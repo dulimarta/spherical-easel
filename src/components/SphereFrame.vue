@@ -665,7 +665,7 @@ export default class SphereFrame extends VueComponent {
       case "intersect":
         this.currentTool = this.intersectTool;
         break;
-      case "pointOnOneDim":
+      case "pointOnObject":
         this.currentTool = this.pointOnOneDimensionalTool;
         break;
 

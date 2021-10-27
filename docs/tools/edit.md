@@ -10,7 +10,7 @@ Each of these tools allows the user to edit an arrangement.
 
 ::: tool-title
 
-## Selection
+## Selection <IconBase icon-name="toolsTab" />
 
 :::
 

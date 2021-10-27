@@ -1,21 +1,23 @@
 <template>
-  <v-icon :size="iconSize">{{iconName}}</v-icon>
+  <v-icon :size="iconSizeValue">{{iconName}}</v-icon>
 </template>
 
-<script>
-export default {
-  // kebab-case translates to KebabCase
-  // So tikz-picture translates to TikzPicture
-  // And tik-z-picture translates to TikZPicture
-  name: "m-d-i-icon-base",
-  props: {
-    iconName: "",
-    iconSize: ""
-  },
-  data() {
-    return {};
+<script lang='ts'>
+import SETTINGS from "../../../src/global-settings";
+import { ActionMode } from "../../../src/types/index";
+import { Prop, Component, Vue } from "vue-property-decorator";
+
+@Component({})
+export default class MDIIconBase extends Vue {
+  @Prop() readonly iconName!: ActionMode;
+  @Prop() readonly iconSize?: number;
+
+  private iconSizeValue = SETTINGS.icons.defaultIconSize;
+
+  mounted() {
+    this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize; // the default size
   }
-};
+}
 </script>
 
 <style scoped>

@@ -10,14 +10,14 @@
         <v-col cols="auto">
           <v-icon v-if="isAntipode"
             medium>
-            $vuetify.icons.value.antipode</v-icon>
+            $vuetify.icons.value.antipodalPoint</v-icon>
           <v-icon v-else-if="isPointOnObject"
             medium>
             $vuetify.icons.value.pointOnObject
           </v-icon>
           <v-icon v-else-if="isIntersectionPoint"
             medium>
-            $vuetify.icons.value.intersection
+            $vuetify.icons.value.intersect
           </v-icon>
           <v-icon v-else-if="isPolar"
             medium>
@@ -64,25 +64,34 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-          <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
           <v-icon v-else-if="isAngle"
             medium>
-            $vuetify.icons.value.angleMarker</v-icon>
-          <v-icon v-else-if="isMeasuredTriangle"
+            $vuetify.icons.value.angle
+          </v-icon>
+          <v-icon v-else-if="isMeasureTriangle"
             medium>
-            $vuetify.icons.value.measuredTriangle</v-icon>
-          <v-icon v-else-if="isMeasuredPolygon"
+            $vuetify.icons.value.measureTriangle
+          </v-icon>
+          <v-icon v-else-if="isMeasurePolygon"
             medium>
-            $vuetify.icons.value.measuredPolygon</v-icon>
-          <v-icon v-else-if="isSegmentLength">
+            $vuetify.icons.value.measurePolygon
+          </v-icon>
+          <v-icon v-else-if="isSegmentLength"
+            medium>
             $vuetify.icons.value.segmentLength
           </v-icon>
-          <v-icon v-else-if="isPointDistance">
+          <v-icon v-else-if="isPointDistance"
+            medium>
             $vuetify.icons.value.pointDistance
           </v-icon>
-          <v-icon v-else-if="isMeasurement">mdi-tape-measure
+          <v-icon v-else-if="isCalculation"
+            medium>
+            $vuetify.icons.value.calculationObject
           </v-icon>
-          <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
+          <v-icon v-else-if="isMeasurement"
+            medium>
+            $vuetify.icons.value.measurementObject
+          </v-icon>
 
         </v-col>
         <v-col class="text-truncate">
@@ -233,6 +242,7 @@ import { SEStore } from "@/store";
 import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
+import SETTINGS from "@/global-settings";
 
 const SE = namespace("se");
 @Component
@@ -491,15 +501,15 @@ export default class SENoduleItem extends Vue {
   get isCalculation(): boolean {
     return this.node instanceof SECalculation;
   }
-  get isSlider(): boolean {
-    return this.node instanceof SESlider;
-  }
-  get isMeasuredTriangle(): boolean {
+  // get isSlider(): boolean { // Not needed as SESlider items are sorted in SENoduleList
+  //   return this.node instanceof SESlider;
+  // }
+  get isMeasureTriangle(): boolean {
     return (
       this.node instanceof SEPolygon && this.node.seEdgeSegments.length === 3
     );
   }
-  get isMeasuredPolygon(): boolean {
+  get isMeasurePolygon(): boolean {
     return this.node instanceof SEPolygon;
   }
 

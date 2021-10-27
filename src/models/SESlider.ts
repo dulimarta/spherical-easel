@@ -37,7 +37,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   set value(v: number) {
     this.current = v;
     this.markKidsOutOfDate();
-    this.updateKids();
+    this.update();
   }
 
   public get noduleDescription(): string {

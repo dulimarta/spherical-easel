@@ -654,6 +654,7 @@ export const SETTINGS = {
     }
   },
   icons: {
+    defaultIconSize: 30,
     boundaryCircle: {
       strokeWidth: 1.5,
       color: "hsla(0, 0%, 0%, 1)"
@@ -727,167 +728,91 @@ export const SETTINGS = {
         }
       }
     },
-    angleMarker: {
-      emphasizeTypes: [["angleMarker", "back", "front"]],
-      scale: {
-        front: 7,
-        back: 5
+    normal: {
+      angle: {
+        scale: {
+          front: 7,
+          back: 5
+        },
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        },
+        fillColor: {
+          front: "hsla(0, 0%, 90%, 0.4)",
+          back: "hsla(0, 0%, 100%, 0.2)"
+        }
       },
-      strokeWidth: {
-        front: 1,
-        back: 1
+      circle: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        },
+        fillColor: {
+          front: "hsla(0, 0%, 90%, 0.4)",
+          back: "hsla(0, 0%, 100%, 0.2)"
+        }
       },
-      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
-      fillColor: {
-        front: "hsla(0, 0%, 90%, 0.4)",
-        back: "hsla(0, 0%, 100%, 0.2)"
+      ellipse: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        },
+        fillColor: {
+          front: "hsla(0, 0%, 90%, 0.4)",
+          back: "hsla(0, 0%, 100%, 0.2)"
+        }
+      },
+      point: {
+        scale: {
+          front: 7,
+          back: 9
+        },
+        strokeWidth: {
+          front: 0.8,
+          back: 0.7
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        },
+        fillColor: {
+          front: "hsla(0, 0%, 90%, 1)",
+          back: "hsla(0, 0%, 100%, 1)"
+        }
+      },
+      line: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        }
+      },
+      segment: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 40%, 1)",
+          back: "hsla(0, 0%, 60%, 1)"
+        }
       }
-    },
-    circle: {
-      emphasizeTypes: [
-        ["circle", "front", "back"],
-        ["point", "front", "back"]
-      ],
-      strokeWidth: {
-        front: 1,
-        back: 1
-      },
-      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
-      fillColor: {
-        front: "hsla(0, 0%, 90%, 0.4)",
-        back: "hsla(0, 0%, 100%, 0.2)"
-      }
-    },
-    ellipse: {
-      emphasizeTypes: [["point", "front", "back"]],
-      strokeWidth: {
-        front: 1,
-        back: 1
-      },
-      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
-      fillColor: {
-        front: "hsla(0, 0%, 90%, 0.4)",
-        back: "hsla(0, 0%, 100%, 0.2)"
-      }
-    },
-    point: {
-      scale: {
-        front: 7,
-        back: 9
-      },
-      strokeWidth: {
-        front: 0.8,
-        back: 0.7
-      },
-      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
-      fillColor: {
-        front: "hsla(0, 0%, 90%, 1)",
-        back: "hsla(0, 0%, 100%, 1)"
-      },
-      emphasizeTypes: [["point", "front", "back"]]
-    },
-    line: {
-      emphasizeTypes: [
-        ["line", "front", "back"],
-        ["point", "front", "back"]
-      ],
-      strokeWidth: {
-        front: 1,
-        back: 1
-      },
-      edgeColor: {
-        front: "hsla(0, 0%, 40%, 1)",
-        back: "hsla(0, 0%, 60%, 1)"
-      }
-    },
-    segment: {
-      emphasizeTypes: [
-        ["segment", "front", "back"],
-        ["point", "front", "back"]
-      ],
-      strokeWidth: {
-        front: 1,
-        back: 1
-      },
-      edgeColor: {
-        front: "hsla(0, 0%, 40%, 1)",
-        back: "hsla(0, 0%, 60%, 1)"
-      }
-    },
-    antipode: {
-      emphasizeTypes: [["point", "front"]]
-    },
-    polar: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["line", "front"]
-      ]
-    },
-    perpendicular: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["line", "front", "back"]
-      ]
-    },
-    tangent: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["line", "front", "back"]
-      ]
-    },
-    intersection: {
-      emphasizeTypes: [["point", "front"]]
-    },
-    pointOnObject: {
-      emphasizeTypes: [["point", "front"]]
-    },
-    segmentLength: {
-      emphasizeTypes: [["segment", "back", "front"]]
-    },
-    pointDistance: {
-      emphasizeTypes: [["point", "front", "back"]]
-    },
-    parametric: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["parametric", "front"]
-      ]
-    },
-    measuredTriangle: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["angleMarker", "back", "front"]
-      ]
-    },
-    measuredPolygon: {
-      emphasizeTypes: [
-        ["point", "front"],
-        ["angleMarker", "back", "front"]
-      ]
-    },
-    midpoint: {
-      emphasizeTypes: [
-        ["segment", "front"],
-        ["point", "front"]
-      ]
-    },
-    nSectPoint: {
-      emphasizeTypes: [
-        ["segment", "front"],
-        ["point", "front"]
-      ]
-    },
-    angleBisector: {
-      emphasizeTypes: [
-        ["line", "front", "back"],
-        ["angleMarker", "front"]
-      ]
-    },
-    nSectLine: {
-      emphasizeTypes: [
-        ["line", "front", "back"],
-        ["angleMarker", "front"]
-      ]
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

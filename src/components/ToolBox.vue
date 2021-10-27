@@ -7,7 +7,6 @@
     mode="out-in">
     <div v-if="!minified"
       key="full">
-      <!-- Two tabs set up TODO: fix the behavior of the tabs-->
       <v-tabs v-model="activeLeftDrawerTab"
         centered
         grow
@@ -18,7 +17,7 @@
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
               v-on="on">
-              <v-icon left>mdi-calculator</v-icon>
+              <v-icon left>$vuetify.icons.value.toolsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
@@ -30,7 +29,7 @@
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
               v-on="on">
-              <v-icon left>mdi-format-list-bulleted</v-icon>
+              <v-icon left>$vuetify.icons.value.objectsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
@@ -41,7 +40,7 @@
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
               v-on="on">
-              <v-icon left>mdi-database</v-icon>
+              <v-icon left>$vuetify.icons.value.constructionsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
@@ -63,8 +62,13 @@
     <div v-else
       class="mini-icons"
       key="partial">
-      <v-icon>mdi-calculator</v-icon>
-      <v-icon>mdi-format-list-bulleted</v-icon>
+      <v-spacer />
+      <v-icon>$vuetify.icons.value.toolsTab</v-icon>
+      <v-spacer />
+      <v-icon>$vuetify.icons.value.objectsTab</v-icon>
+      <v-spacer />
+      <v-icon>$vuetify.icons.value.constructionsTab</v-icon>
+      <v-spacer />
     </div>
   </transition>
 
@@ -92,6 +96,7 @@ export default class Toolbox extends Vue {
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = 0;
+
   // private scene!: Two.Group;
 
   mounted(): void {

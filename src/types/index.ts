@@ -193,29 +193,6 @@ export type SavedNames =
   | "sliderMeasurementStep"
   | "sliderMeasurementValue";
 
-export type IconNames =
-  | "point"
-  | "line"
-  | "segment"
-  | "circle"
-  | "antipode"
-  | "polar"
-  | "perpendicular"
-  | "tangent"
-  | "intersection"
-  | "pointOnObject"
-  | "angleMarker"
-  | "segmentLength"
-  | "pointDistance"
-  | "ellipse"
-  | "parametric"
-  | "measuredTriangle"
-  | "measuredPolygon"
-  | "midpoint"
-  | "nSectPoint"
-  | "angleBisector"
-  | "nSectLine";
-
 export type ActionMode =
   | "angle"
   | "antipodalPoint"
@@ -232,7 +209,7 @@ export type ActionMode =
   | "tangent"
   | "point"
   | "pointDistance"
-  | "pointOnOneDim"
+  | "pointOnObject"
   | "polar"
   | "rotate"
   | "segment"
@@ -249,6 +226,14 @@ export type ActionMode =
   | "nSectPoint"
   | "angleBisector"
   | "nSectLine";
+
+export type IconNames =
+  | ActionMode
+  | "toolsTab"
+  | "objectsTab"
+  | "constructionsTab"
+  | "calculationObject"
+  | "measurementObject";
 /**
  * Intersection Vector3 and if that intersection exists
  */

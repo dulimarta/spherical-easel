@@ -17,190 +17,371 @@ const vuetify = new Vuetify({
       point: {
         component: IconBase,
         props: {
-          iconName: "point"
-          // iconFile: "/icons/iconPointPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.point.emphasizeTypes //[["point", "front", "back"]]
+          iconName: "point",
+          emphasizeTypes: [["point", "front", "back"]],
+          mdiIcon: false,
+          filePath: "../../icons/iconPointPaths.svg"
         }
       },
       line: {
         component: IconBase,
         props: {
-          iconName: "line"
-          // iconFile: "/icons/iconLinePaths.svg",
-          // emphasizeTypes: SETTINGS.icons.line.emphasizeTypes
+          iconName: "line",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["point", "front", "back"]
+          ],
+          filePath: "../../icons/iconLinePaths.svg"
         }
       },
       segment: {
         component: IconBase,
         props: {
-          iconName: "segment"
-          // iconFile: "/icons/iconSegmentPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.segment.emphasizeTypes
+          iconName: "segment",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["segment", "front", "back"],
+            ["point", "front", "back"]
+          ],
+          filePath: "../../icons/iconSegmentPaths.svg"
         }
       },
       circle: {
         component: IconBase,
         props: {
-          iconName: "circle"
-          // iconFile: "/icons/iconCirclePaths.svg",
-          // emphasizeTypes: SETTINGS.icons.circle.emphasizeTypes
+          iconName: "circle",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["circle", "front", "back"],
+            ["point", "front", "back"]
+          ],
+          filePath: "../../icons/iconCirclePaths.svg"
         }
       },
-      antipode: {
+      antipodalPoint: {
         component: IconBase,
         props: {
-          iconName: "antipode"
-          // iconFile: "/icons/iconAntipodePaths.svg",
-          // emphasizeTypes: SETTINGS.icons.antipode.emphasizeTypes
+          iconName: "antipodalPoint",
+          mdiIcon: false,
+          emphasizeTypes: [["point", "front"]],
+          filePath: "../../icons/iconAntipodalPointPaths.svg"
         }
       },
       polar: {
         component: IconBase,
         props: {
-          iconName: "polar"
-          // iconFile: "/icons/iconPolarPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.polar.emphasizeTypes
+          iconName: "polar",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front"]
+          ],
+          filePath: "../../icons/iconPolarPaths.svg"
         }
       },
       perpendicular: {
         component: IconBase,
         props: {
-          iconName: "perpendicular"
-          // iconFile: "/icons/iconPerpendicularPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.perpendicular.emphasizeTypes
+          iconName: "perpendicular",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front", "back"]
+          ],
+          filePath: "../../icons/iconPerpendicularPaths.svg"
         }
       },
       tangent: {
         component: IconBase,
         props: {
-          iconName: "tangent"
-          // iconFile: "/icons/iconTangentPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.tangent.emphasizeTypes
+          iconName: "tangent",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front", "back"]
+          ],
+          filePath: "../../icons/iconTangentPaths.svg"
         }
       },
-      intersection: {
+      intersect: {
         component: IconBase,
         props: {
-          iconName: "intersection"
-          // iconFile: "/icons/iconIntersectionPaths.svg",
-          // emphasizeTypes: SETTINGS.icons.ONTEline.emphasizeTypes
+          iconName: "intersect",
+          mdiIcon: false,
+          emphasizeTypes: [["point", "front"]],
+          filePath: "../../icons/iconIntersectPaths.svg"
         }
       },
       pointOnObject: {
         component: IconBase,
         props: {
-          iconName: "pointOnObject"
-          // iconFile: "/icons/iconPointOnObjectPaths.svg",
-          // emphasizeTypes: [["point", "front"]]
+          iconName: "pointOnObject",
+          mdiIcon: false,
+          emphasizeTypes: [["point", "front"]],
+          filePath: "../../icons/iconPointOnObjectPaths.svg"
         }
       },
-      angleMarker: {
+      angle: {
         component: IconBase,
         props: {
-          iconName: "angleMarker"
-          // iconFile: "/icons/iconAngleMarkerPaths.svg",
-          // emphasizeTypes: [["angleMarker", "back", "front"]]
+          iconName: "angle",
+          emphasizeTypes: [["angleMarker", "back", "front"]],
+          mdiIcon: false,
+          filePath: "../../icons/iconAnglePaths.svg"
         }
       },
       segmentLength: {
         component: IconBase,
         props: {
-          iconName: "segmentLength"
-          // iconFile: "/icons/iconSegmentLengthPaths.svg",
-          // emphasizeTypes: [["segment", "back", "front"]]
+          iconName: "segmentLength",
+          mdiIcon: false,
+          emphasizeTypes: [["segment", "back", "front"]],
+          filePath: "../../icons/iconSegmentLengthPaths.svg"
         }
       },
       pointDistance: {
         component: IconBase,
         props: {
-          iconName: "pointDistance"
-          // iconFile: "/icons/iconPointDistancePaths.svg",
-          // emphasizeTypes: [["point", "front", "back"]]
+          iconName: "pointDistance",
+          mdiIcon: false,
+          emphasizeTypes: [["point", "front", "back"]],
+          filePath: "../../icons/iconPointDistancePaths.svg"
         }
       },
       ellipse: {
         component: IconBase,
         props: {
-          iconName: "ellipse"
-          // iconFile: "/icons/iconEllipsePaths.svg",
-          // emphasizeTypes: [["point", "front", "back"]]
+          iconName: "ellipse",
+          mdiIcon: false,
+          emphasizeTypes: [["point", "front", "back"]],
+          filePath: "../../icons/iconEllipsePaths.svg"
         }
       },
       parametric: {
         component: IconBase,
         props: {
-          iconName: "parametric"
-          // iconFile: "/icons/iconParametricPaths.svg",
-          // emphasizeTypes: [
-          //   ["point", "front"],
-          //   ["parametric", "front"]
-          // ]
+          iconName: "parametric",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["parametric", "front"]
+          ],
+          filePath: "../../icons/iconParametricPaths.svg"
         }
       },
-      measuredTriangle: {
+      measureTriangle: {
         component: IconBase,
         props: {
-          iconName: "measuredTriangle"
-          // iconFile: "/icons/iconMeasuredTrianglePaths.svg",
-          // emphasizeTypes: [
-          //   ["point", "front"],
-          //   ["angleMarker", "back", "front"]
-          // ]
+          iconName: "measureTriangle",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["angleMarker", "back", "front"]
+          ],
+          filePath: "../../icons/iconMeasureTrianglePaths.svg"
         }
       },
-      measuredPolygon: {
+      measurePolygon: {
         component: IconBase,
         props: {
-          iconName: "measuredPolygon"
-          // iconFile: "/icons/iconMeasuredPolygonPaths.svg",
-          // emphasizeTypes: [
-          //   ["point", "front"],
-          //   ["angleMarker", "back", "front"]
-          // ]
+          iconName: "measurePolygon",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["point", "front"],
+            ["angleMarker", "back", "front"]
+          ],
+          filePath: "../../icons/iconMeasurePolygonPaths.svg"
         }
       },
       midpoint: {
         component: IconBase,
         props: {
-          iconName: "midpoint"
-          // iconFile: "/icons/iconMidpointPaths.svg",
-          // emphasizeTypes: [
-          //   ["segment", "front"],
-          //   ["point", "front"]
-          // ]
+          iconName: "midpoint",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["segment", "front"],
+            ["point", "front"]
+          ],
+          filePath: "../../icons/iconMidpointPaths.svg"
         }
       },
       nSectPoint: {
         component: IconBase,
         props: {
-          iconName: "nSectPoint"
-          // iconFile: "/icons/iconNSectPointPaths.svg",
-          // emphasizeTypes: [
-          //   ["segment", "front"],
-          //   ["point", "front"]
-          // ]
+          iconName: "nSectPoint",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["segment", "front"],
+            ["point", "front"]
+          ],
+          filePath: "../../icons/iconNSectPointPaths.svg"
         }
       },
       angleBisector: {
         component: IconBase,
         props: {
-          iconName: "angleBisector"
-          // iconFile: "/icons/iconAngleBisectorPaths.svg",
-          // emphasizeTypes: [
-          //   ["line", "front", "back"],
-          //   ["angleMarker", "front"]
-          // ]
+          iconName: "angleBisector",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["angleMarker", "front"]
+          ],
+          filePath: "../../icons/iconAngleBisectorPaths.svg"
         }
       },
       nSectLine: {
         component: IconBase,
         props: {
-          iconName: "nSectLine"
-          // iconFile: "/icons/iconNSectLinePaths.svg",
-          // emphasizeTypes: [
-          //   ["line", "front", "back"],
-          //   ["angleMarker", "front"]
-          // ]
+          iconName: "nSectLine",
+          mdiIcon: false,
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["angleMarker", "front"]
+          ],
+          filePath: "../../icons/iconNSectLinePaths.svg"
+        }
+      },
+      coordinate: {
+        component: IconBase,
+        props: {
+          iconName: "coordinate",
+          mdiIcon: "mdi-axis-arrow-info",
+          emphasizeTypes: [[]]
+        }
+      },
+      delete: {
+        component: IconBase,
+        props: {
+          iconName: "delete",
+          mdiIcon: "mdi-delete",
+          emphasizeTypes: [[]]
+        }
+      },
+      hide: {
+        component: IconBase,
+        props: {
+          iconName: "hide",
+          mdiIcon: "mdi-file-hidden",
+          emphasizeTypes: [[]]
+        }
+      },
+      iconFactory: {
+        component: IconBase,
+        props: {
+          iconName: "iconFactory",
+          mdiIcon: "mdi-plus",
+          emphasizeTypes: [[]]
+        }
+      },
+      move: {
+        component: IconBase,
+        props: {
+          iconName: "move",
+          mdiIcon: "mdi-cursor-move",
+          emphasizeTypes: [[]]
+        }
+      },
+      rotate: {
+        component: IconBase,
+        props: {
+          iconName: "rotate",
+          mdiIcon: "mdi-rotate-3d-variant",
+          emphasizeTypes: [[]]
+        }
+      },
+      select: {
+        component: IconBase,
+        props: {
+          iconName: "select",
+          mdiIcon: "mdi-cursor-pointer",
+          emphasizeTypes: [[]]
+        }
+      },
+      toggleLabelDisplay: {
+        component: IconBase,
+        props: {
+          iconName: "toggleLabelDisplay",
+          mdiIcon: "mdi-toggle-switch-off-outline",
+          emphasizeTypes: [[]]
+        }
+      },
+      zoomFit: {
+        component: IconBase,
+        props: {
+          iconName: "zoomFit",
+          mdiIcon: "mdi-magnify-scan",
+          emphasizeTypes: [[]]
+        }
+      },
+      zoomIn: {
+        component: IconBase,
+        props: {
+          iconName: "zoomIn",
+          mdiIcon: "mdi-magnify-plus-outline",
+          emphasizeTypes: [[]]
+        }
+      },
+      zoomOut: {
+        component: IconBase,
+        props: {
+          iconName: "zoomOut",
+          mdiIcon: "mdi-magnify-minus-outline",
+          emphasizeTypes: [[]]
+        }
+      },
+      toolsTab: {
+        component: IconBase,
+        props: {
+          iconName: "toolsTab",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-tools",
+          filePath: ""
+        }
+      },
+      objectsTab: {
+        component: IconBase,
+        props: {
+          iconName: "objectsTab",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-format-list-bulleted",
+          filePath: ""
+        }
+      },
+      constructionsTab: {
+        component: IconBase,
+        props: {
+          iconName: "constructionsTab",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-database",
+          filePath: ""
+        }
+      },
+      calculationObject: {
+        component: IconBase,
+        props: {
+          iconName: "calculationObject",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-calculator-variant",
+          filePath: ""
+        }
+      },
+      measurementObject: {
+        component: IconBase,
+        props: {
+          iconName: "measurementObject",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-math-compass",
+          filePath: ""
+        }
+      },
+      slider: {
+        component: IconBase,
+        props: {
+          iconName: "slider",
+          emphasizeTypes: [[]],
+          mdiIcon: "mdi-slide",
+          filePath: ""
         }
       }
     }
