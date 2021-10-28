@@ -534,7 +534,7 @@ export default class MoveHandler extends Highlighter {
                   )
                   .isZero(SETTINGS.nearlyAntipodalIdeal)
               ) {
-                console.log("issued line move command");
+                //console.log("issued line move command");
                 moveCommandGroup.addCommand(
                   new MoveLineCommand(
                     seNoduleAfterState.object as SELine,

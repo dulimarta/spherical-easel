@@ -207,6 +207,7 @@ export default class SE extends VuexModule implements AppState {
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
     this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
+    this.sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
     this.seParametrics.forEach((x: SEParametric) => {
       let ptr: Parametric | null = x.ref;
       while (ptr !== null) {

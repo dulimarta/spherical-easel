@@ -245,7 +245,9 @@ export type IconNames =
   | "hideNodeLabel"
   | "deleteNode"
   | "appSettings"
-  | "clearConstruction";
+  | "clearConstruction"
+  | "undo"
+  | "redo";
 
 /**
  * Intersection Vector3 and if that intersection exists

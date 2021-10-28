@@ -124,7 +124,7 @@ export default class SelectionHandler extends Highlighter {
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
-    console.log(keyEvent.key);
+    //console.log(keyEvent.key);
     if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
@@ -208,7 +208,7 @@ export default class SelectionHandler extends Highlighter {
         } else {
           this.currentSelection = [];
 
-          // Check to see if there was an object on the back of the sphere that he was trying to
+          // Check to see if there was an object on the back of the sphere that the user was trying to
           // select but doesn't know about the shift key.  Send an alert in this case
           const sphereVec = new Vector3(
             this.currentSphereVector.x,
@@ -242,7 +242,7 @@ export default class SelectionHandler extends Highlighter {
     }
     SEStore.setSelectedSENodules(this.currentSelection);
     // console.log("number selected", SEStore.selectedSENodules.length);
-    /** 
+    /**
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)

@@ -1206,6 +1206,20 @@ export const SETTINGS = {
         mdiIcon: "mdi-broom",
         filePath: ""
       }
+    },
+    undo: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-undo",
+        filePath: ""
+      }
+    },
+    redo: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-redo",
+        filePath: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

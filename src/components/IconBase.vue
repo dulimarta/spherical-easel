@@ -967,7 +967,7 @@ export default class IconBase extends Vue {
 <style scoped>
 svg {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: text-bottom;
   margin-bottom: -2px;
 }
 @import "https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css";

@@ -494,7 +494,8 @@ export default {
       "The selected segment doesn't form a triangle with the previously selected segments.",
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
-    newPolygonAdded: "A new polygon was created."
+    newPolygonAdded: "A new polygon was created.",
+    deletedNodes: "Successfully deleted {number} objects."
   },
 
   objectTree: {

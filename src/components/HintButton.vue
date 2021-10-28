@@ -15,7 +15,7 @@
         bottom
         fab
         x-small>
-        <v-icon v-if="type === 'undo'">mdi-undo</v-icon>
+        <v-icon v-if="type === 'undo'">$undo</v-icon>
         <v-icon v-else-if="type === 'default'">mdi-backup-restore</v-icon>
         <v-icon v-else-if="type === 'colorInput'">mdi-dots-horizontal
         </v-icon>

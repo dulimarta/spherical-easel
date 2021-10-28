@@ -62,7 +62,7 @@
                         v-on="on">
                         <v-icon color="blue"
                           :disabled="!stylePanelMinified || !undoEnabled">
-                          mdi-undo</v-icon>
+                          $undo</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("main.UndoLastAction") }}</span>
@@ -78,7 +78,7 @@
                         v-on="on">
                         <v-icon color="blue"
                           :disabled="!stylePanelMinified || !redoEnabled">
-                          mdi-redo</v-icon>
+                          $redo</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("main.RedoLastAction") }}</span>

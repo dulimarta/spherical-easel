@@ -313,6 +313,18 @@ const vuetify = new Vuetify({
         props: {
           iconName: "clearConstruction"
         }
+      },
+      undo: {
+        component: IconBase,
+        props: {
+          iconName: "undo"
+        }
+      },
+      redo: {
+        component: IconBase,
+        props: {
+          iconName: "redo"
+        }
       }
     }
   },
