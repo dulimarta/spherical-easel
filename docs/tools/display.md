@@ -9,21 +9,21 @@ Each of these tools allows a user to adjust the display of an arrangement.
 
 ::: tool-title
 
-## Hide Object
+## Hide Object <IconBase icon-name="hide" />
 
 :::
 ::: tool-description
+
 Hide selected objects.
 
 ::: tool-details
 
-- Clicking at a location hides all nearby objects.
-- When an object is hidden its label is also hidden. However, after using this tool, you can select the object in the Objects Tab and then use the Style Panel to show the label. This allows the user to hide an angle marker and but then use the angle marker's label to display text to label the angle.
-- When hiding a line segment or point that is part of a [Measured Angle](/tools/measurement.html#angle) and an angle marker is display, hiding that object will also hide the angle marker.
-- If the user would like to show all hidden objects, hold the <kbd>S</kbd> key and click on the Sphere Canvas and all hidden objects will be shown.
+- Mousing over an object will highlight the object in focus and clicking will hide that object.
+- When an object is hidden its label is also hidden. If the user wishes to display a label without displaying the object, the user can select the object in the Objects Tab <IconBase icon-size = 12 icon-name="objectsTab" /> and then use display label toggle button <IconBase icon-size = 12 icon-name="showNodeLabel" /> to show the label.
+- While using this tool, if the user would like to show _all_ hidden objects, press the <kbd>S</kbd> (Capital S) key and all hidden objects will be shown.
+- While using this tool, if the user would like to show all the objects that the user has hidden _since_ _the_ _tool_ was activated, press the <kbd>s</kbd> (lowercase s) key and those objects will be shown.
 - If this tool is activated with any objects selected, the selected objects are hidden automatically.
-  ::: tip
-  If when clicking at a location more than one object becomes hidden and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will hide the selected objects.
+
   :::
 
   ::: tool-title

@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SESlider } from "@/models/SESlider";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import SliderHandler from "@/eventHandlers/SliderHandler";
 import { SavedNames } from "@/types";
 
 export class AddSliderMeasurementCommand extends AddExpressionCommand {

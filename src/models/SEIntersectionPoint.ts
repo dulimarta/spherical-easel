@@ -105,8 +105,9 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   /**
-   * If the intersection point is changed to isUserCreated(true) then the point should be showing,
-   * the default style should be displayed and the glowing background should be set up
+   * If the intersection point is changed to isUserCreated(true) then the user intentionally created this point
+   * That is, the point was not automatically created. The showing or not of a user created
+   * point is possible. A not user created point is not showing unless moused over.
    */
   set isUserCreated(flag: boolean) {
     this._isUserCreated = flag;

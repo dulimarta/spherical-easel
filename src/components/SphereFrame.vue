@@ -33,7 +33,6 @@ import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import AngleHandler from "@/eventHandlers/AngleHandler";
 import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
-import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
@@ -113,7 +112,6 @@ export default class SphereFrame extends VueComponent {
   private pointDistanceTool!: PointDistanceHandler;
   private angleTool!: AngleHandler;
   private coordinateTool!: CoordinateHandler;
-  private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
   private tangentLineThruPointTool!: TangentLineThruPointHandler;
@@ -268,7 +266,6 @@ export default class SphereFrame extends VueComponent {
     this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.angleTool = new AngleHandler(this.layers);
     this.coordinateTool = new CoordinateHandler(this.layers);
-    this.sliderTool = new SliderHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
@@ -684,9 +681,6 @@ export default class SphereFrame extends VueComponent {
       case "coordinate":
         this.currentTool = this.coordinateTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
-        break;
-      case "slider":
-        this.currentTool = this.sliderTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;

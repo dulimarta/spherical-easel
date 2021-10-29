@@ -215,7 +215,6 @@ export type ActionMode =
   | "segment"
   | "segmentLength"
   | "select"
-  | "slider"
   | "toggleLabelDisplay"
   | "zoomFit"
   | "zoomIn"
@@ -229,6 +228,7 @@ export type ActionMode =
 
 export type IconNames =
   | ActionMode
+  | "slider"
   | "toolsTab"
   | "objectsTab"
   | "constructionsTab"

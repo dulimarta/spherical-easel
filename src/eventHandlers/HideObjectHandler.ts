@@ -6,16 +6,74 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEStore } from "@/store";
+import { SELabel } from "@/models/SELabel";
 
 export default class HideObjectHandler extends Highlighter {
   /**
    * Object to hide - the victim!
    */
   private victim: SENodule | null = null;
+  // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
+  private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
   constructor(layers: Two.Group[]) {
     super(layers);
   }
+
+  keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // See if the S key was pressed, if so show *all* hidden objects
+    if (keyEvent.key.match("S")) {
+      const setNoduleDisplayCommandGroup = new CommandGroup();
+      SEStore.seNodules.forEach(seNodule => {
+        // don't do anything to the intersection points that are not user created
+        if (
+          seNodule instanceof SEIntersectionPoint &&
+          !(seNodule as SEIntersectionPoint).isUserCreated
+        ) {
+          return;
+        }
+        // don't show labels of intersection points that are not user created
+        if (
+          seNodule instanceof SELabel &&
+          seNodule.parent instanceof SEIntersectionPoint &&
+          !seNodule.parent.isUserCreated
+        ) {
+          return;
+        }
+        if (seNodule.showing === false) {
+          setNoduleDisplayCommandGroup.addCommand(
+            new SetNoduleDisplayCommand(seNodule, true)
+          );
+        }
+      });
+      setNoduleDisplayCommandGroup.execute();
+    } else if (keyEvent.key.match("s")) {
+      // if the lower case s key was pushed restore/show only those objects that the user has hidden since activating the tool
+      const setNoduleDisplayCommandGroup = new CommandGroup();
+      SEStore.seNodules.forEach(seNodule => {
+        // don't do anything to the intersection points that are not user created
+        if (
+          seNodule instanceof SEIntersectionPoint &&
+          !(seNodule as SEIntersectionPoint).isUserCreated
+        ) {
+          return;
+        }
+        // don't do anything to those seNodules whose showing value hasn't changed.
+        if (this.initialShowingMap.get(seNodule.id) !== undefined) {
+          if (this.initialShowingMap.get(seNodule.id) === seNodule.showing) {
+            return;
+          }
+        }
+
+        if (seNodule.showing === false) {
+          setNoduleDisplayCommandGroup.addCommand(
+            new SetNoduleDisplayCommand(seNodule, true)
+          );
+        }
+      });
+      setNoduleDisplayCommandGroup.execute();
+    }
+  };
 
   mousePressed(_event: MouseEvent): void {
     //Select an object to delete
@@ -99,10 +157,17 @@ export default class HideObjectHandler extends Highlighter {
     this.victim = null;
   }
   activate(): void {
+    window.addEventListener("keypress", this.keyPressHandler);
+    // Record the showing status of all the SENodules
+    SEStore.seNodules.forEach(seNodule => {
+      this.initialShowingMap.set(seNodule.id, seNodule.showing);
+    });
+
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
     SEStore.selectedSENodules
       .filter(
+        // remove the intersection points that are not user created
         (object: SENodule) =>
           !(object instanceof SEIntersectionPoint) ||
           (object as SEIntersectionPoint).isUserCreated
@@ -117,5 +182,9 @@ export default class HideObjectHandler extends Highlighter {
   }
   deactivate(): void {
     super.deactivate();
+    // Remove the listener
+    window.removeEventListener("keypress", this.keyPressHandler);
+    // clear the initial showing map
+    this.initialShowingMap.clear();
   }
 }
