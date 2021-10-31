@@ -119,7 +119,7 @@ export default class DeleteHandler extends Highlighter {
     if (SEStore.selectedSENodules.length !== 0) {
       const deleteCommandGroup = new CommandGroup();
       //Keep track of the deleted objects ids
-      // if the user selects object1 and object2 that is a dependent/decendent of object1, deleting object 1 will
+      // if the user selects object1 and object2 that is a dependent/descendent of object1, deleting object 1 will
       // also delete object2, so that you should not also try to delete object again.
       const deletedObjectIDs: number[] = [];
       SEStore.selectedSENodules

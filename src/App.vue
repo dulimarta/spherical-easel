@@ -111,22 +111,23 @@
       </v-col>
     </v-footer>
     <Dialog ref="logoutDialog"
-      title="Confirm Logout"
-      yes-text="Proceed"
+      :title="$t('constructions.confirmLogout')"
+      :yes-text="$t('constructions.proceed')"
       :yes-action="() => doLogout()"
-      no-text="Cancel"
+      :no-text="$t('constructions.cancel')"
       max-width="40%">
-      <p>You are about to logout, any unsaved constructions will be
-        discarded.</p>
-      <p><em>Proceed</em> or <em>cancel?</em></p>
+      <p>
+        {{$t('constructions.logoutDialog')}}</p>
+
     </Dialog>
     <Dialog ref="saveConstructionDialog"
-      title="Save Construction"
-      yes-text="Save"
-      no-text="Cancel"
+      :title="$t('constructions.saveConstruction')"
+      :yes-text="$t('constructions.save')"
+      :no-text="$t('constructions.cancel')"
       :yes-action="() => doShare()"
       max-width="40%">
-      <p>Please provide a short description for your construction
+      <p>
+        {{$t('constructions.saveConstructionDialog')}}
       </p>
 
       <v-text-field type="text"
@@ -134,12 +135,12 @@
         clearable
         counter
         persistent-hint
-        label="Description"
+        :label="$t('constructions.description')"
         required
         v-model="description"></v-text-field>
       <v-switch v-model="publicConstruction"
         :disabled="uid.length === 0"
-        label="Available to public"></v-switch>
+        :label="$t('constructions.makePublic')"></v-switch>
     </Dialog>
   </v-app>
 </template>
@@ -298,6 +299,7 @@ export default class App extends Vue {
     this.whoami = "";
     this.uid = "";
     window.removeEventListener("keydown", this.keyHandler);
+    EventBus.unlisten("secret-key-detected");
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;

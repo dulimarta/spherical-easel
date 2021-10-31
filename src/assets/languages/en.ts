@@ -633,12 +633,30 @@ export default {
   },
 
   constructions: {
+    save: "Save",
+    cancel: "Cancel",
+    keep: "Keep",
+    discard: "discard",
+    description: "Description",
+    proceed: "Proceed",
+    resetSphere: "Reset Sphere",
+    confirmReset: "Confirm Reset Sphere",
+    confirmation: "Confirmation Required",
+    confirmLogout: "Confirm Logout",
+    saveConstruction: "Save Construction",
+    clearConstructionMsg:
+      "You are about to clear your construction. This action cannot be undone and any unsaved work will be discarded.",
+    makePublic: "Available to public",
     privateConstructions: "Private Constructions",
     publicConstructions: "Public Constructions",
+    logoutDialog:
+      "You are about to logout, any unsaved constructions will be discarded.",
+    saveConstructionDialog:
+      "Please provide a short description for your construction.",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
-      "You have unsaved objects. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
+      "You have unsaved work. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
     firestoreConstructionLoaded: "Construction successfully loaded.",
     firestoreConstructionSaved: "Construction successfully saved.",
     firestoreConstructionDeleted: "Construction successfully deleted.",

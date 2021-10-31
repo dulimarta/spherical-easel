@@ -165,7 +165,7 @@ export default class SelectionHandler extends Highlighter {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
           });
-        keyEvent.preventDefault(); //prevents this command from selecting all the text on the screen
+        keyEvent.preventDefault(); //prevents this key stroke combination from selecting all the text on the screen
       }
     } else if (navigator.userAgent.indexOf("Mac OS X") === -1) {
       //PC shortcuts for select all
@@ -176,7 +176,7 @@ export default class SelectionHandler extends Highlighter {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
           });
-        keyEvent.preventDefault(); //prevents this command from selecting all the text on the screen
+        keyEvent.preventDefault(); //prevents this key stroke combination from selecting all the text on the screen
       }
     }
 

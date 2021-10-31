@@ -85,7 +85,7 @@
                   </v-tooltip>
                 </div>
                 <div class="anchored top right">
-                  <v-tooltip bottom
+                  <!--<v-tooltip bottom
                     v-if="accountEnabled"
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
@@ -98,19 +98,19 @@
                       </v-btn>
                     </template>
                     <span>Reset sphere</span>
-                  </v-tooltip>
+                  </v-tooltip>-->
                   <v-tooltip bottom
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn icon
                         tile
-                        @click="resetSphere"
+                        @click="$refs.clearConstructionDialog.show()"
                         v-on="on">
                         <v-icon>$clearConstruction</v-icon>
                       </v-btn>
                     </template>
-                    <span>Reset sphere</span>
+                    <span>{{$t('constructions.resetSphere')}}</span>
                   </v-tooltip>
                 </div>
                 <div class="anchored bottom right">
@@ -234,13 +234,19 @@
     </Pane>
     <Dialog ref="unsavedWorkDialog"
       max-width="40%"
-      title="Confirmation Required"
-      yes-text="Keep"
-      no-text="Discard"
+      :title="$t('constructions.confirmation')"
+      :yes-text="$t('constructions.keep')"
+      :no-text="$t('constructions.discard')"
       :no-action="doLeave">
       {{$t(`constructions.unsavedConstructionMsg`)}}
-      You have unsaved work. Do you want to stay on this page and keep your
-      work or switch to another page and discard your work.
+    </Dialog>
+    <Dialog ref="clearConstructionDialog"
+      :title="$t('constructions.confirmReset')"
+      :yes-text="$t('constructions.proceed')"
+      :yes-action="() => resetSphere()"
+      :no-text="$t('constructions.cancel')"
+      max-width="40%">
+      <p> {{$t(`constructions.clearConstructionMsg`)}}</p>
     </Dialog>
   </Splitpanes>
 </template>
@@ -349,6 +355,7 @@ export default class Easel extends Vue {
     mainPanel: VueComponent;
     stylePanel: HTMLDivElement;
     unsavedWorkDialog: VueComponent & DialogAction;
+    clearConstructionDialog: VueComponent & DialogAction;
   };
 
   //#region magnificationUpdate
@@ -521,6 +528,7 @@ export default class Easel extends Vue {
   }
 
   resetSphere(): void {
+    this.$refs.clearConstructionDialog.hide();
     SEStore.removeAllFromLayers();
     SEStore.init();
     Command.commandHistory.splice(0);
