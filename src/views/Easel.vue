@@ -452,11 +452,13 @@ export default class Easel extends Vue {
         if (u !== null) this.uid = u.uid;
       }
     );
+    window.addEventListener("keydown", this.handleKeyDown);
   }
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
     EventBus.unlisten("secret-key-detected");
+    window.removeEventListener("keydown", this.handleKeyDown);
   }
 
   /**
@@ -524,9 +526,37 @@ export default class Easel extends Vue {
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   }
 
+  handleKeyDown(keyEvent: KeyboardEvent): void {
+    // TO DO: test this on PC
+    if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
+      //Mac shortcuts
+      if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.metaKey) {
+        Command.undo();
+      } else if (
+        keyEvent.code === "KeyZ" &&
+        keyEvent.shiftKey &&
+        keyEvent.metaKey
+      ) {
+        Command.redo();
+      }
+    } else {
+      //pc shortcuts
+      if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.ctrlKey) {
+        Command.undo();
+      } else if (
+        keyEvent.code === "KeyY" &&
+        !keyEvent.shiftKey &&
+        keyEvent.ctrlKey
+      ) {
+        Command.redo();
+      }
+    }
+  }
   //#region resizePlottables
   resizePlottables(e: { factor: number }): void {
     // const oldFactor = this.previousZoomMagnificationFactor;

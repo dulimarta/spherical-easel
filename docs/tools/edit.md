@@ -20,20 +20,22 @@ Select object(s) to change their visual style or to perform actions on them with
 
 ::: tool-details Selecting Objects:
 
-- Mousing over an object will highlight the object in focus and clicking will select that object.
-- To add or subtract to your current selection, press and hold the <kbd>Alt/Option</kbd> key when mouse pressing. A mouse press will add the objects to the current selection or, if the mouse press is on already selected object, that object will be removed from the current selection.
+- Mousing over an object will highlight the object in focus and clicking (mouse press and release at the same location) will select that object. Holding the shift key selects objects on the back of the sphere.
+- To add or subtract to your current selection, press and hold the <kbd>Alt/Option</kbd> key when clicking. A click will add the objects to the current selection or, if the click is on an already selected object, that object will be removed from the current selection.
 - All selected objects will glow (i.e. have a highlight color displayed in the background of the object) and slowly blink.
-- To select multiple objects, mouse drag and create a rectangle. Anything partially within that region will be selected when the mouse is released. (TODO: Not Implemented yet)
-- To clear your selection, mouse press and release at a location with no objects nearby.
+- To select multiple objects, mouse press and drag to create a selection rectangle. Anything in or partially within that rectangle will be added to the current selection when the mouse is released. Holding the shift key creates the rectangle on the back of the sphere.
+- To clear your selection, mouse press and release without moving at a location with no objects nearby.
 - To single out one object when multiple objects are nearby, mouse over (with _no_ mouse press or release) that location (where there are at lease two objects nearby) and press and hold a number key <kbd>1-9</kbd>. Depending on the key, a single object will be highlighted. To add this object to the selected list, mouse press and release without moving.
-- To select all points, move the mouse into the Sphere Canvas and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press at an empty location on the Sphere Canvas and release once. Similarly to select...
-  - All circles use the <kbd>c</kbd> key
-  - All lines use the <kbd>l</kbd> key
-  - All segments use the <kbd>s</kbd> key
-  - All ellipses use the <kbd>e</kbd> key
-  - All angle markers <kbd>a</kbd> key
-  - All parametrics <kbd>P</kbd> key (capital P)
-  - All polygons <kbd>O</kbd> key (capital O)
+- To select all points, move the mouse into the Sphere Canvas and press the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press and release _without_ moving the mouse on the Sphere Canvas. Similarly to select ...
+  - All visible circles use the <kbd>c</kbd> key
+  - All visible lines use the <kbd>l</kbd> key
+  - All visible segments use the <kbd>s</kbd> key
+  - All visible ellipses use the <kbd>e</kbd> key
+  - All visible angle markers <kbd>A</kbd> key (capital A)
+  - All visible label <kbd>L</kbd> key (capital L)
+  - All visible parametrics <kbd>P</kbd> key (capital P)
+  - All visible polygons <kbd>O</kbd> key (capital O)
+  - All visible objects <kbd>a</kbd> and <kbd>command</kbd> keys (command/meta a)
 
 **Changing Visual Style:**
 
@@ -101,7 +103,7 @@ Clears the current construction on the Sphere Canvas.
 - This tools is found in the upper right hand corner of the Sphere Canvas.
 - This tool clears the Sphere Canvas without saving the current construction.
 - Clicking this button resets the Sphere Canvas so that the user can start a new construction.
-- This action is not undoable.
+- This action is not undoable. If the user wants an undoable way of clearing the sphere, activate the select tool, select all objects with <kbd>Command a</kbd>, then activate the delete tool.
 
 :::
 

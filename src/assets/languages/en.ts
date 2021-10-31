@@ -238,7 +238,7 @@ export default {
     selectionDirection3:
       "Press a number key to select an object at that depth.",
     selectionDirection4:
-      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (a), parametrics (P), and polygons (O).",
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), labels (L) or all objects (metaKey a).",
     closeStylingPanel: "Close Styling Panel",
     noSelectionToolTip:
       "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",

@@ -290,6 +290,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
+
     EventBus.unlisten("sphere-rotate");
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
@@ -613,6 +614,8 @@ export default class SphereFrame extends VueComponent {
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
+        this.zoomTool.activate(); // unglow any selected objects.
+        this.zoomTool.deactivate(); // shut the tool down properly
         SEStore.revertActionMode();
         break;
 

@@ -3,6 +3,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
+import Two from "two.js";
 import { SEStore } from "@/store";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
@@ -13,9 +14,17 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import Parametric from "@/plottables/Parametric";
+import { SELabel } from "@/models/SELabel";
+import SETTINGS, { LAYER } from "@/global-settings";
+import { SelectionRectangle } from "@/plottables/SelectionRectangle";
+import SE from "@/store/se-module";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
+const MESHSIZE = 10;
+const sphereVector = new Vector3();
+const screenVector = new Two.Vector(0, 0);
+
 export default class SelectionHandler extends Highlighter {
   /**
    * An array of the selected objects.  These objects should stay highlighted/selected until either this
@@ -29,21 +38,37 @@ export default class SelectionHandler extends Highlighter {
   private highlightTimer2: NodeJS.Timeout | null = null;
   private delayedStart: NodeJS.Timeout | null = null;
   private highlightOn = false;
+
+  // A flag and location to indicate that the user is dragging to make a selection rectangle
+  private mouseDownLocation: number[] = [];
+  private dragging = false;
+
+  private selectionRectangle: SelectionRectangle;
+  private selectionRectangleAdded = false;
+  private selectionRectangleSelection: SENodule[] = []; // The selections added in the selection rectangle
+
   /**
    * An array to store the object selected by the key press handler
    */
   private keyPressSelection: SENodule[] = [];
 
+  constructor(layers: Two.Group[]) {
+    super(layers);
+    this.selectionRectangle = new SelectionRectangle(
+      layers[LAYER.foregroundText]
+    );
+  }
   /**
    * This handles the keyboard events and when multiple objects are under
    * the mouse, the user can specify which one to select.
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    //if (keyEvent.repeat) return; // Ignore repeated events on the same key
     // Clear the keyPressSelection
     this.keyPressSelection.clear();
-    // Get all SEPoints
-    if (keyEvent.key.match("p")) {
+    // Get all SEPoints lower case p
+    if (keyEvent.code === "KeyP" && !keyEvent.shiftKey) {
       SEStore.sePoints
         .filter(
           (n: SEPoint) =>
@@ -51,56 +76,56 @@ export default class SelectionHandler extends Highlighter {
         ) // no unUserCreated intersection points allowed and no hidden points allowed
         .forEach((n: SEPoint) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SECircles
-    if (keyEvent.key.match("c")) {
+    // Get all SECircles lower case c
+    else if (keyEvent.code === "KeyC" && !keyEvent.shiftKey) {
       SEStore.seCircles
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SEEllipses
-    if (keyEvent.key.match("e")) {
+    // Get all SEEllipses lower case e
+    else if (keyEvent.code === "KeyE" && !keyEvent.shiftKey) {
       SEStore.seEllipses
         .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
         .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SELines
-    if (keyEvent.key.match("l")) {
+    // Get all SELines lower case l
+    else if (keyEvent.code === "KeyL" && !keyEvent.shiftKey) {
       SEStore.seLines
         .filter((n: SELine) => n.showing) //no hidden lines allowed
         .forEach((n: SELine) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SESegments
-    if (keyEvent.key.match("s")) {
+    // Get all SESegments lower case s
+    else if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       SEStore.seSegments
         .filter((n: SESegment) => n.showing) //no hidden segments allowed
         .forEach((n: SESegment) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SEAngleMarkers
-    if (keyEvent.key.match("a")) {
+    // Get all SEAngleMarkers upper case A
+    else if (keyEvent.code === "KeyA" && keyEvent.shiftKey) {
       SEStore.seAngleMarkers
         .filter((n: SEAngleMarker) => n.showing) //no hidden angle markers allowed
         .forEach((n: SEAngleMarker) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
-    // Get all SEParametrics
-    if (keyEvent.key.match("P")) {
+    // Get all SEParametrics upper case P
+    else if (keyEvent.code === "KeyP" && keyEvent.shiftKey) {
       SEStore.seParametrics
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
@@ -112,19 +137,52 @@ export default class SelectionHandler extends Highlighter {
           }
         });
     }
-    // Get all SEPolygons
-    if (keyEvent.key.match("O")) {
+    // Get all SEPolygons upper case O
+    else if (keyEvent.code === "KeyO" && keyEvent.shiftKey) {
       SEStore.sePolygons
         .filter((n: SEPolygon) => n.showing) //no hidden Polygons allowed
         .forEach((n: SEPolygon) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          n.ref.glowingDisplay();
         });
     }
+    // Get all SELabels upper case L
+    else if (keyEvent.code === "KeyL" && keyEvent.shiftKey) {
+      SEStore.seLabels
+        .filter((n: SELabel) => n.showing) //no hidden Labels allowed
+        .forEach((n: SELabel) => {
+          this.keyPressSelection.push(n);
+          n.ref.glowingDisplay();
+        });
+    }
+    // Get all SENodules lower case a and meta key
+    else if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
+      //Mac shortcuts for select all
+      if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
+        SEStore.seNodules
+          .filter((n: SENodule) => n.showing) //no hidden objects allowed
+          .forEach((n: SENodule) => {
+            this.keyPressSelection.push(n);
+            if (n.ref) n.ref.glowingDisplay();
+          });
+        keyEvent.preventDefault(); //prevents this command from selecting all the text on the screen
+      }
+    } else if (navigator.userAgent.indexOf("Mac OS X") === -1) {
+      //PC shortcuts for select all
+      if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
+        SEStore.seNodules
+          .filter((n: SENodule) => n.showing) //no hidden objects allowed
+          .forEach((n: SENodule) => {
+            this.keyPressSelection.push(n);
+            if (n.ref) n.ref.glowingDisplay();
+          });
+        keyEvent.preventDefault(); //prevents this command from selecting all the text on the screen
+      }
+    }
+
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
-    //console.log(keyEvent.key);
     if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
@@ -146,108 +204,170 @@ export default class SelectionHandler extends Highlighter {
 
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
+    // The user moused down so record the location
+    this.mouseDownLocation = [
+      this.currentScreenVector.x,
+      this.currentScreenVector.y
+    ];
+    // clear the selected rectangle selection
+    this.selectionRectangleSelection.splice(0);
+  }
 
+  private blinkSelections(): void {
+    this.highlightOn = !this.highlightOn;
+    this.currentSelection.forEach((n: SENodule) => {
+      n.glowing = this.highlightOn;
+    });
+  }
+
+  mouseMoved(event: MouseEvent): void {
+    // UnGlow and clear any objects in the keyPressSelection
+    if (this.keyPressSelection.length != 0) {
+      this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
+      this.keyPressSelection.splice(0);
+    }
+
+    super.mouseMoved(event);
+
+    if (this.mouseDownLocation.length !== 0) {
+      this.dragging = true;
+      // Add the rectangle if it hasn't been added already
+      if (!this.selectionRectangleAdded) {
+        this.selectionRectangle.show();
+        this.selectionRectangleAdded = true;
+      }
+      // update the location of the rectangle
+      this.selectionRectangle.move(
+        this.mouseDownLocation,
+        [this.currentScreenVector.x, this.currentScreenVector.y],
+        event.shiftKey
+      );
+      // highlight and move the the selected objects intersecting the rectangle that are not already in the current selection into the current selection
+      this.highlight(
+        this.mouseDownLocation,
+        [this.currentScreenVector.x, this.currentScreenVector.y],
+        event.shiftKey
+      );
+    } else {
+      // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
+      this.hitSENodules
+        .filter((p: SENodule) => {
+          if (
+            p instanceof SEIntersectionPoint &&
+            !p.isUserCreated
+            // ||
+            // p.isLabel()
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        })
+        .forEach((n: SENodule, index) => {
+          if (index === 0 || n.selected) {
+            n.glowing = true;
+          } else {
+            n.glowing = false;
+          }
+        });
+    }
+  }
+
+  mouseReleased(event: MouseEvent): void {
     //If you select an object (like a line), then add to that selection with a key press and a mouse press at
     // a empty location (like p -adding all point to the selection ), then *without* moving the mouse, a mouse press doesn't
     // clear the current selections like it should -- is this even worth worrying about?
+    if (!this.dragging) {
+      // if not dragging to create a selection rectangle, then add the key press select, or clicked object, or clear the selections
+      if (this.keyPressSelection.length !== 0) {
+        // remove any items from the keyPressSelection if they are already selected
+        const newKeyPressSelections = this.keyPressSelection.filter(
+          (n: SENodule) => {
+            return this.currentSelection.findIndex(h => h.id === n.id) < 0;
+          }
+        );
 
-    // event.preventDefault();
-    if (this.keyPressSelection.length !== 0) {
-      // remove any items from the keyPressSelection if they are already selected
-      const newKeyPressSelections = this.keyPressSelection.filter(
-        (n: SENodule) => {
-          // console.log(
-          //   "test id",
-          //   n.id,
-          //   this.currentSelection.findIndex(h => h.id === n.id) < 0
-          // );
-          return this.currentSelection.findIndex(h => h.id === n.id) < 0;
-        }
-      );
-      //console.log("after filter length", newKeyPressSelections.length);
-      // Select all the objects in the keypress selection
-      newKeyPressSelections.forEach(n => {
-        n.selected = true;
-      });
-
-      // Add the key press selection to the selected list.
-      this.currentSelection.push(...newKeyPressSelections);
-      this.keyPressSelection.splice(0);
-    } else {
-      // Remove labels and non-selectable intersection points
-      const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
-        if (
-          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-          p.isLabel()
-        ) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      if (event.altKey) {
-        // Add current hit object list to the current selection
-        possibleAdditions[0].selected = !possibleAdditions[0].selected;
-        if (possibleAdditions[0].selected) {
-          this.currentSelection.push(possibleAdditions[0]);
-        } else {
-          // Remove hit object from current selection
-          const idx = this.currentSelection.findIndex(
-            c => c.id === possibleAdditions[0].id
-          );
-          if (idx >= 0) this.currentSelection.splice(idx, 1);
-        }
-      } else {
-        // Replace the current selection with the hit object (if any)
-        this.currentSelection.forEach(s => {
-          s.selected = false;
+        // Select all the objects in the keypress selection
+        newKeyPressSelections.forEach(n => {
+          n.selected = true;
         });
-        if (possibleAdditions[0] !== undefined) {
-          possibleAdditions[0].selected = true;
-          this.currentSelection = [possibleAdditions[0]];
-        } else {
-          this.currentSelection = [];
 
-          // Check to see if there was an object on the back of the sphere that the user was trying to
-          // select but doesn't know about the shift key.  Send an alert in this case
-          const sphereVec = new Vector3(
-            this.currentSphereVector.x,
-            this.currentSphereVector.y,
-            -1 * this.currentSphereVector.z
-          );
-          const hitSENodules = SEStore.findNearbySENodules(
-            sphereVec,
-            this.currentScreenVector
-          ).filter((n: SENodule) => {
-            if (n instanceof SEIntersectionPoint) {
-              if (!n.isUserCreated) {
-                return n.exists; //You always hit automatically created intersection points if it exists
+        // Add the key press selection to the selected list.
+        this.currentSelection.push(...newKeyPressSelections);
+        this.keyPressSelection.splice(0);
+      } else {
+        // Remove non-selectable intersection points
+        const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+          if (
+            p instanceof SEIntersectionPoint &&
+            !p.isUserCreated
+            // ||
+            // p.isLabel()
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+        if (event.altKey) {
+          // Add current hit object list to the current selection
+          possibleAdditions[0].selected = !possibleAdditions[0].selected;
+          if (possibleAdditions[0].selected) {
+            this.currentSelection.push(possibleAdditions[0]);
+          } else {
+            // Remove hit object from current selection
+            const idx = this.currentSelection.findIndex(
+              c => c.id === possibleAdditions[0].id
+            );
+            if (idx >= 0) this.currentSelection.splice(idx, 1);
+          }
+        } else {
+          // Replace the current selection with the hit object (if any)
+          this.currentSelection.forEach(s => {
+            s.selected = false;
+          });
+          if (possibleAdditions[0] !== undefined) {
+            possibleAdditions[0].selected = true;
+            this.currentSelection = [possibleAdditions[0]];
+          } else {
+            this.currentSelection.splice(0);
+
+            // Check to see if there was an object on the back of the sphere that the user was trying to
+            // select but doesn't know about the shift key.  Send an alert in this case
+            const sphereVec = new Vector3(
+              this.currentSphereVector.x,
+              this.currentSphereVector.y,
+              -1 * this.currentSphereVector.z
+            );
+            const hitSENodules = SEStore.findNearbySENodules(
+              sphereVec,
+              this.currentScreenVector
+            ).filter((n: SENodule) => {
+              if (n instanceof SEIntersectionPoint) {
+                if (!n.isUserCreated) {
+                  return n.exists; //You always hit automatically created intersection points if it exists
+                } else {
+                  return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+                }
               } else {
                 return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
               }
-            } else {
-              return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-            }
-          });
-          // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
-          if (!event.shiftKey && hitSENodules.length > 0) {
-            EventBus.fire("show-alert", {
-              key: `handlers.moveHandlerObjectOnBackOfSphere`,
-              keyOptions: {},
-              type: "info"
             });
+            // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
+            if (!event.shiftKey && hitSENodules.length > 0) {
+              EventBus.fire("show-alert", {
+                key: `handlers.moveHandlerObjectOnBackOfSphere`,
+                keyOptions: {},
+                type: "info"
+              });
+            }
           }
         }
       }
     }
+
     SEStore.setSelectedSENodules(this.currentSelection);
-    // console.log("number selected", SEStore.selectedSENodules.length);
-    /**
-    console.log("----selected---- objects------");
-    this.currentSelection.forEach(n =>
-      console.log("hit object", n.name, n.selected)
-    );
-    **/
+
     if (SEStore.selectedSENodules.length === 0) {
       EventBus.fire("show-alert", {
         key: `handlers.selectionUpdateNothingSelected`,
@@ -285,53 +405,32 @@ export default class SelectionHandler extends Highlighter {
       this.highlightTimer = null;
       this.highlightTimer2 = null;
     }
-  }
-
-  private blinkSelections(): void {
-    this.highlightOn = !this.highlightOn;
-    this.currentSelection.forEach((n: SENodule) => {
-      n.glowing = this.highlightOn;
-    });
-  }
-
-  mouseMoved(event: MouseEvent): void {
-    // UnGlow and clear any objects in the keyPressSelection
-    if (this.keyPressSelection.length != 0) {
-      this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
-      this.keyPressSelection.splice(0);
+    // clear the mouse down location to get ready for another rectangle or selection
+    this.mouseDownLocation.splice(0);
+    this.dragging = false;
+    // remove the selection rectangle from the layers
+    if (this.selectionRectangleAdded) {
+      this.selectionRectangle.hide();
     }
-
-    super.mouseMoved(event);
-
-    // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
-    this.hitSENodules
-      .filter((p: SENodule) => {
-        if (
-          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-          p.isLabel()
-        ) {
-          return false;
-        } else {
-          return true;
-        }
-      })
-      .forEach((n: SENodule, index) => {
-        if (index === 0 || n.selected) {
-          n.glowing = true;
-        } else {
-          n.glowing = false;
-        }
-      });
+    this.selectionRectangleAdded = false;
+    this.selectionRectangleSelection.splice(0);
   }
 
-  mouseReleased(event: MouseEvent): void {
-    //console.log("num selected objects", this.currentSelection.length);
-    // No code required
+  mouseLeave(event: MouseEvent): void {
+    this.mouseDownLocation.splice(0);
+    this.dragging = false;
+    // remove the selection rectangle from the layers
+    if (this.selectionRectangleAdded) {
+      this.selectionRectangle.hide();
+    }
+    this.selectionRectangleAdded = false;
+    this.selectionRectangleSelection.splice(0);
   }
 
   activate(): void {
-    window.addEventListener("keypress", this.keyPressHandler);
-    this.currentSelection.clear();
+    window.addEventListener("keydown", this.keyPressHandler);
+    this.currentSelection.splice(0);
+    this.selectionRectangleSelection.splice(0);
   }
 
   deactivate(): void {
@@ -357,10 +456,103 @@ export default class SelectionHandler extends Highlighter {
     //this.currentSelection.clear();
 
     // Remove the listener
-    window.removeEventListener("keypress", this.keyPressHandler);
+    window.removeEventListener("keydown", this.keyPressHandler);
 
     // If the user has been styling objects and then, without selecting new objects, activates
     //  another tool, the style state should be saved.
     EventBus.fire("save-style-state", {});
+
+    this.selectionRectangle.hide();
+    this.selectionRectangleSelection.splice(0);
+  }
+  private highlight(
+    cornerOne: number[],
+    cornerTwo: number[],
+    back: boolean
+  ): void {
+    // first remove all the previous rectangular selections from the current selection, unselect them, then clear rectangular selections
+    this.selectionRectangleSelection.forEach(nodule => {
+      const index = this.currentSelection.findIndex(
+        nod => nod.id === nodule.id
+      );
+      if (index !== -1) {
+        this.currentSelection.splice(index, 1);
+      }
+      nodule.selected = false;
+    });
+    this.selectionRectangleSelection.splice(0);
+
+    // starting with cornerOne which is in the sphere form a grid of points ending at cornerTwo, which might be outside of the sphere
+    // decide to increase or decrease in the x/y directions depending on the relative locations of the corner
+    const xDirection = cornerOne[0] < cornerTwo[0] ? 1 : -1;
+    const yDirection = cornerOne[1] < cornerTwo[1] ? 1 : -1;
+
+    let iX = 0;
+    let iY = 0;
+    let deltaX = 0;
+    let deltaY = 0;
+    let xLocation = 0;
+    let yLocation = 0;
+    const R = SETTINGS.boundaryCircle.radius;
+    let zCoordinate = 0;
+    let nearBySENodules: SENodule[] = [];
+    do {
+      do {
+        xLocation = cornerOne[0] + deltaX;
+        yLocation = cornerOne[1] + deltaY;
+
+        if (xLocation * xLocation + yLocation * yLocation < R * R) {
+          // the xLocation,yLocation is on the sphere
+          screenVector.set(xLocation, yLocation);
+          zCoordinate =
+            Math.sqrt(R * R - (xLocation * xLocation + yLocation * yLocation)) *
+            (back ? -1 : +1);
+          sphereVector.set(xLocation, yLocation, zCoordinate).normalize();
+          // find all the nearby objects
+          nearBySENodules = SEStore.findNearbySENodules(
+            sphereVector,
+            screenVector
+          )
+            .filter((n: SENodule) => {
+              if (n instanceof SEIntersectionPoint) {
+                if (!n.isUserCreated) {
+                  return false; // you can't select non-user created points
+                } else {
+                  return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+                }
+              } else {
+                return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+              }
+            })
+            .filter((n: SENodule) => {
+              // remove any that are already in the current selectionRectangleSelection
+              if (
+                this.selectionRectangleSelection.findIndex(
+                  current => current.id === n.id
+                ) !== -1
+              ) {
+                return false;
+              } else {
+                return true;
+              }
+            });
+          // highlight eligible nearby objects and add them to the current selection
+          if (nearBySENodules.length !== 0) {
+            nearBySENodules.forEach(n => {
+              if (n.ref) n.ref.glowingDisplay();
+              n.selected = true;
+            });
+            this.selectionRectangleSelection.push(...nearBySENodules);
+          }
+        }
+        iX += 1;
+        deltaX = (xDirection * iX * MESHSIZE) / SEStore.zoomMagnificationFactor;
+      } while (Math.abs(cornerOne[0] - cornerTwo[0]) > Math.abs(deltaX));
+      iX = 0;
+      iY += 1;
+      deltaY = (yDirection * iY * MESHSIZE) / SEStore.zoomMagnificationFactor;
+    } while (Math.abs(cornerOne[1] - cornerTwo[1]) > Math.abs(deltaY));
+    // add the collection of selected objects to the current selection
+    this.currentSelection.push(...this.selectionRectangleSelection);
   }
 }

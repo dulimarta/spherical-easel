@@ -117,13 +117,6 @@ export default class DeleteHandler extends Highlighter {
   activate(): void {
     // Delete all selected objects
     if (SEStore.selectedSENodules.length !== 0) {
-      EventBus.fire("show-alert", {
-        key: `handlers.deletedNodes`,
-        keyOptions: {
-          number: `${SEStore.selectedSENodules.length}`
-        },
-        type: "success"
-      });
       const deleteCommandGroup = new CommandGroup();
       //Keep track of the deleted objects ids
       // if the user selects object1 and object2 that is a dependent/decendent of object1, deleting object 1 will
@@ -186,6 +179,13 @@ export default class DeleteHandler extends Highlighter {
       deleteCommandGroup.execute();
       //reset the deleted object id list
       deletedObjectIDs.splice(0);
+      EventBus.fire("show-alert", {
+        key: `handlers.deletedNodes`,
+        keyOptions: {
+          number: `${SEStore.selectedSENodules.length}`
+        },
+        type: "success"
+      });
     }
 
     // Unselect the selected objects and clear the selectedObject array
