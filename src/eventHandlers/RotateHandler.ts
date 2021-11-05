@@ -8,6 +8,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SEStore } from "@/store";
+import Highlighter from "./Highlighter";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import i18n from "../i18n";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -19,7 +22,7 @@ const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 // const tmpMatrix = new Matrix4();
 
-export default class RotateHandler extends MouseHandler {
+export default class RotateHandler extends Highlighter {
   /**
    * Records the location of the first mouse press, so that when undoing
    * we can just record the rotation from the first mouse press to the mouse release
@@ -69,45 +72,206 @@ export default class RotateHandler extends MouseHandler {
    * If this is true, the selected SENodule contained a point or a line/segment and the
    * rotation should be abut that point's vector or the line/segment's normal vector (call axis of rotation)
    */
-  private rotateAboutPointMode = false;
+  private rotateAboutObjectMode = false;
   private axisOfRotation = new Vector3();
   private totalAngleOfRotation = 0; // Keep track of the total angle of rotation so that it can be undone
+  private rotationObject: SEPoint | SESegment | SELine | null = null;
+  private newObjectOfRotation = true;
+  private altKeyDown = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
   }
+  keyDown(keyEvent: KeyboardEvent): void {
+    if (keyEvent.repeat) return; // Ignore repeated events on the same key
+    if (keyEvent.altKey) {
+      EventBus.fire("show-alert", {
+        key: `handlers.rotationAboutEquator`,
+        keyOptions: {},
+        type: "warning"
+      });
+      this.altKeyDown = true;
+    }
+  }
+
+  keyUp(keyEvent: KeyboardEvent): void {
+    if (this.altKeyDown) {
+      EventBus.fire("show-alert", {
+        key: `handlers.rotationNoObjectUpdate`,
+        keyOptions: {},
+        type: "warning"
+      });
+      this.altKeyDown = false;
+    }
+  }
 
   mousePressed(event: MouseEvent): void {
-    // Mouse pressing in the sphere while it is rotating in momentum mode does nothing to the sphere
-    if (this.momentumMode) return;
-
     // Mouse pressing outside of the sphere does nothing and doesn't start a rotation
     if (!this.isOnSphere) return;
 
-    // Set this variable so that rotations and momentum will happen and *originate* with a mouse pressed event in the sphere
-    this.userIsRotating = true;
-    this.startVector.copy(this.currentSphereVector);
-    this.previousTime = event.timeStamp;
-    this.totalAngleOfRotation = 0; // reset it for the next rotation
+    // if the user is over a line, point, or segment and clicks on it, rotate about it.
+    let rotationObjectTypeKey: string | undefined = "";
+    let rotationObjectName: string | undefined = "";
+    if (!event.altKey) {
+      if (this.hitSEPoints.length > 0) {
+        // never highlight non user created intersection points
+        const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
+          if (
+            p instanceof SEIntersectionPoint &&
+            !(p as SEIntersectionPoint).isUserCreated
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+        if (filteredPoints.length > 0) {
+          if (this.rotationObject !== null) {
+            //un glow the previous object of rotation
+            this.rotationObject.glowing = false;
+          }
+          this.rotationObject = filteredPoints[0];
+          this.axisOfRotation.copy(filteredPoints[0].locationVector);
+          this.rotateAboutObjectMode = true;
+          rotationObjectTypeKey = "objects.points";
+          rotationObjectName = filteredPoints[0].label?.ref.shortUserName;
+          this.newObjectOfRotation = true;
+          this.momentumMode = false;
+        }
+      } else if (this.hitSESegments.length > 0) {
+        if (this.rotationObject !== null) {
+          //un glow the previous object of rotation
+          this.rotationObject.glowing = false;
+        }
+        this.rotationObject = this.hitSESegments[0];
+        this.axisOfRotation.copy(this.hitSESegments[0].normalVector);
+        this.rotateAboutObjectMode = true;
+        rotationObjectTypeKey = "objects.segments";
+        rotationObjectName = this.hitSESegments[0].label?.ref.shortUserName;
+        this.newObjectOfRotation = true;
+      } else if (this.hitSELines.length > 0) {
+        if (this.rotationObject !== null) {
+          //un glow the previous object of rotation
+          this.rotationObject.glowing = false;
+        }
+        this.rotationObject = this.hitSELines[0];
+        this.axisOfRotation.copy(this.hitSELines[0].normalVector);
+        this.rotateAboutObjectMode = true;
+        rotationObjectTypeKey = "objects.lines";
+        rotationObjectName = this.hitSELines[0].label?.ref.shortUserName;
+        this.newObjectOfRotation = true;
+      } else if (this.rotationObject === null && this.newObjectOfRotation) {
+        EventBus.fire("show-alert", {
+          key: `handlers.rotationNoObjectUpdate`,
+          keyOptions: {},
+          type: "warning"
+        });
+        this.newObjectOfRotation = false;
+      }
+
+      if (this.rotationObject !== null && this.newObjectOfRotation) {
+        EventBus.fire("show-alert", {
+          key: `handlers.rotationObjectUpdate`,
+          keyOptions: {
+            type: String(
+              i18n.tc(rotationObjectTypeKey, 2, { name: rotationObjectName })
+            ),
+            name: rotationObjectName
+          },
+          type: "success"
+        });
+        this.newObjectOfRotation = false;
+      } else if (this.newObjectOfRotation) {
+        EventBus.fire("show-alert", {
+          key: `handlers.rotationNoObjectUpdate`,
+          keyOptions: {},
+          type: "warning"
+        });
+        this.newObjectOfRotation = false;
+      }
+    } else {
+      if (this.rotationObject !== null) {
+        //unglow the object of rotation
+        this.rotationObject.glowing = false;
+      }
+      this.rotationObject = null;
+      this.rotateAboutObjectMode = false;
+    }
+
+    // Mouse press is the user's way to turn off the momentum rotation while it is happening
+    if (this.momentumMode) {
+      this.momentumMode = false;
+    } else {
+      // Set this variable so that rotations and momentum will happen and *originate* with a mouse pressed event in the sphere
+      this.userIsRotating = true;
+      this.startVector.copy(this.currentSphereVector);
+      this.previousTime = event.timeStamp;
+      this.totalAngleOfRotation = 0; // reset it for the next rotation
+    }
+    if (this.rotationObject !== null) {
+      //glow the object of rotation
+      this.rotationObject.glowing = true;
+    }
   }
 
   mouseMoved(event: MouseEvent): void {
+    // Determine the current location on the sphere (on on screen) and highlight objects
+    super.mouseMoved(event);
+    if (this.rotationObject !== null) {
+      //glow the object of rotation
+      this.rotationObject.glowing = true;
+    }
+    // If the mouse is not on the sphere release the object of rotation
+    if (!this.isOnSphere) {
+      if (this.rotationObject !== null) {
+        //unglow the object of rotation
+        this.rotationObject.glowing = false;
+        EventBus.fire("show-alert", {
+          key: `handlers.rotationNoObjectUpdate`,
+          keyOptions: {},
+          type: "warning"
+        });
+      }
+      this.rotationObject = null;
+      this.rotateAboutObjectMode = false;
+      return;
+    }
+
     // Mousing moving in the sphere while it is rotating in momentum mode does nothing to the sphere
     if (this.momentumMode) return;
 
-    // Determine the current location on the sphere (on on screen) and highlight objects
-    super.mouseMoved(event);
-
-    // If the mouse is not on the sphere do nothing
-    if (!this.isOnSphere) return;
+    // if the user is not rotating highlight lines, segments and points that the user can rotate about
+    if (!this.userIsRotating) {
+      if (this.hitSEPoints.length > 0) {
+        // never highlight non user created intersection points
+        const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
+          if (
+            p instanceof SEIntersectionPoint &&
+            !(p as SEIntersectionPoint).isUserCreated
+          ) {
+            return false;
+          } else {
+            return true;
+          }
+        });
+        if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+      }
+      return;
+    }
 
     // Compute the angular change in position
-    let rotationAngle = this.previousSphereVector.angleTo(
-      this.currentSphereVector
-    );
+    // let rotationAngle = this.previousSphereVector.angleTo(
+    //   this.currentSphereVector
+    // );
+    let rotationAngle =
+      this.previousScreenVector.distanceTo(this.currentScreenVector) / 500;
     // If the rotation is big enough and the user is rotating preform the rotation
     if (this.userIsRotating && rotationAngle > SETTINGS.rotate.minAngle) {
-      if (this.rotateAboutPointMode || event.altKey) {
+      if (this.rotateAboutObjectMode || event.altKey) {
         // Determine which direction to rotate.
         tmpVector1.crossVectors(
           this.currentSphereVector,
@@ -192,6 +356,7 @@ export default class RotateHandler extends MouseHandler {
         // START THE MOMENTUM ROTATIONS
         this.momentumCurrentSphereVector = this.currentSphereVector;
         this.momentumMode = true;
+        this.userIsRotating = true;
         this.momentum(0);
       } else {
         //if (this.derivative != 0) {
@@ -203,10 +368,8 @@ export default class RotateHandler extends MouseHandler {
           this.currentSphereVector
         );
       }
-    } else {
-      // This is the users way to turn off the momentum rotation.
-      this.momentumMode = false;
     }
+
     // Get ready for the next rotation event or action
     this.userIsRotating = false;
     // this.totalAngleOfRotation = 0;
@@ -225,6 +388,14 @@ export default class RotateHandler extends MouseHandler {
     this.momentumMode = false;
     this.userIsRotating = false;
     this.totalAngleOfRotation = 0;
+    if (this.rotationObject !== null) {
+      //unglow the object of rotation
+      this.rotationObject.glowing = false;
+    }
+    this.rotationObject = null;
+    this.rotateAboutObjectMode = false;
+    this.newObjectOfRotation = true;
+    SEStore.unglowAllSENodules();
   }
 
   // Delay the execution of a set of commands (but allow other threads to continue)
@@ -240,16 +411,36 @@ export default class RotateHandler extends MouseHandler {
   async momentum(callNumber: number): Promise<void> {
     // Check to see if momentum mode is still enable and the time elapsed since the first momentum call is less than the endTime
     if (this.momentumMode && callNumber * deltaT < endTime) {
+      // LINEAR angular velocity
       // momentumAngle is the area under the curve y(t) = -this.derivative/endTime*t + this.derivative
       //  from t=callNum*deltaT to t=(callNum+1)*deltaT. y(t) is the angular velocity of the sphere
       //  over time. It is linear from the initial point (0,this.derivative) to (endTime,0).
       //  On input t in milliseconds the output is radians/millisecond so by the Total Change Theorem
       //  of calculus (https://activecalculus.org/single/sec-4-4-FTC.html) this area is the  total change
       //  angle over that time period.
+      // this.momentumAngle =
+      //   deltaT *
+      //   ((-this.derivative / endTime) * (deltaT / 2.0 + 1) + this.derivative);
+
+      // QUADRATIC angular velocity
+      // momentumAngle is the area under the curve y(t) = this.derivative/endTime^2*(t-endTime)^2
+      //  from t=callNum*deltaT to t=(callNum+1)*deltaT. y(t) is the angular velocity of the sphere
+      //  over time. It is quadratic from the initial point (0,this.derivative) to (endTime,0) <-- vertex.
+      //  On input t in milliseconds the output is radians/millisecond so by the Total Change Theorem
+      //  of calculus (https://activecalculus.org/single/sec-4-4-FTC.html) this area is the  total change
+      //  angle over that time period.
       this.momentumAngle =
-        deltaT *
-        ((-this.derivative / endTime) * (2 * callNumber + 1) + this.derivative);
-      if (this.rotateAboutPointMode) {
+        (this.derivative / (endTime * endTime)) *
+        ((1 / 3.0) *
+          ((callNumber + 1) * deltaT - endTime) *
+          ((callNumber + 1) * deltaT - endTime) *
+          ((callNumber + 1) * deltaT - endTime) -
+          (1 / 3.0) *
+            (callNumber * deltaT - endTime) *
+            (callNumber * deltaT - endTime) *
+            (callNumber * deltaT - endTime));
+
+      if (this.rotateAboutObjectMode) {
         this.totalAngleOfRotation += this.momentumAngle;
       }
       this.changeInPositionRotationMatrix.makeRotationAxis(
@@ -262,6 +453,10 @@ export default class RotateHandler extends MouseHandler {
       EventBus.fire("sphere-rotate", {
         transform: this.changeInPositionRotationMatrix
       });
+      if (this.rotationObject !== null) {
+        //glow the object of rotation
+        this.rotationObject.glowing = true;
+      }
       await this.sleep(deltaT);
       this.momentum(callNumber + 1);
     } else {
@@ -279,26 +474,60 @@ export default class RotateHandler extends MouseHandler {
   }
 
   activate(): void {
-    // If there is exactly one SEPoint/SELine/SESegment object enter the rotateAboutPointMode
+    window.addEventListener("keydown", this.keyDown);
+    window.addEventListener("keyup", this.keyUp);
+    // If there is exactly one SEPoint/SELine/SESegment object enter the rotateAboutObjectMode
+    let rotationObjectTypeKey: string | undefined = "";
+    let rotationObjectName: string | undefined = "";
+
     if (SEStore.selectedSENodules.length == 1) {
       const object = SEStore.selectedSENodules[0];
       if (object instanceof SEPoint) {
+        this.rotationObject = object;
         this.axisOfRotation.copy(object.locationVector);
-        this.rotateAboutPointMode = true;
+        this.rotateAboutObjectMode = true;
+        rotationObjectTypeKey = "objects.points";
+        rotationObjectName = object.label?.ref.shortUserName;
       } else if (object instanceof SELine) {
+        this.rotationObject = object;
         this.axisOfRotation.copy(object.normalVector);
-        this.rotateAboutPointMode = true;
+        this.rotateAboutObjectMode = true;
+        rotationObjectTypeKey = "objects.lines";
+        rotationObjectName = object.label?.ref.shortUserName;
       } else if (object instanceof SESegment) {
+        this.rotationObject = object;
         this.axisOfRotation.copy(object.normalVector);
-        this.rotateAboutPointMode = true;
+        this.rotateAboutObjectMode = true;
+        rotationObjectTypeKey = "objects.segments";
+        rotationObjectName = object.label?.ref.shortUserName;
+      }
+      if (this.rotationObject !== null) {
+        EventBus.fire("show-alert", {
+          key: `handlers.rotationObjectUpdate`,
+          keyOptions: {
+            type: String(
+              i18n.tc(rotationObjectTypeKey, 2, { name: rotationObjectName })
+            ),
+            name: rotationObjectName
+          },
+          type: "success"
+        });
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    // super.activate();
+    super.activate();
+
+    if (this.rotationObject !== null) {
+      //glow the object of rotation
+      this.rotationObject.glowing = true;
+    }
   }
 
   deactivate(): void {
-    this.rotateAboutPointMode = false;
+    window.removeEventListener("keydown", this.keyDown);
+    window.removeEventListener("keyup", this.keyUp);
+    this.rotationObject = null;
+    this.rotateAboutObjectMode = false;
   }
   /**
    * Sends a RotateSphereCommand to the Command stack that takes the beforeRotationVector to the after one
@@ -310,7 +539,7 @@ export default class RotateHandler extends MouseHandler {
     afterRotationVector: Vector3
   ): void {
     let rotationAngle = 0;
-    if (!this.rotateAboutPointMode) {
+    if (!this.rotateAboutObjectMode) {
       // The rotation angle
       rotationAngle = beforeRotationVector.angleTo(afterRotationVector);
       // The rotation axis

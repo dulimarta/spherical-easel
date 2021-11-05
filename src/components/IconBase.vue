@@ -31,6 +31,7 @@ import { IconNames } from "../../src/types/index";
 export default class IconBase extends Vue {
   @Prop() readonly iconName!: IconNames;
   @Prop() readonly iconSize?: number;
+  @Prop() readonly notInline?: boolean;
 
   private emphasizeTypes: string[][] = [[]];
   private mdiIcon: boolean | string = false;
@@ -43,7 +44,12 @@ export default class IconBase extends Vue {
   private mdiIconName = "";
 
   mounted(): void {
-    this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize;
+    if (this.notInline === undefined) {
+      this.iconSizeValue =
+        this.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
+    } else {
+      this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize;
+    }
     this.filePath = SETTINGS.icons[this.iconName].props.filePath;
     this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
     this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;

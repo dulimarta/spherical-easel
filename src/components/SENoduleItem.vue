@@ -135,13 +135,15 @@
                     v-on="on"
                     @click="toggleVisibility">
                     <v-icon small
-                      v-if="isHidden">
-                      $showNode
+                      v-if="isHidden"
+                      :key="visibilityUpdateKey">
+                      $vuetify.icons.value.showNode
                     </v-icon>
                     <v-icon small
                       v-else
-                      style="color:gray">
-                      $hideNode
+                      style="color:gray"
+                      :key="visibilityUpdateKey">
+                      $vuetify.icons.value.hideNode
                     </v-icon>
                   </div>
                 </template>
@@ -155,15 +157,16 @@
                     v-show="isPlottable"
                     v-on="on"
                     @click="toggleLabelDisplay">
-
                     <v-icon small
-                      v-if="isLabelHidden">
-                      $showNodeLabel
+                      v-if="isLabelHidden"
+                      :key="labelVisibilityUpdateKey">
+                      $vuetify.icons.value.showNodeLabel
                     </v-icon>
                     <v-icon small
                       v-else
-                      style="color:gray">
-                      $hideNodeLabel
+                      style="color:gray"
+                      :key="labelVisibilityUpdateKey">
+                      $vuetify.icons.value.hideNodeLabel
                     </v-icon>
                   </div>
                 </template>
@@ -177,7 +180,7 @@
                     v-on="on"
                     @click="deleteNode">
                     <v-icon small>
-                      $deleteNode
+                      $vuetify.icons.value.deleteNode
                     </v-icon>
                   </div>
                 </template>
@@ -242,12 +245,17 @@ import { SEStore } from "@/store";
 import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
+import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import SETTINGS from "@/global-settings";
+import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 
 const SE = namespace("se");
 @Component
 export default class SENoduleItem extends Vue {
   @Prop() readonly node!: SENodule;
+
+  private visibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
+  private labelVisibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseRotationMatrix!: Matrix4;
@@ -313,6 +321,8 @@ export default class SENoduleItem extends Vue {
 
   toggleVisibility(): void {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
+    this.visibilityUpdateKey += 1;
+    this.labelVisibilityUpdateKey += 1;
   }
   toggleLabelDisplay(): void {
     if (
@@ -333,43 +343,52 @@ export default class SENoduleItem extends Vue {
         ).execute();
       }
     }
+    this.visibilityUpdateKey += 1;
+    this.labelVisibilityUpdateKey += 1;
   }
 
   deleteNode(): void {
+    /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLCIATION BE ELIMINATED?
     // Clear the delete array and map
     this.beforeDeleteStateMap.clear();
     this.beforeDeleteSENoduleIDList.splice(0);
-
     // First mark all children of the victim out of date so that the update method does a topological sort
     this.node.markKidsOutOfDate();
-    //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
+    //Record the state of the this.node and all the SENodules that depend on it (i.e kids, grandKids, etc..).
     this.node.update(
       this.beforeDeleteStateMap,
       this.beforeDeleteSENoduleIDList
     );
 
-    // console.debug("order of states before reverse");
-    // this.beforeDeleteState.stateArray.forEach(obj =>
-    //   console.debug(obj.object.name)
-    // );
-    // console.debug("end order");
-
     const deleteCommandGroup = new CommandGroup();
-    // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
-    // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
-    // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
+    // The update method orders the objects from the this.node to the leaf (i.e objects with only in arrows)
+    // To delete remove from the leaves to the this.node (and to undo build from the this.node to leaves -- accomplished
+    // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
     this.beforeDeleteSENoduleIDList.reverse();
     this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
-      // Get the before state of the SENodule
+      // Get the SENodule via the beforeState
       const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
 
       if (seNoduleBeforeState !== undefined) {
-        deleteCommandGroup.addCommand(
-          new DeleteNoduleCommand(seNoduleBeforeState.object)
-        );
+        if (
+          seNoduleBeforeState.object instanceof SEIntersectionPoint &&
+          (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
+        ) {
+          // don't delete a user created intersection point, covert it back to not user created.
+          deleteCommandGroup.addCommand(
+            new ConvertUserCreatedInterToNotUserCreatedCommand(
+              seNoduleBeforeState.object
+            )
+          );
+        } else {
+          deleteCommandGroup.addCommand(
+            new DeleteNoduleCommand(seNoduleBeforeState.object)
+          );
+        }
       }
     });
     deleteCommandGroup.execute();
+
     // when deleting mesurements, the measure object(if any) must be unglowed
     SEStore.unglowAllSENodules();
   }
@@ -576,6 +595,8 @@ export default class SENoduleItem extends Vue {
   }
 
   get showClass(): string {
+    this.visibilityUpdateKey += 1; // if we don't do this, then for a user created point, undoing/redoing doesn't update the icon between eye/slash eye. This issue is revealed when 1) Draw two lines 2) use point tool to create the intersection 3) hide the intersection with the object panel icon 4) undo button on sphere frame
+    this.labelVisibilityUpdateKey += 1; //
     return this.node.showing ? "visibleNode" : "invisibleNode";
   }
 

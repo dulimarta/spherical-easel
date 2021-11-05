@@ -230,7 +230,7 @@ export default {
     noFillTip:
       "Check this to remove the fill or stoke from the selected object(s).",
     selectAnObject: "Select Object(s) To Style",
-    closeOrSelect: "Close the styling panel or select object(s).",
+    closeOrSelect: "Close the style panel or select object(s).",
     toSelectObjects: "To select objects:",
     selectionDirection1: "Click on glowing objects to select them.",
     selectionDirection2:
@@ -238,8 +238,8 @@ export default {
     selectionDirection3:
       "Press a number key to select an object at that depth.",
     selectionDirection4:
-      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), labels (L) or all objects (metaKey a).",
-    closeStylingPanel: "Close Styling Panel",
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), labels (L) or all objects (command/ctrl + a).",
+    closeStylingPanel: "Close Style Panel",
     noSelectionToolTip:
       "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
@@ -259,7 +259,7 @@ export default {
 
     backStyleDisagreement: "Back Styling Disagreement",
     backStyleDifferentValuesToolTip:
-      "The selected objects have different automatic back styling settings. At least one want to use automatic back styling and at least one does not want to. Click the button make the automatic back styling the same for all selected objects.",
+      "The selected objects have different automatic back styling settings. At least one is using automatic back styling and at least is not. Click the button make the automatic back styling the same for all selected objects.",
 
     styleDisagreement: "Common Style Disagreement",
     differentValues:
@@ -495,7 +495,12 @@ export default {
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
     newPolygonAdded: "A new polygon was created.",
-    deletedNodes: "Successfully deleted {number} objects."
+    deletedNodes: "Successfully deleted {number} objects.",
+
+    rotationObjectUpdate: "Rotating about {type} {name}.",
+    rotationNoObjectUpdate:
+      "Mouse location determines the rotation. No object selected to rotate about.",
+    rotationAboutEquator: "Rotating about the north pole of the screen sphere."
   },
 
   objectTree: {

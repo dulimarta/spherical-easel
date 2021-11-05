@@ -417,14 +417,58 @@ export default class SelectionHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
-    this.mouseDownLocation.splice(0);
-    this.dragging = false;
-    // remove the selection rectangle from the layers
-    if (this.selectionRectangleAdded) {
-      this.selectionRectangle.hide();
+    if (SEStore.actionMode === "select") {
+      SEStore.setSelectedSENodules(this.currentSelection);
+
+      if (SEStore.selectedSENodules.length === 0) {
+        EventBus.fire("show-alert", {
+          key: `handlers.selectionUpdateNothingSelected`,
+          keyOptions: {},
+          type: "error"
+        });
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.selectionUpdate`,
+          keyOptions: {
+            number: `${SEStore.selectedSENodules.length}`
+          },
+          type: "success"
+        });
+      }
+
+      if (this.currentSelection.length > 0 && this.highlightTimer === null) {
+        // We have selections and interval timer is not running, then start timer and offset timer
+        this.highlightTimer = setInterval(
+          this.blinkSelections.bind(this),
+          1500
+        );
+        this.delayedStart = setTimeout(() => {
+          this.highlightTimer2 = setInterval(
+            this.blinkSelections.bind(this),
+            1500
+          );
+        }, 300);
+      } else if (
+        this.currentSelection.length === 0 &&
+        this.highlightTimer !== null
+      ) {
+        // interval timer is running and we have no selections, then stop timer
+        clearInterval(this.highlightTimer);
+        if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+        if (this.delayedStart) clearInterval(this.delayedStart);
+        this.delayedStart = null;
+        this.highlightTimer = null;
+        this.highlightTimer2 = null;
+      }
+      this.mouseDownLocation.splice(0);
+      this.dragging = false;
+      // remove the selection rectangle from the layers
+      if (this.selectionRectangleAdded) {
+        this.selectionRectangle.hide();
+      }
+      this.selectionRectangleAdded = false;
+      this.selectionRectangleSelection.splice(0);
     }
-    this.selectionRectangleAdded = false;
-    this.selectionRectangleSelection.splice(0);
   }
 
   activate(): void {
@@ -525,8 +569,11 @@ export default class SelectionHandler extends Highlighter {
               }
             })
             .filter((n: SENodule) => {
-              // remove any that are already in the current selectionRectangleSelection
+              // remove any that are already in the current selection or the selection rectangle
               if (
+                this.currentSelection.findIndex(
+                  current => current.id === n.id
+                ) !== -1 ||
                 this.selectionRectangleSelection.findIndex(
                   current => current.id === n.id
                 ) !== -1
@@ -536,7 +583,7 @@ export default class SelectionHandler extends Highlighter {
                 return true;
               }
             });
-          // highlight eligible nearby objects and add them to the current selection
+          // highlight eligible nearby objects and add them to the selection rectangle
           if (nearBySENodules.length !== 0) {
             nearBySENodules.forEach(n => {
               if (n.ref) n.ref.glowingDisplay();

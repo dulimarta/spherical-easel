@@ -132,6 +132,17 @@ module.exports = {
         ]
       }
     ],
+    // [
+    //   '@vuepress/register-components',
+    //    {
+    //      components: [
+    //        {
+    //          name: 'pc-vs-mac-shortcuts',
+    //          path: 'pc-vs-mac-shortcuts.vue'
+    //        }
+    //      ]
+    //    }
+    //  ],
     ["vuepress-plugin-typescript", {
       tsLoaderOptions: {
         transpileOnly: true,

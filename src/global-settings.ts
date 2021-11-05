@@ -139,7 +139,7 @@ export const SETTINGS = {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
     momentum: {
       enabled: true, // If momentum is enabled then the sphere keeps rotating depending after the user has stopped intentionally rotating it.
-      decayTime: 0.5, // Time in seconds for the rotation to stop, max value of 300 seconds (5 minutes).
+      decayTime: 3, // Time in seconds for the rotation to stop, max value of 300 seconds (5 minutes).
       framesPerSecond: 30, // The momentum rotation will be updated this many times per second
       pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
     }
@@ -654,7 +654,8 @@ export const SETTINGS = {
     }
   },
   icons: {
-    defaultIconSize: 30,
+    defaultIconSize: 40,
+    defaultInlineIconSize: 25,
     boundaryCircle: {
       strokeWidth: 1.5,
       color: "hsla(0, 0%, 0%, 1)"
