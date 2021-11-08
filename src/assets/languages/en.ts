@@ -662,9 +662,9 @@ export default {
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
       "You have unsaved work. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
-    firestoreConstructionLoaded: "Construction successfully loaded.",
-    firestoreConstructionSaved: "Construction successfully saved.",
-    firestoreConstructionDeleted: "Construction successfully deleted.",
+    firestoreConstructionLoaded: "Construction {docId} successfully loaded.",
+    firestoreConstructionSaved: "Construction {docId} successfully saved.",
+    firestoreConstructionDeleted: "Construction {docId} successfully deleted.",
     firestoreSaveError: "Construction was not saved.",
     constructionNotFound: "Construction {docId} not found."
   }

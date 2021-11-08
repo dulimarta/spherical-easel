@@ -27,6 +27,7 @@
     "markdown-it-texmath": "^0.7.2",
     "moment": "^2.26.0",
     "newton-raphson-method": "^1.0.2",
+    "node-gzip": "^1.1.2",
     "splitpanes": "^2.3.6",
     "three": "^0.118.3",
     "two.js": "^0.7.5",

@@ -165,11 +165,13 @@ import {
   DocumentReference,
   DocumentSnapshot
 } from "@firebase/firestore-types";
+import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
 import { detect } from "detect-browser";
+// import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
 const SE = namespace("se");
@@ -203,6 +205,7 @@ export default class App extends Vue {
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
+  readonly $appStorage!: FirebaseStorage;
 
   clientBrowser: any;
   description = "";
@@ -321,6 +324,8 @@ export default class App extends Vue {
   }
 
   async doShare(): Promise<void> {
+    /* TODO: move the following constant to global-settings? */
+    const SCRIPT_SIZE_LIMIT = 50; /* in bytes */
     // A local function to convert a blob to base64 representation
     const toBase64 = (inputBlob: Blob): Promise<string> =>
       new Promise((resolve, reject) => {
@@ -355,9 +360,10 @@ export default class App extends Vue {
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");
-    this.$appDB
-      .collection(collectionPath)
-      .add({
+    let docRef: Promise<DocumentReference>;
+    if (out.length < 5 * 1024) {
+      docRef = this.$appDB.collection(collectionPath).add({
+        /* Put the script in Firestore */
         script: out,
         version: "1",
         dateCreated: new Date().toISOString(),
@@ -365,7 +371,33 @@ export default class App extends Vue {
         description: this.description,
         rotationMatrix: JSON.stringify(rotationMat.elements),
         preview: svgPreviewData
-      })
+      });
+    } else {
+      docRef = this.$appDB
+        .collection(collectionPath)
+        .add({
+          /* Don't put the script in Firestore */
+          version: "1",
+          dateCreated: new Date().toISOString(),
+          author: this.whoami,
+          description: this.description,
+          rotationMatrix: JSON.stringify(rotationMat.elements),
+          preview: svgPreviewData
+        })
+        .then((doc: DocumentReference) => {
+          // Upload the script to Firebase Storage
+          return this.$appStorage
+            .ref(`scripts/${doc.id}`)
+            .putString(out)
+            .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL())
+            .then((url: string) => {
+              // Put the URL in the script field
+              doc.update({ script: url });
+              return doc;
+            });
+        });
+    }
+    docRef
       .then((doc: DocumentReference) => {
         EventBus.fire("show-alert", {
           key: "constructions.firestoreConstructionSaved",
@@ -382,6 +414,7 @@ export default class App extends Vue {
           type: "error"
         });
       });
+
     this.$refs.saveConstructionDialog.hide();
   }
 }
