@@ -152,7 +152,14 @@ export default class ConstructionLoader extends Vue {
       } else {
         parsedScript = JSON.parse(doc.script) as ConstructionScript;
       }
-      // const parsedScript = JSON.parse(scriptText) as ConstructionScript;
+      let svgData: string | undefined;
+      if (doc.preview?.startsWith("https:")) {
+        svgData = await this.$appStorage
+          .refFromURL(doc.preview)
+          .getDownloadURL()
+          .then((url: string) => axios.get(url))
+          .then((r: AxiosResponse) => r.data);
+      } else svgData = doc.preview;
 
       if (parsedScript.length > 0) {
         // we care only for non-empty script
@@ -177,7 +184,7 @@ export default class ConstructionLoader extends Vue {
           dateCreated: doc.dateCreated,
           description: doc.description,
           sphereRotationMatrix,
-          previewData: doc.preview ?? ""
+          previewData: svgData ?? ""
         });
       }
     });
