@@ -40,7 +40,7 @@
                     small
                     color="secondary">
                     <v-icon @click="loadPreview(r.id)">
-                      mdi-download</v-icon>
+                      $downloadConstruction</v-icon>
                   </v-btn>
                 </v-col>
                 <v-col v-if="
@@ -51,7 +51,7 @@
                     small
                     color="secondary"
                     @click="$emit('share-requested', {docId: r.id})">
-                    <v-icon>mdi-share-variant</v-icon>
+                    <v-icon>$shareConstruction</v-icon>
                   </v-btn>
                 </v-col>
                 <!-- show delete button only for its owner -->
@@ -62,7 +62,7 @@
                     small
                     color="red"
                     @click="$emit('delete-requested', {docId: r.id})">
-                    <v-icon>mdi-trash-can</v-icon>
+                    <v-icon>$deleteConstruction</v-icon>
                   </v-btn>
                 </v-col>
 

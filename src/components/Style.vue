@@ -96,9 +96,10 @@
 
     </div>
     <div v-else
+      v-on:click="$emit('toggle-style-panel')"
       id="mini-icons"
       key="partial">
-      <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette
+      <v-icon>$vuetify.icons.value.stylePanel
       </v-icon>
     </div>
   </transition>

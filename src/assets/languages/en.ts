@@ -230,7 +230,7 @@ export default {
     noFillTip:
       "Check this to remove the fill or stoke from the selected object(s).",
     selectAnObject: "Select Object(s) To Style",
-    closeOrSelect: "Close the styling panel or select object(s).",
+    closeOrSelect: "Close the style panel or select object(s).",
     toSelectObjects: "To select objects:",
     selectionDirection1: "Click on glowing objects to select them.",
     selectionDirection2:
@@ -238,8 +238,8 @@ export default {
     selectionDirection3:
       "Press a number key to select an object at that depth.",
     selectionDirection4:
-      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (a), parametrics (P), and polygons (O).",
-    closeStylingPanel: "Close Styling Panel",
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), labels (L) or all objects (command/ctrl + a).",
+    closeStylingPanel: "Close Style Panel",
     noSelectionToolTip:
       "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
@@ -259,7 +259,7 @@ export default {
 
     backStyleDisagreement: "Back Styling Disagreement",
     backStyleDifferentValuesToolTip:
-      "The selected objects have different automatic back styling settings. At least one want to use automatic back styling and at least one does not want to. Click the button make the automatic back styling the same for all selected objects.",
+      "The selected objects have different automatic back styling settings. At least one is using automatic back styling and at least is not. Click the button make the automatic back styling the same for all selected objects.",
 
     styleDisagreement: "Common Style Disagreement",
     differentValues:
@@ -494,7 +494,13 @@ export default {
       "The selected segment doesn't form a triangle with the previously selected segments.",
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
-    newPolygonAdded: "A new polygon was created."
+    newPolygonAdded: "A new polygon was created.",
+    deletedNodes: "Successfully deleted {number} objects.",
+
+    rotationObjectUpdate: "Rotating about {type} {name}.",
+    rotationNoObjectUpdate:
+      "Mouse location determines the rotation. No object selected to rotate about.",
+    rotationAboutEquator: "Rotating about the north pole of the screen sphere."
   },
 
   objectTree: {
@@ -632,15 +638,33 @@ export default {
   },
 
   constructions: {
+    save: "Save",
+    cancel: "Cancel",
+    keep: "Keep",
+    discard: "discard",
+    description: "Description",
+    proceed: "Proceed",
+    resetSphere: "Reset Sphere",
+    confirmReset: "Confirm Reset Sphere",
+    confirmation: "Confirmation Required",
+    confirmLogout: "Confirm Logout",
+    saveConstruction: "Save Construction",
+    clearConstructionMsg:
+      "You are about to clear your construction. This action cannot be undone and any unsaved work will be discarded.",
+    makePublic: "Available to public",
     privateConstructions: "Private Constructions",
     publicConstructions: "Public Constructions",
+    logoutDialog:
+      "You are about to logout, any unsaved constructions will be discarded.",
+    saveConstructionDialog:
+      "Please provide a short description for your construction.",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
-      "You have unsaved objects. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
-    firestoreConstructionLoaded: "Construction successfully loaded.",
-    firestoreConstructionSaved: "Construction successfully saved.",
-    firestoreConstructionDeleted: "Construction successfully deleted.",
+      "You have unsaved work. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
+    firestoreConstructionLoaded: "Construction {docId} successfully loaded.",
+    firestoreConstructionSaved: "Construction {docId} successfully saved.",
+    firestoreConstructionDeleted: "Construction {docId} successfully deleted.",
     firestoreSaveError: "Construction was not saved.",
     constructionNotFound: "Construction {docId} not found."
   }

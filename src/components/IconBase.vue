@@ -1,147 +1,175 @@
-<template>
-  <svg xmlns="http://www.w3.org/2000/svg"
-    preserveAspectRatio="xMidYMid meet"
+  <template>
+  <v-icon v-if="mdiIcon"
+    :size="iconSizeValue">{{mdiIconName}}</v-icon>
+  <svg v-else
+    xmlns="http://www.w3.org/2000/svg"
     transform="matrix(1 0 0 -1 0 0)"
     viewBox="-250 -250 500 500"
+    preserveAspectRatio="xMidYMid meet"
+    :width="iconSizeValue"
+    :height="iconSizeValue"
     :aria-labelledby="iconName"
-    role="presentation"
     style="overflow: visible"
     vector-effect="non-scaling-stroke">
     <g v-html="svgSnippetAmended">
     </g>
   </svg>
+
 </template>
 
+
+
 <script lang="ts">
+import SE from "@/store/se-module";
 import axios from "axios";
 import { Prop, Component, Vue } from "vue-property-decorator";
-import SETTINGS from "@/global-settings";
-import Nodule from "@/plottables/Nodule";
+//import SETTINGS from "@/global-settings";
+import SETTINGS from "../../src/global-settings";
+import { IconNames } from "../../src/types/index";
 
 @Component({})
 export default class IconBase extends Vue {
-  @Prop() readonly iconName?: string;
-  @Prop() readonly iconFile!: string;
-  @Prop() readonly emphasizeTypes!: string[][];
+  @Prop() readonly iconName!: IconNames;
+  @Prop() readonly iconSize?: number;
+  @Prop() readonly notInline?: boolean;
+
+  private emphasizeTypes: string[][] = [[]];
+  private mdiIcon: boolean | string = false;
+  private filePath = "";
 
   private svgSnippetRaw = "";
   private svgSnippetAmended = "";
   private doneFetching = false;
+  private iconSizeValue = SETTINGS.icons.defaultIconSize;
+  private mdiIconName = "";
 
   mounted(): void {
-    // console.log("App location", window.location);
-    let filePath: string;
-    // Failed attempt to load from current directory
-    if (this.iconFile.startsWith(".") || this.iconFile.startsWith("/")) {
-      filePath = this.iconFile;
+    if (this.notInline === undefined) {
+      this.iconSizeValue =
+        this.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
     } else {
-      filePath = "/" + this.iconFile;
+      this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize;
     }
-    this.doneFetching = false;
-    // By default, axios assumes a JSON response and the input will be parsed as JSON.
-    // We want to override it to "text"
-    axios.get(filePath, { responseType: "text" }).then(r => {
-      this.svgSnippetRaw = r.data;
-      this.doneFetching = true;
-      const parts = this.svgSnippetRaw.split(";");
-      // scale the angleMarkers fill and circular edge
-      // the angle markers fill object contains the center of the dialation
-      // then the d="M -75.437 -26.553... gives the center of the dialation
-      // so the new translation vector is [-75.437*(1-scale),-26.553*(1-scale)]
-      // const ind = parts.findIndex(ele => {
-      //   const type = this.getAttribute(ele, "type");
-      //   const fill = this.getAttribute(ele, "myfill");
-      //   // console.log("check", type, fill);
-      //   if (type === "angleMarker" && fill === "true") {
-      //     return true;
-      //   } else {
-      //     return false;
-      //   }
-      // });
+    this.filePath = SETTINGS.icons[this.iconName].props.filePath;
+    this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
+    this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;
 
-      // if (ind !== -1) {
-      //   // there is an angleMarker fill path
-      //   const vals = this.getAttribute(parts[ind], "d")?.split(" ") ?? [];
-      //   if (vals.length === 0) {
-      //     throw new Error(
-      //       `IconBase - Undefined d path attribute in ${parts[ind]}.`
-      //     );
-      //   }
-      // console.log("scale angle marker", vals[1], vals[2]);
-      // vals[1] and vals[2] contain the center of the dilation, scale *all* anglemarker parts (both circle edge and fill)
-      parts.forEach((svgString, index) => {
-        if (index === 0) return; // do nothing to the <defn>...</defn> string
-        const type = this.getAttribute(svgString, "type");
-        const side = this.getAttribute(svgString, "side");
-        const fill = this.getAttribute(svgString, "myfill");
+    if (typeof this.mdiIcon !== "string") {
+      this.doneFetching = false;
+      // By default, axios assumes a JSON response and the input will be parsed as JSON.
+      // We want to override it to "text"
+      axios.get(this.filePath, { responseType: "text" }).then(r => {
+        this.svgSnippetRaw = r.data;
+        this.doneFetching = true;
+        const parts = this.svgSnippetRaw.split(";");
+        // scale the angleMarkers fill and circular edge
+        // the angle markers fill object contains the center of the dialation
+        // then the d="M -75.437 -26.553... gives the center of the dialation
+        // so the new translation vector is [-75.437*(1-scale),-26.553*(1-scale)]
+        // const ind = parts.findIndex(ele => {
+        //   const type = this.getAttribute(ele, "type");
+        //   const fill = this.getAttribute(ele, "myfill");
+        //   // console.log("check", type, fill);
+        //   if (type === "angleMarker" && fill === "true") {
+        //     return true;
+        //   } else {
+        //     return false;
+        //   }
+        // });
 
-        if (fill === "true" && type === "angleMarker") {
-          const vals = this.getAttribute(svgString, "d")?.split(" ") ?? [];
-          if (vals.length === 0) {
-            throw new Error(
-              `IconBase - Undefined d path attribute in ${svgString}.`
-            );
+        // if (ind !== -1) {
+        //   // there is an angleMarker fill path
+        //   const vals = this.getAttribute(parts[ind], "d")?.split(" ") ?? [];
+        //   if (vals.length === 0) {
+        //     throw new Error(
+        //       `IconBase - Undefined d path attribute in ${parts[ind]}.`
+        //     );
+        //   }
+        // console.log("scale angle marker", vals[1], vals[2]);
+        // vals[1] and vals[2] contain the center of the dilation, scale *all* anglemarker parts (both circle edge and fill)
+        parts.forEach((svgString, index) => {
+          if (index === 0) return; // do nothing to the <defn>...</defn> string
+          const type = this.getAttribute(svgString, "type");
+          const side = this.getAttribute(svgString, "side");
+          const fill = this.getAttribute(svgString, "myfill");
+
+          if (fill === "true" && type === "angleMarker") {
+            const vals = this.getAttribute(svgString, "d")?.split(" ") ?? [];
+            if (vals.length === 0) {
+              throw new Error(
+                `IconBase - Undefined d path attribute in ${svgString}.`
+              );
+            }
+            // this is part of an angleMarker and the previous part is the edge of the fill so
+            if (side === "front") {
+              // this angleMarker is on the front
+              parts[index] = this.setAttribute(
+                parts[index],
+                "transform",
+                this.setTransformationScale(
+                  this.getAttribute(parts[index], "transform") ?? "",
+                  SETTINGS.icons.normal.angle.scale.front,
+                  Number(vals[1]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.front),
+                  Number(vals[2]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.front)
+                )
+              );
+              parts[index - 1] = this.setAttribute(
+                parts[index - 1],
+                "transform",
+                this.setTransformationScale(
+                  this.getAttribute(parts[index - 1], "transform") ?? "",
+                  SETTINGS.icons.normal.angle.scale.front,
+                  Number(vals[1]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.front),
+                  Number(vals[2]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.front)
+                )
+              );
+            } else {
+              //this angleMarker is on the back
+              parts[index] = this.setAttribute(
+                parts[index],
+                "transform",
+                this.setTransformationScale(
+                  this.getAttribute(parts[index], "transform") ?? "",
+                  SETTINGS.icons.normal.angle.scale.front,
+                  Number(vals[1]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.back),
+                  Number(vals[2]) * (1 - SETTINGS.icons.normal.angle.scale.back)
+                )
+              );
+              parts[index - 1] = this.setAttribute(
+                parts[index - 1],
+                "transform",
+                this.setTransformationScale(
+                  this.getAttribute(parts[index - 1], "transform") ?? "",
+                  SETTINGS.icons.normal.angle.scale.front,
+                  Number(vals[1]) *
+                    (1 - SETTINGS.icons.normal.angle.scale.back),
+                  Number(vals[2]) * (1 - SETTINGS.icons.normal.angle.scale.back)
+                )
+              );
+            }
           }
-          // this is part of an angleMarker and the previous part is the edge of the fill so
-          if (side === "front") {
-            // this angleMarker is on the front
-            parts[index] = this.setAttribute(
-              parts[index],
-              "transform",
-              this.setTransformationScale(
-                this.getAttribute(parts[index], "transform") ?? "",
-                SETTINGS.icons.angleMarker.scale.front,
-                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.front),
-                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.front)
-              )
-            );
-            parts[index - 1] = this.setAttribute(
-              parts[index - 1],
-              "transform",
-              this.setTransformationScale(
-                this.getAttribute(parts[index - 1], "transform") ?? "",
-                SETTINGS.icons.angleMarker.scale.front,
-                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.front),
-                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.front)
-              )
-            );
-          } else {
-            //this angleMarker is on the back
-            parts[index] = this.setAttribute(
-              parts[index],
-              "transform",
-              this.setTransformationScale(
-                this.getAttribute(parts[index], "transform") ?? "",
-                SETTINGS.icons.angleMarker.scale.front,
-                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.back),
-                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.back)
-              )
-            );
-            parts[index - 1] = this.setAttribute(
-              parts[index - 1],
-              "transform",
-              this.setTransformationScale(
-                this.getAttribute(parts[index - 1], "transform") ?? "",
-                SETTINGS.icons.angleMarker.scale.front,
-                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.back),
-                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.back)
-              )
-            );
-          }
-        }
+        });
+        // }
+        parts.forEach((svgString, index) => {
+          if (index === 0) return; // do nothing to the <defn>...</defn> string
+          parts[index] = this.amendAttributes(parts[index]);
+          // Remove the four added attributes, type, side, fill, and part
+          parts[index] = this.removeAttribute(parts[index], "type");
+          parts[index] = this.removeAttribute(parts[index], "side");
+          parts[index] = this.removeAttribute(parts[index], "myfill");
+          parts[index] = this.removeAttribute(parts[index], "part");
+        });
+        this.svgSnippetAmended = parts.join(" ");
+        // console.log(this.svgSnippetAmended);
       });
-      // }
-      parts.forEach((svgString, index) => {
-        if (index === 0) return; // do nothing to the <defn>...</defn> string
-        parts[index] = this.amendAttributes(parts[index]);
-        // Remove the four added attributes, type, side, fill, and part
-        parts[index] = this.removeAttribute(parts[index], "type");
-        parts[index] = this.removeAttribute(parts[index], "side");
-        parts[index] = this.removeAttribute(parts[index], "myfill");
-        parts[index] = this.removeAttribute(parts[index], "part");
-      });
-      this.svgSnippetAmended = parts.join(" ");
-    });
+    } else {
+      this.mdiIconName = this.mdiIcon;
+    }
   }
 
   /**Blah abl */
@@ -304,8 +332,8 @@ export default class IconBase extends Vue {
           this.setTransformationScale(
             this.getAttribute(svgPathString, "transform") ?? "",
             side === "back"
-              ? SETTINGS.icons.point.scale.back
-              : SETTINGS.icons.point.scale.front
+              ? SETTINGS.icons.normal.point.scale.back
+              : SETTINGS.icons.normal.point.scale.front
           )
         );
         break;
@@ -469,9 +497,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.point.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.point.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.point.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.point.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back") {
@@ -479,14 +507,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.point.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.point.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.point.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.point.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.point.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.point.strokeWidth.front.toString();
             }
           }
         }
@@ -497,9 +525,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.line.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.line.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.line.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.line.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back") {
@@ -507,14 +535,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.line.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.line.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.line.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.line.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.line.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.line.strokeWidth.front.toString();
             }
           }
         }
@@ -525,9 +553,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back" || backFront === "03") {
-            return SETTINGS.icons.segment.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.segment.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.segment.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.segment.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back" || backFront === "03") {
@@ -535,14 +563,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.segment.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.segment.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.segment.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.segment.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.segment.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.segment.strokeWidth.front.toString();
             }
           }
         }
@@ -553,9 +581,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.circle.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.circle.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.circle.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.circle.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back") {
@@ -563,14 +591,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.circle.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.circle.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.circle.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.circle.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.circle.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.circle.strokeWidth.front.toString();
             }
           }
         }
@@ -581,9 +609,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.angleMarker.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.angle.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.angleMarker.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.angle.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back") {
@@ -591,14 +619,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.angleMarker.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.angle.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.angleMarker.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.angle.strokeWidth.front.toString();
             }
           }
         }
@@ -609,9 +637,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.ellipse.strokeWidth.back.toString();
+            return SETTINGS.icons.normal.ellipse.strokeWidth.back.toString();
           } else {
-            return SETTINGS.icons.ellipse.strokeWidth.front.toString();
+            return SETTINGS.icons.normal.ellipse.strokeWidth.front.toString();
           }
         } else {
           if (backFront === "back") {
@@ -619,14 +647,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.ellipse.strokeWidth.back.toString();
             } else {
-              return SETTINGS.icons.ellipse.strokeWidth.back.toString();
+              return SETTINGS.icons.normal.ellipse.strokeWidth.back.toString();
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.ellipse.strokeWidth.front.toString();
             } else {
-              return SETTINGS.icons.ellipse.strokeWidth.front.toString();
+              return SETTINGS.icons.normal.ellipse.strokeWidth.front.toString();
             }
           }
         }
@@ -648,9 +676,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.point.edgeColor.back;
+            return SETTINGS.icons.normal.point.edgeColor.back;
           } else {
-            return SETTINGS.icons.point.edgeColor.front;
+            return SETTINGS.icons.normal.point.edgeColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -658,14 +686,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.point.edgeColor.back;
             } else {
-              return SETTINGS.icons.point.edgeColor.back;
+              return SETTINGS.icons.normal.point.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.point.edgeColor.front;
             } else {
-              return SETTINGS.icons.point.edgeColor.front;
+              return SETTINGS.icons.normal.point.edgeColor.front;
             }
           }
         }
@@ -676,9 +704,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.line.edgeColor.back;
+            return SETTINGS.icons.normal.line.edgeColor.back;
           } else {
-            return SETTINGS.icons.line.edgeColor.front;
+            return SETTINGS.icons.normal.line.edgeColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -686,14 +714,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.line.edgeColor.back;
             } else {
-              return SETTINGS.icons.line.edgeColor.back;
+              return SETTINGS.icons.normal.line.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.line.edgeColor.front;
             } else {
-              return SETTINGS.icons.line.edgeColor.front;
+              return SETTINGS.icons.normal.line.edgeColor.front;
             }
           }
         }
@@ -704,9 +732,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back" || backFront === "03") {
-            return SETTINGS.icons.segment.edgeColor.back;
+            return SETTINGS.icons.normal.segment.edgeColor.back;
           } else {
-            return SETTINGS.icons.segment.edgeColor.front;
+            return SETTINGS.icons.normal.segment.edgeColor.front;
           }
         } else {
           if (backFront === "back" || backFront === "03") {
@@ -714,14 +742,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.segment.edgeColor.back;
             } else {
-              return SETTINGS.icons.segment.edgeColor.back;
+              return SETTINGS.icons.normal.segment.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.segment.edgeColor.front;
             } else {
-              return SETTINGS.icons.segment.edgeColor.front;
+              return SETTINGS.icons.normal.segment.edgeColor.front;
             }
           }
         }
@@ -732,9 +760,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.circle.edgeColor.back;
+            return SETTINGS.icons.normal.circle.edgeColor.back;
           } else {
-            return SETTINGS.icons.circle.edgeColor.front;
+            return SETTINGS.icons.normal.circle.edgeColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -742,14 +770,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.circle.edgeColor.back;
             } else {
-              return SETTINGS.icons.circle.edgeColor.back;
+              return SETTINGS.icons.normal.circle.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.circle.edgeColor.front;
             } else {
-              return SETTINGS.icons.circle.edgeColor.front;
+              return SETTINGS.icons.normal.circle.edgeColor.front;
             }
           }
         }
@@ -760,9 +788,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.angleMarker.edgeColor.back;
+            return SETTINGS.icons.normal.angle.edgeColor.back;
           } else {
-            return SETTINGS.icons.angleMarker.edgeColor.front;
+            return SETTINGS.icons.normal.angle.edgeColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -770,14 +798,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.edgeColor.back;
             } else {
-              return SETTINGS.icons.angleMarker.edgeColor.back;
+              return SETTINGS.icons.normal.angle.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.edgeColor.front;
             } else {
-              return SETTINGS.icons.angleMarker.edgeColor.front;
+              return SETTINGS.icons.normal.angle.edgeColor.front;
             }
           }
         }
@@ -788,9 +816,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.ellipse.edgeColor.back;
+            return SETTINGS.icons.normal.ellipse.edgeColor.back;
           } else {
-            return SETTINGS.icons.ellipse.edgeColor.front;
+            return SETTINGS.icons.normal.ellipse.edgeColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -798,14 +826,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.ellipse.edgeColor.back;
             } else {
-              return SETTINGS.icons.ellipse.edgeColor.back;
+              return SETTINGS.icons.normal.ellipse.edgeColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.ellipse.edgeColor.front;
             } else {
-              return SETTINGS.icons.ellipse.edgeColor.front;
+              return SETTINGS.icons.normal.ellipse.edgeColor.front;
             }
           }
         }
@@ -827,9 +855,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.point.fillColor.back;
+            return SETTINGS.icons.normal.point.fillColor.back;
           } else {
-            return SETTINGS.icons.point.fillColor.front;
+            return SETTINGS.icons.normal.point.fillColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -837,14 +865,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.point.fillColor.back;
             } else {
-              return SETTINGS.icons.point.fillColor.back;
+              return SETTINGS.icons.normal.point.fillColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.point.fillColor.front;
             } else {
-              return SETTINGS.icons.point.fillColor.front;
+              return SETTINGS.icons.normal.point.fillColor.front;
             }
           }
         }
@@ -859,9 +887,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.circle.fillColor.back;
+            return SETTINGS.icons.normal.circle.fillColor.back;
           } else {
-            return SETTINGS.icons.circle.fillColor.front;
+            return SETTINGS.icons.normal.circle.fillColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -869,14 +897,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized which means the gradient should remain so don't change the fill
               return ""; //SETTINGS.icons.emphasize.circle.fillColor.back;
             } else {
-              return SETTINGS.icons.circle.fillColor.back;
+              return SETTINGS.icons.normal.circle.fillColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized which means the gradient should remain so don't change the fill
               return ""; //SETTINGS.icons.emphasize.circle.fillColor.front;
             } else {
-              return SETTINGS.icons.circle.fillColor.front;
+              return SETTINGS.icons.normal.circle.fillColor.front;
             }
           }
         }
@@ -887,9 +915,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "14" || backFront === "15") {
-            return SETTINGS.icons.angleMarker.fillColor.back;
+            return SETTINGS.icons.normal.angle.fillColor.back;
           } else {
-            return SETTINGS.icons.angleMarker.fillColor.front;
+            return SETTINGS.icons.normal.angle.fillColor.front;
           }
         } else {
           if (backFront === "14" || backFront === "15") {
@@ -897,14 +925,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.fillColor.back;
             } else {
-              return SETTINGS.icons.angleMarker.fillColor.back;
+              return SETTINGS.icons.normal.angle.fillColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.fillColor.front;
             } else {
-              return SETTINGS.icons.angleMarker.fillColor.front;
+              return SETTINGS.icons.normal.angle.fillColor.front;
             }
           }
         }
@@ -915,9 +943,9 @@ export default class IconBase extends Vue {
         if (ind === -1) {
           // This object is not emphasized
           if (backFront === "back") {
-            return SETTINGS.icons.ellipse.fillColor.back;
+            return SETTINGS.icons.normal.ellipse.fillColor.back;
           } else {
-            return SETTINGS.icons.ellipse.fillColor.front;
+            return SETTINGS.icons.normal.ellipse.fillColor.front;
           }
         } else {
           if (backFront === "back") {
@@ -925,14 +953,14 @@ export default class IconBase extends Vue {
               // The back side of the object is emphasized which means the gradient should remain so don't change the fill
               return ""; //SETTINGS.icons.emphasize.ellipse.fillColor.back;
             } else {
-              return SETTINGS.icons.ellipse.fillColor.back;
+              return SETTINGS.icons.normal.ellipse.fillColor.back;
             }
           } else {
             if (emph[ind].indexOf("front") !== -1) {
               // The front side of the object is emphasized which means the gradient should remain so don't change the fill
               return ""; //SETTINGS.icons.emphasize.ellipse.fillColor.front;
             } else {
-              return SETTINGS.icons.ellipse.fillColor.front;
+              return SETTINGS.icons.normal.ellipse.fillColor.front;
             }
           }
         }
@@ -945,7 +973,8 @@ export default class IconBase extends Vue {
 <style scoped>
 svg {
   display: inline-block;
-  vertical-align: baseline;
-  margin-bottom: -2px; /* yes, I'm that particular about formatting */
+  vertical-align: text-bottom;
+  margin-bottom: -2px;
 }
+@import "https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css";
 </style>

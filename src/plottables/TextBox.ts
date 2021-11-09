@@ -29,7 +29,7 @@ export class TextBox extends Two.Group {
   /**
    * Show the text is a specific layer AFTER a delay (in milliseconds)
    * @param layer the target layer
-   * @param delay niumber of milliseconds to wait
+   * @param delay number of milliseconds to wait
    */
   public showWithDelay(layer: Two.Group, delay: number): void {
     this.timer = setTimeout(() => {

@@ -209,13 +209,12 @@ export type ActionMode =
   | "tangent"
   | "point"
   | "pointDistance"
-  | "pointOnOneDim"
+  | "pointOnObject"
   | "polar"
   | "rotate"
   | "segment"
   | "segmentLength"
   | "select"
-  | "slider"
   | "toggleLabelDisplay"
   | "zoomFit"
   | "zoomIn"
@@ -226,6 +225,30 @@ export type ActionMode =
   | "nSectPoint"
   | "angleBisector"
   | "nSectLine";
+
+export type IconNames =
+  | ActionMode
+  | "slider"
+  | "toolsTab"
+  | "objectsTab"
+  | "constructionsTab"
+  | "calculationObject"
+  | "measurementObject"
+  | "stylePanel"
+  | "downloadConstruction"
+  | "shareConstruction"
+  | "deleteConstruction"
+  | "cycleNodeValueDisplayMode"
+  | "showNode"
+  | "hideNode"
+  | "showNodeLabel"
+  | "hideNodeLabel"
+  | "deleteNode"
+  | "appSettings"
+  | "clearConstruction"
+  | "undo"
+  | "redo";
+
 /**
  * Intersection Vector3 and if that intersection exists
  */

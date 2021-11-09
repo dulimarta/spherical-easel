@@ -67,6 +67,7 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
+import { FirebaseStorage } from "@firebase/storage-types";
 import { run } from "@/commands/CommandInterpreter";
 import {
   ConstructionScript,
@@ -82,12 +83,15 @@ import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
+import { ungzip } from "node-gzip";
+import axios, { AxiosResponse } from "axios";
 const SE = namespace("se");
 
 @Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+  readonly $appStorage!: FirebaseStorage;
 
   @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
@@ -134,9 +138,21 @@ export default class ConstructionLoader extends Vue {
     targetArr: Array<SphericalConstruction>
   ): void {
     targetArr.splice(0);
-    qs.forEach((qd: QueryDocumentSnapshot) => {
+    qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
-      const parsedScript = JSON.parse(doc.script) as ConstructionScript;
+      let parsedScript: ConstructionScript;
+      if (doc.script.startsWith("https:")) {
+        const scriptText = await this.$appStorage
+          .refFromURL(doc.script)
+          .getDownloadURL()
+          .then((url: string) => axios.get(url))
+          .then((r: AxiosResponse) => r.data);
+
+        parsedScript = scriptText as ConstructionScript;
+      } else {
+        parsedScript = JSON.parse(doc.script) as ConstructionScript;
+      }
+      // const parsedScript = JSON.parse(scriptText) as ConstructionScript;
 
       if (parsedScript.length > 0) {
         // we care only for non-empty script

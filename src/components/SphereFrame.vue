@@ -33,7 +33,6 @@ import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import AngleHandler from "@/eventHandlers/AngleHandler";
 import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
-import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
@@ -113,7 +112,6 @@ export default class SphereFrame extends VueComponent {
   private pointDistanceTool!: PointDistanceHandler;
   private angleTool!: AngleHandler;
   private coordinateTool!: CoordinateHandler;
-  private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
   private tangentLineThruPointTool!: TangentLineThruPointHandler;
@@ -244,6 +242,16 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
 
+    // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
+    // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
+    // unpredictable. (In the case of the move tool, if the user first clicks, then presses ctrl, the behavior is fine.)
+    // source: https://www.sitepoint.com/community/t/how-do-i-disable-the-context-menu-in-chrome-on-a-mac/346738
+    // I can't see a good way to remove this listener
+    // IS THIS A GOOD IDEA? Maybe not
+    this.$refs.canvas.addEventListener("contextmenu", event =>
+      event.preventDefault()
+    );
+
     // Create the tools/handlers
     this.selectTool = new SelectionHandler(this.layers);
     this.currentTool = this.selectTool;
@@ -268,7 +276,6 @@ export default class SphereFrame extends VueComponent {
     this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.angleTool = new AngleHandler(this.layers);
     this.coordinateTool = new CoordinateHandler(this.layers);
-    this.sliderTool = new SliderHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
@@ -293,6 +300,11 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
+    // Does this remove the contect menu listener? I'm not sure.
+    this.$refs.canvas.removeEventListener("contextmenu", event =>
+      event.preventDefault()
+    );
+
     EventBus.unlisten("sphere-rotate");
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
@@ -616,6 +628,8 @@ export default class SphereFrame extends VueComponent {
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
+        this.zoomTool.activate(); // unglow any selected objects.
+        this.zoomTool.deactivate(); // shut the tool down properly
         SEStore.revertActionMode();
         break;
 
@@ -665,7 +679,7 @@ export default class SphereFrame extends VueComponent {
       case "intersect":
         this.currentTool = this.intersectTool;
         break;
-      case "pointOnOneDim":
+      case "pointOnObject":
         this.currentTool = this.pointOnOneDimensionalTool;
         break;
 
@@ -684,9 +698,6 @@ export default class SphereFrame extends VueComponent {
       case "coordinate":
         this.currentTool = this.coordinateTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
-        break;
-      case "slider":
-        this.currentTool = this.sliderTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;

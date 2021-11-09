@@ -273,7 +273,9 @@ export default class MoveHandler extends Highlighter {
     if (!this.isOnSphere) {
       return;
     }
+
     event.preventDefault();
+
     // highlight the objects that can be moved
     // and only the highlight the object that will be moved when the user clicks and drags
     if (!this.movingSomething && !this.rotateSphere) {
@@ -534,7 +536,7 @@ export default class MoveHandler extends Highlighter {
                   )
                   .isZero(SETTINGS.nearlyAntipodalIdeal)
               ) {
-                console.log("issued line move command");
+                //console.log("issued line move command");
                 moveCommandGroup.addCommand(
                   new MoveLineCommand(
                     seNoduleAfterState.object as SELine,
@@ -613,7 +615,8 @@ export default class MoveHandler extends Highlighter {
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     this.mouseReleased(event);
   }
-
+  // activate(): void {}
+  // deactivate(): void {}
   private doRotateSphere(): void {
     // Compute the angular change in position
     const rotationAngle = this.previousSphereVector.angleTo(

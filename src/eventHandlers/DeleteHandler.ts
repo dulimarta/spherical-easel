@@ -7,6 +7,9 @@ import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPoint } from "@/models/SEPoint";
+import { SEStore } from "@/store";
+import EventBus from "@/eventHandlers/EventBus";
+import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -113,7 +116,78 @@ export default class DeleteHandler extends Highlighter {
   }
   activate(): void {
     // Delete all selected objects
-    this.hitSENodules.forEach(object => this.delete(object));
+    if (SEStore.selectedSENodules.length !== 0) {
+      const deleteCommandGroup = new CommandGroup();
+      //Keep track of the deleted objects ids
+      // if the user selects object1 and object2 that is a dependent/descendent of object1, deleting object 1 will
+      // also delete object2, so that you should not also try to delete object again.
+      const deletedObjectIDs: number[] = [];
+      SEStore.selectedSENodules
+        .filter(
+          (object: SENodule) =>
+            !(object instanceof SEIntersectionPoint) ||
+            (object as SEIntersectionPoint).isUserCreated
+        )
+        .forEach(object => {
+          //if object has already been deleted don't do anything
+          if (deletedObjectIDs.findIndex(id => id === object.id) !== -1) return;
+
+          // First mark all children of the victim out of date so that the update method does a topological sort
+          object.markKidsOutOfDate();
+          //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
+          object.update(
+            this.beforeDeleteStateMap,
+            this.beforeDeleteSENoduleIDList
+          );
+
+          // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
+          // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
+          // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
+          this.beforeDeleteSENoduleIDList.reverse();
+          this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
+            // add the deleted id to the deletedObjectIDs
+            deletedObjectIDs.push(seNoduleID);
+
+            // Get the SENodule via the beforeState
+            const seNoduleBeforeState = this.beforeDeleteStateMap.get(
+              seNoduleID
+            );
+
+            if (seNoduleBeforeState !== undefined) {
+              if (
+                seNoduleBeforeState.object instanceof SEIntersectionPoint &&
+                (seNoduleBeforeState.object as SEIntersectionPoint)
+                  .isUserCreated
+              ) {
+                // don't delete a user created intersection point, covert it back to not user created.
+                deleteCommandGroup.addCommand(
+                  new ConvertUserCreatedInterToNotUserCreatedCommand(
+                    seNoduleBeforeState.object
+                  )
+                );
+              } else {
+                deleteCommandGroup.addCommand(
+                  new DeleteNoduleCommand(seNoduleBeforeState.object)
+                );
+              }
+            }
+          });
+          // Reset the beforeDeleteStateMap and SENoduleISList
+          this.beforeDeleteStateMap.clear();
+          this.beforeDeleteSENoduleIDList.splice(0);
+        });
+      deleteCommandGroup.execute();
+      //reset the deleted object id list
+      deletedObjectIDs.splice(0);
+      EventBus.fire("show-alert", {
+        key: `handlers.deletedNodes`,
+        keyOptions: {
+          number: `${SEStore.selectedSENodules.length}`
+        },
+        type: "success"
+      });
+    }
+
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
@@ -137,9 +211,21 @@ export default class DeleteHandler extends Highlighter {
       const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
 
       if (seNoduleBeforeState !== undefined) {
-        deleteCommandGroup.addCommand(
-          new DeleteNoduleCommand(seNoduleBeforeState.object)
-        );
+        if (
+          seNoduleBeforeState.object instanceof SEIntersectionPoint &&
+          (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
+        ) {
+          // don't delete a user created intersection point, covert it back to not user created.
+          deleteCommandGroup.addCommand(
+            new ConvertUserCreatedInterToNotUserCreatedCommand(
+              seNoduleBeforeState.object
+            )
+          );
+        } else {
+          deleteCommandGroup.addCommand(
+            new DeleteNoduleCommand(seNoduleBeforeState.object)
+          );
+        }
       }
     });
     deleteCommandGroup.execute();

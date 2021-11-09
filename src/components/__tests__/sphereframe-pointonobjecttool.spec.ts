@@ -29,7 +29,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       );
       expect(SEStore.seLines.length).toEqual(prevLineCount + 1);
       await SEStore.setActionMode({
-        id: "pointOnOneDim",
+        id: "pointOnObject",
         name: "Tool Name does not matter"
       });
       const aLine = SEStore.seLines[prevLineCount];
@@ -77,7 +77,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       );
       expect(SEStore.seSegments.length).toEqual(prevSegmentCount + 1);
       await SEStore.setActionMode({
-        id: "pointOnOneDim",
+        id: "pointOnObject",
         name: "Tool Name does not matter"
       });
       const aLineSegment = SEStore.seSegments[prevSegmentCount];
@@ -124,7 +124,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       );
       expect(SEStore.seCircles.length).toEqual(prevCircleCount + 1);
       await SEStore.setActionMode({
-        id: "pointOnOneDim",
+        id: "pointOnObject",
         name: "Tool Name does not matter"
       });
       const aCircle = SEStore.seCircles[prevCircleCount];

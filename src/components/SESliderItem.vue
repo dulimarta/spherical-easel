@@ -2,7 +2,7 @@
   <div class="white mx-1">
     <div class="node"
       @click="selectMe">
-      <v-icon>mdi-arrow-left-right</v-icon>
+      <v-icon>$vuetify.icons.value.slider</v-icon>
       <span>{{ node.name }}: {{node.value}}</span>
     </div>
     <v-slider v-model.number="node.value"

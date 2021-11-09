@@ -15,7 +15,8 @@
           </v-btn>
           <Toolbox id="toolbox"
             ref="toolbox"
-            :minified="toolboxMinified" />
+            :minified="toolboxMinified"
+            v-on:toggle-tool-box-panel="minifyToolbox" />
 
         </div>
       </v-container>
@@ -23,7 +24,7 @@
     <Pane :size="centerWidth">
 
       <!-- Use the right pane mainly for the canvas and style panel -->
-      <!-- 
+      <!--
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
@@ -51,7 +52,7 @@
                   <v-tooltip bottom
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
-                    <!-- TODO:   
+                    <!-- TODO:
                         When not available they should be greyed out (i.e. disabled).-->
                     <template v-slot:activator="{ on }">
                       <v-btn
@@ -61,7 +62,7 @@
                         v-on="on">
                         <v-icon color="blue"
                           :disabled="!stylePanelMinified || !undoEnabled">
-                          mdi-undo</v-icon>
+                          $undo</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("main.UndoLastAction") }}</span>
@@ -77,14 +78,14 @@
                         v-on="on">
                         <v-icon color="blue"
                           :disabled="!stylePanelMinified || !redoEnabled">
-                          mdi-redo</v-icon>
+                          $redo</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("main.RedoLastAction") }}</span>
                   </v-tooltip>
                 </div>
                 <div class="anchored top right">
-                  <v-tooltip bottom
+                  <!--<v-tooltip bottom
                     v-if="accountEnabled"
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
@@ -93,23 +94,23 @@
                         tile
                         @click="requestShare()"
                         v-on="on">
-                        <v-icon>mdi-share</v-icon>
+                        <v-icon>$shareConstruction</v-icon>
                       </v-btn>
                     </template>
                     <span>Reset sphere</span>
-                  </v-tooltip>
+                  </v-tooltip>-->
                   <v-tooltip bottom
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn icon
                         tile
-                        @click="resetSphere"
+                        @click="$refs.clearConstructionDialog.show()"
                         v-on="on">
-                        <v-icon>mdi-broom</v-icon>
+                        <v-icon>$clearConstruction</v-icon>
                       </v-btn>
                     </template>
-                    <span>Reset sphere</span>
+                    <span>{{$t('constructions.resetSphere')}}</span>
                   </v-tooltip>
                 </div>
                 <div class="anchored bottom right">
@@ -122,7 +123,7 @@
                         tile
                         @click="enableZoomIn"
                         v-on="on">
-                        <v-icon>mdi-magnify-plus-outline</v-icon>
+                        <v-icon>$zoomIn</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
@@ -136,7 +137,7 @@
                         tile
                         @click="enableZoomOut"
                         v-on="on">
-                        <v-icon>mdi-magnify-minus-outline</v-icon>
+                        <v-icon>$zoomOut</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
@@ -150,8 +151,7 @@
                         tile
                         @click="enableZoomFit"
                         v-on="on">
-                        <v-icon>mdi-magnify-scan
-                        </v-icon>
+                        <v-icon>$zoomFit </v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
@@ -234,13 +234,19 @@
     </Pane>
     <Dialog ref="unsavedWorkDialog"
       max-width="40%"
-      title="Confirmation Required"
-      yes-text="Keep"
-      no-text="Discard"
+      :title="$t('constructions.confirmation')"
+      :yes-text="$t('constructions.keep')"
+      :no-text="$t('constructions.discard')"
       :no-action="doLeave">
       {{$t(`constructions.unsavedConstructionMsg`)}}
-      You have unsaved work. Do you want to stay on this page and keep your
-      work or switch to another page and discard your work.
+    </Dialog>
+    <Dialog ref="clearConstructionDialog"
+      :title="$t('constructions.confirmReset')"
+      :yes-text="$t('constructions.proceed')"
+      :yes-action="() => resetSphere()"
+      :no-text="$t('constructions.cancel')"
+      max-width="40%">
+      <p> {{$t(`constructions.clearConstructionMsg`)}}</p>
     </Dialog>
   </Splitpanes>
 </template>
@@ -349,6 +355,7 @@ export default class Easel extends Vue {
     mainPanel: VueComponent;
     stylePanel: HTMLDivElement;
     unsavedWorkDialog: VueComponent & DialogAction;
+    clearConstructionDialog: VueComponent & DialogAction;
   };
 
   //#region magnificationUpdate
@@ -452,11 +459,13 @@ export default class Easel extends Vue {
         if (u !== null) this.uid = u.uid;
       }
     );
+    window.addEventListener("keydown", this.handleKeyDown);
   }
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
     EventBus.unlisten("secret-key-detected");
+    window.removeEventListener("keydown", this.handleKeyDown);
   }
 
   /**
@@ -519,14 +528,43 @@ export default class Easel extends Vue {
   }
 
   resetSphere(): void {
+    this.$refs.clearConstructionDialog.hide();
     SEStore.removeAllFromLayers();
     SEStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   }
 
+  handleKeyDown(keyEvent: KeyboardEvent): void {
+    // TO DO: test this on PC
+    if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
+      //Mac shortcuts
+      if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.metaKey) {
+        Command.undo();
+      } else if (
+        keyEvent.code === "KeyZ" &&
+        keyEvent.shiftKey &&
+        keyEvent.metaKey
+      ) {
+        Command.redo();
+      }
+    } else {
+      //pc shortcuts
+      if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.ctrlKey) {
+        Command.undo();
+      } else if (
+        keyEvent.code === "KeyY" &&
+        !keyEvent.shiftKey &&
+        keyEvent.ctrlKey
+      ) {
+        Command.redo();
+      }
+    }
+  }
   //#region resizePlottables
   resizePlottables(e: { factor: number }): void {
     // const oldFactor = this.previousZoomMagnificationFactor;
@@ -568,7 +606,7 @@ export default class Easel extends Vue {
       this.attemptedToRoute = toRoute;
       next(false); // Stay on this view
     } else {
-      /* Proceed to the next view when the canvas has no objects OR 
+      /* Proceed to the next view when the canvas has no objects OR
       user has confirmed leaving this view */
       next();
     }

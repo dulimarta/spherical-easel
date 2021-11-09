@@ -34,7 +34,7 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 
 ::: tool-title
 
-## Line
+## Line <icon-base iconSize="64" iconName="line"> </icon-base>
 
 :::
 ::: tool-description
@@ -60,7 +60,7 @@ Create a line segment.
 
 - Mouse press to declare a start point on the line segment (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare an endpoint of the line segment (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags) determine a unique line segment.
-- Pressing the <kyb>Ctrl</kyb> key while dragging will force the line segment created to be longer than $\pi$.
+- Pressing the <KeyShortcuts macCtrl pcCtrl  /> key while dragging will force the line segment created to be longer than $\pi$.
 - When a line segment is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with two points selected the above action is performed automatically creating a line segment with length less than $\pi$ and an arbitrary normal vector in the case that the points are antipodal.
 
