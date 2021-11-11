@@ -68,7 +68,7 @@
         i18n-title-line="style.selectAnObject"
         i18n-subtitle-line="style.closeOrSelect"
         i18n-list-title="style.toSelectObjects"
-        :i18n-list-items="['style.selectionDirection1','style.selectionDirection2','style.selectionDirection3','style.selectionDirection4']"
+        :i18n-list-items="buttonListItems()"
         i18n-button-label="style.closeStylingPanel"
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')">
@@ -156,32 +156,30 @@ export default class Style extends Vue {
     );
   }
 
+  buttonListItems(): string[] {
+    if (navigator.userAgent.indexOf("Mac OS X") === -1) {
+      // the user is on a PC
+      return [
+        "style.selectionDirection1",
+        "style.selectionDirection2",
+        "style.selectionDirection3",
+        "style.selectionDirection4PC"
+      ];
+    } else {
+      // the user is on a Mac
+      return [
+        "style.selectionDirection1",
+        "style.selectionDirection2",
+        "style.selectionDirection3",
+        "style.selectionDirection4Mac"
+      ];
+    }
+  }
   @Watch("minified")
   closeAllPanels(): void {
     this.activePanel = undefined;
     // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
     EventBus.fire("save-style-state", {});
-  }
-
-  // You are not allow to style labels directly so remove them from the selection and warn the user
-  @Watch("selectedSENodules")
-  private removeAllLablesFromSelection(): void {
-    let labelIDs: number[] = [];
-    this.selectedSENodules.forEach(nod => {
-      if (nod.isLabel()) {
-        labelIDs.push(nod.id);
-      }
-    });
-    if (labelIDs.length > 0) {
-      EventBus.fire("show-alert", {
-        key: `style.cannotSytleLabels`,
-        keyOptions: {},
-        type: "warning"
-      });
-      EventBus.fire("remove-senodules-from-selection", {
-        victimIDs: labelIDs
-      });
-    }
   }
 
   @Watch("selectedSENodules")
