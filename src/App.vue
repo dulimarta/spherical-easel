@@ -40,10 +40,10 @@
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-            <router-link to="/docs/">
+            <a href="/docs/">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
-            </router-link>
+            </a>
             <!-- Use <a> For GitLab -->
             <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
@@ -325,7 +325,7 @@ export default class App extends Vue {
 
   async doShare(): Promise<void> {
     /* TODO: move the following constant to global-settings? */
-    const SCRIPT_SIZE_LIMIT = 50; /* in bytes */
+    const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
     // A local function to convert a blob to base64 representation
     const toBase64 = (inputBlob: Blob): Promise<string> =>
       new Promise((resolve, reject) => {
@@ -338,7 +338,7 @@ export default class App extends Vue {
       });
 
     /* dump the command history */
-    const out = Command.dumpOpcode();
+    const scriptOut = Command.dumpOpcode();
 
     const rotationMat = this.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
@@ -360,57 +360,64 @@ export default class App extends Vue {
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");
-    let docRef: Promise<DocumentReference>;
-    if (out.length < 5 * 1024) {
-      docRef = this.$appDB.collection(collectionPath).add({
-        /* Put the script in Firestore */
-        script: out,
+
+    /* Create a pipeline of Firebase tasks
+       Task 1: Upload construction to Firestore
+       Task 2: Upload the script to Firebase Storage (for large script)
+       Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
+    */
+    this.$appDB // Task #1
+      .collection(collectionPath)
+      .add({
         version: "1",
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements),
-        preview: svgPreviewData
-      });
-    } else {
-      docRef = this.$appDB
-        .collection(collectionPath)
-        .add({
-          /* Don't put the script in Firestore */
-          version: "1",
-          dateCreated: new Date().toISOString(),
-          author: this.whoami,
-          description: this.description,
-          rotationMatrix: JSON.stringify(rotationMat.elements),
-          preview: svgPreviewData
-        })
-        .then((doc: DocumentReference) => {
-          // Upload the script to Firebase Storage
-          return this.$appStorage
-            .ref(`scripts/${doc.id}`)
-            .putString(out)
-            .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL())
-            .then((url: string) => {
-              // Put the URL in the script field
-              doc.update({ script: url });
-              return doc;
-            });
-        });
-    }
-    docRef
-      .then((doc: DocumentReference) => {
+        rotationMatrix: JSON.stringify(rotationMat.elements)
+      })
+      .then((constructionDoc: DocumentReference) => {
+        /* Task #2 */
+        const scriptPromise: Promise<string> =
+          scriptOut.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(scriptOut)
+            : this.$appStorage
+                .ref(`scripts/${constructionDoc.id}`)
+                .putString(scriptOut)
+                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+
+        /* Task #3 */
+        const svgPromise: Promise<string> =
+          svgPreviewData.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(svgPreviewData)
+            : this.$appStorage
+                .ref(`construction-svg/${constructionDoc.id}`)
+                .putString(svgPreviewData)
+                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+
+        /* Wrap the result from the three tasks as a new Promise */
+        return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
+      })
+      .then(([docId, scriptData, svgData]) => {
+        this.$appDB
+          .collection(collectionPath)
+          .doc(docId)
+          .update({ script: scriptData, preview: svgData });
+        // Pass on the document ID to be included in the alert message
+        return docId;
+      })
+      .then((docId: string) => {
         EventBus.fire("show-alert", {
           key: "constructions.firestoreConstructionSaved",
-          keyOptions: { docId: doc.id },
+          keyOptions: { docId },
           type: "info"
         });
         SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
-        console.error("Can't save document", err);
+        console.error("Can't save document", err.message);
         EventBus.fire("show-alert", {
           key: "constructions.firestoreSaveError",
-          keyOptions: {},
+          // keyOptions: { docId: constructionDoc.id },
           type: "error"
         });
       });
