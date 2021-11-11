@@ -372,7 +372,10 @@ export default {
     labelObjectVisibility: "Label And Object Visibility",
     selectObjectsToShow: "Select Objects to Show",
     labelVisible: "Label Visible",
-    objectVisible: "Object Visible"
+    objectVisible: "Object Visible",
+
+    cannotSytleLabels:
+      "You cannot style labels directly. To style a label, select and style the object it labels."
   },
   handlers: {
     nEqualOneAngleNSect:

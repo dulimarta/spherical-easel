@@ -602,4 +602,17 @@ export default class SelectionHandler extends Highlighter {
     // add the collection of selected objects to the current selection
     this.currentSelection.push(...this.selectionRectangleSelection);
   }
+
+  removeSENoduleFromSelection(victimIDs: number[]): void {
+    victimIDs.forEach(id => {
+      const index = this.currentSelection.findIndex(nod => nod.id === id);
+      if (index > -1) {
+        const victim = this.currentSelection[index];
+        victim.glowing = false;
+        victim.selected = false;
+        this.currentSelection.splice(index, 1);
+      }
+    });
+    SEStore.setSelectedSENodules(this.currentSelection);
+  }
 }

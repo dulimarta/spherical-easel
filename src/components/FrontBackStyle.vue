@@ -419,6 +419,7 @@ export default class FrontBackStyle extends Vue {
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
+  // You are not allow to style labels  directly  so remove them from the selection and warn the user
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 

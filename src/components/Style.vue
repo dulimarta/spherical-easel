@@ -163,6 +163,27 @@ export default class Style extends Vue {
     EventBus.fire("save-style-state", {});
   }
 
+  // You are not allow to style labels directly so remove them from the selection and warn the user
+  @Watch("selectedSENodules")
+  private removeAllLablesFromSelection(): void {
+    let labelIDs: number[] = [];
+    this.selectedSENodules.forEach(nod => {
+      if (nod.isLabel()) {
+        labelIDs.push(nod.id);
+      }
+    });
+    if (labelIDs.length > 0) {
+      EventBus.fire("show-alert", {
+        key: `style.cannotSytleLabels`,
+        keyOptions: {},
+        type: "warning"
+      });
+      EventBus.fire("remove-senodules-from-selection", {
+        victimIDs: labelIDs
+      });
+    }
+  }
+
   @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
     // console.log("Style All Labels: onSelectionChanged");

@@ -50,6 +50,7 @@ import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import { SELine } from "@/models/SELine";
+import { SENodule } from "@/models/SENodule";
 const SE = namespace("se");
 
 @Component({})
@@ -227,6 +228,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
+    EventBus.listen("remove-senodules-from-selection", this.removeNodules);
   }
 
   mounted(): void {
@@ -309,6 +311,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
+    EventBus.unlisten("remove-senodules-from-selection");
   }
 
   @Watch("canvasSize")
@@ -587,6 +590,10 @@ export default class SphereFrame extends VueComponent {
       type: "text/plain;charset=utf-8"
     });
     FileSaver.saveAs(blob, "iconXXXPaths.svg");
+  }
+
+  removeNodules(e: unknown): void {
+    this.selectTool.removeSENoduleFromSelection((e as any).victimIDs);
   }
 
   animateCanvas(): void {

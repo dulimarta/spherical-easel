@@ -19,6 +19,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
@@ -37,6 +38,7 @@ export default class extends Vue {
   // automaticBackStyle : TRUE means the program will customize back style
   @Prop({ default: true }) automaticBackStyle!: boolean;
 
+  // You are not allow to style labels directly so remove them from the selection and warn the user
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly allSelectedSENodules!: SENodule[];
 
@@ -63,9 +65,9 @@ export default class extends Vue {
 
   /*
   When dataAgreement is TRUE
-  * propDynamicBackStyleCommonValue is TRUE when all selected objects 
+  * propDynamicBackStyleCommonValue is TRUE when all selected objects
     have the dynamicBackStyle = TRUE
-  * propDynamicBackStyleCommonValue is FALSE when all selected objects 
+  * propDynamicBackStyleCommonValue is FALSE when all selected objects
     have the dynamicBackStyle = FALSE
   */
   // dataAgreement = true;
