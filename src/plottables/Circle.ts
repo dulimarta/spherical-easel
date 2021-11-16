@@ -819,7 +819,6 @@ export default class Circle extends Nodule {
     dup.backPart.closed = this.backPart.closed;
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
-    dup.styleOptions = this.styleOptions;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;

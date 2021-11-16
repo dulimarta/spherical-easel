@@ -50,6 +50,7 @@ import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import { SELine } from "@/models/SELine";
+import { SENodule } from "@/models/SENodule";
 const SE = namespace("se");
 
 @Component({})

@@ -146,21 +146,21 @@ export default class SelectionHandler extends Highlighter {
           n.ref.glowingDisplay();
         });
     }
-    // Get all SELabels upper case L
-    else if (keyEvent.code === "KeyL" && keyEvent.shiftKey) {
-      SEStore.seLabels
-        .filter((n: SELabel) => n.showing) //no hidden Labels allowed
-        .forEach((n: SELabel) => {
-          this.keyPressSelection.push(n);
-          n.ref.glowingDisplay();
-        });
-    }
+    // Get all SELabels upper case L NO THERE IS NO NEED TO SELECT LABELS
+    // else if (keyEvent.code === "KeyL" && keyEvent.shiftKey) {
+    //   SEStore.seLabels
+    //     .filter((n: SELabel) => n.showing) //no hidden Labels allowed
+    //     .forEach((n: SELabel) => {
+    //       this.keyPressSelection.push(n);
+    //       n.ref.glowingDisplay();
+    //     });
+    // }
     // Get all SENodules lower case a and meta key
     else if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
       //Mac shortcuts for select all
       if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
         SEStore.seNodules
-          .filter((n: SENodule) => n.showing) //no hidden objects allowed
+          .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
@@ -171,7 +171,7 @@ export default class SelectionHandler extends Highlighter {
       //PC shortcuts for select all
       if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
         SEStore.seNodules
-          .filter((n: SENodule) => n.showing) //no hidden objects allowed
+          .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
@@ -211,6 +211,15 @@ export default class SelectionHandler extends Highlighter {
     ];
     // clear the selected rectangle selection
     this.selectionRectangleSelection.splice(0);
+
+    // If the user clicks on a label warn them about labels not being selectable.
+    if (this.hitSENodules[0] && this.hitSENodules[0].isLabel()) {
+      EventBus.fire("show-alert", {
+        key: `style.cannotSelectLabels`,
+        keyOptions: {},
+        type: "warning"
+      });
+    }
   }
 
   private blinkSelections(): void {
@@ -253,10 +262,8 @@ export default class SelectionHandler extends Highlighter {
       this.hitSENodules
         .filter((p: SENodule) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !p.isUserCreated
-            // ||
-            // p.isLabel()
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
           ) {
             return false;
           } else {
@@ -299,10 +306,8 @@ export default class SelectionHandler extends Highlighter {
         // Remove non-selectable intersection points
         const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !p.isUserCreated
-            // ||
-            // p.isLabel()
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            p.isLabel() // no labels can be selected
           ) {
             return false;
           } else {
@@ -342,17 +347,19 @@ export default class SelectionHandler extends Highlighter {
             const hitSENodules = SEStore.findNearbySENodules(
               sphereVec,
               this.currentScreenVector
-            ).filter((n: SENodule) => {
-              if (n instanceof SEIntersectionPoint) {
-                if (!n.isUserCreated) {
-                  return n.exists; //You always hit automatically created intersection points if it exists
+            )
+              .filter((n: SENodule) => !n.isLabel()) // remove all labels from the selection
+              .filter((n: SENodule) => {
+                if (n instanceof SEIntersectionPoint) {
+                  if (!n.isUserCreated) {
+                    return n.exists; //You always hit automatically created intersection points if it exists
+                  } else {
+                    return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+                  }
                 } else {
                   return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
                 }
-              } else {
-                return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-              }
-            });
+              });
             // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
             if (!event.shiftKey && hitSENodules.length > 0) {
               EventBus.fire("show-alert", {
@@ -557,6 +564,7 @@ export default class SelectionHandler extends Highlighter {
             sphereVector,
             screenVector
           )
+            .filter((n: SENodule) => !n.isLabel()) // remove any labels
             .filter((n: SENodule) => {
               if (n instanceof SEIntersectionPoint) {
                 if (!n.isUserCreated) {

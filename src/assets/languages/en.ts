@@ -237,8 +237,11 @@ export default {
       "Hold the Alt/Option key to add or subtract from your selection.",
     selectionDirection3:
       "Press a number key to select an object at that depth.",
-    selectionDirection4:
-      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), labels (L) or all objects (command/ctrl + a).",
+    selectionDirection4Mac:
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), or all objects (command+a).",
+
+    selectionDirection4PC:
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), or all objects (ctrl+a).",
     closeStylingPanel: "Close Style Panel",
     noSelectionToolTip:
       "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
@@ -307,9 +310,6 @@ export default {
     lessStyleOptions: "Less",
     toggleStyleOptionsToolTip: "More/Less label styling options.",
 
-    convertSelectionToLabels:
-      "A mix of label and non-label objects were selected when all label displays were changed. In order to do this the current selection was converted to all the labels of those objects.",
-
     dashPattern: "Dash Pattern",
     dashPatternCheckBoxToolTip:
       "Enable or Disable a dash pattern for the selected objects.",
@@ -372,7 +372,10 @@ export default {
     labelObjectVisibility: "Label And Object Visibility",
     selectObjectsToShow: "Select Objects to Show",
     labelVisible: "Label Visible",
-    objectVisible: "Object Visible"
+    objectVisible: "Object Visible",
+
+    cannotSelectLabels:
+      "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel."
   },
   handlers: {
     nEqualOneAngleNSect:
