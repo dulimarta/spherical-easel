@@ -28,7 +28,7 @@ export class LineNormalVisitor implements Visitor {
     // Don't update here, because it may cause a point on one dimensional to update to the wrong location
     // The undo and restore methods of command cause one update for display at the end of every command or
     // command group
-    // m.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    // m.update();
   }
 
   // eslint-disable-next-line

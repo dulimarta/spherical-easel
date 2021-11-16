@@ -1,11 +1,6 @@
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import {
-  UpdateStateType,
-  UpdateMode,
-  ValueDisplayMode,
-  ExpressionState
-} from "@/types";
+import { ObjectState } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 
@@ -40,23 +35,32 @@ export class SEPointDistance extends SEExpression {
     );
   }
 
-  public update(state: UpdateStateType): void {
-    // This object and any of its children has no presence on the sphere canvas, so update for move should
-    if (state.mode === UpdateMode.RecordStateForMove) return;
-    // This object is completely determined by its parents, so only record the object in state array
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const expressionState: ExpressionState = {
-        kind: "expression",
-        object: this
-      };
-      state.stateArray.push(expressionState);
-    }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     if (!this.canUpdateNow()) return;
-    // When this updates send its value to the label but this has no label to update
-    //const pos = this.name.lastIndexOf(":");
-    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
+
     this.setOutOfDate(false);
-    this.updateKids(state);
+
+    this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
+
+    // There is no display to update, this doesn't have a presence on the sphere frame
+
+    // These point measurement are completely determined by their parents and an update on the parents
+    // will cause this measurement update correctly. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Point Distance with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "pointDistance", object: this });
+    }
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   public get value(): number {

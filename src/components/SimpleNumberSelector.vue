@@ -1,11 +1,15 @@
 <template>
   <div>
-    <span
-      class="text-subtitle-2">{{ $t(titleKey) + " ("+thumbMap(styleData)+")" }}</span>
+    <span class="text-subtitle-2"
+      :style="{'color' : conflict?'red':''}">{{ $t(titleKey) + " ("+thumbMap(styleData)+")" }}</span>
+    <span v-if="numSelected > 1"
+      class="text-subtitle-2"
+      style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
 
     <!-- The number selector slider -->
     <v-slider v-model.number="styleData"
+      @change="changeEvent"
       v-bind="$attrs"
       type="range"
       class="mb-n4 pa-n4">
@@ -32,7 +36,12 @@ export default class SimpleNumberSelector extends Vue {
   @Prop() readonly titleKey!: string;
   @PropSync("data") styleData!: number;
   @Prop() readonly thumbStringValues?: string[];
+  @Prop() readonly numSelected!: number;
+  @Prop() conflict!: boolean;
 
+  changeEvent(): void {
+    this.$emit("resetColor");
+  }
   //converts the value of the slider to the text message displayed in the thumb marker
   thumbMap(val: number): string {
     if (this.thumbStringValues === undefined) {

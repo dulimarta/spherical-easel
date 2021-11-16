@@ -4,6 +4,10 @@ import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SEStore } from "@/store";
+import { SENodule } from "@/models/SENodule";
+import { Labelable } from "@/types";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -15,10 +19,96 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     super(layers);
   }
 
+  keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    //if (keyEvent.repeat) return; // Ignore repeated events on the same key
+
+    // Show all labels of all visible objects (whose labels are not already showing) lower case s
+    if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
+      const labelToggleDisplayCommandGroup = new CommandGroup();
+      SEStore.seNodules
+        .filter(
+          // no non-user created points
+          (object: SENodule) =>
+            !(object instanceof SEIntersectionPoint) ||
+            (object as SEIntersectionPoint).isUserCreated
+        )
+        .filter(
+          // no hidden objects
+          (object: SENodule) => object.showing
+        )
+        .filter(
+          // no objects whose labels are already showing
+          (object: SENodule) => {
+            if (object.isLabelable()) {
+              return !((object as unknown) as Labelable).label!.showing;
+            } else {
+              return false;
+            }
+          }
+        )
+        .forEach(object => {
+          // Do the toggling on labelable objects via command so it will be undoable
+          if (object.isLabelable()) {
+            labelToggleDisplayCommandGroup.addCommand(
+              new SetNoduleDisplayCommand(
+                ((object as unknown) as Labelable).label!,
+                true
+              )
+            );
+          }
+        });
+      labelToggleDisplayCommandGroup.execute();
+    }
+
+    // Hide all labels of all visible objects (whose labels are not already hiding) lower case h
+    if (keyEvent.code === "KeyH" && !keyEvent.shiftKey) {
+      const labelToggleDisplayCommandGroup = new CommandGroup();
+      SEStore.seNodules
+        .filter(
+          // no non-user created points
+          (object: SENodule) =>
+            !(object instanceof SEIntersectionPoint) ||
+            (object as SEIntersectionPoint).isUserCreated
+        )
+        .filter(
+          // no hidden objects
+          (object: SENodule) => object.showing
+        )
+        .filter(
+          // no objects whose labels are already hidden
+          (object: SENodule) => {
+            if (object.isLabelable()) {
+              return ((object as unknown) as Labelable).label!.showing;
+            } else {
+              return false;
+            }
+          }
+        )
+        .forEach(object => {
+          // Do the toggling on labelable objects via command so it will be undoable
+          if (object.isLabelable()) {
+            labelToggleDisplayCommandGroup.addCommand(
+              new SetNoduleDisplayCommand(
+                ((object as unknown) as Labelable).label!,
+                false
+              )
+            );
+          }
+        });
+      labelToggleDisplayCommandGroup.execute();
+    }
+  };
+
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      if (this.hitSEPoints.length > 0) {
+      if (
+        this.hitSEPoints.length > 0 &&
+        !(
+          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        )
+      ) {
         if (this.hitSEPoints[0].label != null) {
           this.label = this.hitSEPoints[0].label;
         }
@@ -68,13 +158,15 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Only one point can be processed at a time, so set the first point nearby to glowing
     // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
-    if (this.hitSEPoints.length > 0) {
+    if (
+      this.hitSEPoints.length > 0 &&
+      !(
+        this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+        !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+      )
+    ) {
       // never highlight non user created intersection points
-      const filteredIntersections = this.hitSEPoints.filter(
-        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
-      );
-      if (filteredIntersections.length > 0)
-        filteredIntersections[0].glowing = true;
+      this.hitSEPoints[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {
@@ -101,14 +193,35 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     this.label = null;
   }
   activate(): void {
-    // Hide all selected objects
-    this.hitSENodules.forEach(object =>
-      new SetNoduleDisplayCommand(object, false).execute()
-    );
+    window.addEventListener("keydown", this.keyPressHandler);
+    // Toggle the display of all selected objects
+    if (SEStore.selectedSENodules.length !== 0) {
+      const labelToggleDisplayCommandGroup = new CommandGroup();
+      SEStore.selectedSENodules
+        .filter(
+          (object: SENodule) =>
+            !(object instanceof SEIntersectionPoint) ||
+            (object as SEIntersectionPoint).isUserCreated
+        )
+        .forEach(object => {
+          // Do the toggling on labelable objects via command so it will be undoable
+          if (object.isLabelable()) {
+            labelToggleDisplayCommandGroup.addCommand(
+              new SetNoduleDisplayCommand(
+                ((object as unknown) as Labelable).label!,
+                !((object as unknown) as Labelable).label!.showing
+              )
+            );
+          }
+        });
+      labelToggleDisplayCommandGroup.execute();
+    }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
   deactivate(): void {
+    // Remove the listener
+    window.removeEventListener("keydown", this.keyPressHandler);
     super.deactivate();
   }
 }

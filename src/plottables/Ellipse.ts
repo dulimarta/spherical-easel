@@ -961,7 +961,6 @@ export default class Ellipse extends Nodule {
     dup.backPart.closed = this.backPart.closed;
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
-    dup.styleOptions = this.styleOptions;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -1119,13 +1118,17 @@ export default class Ellipse extends Nodule {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         //FRONT
-        if (SETTINGS.ellipse.temp.fillColor.front === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.front)
+        ) {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = SETTINGS.ellipse.temp.fillColor.front;
           this.frontFill.fill = this.frontGradient;
         }
-        if (SETTINGS.ellipse.temp.strokeColor.front === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.front)
+        ) {
           this.frontPart.noStroke();
         } else {
           this.frontPart.stroke = SETTINGS.ellipse.temp.strokeColor.front;
@@ -1138,15 +1141,22 @@ export default class Ellipse extends Nodule {
           SETTINGS.ellipse.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
+          if (SETTINGS.ellipse.drawn.dashArray.reverse.front) {
+            this.frontPart.dashes.reverse();
+          }
         }
         //BACK
-        if (SETTINGS.ellipse.temp.fillColor.back === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.back)
+        ) {
           this.backFill.noFill();
         } else {
           this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
           this.backFill.fill = this.backGradient;
         }
-        if (SETTINGS.ellipse.temp.strokeColor.back === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.back)
+        ) {
           this.backPart.noStroke();
         } else {
           this.backPart.stroke = SETTINGS.ellipse.temp.strokeColor.back;
@@ -1159,6 +1169,9 @@ export default class Ellipse extends Nodule {
           SETTINGS.ellipse.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
+          if (SETTINGS.ellipse.drawn.dashArray.reverse.back) {
+            this.backPart.dashes.reverse();
+          }
         }
 
         // The temporary display is never highlighted
@@ -1173,23 +1186,30 @@ export default class Ellipse extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
 
-        if (frontStyle?.fillColor === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
           this.frontFill.fill = this.frontGradient;
         }
 
-        if (frontStyle?.strokeColor === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
           this.frontPart.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent is applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.frontPart.dashes.clear();
           this.frontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.frontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.frontPart.dashes.clear();
@@ -1199,8 +1219,9 @@ export default class Ellipse extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
-            "noFill"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontStyle?.fillColor)
+            )
           ) {
             this.backFill.noFill();
           } else {
@@ -1211,7 +1232,7 @@ export default class Ellipse extends Nodule {
             this.backFill.fill = this.backGradient;
           }
         } else {
-          if (backStyle?.fillColor === "noFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
@@ -1221,8 +1242,9 @@ export default class Ellipse extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ===
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this.backPart.noStroke();
           } else {
@@ -1231,7 +1253,7 @@ export default class Ellipse extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor === "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = backStyle?.strokeColor ?? "black";
@@ -1240,9 +1262,16 @@ export default class Ellipse extends Nodule {
 
         // strokeWidthPercent applied by adjustSizer()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.backPart.dashes.clear();
           this.backPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.backPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.backPart.dashes.clear();
@@ -1257,9 +1286,16 @@ export default class Ellipse extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();
@@ -1272,9 +1308,16 @@ export default class Ellipse extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackPart.dashes.clear();
           this.glowingBackPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.glowingBackPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackPart.dashes.clear();

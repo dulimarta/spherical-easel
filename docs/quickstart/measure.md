@@ -9,7 +9,7 @@ lang: en-US
 
 Activate the [Measure Length Tool](/tools/measurement.html#length) and mouse release on one of the line segments in the triangle. Notice that when this measurement is made a new category, called Measurements, appears in the Objects tab (in addition to the Points, Line Segments and Calculations categories). Under this category a new row has appeared have appeared displaying the length of the selected line segment.
 
-TODO: add image showing this intermediate step
+TODO: add image showing this intermediate step blah blah
 
 ::: tool-details Spherical Geometry: Distance versus Length
 Notice that the Measure Segment Tool (TODO:AddIconImage) is different than the Measure Distance Tool (TODO:AddIconImage). The Measure Segment Tool measures the length of a segment which is always less than $2\pi$ and the Measure Distance Tool measures the distance between two points which is always less than $\pi$ because we are on a unit sphere. You can select the Settings icon (TODO: fix the wording and AddIconImage) and adjust the number of decimal places that are displayed.

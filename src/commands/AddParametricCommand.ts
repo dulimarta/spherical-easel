@@ -9,11 +9,12 @@ import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
-  UpdateMode,
   CoordExpression,
   MinMaxExpression,
-  MinMaxNumber
+  MinMaxNumber,
+  SavedNames
 } from "@/types";
+import { StyleEditPanels } from "@/types/Styles";
 
 export class AddParametricCommand extends Command {
   private seParametric: SEParametric;
@@ -54,118 +55,224 @@ export class AddParametricCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return (
-      [
-        "AddParametric",
-        /* arg-0 */ this.seParametric.name,
-        /* arg-1 */ this.seParametric.ref.coordinateExpressions.x,
-        /* arg-2 */ this.seParametric.ref.coordinateExpressions.y,
-        /* arg-3 */ this.seParametric.ref.coordinateExpressions.z,
-        /* arg-4 */ this.seParametric.ref.tExpressions.min,
-        /* arg-5 */ this.seParametric.ref.tExpressions.max,
-        /* arg-6 */ this.seParametric.ref.tNumbers.min,
-        /* arg-7 */ this.seParametric.ref.tNumbers.max,
-        /* arg-8 */ this.seParametric.ref.closed,
-        /* arg-9 */ this.seParametric.showing,
-        /* arg-10 */ this.seParametric.exists,
-        /* arg-11 */ this.seLabel.name,
-        /* arg-12 */ this.seLabel.exists,
-        /* arg-13 */ this.seLabel.showing,
-        /* arg-14 */ this.seParametric.ref.seParentExpressions
-          .map((n: SEExpression) => n.name)
+    return [
+      "AddParametric",
+      // Any attribute that could possibly have a "=", "@", "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seParametric.name),
+      "objectExists=" + this.seParametric.exists,
+      "objectShowing=" + this.seParametric.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seParametric.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seParametric.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "parametricXCoordinateExpression=" +
+        Command.symbolToASCIIDec(this.seParametric.coordinateExpressions.x),
+      "parametricYCoordinateExpression=" +
+        Command.symbolToASCIIDec(this.seParametric.coordinateExpressions.y),
+      "parametricZCoordinateExpression=" +
+        Command.symbolToASCIIDec(this.seParametric.coordinateExpressions.z),
+      "parametricMinExpression=" +
+        Command.symbolToASCIIDec(this.seParametric.tExpressions.min),
+      "parametricMaxExpression=" +
+        Command.symbolToASCIIDec(this.seParametric.tExpressions.max),
+      "parametricMinNumber=" + this.seParametric.tNumbers.min,
+      "parametricMaxNumber=" + this.seParametric.tNumbers.max,
+      "parametricCurveClosed=" + this.seParametric.ref.closed,
+      "parametricExpressionParentsNames=" +
+        this.seParametric.seParentExpressions
+          .map((n: SEExpression) => Command.symbolToASCIIDec(n.name))
           .join("@"),
-        /* arg-15 */ this.seParametric.ref.c1DiscontinuityParameterValues.join(
-          "@"
-        )
-      ]
-        .join(";") // Can't use "/" may get mixed up with division
-        // Replace the first ";" with "/" so CommandInterpreter is able to identify and dispatch this command correctly
-        .replace(";", "/")
-    );
+      "parametricCuspParameterValues=" +
+        this.seParametric.c1DiscontinuityParameterValues
+          .map(num => Command.symbolToASCIIDec(num.toString()))
+          .join("@")
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const slashAt = command.indexOf("/");
-    const args = command.substring(slashAt + 1);
-    console.debug("Whole command", command);
-    console.debug("Arguments", args);
-    const tokens = args.split(";");
-    console.debug("Tokens", tokens);
-    const coordinateExpressions: CoordExpression = {
-      x: tokens[1],
-      y: tokens[2],
-      z: tokens[3]
-    };
-    const tExpressions: MinMaxExpression = {
-      min: tokens[4],
-      max: tokens[5]
-    };
-    const tNumbers: MinMaxNumber = {
-      min: Number(tokens[6]),
-      max: Number(tokens[7])
-    };
-    const closed = tokens[8] === "true";
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-    const calculationParents: (SENodule | undefined)[] = [];
-
-    const parentNames = tokens[14] !== "" ? tokens[14].split("@") : [];
-    parentNames.forEach(name =>
-      calculationParents.push(objMap.get(name) as SENodule | undefined)
+    // get the object specific attributes
+    const parametricXCoordinateExpression = propMap.get(
+      "parametricXCoordinateExpression"
+    );
+    const parametricYCoordinateExpression = propMap.get(
+      "parametricYCoordinateExpression"
+    );
+    const parametricZCoordinateExpression = propMap.get(
+      "parametricZCoordinateExpression"
     );
 
-    const tValues = tokens[15] !== "" ? tokens[14].split("@") : [];
-    const c1DiscontinuityParameterValues: number[] = [];
-    tValues.forEach(str => c1DiscontinuityParameterValues.push(Number(str)));
+    const parametricMinExpression = propMap.get("parametricMinExpression"); // this could be ""
+    const parametricMaxExpression = propMap.get("parametricMaxExpression"); // this could be ""
 
-    if (calculationParents.every(seNodule => seNodule !== undefined)) {
+    const parametricMinNumber = Number(propMap.get("parametricMinNumber"));
+    const parametricMaxNumber = Number(propMap.get("parametricMaxNumber"));
+    const parametricCurveClosed = propMap.get("parametricCurveClosed");
+
+    const tempParametricExpressionParents = propMap.get(
+      "parametricExpressionParentsNames"
+    );
+    const parametricExpressionParents: (SEExpression | undefined)[] = [];
+    if (tempParametricExpressionParents) {
+      tempParametricExpressionParents
+        .split("@")
+        .forEach(name =>
+          parametricExpressionParents.push(
+            objMap.get(name) as SEExpression | undefined
+          )
+        );
+    }
+
+    const tempParametricCuspParameterValues = propMap.get(
+      "parametricCuspParameterValues"
+    );
+    const parametricCuspParameterValues: number[] = [];
+    if (tempParametricCuspParameterValues) {
+      tempParametricCuspParameterValues
+        .split("@")
+        .forEach(numString =>
+          parametricCuspParameterValues.push(
+            Number(Command.asciiDecToSymbol(numString))
+          )
+        );
+    }
+
+    if (
+      parametricXCoordinateExpression !== undefined &&
+      parametricYCoordinateExpression !== undefined &&
+      parametricZCoordinateExpression !== undefined &&
+      parametricMinExpression !== undefined &&
+      parametricMaxExpression !== undefined &&
+      !isNaN(parametricMinNumber) &&
+      !isNaN(parametricMaxNumber) &&
+      parametricExpressionParents.every(
+        expression => expression !== undefined
+      ) &&
+      parametricCuspParameterValues.every(num => !isNaN(num))
+    ) {
+      //make the parametric
+      const coordinateExpressions: CoordExpression = {
+        x: parametricXCoordinateExpression,
+        y: parametricYCoordinateExpression,
+        z: parametricZCoordinateExpression
+      };
+      const tExpressions: MinMaxExpression = {
+        min: parametricMinExpression,
+        max: parametricMaxExpression
+      };
+      const tNumbers: MinMaxNumber = {
+        min: parametricMinNumber,
+        max: parametricMaxNumber
+      };
       const parametric = new Parametric(
+        tNumbers.min,
+        tNumbers.max,
+        tNumbers.min,
+        tNumbers.max,
+        parametricCurveClosed === "true"
+      );
+      const seParametric = new SEParametric(
+        parametric,
         coordinateExpressions,
         tExpressions,
         tNumbers,
-        calculationParents.map(par => par as SEExpression),
-        c1DiscontinuityParameterValues,
-        closed
+        parametricCuspParameterValues,
+        parametricExpressionParents.map(par => par as SEExpression)
       );
-      // Set the display to the default values
-      parametric.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the stroke width to the current zoom magnification factor
-      parametric.adjustSize();
-      parametric.updateDisplay();
 
-      // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-      const newSEParametric = new SEParametric(parametric);
-      newSEParametric.name = tokens[0];
-      objMap.set(tokens[0], newSEParametric);
-      newSEParametric.glowing = false;
-      newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      newSEParametric.showing = tokens[9] === "true";
-      newSEParametric.exists = tokens[10] === "true";
+      //style the parametric
+      const parametricFrontStyleString = propMap.get("objectFrontStyle");
+      if (parametricFrontStyleString !== undefined)
+        parametric.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(parametricFrontStyleString)
+        );
+      const parametricBackStyleString = propMap.get("objectBackStyle");
+      if (parametricBackStyleString !== undefined)
+        parametric.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(parametricBackStyleString)
+        );
 
-      // Create the plottable and model label
-      const seLabel = new SELabel(new Label(), newSEParametric);
-      // Set the initial label location at the start of the curve
-      const labelPosition = new Vector3();
-      labelPosition
-        .copy(parametric.P(tNumbers.min))
-        .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
-        .normalize();
-      seLabel.locationVector = labelPosition;
-      seLabel.showing = tokens[13] === "true";
-      seLabel.exists = tokens[12] === "true";
-      seLabel.name = tokens[11];
-      objMap.set(tokens[11], seLabel);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seParametric);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
 
-      // Create a command group to add the points defining the ellipse and the ellipse to the store
-      // This way a single undo click will undo all (potentially three) operations.
+      //put the parametric in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seParametric.name = propMap.get("objectName") ?? "";
+        seParametric.showing = propMap.get("objectShowing") === "true";
+        seParametric.exists = propMap.get("objectExists") === "true";
+        objMap.set(seParametric.name, seParametric);
+      } else {
+        throw new Error("AddParametricCommand:  Parametric name doesn't exist");
+      }
 
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddParametricCommand: Label Name doesn't exist");
+      }
       return new AddParametricCommand(
-        newSEParametric,
-        calculationParents.map(par => par as SEExpression),
+        seParametric,
+        parametricExpressionParents.map(par => par as SEExpression),
         seLabel
       );
-    } else
-      throw new Error(
-        `AddParametric: at least one parent in ${parentNames} is undefined`
-      );
+    }
+    throw new Error(
+      `AddParametric: 
+      ${parametricXCoordinateExpression}, 
+      ${parametricYCoordinateExpression}, 
+      ${parametricZCoordinateExpression}, 
+      ${parametricMinExpression}, 
+      ${parametricMaxExpression}, 
+      ${parametricMinNumber},
+      ${parametricMaxNumber},
+      ${parametricExpressionParents},
+      or
+      ${parametricCuspParameterValues}
+       is undefined`
+    );
   }
 }

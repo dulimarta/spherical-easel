@@ -1,9 +1,14 @@
 import { UnsignedShort4444Type, Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
-import { parametricVectorAndTValue, UpdateStateType } from "@/types";
+import {
+  NormalVectorAndTValue,
+  ObjectState,
+  ParametricVectorAndTValue
+} from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { colors } from "vuetify/lib";
+import Parametric from "@/plottables/Parametric";
 
 let NODE_COUNT = 0;
 
@@ -81,10 +86,13 @@ export abstract class SENodule {
   /**
    * A method to update the current SENodule on the unit sphere when its parents have changed
    * The first method called is canUpdateNow, that checks to see if all the parents of this object are
-   * not outOfDate. If any are the method returns with out updating, know that the updating method will
+   * not outOfDate. If any are the method returns with out updating, knowing that the updating method will
    * eventually try again because the last method called is updateKids()
    */
-  public abstract update(state: UpdateStateType): void;
+  public abstract update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void;
 
   /**
    * Is the object hit a point at a particular sphere location?
@@ -121,7 +129,10 @@ export abstract class SENodule {
   }
 
   /* Kids of the current SENodule are updated  */
-  public updateKids(state: UpdateStateType): void {
+  public updateKids(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // In order to do a topological sort of the Data Structure (Directed Acyclic Graph), we first
     // query which of the kids of this object are updatable right now and then for those that are updatable
     // we update them. This means that every descendant object is visited only once.
@@ -133,7 +144,10 @@ export abstract class SENodule {
     });
 
     for (let i = 0; i < updatableNowIndexList.length; i++) {
-      this._kids[updatableNowIndexList[i]].update(state);
+      this._kids[updatableNowIndexList[i]].update(
+        objectState,
+        orderedSENoduleList
+      );
     }
     return;
   }
@@ -235,59 +249,59 @@ export abstract class SENodule {
     return this._outOfDate;
   }
 
-  //Hans -  why doesn't this testing for class work?
-  //Should return true only if this is an instance of SEPointOnOneDimensional
-  public abstract isPointOnOneDimensional(): boolean;
-  // This doesn't work
-  // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-  //   return true;
-  // }
-
-  // Only returns true if this is an SEPoint and this has no parents
-  public abstract isFreePoint(): boolean;
-  // This doesn't work
-  // public isFreePoint(): this is SEPoint {
-  //   return this._parents.length == 0;
-  // }
-
-  // Only returns true if this is an SEPoint
-  public abstract isPoint(): boolean;
-  // I wish something like this worked but it doesn't
-  // public isPoint(): this is SEPoint {
-  //   return true;
-  // }
-
+  //Should return true only if this is an instance of SEPointOnOneDimensional over ride as appropriate
+  public isPointOnOneDimensional(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SEPoint and this has no parents or is a point on an object
+  public isFreePoint(): boolean {
+    return false;
+  }
+  // Carefule with over ride, for example, the class SEPoint has isFreePoint return true, but its subclasses should return false
+  public isNonFreePoint(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SEPoint (or a sub class)
+  public isPoint(): boolean {
+    return false;
+  }
   // Only returns true if this is an SENonFreeLine
-  public abstract isNonFreeLine(): boolean;
-
+  public isNonFreeLine(): boolean {
+    return false;
+  }
   // Only returns true if this is an SELabel
-  public abstract isLabel(): boolean;
-  // This doesn't work
-  // public isLabel(): this is SELabel {
-  //   return true;
-  // }
-
+  public isLabel(): boolean {
+    return false;
+  }
   // Only returns true if this is an SEOneDimensional
-  public abstract isOneDimensional(): boolean;
-  // This doesn't work
-  // public isOneDimensional(): this is SEOneDimensional {
-  //   return true;
-  // }
+  public isOneDimensional(): boolean {
+    return false;
+  }
   // Only returns true if this is an Labelable
-  public abstract isLabelable(): boolean;
-
-  // Only returns true if this is an SESegment of length pi
-  public abstract isSegmentOfLengthPi(): boolean;
+  public isLabelable(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SESegment of length pi (or very nearly pi)
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
+  //only returns true if this is an SELine where the points defining it are antipodal or nearly so
+  public isLineWithAntipodalPoints(): boolean {
+    return false;
+  }
 
   public isFreeToMove(): boolean {
-    if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
+    if (
+      this.isFreePoint() ||
+      this.isPointOnOneDimensional() ||
+      this.isLabel() ||
+      this.isSegmentOfLengthPi() ||
+      this.isLineWithAntipodalPoints()
+    )
       return true;
-    if (this.isNonFreeLine()) {
-      // don't let this fall through because if a point has an empty parents array the .every method returns true even for non-free points
+    if (this.isNonFreeLine() || this.isNonFreePoint()) {
+      // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
-    }
-    if (this.isSegmentOfLengthPi()) {
-      return true;
     }
     return this._parents.every(n => n.isFreePoint());
   }
@@ -331,9 +345,23 @@ export abstract class SENodule {
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      this.ref?.glowingDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.glowingDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.glowingDisplay();
+          ptr = ptr.next;
+        }
+      }
     } else {
-      this.ref?.normalDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.normalDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.normalDisplay();
+          ptr = ptr.next;
+        }
+      }
       // TODO: not glowing implies not selected?
       // this.selected = false;
     }
@@ -375,7 +403,7 @@ export abstract class SENodule {
     tMin: number,
     tMax: number,
     PPPrime?: (t: number) => Vector3
-  ): parametricVectorAndTValue {
+  ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
     const d: (t: number) => number = function(t: number): number {
@@ -399,21 +427,36 @@ export abstract class SENodule {
     } else {
       dpp = undefined;
     }
+
     const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
+    if (zeros.length > 0) {
+      // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+      let minTVal: number = zeros[0]; // The t value that minimizes d
+      zeros.forEach(tVal => {
+        if (d(tVal) < d(minTVal)) {
+          minTVal = tVal;
+        }
+      });
+      const returnPair: ParametricVectorAndTValue = {
+        vector: P(minTVal),
+        tVal: minTVal
+      };
 
-    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
-    let minTVal: number = zeros[0]; // The t value that minimizes d
-    zeros.forEach(tVal => {
-      if (d(tVal) < d(minTVal)) {
-        minTVal = tVal;
-      }
-    });
-    const returnPair: parametricVectorAndTValue = {
-      vector: P(minTVal),
-      tVal: minTVal
-    };
-
-    return returnPair;
+      return returnPair;
+    } else {
+      const d1 = d(tMin);
+      const d2 = d(tMax);
+      if (d1 < d2) {
+        return {
+          vector: P(tMin),
+          tVal: d1
+        };
+      } else
+        return {
+          vector: P(tMin),
+          tVal: d2
+        };
+    }
   }
 
   /**
@@ -465,7 +508,7 @@ export abstract class SENodule {
     tMax: number,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
@@ -491,27 +534,31 @@ export abstract class SENodule {
       dp
     );
 
-    const returnVectors: Vector3[] = [];
-    zeros.forEach(tVal => {
-      const temp = new Vector3();
-      // console.log(
-      //   "tval and pprime",
-      //   tVal,
-      //   temp.copy(PPrime(tVal).normalize()).x,
-      //   temp.copy(PPrime(tVal).normalize()).y,
-      //   temp.copy(PPrime(tVal).normalize()).z
-      // );
-      temp.copy(PPrime(tVal));
-      // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
-      // also check that that vec is perpendicular to the given unitVector
-      // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
-      //   console.log("through point in SENodule");
-      // } else {
-      //   console.log("not through point in SENodule");
-      // }
-      returnVectors.push(temp);
-      // }
-    });
+    // console.debug("Zeros for perpendicular lines", zeros);
+
+    const returnVectors: Array<NormalVectorAndTValue> = zeros
+      .map(tVal => {
+        const tempNormal = new Vector3();
+        tempNormal.copy(PPrime(tVal));
+        tempNormal.normalize();
+        // const tempLocation = new Vector3();
+        // tempLocation.copy(P(tVal));
+        // console.debug("At t=", tVal, "normal is", temp.toFixed(3));
+        // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
+        // also check that that vec is perpendicular to the given unitVector
+        // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
+        //   console.log("through point in SENodule");
+        // } else {
+        //   console.log("not through point in SENodule");
+        // }
+        return {
+          normal: tempNormal,
+          tVal
+        };
+
+        // }
+      })
+      .filter((pair: NormalVectorAndTValue) => !pair.normal.isZero());
     // remove duplicates from the list
     // const uniqueNormals: Vector3[] = [];
     // returnVectors.forEach(vec => {
@@ -535,8 +582,8 @@ export abstract class SENodule {
   }
 
   /**
-   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
-   * pass though unitVec
+   * Find all the unit normal vector lines that are tangent to the curve P(t) where tMin<= t <= tMax
+   * using subdivisions and Newton's method that pass though unitVec
    * @param PPPrime P''(t) is the parameterization of second derivative of P(t) (NOT NECESSARILY UNIT)
    * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
    * @param unitVec a unit vector
@@ -558,8 +605,8 @@ export abstract class SENodule {
     // This means we want the dot product to be zero
     const d: (t: number) => number = function(t: number): number {
       const tmpVec = new Vector3();
-      tmpVec.crossVectors(P(t), PPrime(t));
-      return tmpVec.dot(unitVec);
+      tmpVec.crossVectors(P(t), unitVec);
+      return tmpVec.dot(PPrime(t));
     };
     // use (P(t)xP''(t)).unitVect as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
@@ -584,7 +631,8 @@ export abstract class SENodule {
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
       const temp = new Vector3();
-      temp.copy(P(tVal).cross(PPrime(tVal)));
+
+      temp.copy(P(tVal).cross(unitVec));
       returnVectors.push(temp.normalize());
     });
     return returnVectors;
@@ -621,6 +669,8 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      if (tVal < tMin || tVal > tMax)
+        console.debug("Evaluating at t", tVal, "out of range", tMin, tMax);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
         // make sure that tVal is not on the avoid list
         if (
@@ -647,11 +697,7 @@ export abstract class SENodule {
 
       lastTVal = tVal;
     }
-    // if (zeros.length > 0) {
-    //   console.log("number of zeros", zeros.length);
-    // }
     if (signChanges.length === 0 && zeros.length === 0) {
-      // console.log("No sign changes; No zeros");
       return [];
     }
 
@@ -678,9 +724,9 @@ export abstract class SENodule {
           } else {
             console.log(
               "Newton's method failed to converge in interval",
-              zeroTVal,
               interval[0],
-              interval[1]
+              interval[1],
+              zeroTVal
             );
           }
         } else {

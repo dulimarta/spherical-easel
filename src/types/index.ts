@@ -54,9 +54,9 @@ export interface AppState {
   defaultStyleStates: StyleOptions[];
   initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
   defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  oldStyleSelections: SENodule[];
+  oldSelections: SENodule[];
   styleSavedFromPanel: StyleEditPanels;
-  initialBackStyleContrast: number;
+  // initialBackStyleContrast: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
@@ -73,6 +73,125 @@ export interface ToolButtonType {
   toolUseMessage: string;
   toolTipMessage: string;
 }
+export type SavedNames =
+  | "objectName"
+  | "objectExists"
+  | "objectShowing"
+  | "objectFrontStyle"
+  | "objectBackStyle"
+  | "labelName"
+  | "labelStyle"
+  | "labelVector"
+  | "labelShowing"
+  | "labelExists"
+  | "pointVector"
+  | "antipodalPointsParentName"
+  | "angleMarkerMode"
+  | "angleMarkerFirstParentName"
+  | "angleMarkerSecondParentName"
+  | "angleMarkerThirdParentName"
+  | "circleRadius"
+  | "circleCenterPointName"
+  | "circlePointOnCircleName"
+  | "ellipseFocus1Name"
+  | "ellipseFocus2Name"
+  | "ellipsePointOnEllipseName"
+  | "lineNormalVector"
+  | "lineStartPointName"
+  | "lineEndPointName"
+  | "segmentNormalVector"
+  | "segmentArcLength"
+  | "segmentStartPointName"
+  | "segmentEndPointName"
+  | "intersectionPointParent1Name"
+  | "intersectionPointParent2Name"
+  | "intersectionPointUserCreated"
+  | "intersectionPointOrder"
+  | "intersectionPointVector"
+  | "pointOnOneOrTwoDimensionalParentName"
+  | "pointOnOneOrTwoDimensionalVector"
+  | "parametricXCoordinateExpression"
+  | "parametricYCoordinateExpression"
+  | "parametricZCoordinateExpression"
+  | "parametricMinExpression"
+  | "parametricMaxExpression"
+  | "parametricMinNumber"
+  | "parametricMaxNumber"
+  | "parametricCurveClosed"
+  | "parametricExpressionParentsNames"
+  | "parametricCuspParameterValues"
+  | "parametricEndPointParametricParentName"
+  | "parametricEndPointseStartEndPointName"
+  | "parametricEndPointseStartEndPointLocationVector"
+  | "parametricEndPointseStartEndPointShowing"
+  | "parametricEndPointseStartEndPointExists"
+  | "parametricEndPointseStartEndPointFrontStyle"
+  | "parametricEndPointseStartEndPointBackStyle"
+  | "parametricEndPointseEndEndPointName"
+  | "parametricEndPointseEndEndPointLocationVector"
+  | "parametricEndPointseEndEndPointShowing"
+  | "parametricEndPointseEndEndPointExists"
+  | "parametricEndPointseEndEndPointFrontStyle"
+  | "parametricEndPointseEndEndPointBackStyle"
+  | "parametricEndPointseTracePointName"
+  | "parametricEndPointseTracePointLocationVector"
+  | "parametricEndPointseTracePointShowing"
+  | "parametricEndPointseTracePointExists"
+  | "parametricEndPointseTracePointFrontStyle"
+  | "parametricEndPointseTracePointBackStyle"
+  | "parametricEndPointseStartLabelName"
+  | "parametricEndPointseStartLabelLocationVector"
+  | "parametricEndPointseStartLabelShowing"
+  | "parametricEndPointseStartLabelExists"
+  | "parametricEndPointseStartLabelLabelStyle"
+  | "parametricEndPointseEndLabelName"
+  | "parametricEndPointseEndLabelLocationVector"
+  | "parametricEndPointseEndLabelShowing"
+  | "parametricEndPointseEndLabelExists"
+  | "parametricEndPointseEndLabelLabelStyle"
+  | "parametricEndPointseTraceLabelName"
+  | "parametricEndPointseTraceLabelLocationVector"
+  | "parametricEndPointseTraceLabelShowing"
+  | "parametricEndPointseTraceLabelExists"
+  | "parametricEndPointseTraceLabelLabelStyle"
+  | "seNSectLineStartSEPointName"
+  | "seNSectLineEndSEPointLocationVector"
+  | "seNSectLineNormalVector"
+  | "seNSectLineParentAngleName"
+  | "seNSectLineIndex"
+  | "seNSectLineN"
+  | "seNSectPointVector"
+  | "seNSectPointParentSegmentName"
+  | "seNSectPointIndex"
+  | "seNSectPointN"
+  | "polarLineParentPointName"
+  | "polarLineStartSEPointLocationVector"
+  | "polarLineEndSEPointLocationVector"
+  | "polarPointVector"
+  | "polarPointParentName"
+  | "polarPointIndex"
+  | "perpendicularLineThruPointParentPointName"
+  | "perpendicularLineThruPointEndSEPointLocationVector"
+  | "perpendicularLineThruPointNormalVector"
+  | "perpendicularLineThruPointParentOneDimensionalName"
+  | "perpendicularLineThruPointIndex"
+  | "tangentLineThruPointParentPointName"
+  | "tangentLineThruPointEndSEPointLocationVector"
+  | "tangentLineThruPointNormalVector"
+  | "tangentLineThruPointParentOneDimensionalName"
+  | "tangentLineThruPointIndex"
+  | "polygonAngleMarkerParentsNames"
+  | "polygonSegmentParentsNames"
+  | "polygonSegmentFlippedList"
+  | "lengthMeasurementSegmentParentName"
+  | "calculationExpressionString"
+  | "calculationParentsNames"
+  | "locationMeasurementParentPointName"
+  | "locationMeasurementSelector"
+  | "sliderMeasurementMin"
+  | "sliderMeasurementMax"
+  | "sliderMeasurementStep"
+  | "sliderMeasurementValue";
 
 export type ActionMode =
   | "angle"
@@ -90,19 +209,46 @@ export type ActionMode =
   | "tangent"
   | "point"
   | "pointDistance"
-  | "pointOnOneDim"
+  | "pointOnObject"
   | "polar"
   | "rotate"
   | "segment"
   | "segmentLength"
   | "select"
-  | "slider"
   | "toggleLabelDisplay"
   | "zoomFit"
   | "zoomIn"
   | "zoomOut"
   | "measureTriangle"
-  | "measurePolygon";
+  | "measurePolygon"
+  | "midpoint"
+  | "nSectPoint"
+  | "angleBisector"
+  | "nSectLine";
+
+export type IconNames =
+  | ActionMode
+  | "slider"
+  | "toolsTab"
+  | "objectsTab"
+  | "constructionsTab"
+  | "calculationObject"
+  | "measurementObject"
+  | "stylePanel"
+  | "downloadConstruction"
+  | "shareConstruction"
+  | "deleteConstruction"
+  | "cycleNodeValueDisplayMode"
+  | "showNode"
+  | "hideNode"
+  | "showNodeLabel"
+  | "hideNodeLabel"
+  | "deleteNode"
+  | "appSettings"
+  | "clearConstruction"
+  | "undo"
+  | "redo";
+
 /**
  * Intersection Vector3 and if that intersection exists
  */
@@ -123,8 +269,12 @@ export interface SEIntersectionReturnType {
 /**
  * For a parametric equation P(t), this is the pair P(t), t
  */
-export type parametricVectorAndTValue = {
+export type ParametricVectorAndTValue = {
   vector: Vector3;
+  tVal: number;
+};
+export type NormalVectorAndTValue = {
+  normal: Vector3;
   tVal: number;
 };
 
@@ -139,13 +289,13 @@ export interface OneDimensional {
    * Return the normal vector(s) to the plane containing a line that is perpendicular to this one dimensional through the
    * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
    * use the oldNormal to help compute a new normal (which is returned)
-   * @param sePoint A point on the line normal to this parametric
+   * @param sePointVector A point on the line normal to this parametric
    */
   getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Vector3[];
+  ): Array<NormalVectorAndTValue>;
 }
 
 export interface Labelable {
@@ -248,15 +398,6 @@ export type hslaColorType = {
   l: number;
   a: number;
 };
-/**
- * There are three modes for updating. The DisplayOnly doesn't record information as the update(mode: , stateArray:[]) method is
- * executed
- */
-export enum UpdateMode {
-  DisplayOnly, // Record nothing in the state Array
-  RecordStateForDelete, // All visited objects must be put into the stateArray
-  RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
-}
 
 /**
  * There are three modes for displaying a value of a measurement.
@@ -275,162 +416,42 @@ export enum LabelDisplayMode {
   NameAndValue // display the name and value (if any)
 }
 
-export interface UpdateStateType {
-  mode: UpdateMode;
-  stateArray: ObjectState[];
-}
+/*******************************************UPDATE TYPES **********************/
 
-/**
- * Record the information necessary to restore/undo a move or delete of the object
- */
-export type ObjectState =
-  | CircleState
-  | EllipseState
-  | LineState
-  | SegmentState
-  | PointState
-  | LabelState
-  | AngleMarkerState
-  | PerpendicularLineThruPointState
-  | TangentLineThruPointState
-  | ExpressionState
-  | ParametricState
-  | PolygonState;
+export type ObjectNames =
+  | "angleMarker"
+  | "antipodalPoint"
+  | "calculation"
+  | "circle"
+  | "ellipse"
+  | "intersectionPoint"
+  | "label"
+  | "line"
+  | "nSectLine"
+  | "nSectPoint"
+  | "parametric"
+  | "parametricEndPoint"
+  | "parametricTracePoint"
+  | "perpendicularLineThruPoint"
+  | "point"
+  | "pointCoordinate"
+  | "pointDistance"
+  | "pointOnOneOrTwoDimensional"
+  | "polarLine"
+  | "polarPoint"
+  | "polygon"
+  | "segment"
+  | "segmentLength"
+  | "slider"
+  | "tangentLineThruPoint";
 
-export interface PolygonState {
-  kind: "polygon";
-  object: SEPolygon;
-}
-
-export function isPolygonState(entry: ObjectState): entry is PolygonState {
-  return entry.kind === "polygon";
-}
-
-export interface PerpendicularLineThruPointState {
-  kind: "perpendicularLineThruPoint";
-  object: SEPerpendicularLineThruPoint;
-}
-
-export function isPerpendicularLineThruPointState(
-  entry: ObjectState
-): entry is PerpendicularLineThruPointState {
-  return entry.kind === "perpendicularLineThruPoint";
-}
-
-export interface TangentLineThruPointState {
-  kind: "tangentLineThruPoint";
-  object: SETangentLineThruPoint;
-}
-
-export function isTangentLineThruPointState(
-  entry: ObjectState
-): entry is TangentLineThruPointState {
-  return entry.kind === "tangentLineThruPoint";
-}
-
-export interface AngleMarkerState {
-  kind: "angleMarker";
-  object: SEAngleMarker;
-  // vertexVectorX: number;
-  // vertexVectorY: number;
-  // vertexVectorZ: number;
-  // startVectorX: number;
-  // startVectorY: number;
-  // startVectorZ: number;
-  // endVectorX: number;
-  // endVectorY: number;
-  // endVectorZ: number;
-}
-export function isAngleMarkerState(
-  entry: ObjectState
-): entry is AngleMarkerState {
-  return entry.kind === "angleMarker";
-}
-
-export interface LineState {
-  kind: "line";
-  object: SELine;
-  normalVectorX: number;
-  normalVectorY: number;
-  normalVectorZ: number;
-}
-export function isLineState(entry: ObjectState): entry is LineState {
-  return entry.kind === "line";
-}
-export interface SegmentState {
-  kind: "segment";
-  object: SESegment;
-  normalVectorX: number;
-  normalVectorY: number;
-  normalVectorZ: number;
-  arcLength: number;
-}
-export function isSegmentState(entry: ObjectState): entry is SegmentState {
-  return entry.kind === "segment";
-}
-export interface PointState {
-  kind: "point";
-  object: SEPoint;
-  locationVectorX: number;
-  locationVectorY: number;
-  locationVectorZ: number;
-}
-export function isPointState(entry: ObjectState): entry is PointState {
-  return entry.kind === "point";
-}
-export interface LabelState {
-  kind: "label";
-  object: SELabel;
-  locationVectorX: number;
-  locationVectorY: number;
-  locationVectorZ: number;
-}
-export function isLabelState(entry: ObjectState): entry is LabelState {
-  return entry.kind === "label";
-}
-
-export interface CircleState {
-  // No fields are needed for moving circles because they are completely determined by their point parents
-  kind: "circle";
-  // Fields needed for undoing delete
-  object: SECircle;
-}
-export function isCircleState(entry: ObjectState): entry is CircleState {
-  return entry.kind === "circle";
-}
-
-export interface EllipseState {
-  // No fields are needed for moving ellipses because they are completely determined by their point parents
-  kind: "ellipse";
-  // Fields needed for undoing delete
-  object: SEEllipse;
-}
-export function isEllipseState(entry: ObjectState): entry is EllipseState {
-  return entry.kind === "ellipse";
-}
-
-export interface ParametricState {
-  // No fields are needed for moving ellipses because they are completely determined by their point parents
-  kind: "parametric";
-  // Fields needed for undoing delete
-  object: SEParametric;
-}
-export function isParametricState(
-  entry: ObjectState
-): entry is ParametricState {
-  return entry.kind === "parametric";
-}
-
-export interface ExpressionState {
-  // No fields are needed for moving because non-angle marker expressions are not movable
-  kind: "expression";
-  // Fields needed for undoing delete
-  object: SEExpression;
-}
-export function isExpressionState(
-  entry: ObjectState
-): entry is ExpressionState {
-  return entry.kind === "expression";
+export interface ObjectState {
+  kind: ObjectNames;
+  object: SENodule;
+  normalVector?: Vector3;
+  arcLength?: number;
+  locationVector?: Vector3;
+  sliderValue?: number;
 }
 
 export type ConstructionScript = Array<string | Array<string>>;

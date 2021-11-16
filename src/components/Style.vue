@@ -68,7 +68,7 @@
         i18n-title-line="style.selectAnObject"
         i18n-subtitle-line="style.closeOrSelect"
         i18n-list-title="style.toSelectObjects"
-        :i18n-list-items="['style.selectionDirection1','style.selectionDirection2','style.selectionDirection3','style.selectionDirection4']"
+        :i18n-list-items="buttonListItems()"
         i18n-button-label="style.closeStylingPanel"
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')">
@@ -96,9 +96,10 @@
 
     </div>
     <div v-else
+      v-on:click="$emit('toggle-style-panel')"
       id="mini-icons"
       key="partial">
-      <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette
+      <v-icon>$vuetify.icons.value.stylePanel
       </v-icon>
     </div>
   </transition>
@@ -155,6 +156,25 @@ export default class Style extends Vue {
     );
   }
 
+  buttonListItems(): string[] {
+    if (navigator.userAgent.indexOf("Mac OS X") === -1) {
+      // the user is on a PC
+      return [
+        "style.selectionDirection1",
+        "style.selectionDirection2",
+        "style.selectionDirection3",
+        "style.selectionDirection4PC"
+      ];
+    } else {
+      // the user is on a Mac
+      return [
+        "style.selectionDirection1",
+        "style.selectionDirection2",
+        "style.selectionDirection3",
+        "style.selectionDirection4Mac"
+      ];
+    }
+  }
   @Watch("minified")
   closeAllPanels(): void {
     this.activePanel = undefined;

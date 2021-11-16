@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 
 export class SEAntipodalPoint extends SEPoint {
@@ -33,13 +33,17 @@ export class SEAntipodalPoint extends SEPoint {
     );
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this._antipodalPointParent.exists;
+
     if (this._exists) {
       // Update the current location with the opposite of the antipodal parent vector location
       this._locationVector
@@ -54,21 +58,24 @@ export class SEAntipodalPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    // The location of this antipodal point is determined by the parent point so no need to
-    // store anything for moving undo Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const pointState: PointState = {
-        kind: "point",
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z,
-        object: this
-      };
-      state.stateArray.push(pointState);
+    // These antipodal point are completely determined by their line/segment/point parents and an update on the parents
+    // will cause this antipodal point to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Antipodal point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "antipodalPoint", object: this });
     }
 
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
+  }
+  public isNonFreePoint(): boolean {
+    return true;
   }
   public isFreePoint(): boolean {
     return false;

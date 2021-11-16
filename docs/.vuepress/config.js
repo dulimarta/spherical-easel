@@ -1,3 +1,7 @@
+const path = require("path","@vuepress/utils");
+const { convertTypeAcquisitionFromJson } = require("typescript");
+const projectRoot = process.cwd();
+const alias = path.resolve(projectRoot, 'src');
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "dist/docs",
@@ -24,6 +28,7 @@ module.exports = {
     // references to the local directory.
     ["script", { src: "/tikzjax.js" }]
   ],
+
   // This section is needed so that the plugin containers work (i.e. the :::tool-title etc in the markdown)
   markdown: {
     extendMarkdown: md => {
@@ -115,7 +120,37 @@ module.exports = {
         after: "</script>",
         defaultTitle: ""
       }
-    ]
+    ],
+    [
+     '@vuepress/register-components',
+      {
+        components: [
+          {
+            name: 'IconBase',
+            path: '/src/components/IconBase.vue'
+          }
+        ]
+      }
+    ],
+    // [
+    //   '@vuepress/register-components',
+    //    {
+    //      components: [
+    //        {
+    //          name: 'pc-vs-mac-shortcuts',
+    //          path: 'pc-vs-mac-shortcuts.vue'
+    //        }
+    //      ]
+    //    }
+    //  ],
+    ["vuepress-plugin-typescript", {
+      tsLoaderOptions: {
+        transpileOnly: true,
+        compilerOptions: {
+          target: "ES2019"
+        }
+      }
+    }]
     // [
     //   // This plug in is not used unless we use a custom theme
     //   //  see https://vuepress.vuejs.org/plugin/official/plugin-last-updated.html
@@ -156,9 +191,26 @@ module.exports = {
   themeConfig: {
     //enable smooth scrolling so keyboard scrolling won't jump
     smoothScroll: true,
-
     //All locales use this logo, appears in the upper left on each page
     logo: "/SphericalEaselLogo.png",
+    // Settings to enable the user to edit this pages in GitLab
+    // full GitLab url. TODO: This doesn't work the link in the nav doesn't show
+    //repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
+    //repo: 'https://github.com/dulimarta/spherical-easel', //assumes github see https://vuepress.vuejs.org/theme/default-theme-config.html#git-repository-and-edit-links
+    repo: '/dulimarta/spherical-easel',
+    // Customizing the header label
+    // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
+    repoLabel: "Contribute!",
+    // if your docs are in a different repo from your main project:
+    docsRepo: '/dulimarta/spherical-easel',
+    // if your docs are not at the root of the repo:
+    docsDir: '/docs',
+    // if your docs are in a specific branch (defaults to 'master'):
+    docsBranch: 'main',
+    // Invite user to edit these pages via GitLab(?), defaults to false, set to true to enable
+    editLinks: true,
+    // text for the edit-on-gitlab link
+    editLinkText: "Edit this page on GitHub",
 
     locales: {
       //The US-English theme
@@ -172,17 +224,7 @@ module.exports = {
         label: "English",
         // Aria Label for locale in the dropdown (this is an assistive technology item)
         ariaLabel: "Languages",
-        // Settings to enable the user to edit this pages in GitLab
-        // full GitLab url. TODO: This doesn't work the link in the nav doesn't show
-        repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
-        // Customizing the header label
-        // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
-        repoLabel: "Contribute!",
-        // Invite user to edit these pages via GitLab(?), defaults to false, set to true to enable
-        // TODO: This doesn't enable the "edit me" links on each page
-        editLinks: true,
-        // text for the edit-on-gitlab link
-        editLinkText: "Help us by editing this page on GitLab",
+
         //Enable searching on the the documentation using the third party aloglia https://www.algolia.com/
         //   algolia docsearch options for current locale THIS NEEDS TO BE CONFIGURED TO WORK
         //   algolia: {
@@ -367,5 +409,10 @@ module.exports = {
         searchMaxSuggestions: 10
       }
     }
+  },
+  configureWebpack(config) {
+    // Enable dev tool to allow debugging of setup issue
+    config.devtool = false;
+    config.resolve.alias["@"] - alias;
   }
 };

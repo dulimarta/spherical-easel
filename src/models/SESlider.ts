@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 
 const emptySet = new Set<string>();
@@ -36,7 +36,8 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   }
   set value(v: number) {
     this.current = v;
-    this.updateKids({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.markKidsOutOfDate();
+    this.update();
   }
 
   public get noduleDescription(): string {
@@ -54,19 +55,30 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
 
   public customStyles = (): Set<string> => emptySet;
 
-  public update(state: UpdateStateType): void {
-    // This object and any of its children has no presence on the sphere canvas, so update for move should
-    if (state.mode === UpdateMode.RecordStateForMove) return;
-    // This object is completely determined by its parents, so only record the object in state array
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const expressionState: ExpressionState = {
-        kind: "expression",
-        object: this
-      };
-      state.stateArray.push(expressionState);
-    }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
-    this.updateKids(state);
+
+    // SESliders always exist they are like free points, they have kids but no parents.
+    //  So we store the value of the slider (because the min, max and step can't change)
+    if (objectState && orderedSENoduleList) {
+      orderedSENoduleList.push(this.id);
+      if (objectState.has(this.id)) {
+        console.log(
+          `Slider with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      objectState.set(this.id, {
+        kind: "slider",
+        object: this,
+        sliderValue: this.value
+      });
+    }
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 }

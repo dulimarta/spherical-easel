@@ -1,5 +1,6 @@
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
+
 // async function is also supported, too
 export default ({
   Vue, // the version of Vue being used in the VuePress app
@@ -8,6 +9,7 @@ export default ({
   //   siteData, // site metadata
   //   isServer // is this enhancement applied in server-rendering or client
 }) => {
+  //Vue.component('icon-base', IconBase) // add it to vue
   Vue.use(Vuetify);
   options.vuetify = new Vuetify({});
 };

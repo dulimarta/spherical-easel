@@ -69,6 +69,7 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
+import { FirebaseStorage } from "@firebase/storage-types";
 import { run } from "@/commands/CommandInterpreter";
 import {
   ConstructionScript,
@@ -85,6 +86,7 @@ import { Matrix4 } from "three";
 import { Watch } from "vue-property-decorator";
 import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
+import axios, { AxiosResponse } from "axios";
 const SE = namespace("se");
 
 @Component({
@@ -93,6 +95,7 @@ const SE = namespace("se");
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+  readonly $appStorage!: FirebaseStorage;
 
   @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
@@ -147,9 +150,28 @@ export default class ConstructionLoader extends Vue {
     targetArr: Array<SphericalConstruction>
   ): void {
     targetArr.splice(0);
-    qs.forEach((qd: QueryDocumentSnapshot) => {
+    qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
-      const parsedScript = JSON.parse(doc.script) as ConstructionScript;
+      let parsedScript: ConstructionScript;
+      if (doc.script.startsWith("https:")) {
+        const scriptText = await this.$appStorage
+          .refFromURL(doc.script)
+          .getDownloadURL()
+          .then((url: string) => axios.get(url))
+          .then((r: AxiosResponse) => r.data);
+
+        parsedScript = scriptText as ConstructionScript;
+      } else {
+        parsedScript = JSON.parse(doc.script) as ConstructionScript;
+      }
+      let svgData: string | undefined;
+      if (doc.preview?.startsWith("https:")) {
+        svgData = await this.$appStorage
+          .refFromURL(doc.preview)
+          .getDownloadURL()
+          .then((url: string) => axios.get(url))
+          .then((r: AxiosResponse) => r.data);
+      } else svgData = doc.preview;
 
       if (parsedScript.length > 0) {
         // we care only for non-empty script
@@ -174,7 +196,7 @@ export default class ConstructionLoader extends Vue {
           dateCreated: doc.dateCreated,
           description: doc.description,
           sphereRotationMatrix,
-          previewData: doc.preview ?? ""
+          previewData: svgData ?? ""
         });
       }
     });
@@ -229,6 +251,12 @@ export default class ConstructionLoader extends Vue {
     EventBus.fire("construction-loaded", {});
     // update all
     SEStore.updateDisplay();
+
+    // set the mode to move because chances are high that the user wants this mode after loading.
+    SEStore.setActionMode({
+      id: "move",
+      name: "MoveDisplayedName"
+    });
   }
 
   doShareConstruction(event: { docId: string }): void {

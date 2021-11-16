@@ -9,9 +9,11 @@ import { SENodule } from "../models/SENodule";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
 import { namespace } from "vuex-class";
+import EventBus from "@/eventHandlers/EventBus";
 const SE = namespace("se");
 @Component({ components: { FadeInCard } })
 export default class AdvancedStyle extends Vue {
+  // You are not allow to style labels directly so remove them from the selection and warn the user
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 

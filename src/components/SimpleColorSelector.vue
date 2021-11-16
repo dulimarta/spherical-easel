@@ -1,9 +1,13 @@
 <template>
   <div>
     <div>
-      <span class="text-subtitle-2">{{ $t(titleKey)+" " }}</span>
-      <v-icon :color="internalColor.hexa"
+      <span class="text-subtitle-2"
+        :style="{'color' : conflict?'red':''}">{{ $t(titleKey)+" " }}</span>
+      <v-icon :color="conflict !== 'red' ? internalColor.hexa : `#ffffff`"
         small>mdi-checkbox-blank</v-icon>
+      <span v-if="numSelected > 1"
+        class="text-subtitle-2"
+        style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     </div>
 
     <!-- Show no fill checkbox, color code inputs, Undo and Reset to Defaults buttons -->
@@ -23,10 +27,11 @@
                   color="indigo darken-3"
                   hide-details
                   x-small
-                  dense></v-checkbox>
+                  dense
+                  @click="changeEvent"></v-checkbox>
               </span>
             </template>
-            {{$t('style.noFillLabelTip')}}
+            {{isOnLabelPanel? $t('style.noFillLabelTip'): $t('style.noFillTip')}}
           </v-tooltip>
         </v-col>
         <v-spacer />
@@ -34,6 +39,7 @@
           class="ma-0 pl-0 pr-0 pt-2 pb-2">
           <HintButton type="colorInput"
             @click="toggleColorInputs"
+            :disabled="noData"
             i18n-label="style.showColorInputs"
             i18n-tooltip="style.showColorInputsToolTip">
           </HintButton>
@@ -42,17 +48,19 @@
       </v-row>
     </v-container>
     <!-- The color picker -->
-    <v-color-picker :disabled="noData"
-      hide-sliders
-      hide-canvas
-      show-swatches
-      :hide-inputs="!showColorInputs"
-      :swatches-max-height="100"
-      :swatches="colorSwatches"
-      v-model="internalColor"
-      mode="hsla"
-      id="colorPicker">
-    </v-color-picker>
+    <div @click="changeEvent">
+      <v-color-picker :disabled="noData"
+        hide-sliders
+        hide-canvas
+        show-swatches
+        :hide-inputs="!showColorInputs"
+        :swatches-max-height="100"
+        :swatches="colorSwatches"
+        v-model="internalColor"
+        mode="hsla"
+        id="colorPicker">
+      </v-color-picker>
+    </div>
   </div>
 </template>
 
@@ -73,9 +81,11 @@ const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class SimpleColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
+  @Prop() conflict!: boolean;
   // external representation: hsla in CSS
   @PropSync("data") hslaColor!: string;
   @Prop({ required: true }) readonly styleName!: string;
+  @Prop() readonly numSelected!: number;
 
   // Internal representation is an object with multiple color representations
   internalColor: any = {};
@@ -85,6 +95,10 @@ export default class SimpleColorSelector extends Vue {
   private noData = false; // no data means noFill or noStroke
   private preNoColor: string = NO_HSLA_DATA;
 
+  private isOnLabelPanel = false;
+
+  // private boxSampleColor: string = "";
+
   // For TwoJS
   // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
   private showColorInputs = false;
@@ -93,21 +107,26 @@ export default class SimpleColorSelector extends Vue {
   private noDataStr = "";
   private noDataUILabel = i18n.t("style.noFill");
 
+  changeEvent(): void {
+    // console.log("emit!");
+    this.$emit("resetColor");
+  }
   // Vue component life cycle hook
   mounted(): void {
-    if (this.hslaColor) {
-      const parts = this.hslaColor
-        .trim()
-        .replace(/hsla *\(/, "")
-        .replace(")", "")
-        .split(",");
-      this.internalColor.hsla = {
-        h: Number(parts[0]),
-        s: Number(parts[1].replace("%", "")) / 100,
-        l: Number(parts[2].replace("%", "")) / 100,
-        a: Number(parts[3])
-      };
+    // console.log("mounting!", this.hslaColor);
+    if (this.hslaColor !== undefined && this.hslaColor !== null) {
+      this.calculateInternalColorFrom(this.hslaColor);
+      // set the noData flag
+      if (
+        this.internalColor.hsla.h === 0 &&
+        this.internalColor.hsla.s === 0 &&
+        this.internalColor.hsla.l === 0 &&
+        this.internalColor.hsla.a === 0
+      ) {
+        this.noData = true;
+      }
     }
+    // this.boxSampleColor = this.internalColor.hexa;
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
     const propName = this.styleName.replace("Color", "");
@@ -119,12 +138,16 @@ export default class SimpleColorSelector extends Vue {
       this.styleName.search(re) === -1
         ? i18n.t("style.noStroke")
         : i18n.t("style.noFill"); // the noStroke/noFill option
+
+    var re2 = /label/gi;
+    this.isOnLabelPanel = this.titleKey.search(re2) !== -1;
     //this.noDataUILabel = `No ${inTitleCase}`;
     // console.log("style name", this.styleName);
     // console.log("noStrData", this.noDataStr);
   }
 
   beforeUpdate(): void {
+    // console.log("before update Simple color selector");
     const col = this.internalColor.hsla;
     //   // console.debug("Color changed to", col);
     const hue = col.h.toFixed(0);
@@ -135,22 +158,83 @@ export default class SimpleColorSelector extends Vue {
   }
 
   toggleColorInputs(): void {
-    if (!this.noData) {
-      this.showColorInputs = !this.showColorInputs;
+    // if (!this.noData) {
+    this.showColorInputs = !this.showColorInputs;
+    // } else {
+    //   this.showColorInputs = false;
+    // }
+  }
+
+  convertColorToRGBAString(colorObject: hslaColorType): string {
+    // THANK YOU INTERNET!
+    const hue = colorObject.h;
+    const sat = colorObject.s * 100;
+    const lum = colorObject.l;
+    const a = (sat * Math.min(lum, 1 - lum)) / 100;
+    const f = (n: number): string => {
+      const k = (n + hue / 30) % 12;
+      const color = lum - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color)
+        .toString(16)
+        .padStart(2, "00");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  @Watch("hslaColor")
+  calculateInternalColorFrom(hslaString: string): void {
+    // console.debug("HSLA string changed", hslaString);
+    const parts = hslaString
+      .trim()
+      .replace(/hsla *\(/, "")
+      .replace(")", "")
+      .split(",");
+    this.internalColor.hsla = {
+      h: Number(parts[0]),
+      s: Number(parts[1].replace("%", "")) / 100,
+      l: Number(parts[2].replace("%", "")) / 100,
+      a: Number(parts[3])
+    };
+
+    if (this.noData) {
+      this.internalColor.hexa = this.convertColorToRGBAString({
+        h: 0,
+        s: 1,
+        l: 1,
+        a: 0
+      });
     } else {
-      this.showColorInputs = false;
+      this.internalColor.hexa = this.convertColorToRGBAString(
+        this.internalColor.hsla
+      );
     }
   }
 
   @Watch("noData")
   setNoData(): void {
+    // console.debug(
+    //   "Saved HSLA",
+    //   this.preNoColor,
+    //   "current HSLA",
+    //   this.hslaColor
+    // );
     if (this.noData) {
-      this.preNoColor = this.hslaColor;
+      if (
+        this.internalColor.hsla.h !== 0 ||
+        this.internalColor.hsla.s !== 0 ||
+        this.internalColor.hsla.l !== 0 ||
+        this.internalColor.hsla.a !== 0
+      ) {
+        this.preNoColor = this.hslaColor;
+      }
+      //this.preNoColor = this.hslaColor;
       this.hslaColor = NO_HSLA_DATA;
       this.showColorInputs = false;
+      this.colorSwatches = SETTINGS.style.greyedOutSwatches;
     } else {
       this.hslaColor = this.preNoColor;
-      this.showColorInputs = true;
+      this.colorSwatches = SETTINGS.style.swatches;
+      // this.showColorInputs = true;
       //   // this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }
     // If this color selector is on the label panel, then all changes are directed at the label(s).

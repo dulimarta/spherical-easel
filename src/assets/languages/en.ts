@@ -50,6 +50,27 @@ export default {
     CreatePolarToolUseMessage:
       "Select a location to create a point (if necessary) and its polar line or select a line segment or line to create both polar points",
 
+    CreateMidpointDisplayedName: "Midpoint<br>&nbsp;",
+    CreateMidpointToolTipMessage: "Create the midpoint of a line segment.",
+    CreateMidpointToolUseMessage:
+      "Select a line segment to create its midpoint.",
+
+    CreateAngleBisectorDisplayedName: "Angle<br>Bisector",
+    CreateAngleBisectorToolTipMessage: "Create the angle bisector of an angle.",
+    CreateAngleBisectorToolUseMessage:
+      "Select an angle to create its bisector.",
+
+    CreateNSectAngleDisplayedName: "N-Sect<br>Angle",
+    CreateNSectAngleToolTipMessage: "Divide an angle into N equal pieces.",
+    CreateNSectAngleToolUseMessage:
+      "Use a number key to select a number then select an angle to divide into that many equal pieces.",
+
+    CreateNSectSegmentDisplayedName: "N-Sect<br>Segment",
+    CreateNSectSegmentToolTipMessage:
+      "Divide a line segment into N equal pieces.",
+    CreateNSectSegmentToolUseMessage:
+      "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
+
     CreateCircleDisplayedName: "Create<br>Circle",
     CreateCircleToolTipMessage: "Insert circle",
     CreateCircleToolUseMessage:
@@ -103,13 +124,13 @@ export default {
     CreateSliderToolTipMessage: "User Controlled Value",
     CreateSliderToolUseMessage: "Click this button to create a value slider ",
 
-    CreateTangentDisplayedName: "Tangent<br>&nbsp;",
-    CreateTangentToolTipMessage: "Tangent Through Point",
+    CreateTangentDisplayedName: "Tangents<br>&nbsp;",
+    CreateTangentToolTipMessage: "Tangents through a point",
     CreateTangentToolUseMessage:
-      "Create the tangent line(s) to a selected non-straight one-dimensional object and selected location.",
+      "Create the tangent lines to a selected non-straight one-dimensional object and selected location.",
 
     CreatePerpendicularDisplayedName: "Perpendicular<br>&nbsp;",
-    CreatePerpendicularToolTipMessage: "Perpendicular Through Point",
+    CreatePerpendicularToolTipMessage: "Perpendicular(s) through a point",
     CreatePerpendicularToolUseMessage:
       "Create the perpendicular line(s) to a selected one-dimensional object and selected location.",
 
@@ -175,6 +196,9 @@ export default {
   },
 
   style: {
+    dashArrayReverse: "Switch Dash and Gap",
+    dashPatternReverseArrayToolTip:
+      "Switch the dash and gap lengths so that the gap length can be less than the dash length",
     labelStyle: "Label Style",
     foregroundStyle: "Foreground Style",
     backgroundStyle: "Background Style",
@@ -183,6 +207,7 @@ export default {
     back: "Back",
     front: "Front",
     value: "Value",
+    frontAndBack: "Front and Back",
 
     point: "1 Point | {count} Points",
     line: "1 Line | {count} Lines",
@@ -202,18 +227,22 @@ export default {
 
     noFillLabelTip:
       "If you want to make the labels only appear on the front of the sphere disable automatic back styling and check 'No Fill' on the Label Back Fill Color. Similarly, to make the labels only appear on the back of the sphere disable automatic back styling and check 'No Fill' on the Label Front Fill Color.",
-
+    noFillTip:
+      "Check this to remove the fill or stoke from the selected object(s).",
     selectAnObject: "Select Object(s) To Style",
-    closeOrSelect: "Close the styling panel or select object(s).",
+    closeOrSelect: "Close the style panel or select object(s).",
     toSelectObjects: "To select objects:",
     selectionDirection1: "Click on glowing objects to select them.",
     selectionDirection2:
       "Hold the Alt/Option key to add or subtract from your selection.",
     selectionDirection3:
       "Press a number key to select an object at that depth.",
-    selectionDirection4:
-      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (a), parametrics (P), and polygons (O).",
-    closeStylingPanel: "Close Styling Panel",
+    selectionDirection4Mac:
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), or all objects (command+a).",
+
+    selectionDirection4PC:
+      "Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), angle markers (A), parametrics (P), polygons (O), or all objects (ctrl+a).",
+    closeStylingPanel: "Close Style Panel",
     noSelectionToolTip:
       "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
@@ -232,18 +261,25 @@ export default {
       "Not all objects in the current selection are visible. Click this button to make them visible and then they will be styleable.",
 
     backStyleDisagreement: "Back Styling Disagreement",
+    backStyleDifferentValuesToolTip:
+      "The selected objects have different automatic back styling settings. At least one is using automatic back styling and at least is not. Click the button make the automatic back styling the same for all selected objects.",
+
     styleDisagreement: "Common Style Disagreement",
     differentValues:
       "The selected objects have different values for at least one of these style options. Click the button and edit a style to make all selected objects have that style value in common.",
     enableCommonStyle: "Overide",
     differentValuesToolTip:
-      "The selected objects have different values for at least one style option. Click the button and edit a style to make all selected objects have that style value in common.",
+      "The selected objects have different values for at least one style option. Click the button and edit a style to make *all* selected objects have *all* the styles in this block have a common value(s).",
+
+    singleLabelTextToolTip: "Enter a label text.",
+    multiLabelTextToolTip:
+      "You cannot edit the text of more than one label at a time.",
 
     dynamicBackStyleHeader: "Automatic Back Styling",
     disableDynamicBackStyle: "Disable",
     enableDynamicBackStyle: "Enable",
     disableDynamicBackStyleToolTip:
-      "The styling of objects on the back of the sphere is handled automatically unless disabled. The automatic style depends on a Back Styling Contrast percent and the front styling. The contrast is a global variable and applies to all objects the have Dynamic Back Styling enabled. If the contrast is 100%, then there is no difference between the styling of objects on the front and the back of the sphere. If the contrast is 0%, then colors on back of sphere are almost transparent and size reduction is maximized for points and thicknesses. Dash pattern is not effected by the contrast. The Back Contrast percent may be set in the Background Style panel.",
+      "The styling of objects on the back of the sphere is handled automatically unless disabled. The automatic style depends on a Global Back Styling Contrast percent and the front styling. The contrast is a global variable and applies to all objects the have Dynamic Back Styling enabled. If the contrast is 100%, then there is no difference between the styling of objects on the front and the back of the sphere. If the contrast is 0%, then colors on back of sphere are almost transparent and size reduction is maximized for points and thicknesses. Dash pattern is not effected by the contrast. The Back Contrast percent may be set in the Background Style panel.",
 
     clearChanges: "Undo",
     clearChangesToolTip:
@@ -274,9 +310,6 @@ export default {
     lessStyleOptions: "Less",
     toggleStyleOptionsToolTip: "More/Less label styling options.",
 
-    convertSelectionToLabels:
-      "A mix of label and non-label objects were selected when all label displays were changed. In order to do this the current selection was converted to all the labels of those objects.",
-
     dashPattern: "Dash Pattern",
     dashPatternCheckBoxToolTip:
       "Enable or Disable a dash pattern for the selected objects.",
@@ -286,25 +319,28 @@ export default {
     labelBackFillColor: "Label Back Fill Color",
     pointRadiusPercent: "Point Radius",
     angleMarkerRadiusPercent: "Angle Marker Radius",
-    angleMarkerDecorations: "Angle Marker Decorations",
+    angleMarkerOptions: "Angle Marker Options",
     angleMarkerDoubleArc: "Double Arc",
     angleMarkerTickMark: "Tick Mark",
 
     strokeColor: "Stroke Color",
     strokeWidthPercent: "Stroke Width",
     dynamicBackStyle: "Dynamic Back Style",
-    backStyleContrast: "Global Back Style Contrast",
+    globalBackStyleContrast: "Global",
+    backStyleContrast: "Back Style Contrast",
     backStyleContrastToolTip:
-      "By default the back side display style of an object is determined by the front style of that object and the value of Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is barely visible and its size reduction is maximized.",
+      "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
 
     labelStyleOptions: "Label Text Options",
     labelStyleOptionsMultiple: "(Multiple)",
     labelText: "Label Text",
     labelCaption: "Label Caption",
     renameLabels: "Rename All",
-    maxMinLabelDisplayTextLengthWarning:
-      "Must be between 1 and {max} characters long.",
-    maxMinLabelDisplayCaptionLengthWarning:
+    maxLabelDisplayTextLengthWarning:
+      "Label must be between 1 and {max} characters long.",
+    minLabelDisplayTextLengthWarning:
+      "Label must contain at least 1 character.",
+    maxLabelDisplayCaptionLengthWarning:
       "Must be at most {max} characters long.",
     labelTextScalePercent: "Label Scale",
     labelTextRotation: "Label Rotation",
@@ -336,9 +372,33 @@ export default {
     labelObjectVisibility: "Label And Object Visibility",
     selectObjectsToShow: "Select Objects to Show",
     labelVisible: "Label Visible",
-    objectVisible: "Object Visible"
+    objectVisible: "Object Visible",
+
+    cannotSelectLabels:
+      "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel."
   },
   handlers: {
+    nEqualOneAngleNSect:
+      "You must choose to divide angles into more than 1 equal pieces.",
+    nSetAngleNSect: "You are dividing angles into {number} equal pieces.",
+    bisectedAngleAlready:
+      "Angle {angle} has already been bisected. Choose another angle or divide this one into more than two equal pieces.",
+    nSectedAngleAlready:
+      "Angle {angle} has already been divided into {number} equal pieces. Choose another angle or divide it into something other than {number} equal pieces.",
+    angleSuccessfullyBisected: "Angle {angle} has be successfully bisected",
+    angleSuccessfullyNSected:
+      "Angle {angle} has be successfully divided into {number} equal pieces.",
+    nEqualOneSegmentNSect:
+      "You must choose to divide segments into more than 1 equal pieces.",
+    nSetSegmentNSect: "You are dividing segments into {number} equal pieces.",
+    bisectedSegmentAlready:
+      "Segment {segment} has already been bisected. Choose another segment or divide this one into more than two equal pieces.",
+    nSectedSegmentAlready:
+      "Segment {segment} has already been divided into {number} equal pieces. Choose another segment or divide it into something other than {number} equal pieces.",
+    segmentSuccessfullyBisected:
+      "Segment {segment} has be successfully bisected",
+    segmentSuccessfullyNSected:
+      "Segment {segment} has be successfully divided into {number} equal pieces.",
     ellipseAntipodalSelected:
       "The foci of an ellipse are not allowed to be antipodal or identical. Select another location.",
     ellipseFocus2Selected:
@@ -403,6 +463,14 @@ export default {
       "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
     selectionUpdateNothingSelected: "No objects selected.",
     pointCreationAttemptDuplicate: "There is already a point at this location.",
+    circleCreationAttemptDuplicate:
+      "There is already a circle with this center and radius.",
+    ellipseCreationAttemptDuplicate:
+      "There is already an ellipse with these foci and angle sum.",
+    segmentCreationAttemptDuplicate:
+      "There is already a line segment with these endpoints, this normal vector, and length.",
+    lineCreationAttemptDuplicate:
+      "There is already a line with this normal vector.",
     lineThruPointPointSelected:
       "Point selected. Now select a one dimensional object to determine the perpendicular.",
     lineThruPointLineSelected:
@@ -429,10 +497,22 @@ export default {
       "The selected segment doesn't form a triangle with the previously selected segments.",
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
-    newPolygonAdded: "A new polygon was created."
+    newPolygonAdded: "A new polygon was created.",
+    deletedNodes: "Successfully deleted {number} objects.",
+
+    rotationObjectUpdate: "Rotating about {type} {name}.",
+    rotationNoObjectUpdate:
+      "Mouse location determines the rotation. No object selected to rotate about.",
+    rotationAboutEquator: "Rotating about the north pole of the screen sphere."
   },
 
   objectTree: {
+    aMidLineOf: "The line bisecting angle {angle}.",
+    anNsectLineOf:
+      "Angle {angle} is divided into {N} equal parts and this is the line with index {index}.",
+    aMidPointOf: "A midpoint of segment {segment}",
+    anNsectPointOf:
+      "Segment {segment} is divided into {N} equal parts and this is the point with index {index}.",
     bigonWithEdges:
       "The area of a bi-gon with ordered edges {edges}. Area: {val}",
     triangleWithEdges:
@@ -455,8 +535,10 @@ export default {
     cycleValueDisplayMode:
       "Click to cycle to the next value display mode including multiples of pi and degrees.",
     toggleDisplay: "Toggle the display of the corresponding object.",
+    toggleLabelDisplay:
+      "Toggle the  display of the corresponding object's label.",
     slider: "Slider",
-    sliderValue: "{token} - Slider: {val}",
+    sliderValue: "{token}: Slider: {val}",
     noObjectsInDatabase: "No objects in database",
     result: "Result",
     calculationExpression: "Calculation Expression",
@@ -476,15 +558,15 @@ export default {
       "Angle formed by line {line} and segment {seg} with measure {val}.",
     calculationDescription:
       "Calculation based on expression {str} with value {val}",
-    calculationValue: "{token} - Calc: {val}",
-    coordinateOf: "The {axisName} coordinate of point {pt}.",
-    coordOf: "{token} - {pt} {axisName} Coord: {val}",
+    calculationValue: "{token}: Calc: {val}",
+    coordinateOf: "The {axisName} coordinate of point {pt}: {val}",
+    coordOf: "{token}: {pt} {axisName}: {val}",
     x: "x",
     y: "y",
     z: "z",
     distanceBetweenPts:
       "Distance between points {pt1} and {pt2}. Distance: {val}",
-    distanceValue: "{token} - Dist: {val}",
+    distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
@@ -515,30 +597,30 @@ export default {
     yParametricCoordinate: "Y(t) formula",
     zParametricCoordinate: "Z(t) formula",
     xCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the x coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the x coordinate for the parametric curve.",
     yCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the y coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the y coordinate for the parametric curve.",
     zCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the z coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the z coordinate for the parametric curve.",
     tExpressionData: "Optional Tracing Expressions",
     tMinExpression: "Minimum Parameter Tracing Expression",
     tMinExpressionTip:
-      "An optional expression (depending on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
+      "An optional expression (that MUST depend on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
     tMaxExpression: "Maximum Parameter Tracing Expression",
     tMaxExpressionTip:
-      "An optional expression (depending on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
+      "An optional expression (that MUST depend on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
     exactlyOneEmptyTExpression:
       "Maximum and Minimum Parameter Tracing Expression must either both be empty or both be defined.",
 
     tMinNumber: "Minimum parameter(t) Value",
     tMinNumberTip:
-      "A required absolute minimum t value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
+      "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
     tMaxNumber: "Maximum parameter(t) Value",
     tMaxNumberTip:
-      "A required absolute minimum t value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
+      "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
     cuspParameterValues: "Cusp t values (if any)",
     cuspParameterValuesTip:
-      "The comma separated list of the t values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
+      "The comma separated list of the t (each must be a number) values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
     cuspValuesOutOfBounds:
       "At least one of the cusp parameter values is not between the minimum and maximum parameter values. Check the cusp parameter values.",
     currentTValue: "Current Value: ",
@@ -550,6 +632,7 @@ export default {
       "The parametric derivative must be perpendicular to the the unit parametric curve vector; these were not perpendicular at a t value of {tVal}.",
 
     endPointOfParametric: "The {end} point of parametric curve {parent}.",
+    tracePointOfParametric: "The trace point of parametric curve {parent}.",
     parametricDescription:
       "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
     duplicateParametricCurve: "Duplicate parametric curves are not allowed.",
@@ -558,15 +641,34 @@ export default {
   },
 
   constructions: {
+    save: "Save",
+    cancel: "Cancel",
+    keep: "Keep",
+    discard: "discard",
+    description: "Description",
+    proceed: "Proceed",
+    resetSphere: "Reset Sphere",
+    confirmReset: "Confirm Reset Sphere",
+    confirmation: "Confirmation Required",
+    confirmLogout: "Confirm Logout",
+    saveConstruction: "Save Construction",
+    clearConstructionMsg:
+      "You are about to clear your construction. This action cannot be undone and any unsaved work will be discarded.",
+    makePublic: "Available to public",
     privateConstructions: "Private Constructions",
     publicConstructions: "Public Constructions",
+    logoutDialog:
+      "You are about to logout, any unsaved constructions will be discarded.",
+    saveConstructionDialog:
+      "Please provide a short description for your construction.",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
-      "You have unsaved objects. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
-    firestoreConstructionLoaded: "Construction successfully loaded.",
-    firestoreConstructionSaved: "Construction successfully saved.",
-    firestoreConstructionDeleted: "Construction successfully deleted.",
-    firestoreSaveError: "Construction was not saved."
+      "You have unsaved work. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
+    firestoreConstructionLoaded: "Construction {docId} successfully loaded.",
+    firestoreConstructionSaved: "Construction {docId} successfully saved.",
+    firestoreConstructionDeleted: "Construction {docId} successfully deleted.",
+    firestoreSaveError: "Construction was not saved.",
+    constructionNotFound: "Construction {docId} not found."
   }
 } as LocaleMessages;

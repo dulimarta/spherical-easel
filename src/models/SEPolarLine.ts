@@ -2,8 +2,7 @@ import Line from "@/plottables/Line";
 import { Visitable } from "@/visitors/Visitable";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional, Labelable } from "@/types";
-import { UpdateMode, UpdateStateType, LineState } from "@/types";
+import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
@@ -45,13 +44,17 @@ export class SEPolarLine extends SELine
     );
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this.polarPointParent.exists;
+
     if (this._exists) {
       // now update the locations of endSEPoiont and startSEPoint
       // form a vector perpendicular to the polar point parent
@@ -87,23 +90,20 @@ export class SEPolarLine extends SELine
       this.ref.setVisible(false);
     }
 
-    // Create a line state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      // If the parent points of the line are antipodal, the normal vector determines the
-      // plane of the line.   Store the coordinate values of the normal vector and not the pointer to the vector.
-      const lineState: LineState = {
-        kind: "line",
-        object: this,
-        normalVectorX: this._normalVector.x,
-        normalVectorY: this._normalVector.y,
-        normalVectorZ: this._normalVector.z
-      };
-      state.stateArray.push(lineState);
+    // These polar lines are completely determined by their line/segment/point parents and an update on the parents
+    // will cause this line to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Polar Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "polarLine", object: this });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
   public isNonFreeLine(): boolean {
     return true;

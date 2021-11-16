@@ -45,7 +45,6 @@ export default {
 
 <style scoped>
 .tikz {
-  border: 1px solid gray;
   min-height: 2em;
 }
 </style>

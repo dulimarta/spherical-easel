@@ -1,8 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { IntersectionReturnType } from "@/types";
+import { IntersectionReturnType, ObjectState } from "@/types";
 import { SEOneOrTwoDimensional } from "@/types";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
@@ -106,8 +105,9 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   /**
-   * If the intersection point is changed to isUserCreated(true) then the point should be showing,
-   * the default style should be displayed and the glowing background should be set up
+   * If the intersection point is changed to isUserCreated(true) then the user intentionally created this point
+   * That is, the point was not automatically created. The showing or not of a user created
+   * point is possible. A not user created point is not showing unless moused over.
    */
   set isUserCreated(flag: boolean) {
     this._isUserCreated = flag;
@@ -116,12 +116,15 @@ export class SEIntersectionPoint extends SEPoint {
     return this._isUserCreated;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this.seParent1.exists && this.seParent2.exists;
     if (this._exists) {
       // console.debug("Updating SEIntersectionPoint", this.name);
@@ -137,30 +140,28 @@ export class SEIntersectionPoint extends SEPoint {
         this._exists = false;
       }
     }
-    // if (this._isUserCreated) {
-    //   console.log("update intersection pt", this.locationVector.x);
-    // }
+
     // Update visibility
     if (this._exists && this._isUserCreated && this._showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
-    // Intersection Points are completely determined by their parents and an update on the parents
-    // will cause this point to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const pointState: PointState = {
-        kind: "point",
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z,
-        object: this
-      };
-      state.stateArray.push(pointState);
+    // Intersection Points are completely determined by their parents and an update on the parents
+    // will cause this point to be put into the correct location.So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "intersectionPoint", object: this });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
@@ -171,14 +172,11 @@ export class SEIntersectionPoint extends SEPoint {
       super.glowing = b;
     }
   }
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  //override the method from SEPoint
-  public isFreePoint(): boolean {
-    return false;
-  }
 
   public isNonFreePoint(): boolean {
+    return true;
+  }
+  public isFreePoint(): boolean {
     return false;
   }
 }

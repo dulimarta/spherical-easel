@@ -61,7 +61,7 @@ export default class PointHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.pointCreationAttemptDuplicate`,
           keyOptions: {},
-          type: "warning"
+          type: "error"
         });
         return;
       } else {

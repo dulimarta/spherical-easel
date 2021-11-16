@@ -89,7 +89,7 @@ Create a circle defined by three points.
 
 ::: tool-title
 
-## Parametric Curve (User defined)
+## Parametric Curve
 
 :::
 

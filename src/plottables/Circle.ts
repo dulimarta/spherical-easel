@@ -11,6 +11,7 @@ import {
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import AppStore from "@/store";
+import SE from "@/store/se-module";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -818,7 +819,6 @@ export default class Circle extends Nodule {
     dup.backPart.closed = this.backPart.closed;
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
-    dup.styleOptions = this.styleOptions;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -972,13 +972,17 @@ export default class Circle extends Nodule {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         //FRONT
-        if (SETTINGS.circle.temp.fillColor.front === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
+        ) {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
           this.frontFill.fill = this.frontGradient;
         }
-        if (SETTINGS.circle.temp.strokeColor.front === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
+        ) {
           this.frontPart.noStroke();
         } else {
           this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
@@ -991,15 +995,22 @@ export default class Circle extends Nodule {
           SETTINGS.circle.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
+          if (SETTINGS.circle.drawn.dashArray.reverse.front) {
+            this.frontPart.dashes.reverse();
+          }
         }
         //BACK
-        if (SETTINGS.circle.temp.fillColor.back === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
+        ) {
           this.backFill.noFill();
         } else {
           this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
           this.backFill.fill = this.backGradient;
         }
-        if (SETTINGS.circle.temp.strokeColor.back === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
+        ) {
           this.backPart.noStroke();
         } else {
           this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
@@ -1012,6 +1023,9 @@ export default class Circle extends Nodule {
           SETTINGS.circle.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
+          if (SETTINGS.circle.drawn.dashArray.reverse.back) {
+            this.backPart.dashes.reverse();
+          }
         }
 
         // The temporary display is never highlighted
@@ -1025,14 +1039,14 @@ export default class Circle extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-        if (frontStyle?.fillColor === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
           this.frontFill.fill = this.frontGradient;
         }
 
-        if (frontStyle?.strokeColor === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
           this.frontPart.stroke = frontStyle?.strokeColor as Color;
@@ -1051,8 +1065,9 @@ export default class Circle extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
-            "noFill"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontStyle?.fillColor)
+            )
           ) {
             this.backFill.noFill();
           } else {
@@ -1063,7 +1078,7 @@ export default class Circle extends Nodule {
             this.backFill.fill = this.backGradient;
           }
         } else {
-          if (backStyle?.fillColor === "noFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
@@ -1074,8 +1089,9 @@ export default class Circle extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ===
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this.backPart.noStroke();
           } else {
@@ -1084,7 +1100,7 @@ export default class Circle extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor === "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = backStyle?.strokeColor ?? "black";
@@ -1093,9 +1109,16 @@ export default class Circle extends Nodule {
 
         // strokeWidthPercent applied by adjustSizer()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.backPart.dashes.clear();
           this.backPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.dashArray) {
+            this.backPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.backPart.dashes.clear();
@@ -1110,9 +1133,16 @@ export default class Circle extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();
@@ -1125,9 +1155,16 @@ export default class Circle extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackPart.dashes.clear();
           this.glowingBackPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.glowingBackPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackPart.dashes.clear();

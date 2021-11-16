@@ -16,39 +16,29 @@ import { MovePointCommand } from "@/commands/MovePointCommand";
 import { MoveLineCommand } from "@/commands/MoveLineCommand";
 import { MoveSegmentCommand } from "@/commands/MoveSegmentCommand";
 import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
-import {
-  isLineState,
-  isSegmentState,
-  isPointState,
-  isLabelState
-} from "@/types";
-import {
-  UpdateMode,
-  UpdateStateType,
-  LineState,
-  LabelState,
-  SegmentState,
-  PointState
-} from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 
 import { SEStore } from "@/store";
 import { SEPolygon } from "@/models/SEPolygon";
+import { ObjectNames, ObjectState } from "@/types";
+import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
+import { SESlider } from "@/models/SESlider";
+import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
 // const tmpMatrix = new Matrix4();
 
-// public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-//   return true;
-// }
 export default class MoveHandler extends Highlighter {
   /**
-   * Set when the user is trying to move an element
+   * If the user starts to move an object and mouse press at a location on the sphere, then moves
+   * off the canvas, then back inside the sphere and mouse releases, we should not be moving anything. This
+   * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
+   * on the canvas, nothing should happen.
    */
-  private isDragging = false;
+  private movingSomething = false;
 
   /**
    * The target SENodule
@@ -71,34 +61,22 @@ export default class MoveHandler extends Highlighter {
    * pushed onto the undo/redo stack) to change the value.
    */
   //#region beforeSaveState
-  private beforeMoveState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
+  private beforeMoveStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
+  private beforeMoveSENoduleIDList: number[] = [];
 
-  private afterMoveState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
+  private afterMoveStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
+  private afterMoveSENoduleIDList: number[] = [];
   //#endregion beforeSaveState
   /**
    * Vectors that define the rotated sphere before and after moving (for undoing the rotate sphere)
    */
-  private beforeMoveVector1 = new Vector3();
-  private afterMoveVector1 = new Vector3();
+  private beforeMoveVector = new Vector3();
+  private afterMoveVector = new Vector3();
   /**
    * A matrix that is used to indicate the *change* in position of sphere used only in Rotation.
    * Rotations is used when no object is selected and the user mouse presses and drags on an empty location.
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
-
-  /**
-   * If the user starts to move an object and mouse press at a location on the sphere, then moves
-   * off the canvas, then back inside the sphere and mouse releases, we should not be moving anything. This
-   * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
-   * on the canvas, nothing should happen.
-   */
-  private movingSomething = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -108,10 +86,9 @@ export default class MoveHandler extends Highlighter {
     // if mouse press is not on the sphere do not do anything
     if (!this.isOnSphere) return;
     // Reset the variables for another move event
-    this.isDragging = true;
     this.moveTarget = null;
     this.rotateSphere = false;
-    this.movingSomething = true;
+    this.movingSomething = false;
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
     if (
@@ -127,7 +104,11 @@ export default class MoveHandler extends Highlighter {
         // First mark all children of the target out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
         // Store the state of the freePoints, segments and lines before the move
-        this.moveTarget.update(this.beforeMoveState);
+        this.moveTarget.update(
+          this.beforeMoveStateMap,
+          this.beforeMoveSENoduleIDList
+        );
+        this.movingSomething = true;
         return;
       }
       const labels = this.hitSELabels.filter(
@@ -138,7 +119,11 @@ export default class MoveHandler extends Highlighter {
         // First mark all children of the target out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
         // Store the state of the freePoints, segments and lines before the move
-        this.moveTarget.update(this.beforeMoveState);
+        this.moveTarget.update(
+          this.beforeMoveStateMap,
+          this.beforeMoveSENoduleIDList
+        );
+        this.movingSomething = true;
         return;
       }
       //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
@@ -147,18 +132,28 @@ export default class MoveHandler extends Highlighter {
         const freeSegments = this.hitSESegments.filter(
           n => n.isFreeToMove() && n.showing
         );
+
         if (freeSegments.length > 0) {
           this.moveTarget = freeSegments[0];
+
           // First mark all children of the target's point parents out of date so that the update method does a topological sort
           (this.moveTarget as SESegment).startSEPoint.markKidsOutOfDate();
+
           (this.moveTarget as SESegment).endSEPoint.markKidsOutOfDate();
+
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SESegment).startSEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
+
           (this.moveTarget as SESegment).endSEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
+
+          this.movingSomething = true;
+
           return;
         }
 
@@ -171,8 +166,15 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
           (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
-          (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
-          (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
+          (this.moveTarget as SELine).startSEPoint.update(
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
+          );
+          (this.moveTarget as SELine).endSEPoint.update(
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
+          );
+          this.movingSomething = true;
           return;
         }
 
@@ -186,11 +188,14 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SECircle).circleSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SECircle).centerSEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
           (this.moveTarget as SECircle).circleSEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
+          this.movingSomething = true;
           return;
         }
 
@@ -205,14 +210,18 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SEEllipse).ellipseSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SEEllipse).focus1SEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
           (this.moveTarget as SEEllipse).focus2SEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
           (this.moveTarget as SEEllipse).ellipseSEPoint.update(
-            this.beforeMoveState
+            this.beforeMoveStateMap,
+            this.beforeMoveSENoduleIDList
           );
+          this.movingSomething = true;
           return;
         }
       }
@@ -250,7 +259,7 @@ export default class MoveHandler extends Highlighter {
       }
 
       this.rotateSphere = true;
-      this.beforeMoveVector1.copy(this.currentSphereVector);
+      this.beforeMoveVector.copy(this.currentSphereVector);
       EventBus.fire("show-alert", {
         key: `handlers.moveHandlerNothingSelected`,
         keyOptions: {},
@@ -264,10 +273,12 @@ export default class MoveHandler extends Highlighter {
     if (!this.isOnSphere) {
       return;
     }
+
     event.preventDefault();
+
     // highlight the objects that can be moved
     // and only the highlight the object that will be moved when the user clicks and drags
-    if (!this.isDragging) {
+    if (!this.movingSomething && !this.rotateSphere) {
       if (this.hitSEPoints.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSEPoints[0].glowing = true;
       } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
@@ -286,24 +297,18 @@ export default class MoveHandler extends Highlighter {
         }
       }
     }
-    if (this.isDragging && this.movingSomething) {
+    if (this.rotateSphere || this.movingSomething) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
         this.moveTarget.locationVector = this.currentSphereVector;
         // Update the display of the objects depending on this SEPoint based on the new location of the point
         //#region displayOnlyUpdate
-        this.moveTarget.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        this.moveTarget.markKidsOutOfDate();
+        this.moveTarget.update();
         //#endregion displayOnlyUpdate
       } else if (this.moveTarget instanceof SELabel) {
         // Move the selected SELabel
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the label (No need to update display because SELabels have no children/kids)
-        //   mode: UpdateMode.DisplayOnly,
-        //   stateArray: []
-        // });
       } else if (
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
@@ -336,21 +341,19 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere, updates the display after moving all the points.
         this.doRotateSphere();
-        this.afterMoveVector1.copy(this.currentSphereVector);
+        this.afterMoveVector.copy(this.currentSphereVector);
       }
     }
   }
 
   mouseReleased(event: MouseEvent): void {
-    if (!this.movingSomething) return;
+    if (!this.movingSomething && !this.rotateSphere) return;
 
     if (this.moveTarget == null && this.rotateSphere) {
       // Store the rotation of the sphere for undo/redo command.
       // Create the rotation matrix that takes beforeMoveVector1 to the afterMoveVector1 location
-      const rotationAngle = this.beforeMoveVector1.angleTo(
-        this.afterMoveVector1
-      );
-      desiredZAxis.crossVectors(this.beforeMoveVector1, this.afterMoveVector1);
+      const rotationAngle = this.beforeMoveVector.angleTo(this.afterMoveVector);
+      desiredZAxis.crossVectors(this.beforeMoveVector, this.afterMoveVector);
       if (desiredZAxis.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         if (rotationAngle == 0) {
           // The vectors are identical
@@ -378,180 +381,218 @@ export default class MoveHandler extends Highlighter {
       if (this.moveTarget instanceof SEPoint) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
-        this.moveTarget.update(this.afterMoveState);
+        this.moveTarget.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SELabel) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
-        this.moveTarget.update(this.afterMoveState);
+        this.moveTarget.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SESegment) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.startSEPoint.markKidsOutOfDate();
         this.moveTarget.endSEPoint.markKidsOutOfDate();
-        this.moveTarget.startSEPoint.update(this.afterMoveState);
-        this.moveTarget.endSEPoint.update(this.afterMoveState);
+        this.moveTarget.startSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+        this.moveTarget.endSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SELine) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.startSEPoint.markKidsOutOfDate();
         this.moveTarget.endSEPoint.markKidsOutOfDate();
-        this.moveTarget.startSEPoint.update(this.afterMoveState);
-        this.moveTarget.endSEPoint.update(this.afterMoveState);
+        this.moveTarget.startSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+        this.moveTarget.endSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SECircle) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.centerSEPoint.markKidsOutOfDate();
         this.moveTarget.circleSEPoint.markKidsOutOfDate();
-        this.moveTarget.centerSEPoint.update(this.afterMoveState);
-        this.moveTarget.circleSEPoint.update(this.afterMoveState);
+        this.moveTarget.centerSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+        this.moveTarget.circleSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SEEllipse) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.focus1SEPoint.markKidsOutOfDate();
         this.moveTarget.focus2SEPoint.markKidsOutOfDate();
         this.moveTarget.ellipseSEPoint.markKidsOutOfDate();
-        this.moveTarget.focus1SEPoint.update(this.afterMoveState);
-        this.moveTarget.focus2SEPoint.update(this.afterMoveState);
-        this.moveTarget.ellipseSEPoint.update(this.afterMoveState);
+        this.moveTarget.focus1SEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+        this.moveTarget.focus2SEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+        this.moveTarget.ellipseSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       }
       // Store the move point/line/segment for undo/redo command
       const moveCommandGroup = new CommandGroup();
 
-      // Note that the beforeMoveState and the afterMoveState were called in the
-      // same order each time so the corresponding stateArrays should index the visited objects
-      // in the same order (i.e. index of beforeMoveState.stateArray or afterMoveState.stateArray
-      // should refer to the same object
+      // Note that beforeMoveStateMap (and the afterMoveStateMap) were called in the
+      // in such a way each one should only visit each SENodule (at most) once. The order in which these were
+      // visited is recorded in the beforeSENoduleIDList (afterSENoduleIDLIst).  It is possible that
+      // there are more items in the afterSENoduleIDList because of the perpendicular/tangent SEPencil can create
+      // perpendicular or tangent lines (but lines or any SENodules are never deleted so it is always the case that
+      //  beforeSENoduleIDList,length <= afterSENoduleIDList.length). This is why we will trace our way through the
+      // afterSENoduleIDList because if we come across an object (like a perpendicular or tangent line) that is
+      // in the afterMap but not the beforeMap, then the way to undo it is to make it not exist.
 
-      // Loop through the stateArray backwards! The order is really important!  The order that stateArray
+      // Loop through the afterSENoduleIDList backwards! The order is really important!  The order that afterSENoduleIDList
       // was formed is for a do() commands, that is if we were building the move from a series of commands.
       // However, the moving is already done, so we are really building a set of commands (to push not execute!) to undo the move
-      // operation which are executed in reverse order. So reverse the order here in the stateArray.
-      this.beforeMoveState.stateArray.reverse();
-      this.afterMoveState.stateArray.reverse();
-      this.beforeMoveState.stateArray.forEach((entry, index) => {
-        if (isPointState(entry)) {
-          const beforeLocationVector = new Vector3(
-            entry.locationVectorX,
-            entry.locationVectorY,
-            entry.locationVectorZ
-          );
+      // operation which are executed in reverse order. So reverse the order here in the afterSENoduleIDList.
 
-          const afterLocationVector = new Vector3(
-            (this.afterMoveState.stateArray[
-              index
-            ] as PointState).locationVectorX,
-            (this.afterMoveState.stateArray[
-              index
-            ] as PointState).locationVectorY,
-            (this.afterMoveState.stateArray[
-              index
-            ] as PointState).locationVectorZ
-          );
-          if (
-            !tmpVector1
-              .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero(SETTINGS.nearlyAntipodalIdeal)
-          ) {
-            moveCommandGroup.addCommand(
-              new MovePointCommand(
-                entry.object,
-                beforeLocationVector,
-                afterLocationVector
-              )
-            );
-          }
-        } else if (isLabelState(entry)) {
-          const beforeLocationVector = new Vector3(
-            entry.locationVectorX,
-            entry.locationVectorY,
-            entry.locationVectorZ
-          );
+      this.afterMoveSENoduleIDList.reverse();
+      this.afterMoveSENoduleIDList.forEach(seNoduleID => {
+        // Get the after state of the SENodule
+        const seNoduleAfterState = this.afterMoveStateMap.get(seNoduleID);
 
-          const afterLocationVector = new Vector3(
-            (this.afterMoveState.stateArray[
-              index
-            ] as LabelState).locationVectorX,
-            (this.afterMoveState.stateArray[
-              index
-            ] as LabelState).locationVectorY,
-            (this.afterMoveState.stateArray[
-              index
-            ] as LabelState).locationVectorZ
+        if (seNoduleAfterState === undefined) {
+          throw new Error(
+            `MoveHandler: afterMoveStateMap doesn't contain the SENodule id ${seNoduleID}. This should never happen.`
           );
-          if (
-            !tmpVector1
-              .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero(SETTINGS.nearlyAntipodalIdeal)
-          ) {
-            moveCommandGroup.addCommand(
-              new MoveLabelCommand(
-                entry.object,
-                beforeLocationVector,
-                afterLocationVector
-              )
-            );
-          }
-        } else if (isLineState(entry)) {
-          const beforeNormalVector = new Vector3(
-            entry.normalVectorX,
-            entry.normalVectorY,
-            entry.normalVectorZ
+        }
+
+        // Get the before state of the SENodule
+        const seNoduleBeforeState = this.beforeMoveStateMap.get(seNoduleID);
+
+        if (seNoduleBeforeState === undefined) {
+          // The after object was created during the move.
+          // so we push a command on to the stack to undo this objects existence
+          // so do to this command means the the object exists and is showing
+          // to undo this command meqns the the object doesn't exist and is not showing
+          moveCommandGroup.addCommand(
+            new SetNoduleExistCommand(seNoduleAfterState.object, true, true)
           );
-          const afterNormalVector = new Vector3(
-            (this.afterMoveState.stateArray[index] as LineState).normalVectorX,
-            (this.afterMoveState.stateArray[index] as LineState).normalVectorY,
-            (this.afterMoveState.stateArray[index] as LineState).normalVectorZ
-          );
-          // Include a command if the normal vector have changed
-          if (
-            !tmpVector1
-              .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero(SETTINGS.nearlyAntipodalIdeal)
-          ) {
-            moveCommandGroup.addCommand(
-              new MoveLineCommand(
-                entry.object as SELine,
-                beforeNormalVector,
-                afterNormalVector
-              )
-            );
-          }
-        } else if (isSegmentState(entry)) {
-          const beforeNormalVector = new Vector3(
-            entry.normalVectorX,
-            entry.normalVectorY,
-            entry.normalVectorZ
-          );
-          const afterNormalVector = new Vector3(
-            (this.afterMoveState.stateArray[
-              index
-            ] as SegmentState).normalVectorX,
-            (this.afterMoveState.stateArray[
-              index
-            ] as SegmentState).normalVectorY,
-            (this.afterMoveState.stateArray[
-              index
-            ] as SegmentState).normalVectorZ
-          );
-          // Include a command if the normal vectors have changed or the arcLength before/after changed from less to from bigger than Pi
-          if (
-            !tmpVector1
-              .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero(SETTINGS.nearlyAntipodalIdeal) ||
-            (entry.arcLength < Math.PI &&
-              (this.afterMoveState.stateArray[index] as SegmentState)
-                .arcLength > Math.PI) ||
-            (entry.arcLength > Math.PI &&
-              (this.afterMoveState.stateArray[index] as SegmentState)
-                .arcLength < Math.PI)
-          ) {
-            moveCommandGroup.addCommand(
-              new MoveSegmentCommand(
-                entry.object as SESegment,
-                beforeNormalVector,
-                afterNormalVector,
-                entry.arcLength,
-                (this.afterMoveState.stateArray[
-                  index
-                ] as SegmentState).arcLength
-              )
-            );
+          console.log("new object was created from before to after");
+        } else {
+          switch (seNoduleAfterState.kind) {
+            // For these three types of free objects the location vector was recorded
+            case "label":
+            case "pointOnOneOrTwoDimensional":
+            case "point":
+              // if the point moved then update its location with a command
+              if (
+                seNoduleAfterState.object &&
+                seNoduleAfterState.locationVector &&
+                seNoduleBeforeState.locationVector &&
+                !tmpVector1
+                  .subVectors(
+                    seNoduleAfterState.locationVector,
+                    seNoduleBeforeState.locationVector
+                  )
+                  .isZero(SETTINGS.nearlyAntipodalIdeal)
+              ) {
+                if (seNoduleAfterState.kind !== "label") {
+                  moveCommandGroup.addCommand(
+                    new MovePointCommand(
+                      seNoduleAfterState.object as SEPoint,
+                      seNoduleBeforeState.locationVector,
+                      seNoduleAfterState.locationVector
+                    )
+                  );
+                } else {
+                  moveCommandGroup.addCommand(
+                    new MoveLabelCommand(
+                      seNoduleAfterState.object as SELabel,
+                      seNoduleBeforeState.locationVector,
+                      seNoduleAfterState.locationVector
+                    )
+                  );
+                }
+              }
+              break;
+            case "line":
+              // if the line normal changed then moved the line with a command
+              if (
+                seNoduleAfterState.object &&
+                seNoduleAfterState.normalVector &&
+                seNoduleBeforeState.normalVector &&
+                !tmpVector1
+                  .subVectors(
+                    seNoduleAfterState.normalVector,
+                    seNoduleBeforeState.normalVector
+                  )
+                  .isZero(SETTINGS.nearlyAntipodalIdeal)
+              ) {
+                //console.log("issued line move command");
+                moveCommandGroup.addCommand(
+                  new MoveLineCommand(
+                    seNoduleAfterState.object as SELine,
+                    seNoduleBeforeState.normalVector,
+                    seNoduleAfterState.normalVector
+                  )
+                );
+              }
+              break;
+            case "segment":
+              // move the segment with a command if the arc length has changed from less than pi to bigger than pi (or vice verse)
+              // or the normal has changed
+              if (
+                seNoduleAfterState.object &&
+                seNoduleAfterState.normalVector &&
+                seNoduleBeforeState.normalVector &&
+                seNoduleAfterState.arcLength &&
+                seNoduleBeforeState.arcLength &&
+                (!tmpVector1
+                  .subVectors(
+                    seNoduleBeforeState.normalVector,
+                    seNoduleAfterState.normalVector
+                  )
+                  .isZero(SETTINGS.nearlyAntipodalIdeal) ||
+                  (seNoduleBeforeState.arcLength < Math.PI &&
+                    seNoduleAfterState.arcLength > Math.PI) ||
+                  (seNoduleBeforeState.arcLength > Math.PI &&
+                    seNoduleAfterState.arcLength < Math.PI))
+              ) {
+                moveCommandGroup.addCommand(
+                  new MoveSegmentCommand(
+                    seNoduleAfterState.object as SESegment,
+                    seNoduleBeforeState.normalVector,
+                    seNoduleAfterState.normalVector,
+                    seNoduleBeforeState.arcLength,
+                    seNoduleAfterState.arcLength
+                  )
+                );
+              }
+              break;
+            case "slider":
+              if (
+                seNoduleAfterState.object &&
+                seNoduleAfterState.sliderValue &&
+                seNoduleBeforeState.sliderValue &&
+                seNoduleAfterState.sliderValue !==
+                  seNoduleBeforeState.sliderValue
+              ) {
+                moveCommandGroup.addCommand(
+                  new ChangeSliderCommand(
+                    seNoduleAfterState.object as SESlider,
+                    seNoduleAfterState.sliderValue,
+                    seNoduleBeforeState.sliderValue
+                  )
+                );
+              }
           }
         }
       });
@@ -563,15 +604,10 @@ export default class MoveHandler extends Highlighter {
     this.moveTarget = null;
     this.rotateSphere = false;
     this.movingSomething = false;
-    this.isDragging = false;
-    this.beforeMoveState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
-    this.afterMoveState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
+    this.beforeMoveStateMap.clear();
+    this.beforeMoveSENoduleIDList.splice(0);
+    this.afterMoveStateMap.clear();
+    this.afterMoveSENoduleIDList.splice(0);
   }
 
   mouseLeave(event: MouseEvent): void {
@@ -579,7 +615,8 @@ export default class MoveHandler extends Highlighter {
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     this.mouseReleased(event);
   }
-
+  // activate(): void {}
+  // deactivate(): void {}
   private doRotateSphere(): void {
     // Compute the angular change in position
     const rotationAngle = this.previousSphereVector.angleTo(

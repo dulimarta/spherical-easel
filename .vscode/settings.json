@@ -81,5 +81,7 @@
     "docs/languages",
     "src/languages",
     "src/assets/languages"
-  ]
+  ],
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true
 }

@@ -1,12 +1,12 @@
-<!-- 
+<!--
   template is HTML for the layout for the UI of the vue application (i.e. the main
   window with everything in it), it allows for binding with the
   underlying Document Object Model. We can use this template for specifiying
-  locations in the document with the "id" class.  
+  locations in the document with the "id" class.
 -->
 
 <template>
-  <!-- 
+  <!--
     This is the main application that must contain all the vuetify components.
     There can be only one of these environments.
   -->
@@ -36,14 +36,14 @@
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
-            <!--- TODO: Change the URL to match the hosting site 
+            <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-            <router-link to="/docs/">
+            <a href="/docs/">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
-            </router-link>
+            </a>
             <!-- Use <a> For GitLab -->
             <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
@@ -56,7 +56,7 @@
 
       <v-spacer></v-spacer>
 
-      <!-- This will open up the global settings view setting the language, decimals 
+      <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <transition name="pulse">
         <div v-if="accountEnabled">
@@ -80,11 +80,11 @@
         </div>
       </transition>
       <router-link to="/settings/">
-        <v-icon>mdi-cog</v-icon>
+        <v-icon>$appSettings</v-icon>
       </router-link>
     </v-app-bar>
 
-    <!-- 
+    <!--
       This is the main window of the app. All other components are display on top of this element
       The router controls this background and it can be Easel or settings or...
     -->
@@ -112,22 +112,23 @@
       </v-col>
     </v-footer>
     <Dialog ref="logoutDialog"
-      title="Confirm Logout"
-      yes-text="Proceed"
+      :title="$t('constructions.confirmLogout')"
+      :yes-text="$t('constructions.proceed')"
       :yes-action="() => doLogout()"
-      no-text="Cancel"
+      :no-text="$t('constructions.cancel')"
       max-width="40%">
-      <p>You are about to logout, any unsaved constructions will be
-        discarded.</p>
-      <p><em>Proceed</em> or <em>cancel?</em></p>
+      <p>
+        {{$t('constructions.logoutDialog')}}</p>
+
     </Dialog>
     <Dialog ref="saveConstructionDialog"
-      title="Save Construction"
-      yes-text="Save"
-      no-text="Cancel"
+      :title="$t('constructions.saveConstruction')"
+      :yes-text="$t('constructions.save')"
+      :no-text="$t('constructions.cancel')"
       :yes-action="() => doShare()"
       max-width="40%">
-      <p>Please provide a short description for your construction
+      <p>
+        {{$t('constructions.saveConstructionDialog')}}
       </p>
 
       <v-text-field type="text"
@@ -135,19 +136,19 @@
         clearable
         counter
         persistent-hint
-        label="Description"
+        :label="$t('constructions.description')"
         required
         v-model="description"></v-text-field>
       <v-switch v-model="publicConstruction"
         :disabled="uid.length === 0"
-        label="Available to public"></v-switch>
+        :label="$t('constructions.makePublic')"></v-switch>
     </Dialog>
   </v-app>
 </template>
 
-<!-- 
-  This section is for Typescript code (note lang="ts") for binding the output of the user 
-  actions to desired changes in the display and the rest of the app. 
+<!--
+  This section is for Typescript code (note lang="ts") for binding the output of the user
+  actions to desired changes in the display and the rest of the app.
 -->
 <script lang="ts">
 /* Import the custom components */
@@ -165,11 +166,13 @@ import {
   DocumentReference,
   DocumentSnapshot
 } from "@firebase/firestore-types";
+import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
 import { detect } from "detect-browser";
+// import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
 const SE = namespace("se");
@@ -203,6 +206,7 @@ export default class App extends Vue {
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
+  readonly $appStorage!: FirebaseStorage;
 
   clientBrowser: any;
   description = "";
@@ -299,6 +303,7 @@ export default class App extends Vue {
     this.whoami = "";
     this.uid = "";
     window.removeEventListener("keydown", this.keyHandler);
+    EventBus.unlisten("secret-key-detected");
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;
@@ -320,6 +325,8 @@ export default class App extends Vue {
   }
 
   async doShare(): Promise<void> {
+    /* TODO: move the following constant to global-settings? */
+    const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
     // A local function to convert a blob to base64 representation
     const toBase64 = (inputBlob: Blob): Promise<string> =>
       new Promise((resolve, reject) => {
@@ -332,7 +339,7 @@ export default class App extends Vue {
       });
 
     /* dump the command history */
-    const out = Command.dumpOpcode();
+    const scriptOut = Command.dumpOpcode();
 
     const rotationMat = this.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
@@ -354,32 +361,68 @@ export default class App extends Vue {
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");
-    this.$appDB
+
+    /* Create a pipeline of Firebase tasks
+       Task 1: Upload construction to Firestore
+       Task 2: Upload the script to Firebase Storage (for large script)
+       Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
+    */
+    this.$appDB // Task #1
       .collection(collectionPath)
       .add({
-        script: out,
+        version: "1",
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements),
-        preview: svgPreviewData
+        rotationMatrix: JSON.stringify(rotationMat.elements)
       })
-      .then((doc: DocumentReference) => {
+      .then((constructionDoc: DocumentReference) => {
+        /* Task #2 */
+        const scriptPromise: Promise<string> =
+          scriptOut.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(scriptOut)
+            : this.$appStorage
+                .ref(`scripts/${constructionDoc.id}`)
+                .putString(scriptOut)
+                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+
+        /* Task #3 */
+        const svgPromise: Promise<string> =
+          svgPreviewData.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(svgPreviewData)
+            : this.$appStorage
+                .ref(`construction-svg/${constructionDoc.id}`)
+                .putString(svgPreviewData)
+                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+
+        /* Wrap the result from the three tasks as a new Promise */
+        return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
+      })
+      .then(([docId, scriptData, svgData]) => {
+        this.$appDB
+          .collection(collectionPath)
+          .doc(docId)
+          .update({ script: scriptData, preview: svgData });
+        // Pass on the document ID to be included in the alert message
+        return docId;
+      })
+      .then((docId: string) => {
         EventBus.fire("show-alert", {
           key: "constructions.firestoreConstructionSaved",
-          keyOptions: { docId: doc.id },
+          keyOptions: { docId },
           type: "info"
         });
         SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
-        console.error("Can't save document", err);
+        console.error("Can't save document", err.message);
         EventBus.fire("show-alert", {
           key: "constructions.firestoreSaveError",
-          keyOptions: {},
+          // keyOptions: { docId: constructionDoc.id },
           type: "error"
         });
       });
+
     this.$refs.saveConstructionDialog.hide();
   }
 }

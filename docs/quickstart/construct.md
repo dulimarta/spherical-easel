@@ -7,7 +7,7 @@ lang: en-US
 
 ## 1. Display the Tools Tab
 
-On the left hand side of the Spherical Easel application window (or the bottom if mobile) there is a Objects & Tools Panel. This panel contains two tabs at the top: a Tools tab (TOOD:AddIconImage) that displays the available tool buttons and an Object tab (TOOD:AddIconImage icon) that displays a list of the plotted objects, measurements, and calculations. Make sure that the Tools tab is active and you can see collection of tools each of which is represented with labeled button in the Objects & Tools Panel.
+On the left hand side of the Spherical Easel application window (or the bottom if mobile) there is a Tools, Objects & Saved Constructions Panel. This panel contains three tabs at the top: a Tools tab (TOOD:AddIconImage) that displays the available tool buttons and an Object tab (TOOD:AddIconImage icon) that displays a list of the plotted objects, measurements, and calculations. Make sure that the Tools tab is active and you can see collection of tools each of which is represented with labeled button in the Objects & Tools Panel.
 
 TODO: add image (with labels) showing the Objects & Tools Panel with the Tools tab displayed and the Sphere Canvas
 

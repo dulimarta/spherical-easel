@@ -22,7 +22,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState, UpdateMode } from "@/types";
+import { AppState } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";

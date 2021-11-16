@@ -149,14 +149,7 @@ export default class Line extends Nodule {
       const py = radius * Math.sin(angle);
       this.points.push(new Vector3(px, py, 0));
     }
-    // const dashArrayFront: Array<number> = [];
-    // if (SETTINGS.line.drawn.dashArray.front.length > 0) {
-    //   dashArrayFront.push(...SETTINGS.line.drawn.dashArray.front);
-    // }
-    // const dashArrayBack: Array<number> = [];
-    // if (SETTINGS.line.drawn.dashArray.back.length > 0) {
-    //   dashArrayFront.push(...SETTINGS.line.drawn.dashArray.back);
-    // }
+
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LINE_FRONT_STYLE);
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LINE_BACK_STYLE);
   }
@@ -236,8 +229,11 @@ export default class Line extends Nodule {
       lastSign = thisSign;
       if (this.tmpVector.z > 0) {
         if (posIndex === this.frontHalf.vertices.length) {
-          const extra = this.backHalf.vertices.pop();
+          let extra: Two.Anchor | undefined;
+          extra = this.backHalf.vertices.pop();
           if (extra) this.frontHalf.vertices.push(extra);
+          extra = this.glowingBackHalf.vertices.pop();
+          if (extra) this.glowingFrontHalf.vertices.push(extra);
         }
         this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
         this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
@@ -246,8 +242,11 @@ export default class Line extends Nodule {
         posIndex++;
       } else {
         if (negIndex === this.backHalf.vertices.length) {
-          const extra = this.frontHalf.vertices.pop();
+          let extra: Two.Anchor | undefined;
+          extra = this.frontHalf.vertices.pop();
           if (extra) this.backHalf.vertices.push(extra);
+          extra = this.glowingFrontHalf.vertices.pop();
+          if (extra) this.glowingBackHalf.vertices.push(extra);
         }
         this.backHalf.vertices[negIndex].x = this.tmpVector.x;
         this.backHalf.vertices[negIndex].y = this.tmpVector.y;
@@ -401,7 +400,9 @@ export default class Line extends Nodule {
 
         // Front
         // no fillColor
-        if (SETTINGS.line.temp.strokeColor.front == "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
+        ) {
           this.frontHalf.noStroke();
         } else {
           this.frontHalf.stroke = SETTINGS.line.temp.strokeColor.front;
@@ -414,11 +415,16 @@ export default class Line extends Nodule {
           SETTINGS.line.drawn.dashArray.front.forEach(v => {
             this.frontHalf.dashes.push(v);
           });
+          if (SETTINGS.line.drawn.dashArray.reverse.front) {
+            this.frontHalf.dashes.reverse();
+          }
         }
 
         // Back
         // no fill color
-        if (SETTINGS.line.temp.strokeColor.back == "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
+        ) {
           this.backHalf.noStroke();
         } else {
           this.backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
@@ -432,6 +438,9 @@ export default class Line extends Nodule {
           SETTINGS.line.drawn.dashArray.back.forEach(v => {
             this.backHalf.dashes.push(v);
           });
+          if (SETTINGS.line.drawn.dashArray.reverse.back) {
+            this.backHalf.dashes.reverse();
+          }
         }
 
         // The temporary display is never highlighted
@@ -446,16 +455,23 @@ export default class Line extends Nodule {
         // Front
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (frontStyle?.strokeColor == "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
         } else {
           this.frontHalf.stroke = (frontStyle?.strokeColor ?? "black") as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle?.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle?.dashArray.length > 0
+        ) {
           this.frontHalf.dashes.clear();
           this.frontHalf.dashes.push(...frontStyle?.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.frontHalf.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.frontHalf.dashes.clear();
@@ -467,8 +483,9 @@ export default class Line extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this.backHalf.noStroke();
           } else {
@@ -477,7 +494,7 @@ export default class Line extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor == "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backHalf.noStroke();
           } else {
             this.backHalf.stroke = backStyle?.strokeColor as Color;
@@ -485,9 +502,16 @@ export default class Line extends Nodule {
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.backHalf.dashes.clear();
           this.backHalf.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.backHalf.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.backHalf.dashes.clear();
@@ -500,9 +524,16 @@ export default class Line extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle?.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle?.dashArray.length > 0
+        ) {
           this.glowingFrontHalf.dashes.clear();
           this.glowingFrontHalf.dashes.push(...frontStyle?.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontHalf.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontHalf.dashes.clear();
@@ -515,9 +546,16 @@ export default class Line extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackHalf.dashes.clear();
           this.glowingBackHalf.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.glowingBackHalf.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackHalf.dashes.clear();

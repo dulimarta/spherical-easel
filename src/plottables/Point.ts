@@ -317,7 +317,9 @@ export default class Point extends Nodule {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
         // FRONT
-        if (SETTINGS.point.temp.fillColor.front === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
+        ) {
           this.frontPoint.noFill();
         } else {
           this.frontPoint.fill = SETTINGS.point.temp.fillColor.front;
@@ -327,7 +329,7 @@ export default class Point extends Nodule {
         // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
 
         // BACK
-        if (SETTINGS.point.temp.fillColor.back === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
           this.backPoint.noFill();
         } else {
           this.backPoint.fill = SETTINGS.point.temp.fillColor.back;
@@ -343,12 +345,12 @@ export default class Point extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
-        if (frontStyle.fillColor === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
           this.frontPoint.fill = frontStyle.fillColor as Color;
         }
-        if (frontStyle.strokeColor == "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
         } else {
           this.frontPoint.stroke = frontStyle.strokeColor as Color;
@@ -359,7 +361,11 @@ export default class Point extends Nodule {
         // BACK
         const backStyle = this.styleOptions.get(StyleEditPanels.Back)!;
         if (backStyle.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(frontStyle.fillColor!) === "noFill") {
+          if (
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontStyle.fillColor)
+            )
+          ) {
             this.backPoint.noFill();
           } else {
             this.backPoint.fill = Nodule.contrastFillColor(
@@ -367,7 +373,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (backStyle.fillColor === "noFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.fillColor)) {
             this.backPoint.noFill();
           } else {
             this.backPoint.fill = backStyle.fillColor as Color;
@@ -375,7 +381,9 @@ export default class Point extends Nodule {
         }
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle.strokeColor!) === "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle.strokeColor)
+            )
           ) {
             this.backPoint.noStroke();
           } else {
@@ -384,7 +392,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (backStyle.strokeColor === "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.strokeColor)) {
             this.backPoint.noStroke();
           } else {
             this.backPoint.stroke = backStyle.strokeColor as Color;
@@ -394,12 +402,12 @@ export default class Point extends Nodule {
         // pointRadiusPercent applied by adjustSize();
 
         // FRONT Glowing
-        if (this.glowingFillColorFront === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
           this.glowingFrontPoint.noFill();
         } else {
           this.glowingFrontPoint.fill = this.glowingFillColorFront;
         }
-        if (this.glowingStrokeColorBack === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingFrontPoint.noStroke();
         } else {
           this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
@@ -408,12 +416,14 @@ export default class Point extends Nodule {
         // points have no dashing
 
         // Back Glowing
-        if (SETTINGS.point.glowing.fillColor.back === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
+        ) {
           this.glowingBackPoint.noFill();
         } else {
           this.glowingBackPoint.fill = this.glowingFillColorBack;
         }
-        if (this.glowingStrokeColorBack === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingBackPoint.noStroke();
         } else {
           this.glowingBackPoint.stroke = this.glowingStrokeColorBack;

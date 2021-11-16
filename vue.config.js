@@ -1,4 +1,5 @@
 module.exports = {
+  productionSourceMap: false, // disable source map on production build
   transpileDependencies: ["vuetify", "vuex-module-decorators"],
   pluginOptions: {
     i18n: {

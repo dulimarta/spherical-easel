@@ -203,7 +203,7 @@ export default {
     clickToMakeObjectsVisible: "",
     closeOrSelect: "",
     closeStylingPanel: "",
-    convertSelectionToLabels: "",
+
     cursive: "Cursive",
     dashPattern: "Pola garis putus",
     dashPatternCheckBoxToolTip: "",
@@ -300,7 +300,8 @@ export default {
       selectionDirection1: "",
       selectionDirection2: "",
       selectionDirection3: "",
-      selectionDirection4: "",
+      selectionDirection4Mac: "",
+      selectionDirection4PC: "",
       showColorInputs: "",
       showColorInputsToolTip: "",
       showColorPresets: "",

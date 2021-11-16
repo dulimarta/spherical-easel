@@ -6,8 +6,9 @@ Vue.use(Vuetify);
 
 import colors from "vuetify/es5/util/colors";
 import IconBase from "../components/IconBase.vue";
+import SETTINGS from "@/global-settings";
 
-/* This allows us to set the global style variables to adjust the look and feel of the 
+/* This allows us to set the global style variables to adjust the look and feel of the
 app from one central place. */
 const vuetify = new Vuetify({
   iconfont: "mdiSvg",
@@ -16,164 +17,313 @@ const vuetify = new Vuetify({
       point: {
         component: IconBase,
         props: {
-          iconName: "Point",
-          iconFile: "/icons/iconPointPaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          iconName: "point" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       line: {
         component: IconBase,
         props: {
-          iconName: "Line",
-          iconFile: "/icons/iconLinePaths.svg",
-          emphasizeTypes: [
-            ["line", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "line" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       segment: {
         component: IconBase,
         props: {
-          iconName: "Segment",
-          iconFile: "/icons/iconSegmentPaths.svg",
-          emphasizeTypes: [
-            ["segment", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "segment" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       circle: {
         component: IconBase,
         props: {
-          iconName: "Circle",
-          iconFile: "/icons/iconCirclePaths.svg",
-          emphasizeTypes: [
-            ["circle", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "circle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
-      antipode: {
+      antipodalPoint: {
         component: IconBase,
         props: {
-          iconName: "Antipode",
-          iconFile: "/icons/iconAntipodePaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "antipodalPoint" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       polar: {
         component: IconBase,
         props: {
-          iconName: "Polar",
-          iconFile: "/icons/iconPolarPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front"]
-          ]
+          iconName: "polar" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       perpendicular: {
         component: IconBase,
         props: {
-          iconName: "Perpendicular",
-          iconFile: "/icons/iconPerpendicularPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front", "back"]
-          ]
+          iconName: "perpendicular" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       tangent: {
         component: IconBase,
         props: {
-          iconName: "Tangent",
-          iconFile: "/icons/iconTangentPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front", "back"]
-          ]
+          iconName: "tangent" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
-      intersection: {
+      intersect: {
         component: IconBase,
         props: {
-          iconName: "Intersection",
-          iconFile: "/icons/iconIntersectionPaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "intersect" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       pointOnObject: {
         component: IconBase,
         props: {
-          iconName: "Intersection",
-          iconFile: "/icons/iconPointOnObjectPaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "pointOnObject" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       angle: {
         component: IconBase,
         props: {
-          iconName: "Angle",
-          iconFile: "/icons/iconAngleMarkerPaths.svg",
-          emphasizeTypes: [["angleMarker", "back", "front"]]
+          iconName: "angle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       segmentLength: {
         component: IconBase,
         props: {
-          iconName: "Segment Length",
-          iconFile: "/icons/iconSegmentLengthPaths.svg",
-          emphasizeTypes: [["segment", "back", "front"]]
+          iconName: "segmentLength" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       pointDistance: {
         component: IconBase,
         props: {
-          iconName: "Point Distance",
-          iconFile: "/icons/iconPointDistancePaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          iconName: "pointDistance" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       ellipse: {
         component: IconBase,
         props: {
-          iconName: "Ellipse",
-          iconFile: "/icons/iconEllipsePaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          iconName: "ellipse" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       parametric: {
         component: IconBase,
         props: {
-          iconName: "Parametric",
-          iconFile: "/icons/iconParametricPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["parametric", "front"]
-          ]
+          iconName: "parametric" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
-      measuredTriangle: {
+      measureTriangle: {
         component: IconBase,
         props: {
-          iconName: "MeasuredTriangle",
-          iconFile: "/icons/iconMeasuredTrianglePaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["angleMarker", "back", "front"]
-          ]
+          iconName: "measureTriangle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
-      measuredPolygon: {
+      measurePolygon: {
         component: IconBase,
         props: {
-          iconName: "MeasuredPolygon",
-          iconFile: "/icons/iconMeasuredPolygonPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["angleMarker", "back", "front"]
-          ]
+          iconName: "measurePolygon" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      midpoint: {
+        component: IconBase,
+        props: {
+          iconName: "midpoint" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      nSectPoint: {
+        component: IconBase,
+        props: {
+          iconName: "nSectPoint" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      angleBisector: {
+        component: IconBase,
+        props: {
+          iconName: "angleBisector" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      nSectLine: {
+        component: IconBase,
+        props: {
+          iconName: "nSectLine" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      coordinate: {
+        component: IconBase,
+        props: {
+          iconName: "coordinate" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      delete: {
+        component: IconBase,
+        props: {
+          iconName: "delete" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      hide: {
+        component: IconBase,
+        props: {
+          iconName: "hide" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      iconFactory: {
+        component: IconBase,
+        props: {
+          iconName: "iconFactory" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      move: {
+        component: IconBase,
+        props: {
+          iconName: "move" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      rotate: {
+        component: IconBase,
+        props: {
+          iconName: "rotate" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      select: {
+        component: IconBase,
+        props: {
+          iconName: "select" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      toggleLabelDisplay: {
+        component: IconBase,
+        props: {
+          iconName: "toggleLabelDisplay" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      zoomFit: {
+        component: IconBase,
+        props: {
+          iconName: "zoomFit" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      zoomIn: {
+        component: IconBase,
+        props: {
+          iconName: "zoomIn" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      zoomOut: {
+        component: IconBase,
+        props: {
+          iconName: "zoomOut" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      toolsTab: {
+        component: IconBase,
+        props: {
+          iconName: "toolsTab" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      objectsTab: {
+        component: IconBase,
+        props: {
+          iconName: "objectsTab" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      constructionsTab: {
+        component: IconBase,
+        props: {
+          iconName: "constructionsTab" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      calculationObject: {
+        component: IconBase,
+        props: {
+          iconName: "calculationObject" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      measurementObject: {
+        component: IconBase,
+        props: {
+          iconName: "measurementObject" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      slider: {
+        component: IconBase,
+        props: {
+          iconName: "slider" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      stylePanel: {
+        component: IconBase,
+        props: {
+          iconName: "stylePanel" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      downloadConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "downloadConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      shareConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "shareConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      deleteConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "deleteConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      cycleNodeValueDisplayMode: {
+        component: IconBase,
+        props: {
+          iconName: "cycleNodeValueDisplayMode" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      showNode: {
+        component: IconBase,
+        props: {
+          iconName: "showNode"
+        }
+      },
+      hideNode: {
+        component: IconBase,
+        props: {
+          iconName: "hideNode"
+        }
+      },
+      showNodeLabel: {
+        component: IconBase,
+        props: {
+          iconName: "showNodeLabel"
+        }
+      },
+      hideNodeLabel: {
+        component: IconBase,
+        props: {
+          iconName: "hideNodeLabel"
+        }
+      },
+      deleteNode: {
+        component: IconBase,
+        props: {
+          iconName: "deleteNode"
+        }
+      },
+      appSettings: {
+        component: IconBase,
+        props: {
+          iconName: "appSettings"
+        }
+      },
+      clearConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "clearConstruction"
+        }
+      },
+      undo: {
+        component: IconBase,
+        props: {
+          iconName: "undo"
+        }
+      },
+      redo: {
+        component: IconBase,
+        props: {
+          iconName: "redo"
         }
       }
     }

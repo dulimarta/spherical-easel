@@ -82,8 +82,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Measurement Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Measurement Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="MeasurementToolGroup"
@@ -104,8 +104,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Advanced Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Advanced Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup"
@@ -127,8 +127,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Transformational Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Transformational Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="TransformationalToolGroup"
@@ -149,8 +149,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Conice Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Conice Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="ConicToolGroup"
@@ -222,7 +222,7 @@ export default class ToolGroups extends Vue {
   private elev = 24;
   private inProductionMode = false;
 
-  /* This is a variable that does NOT belong in the global settings but I don't know where else to 
+  /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
@@ -240,7 +240,7 @@ export default class ToolGroups extends Vue {
     return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
   }
 
-  /* This turns off all other snackbar/toolUseMessage displays so that multiple 
+  /* This turns off all other snackbar/toolUseMessage displays so that multiple
   snackbar/toolUseMessages are not displayed at the same time.  */
   displayOnlyThisToolUseMessageFunc(id: number): void {
     // Alternative solution: use Array high-order functions
@@ -298,7 +298,7 @@ export default class ToolGroups extends Vue {
       id: 0,
       actionModeValue: "select",
       displayedName: "SelectDisplayedName",
-      icon: "mdi-cursor-pointer",
+      icon: "$vuetify.icons.value.select",
       toolTipMessage: "SelectToolTipMessage",
       toolUseMessage: "SelectToolUseMessage",
       displayToolUseMessage: false,
@@ -308,7 +308,7 @@ export default class ToolGroups extends Vue {
       id: 5,
       actionModeValue: "delete",
       displayedName: "DeleteDisplayedName",
-      icon: "mdi-delete",
+      icon: "$vuetify.icons.value.delete",
       toolTipMessage: "DeleteToolTipMessage",
       toolUseMessage: "DeleteToolUseMessage",
       displayToolUseMessage: false,
@@ -319,7 +319,7 @@ export default class ToolGroups extends Vue {
       id: 0,
       actionModeValue: "hide",
       displayedName: "HideDisplayedName",
-      icon: "mdi-file-hidden",
+      icon: "$vuetify.icons.value.hide",
       toolTipMessage: "HideObjectToolTipMessage",
       toolUseMessage: "HideObjectToolUseMessage",
       displayToolUseMessage: false,
@@ -329,7 +329,7 @@ export default class ToolGroups extends Vue {
       id: 5,
       actionModeValue: "toggleLabelDisplay",
       displayedName: "ToggleLabelDisplayedName",
-      icon: "mdi-toggle-switch-off-outline",
+      icon: "$vuetify.icons.value.toggleLabelDisplay",
       toolTipMessage: "ToggleLabelToolTipMessage",
       toolUseMessage: "ToggleLabelToolUseMessage",
       displayToolUseMessage: false,
@@ -340,7 +340,7 @@ export default class ToolGroups extends Vue {
       id: 15,
       actionModeValue: "move",
       displayedName: "MoveDisplayedName",
-      icon: "mdi-cursor-move",
+      icon: "$vuetify.icons.value.move",
       toolTipMessage: "MoveObjectToolTipMessage",
       toolUseMessage: "MoveObjectToolUseMessage",
       displayToolUseMessage: false,
@@ -350,7 +350,7 @@ export default class ToolGroups extends Vue {
       id: 20,
       actionModeValue: "rotate",
       displayedName: "RotateDisplayedName",
-      icon: "mdi-rotate-3d-variant",
+      icon: "$vuetify.icons.value.rotate",
       toolTipMessage: "RotateSphereToolTipMessage",
       toolUseMessage: "RotateSphereToolUseMessage",
       displayToolUseMessage: false,
@@ -361,7 +361,7 @@ export default class ToolGroups extends Vue {
       id: 25,
       actionModeValue: "zoomIn",
       displayedName: "PanZoomInDisplayedName",
-      icon: "mdi-magnify-plus-outline",
+      icon: "$vuetify.icons.value.zoomIn",
       toolTipMessage: "PanZoomInToolTipMessage",
       toolUseMessage: "PanZoomInToolUseMessage",
       displayToolUseMessage: false,
@@ -371,7 +371,7 @@ export default class ToolGroups extends Vue {
       id: 30,
       actionModeValue: "zoomOut",
       displayedName: "PanZoomOutDisplayedName",
-      icon: "mdi-magnify-minus-outline",
+      icon: "$vuetify.icons.value.zoomOut",
       toolTipMessage: "PanZoomOutToolTipMessage",
       toolUseMessage: "PanZoomOutToolUseMessage",
       displayToolUseMessage: false,
@@ -381,17 +381,37 @@ export default class ToolGroups extends Vue {
       id: 35,
       actionModeValue: "zoomFit",
       displayedName: "ZoomFitDisplayedName",
-      icon: "mdi-magnify-scan",
+      icon: "$vuetify.icons.value.zoomFit",
       toolTipMessage: "ZoomFitToolTipMessage",
       toolUseMessage: "ZoomFitToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "edit"
     },
     {
+      id: 0,
+      actionModeValue: "midpoint",
+      displayedName: "CreateMidpointDisplayedName",
+      icon: "$vuetify.icons.value.midpoint",
+      toolTipMessage: "CreateMidpointToolTipMessage",
+      toolUseMessage: "CreateMidpointToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
+      id: 5,
+      actionModeValue: "angleBisector",
+      displayedName: "CreateAngleBisectorDisplayedName",
+      icon: "$vuetify.icons.value.angleBisector",
+      toolTipMessage: "CreateAngleBisectorToolTipMessage",
+      toolUseMessage: "CreateAngleBisectorToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 15,
       actionModeValue: "antipodalPoint",
       displayedName: "CreateAntipodalPointDisplayedName",
-      icon: "$vuetify.icons.value.antipode",
+      icon: "$vuetify.icons.value.antipodalPoint",
       toolTipMessage: "CreateAntipodalPointToolTipMessage",
       toolUseMessage: "CreateAntipodalPointToolUseMessage",
       displayToolUseMessage: false,
@@ -431,7 +451,7 @@ export default class ToolGroups extends Vue {
       id: 50,
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",
-      icon: "$vuetify.icons.value.intersection",
+      icon: "$vuetify.icons.value.intersect",
       toolTipMessage: "CreateIntersectionToolTipMessage",
       toolUseMessage: "CreateIntersectionToolUseMessage",
       displayToolUseMessage: false,
@@ -439,7 +459,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 45,
-      actionModeValue: "pointOnOneDim",
+      actionModeValue: "pointOnObject",
       displayedName: "CreatePointOnOneDimDisplayedName",
       icon: "$vuetify.icons.value.pointOnObject",
       toolTipMessage: "CreatePointOnOneDimToolTipMessage",
@@ -481,7 +501,7 @@ export default class ToolGroups extends Vue {
       id: 15,
       actionModeValue: "coordinate",
       displayedName: "CreateCoordinateDisplayedName",
-      icon: "mdi-axis-arrow-info",
+      icon: "$vuetify.icons.value.coordinate",
       toolTipMessage: "CreateCoordinateToolTipMessage",
       toolUseMessage: "CreateCoordinateToolUseMessage",
       displayToolUseMessage: false,
@@ -491,7 +511,7 @@ export default class ToolGroups extends Vue {
       id: 20,
       actionModeValue: "measureTriangle",
       displayedName: "MeasureTriangleDisplayedName",
-      icon: "$vuetify.icons.value.measuredTriangle",
+      icon: "$vuetify.icons.value.measureTriangle",
       toolTipMessage: "MeasureTriangleToolTipMessage",
       toolUseMessage: "MeasureTriangleToolUseMessage",
       displayToolUseMessage: false,
@@ -501,7 +521,7 @@ export default class ToolGroups extends Vue {
       id: 25,
       actionModeValue: "measurePolygon",
       displayedName: "MeasurePolygonDisplayedName",
-      icon: "$vuetify.icons.value.measuredPolygon",
+      icon: "$vuetify.icons.value.measurePolygon",
       toolTipMessage: "MeasurePolygonToolTipMessage",
       toolUseMessage: "MeasurePolygonToolUseMessage",
       displayToolUseMessage: false,
@@ -516,6 +536,36 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateEllipseToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "conic"
+    },
+    {
+      id: 10,
+      actionModeValue: "nSectPoint",
+      displayedName: "CreateNSectSegmentDisplayedName",
+      icon: "$vuetify.icons.value.nSectPoint",
+      toolTipMessage: "CreateNSectSegmentToolTipMessage",
+      toolUseMessage: "CreateNSectSegmentToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
+    },
+    {
+      id: 15,
+      actionModeValue: "nSectLine",
+      displayedName: "CreateNSectAngleDisplayedName",
+      icon: "$vuetify.icons.value.nSectLine",
+      toolTipMessage: "CreateNSectAngleToolTipMessage",
+      toolUseMessage: "CreateNSectAngleToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
+    },
+    {
+      id: 0,
+      actionModeValue: "iconFactory",
+      displayedName: "CreateIconDisplayedName",
+      icon: "$vuetify.icons.value.iconFactory",
+      toolTipMessage: "CreateIconToolTipMessage",
+      toolUseMessage: "CreateIconToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "developerOnly"
     }
     // Disable the icon factory for deployment - this for developers only
     // {

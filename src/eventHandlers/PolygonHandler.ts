@@ -7,7 +7,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -31,6 +31,7 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PolygonHandler extends Highlighter {
   /**
@@ -372,19 +373,20 @@ export default class PolygonHandler extends Highlighter {
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, vtx);
 
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.startSEPoint!.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.polygon.initialLabelOffset,
-              SETTINGS.polygon.initialLabelOffset,
-              0
+        if (this.startSEPoint) {
+          // Set the initial label location
+          this.tmpVector
+            .copy(this.startSEPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.polygon.initialLabelOffset,
+                SETTINGS.polygon.initialLabelOffset,
+                0
+              )
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
-
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+        }
         // Create and execute the command to create a new point for undo/redo
         polygonCommandGroup
           .addCommand(
@@ -397,8 +399,15 @@ export default class PolygonHandler extends Highlighter {
             )
           )
           .execute();
-        // Update the display of the antipodal point
-        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        // Update the display
+        vtx.markKidsOutOfDate();
+        vtx.update();
+
+        // Update the display so the changes become apparent
+        this.seEdgeSegments.forEach(seg => {
+          seg.markKidsOutOfDate();
+          seg.update();
+        });
 
         EventBus.fire("show-alert", {
           key: `handlers.newPolygonAdded`,
@@ -785,10 +794,8 @@ export default class PolygonHandler extends Highlighter {
       const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
       // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-      newSEAngleMarker.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      newSEAngleMarker.markKidsOutOfDate();
+      newSEAngleMarker.update();
 
       // Set the initial label location near the common endpoint of the segments
       // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
@@ -843,10 +850,8 @@ export default class PolygonHandler extends Highlighter {
       seAngleMarkers.push(newSEAngleMarker);
 
       // Update the display of the new angle marker
-      newSEAngleMarker.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      newSEAngleMarker.markKidsOutOfDate();
+      newSEAngleMarker.update();
     });
     return seAngleMarkers;
   }
@@ -879,31 +884,31 @@ export default class PolygonHandler extends Highlighter {
         new AddLengthMeasurementCommand(lenMeasure, seg)
       );
       // Set the selected segment's Label to display and to show NameAndValue in an undoable way
-      polygonCommandGroup.addCommand(
-        new StyleNoduleCommand(
-          [seg.label!.ref],
-          StyleEditPanels.Front,
-          [
-            {
-              // panel: StyleEditPanels.Front,
-              // labelVisibility: true,
-              labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
-            }
-          ],
-          [
-            {
-              // panel: StyleEditPanels.Front,
-              // labelVisibility: seg.label!.showing,
-              labelDisplayMode: seg.label!.ref.labelDisplayMode
-            }
-          ]
-        )
-      );
-      // Update the display so the changes become apparent
-      seg.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      if (seg.label !== undefined) {
+        polygonCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [seg.label.ref],
+            StyleEditPanels.Label,
+            [
+              {
+                // panel: StyleEditPanels.Front,
+                // labelVisibility: true,
+                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                // panel: StyleEditPanels.Front,
+                // labelVisibility: seg.label!.showing,
+                labelDisplayMode: seg.label.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        polygonCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(seg.label, true)
+        );
+      }
     });
   }
 }

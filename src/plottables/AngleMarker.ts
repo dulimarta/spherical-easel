@@ -2864,7 +2864,11 @@ export default class AngleMarker extends Nodule {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         //FRONT
-        if (SETTINGS.angleMarker.temp.fillColor.front === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.angleMarker.temp.fillColor.front
+          )
+        ) {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
         } else {
@@ -2878,7 +2882,11 @@ export default class AngleMarker extends Nodule {
           this.frontFill1.fill = SETTINGS.angleMarker.temp.fillColor.front;
           this.frontFill2.fill = SETTINGS.angleMarker.temp.fillColor.front;
         }
-        if (SETTINGS.angleMarker.temp.strokeColor.front === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.angleMarker.temp.strokeColor.front
+          )
+        ) {
           this.frontCirclePathStart.noStroke();
           this.frontCirclePathTail.noStroke();
           this.frontStraightStart.noStroke();
@@ -2903,16 +2911,28 @@ export default class AngleMarker extends Nodule {
         this.frontStraightEnd.linewidth =
           AngleMarker.currentAngleMarkerStraightStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
+        if (
+          SETTINGS.angleMarker.drawn.dashArray.front.length > 0 &&
+          SETTINGS.angleMarker.drawn.dashArray.front[0] !== 0 &&
+          SETTINGS.angleMarker.drawn.dashArray.front[1] !== 0
+        ) {
           this.frontCirclePathStart.dashes.clear();
           this.frontCirclePathTail.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.front.forEach(v => {
             this.frontCirclePathStart.dashes.push(v);
             this.frontCirclePathTail.dashes.push(v);
           });
+          if (SETTINGS.angleMarker.drawn.dashArray.reverse.front) {
+            this.frontCirclePathStart.dashes.reverse();
+            this.frontCirclePathTail.dashes.reverse();
+          }
         }
         //BACK
-        if (SETTINGS.angleMarker.temp.fillColor.back === "noFill") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.angleMarker.temp.fillColor.back
+          )
+        ) {
           this.backFill1.noFill();
           this.backFill2.noFill();
         } else {
@@ -2926,7 +2946,11 @@ export default class AngleMarker extends Nodule {
           this.backFill1.fill = SETTINGS.angleMarker.temp.fillColor.back;
           this.backFill2.fill = SETTINGS.angleMarker.temp.fillColor.back;
         }
-        if (SETTINGS.angleMarker.temp.strokeColor.back === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.angleMarker.temp.strokeColor.back
+          )
+        ) {
           this.backCirclePathStart.noStroke();
           this.backCirclePathTail.noStroke();
           this.backStraightStart.noStroke();
@@ -2951,13 +2975,21 @@ export default class AngleMarker extends Nodule {
         this.backStraightEnd.linewidth =
           AngleMarker.currentAngleMarkerStraightStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
+        if (
+          SETTINGS.angleMarker.drawn.dashArray.back.length > 0 &&
+          SETTINGS.angleMarker.drawn.dashArray.back[0] !== 0 &&
+          SETTINGS.angleMarker.drawn.dashArray.back[1] !== 0
+        ) {
           this.backCirclePathStart.dashes.clear();
           this.backCirclePathTail.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.back.forEach(v => {
             this.backCirclePathStart.dashes.push(v);
             this.backCirclePathTail.dashes.push(v);
           });
+          if (SETTINGS.angleMarker.drawn.dashArray.reverse.back) {
+            this.backCirclePathStart.dashes.reverse();
+            this.backCirclePathTail.dashes.reverse();
+          }
         }
         // The temporary display is never highlighted
         this.glowingFrontCirclePathStart.visible = false;
@@ -2987,7 +3019,7 @@ export default class AngleMarker extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-        if (frontStyle?.fillColor === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
         } else {
@@ -3001,7 +3033,7 @@ export default class AngleMarker extends Nodule {
           this.frontFill2.fill = frontStyle?.fillColor ?? "black";
         }
 
-        if (frontStyle?.strokeColor === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontCirclePathStart.noStroke();
           this.frontStraightStart.noStroke();
           this.frontCirclePathDoubleArcStart.noStroke();
@@ -3019,7 +3051,13 @@ export default class AngleMarker extends Nodule {
             frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent is applied by adjustSize()
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0 &&
+          frontStyle.dashArray[0] !== 0 &&
+          frontStyle.dashArray[1] !== 0
+        ) {
           this.frontCirclePathStart.dashes.clear();
           this.frontCirclePathDoubleArcStart.dashes.clear();
           this.frontCirclePathTail.dashes.clear();
@@ -3033,6 +3071,12 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathDoubleArcTail.dashes.push(
             ...frontStyle.dashArray
           );
+          if (frontStyle.reverseDashArray) {
+            this.frontCirclePathStart.dashes.reverse();
+            this.frontCirclePathDoubleArcStart.dashes.reverse();
+            this.frontCirclePathTail.dashes.reverse();
+            this.frontCirclePathDoubleArcTail.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.frontCirclePathStart.dashes.clear();
@@ -3049,8 +3093,9 @@ export default class AngleMarker extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
-            "noFill"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontStyle?.fillColor)
+            )
           ) {
             this.backFill1.noFill();
             this.backFill2.noFill();
@@ -3071,7 +3116,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (backStyle?.fillColor === "noFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
@@ -3088,8 +3133,9 @@ export default class AngleMarker extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ===
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
@@ -3118,7 +3164,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor === "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
             this.backCirclePathDoubleArcStart.noStroke();
@@ -3138,7 +3184,13 @@ export default class AngleMarker extends Nodule {
         }
 
         // strokeWidthPercent applied by adjustSizer()
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0 &&
+          backStyle.dashArray[0] !== 0 &&
+          backStyle.dashArray[1] !== 0
+        ) {
           this.backCirclePathStart.dashes.clear();
           this.backCirclePathDoubleArcStart.dashes.clear();
           this.backCirclePathTail.dashes.clear();
@@ -3148,6 +3200,12 @@ export default class AngleMarker extends Nodule {
           this.backCirclePathDoubleArcStart.dashes.push(...backStyle.dashArray);
           this.backCirclePathTail.dashes.push(...backStyle.dashArray);
           this.backCirclePathDoubleArcTail.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.backCirclePathStart.dashes.reverse();
+            this.backCirclePathDoubleArcStart.dashes.reverse();
+            this.backCirclePathTail.dashes.reverse();
+            this.backCirclePathDoubleArcTail.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.backCirclePathStart.dashes.clear();
@@ -3173,7 +3231,12 @@ export default class AngleMarker extends Nodule {
         this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle.dashArray.length > 0 &&
+          frontStyle.dashArray[0] !== 0 &&
+          frontStyle.dashArray[1] !== 0
+        ) {
           this.glowingFrontCirclePathStart.dashes.clear();
           this.glowingFrontCirclePathDoubleArcStart.dashes.clear();
           this.glowingFrontCirclePathTail.dashes.clear();
@@ -3210,7 +3273,13 @@ export default class AngleMarker extends Nodule {
         this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0 &&
+          backStyle.dashArray[0] !== 0 &&
+          backStyle.dashArray[1] !== 0
+        ) {
           this.glowingBackCirclePathStart.dashes.clear();
           this.glowingBackCirclePathDoubleArcStart.dashes.clear();
           this.glowingBackCirclePathTail.dashes.clear();
@@ -3224,6 +3293,12 @@ export default class AngleMarker extends Nodule {
           this.glowingBackCirclePathDoubleArcTail.dashes.push(
             ...backStyle.dashArray
           );
+          if (backStyle.reverseDashArray) {
+            this.glowingBackCirclePathStart.dashes.reverse();
+            this.glowingBackCirclePathDoubleArcStart.dashes.reverse();
+            this.glowingBackCirclePathTail.dashes.reverse();
+            this.glowingBackCirclePathDoubleArcTail.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackCirclePathStart.dashes.clear();

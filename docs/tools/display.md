@@ -9,85 +9,91 @@ Each of these tools allows a user to adjust the display of an arrangement.
 
 ::: tool-title
 
-## Hide Object
+## Hide Object <IconBase notInline icon-name="hide" />
 
 :::
 ::: tool-description
+
 Hide selected objects.
 
 ::: tool-details
 
-- Clicking at a location hides all nearby objects.
-- When an object is hidden its label is also hidden. However, after using this tool, you can select the object in the Objects Tab and then use the Style Panel to show the label. This allows the user to hide an angle marker and but then use the angle marker's label to display text to label the angle.
-- When hiding a line segment or point that is part of a [Measured Angle](/tools/measurement.html#angle) and an angle marker is display, hiding that object will also hide the angle marker.
-- If the user would like to show all hidden objects, hold the <kbd>S</kbd> key and click on the Sphere Canvas and all hidden objects will be shown.
+- Mousing over an object will highlight the object in focus and clicking will hide that object.
+- When an object is hidden its label is also hidden.
+- While using this tool, if the user would like to show all the objects that the user has hidden _since_ _the_ _tool_ was activated, press the <kbd>s</kbd> (lowercase s) key and those objects will be shown.
+- While using this tool, if the user would like to show _all_ hidden objects, press the <kbd>S</kbd> (Capital S) key and all hidden objects will be shown.
 - If this tool is activated with any objects selected, the selected objects are hidden automatically.
+
   ::: tip
-  If when clicking at a location more than one object becomes hidden and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will hide the selected objects.
+  If the user wishes to display a label without displaying the object, the user can open the Objects Tab <IconBase icon-name="objectsTab" />, navigate to and expand the appropriate object type, and then, in the row of the object, use the display label toggle button <IconBase icon-name="showNodeLabel" /> or <IconBase icon-name="hideNodeLabel" /> to show or hide the label.
   :::
 
   ::: tool-title
 
-## Show/Hide Label
+## Toggle Label Display <IconBase notInline icon-name="toggleLabelDisplay" />
 
 :::
 ::: tool-description
+
 Hide or show the label of selected objects.
+
 ::: tool-details
 
-- Clicking at a location toggles the display of all nearby objects' labels.
-- If the user would like to
-
-  - only show labels when clicking, hold the <kbd>S</kbd> keys and click on the Sphere Canvas. All nearby objects will have their labels shown.
-  - only hide labels when clicking, hold the <kbd>H</kbd> keys and click on the Sphere Canvas. All nearby objects will have their labels hidden.
-  - show all object's labels, hold the <kbd>Shift</kbd> + <kbd>S</kbd> key and click once on the Sphere Canvas. All labels will be shown.
-  - hide all object's labels, hold the <kbd>Shift</kbd> + <kbd>H</kbd> key and click once on the Sphere Canvas. All labels will be hidden.
-
-- To toggle the display of a label, the user can click directly on (or near) the label or can click on (or near) the object to which it is attached.
-- If this tool is activated with any object(s) selected, the display of the selected objects' label(s) is toggled automatically.
+- Mousing over an object will highlight the object in focus and clicking will toggle the visibility of that object's label. If the object in focus is a label and the user clicks it, that label is hidden.
+- To show all visible objects' labels, use the press the <KeyShortcuts macLetter="s" pcLetter="s" />.
+- To hide all visible objects' labels, use the press the <KeyShortcuts macLetter="h" pcLetter="h" />.
+- If this tool is activated with any object(s) selected, the display of the selected objects' labels are toggled automatically.
 
   ::: tip
-  If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
+  If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then [Undo](edit.html#undo-and-redo) <IconBase icon-name="undo" /> you first action, change to the [Selection Tool](edit.html#selection) <IconBase icon-name="select" />, and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
   :::
 
 ::: tool-title
 
-## Move
+## Move <IconBase notInline icon-name="move" />
 
 :::
 ::: tool-description
-Move the location of a single object.
+Move the location of a free object.
 ::: tool-details
 
-- Mouse press and dragging on a single free object will move the location of the object on the sphere. Mouse release will terminate the movement of that object and place it at a new location.
-- There are two kinds of free objects:
-  - Those which reside at the top layer or second to top layer of the dependency structure. For example, suppose three points are created on the sphere using the [Point Tool](/tools/basic.html#point) (and are not snapped - [see this tip in the Point Tool](/tools/basic.html#point) - to any object) then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse using the [Ellipse Tool](/tools/basic.html#ellipse) then the ellipse is in the second layer of the dependency structure.
-  - Those points that are either created with the [Point On Object Tool](/tools/construction.html#point-on-object) or are automatically created in this way when creating another object.
-- **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved so long as the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
+- Mousing over an object will highlight a free and movable object. Mouse press and dragging on that object will move the location of the object on the sphere and the location of all objects that depends on it will be updated. Mouse release will terminate the movement of that object and place it at a new location.
+- **Not** all objects are movable. Only free objects are movable. There are several kinds of free objects:
+
+  1. Points which reside in the top layer of the dependency structure of a construction. For example, points created on the sphere that are not snapped - see this [tip](/tools/basic.html#point) - to an intersection point.
+
+  2. Lines, line segments, circles, and ellipses which reside in second to top layer of the dependency structure. For example, suppose three points are created on the sphere and are not snapped to any object. Then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse then the ellipse is in the second layer of the dependency structure. These kinds of objects are free and therefore movable.
+
+  3. Points on objects and objects that depend only on points on objects are also free and moveable. For example, suppose two circles are created that intersect at two points and a line segment is constructed between the intersection points. Further suppose that two points are created on the line segment and are used to create a circle $C$. While the line segment is not free, the points on it and the circle $C$ are free and moveable.
+
+  4. Line segments that have a length of $\frac{\pi}{2}$ are free. For example, if two lines are created and the line segment between the two intersection points is free (even though the intersection points are not free). The line segment will rotate about its endpoints.
+
+  5. (TODO: not implemented) You can move the location of a slider displayed in the Sphere Frame.
+
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
-- Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be "moved" using a Measurement object in the parametric definition.
-- Moving a free line or line segment rotates that line about the axis connecting one of the points on the line or line segment to its antipode. Pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
-- Moving a free line segment with the <kbd>Crtl</kbd> key pressed, moves both endpoints simultaneously. They both rotate about the perpendicular to the plane containing the last mouse location and the current mouse location as the user drags.
-- You can move the location of a slider displayed in the Sphere Frame.
-- If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
+- Moving a free line or line segment rotates it about one of the defining points of the line or an endpoint of line segment. Pressing the <KeyShortcuts macOpt pcAlt /> key toggles the point that the line or line segment rotates about.
+- Moving a free line or line segment with the <KeyShortcuts macCtrl pcCtrl /> key pressed, moves both endpoints or defining points simultaneously. They both rotate about the perpendicular to the plane containing the last mouse location and the current mouse location as the user drags.
+- Polygons, non-ellipse conics, antipodal points, parametric curves, and objects created using the Construction Tools (except point on object) and Advanced Tools are not moveable. Parametric curves can be "moved" by using a Measurement Object <IconBase icon-name="measurementObject" /> or a Calculation Object <IconBase icon-name="calculationObject" /> in the parametric definition. See [Parametric Curve](advanced.html#parametric-curve) for more details
+- If the user clicks on an empty space in the Sphere Canvas and then drags, the sphere is rotated.
+- If this tool is activated with objects selected, the selected objects are unselected and ignored.
 
 ::: tip
-When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about. To move both endpoints of a line segment, press the <kbd>Crtl</kbd> key when moving.
+When moving a free line or line segment pressing the <KeyShortcuts macOpt pcAlt /> key toggles the point that the line or line segment rotates about. To move both endpoints of a line segment, press the <KeyShortcuts macCtrl pcCtrl /> key when moving.
 :::
 
 ::: tool-title
 
-## Rotation
+## Rotation <IconBase notInline icon-name="rotate" />
 
 :::
 ::: tool-description
-Rotate the current view.
+Rotate the sphere.
 ::: tool-details
 
-- Clicking and dragging will change the current view of the sphere. The mouse press location is moved to the current location of the mouse while dragging. The mouse release location sets the final view of the sphere.
-- If the [Momentum](/userguide/#top-region-title-bar) feature is activated, then after the mouse is released, the view will continue to change. The time it will continue to rotate is determined by the Decay Time which has a maximum of 5 minutes. To stop all rotation either click at a location or deactivate this tool.
+- Clicking and dragging will change the current view of the sphere by rotation. The mouse press location is moved to the current location of the mouse while dragging. The mouse release location sets the final view of the sphere.
+- If the [Momentum](/userguide/#top-region-title-bar) feature is activated, then after the mouse is released, the view will continue to change. The time it will continue to rotate is determined by the Decay Time which has a maximum of 5 minutes. To stop all rotation either click anywhere on the Sphere Canvas or deactivate this tool.
 - If the user has Momentum enabled, but while dragging the sphere, pauses for a period of time (about 0.25 seconds) before mouse releasing, the momentum feature will not be activated.
-- Pressing the <kbd>Alt</kbd> rotates the display about the (not displayed) north pole of the display (the upper most point on the screen). This is the same as a translation along the (not displayed) equator of the displayed sphere.
+- Pressing the <KeyShortcuts macOtp  pcAlt /> rotates the display about the (not displayed) north pole of the display (the upper most point on the screen). This is the same as a translation along the (not displayed) equator of the displayed sphere.
 - If this tool is activated with a single point or line segment or line selected, clicking and dragging will either rotate around that point or along that line segment or line (i.e. around the poles of the line or the line containing the line segment). Mouse release will stop the rotation (except for the [Momentum](/userguide/#top-region-title-bar) rotation). To stop the rotation click at a location. To rotate in a different way, deactivate the tool (by selecting another one) to clear the selected objects and then select the Rotation Tool again.
 
 ::: tip

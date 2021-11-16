@@ -1,15 +1,12 @@
-import Two, { Vector } from "two.js";
+import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddTangentLineThruPointCommand } from "@/commands/AddTangentLineThruPointCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SELabel } from "@/models/SELabel";
 import {
   SEOneDimensionalNotStraight,
   SEOneOrTwoDimensional,
-  UpdateMode,
   SEIntersectionReturnType
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -30,18 +27,23 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
-const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
+// const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
 import { SEStore } from "@/store";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 
+type TemporaryLine = {
+  line: Line;
+  exist: boolean;
+  tmpNormal: Vector3;
+};
 export default class TangentLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
-  private tempLines: Line[] = [];
-  private temporaryLinesAdded: boolean[] = [];
-  private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
+  private tempLines: TemporaryLine[] = [];
+  // private temporaryLinesAdded: boolean[] = [];
+  // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
   /**
    * A temporary plottable (TwoJS) point created while the user is making the tangent
@@ -86,14 +88,15 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
   constructor(layers: Two.Group[]) {
     super(layers);
-    // Create and style the temporary lines
-    for (let i = 0; i < MAXNUMBEROFTANGENTS; i++) {
-      this.tempLines.push(new Line());
-      this.tempLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
-      SEStore.addTemporaryNodule(this.tempLines[i]);
-      this.temporaryLinesAdded.push(false);
-      this.temporaryNormals.push(new Vector3());
-    }
+
+    // Create and style the temporary lines (initially allocate one)
+    this.tempLines.push({
+      line: new Line(),
+      exist: false,
+      tmpNormal: new Vector3()
+    });
+    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
+    SEStore.addTemporaryNodule(this.tempLines[0].line);
 
     // Create and style the temporary point marking the point on the tangent being created
     this.temporaryPointMarker = new Point();
@@ -281,10 +284,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
         this.temporaryPointMarker.removeFromLayers();
         this.temporaryPointAdded = false;
 
-        this.temporaryLinesAdded = [];
-        this.tempLines.forEach(line => {
-          line.removeFromLayers();
-          this.temporaryLinesAdded.push(false);
+        this.tempLines.forEach((z: TemporaryLine) => {
+          z.line.removeFromLayers();
+          z.exist = false;
         });
 
         this.sePointVector.set(0, 0, 0);
@@ -418,32 +420,29 @@ export default class TangentLineThruPointHandler extends Highlighter {
         const normalList = this.oneDimensional.getNormalsToTangentLinesThru(
           vectorLocation
         );
-        // console.log("number of normals", normalList.length);
 
-        if (normalList.length > MAXNUMBEROFTANGENTS) {
-          throw new Error(
-            "The number normals is bigger than the MAXNUMBEROFTANGENTS temporary tangents"
-          );
+        // Add more temporary line as needed
+        while (this.tempLines.length < normalList.length) {
+          const newLine = new Line();
+          this.tempLines.push({
+            line: newLine,
+            exist: false,
+            tmpNormal: new Vector3()
+          });
+          newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
+          SEStore.addTemporaryNodule(newLine);
         }
 
         //set the display of the normals and the vectors
-        this.temporaryNormals.forEach((vec, ind) => {
-          // console.log("index", ind);
+        this.tempLines.forEach((z: TemporaryLine, ind: number) => {
           if (ind < normalList.length) {
-            this.temporaryLinesAdded[ind] = true;
-            vec.copy(normalList[ind]);
-            this.tempLines[ind].normalVector = vec;
-            this.tempLines[ind].addToLayers(this.layers);
-            // console.log(
-            //   "index",
-            //   ind,
-            //   normalList[ind].x,
-            //   normalList[ind].y,
-            //   normalList[ind].z
-            // );
+            z.exist = true;
+            z.tmpNormal.copy(normalList[ind]);
+            z.line.normalVector = z.tmpNormal;
+            z.line.addToLayers(this.layers);
           } else {
-            this.temporaryLinesAdded[ind] = false;
-            this.tempLines[ind].removeFromLayers();
+            z.exist = false;
+            z.line.removeFromLayers();
           }
         });
       }
@@ -471,9 +470,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.temporaryNormals.forEach((vec, ind) => {
-      this.temporaryLinesAdded[ind] = false;
-      this.tempLines[ind].removeFromLayers();
+    this.tempLines.forEach((z: TemporaryLine) => {
+      z.exist = false;
+      z.line.removeFromLayers();
     });
 
     this.sePointVector.set(0, 0, 0);
@@ -482,7 +481,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
 
-  createTangent(
+  private createTangent(
     oneDimensional: SEOneDimensionalNotStraight,
     sePointOneDimensionalParent: SEOneOrTwoDimensional | null,
     sePointVector: Vector3,
@@ -578,8 +577,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // There are only two tangent
       this.numberOfTangents = 2;
     } else if (oneDimensional instanceof SEParametric) {
-      // There are upto ??? tangents
-      this.numberOfTangents = oneDimensional.maxNumberOfTangents;
+      // There are upto N tangents, determine the actual count from the temporary lines used so far
+      this.numberOfTangents = this.tempLines.filter(
+        (z: TemporaryLine) => z.exist
+      ).length;
     }
     normalVectors = oneDimensional
       .getNormalsToTangentLinesThru(sePointVector)
@@ -628,7 +629,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
         newPerpLine.exists = false;
       }
       // Update the display of the tangent line
-      newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      newPerpLine.markKidsOutOfDate();
+      newPerpLine.update();
 
       // Create the plottable label
       const newLabel = new Label();

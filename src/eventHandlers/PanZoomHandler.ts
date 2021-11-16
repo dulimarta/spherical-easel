@@ -6,6 +6,7 @@ import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
 
 import { SEStore } from "@/store";
+import { SENodule } from "@/models/SENodule";
 
 export enum ZoomMode {
   MAGNIFY,
@@ -273,7 +274,14 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   activate(): void {
-    // No code required yet
+    SEStore.selectedSENodules.forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+    // Clear the selected objects array
+    SEStore.setSelectedSENodules([]);
+
+    // call an unglow all command
+    SEStore.unglowAllSENodules();
   }
 
   deactivate(): void {

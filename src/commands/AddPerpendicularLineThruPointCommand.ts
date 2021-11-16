@@ -2,8 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEOneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
-import Line from "@/plottables/Line";
+import { SavedNames, SEOneDimensional } from "@/types";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -11,6 +10,8 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import NonFreeLine from "@/plottables/NonFreeLine";
+import { StyleEditPanels } from "@/types/Styles";
+import Point from "@/plottables/Point";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -53,80 +54,178 @@ export class AddPerpendicularLineThruPointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    const targetLine = this.sePerpendicularLineThruPoint;
     return [
       "AddPerpendicularLineThruPoint",
-      /* arg-1 */ targetLine.name,
-      /* arg-2 */ targetLine.normalVector.toFixed(7),
-      /* arg-3 */ targetLine.startSEPoint.name,
-      /* arg-4 */ targetLine.endSEPoint.name,
-      /* arg-5 */ targetLine.endSEPoint.locationVector.toFixed(7),
-      /* arg-6 */ this.parentOneDimensional.name,
-      /* arg-7 */ this.seLabel.name,
-      /* arg-8 */ targetLine.showing,
-      /* arg-9 */ targetLine.exists,
-      /* arg-10*/ targetLine.index
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" +
+        Command.symbolToASCIIDec(this.sePerpendicularLineThruPoint.name),
+      "objectExists=" + this.sePerpendicularLineThruPoint.exists,
+      "objectShowing=" + this.sePerpendicularLineThruPoint.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePerpendicularLineThruPoint.ref.currentStyleState(
+              StyleEditPanels.Front
+            )
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePerpendicularLineThruPoint.ref.currentStyleState(
+              StyleEditPanels.Back
+            )
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "perpendicularLineThruPointParentPointName=" + this.parentSEPoint.name,
+      "perpendicularLineThruPointNormalVector=" +
+        this.sePerpendicularLineThruPoint.normalVector.toFixed(7),
+      "perpendicularLineThruPointEndSEPointLocationVector=" +
+        this.sePerpendicularLineThruPoint.endSEPoint.locationVector.toFixed(7),
+      "perpendicularLineThruPointParentOneDimensionalName=" +
+        this.parentOneDimensional.name,
+      "perpendicularLineThruPointIndex=" +
+        this.sePerpendicularLineThruPoint.index
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const startPoint = objMap.get(tokens[3]) as SEPoint | undefined;
-    const perpToLine = objMap.get(tokens[6]) as SEOneDimensional | undefined;
-    if (startPoint && perpToLine) {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const perpendicularLineThruPointParentOneDimensional = objMap.get(
+      propMap.get("perpendicularLineThruPointParentOneDimensionalName") ?? ""
+    ) as SEOneDimensional | undefined;
+
+    const perpendicularLineThruPointParentPoint = objMap.get(
+      propMap.get("perpendicularLineThruPointParentPointName") ?? ""
+    ) as SEPoint | undefined;
+
+    const perpendicularLineThruPointEndSEPointLocation = new Vector3();
+    perpendicularLineThruPointEndSEPointLocation.from(
+      propMap.get("perpendicularLineThruPointEndSEPointLocationVector")
+    );
+
+    const perpendicularLineThruPointNormal = new Vector3();
+    perpendicularLineThruPointNormal.from(
+      propMap.get("perpendicularLineThruPointNormalVector")
+    );
+
+    const perpendicularLineThruPointIndex = Number(
+      propMap.get("perpendicularLineThruPointIndex")
+    );
+
+    if (
+      perpendicularLineThruPointParentPoint &&
+      perpendicularLineThruPointParentOneDimensional &&
+      perpendicularLineThruPointNormal.z !== 1 &&
+      perpendicularLineThruPointEndSEPointLocation.z !== 1 &&
+      !isNaN(perpendicularLineThruPointIndex)
+    ) {
+      //make the perpendicular Line
       const line = new NonFreeLine();
-      line.stylize(DisplayStyle.ApplyCurrentVariables);
-      line.adjustSize();
-      const normal = new Vector3();
-      normal.from(tokens[2]);
+      // create the non-displayed not in the DAG End Point of the line
+      const endPoint = new SEPoint(new Point());
+      endPoint.locationVector = perpendicularLineThruPointEndSEPointLocation;
+      endPoint.exists = true; //never changes
+      endPoint.showing = false; // never changes
 
-      const endPoint = new SEPoint(new NonFreePoint());
-      endPoint.showing = false;
-      endPoint.exists = true;
-      const endLocation = new Vector3();
-      endLocation.from(tokens[5]);
-      endPoint.locationVector = endLocation;
-      const index = Number(tokens[10]);
-      const seLine = new SEPerpendicularLineThruPoint(
+      const perpendicularLineThruPointLine = new SEPerpendicularLineThruPoint(
         line,
-        perpToLine,
-        startPoint,
-        normal,
+        perpendicularLineThruPointParentOneDimensional,
+        perpendicularLineThruPointParentPoint,
+        perpendicularLineThruPointNormal,
         endPoint,
-        index
+        perpendicularLineThruPointIndex
       );
-      seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      seLine.name = tokens[1];
-      seLine.showing = tokens[8] === "true";
-      seLine.exists = tokens[9] === "true";
-      objMap.set(tokens[1], seLine);
+      //style the perpendicular Line
+      const perpendicularThruPointLineFrontStyleString = propMap.get(
+        "objectFrontStyle"
+      );
+      if (perpendicularThruPointLineFrontStyleString !== undefined)
+        line.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(perpendicularThruPointLineFrontStyleString)
+        );
+      const perpendicularThruPointLineBackStyleString = propMap.get(
+        "objectBackStyle"
+      );
+      if (perpendicularThruPointLineBackStyleString !== undefined)
+        line.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(perpendicularThruPointLineBackStyleString)
+        );
 
-      const seLabel = new SELabel(new Label(), seLine);
-      const labelPosition = new Vector3()
-        .copy(endPoint.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      seLabel.locationVector = labelPosition;
-      seLabel.name = tokens[7];
-      seLabel.showing = tokens[8] === "true";
-      seLabel.exists = tokens[9] === "true";
-      objMap.set(tokens[7], seLabel);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, perpendicularLineThruPointLine);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the circle in the object map
+      if (propMap.get("objectName") !== undefined) {
+        perpendicularLineThruPointLine.name = propMap.get("objectName") ?? "";
+        perpendicularLineThruPointLine.showing =
+          propMap.get("objectShowing") === "true";
+        perpendicularLineThruPointLine.exists =
+          propMap.get("objectExists") === "true";
+        objMap.set(
+          perpendicularLineThruPointLine.name,
+          perpendicularLineThruPointLine
+        );
+      } else {
+        throw new Error(
+          "AddPerpendicularLineThruPoint: Perpendicular Line Name doesn't exist"
+        );
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error(
+          "AddPerpendicularLineThruPoint: Label Name doesn't exist"
+        );
+      }
       return new AddPerpendicularLineThruPointCommand(
-        seLine,
-        startPoint,
-        perpToLine,
+        perpendicularLineThruPointLine,
+        perpendicularLineThruPointParentPoint,
+        perpendicularLineThruPointParentOneDimensional,
         seLabel
       );
-    } else {
-      throw new Error(
-        `AddPerpendicularLineThruPoint: parent start point ${tokens[3]} or parent line ${tokens[6]} is undefined`
-      );
     }
+
+    throw new Error(
+      `AddPerpendicularLineThruPoint: ${perpendicularLineThruPointParentPoint}, ${perpendicularLineThruPointParentOneDimensional}, ${perpendicularLineThruPointIndex}, ${perpendicularLineThruPointNormal}, or ${perpendicularLineThruPointEndSEPointLocation}  is undefined`
+    );
   }
 }

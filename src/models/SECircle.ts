@@ -4,13 +4,12 @@ import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { OneDimensional } from "@/types";
+import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_CIRCLE_BACK_STYLE,
   DEFAULT_CIRCLE_FRONT_STYLE
 } from "@/types/Styles";
-import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -113,13 +112,17 @@ export class SECircle extends SENodule
     );
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
+
     if (this._exists) {
       //update the centerVector and the radius
       const newRadius = this._centerSEPoint.locationVector.angleTo(
@@ -136,19 +139,21 @@ export class SECircle extends SENodule
     } else {
       this.ref.setVisible(false);
     }
-    // These circles are completely determined by their point parents and an update on the parents
-    // will cause this circle to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const circleState: CircleState = {
-        kind: "circle",
-        object: this
-      };
-      state.stateArray.push(circleState);
+    // These circles are completely determined by their point parents and an update on the parents
+    // will cause this circle to be put into the correct location.So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "circle", object: this });
     }
 
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -231,7 +236,7 @@ export class SECircle extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     this.tmpVector.crossVectors(
       sePointVector,
       this._centerSEPoint.locationVector
@@ -246,7 +251,7 @@ export class SECircle extends SENodule
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return [this.tmpVector.normalize()];
+    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
   /**
@@ -364,41 +369,16 @@ export class SECircle extends SENodule
       // First mark the kids out of date so that the update method does a topological sort
       this.circleSEPoint.markKidsOutOfDate();
       this.centerSEPoint.markKidsOutOfDate();
-      this.circleSEPoint.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
-      this.centerSEPoint.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      this.circleSEPoint.update();
+      this.centerSEPoint.update();
     }
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  public isFreePoint(): boolean {
-    return false;
-  }
   public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
+
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

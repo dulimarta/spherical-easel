@@ -1,22 +1,22 @@
 import { SEPoint } from "./SEPoint";
-import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { ObjectState, SEOneDimensional } from "@/types";
+
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import SETTINGS from "@/global-settings";
 import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
+import { SEPencil } from "./SEPencil";
 
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
    * The One-Dimensional parent of this SEPerpendicularLine
    */
   private seParentOneDimensional: SEOneDimensional;
+  public seParentPencil: SEPencil | null = null;
 
   /**
    * The point parent of this SEPerpendicularLine
@@ -29,9 +29,11 @@ export class SEPerpendicularLineThruPoint extends SELine {
   private tempVector1 = new Vector3();
 
   /**
-   * In the case of ellipses where there are upto four perpendiculars through a point, this is the index to use
+   * In the case of ellipses (or parametric curves in general)
+   * there can be multiple number of perpendiculars through a point, this is the index to use
    */
   private _index: number;
+  // private _pencilSize: number;
   /**
    * Create an intersection point between two one-dimensional objects
    * @param line the TwoJS Line associated with this intersection
@@ -48,23 +50,34 @@ export class SEPerpendicularLineThruPoint extends SELine {
     normalVector: Vector3,
     seEndPoint: SEPoint,
     index: number
+    // pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
     this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
+    // this._pencilSize = pencilSize;
   }
 
-  public update(state: UpdateStateType): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (this.seParentPencil !== null) {
+      if (!this.canUpdateNow()) {
+        // If any one parent is not up to date, don't do anything
+        return;
+      }
     }
+
     this.setOutOfDate(false);
+
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
+
     if (this._exists) {
+      this.seParentPencil?.update(); // SEParentPencil isn't in the DAG, so it only serves to create new perpendiculars
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
       // console.log("before x", this.name, this._normalVector.x);
@@ -73,6 +86,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this._normalVector // the soon to be old normal vector
       );
+
       // console.log(
       //   "angle change with returned normals",
       //   this.name,
@@ -81,7 +95,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
       // );
 
       if (normals[this._index] !== undefined) {
-        this._normalVector.copy(normals[this._index]);
+        this._normalVector.copy(normals[this._index].normal);
 
         // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToPerpendicularLinesThru *never* returns a point with
@@ -105,23 +119,31 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this._exists = false;
       }
     }
+
     // Update visibility
     if (this._exists && this._showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
-    // Perpendicular Lines are completely determined by their parents and an update on the parents
-    // will cause this line to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Store only for delete
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const perpendicularLineThruPointState: PerpendicularLineThruPointState = {
+
+    // These perpendicular lines are completely determined by their parametric parents and an update on the parents
+    // will cause this line to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Perpendicular Lint Thru Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, {
         kind: "perpendicularLineThruPoint",
         object: this
-      };
-      state.stateArray.push(perpendicularLineThruPointState);
+      });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   set glowing(b: boolean) {
@@ -130,6 +152,9 @@ export class SEPerpendicularLineThruPoint extends SELine {
   get index(): number {
     return this._index;
   }
+  // get pencilSize(): number {
+  //   return this._pencilSize;
+  // }
 
   public get noduleDescription(): string {
     let oneDimensionalParentType;
