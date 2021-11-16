@@ -285,9 +285,11 @@ import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { SEStore } from "@/store";
 import Parametric from "@/plottables/Parametric";
-import { Matrix4 } from "three";
 import { Unsubscribe } from "@firebase/util";
 import { FirebaseAuth, User } from "@firebase/auth-types";
+import { FirebaseStorage } from "@firebase/storage-types";
+import axios, { AxiosResponse } from "axios";
+
 const SE = namespace("se");
 
 /**
@@ -320,6 +322,7 @@ export default class Easel extends Vue {
 
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+  readonly $appStorage!: FirebaseStorage;
 
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -428,10 +431,19 @@ export default class Easel extends Vue {
       .collection("constructions") // load the script from public collection
       .doc(docId)
       .get()
-      .then((doc: DocumentSnapshot) => {
+      .then(async (doc: DocumentSnapshot) => {
         if (doc.exists) {
           const { script } = doc.data() as ConstructionInFirestore;
-          run(JSON.parse(script) as ConstructionScript);
+          if (script.startsWith("https:")) {
+            const scriptText = await this.$appStorage
+              .refFromURL(script)
+              .getDownloadURL()
+              .then((url: string) => axios.get(url))
+              .then((r: AxiosResponse) => r.data);
+            run(JSON.parse(scriptText) as ConstructionScript);
+          } else {
+            run(JSON.parse(script) as ConstructionScript);
+          }
         } else {
           EventBus.fire("show-alert", {
             key: "constructions.constructionNotFound",
