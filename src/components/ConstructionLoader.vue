@@ -83,7 +83,6 @@ import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
-import { ungzip } from "node-gzip";
 import axios, { AxiosResponse } from "axios";
 const SE = namespace("se");
 
