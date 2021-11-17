@@ -3,7 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import AngleMarker from "@/plottables/AngleMarker";
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, LineBasicMaterial } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { ObjectState } from "@/types";
@@ -75,7 +75,18 @@ export class SEAngleMarker extends SEExpression
    * second parent normal (in that order always) by -1 to get the intersection on the front of the sphere
    * initially, then we *always* have to multiply by -1 to get the correct location.
    */
-  private _vertexDirectionScalar = 1;
+  private _vertexDirectionScalar = 0;
+
+  /**
+   * We want to enable the user to select one of the four angles created by the intersection of two lines
+   * which quadrant is determined by the the lineClickLocations. Place the angle in that quadrant
+   */
+  private _firstPointDirectionScalar = 0;
+  private _secondPointDirectionScalar = 0;
+  private _sideOfLine1 = 0; //lineClickLocation 2 chooses a side of line parent 1
+  private _sideOfLine2 = 0; //lineClickLocation 1 chooses a side of line parent 2
+  private _lineClickLocation1: Vector3 = new Vector3();
+  private _lineClickLocation2: Vector3 = new Vector3();
 
   /**
    * Used in the update method to compute the orthonormal frame for setting _start/_end Vector
@@ -112,13 +123,17 @@ export class SEAngleMarker extends SEExpression
     mode: AngleMode,
     firstSEParent: SELine | SESegment | SEPoint,
     secondSEParent: SELine | SESegment | SEPoint,
-    thirdSEParent?: SEPoint | undefined
+    thirdSEParent?: SEPoint | undefined,
+    lineClickLocation1?: Vector3 | undefined,
+    lineClickLocation2?: Vector3 | undefined
   ) {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.ref = angMar;
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
+    if (lineClickLocation1) this._lineClickLocation1 = lineClickLocation1;
+    if (lineClickLocation2) this._lineClickLocation2 = lineClickLocation2;
     this.mode = mode;
 
     this._valueDisplayMode = SETTINGS.angleMarker.initialValueDisplayMode;
@@ -231,6 +246,12 @@ export class SEAngleMarker extends SEExpression
     return this._endVector;
   }
 
+  get secondPointDirectionScalar(): number {
+    return this._secondPointDirectionScalar;
+  }
+  get firstPointDirectionScalar(): number {
+    return this._firstPointDirectionScalar;
+  }
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -377,29 +398,28 @@ export class SEAngleMarker extends SEExpression
         // First set the vertexVector
         // the common point defining the line is *always* the _vertex vector
         if (
-          this._firstSEParent.startSEPoint ===
-            this._secondSEParent.startSEPoint ||
-          this._firstSEParent.startSEPoint === this._secondSEParent.endSEPoint
+          this._firstSEParent.startSEPoint.id ===
+            this._secondSEParent.startSEPoint.id ||
+          this._firstSEParent.startSEPoint.id ===
+            this._secondSEParent.endSEPoint.id
         ) {
           // the common point defining the line is *always* the _vertex vector
           this._vertexVector.copy(
             this._firstSEParent.startSEPoint.locationVector
           );
         } else if (
-          this._firstSEParent.endSEPoint ===
-            this._secondSEParent.startSEPoint ||
-          this._firstSEParent.endSEPoint === this._secondSEParent.endSEPoint
+          this._firstSEParent.endSEPoint.id ===
+            this._secondSEParent.startSEPoint.id ||
+          this._firstSEParent.endSEPoint.id ===
+            this._secondSEParent.endSEPoint.id
         ) {
           // the common point defining the line is *always* the _vertex vector
           this._vertexVector.copy(
             this._firstSEParent.endSEPoint.locationVector
           );
         } else if (
-          // Check to see if this is the first time through this update method (if the vertexVector is zero)
-          // and the lines do not have a defining point in common
-          this._vertexVector.x === 0 &&
-          this._vertexVector.y === 0 &&
-          this._vertexVector.z === 0
+          // Check to see if this is the first time through this update method
+          this._vertexDirectionScalar === 0
         ) {
           // the vertex of the angle marker is one of the intersection points of the lines
           this._vertexVector
@@ -408,8 +428,8 @@ export class SEAngleMarker extends SEExpression
               this._secondSEParent.normalVector
             )
             .normalize();
-          if (this._vertexVector.z < 0) {
-            //choose the intersection point that is on the front of the sphere
+          if (this._vertexVector.z * this._lineClickLocation1.z < 0) {
+            //choose the intersection point that is on the front of the sphere unless the first click was on the back of the sphere
             this._vertexVector.multiplyScalar(-1);
             // remember this choice and multiply the _vertex vector by it *every* time we recompute it
             this._vertexDirectionScalar = -1;
@@ -426,9 +446,30 @@ export class SEAngleMarker extends SEExpression
             .normalize();
         }
 
-        //Second set the start vector
+        //Second set the start vector use the line click locations to try and figure out which angle to draw
+        // only execute this once (i.e. only when this._firstPointDirectionScalar is zero)
+        if (this._firstPointDirectionScalar === 0) {
+          // the candidate direction for the start/first point in the angle
+          this.tmpVector1
+            .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
+            .normalize();
+
+          // make sure that the line click 1 is on the same of line 2 as the candidate direction for start/first point in the angle
+          if (
+            this.tmpVector1.dot(
+              this._firstSEParent.closestVector(this._lineClickLocation1)
+            ) < 0
+          ) {
+            console.log("first point reverse! -1");
+            this._firstPointDirectionScalar = -1;
+          } else {
+            this._firstPointDirectionScalar = 1;
+          }
+        }
+
         this.tmpVector1
           .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
+          .multiplyScalar(this._firstPointDirectionScalar) // pick the right starting place for the line
           .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the first parent line
         this._startVector.set(0, 0, 0);
         this._startVector.addScaledVector(
@@ -443,6 +484,7 @@ export class SEAngleMarker extends SEExpression
           .normalize();
 
         // Third set the end vector
+
         this.tmpVector1
           .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
           .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the second parent line

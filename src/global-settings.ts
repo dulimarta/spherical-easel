@@ -247,7 +247,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
-    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the segment.
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,

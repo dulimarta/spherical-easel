@@ -74,7 +74,7 @@ export default class LineHandler extends Highlighter {
    * A temporary vector to help with normal vector computations
    */
   private tmpVector = new Vector3();
-
+  private tmpVector1 = new Vector3();
   /**
    * Make a line handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
@@ -475,6 +475,7 @@ export default class LineHandler extends Highlighter {
     this.startSEPointOneDimensionalParent = null;
     this.normalVector.set(0, 0, 0);
     this.startLocationSelected = false;
+    this.tmpVector.set(0, 0, 0);
 
     // call an unglow all command
     SEStore.unglowAllSENodules();
@@ -735,11 +736,10 @@ export default class LineHandler extends Highlighter {
       return false;
     }
 
+    this.tmpVector1.copy(this.normalVector).multiplyScalar(-1); // copy the normal vector and multiply by -1 (avoid changing the normal vector which caused problems for Angle marker)
     if (
       SEStore.seLines.some(line =>
-        this.tmpVector
-          .subVectors(line.normalVector, this.normalVector.multiplyScalar(-1))
-          .isZero()
+        this.tmpVector.subVectors(line.normalVector, this.tmpVector1).isZero()
       )
     ) {
       return false;

@@ -59,7 +59,7 @@ export class SESegment extends SENodule
    * SEEndPoint were nearlyAntipodal or not. See "Right here is why we need this from one update to the next!" in the
    * comments below.
    */
-  private nearlyAntipodal = false;
+  private _nearlyAntipodal = false;
 
   /* Temporary vectors to help with calculuations */
   private tmpVector = new Vector3();
@@ -100,6 +100,11 @@ export class SESegment extends SENodule
 
   accept(v: Visitor): void {
     v.actionOnSegment(this);
+  }
+
+  // Returns true if the points defining the segment are nearly antipodal.
+  get nearlyAntipodal(): boolean {
+    return this._nearlyAntipodal;
   }
 
   get startSEPoint(): SEPoint {
@@ -148,14 +153,20 @@ export class SESegment extends SENodule
   }
   public isHitAt(
     unitIdealVector: Vector3,
-    currentMagnificationFactor: number
+    currentMagnificationFactor: number,
+    extraFactor?: number
   ): boolean {
-    // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
+    // sometimes, like when moving a point that is supposed to be inside a polygon,
+    // we want the bounds on when a segment is hit to be much smaller, so we set the extrafactor number to tighten them
+    // Is the unitIdealVector perpendicular to the normal to the plane containing the segment?
     if (
       Math.abs(unitIdealVector.dot(this._normalVector)) >
-      SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
-    )
+      SETTINGS.segment.hitIdealDistance /
+        (extraFactor ? extraFactor : 1) /
+        currentMagnificationFactor
+    ) {
       return false;
+    }
 
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
@@ -173,9 +184,9 @@ export class SESegment extends SENodule
     );
 
     return (
-      this.tmpVector.angleTo(unitIdealVector) <
-      this._arcLength / 2 +
-        SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
+      this.tmpVector.angleTo(unitIdealVector) < this._arcLength / 2
+      // +
+      //   SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
     );
   }
 
@@ -192,11 +203,12 @@ export class SESegment extends SENodule
     if (
       this.tmpVector
         .subVectors(this.startSEPoint.locationVector, unitIdealVector)
-        .isZero(SETTINGS.tolerance) ||
+        .isZero(SETTINGS.tolerance / 10000) ||
       this.tmpVector
         .subVectors(this.endSEPoint.locationVector, unitIdealVector)
-        .isZero(SETTINGS.tolerance)
+        .isZero(SETTINGS.tolerance / 10000)
     ) {
+      // console.log("inside onSegment");
       return true;
     }
 
@@ -385,13 +397,13 @@ export class SESegment extends SENodule
             .isZero(SETTINGS.nearlyAntipodalIdeal)
         ) {
           // The points are antipodal on the screen
-          this.nearlyAntipodal = true;
+          this._nearlyAntipodal = true;
         } else {
           // Right here is why we need this from one update to the next!
-          if (this.nearlyAntipodal) {
+          if (this._nearlyAntipodal) {
             longerThanPi = !longerThanPi;
           }
-          this.nearlyAntipodal = false;
+          this._nearlyAntipodal = false;
         }
       }
       // Now longerThanPi is correctly set, update the arcLength based on it

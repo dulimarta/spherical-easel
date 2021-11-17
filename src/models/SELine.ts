@@ -85,6 +85,15 @@ export class SELine extends SENodule
     v.actionOnLine(this);
   }
 
+  get nearlyAntipodal(): boolean {
+    return this.tmpVector
+      .crossVectors(
+        this._endSEPoint.locationVector,
+        this._startSEPoint.locationVector
+      )
+      .isZero(SETTINGS.nearlyAntipodalIdeal);
+  }
+
   get normalVector(): Vector3 {
     return this._normalVector;
   }
@@ -202,7 +211,6 @@ export class SELine extends SENodule
     // nearly antipodal or in the same direction)
 
     if (this.tmpVector3.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-      // console.log("get normals to line thru temp is zero");
       // In this case any line containing the sePoint will be perpendicular to the line, but
       //  we want to choose one line whose normal is near the oldNormal and perpendicular to sePointVector
       // So project the oldNormal vector onto the plane perpendicular to sePointVector
@@ -210,16 +218,8 @@ export class SELine extends SENodule
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector))
         .normalize();
-
-      // if (oldNormal.angleTo(this.tmpVector3) > 0.01) {
-      // console.log(
-      //   "change in normal vector in getNormalsToPerpendicularLinesThru",
-      //   oldNormal.angleTo(this.tmpVector3)
-      // );
-      // }
     }
     this.tmpVector3.normalize();
-    // console.log("here x", this.tmpVector3.x);
 
     return [{ normal: this.tmpVector3, tVal: NaN }];
   }
