@@ -224,10 +224,11 @@
             </v-row>
           </InputGroup>
           <InputGroup input-selector="dashArray"
+            :key="dashPanelKey"
             :panel="panel"
             :numSelected="selectionCount"
             v-if="(editModeIsFront && hasStyle(/dashArray/) && ((!angleMarkersSelected && oneDimensionSelected)||(angleMarkersSelected && !oneDimensionSelected)))
-                 ||(editModeIsBack && hasStyle(/dashArray/) && !angleMarkersSelected)">
+                 ||(editModeIsBack && hasStyle(/dashArray/) && ((!angleMarkersSelected && oneDimensionSelected)||(angleMarkersSelected && !oneDimensionSelected)) )">
             <OverlayWithFixButton
               v-if="!dataAgreement(/dashArray|reverseDashArray/)"
               z-index="1"
@@ -238,12 +239,11 @@
                       forceDataAgreement([`dashArray`,`reverseDashArray`])">
             </OverlayWithFixButton>
 
-            <span v-show="editModeIsFront && !angleMarkersSelected"
+            <span v-show="editModeIsFront"
               class="text-subtitle-2">{{ $t("style.front") }}</span>
-            <span v-show="editModeIsBack && !angleMarkersSelected"
+            <span v-show="editModeIsBack"
               class="text-subtitle-2">{{ $t("style.back") }}</span>
-            <span v-show="editModeIsFront && angleMarkersSelected"
-              class="text-subtitle-2">{{ $t("style.frontAndBack") }}</span>
+
             <span
               class="text-subtitle-2">{{" "+ $t("style.dashPattern") }}</span>
             <span v-if="selectedSENodules.length > 1"
@@ -287,6 +287,7 @@
                     <template v-slot:activator="{ on }">
                       <span v-on="on">
                         <v-checkbox v-model="emptyDashPattern"
+                          :key="activeDashPatternKey"
                           :false-value="true"
                           :true-value="false"
                           :label="$t('style.dashPattern')"
@@ -313,6 +314,7 @@
                     <template v-slot:activator="{ on }">
                       <span v-on="on">
                         <v-checkbox v-model="styleOptions.reverseDashArray"
+                          :key="activeReverseDashPatternKey"
                           :disabled="emptyDashPattern"
                           :color="conflictItems.reverseDashArray? `red`: ''"
                           @click="toggleDashPatternReverse(styleOptions); conflictItems.reverseDashArray = false"
@@ -440,7 +442,33 @@ export default class FrontBackStyle extends Vue {
       (this.conflictItems as any)[prop] = false;
     });
   }
+  @Watch("selectedSENodules")
+  dashArrayUIUpdate(): void {
+    // update the emptyDashPattern boolean
 
+    console.log("hert", this.emptyDashPattern);
+    // this.hasStyle(/dashArray/);
+    // if (
+    //   this.styleOptions.dashArray[0] === 0 &&
+    //   styleOptions.dashArray[1] === 0
+    // ) {
+    //   this.emptyDashPattern = true;
+    // } else {
+    //   this.emptyDashPattern = false;
+    // }
+    //Force an update of UI slider.
+    const temp = this.emptyDashPattern;
+    this.emptyDashPattern = !this.emptyDashPattern;
+    this.dashArrayKey += 1;
+    this.dashPanelKey += 1;
+    this.activeDashPatternKey += 1;
+    this.activeReverseDashPatternKey += 1;
+    // update the panel
+    EventBus.fire("update-input-group-with-selector", {
+      inputSelector: "dashArray"
+    });
+    this.emptyDashPattern = temp;
+  }
   // @Watch("selectedSENodules")
   // setAnglemarker(): void {
   //   console.log("set ang mark");
@@ -506,6 +534,8 @@ export default class FrontBackStyle extends Vue {
   //Dash pattern Options
   private dashArrayKey = 0;
   private dashPanelKey = 0;
+  private activeDashPatternKey = 0;
+  private activeReverseDashPatternKey = 0;
   /** gapLength = sliderArray[1] */
   private gapLength = 0;
   private oldGapLength = 0;
@@ -624,6 +654,13 @@ export default class FrontBackStyle extends Vue {
         // );
       }
     );
+    EventBus.listen(
+      "update-empty-dash-array",
+      (load: { emptyDashArray: boolean }): void => {
+        console.log("set empty dash pattern");
+        this.emptyDashPattern = load.emptyDashArray;
+      }
+    );
   }
   resetAndRestoreConflictColors(): void {
     this.alreadySet = false;
@@ -633,6 +670,7 @@ export default class FrontBackStyle extends Vue {
   beforeDestroy(): void {
     EventBus.unlisten("style-label-conflict-color-reset");
     EventBus.unlisten("style-update-conflicting-props");
+    EventBus.unlisten("update-empty-dash-array");
   }
   get editModeIsBack(): boolean {
     return this.panel === StyleEditPanels.Back;
@@ -745,6 +783,7 @@ export default class FrontBackStyle extends Vue {
     }
     // Force an update of UI slider.
     this.dashArrayKey += 1;
+    this.dashPanelKey += 1;
     // update the panel
     EventBus.fire("update-input-group-with-selector", {
       inputSelector: "dashArray"

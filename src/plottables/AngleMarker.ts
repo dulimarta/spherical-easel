@@ -1983,10 +1983,12 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = true;
     this.glowingBackStraightEnd.visible = true;
 
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    // Double arc display on the back side is the same as the display on the front.
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     if (
-      backStyle?.angleMarkerDoubleArc &&
-      backStyle.angleMarkerDoubleArc === true
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
     ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
@@ -2048,10 +2050,13 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    // Double arc display on the back side is the same as the display on the front.
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+
     if (
-      backStyle?.angleMarkerDoubleArc &&
-      backStyle.angleMarkerDoubleArc === true
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
     ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
