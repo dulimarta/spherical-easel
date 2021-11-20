@@ -599,6 +599,11 @@ export const SETTINGS = {
     radiusScalePercent: 100,
     //The angular distance from the first angle marker arc to the second
     doubleArcGap: 0.05,
+    // Properties of the arrow head see Bill Casselman's PiScript Manual page 30 July 26,2013 11:12AM
+    arrowHeadTipAngle: (24 * Math.PI) / 180, // the angle between the shaft and the tip edge (half the whole tip angle)
+    arrowHeadRearAngle: (70 * Math.PI) / 180, // the angle between the shaft and the rear edge (half the whole tip angle)
+    arrowHeadLength: 5,
+    arrowHeadDisplay: true,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {

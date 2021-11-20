@@ -171,16 +171,16 @@
 
           <InputGroup :numSelected="selectionCount"
             :panel="panel"
-            input-selector="angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc"
+            input-selector="angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads"
             v-if="editModeIsFront && hasStyle(/angleMarker/)">
             <OverlayWithFixButton
-              v-if="!dataAgreement(/angleMarkerRadiusPercent|angleMarkerTickMark|angleMarkerDoubleArc/)"
+              v-if="!dataAgreement(/angleMarkerRadiusPercent|angleMarkerTickMark|angleMarkerDoubleArc|angleMarkerArrowHeads/)"
               z-index="1"
               i18n-title-line="style.styleDisagreement"
               i18n-button-label="style.enableCommonStyle"
               i18n-button-tool-tip="style.differentValuesToolTip"
               @click="distinguishConflictingItems(conflictingProps);
-                      forceDataAgreement([`angleMarkerRadiusPercent`,`angleMarkerTickMark`,`angleMarkerDoubleArc`])">
+                      forceDataAgreement([`angleMarkerRadiusPercent`,`angleMarkerTickMark`,`angleMarkerDoubleArc`,`angleMarkerArrowHeads`])">
             </OverlayWithFixButton>
             <span
               class="text-subtitle-2">{{ $t(`style.angleMarkerOptions`) }}</span>
@@ -214,10 +214,19 @@
               <v-col>
                 <v-switch v-model="styleOptions.angleMarkerDoubleArc"
                   :color="conflictItems.angleMarkerDoubleArc?'red':''"
-                  @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'),conflictItems.angleMarkerDoubleArc = false">
+                  @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'),conflictItems.angleMarkerDoubleArc = false">
                   <template v-slot:label>
                     <span
                       :style="{'color': conflictItems.angleMarkerDoubleArc?'red':``}">{{ $t('style.angleMarkerDoubleArc')}}</span>
+                  </template>
+                </v-switch>
+
+                <v-switch v-model="styleOptions.angleMarkerArrowHeads"
+                  :color="conflictItems.angleMarkerArrowHeads?'red':''"
+                  @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'),conflictItems.angleMarkerArrowHeads = false">
+                  <template v-slot:label>
+                    <span
+                      :style="{'color': conflictItems.angleMarkerArrowHeads?'red':``}">{{ $t('style.angleMarkerArrowHeads')}}</span>
                   </template>
                 </v-switch>
               </v-col>
@@ -397,6 +406,7 @@ type ConflictItems = {
   pointRadiusPercent: boolean;
   angleMarkerTickMark: boolean;
   angleMarkerDoubleArc: boolean;
+  angleMarkerArrowHeads: boolean;
   strokeColor: boolean;
   fillColor: boolean;
   strokeWidthPercent: boolean;
@@ -442,33 +452,33 @@ export default class FrontBackStyle extends Vue {
       (this.conflictItems as any)[prop] = false;
     });
   }
-  @Watch("selectedSENodules")
-  dashArrayUIUpdate(): void {
-    // update the emptyDashPattern boolean
+  // @Watch("selectedSENodules")
+  // dashArrayUIUpdate(): void {
+  //   // update the emptyDashPattern boolean
 
-    console.log("hert", this.emptyDashPattern);
-    // this.hasStyle(/dashArray/);
-    // if (
-    //   this.styleOptions.dashArray[0] === 0 &&
-    //   styleOptions.dashArray[1] === 0
-    // ) {
-    //   this.emptyDashPattern = true;
-    // } else {
-    //   this.emptyDashPattern = false;
-    // }
-    //Force an update of UI slider.
-    const temp = this.emptyDashPattern;
-    this.emptyDashPattern = !this.emptyDashPattern;
-    this.dashArrayKey += 1;
-    this.dashPanelKey += 1;
-    this.activeDashPatternKey += 1;
-    this.activeReverseDashPatternKey += 1;
-    // update the panel
-    EventBus.fire("update-input-group-with-selector", {
-      inputSelector: "dashArray"
-    });
-    this.emptyDashPattern = temp;
-  }
+  //   console.log("hert", this.emptyDashPattern);
+  //   // this.hasStyle(/dashArray/);
+  //   // if (
+  //   //   this.styleOptions.dashArray[0] === 0 &&
+  //   //   styleOptions.dashArray[1] === 0
+  //   // ) {
+  //   //   this.emptyDashPattern = true;
+  //   // } else {
+  //   //   this.emptyDashPattern = false;
+  //   // }
+  //   //Force an update of UI slider.
+  //   const temp = this.emptyDashPattern;
+  //   this.emptyDashPattern = !this.emptyDashPattern;
+  //   this.dashArrayKey += 1;
+  //   this.dashPanelKey += 1;
+  //   this.activeDashPatternKey += 1;
+  //   this.activeReverseDashPatternKey += 1;
+  //   // update the panel
+  //   EventBus.fire("update-input-group-with-selector", {
+  //     inputSelector: "dashArray"
+  //   });
+  //   this.emptyDashPattern = temp;
+  // }
   // @Watch("selectedSENodules")
   // setAnglemarker(): void {
   //   console.log("set ang mark");
@@ -481,6 +491,7 @@ export default class FrontBackStyle extends Vue {
     angleMarkerRadiusPercent: false,
     angleMarkerTickMark: false,
     angleMarkerDoubleArc: false,
+    angleMarkerArrowHeads: false,
     pointRadiusPercent: false,
     strokeColor: false,
     fillColor: false,
