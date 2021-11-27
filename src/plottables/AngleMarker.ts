@@ -206,6 +206,9 @@ export default class AngleMarker extends Nodule {
   static currentAngleMarkerRadiusDoubleArc =
     SETTINGS.angleMarker.defaultRadius + SETTINGS.angleMarker.doubleArcGap;
 
+  /** The size of the arrow head needs to scale with the zoom factor */
+  static currentAngleMarkerArrowHeadLength =
+    SETTINGS.angleMarker.arrowHeadLength;
   /**
    * Update all the current stroke widths
    * @param factor The ratio of the current magnification factor over the old magnification factor
@@ -223,20 +226,23 @@ export default class AngleMarker extends Nodule {
 
     AngleMarker.currentAngleMarkerRadius *= factor;
     AngleMarker.currentAngleMarkerRadiusDoubleArc *= factor;
+
+    AngleMarker.currentAngleMarkerArrowHeadLength *= factor;
   }
 
   /**
    * For temporary calculation with ThreeJS objects
    */
   private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   private tmpVectorDA = new Vector3();
   private tmpMatrixDA = new Matrix4();
   private tmpVectorStraight = new Vector3();
   private tmpArrowHeadTip = new Vector3();
   private tmpArrowHeadRear = new Vector3();
-  private tmpArrowHead1 = new Vector3();
-  private tmpArrowHead2 = new Vector3();
+  private tmpArrowHeadInner = new Vector3();
+  private tmpArrowHeadOuter = new Vector3();
   private tmpNormal1 = new Vector3();
   private tmpNormal2 = new Vector3();
   private tmpNormal = new Vector3();
@@ -716,27 +722,35 @@ export default class AngleMarker extends Nodule {
     ).modTwoPi();
     // console.log("angularLength", angularLengthOfMarker);
 
-    // adjust the length of the angular length if the arrowhead is drawn
-    const rearDeltaAngle =
-      // The angular length of the arrowheadlength
-      2 *
-        Math.asin(
-          SETTINGS.angleMarker.arrowHeadLength /
-            SEStore.zoomMagnificationFactor /
-            (2 *
-              Math.sin(this._angleMarkerRadius) *
-              SETTINGS.boundaryCircle.radius)
-        ) +
-      //plus the angular length of the stroke miter
-      2 *
-        Math.asin(
-          this.frontArrowHeadPath.linewidth /
-            SEStore.zoomMagnificationFactor /
-            (2 * Math.sin(SETTINGS.angleMarker.arrowHeadTipAngle)) /
-            (2 *
-              Math.sin(this._angleMarkerRadius) *
-              SETTINGS.boundaryCircle.radius)
-        );
+    // adjust drawn angular length (in the circle of the angle marker) if the arrowhead is drawn
+    const miterLength =
+      this.frontArrowHeadPath.linewidth /
+      (2 *
+        SETTINGS.boundaryCircle.radius *
+        Math.sin(
+          (SETTINGS.angleMarker.arrowHeadTipAngleInner +
+            SETTINGS.angleMarker.arrowHeadTipAngleOuter) /
+            2
+        )); // divide by the radius of the boundary circle because miter length with out that is a length on the sphere of radius boundaryCircle.radius.
+    const rearDeltaAngle = Math.atan(
+      Math.tan(AngleMarker.currentAngleMarkerArrowHeadLength + miterLength) /
+        Math.sin(this._angleMarkerRadius)
+    ); // right triangle trigonometry edges: vertex of angle marker to the point on the angle marker so
+    // that the tangent at that point to the circle of the angle marker has length miter length + arrow head
+    // length to the line that is the end of the angle marker. Since this is an angle computation, the radius of
+    // the sphere on which miter length, angle marker radius, and arrow head length don't matter, so
+    // long as they are all on the same size sphere. (miter length, arrow head length, and angle marker radius are all
+    // length on the unit sphere)
+
+    // console.log(
+    //   rearDeltaAngle,
+    //   angularLengthOfMarker,
+    //   miterLength,
+    // this.frontArrowHeadPath.linewidth
+    //   AngleMarker.currentAngleMarkerArrowHeadLength + miterLength,
+    //   Math.tan(AngleMarker.currentAngleMarkerArrowHeadLength + miterLength),
+    //   Math.sin(this._angleMarkerRadius)
+    // );
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     let angularLengthOfMarkerDraw: number;
     if (
@@ -750,7 +764,7 @@ export default class AngleMarker extends Nodule {
       angularLengthOfMarkerDraw = angularLengthOfMarker;
       this.angleIsBigEnoughToDrawArrowHeads = false;
     }
-
+    //this.angleIsBigEnoughToDrawArrowHeads = false;
     // Bring all the anchor points to a common pool
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
@@ -846,44 +860,42 @@ export default class AngleMarker extends Nodule {
     }
 
     // Compute the arrow head vertices
-    // determine the tip of the arrow head
-    // offset from the end of the angle by the angular miter length
-    let angle =
-      Math.abs(angularLengthOfMarker) -
-      2 *
-        Math.asin(
-          this.frontArrowHeadPath.linewidth /
-            SEStore.zoomMagnificationFactor /
-            (2 * Math.sin(SETTINGS.angleMarker.arrowHeadTipAngle)) /
-            (2 *
-              Math.sin(this._angleMarkerRadius) *
-              SETTINGS.boundaryCircle.radius)
-        );
-
-    this.tmpArrowHeadTip
-      .set(Math.cos(angle), Math.sin(angle), 0)
-      .multiplyScalar(SETTINGS.boundaryCircle.radius)
-      .applyMatrix4(transformMatrixCircular);
 
     // determine the rear arrow head vector
-    // offset from the end of the angle by the angular miter length (already in angle) plus the angular arrow head length
-    angle -=
-      2 *
-      Math.asin(
-        SETTINGS.angleMarker.arrowHeadLength /
-          SEStore.zoomMagnificationFactor /
-          (2 *
-            Math.sin(this._angleMarkerRadius) *
-            SETTINGS.boundaryCircle.radius)
-      );
+    // offset from the end of the angle by the angular miter length  plus the angular arrow head length
+    // This is in terms of the angle drawing the angle marker
     this.tmpArrowHeadRear
-      .set(Math.cos(angle), Math.sin(angle), 0)
+      .set(
+        Math.cos(angularLengthOfMarkerDraw),
+        Math.sin(angularLengthOfMarkerDraw),
+        0
+      )
       .multiplyScalar(SETTINGS.boundaryCircle.radius)
       .applyMatrix4(transformMatrixCircular);
+
+    // determine the tip vector of the arrow head
+    // the tip vector is the vector so that the line containing the tip vector and the rear vector is tangent to the
+    // the anglemarker circle and the distance from tip vector to rear vector is  AngleMarker.currentAngleMarkerArrowHeadLength
+
+    this.tmpVector.crossVectors(this.tmpArrowHeadRear, this._vertexVector); // tmpVector is now the normal to the line through the vertex vector and the rear arrow head vector
+    this.tmpVector.cross(this.tmpArrowHeadRear).normalize(); // tmpVector is now the normal to the tangent line to the anglemarker at the arrow head rear
+    this.tmpVector1
+      .crossVectors(this.tmpVector, this.tmpArrowHeadRear)
+      .normalize()
+      .multiplyScalar(SETTINGS.boundaryCircle.radius); // tmpVector1 is the vector in the plane of the tangent to the anglemarker 90 degrees from rear arrow vector. It is the To vector
+
+    this.tmpArrowHeadTip
+      .copy(this.tmpArrowHeadRear)
+      .multiplyScalar(Math.cos(AngleMarker.currentAngleMarkerArrowHeadLength));
+    this.tmpArrowHeadTip.addScaledVector(
+      this.tmpVector1,
+      Math.sin(AngleMarker.currentAngleMarkerArrowHeadLength)
+    );
 
     // console.log(
     //   "head length diff",
-    //   this.tmpArrowHeadTip.angleTo(this.tmpArrowHeadRear)
+    //   this.tmpArrowHeadTip.angleTo(this.tmpArrowHeadRear) -
+    //     AngleMarker.currentAngleMarkerArrowHeadLength
     // );
 
     // Now determine the other two vertices of the arrow head
@@ -895,11 +907,69 @@ export default class AngleMarker extends Nodule {
       .normalize(); // a vector 90 degrees from the tip vector in the opposite direction of the rear vector
 
     this.tmpNormal1
-      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadTipAngle))
+      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadTipAngleInner))
       .addScaledVector(
         this.tmpNormal,
-        Math.cos(SETTINGS.angleMarker.arrowHeadTipAngle)
+        Math.cos(SETTINGS.angleMarker.arrowHeadTipAngleInner)
       ); // this.tmpNormal1 is the vector that normal to the plane containing the tip vector that is at angle arrowHeadTipAngle from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle A diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal1) -
+    //     SETTINGS.angleMarker.arrowHeadTipAngleInner
+    // );
+
+    this.tmpNormal2
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadRear)
+      .normalize(); // a vector 90 degrees from the rear vector in the direction of the tip vector
+
+    this.tmpNormal2
+      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadRearAngleInner))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(SETTINGS.angleMarker.arrowHeadRearAngleInner)
+      ); // this.tmpNormal2 is the vector that normal to the plane containing the rear vector that is at angle arrowHeadRearAngle from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle B diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal2) -
+    //     SETTINGS.angleMarker.arrowHeadRearAngleInner
+    // );
+
+    this.tmpArrowHeadInner
+      .crossVectors(this.tmpNormal1, this.tmpNormal2)
+      .normalize()
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+    // make sure that the first arrow head 1 vector is near the tip
+
+    if (this.tmpArrowHeadTip.dot(this.tmpArrowHeadInner) < 0) {
+      this.tmpArrowHeadInner.multiplyScalar(-1);
+    }
+
+    //OLD
+    // now compute the other, second, arrow head vector by reflecting this.tmpArrowHead1 through the plane containing tip and rear vectors
+    // this.tmpArrowHeadOuter.copy(this.tmpArrowHeadInner);
+    // this.tmpArrowHeadOuter
+    //   .normalize()
+    //   .addScaledVector(
+    //     this.tmpNormal,
+    //     (-2 * this.tmpArrowHeadInner.dot(this.tmpNormal)) /
+    //       SETTINGS.boundaryCircle.radius
+    //   )
+    //   .normalize()
+    //   .multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+    // Now determine the other vertex of the arrow head
+    this.tmpNormal1
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadTip)
+      .normalize(); // a vector 90 degrees from the tip vector in the opposite direction of the rear vector
+
+    this.tmpNormal1
+      .multiplyScalar(Math.sin(-SETTINGS.angleMarker.arrowHeadTipAngleOuter))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(-SETTINGS.angleMarker.arrowHeadTipAngleOuter)
+      ); // this.tmpNormal1 is the vector that normal to the plane containing the tip vector that is at angle arrowHeadTipAngleOuter from the plane containing the tip and rear vectors
 
     // console.log(
     //   "angle A diff",
@@ -912,10 +982,10 @@ export default class AngleMarker extends Nodule {
       .normalize(); // a vector 90 degrees from the rear vector in the direction of the tip vector
 
     this.tmpNormal2
-      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadRearAngle))
+      .multiplyScalar(Math.sin(-SETTINGS.angleMarker.arrowHeadRearAngleOuter))
       .addScaledVector(
         this.tmpNormal,
-        Math.cos(SETTINGS.angleMarker.arrowHeadRearAngle)
+        Math.cos(-SETTINGS.angleMarker.arrowHeadRearAngleOuter)
       ); // this.tmpNormal2 is the vector that normal to the plane containing the rear vector that is at angle arrowHeadRearAngle from the plane containing the tip and rear vectors
 
     // console.log(
@@ -924,32 +994,15 @@ export default class AngleMarker extends Nodule {
     //     SETTINGS.angleMarker.arrowHeadRearAngle
     // );
 
-    this.tmpArrowHead1
+    this.tmpArrowHeadOuter
       .crossVectors(this.tmpNormal1, this.tmpNormal2)
       .normalize()
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
     // make sure that the first arrow head 1 vector is near the tip
 
-    if (this.tmpArrowHeadTip.dot(this.tmpArrowHead1) < 0) {
-      this.tmpArrowHead1.multiplyScalar(-1);
+    if (this.tmpArrowHeadTip.dot(this.tmpArrowHeadOuter) < 0) {
+      this.tmpArrowHeadOuter.multiplyScalar(-1);
     }
-
-    // now compute the other, second, arrow head vector by reflecting this.tmpArrowHead1 through the plane containing tip and rear vectors
-    this.tmpArrowHead2.copy(this.tmpArrowHead1);
-    this.tmpArrowHead2
-      .normalize()
-      .addScaledVector(
-        this.tmpNormal,
-        (-2 * this.tmpArrowHead1.dot(this.tmpNormal)) /
-          SETTINGS.boundaryCircle.radius
-      )
-      .normalize()
-      .multiplyScalar(SETTINGS.boundaryCircle.radius);
-
-    // console.log("ah tip", this.tmpArrowHeadTip.z);
-    // console.log("ah head1", this.tmpArrowHead1.z);
-    // console.log("ah rear", this.tmpArrowHeadRear.z);
-    // console.log("ah head2", this.tmpArrowHead2.z);
 
     // determine if the arrow head is on the front or the back of the sphere. This is
     // determine by the z coordinate of the tip of the vector. The arrow should be so small that it
@@ -961,53 +1014,53 @@ export default class AngleMarker extends Nodule {
       this.frontArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
       this.frontArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
 
-      this.frontArrowHeadPath.vertices[1].x = this.tmpArrowHead1.x;
-      this.frontArrowHeadPath.vertices[1].y = this.tmpArrowHead1.y;
+      this.frontArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.frontArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
 
       this.frontArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
       this.frontArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
 
-      this.frontArrowHeadPath.vertices[3].x = this.tmpArrowHead2.x;
-      this.frontArrowHeadPath.vertices[3].y = this.tmpArrowHead2.y;
+      this.frontArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.frontArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
 
       // set the glowing front arrow head
       this.glowingFrontArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
       this.glowingFrontArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
 
-      this.glowingFrontArrowHeadPath.vertices[1].x = this.tmpArrowHead1.x;
-      this.glowingFrontArrowHeadPath.vertices[1].y = this.tmpArrowHead1.y;
+      this.glowingFrontArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.glowingFrontArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
 
       this.glowingFrontArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
       this.glowingFrontArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
 
-      this.glowingFrontArrowHeadPath.vertices[3].x = this.tmpArrowHead2.x;
-      this.glowingFrontArrowHeadPath.vertices[3].y = this.tmpArrowHead2.y;
+      this.glowingFrontArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.glowingFrontArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
     } else {
       // the arrow head is on the back
       this.backArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
       this.backArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
 
-      this.backArrowHeadPath.vertices[1].x = this.tmpArrowHead1.x;
-      this.backArrowHeadPath.vertices[1].y = this.tmpArrowHead1.y;
+      this.backArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.backArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
 
       this.backArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
       this.backArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
 
-      this.backArrowHeadPath.vertices[3].x = this.tmpArrowHead2.x;
-      this.backArrowHeadPath.vertices[3].y = this.tmpArrowHead2.y;
+      this.backArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.backArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
 
       // set the glowing back arrow head
       this.glowingBackArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
       this.glowingBackArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
 
-      this.glowingBackArrowHeadPath.vertices[1].x = this.tmpArrowHead1.x;
-      this.glowingBackArrowHeadPath.vertices[1].y = this.tmpArrowHead1.y;
+      this.glowingBackArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.glowingBackArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
 
       this.glowingBackArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
       this.glowingBackArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
 
-      this.glowingBackArrowHeadPath.vertices[3].x = this.tmpArrowHead2.x;
-      this.glowingBackArrowHeadPath.vertices[3].y = this.tmpArrowHead2.y;
+      this.glowingBackArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.glowingBackArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
     }
 
     // Now do the same thing for the DoubleArc(DA) Paths
@@ -2230,7 +2283,8 @@ export default class AngleMarker extends Nodule {
 
     if (
       frontStyle?.angleMarkerArrowHeads &&
-      frontStyle.angleMarkerArrowHeads === true
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads === true
     ) {
       this.frontArrowHeadPath.visible = true;
       this.glowingFrontArrowHeadPath.visible = true;
@@ -2273,7 +2327,8 @@ export default class AngleMarker extends Nodule {
 
     if (
       frontStyle?.angleMarkerArrowHeads &&
-      frontStyle.angleMarkerArrowHeads === true
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads === true
     ) {
       this.backArrowHeadPath.visible = true;
       this.glowingBackArrowHeadPath.visible = true;
