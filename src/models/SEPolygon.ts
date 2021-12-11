@@ -169,7 +169,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   ): boolean {
     //first make sure the unitIdeal is not a point on any of the line segments
     // use the tight bounds on the isHitAt method for segments, because with out this,
-    // the user can put a point a polygon, and then move it *just* outside of the polygon (the 1000) prevents this
+    // the user can put a point a polygon, and then move it *just* outside of the polygon (the 1000 prevents this)
     if (
       this._seEdgeSegments.some(seg =>
         seg.isHitAt(unitIdealVector, currentMagnificationFactor, 1000)
