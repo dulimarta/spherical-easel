@@ -666,7 +666,7 @@ export default class Segment extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
-          this._frontPart.stroke = frontStyle?.strokeColor as Color;
+          this._frontPart.stroke = frontStyle?.strokeColor as Two.Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -690,7 +690,7 @@ export default class Segment extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontExtra.noStroke();
         } else {
-          this._frontExtra.stroke = frontStyle?.strokeColor as Color;
+          this._frontExtra.stroke = frontStyle?.strokeColor as Two.Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -730,7 +730,7 @@ export default class Segment extends Nodule {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
-            this._backPart.stroke = backStyle?.strokeColor as Color;
+            this._backPart.stroke = backStyle?.strokeColor as Two.Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()
@@ -768,7 +768,7 @@ export default class Segment extends Nodule {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backExtra.noStroke();
           } else {
-            this._backExtra.stroke = backStyle?.strokeColor as Color;
+            this._backExtra.stroke = backStyle?.strokeColor as Two.Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()

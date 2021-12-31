@@ -8,7 +8,7 @@ export class TextBox extends Two.Group {
   constructor(msg: string) {
     super();
     this._text = new Two.Text(msg, 0, 0);
-    const bbox = this._text.getBoundingClientRect() as BoundingClientRect;
+    const bbox = this._text.getBoundingClientRect() as Two.BoundingClientRect;
     this.box = new Two.RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
     this.box.fill = "hsl(20,50%,80%)";
     this.box.opacity = 0.7;
@@ -22,7 +22,7 @@ export class TextBox extends Two.Group {
    */
   set text(msg: string) {
     this._text.value = msg;
-    const bbox = this._text.getBoundingClientRect() as BoundingClientRect;
+    const bbox = this._text.getBoundingClientRect() as Two.BoundingClientRect;
     (this.box as any).width = bbox.width;
   }
 

@@ -348,12 +348,12 @@ export default class Point extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
-          this.frontPoint.fill = frontStyle.fillColor as Color;
+          this.frontPoint.fill = frontStyle.fillColor as Two.Color;
         }
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
         } else {
-          this.frontPoint.stroke = frontStyle.strokeColor as Color;
+          this.frontPoint.stroke = frontStyle.strokeColor as Two.Color;
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
@@ -376,7 +376,7 @@ export default class Point extends Nodule {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.fillColor)) {
             this.backPoint.noFill();
           } else {
-            this.backPoint.fill = backStyle.fillColor as Color;
+            this.backPoint.fill = backStyle.fillColor as Two.Color;
           }
         }
         if (backStyle.dynamicBackStyle) {
@@ -395,7 +395,7 @@ export default class Point extends Nodule {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.strokeColor)) {
             this.backPoint.noStroke();
           } else {
-            this.backPoint.stroke = backStyle.strokeColor as Color;
+            this.backPoint.stroke = backStyle.strokeColor as Two.Color;
           }
         }
         //stroke width is not user modifiable - set in the constructor

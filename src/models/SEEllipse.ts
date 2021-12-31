@@ -278,7 +278,7 @@ export class SEEllipse extends SENodule
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(idealUnitSphereVector);
     transformedToStandard.applyMatrix4(
-      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
     const closestStandardVector = new Vector3();
     closestStandardVector.copy(
@@ -389,7 +389,7 @@ export class SEEllipse extends SENodule
       const transformedToStandard = new Vector3();
       transformedToStandard.copy(sePointVector);
       transformedToStandard.applyMatrix4(
-        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+        this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
 
       const normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
@@ -455,7 +455,7 @@ export class SEEllipse extends SENodule
       const transformedToStandard = new Vector3();
       transformedToStandard.copy(sePointVector);
       transformedToStandard.applyMatrix4(
-        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+        this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
@@ -489,7 +489,7 @@ export class SEEllipse extends SENodule
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
     transformedToStandard.applyMatrix4(
-      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
 
     const normalList = SENodule.getNormalsToTangentLinesThruParametrically(

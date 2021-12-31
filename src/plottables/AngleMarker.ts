@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Matrix4, VertexColors } from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";

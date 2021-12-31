@@ -281,7 +281,7 @@ export default class Label extends Nodule {
     top: number;
     width: number;
   } {
-    const rect = this.frontText.getBoundingClientRect() as BoundingClientRect;
+    const rect = this.frontText.getBoundingClientRect() as Two.BoundingClientRect;
     return {
       bottom: rect.bottom,
       height: rect.height,

@@ -32,7 +32,10 @@
     "titleBar.activeBackground": "#905dc6",
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#905dc699",
-    "titleBar.inactiveForeground": "#e7e7e799"
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "sash.hoverBorder": "#aa83d3",
+    "statusBarItem.remoteBackground": "#905dc6",
+    "statusBarItem.remoteForeground": "#e7e7e7"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

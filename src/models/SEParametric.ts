@@ -490,9 +490,8 @@ export class SEParametric extends SENodule
       ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
-    return closestStandardVector.applyMatrix4(
-      this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-    );
+    this.tmpMatrix.copy(SEStore.inverseTotalRotationMatrix);
+    return closestStandardVector.applyMatrix4(this.tmpMatrix.invert());
   }
   /**
    * Return the vector near the SEParameteric (within SETTINGS.parametric.maxLabelDistance) that is closest to the idealUnitSphereVector
@@ -599,18 +598,12 @@ export class SEParametric extends SENodule
     // normalList.forEach((n: NormalVectorAndTValue, k: number) => {
     //   console.debug(`Normal-${k}`, n.normal.toFixed(3));
     // });
+    this.tmpMatrix.copy(SEStore.inverseTotalRotationMatrix);
+    this.tmpMatrix.invert();
     normalList.forEach((pair: NormalVectorAndTValue) => {
-      pair.normal
-        .applyMatrix4(
-          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-        )
-        .normalize();
+      pair.normal.applyMatrix4(this.tmpMatrix).normalize();
       this.tmpVector1.copy(this.ref.P(pair.tVal));
-      this.tmpVector1
-        .applyMatrix4(
-          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-        )
-        .normalize();
+      this.tmpVector1.applyMatrix4(this.tmpMatrix).normalize();
     });
     return normalList;
   }
@@ -705,7 +698,8 @@ export class SEParametric extends SENodule
     //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
     //   );
     // }
-    this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+
+    this.tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
     return taggedList.map((z: NormalVectorAndTValue) => {
       z.normal.applyMatrix4(this.tmpMatrix).normalize();
       return z.normal;
@@ -731,7 +725,7 @@ export class SEParametric extends SENodule
   public isOneDimensional(): boolean {
     return true;
   }
-  
+
   public isLabelable(): boolean {
     return true;
   }

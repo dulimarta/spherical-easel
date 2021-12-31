@@ -372,7 +372,7 @@ export default class Parametric extends Nodule {
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
     // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
-    transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    transformMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
@@ -573,7 +573,7 @@ export default class Parametric extends Nodule {
   }
 
   public endPointVector(minMax: boolean): Vector3 | undefined {
-    transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    transformMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,

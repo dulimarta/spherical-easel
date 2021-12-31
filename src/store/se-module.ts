@@ -514,7 +514,7 @@ export default class SE extends VuexModule implements AppState {
     // so to undo that action we find the inverse which is
     //  inverseTotalRotationMatrix*(inverse of rotationMat)
     tmpMatrix.copy(rotationMat);
-    this.inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
+    this.inverseTotalRotationMatrix.multiply(tmpMatrix.invert());
     rotationVisitor.setTransform(rotationMat);
     // apply the rotation to the line, segments, labels, then points. (Circles and ellipses are determined by their parent points so no need to update them)
     this.seLines.forEach((m: SELine) => {
