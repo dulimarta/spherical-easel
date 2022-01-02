@@ -2,5 +2,14 @@
 command = "yarn app:build; yarn docs:build"
 publish = "dist/"
 
+# Directory that hold lambda functions
+functions = "lambda"
+
+[[redirects]]
+from = "/"
+to = "/.netlify/functions/geo"
+status = 200
+
+
 [context.production.environment]
 NODE_ENV = "production"
