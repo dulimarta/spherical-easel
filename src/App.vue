@@ -172,10 +172,14 @@ import { Matrix4 } from "three";
 import { SEStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
-
+import io, {Socket} from "socket.io-client";
 //#region vuex-module-namespace
 const SE = namespace("se");
 //#endregion vuex-module-namespace
+
+
+
+// const socket = io("http://localhost:4000");
 
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
@@ -206,6 +210,7 @@ export default class App extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   readonly $appStorage!: FirebaseStorage;
+  socket!: Socket
 
   clientBrowser: any;
   description = "";
@@ -255,6 +260,10 @@ export default class App extends Vue {
   };
 
   created(): void {
+    this.socket = io("http://localhost:4000");
+    this.socket.on("hello", (arg) => {
+      console.debug("Socket connected ", this.socket.id, arg);
+    })
     window.addEventListener("keydown", this.keyHandler);
     EventBus.listen("secret-key-detected", () => {
       console.log("Got the secret key");
@@ -295,6 +304,8 @@ export default class App extends Vue {
     );
     // Get the top-level SVG element
     this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
+
+    // socket.on()
   }
 
   beforeDestroy(): void {
