@@ -976,5 +976,5 @@ svg {
   vertical-align: text-bottom;
   margin-bottom: -2px;
 }
-@import "https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css";
+/* @import "https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css"; */
 </style>

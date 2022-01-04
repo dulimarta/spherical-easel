@@ -15,7 +15,7 @@
     "app:serve": "vue-cli-service serve",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
-    "docs:serve": "vuepress dev docs --debug --open",
+    "docs:serve": "vuepress dev docs --debug",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/assets/languages/**/*.json'"
   },
   "dependencies": {
@@ -56,7 +56,8 @@
   "devDependencies": {
     "@intlify/vue-i18n-loader": "^1.1.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
-    "@mdi/js": "~5.5.55",
+    "@mdi/font": "^6.5.95",
+    "@mdi/js": "^6.5.95",
     "@types/express": "^4.17.13",
     "@types/jest": "~24.0.25",
     "@types/node": "^17.0.6",

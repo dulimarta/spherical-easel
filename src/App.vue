@@ -56,8 +56,6 @@
 
       <v-spacer></v-spacer>
 
-      <!-- This will open up the global settings view setting the language, decimals
-      display and other global options-->
       <template v-if="accountEnabled">
         <span>{{whoami}}</span>
 
@@ -78,6 +76,16 @@
           @click="$refs.saveConstructionDialog.show()">$shareConstruction
         </v-icon>
       </template>
+      <!-- This will open up the global settings view setting the language, decimals
+      display and other global options-->
+      <router-link to="/teacher-dashboard"
+        class="mr-2">
+        <v-icon>mdi-human-male-board</v-icon>
+      </router-link>
+      <router-link to="/sessions">
+        <v-icon>mdi-google-classroom</v-icon>
+      </router-link>
+
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
       </router-link>
@@ -172,12 +180,10 @@ import { Matrix4 } from "three";
 import { SEStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
-import io, {Socket} from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 //#region vuex-module-namespace
 const SE = namespace("se");
 //#endregion vuex-module-namespace
-
-
 
 // const socket = io("http://localhost:4000");
 
@@ -210,7 +216,7 @@ export default class App extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   readonly $appStorage!: FirebaseStorage;
-  socket!: Socket
+  socket!: Socket;
 
   clientBrowser: any;
   description = "";
@@ -260,10 +266,6 @@ export default class App extends Vue {
   };
 
   created(): void {
-    this.socket = io("http://localhost:4000");
-    this.socket.on("hello", (arg) => {
-      console.debug("Socket connected ", this.socket.id, arg);
-    })
     window.addEventListener("keydown", this.keyHandler);
     EventBus.listen("secret-key-detected", () => {
       console.log("Got the secret key");

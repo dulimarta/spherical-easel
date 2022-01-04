@@ -3,6 +3,8 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
+import TeacherDashboard from "@/views/TeacherDashboard.vue";
+import SessionList from "@/views/Sessions.vue";
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
@@ -47,6 +49,16 @@ const routes: Array<RouteConfig> = [
         props: true
       }
     ]
+  },
+  {
+    name: "Teacher Dashboard",
+    path: "/teacher-dashboard",
+    component: TeacherDashboard
+  },
+  {
+    name: "Sessions",
+    path: "/sessions",
+    component: SessionList
   }
 ];
 
