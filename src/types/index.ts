@@ -19,6 +19,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { Socket } from "socket.io-client";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -61,6 +62,7 @@ export interface AppState {
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
   temporaryProfilePicture: string;
+  teacherSessionSocket: Socket | null;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

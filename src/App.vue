@@ -76,16 +76,17 @@
           @click="$refs.saveConstructionDialog.show()">$shareConstruction
         </v-icon>
       </template>
-      <!-- This will open up the global settings view setting the language, decimals
-      display and other global options-->
-      <router-link to="/teacher-dashboard"
-        class="mr-2">
-        <v-icon>mdi-human-male-board</v-icon>
-      </router-link>
-      <router-link to="/sessions">
+
+      <!-- TODO: show this link only when logged in as a teacher -->
+      <v-icon class="mr-2"
+        @click="manageSession">mdi-human-male-board</v-icon>
+      <router-link to="/sessions" class="mr-2">
+        <!-- TODO: show this link only when logged in as a student -->
         <v-icon>mdi-google-classroom</v-icon>
       </router-link>
 
+      <!-- This will open up the global settings view setting the language, decimals
+      display and other global options-->
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
       </router-link>
@@ -150,6 +151,14 @@
         :disabled="uid.length === 0"
         :label="$t('constructions.makePublic')"></v-switch>
     </Dialog>
+    <Dialog ref="initiateSessionDialog"
+      title="Session"
+      yes-text="Create"
+      no-text="Cancel"
+      :yes-action="proceedToSession"
+      max-width="40%">
+      You are about to create a new teacher session
+    </Dialog>
   </v-app>
 </template>
 
@@ -207,6 +216,9 @@ export default class App extends Vue {
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
+  @SE.State((s: AppState) => s.teacherSessionSocket)
+  readonly teacherSession!: Socket | null;
+
   // @SE.State((s: AppState) => s.sePoints)
   // readonly sePoints!: SEPoint[];
 
@@ -224,6 +236,7 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
+    initiateSessionDialog: VueComponent & DialogAction
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -436,6 +449,19 @@ export default class App extends Vue {
       });
 
     this.$refs.saveConstructionDialog.hide();
+  }
+
+  manageSession(): void {
+    if (this.teacherSession) {
+      this.proceedToSession();
+    } else {
+      this.$refs.initiateSessionDialog.show();
+    }
+  }
+
+  proceedToSession(): void {
+    this.$router.push({ path: "/teacher-dashboard" });
+      this.$refs.initiateSessionDialog.hide();
   }
 }
 </script>
