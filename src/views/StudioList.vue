@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>List of sessions</h1>
+    <p>Select a session to join</p>
 
     <table v-if="availableSessions.length > 0">
       <tr>
@@ -11,7 +11,11 @@
         :key="pos">
         <td>{{sessId}}</td>
         <td>
-          <v-btn @click="joinSession(sessId)">Join</v-btn>
+
+          <v-btn @click="joinSession(sessId)"
+            color="primary">Join<v-icon>
+              mdi-account-multiple</v-icon>
+          </v-btn>
         </td>
       </tr>
     </table>
@@ -27,9 +31,16 @@ import {
   QueryDocumentSnapshot,
   DocumentSnapshot
 } from "@firebase/firestore-types";
+import { namespace } from "vuex-class";
+import { StudioState } from "@/types";
+import { StudioStore } from "@/store";
+const SD = namespace("sd");
 
 @Component
 export default class Sessions extends Vue {
+  @SD.State((s: StudioState) => s.studioSocket)
+  readonly studentStudioSocket!: Socket | null;
+
   readonly $appDB!: FirebaseFirestore;
 
   socket!: Socket;
@@ -46,19 +57,14 @@ export default class Sessions extends Vue {
   }
 
   joinSession(session: string): void {
-    console.debug("Attempt to join session ", session);
+    console.debug("Attempt rejoin studio", session);
     this.socket = io(
       process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
     );
-    this.socket.on("connect", () => {
-      console.debug("Student connected to socket", this.socket.id);
-      this.socket.emit("student-join", { who: "John Doe", session });
-    });
-    this.socket.on("disconnect", () => {
-      console.debug("Student disconnected from socket", this.socket.id);
-    });
-    this.socket.on("notify-all", (msg: string) => {
-      console.debug("Students received broadcast", msg)
+    StudioStore.setStudioSocket(this.socket);
+    this.$router.push({
+      name: "StudioActivity",
+      params: { session }
     });
   }
 }

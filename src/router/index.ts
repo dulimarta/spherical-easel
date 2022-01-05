@@ -4,7 +4,9 @@ import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
 import TeacherDashboard from "@/views/TeacherDashboard.vue";
-import SessionList from "@/views/Sessions.vue";
+import StudioList from "@/views/StudioList.vue";
+import StudioActivity from "@/views/StudentStudioActivity.vue";
+
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
@@ -56,9 +58,14 @@ const routes: Array<RouteConfig> = [
     component: TeacherDashboard
   },
   {
-    name: "Sessions",
-    path: "/sessions",
-    component: SessionList
+    path: "/studio-list",
+    component: StudioList
+  },
+  {
+    name: "StudioActivity",
+    path: "/in-studio/:session",
+    component: StudioActivity,
+    props: true
   }
 ];
 

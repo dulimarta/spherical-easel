@@ -1,9 +1,17 @@
 <template>
   <div>
-    <h1>Teacher Dashboard</h1>
-    <v-btn @click="stopSession">Terminate Session</v-btn>
+    <h1>Teacher Session Dashboard</h1>
+    <v-btn @click="stopStudio">Terminate Session</v-btn>
     <code>Socket ID: {{socketID}}</code>
-    <v-textarea v-model="message">
+    <p v-for="(m,pos) in sentMessages"
+      :key="pos">
+      {{m}}
+    </p>
+    <v-textarea v-model="message"
+      rows="3"
+      outlined
+      color="secondary"
+      class="ma-3">
 
     </v-textarea>
     <v-btn @click="broadcastMessage">Broadcast</v-btn>
@@ -11,42 +19,43 @@
 </template>
 
 <script lang="ts">
-import { AppState } from "@/types";
+import { StudioState } from "@/types";
 import { io, Socket } from "socket.io-client";
 import { Component, Vue } from "vue-property-decorator";
 import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
-const SE = namespace("se");
+import { StudioStore } from "@/store";
+const SD = namespace("sd");
 
 @Component
 export default class TeacherDashboard extends Vue {
-  @SE.State((s: AppState) => s.teacherSessionSocket)
-  readonly teacherSessionSocket!: Socket | null;
+  @SD.State((s: StudioState) => s.studioSocket)
+  readonly teacherStudioSocket!: Socket | null;
 
   socket: Socket | null = null;
   message = "";
+  sentMessages: Array<string> = [];
 
   get socketID(): string {
-    return this.teacherSessionSocket ? this.teacherSessionSocket.id : "<None>"
+    return this.teacherStudioSocket ? this.teacherStudioSocket.id : "<None>";
   }
 
   mounted(): void {
     console.debug("TeacherDashboard::mounted()", process.env);
-    if (this.teacherSessionSocket == null) {
-      console.debug("About to create a new session...");
+    if (this.teacherStudioSocket == null) {
+      console.debug("About to create a new Studio...");
       this.socket = io(
-        process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
+        process.env.VUE_APP_Studio_SERVER_URL || "http://localhost:4000"
       );
       this.socket.on("connect", () => {
         console.debug("Teacher socket connected to ", this.socket?.id);
-        SEStore.setTeacherSession(this.socket);
+        StudioStore.setStudioSocket(this.socket);
         this.socket?.emit("teacher-join", { who: "Just me", isTeacher: true });
       });
       this.socket.on("new-student", arg => {
         console.debug("A student just joined", arg);
       });
     } else {
-      this.socket = this.teacherSessionSocket;
+      this.socket = this.teacherStudioSocket;
     }
   }
 
@@ -57,14 +66,16 @@ export default class TeacherDashboard extends Vue {
   broadcastMessage(): void {
     console.debug("About to broadcast", this.message);
     this.socket?.emit("notify-all", {
-      room: `chat-${this.teacherSessionSocket?.id}`,
+      room: `chat-${this.teacherStudioSocket?.id}`,
       message: this.message
     });
+    this.sentMessages.push(this.message);
+    this.message = "";
   }
 
-  stopSession(): void {
+  stopStudio(): void {
     this.socket?.emit("teacher-leave");
-    SEStore.setTeacherSession(null);
+    StudioStore.setStudioSocket(null);
     this.$router.back();
   }
 }

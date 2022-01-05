@@ -79,11 +79,11 @@
 
       <!-- TODO: show this link only when logged in as a teacher -->
       <v-icon class="mr-2"
-        @click="manageSession">mdi-human-male-board</v-icon>
-      <router-link to="/sessions" class="mr-2">
-        <!-- TODO: show this link only when logged in as a student -->
-        <v-icon>mdi-google-classroom</v-icon>
-      </router-link>
+        @click="prepareToLaunchStudio">mdi-human-male-board</v-icon>
+
+      <!-- TODO: show this link only when logged in as a student -->
+      <v-icon class="mr-2"
+        @click="joinStudio">mdi-google-classroom</v-icon>
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
@@ -155,7 +155,7 @@
       title="Session"
       yes-text="Create"
       no-text="Cancel"
-      :yes-action="proceedToSession"
+      :yes-action="doLaunchStudio"
       max-width="40%">
       You are about to create a new teacher session
     </Dialog>
@@ -174,7 +174,7 @@ import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AppState } from "./types";
+import { AppState, StudioState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
@@ -192,6 +192,7 @@ import { detect } from "detect-browser";
 import io, { Socket } from "socket.io-client";
 //#region vuex-module-namespace
 const SE = namespace("se");
+const SD = namespace("sd");
 //#endregion vuex-module-namespace
 
 // const socket = io("http://localhost:4000");
@@ -216,8 +217,8 @@ export default class App extends Vue {
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @SE.State((s: AppState) => s.teacherSessionSocket)
-  readonly teacherSession!: Socket | null;
+  @SD.State((s: StudioState) => s.studioSocket)
+  readonly studioSocket!: Socket | null;
 
   // @SE.State((s: AppState) => s.sePoints)
   // readonly sePoints!: SEPoint[];
@@ -236,7 +237,7 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
-    initiateSessionDialog: VueComponent & DialogAction
+    initiateSessionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -451,17 +452,23 @@ export default class App extends Vue {
     this.$refs.saveConstructionDialog.hide();
   }
 
-  manageSession(): void {
-    if (this.teacherSession) {
-      this.proceedToSession();
+  prepareToLaunchStudio(): void {
+    if (this.studioSocket) {
+      this.doLaunchStudio();
     } else {
       this.$refs.initiateSessionDialog.show();
     }
   }
 
-  proceedToSession(): void {
+  doLaunchStudio(): void {
     this.$router.push({ path: "/teacher-dashboard" });
-      this.$refs.initiateSessionDialog.hide();
+    this.$refs.initiateSessionDialog.hide();
+  }
+
+  joinStudio(): void {
+    console.debug("About to join a studio");
+    if (this.studioSocket === null) this.$router.push({ path: "/studio-list" });
+    else this.$router.push({ path: "/in-studio" });
   }
 }
 </script>

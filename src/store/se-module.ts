@@ -119,8 +119,6 @@ export default class SE extends VuexModule implements AppState {
   hasUnsavedNodules = false;
   temporaryProfilePicture = "";
 
-  // Socket.io ID associated with a teacher session
-  teacherSessionSocket: Socket | null = null;
 
   //#endregion appState
 
@@ -148,7 +146,6 @@ export default class SE extends VuexModule implements AppState {
     this.initialStyleStates.splice(0);
     this.defaultStyleStates.splice(0);
     this.hasUnsavedNodules = false;
-    this.teacherSessionSocket = null;
     //this.temporaryNodules.clear(); // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
@@ -726,10 +723,6 @@ export default class SE extends VuexModule implements AppState {
     this.temporaryProfilePicture = imageHexString;
   }
 
-  @Mutation
-  setTeacherSession(sock: Socket | null): void {
-    this.teacherSessionSocket = sock;
-  }
 
   //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
