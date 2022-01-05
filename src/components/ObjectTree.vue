@@ -110,7 +110,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-import SENoduleList from "@/components/SENoduleList.vue";
+// import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import ParametricForm from "@/components/ParametricForm.vue";
@@ -121,7 +121,10 @@ import { namespace } from "vuex-class";
 const SE = namespace("se");
 
 @Component({
-  components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm }
+  components: {
+    // Use async component for dynamic import
+    SENoduleList: () => import("@/components/SENoduleList.vue"),
+  ExpressionForm, ParametricForm, SliderForm }
 })
 export default class ObjectTree extends Vue {
   @SE.State((s: AppState) => s.sePoints)

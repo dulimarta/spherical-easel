@@ -79,12 +79,16 @@
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
 import ToolGroups from "@/components/ToolGroups.vue";
-import ObjectTree from "@/components/ObjectTree.vue";
-import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import SETTINGS from "@/global-settings";
 import { SEStore } from "@/store";
 
-@Component({ components: { ToolGroups, ObjectTree, ConstructionLoader } })
+@Component({
+  components: {
+    ToolGroups,
+    ObjectTree: () => import("@/components/ObjectTree.vue"),
+    ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
+  }
+})
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;

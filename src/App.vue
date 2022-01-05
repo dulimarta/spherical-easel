@@ -56,9 +56,28 @@
 
       <v-spacer></v-spacer>
 
+      <v-tooltip bottom>
+        <template #activator="{on}"
+          v-if="myRole !== 'instructor' || !accountEnabled">
+          <v-icon class="mx-2"
+            v-on="on"
+            @click="joinStudio">mdi-google-classroom</v-icon>
+        </template>
+        <span>Join a studio</span>
+      </v-tooltip>
       <template v-if="accountEnabled">
-        <span>{{whoami}}</span>
 
+        <v-tooltip bottom
+          left>
+          <template #activator="{on}">
+            <v-icon v-if="myRole === 'instructor'"
+              v-on="on"
+              class="mx-2"
+              @click="prepareToLaunchStudio">mdi-human-male-board</v-icon>
+          </template>
+          <span>Create a new studio</span>
+        </v-tooltip>
+        <span class="mx=2">{{whoami}}</span>
         <v-img id="profilePic"
           v-if="profilePicUrl"
           class="mx-2"
@@ -70,20 +89,19 @@
         <v-icon v-else
           class="mx-2"
           @click="doLoginOrCheck">mdi-account</v-icon>
-        <v-icon v-if="whoami !== ''"
-          :disabled="!hasObjects"
-          class="mr-2"
-          @click="$refs.saveConstructionDialog.show()">$shareConstruction
-        </v-icon>
+        <v-tooltip bottom>
+          <template #activator="{on}">
+            <v-icon v-if="whoami !== ''"
+              v-on="on"
+              :disabled="!hasObjects"
+              class="mr-2"
+              @click="$refs.saveConstructionDialog.show()">
+              $shareConstruction
+            </v-icon>
+          </template>
+          <span>Share current construction</span>
+        </v-tooltip>
       </template>
-
-      <!-- TODO: show this link only when logged in as a teacher -->
-      <v-icon class="mr-2"
-        @click="prepareToLaunchStudio">mdi-human-male-board</v-icon>
-
-      <!-- TODO: show this link only when logged in as a student -->
-      <v-icon class="mr-2"
-        @click="joinStudio">mdi-google-classroom</v-icon>
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
@@ -189,7 +207,7 @@ import { Matrix4 } from "three";
 import { SEStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
-import io, { Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 //#region vuex-module-namespace
 const SE = namespace("se");
 const SD = namespace("sd");
@@ -203,6 +221,14 @@ Component.registerHooks([
   "beforeRouteLeave",
   "beforeRouteUpdate"
 ]);
+
+interface UserDocOnFirebase {
+  displayName: string;
+  location: string;
+  profilePictureURL: string;
+  role: string;
+}
+
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
@@ -243,6 +269,7 @@ export default class App extends Vue {
   authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
+  myRole = "";
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
 
@@ -306,10 +333,14 @@ export default class App extends Vue {
             .get()
             .then((ds: DocumentSnapshot) => {
               if (ds.exists) {
-                const { profilePictureURL } = ds.data() as any;
+                const {
+                  profilePictureURL,
+                  role
+                } = ds.data() as UserDocOnFirebase;
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }
+                this.myRole = role.toLowerCase();
               }
             });
         } else {
