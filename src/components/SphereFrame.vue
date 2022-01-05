@@ -49,8 +49,7 @@ import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
-import { SELine } from "@/models/SELine";
-import { SENodule } from "@/models/SENodule";
+
 const SE = namespace("se");
 
 @Component({})
@@ -81,7 +80,7 @@ export default class SphereFrame extends VueComponent {
    * global-settings.ts), then TwoJs objects (Two.Path, Two.Ellipse, etc..) are added to the
    * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
    */
-  private twoInstance: Two;
+  private twoInstance!: Two;
 
   // private sphereCanvas!: Two.Group;
   /**
@@ -130,8 +129,7 @@ export default class SphereFrame extends VueComponent {
    */
   private layers: Two.Group[] = [];
 
-  constructor() {
-    super();
+  created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
       height: this.canvasSize,
@@ -169,6 +167,7 @@ export default class SphereFrame extends VueComponent {
     //this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
+    SEStore.init();
     SEStore.setLayers(this.layers);
 
     // Draw the boundary circle in the default radius
@@ -223,35 +222,6 @@ export default class SphereFrame extends VueComponent {
     //   new Two.Line(-R, 100, R, 100)
     // );
     //this.visitor = new RotationVisitor();
-    // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
-    EventBus.listen("sphere-rotate", this.handleSphereRotation);
-    EventBus.listen("zoom-updated", this.updateView);
-    EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
-    EventBus.listen("construction-loaded", this.animateCanvas);
-  }
-
-  mounted(): void {
-    // Put the main Two.js instance into the canvas
-    this.twoInstance.appendTo(this.$refs.canvas);
-    // Set the main Two.js instance to refresh at 60 fps
-    this.twoInstance.play();
-
-    // Set up the listeners
-    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
-    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
-    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
-
-    // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
-    // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
-    // unpredictable. (In the case of the move tool, if the user first clicks, then presses ctrl, the behavior is fine.)
-    // source: https://www.sitepoint.com/community/t/how-do-i-disable-the-context-menu-in-chrome-on-a-mac/346738
-    // I can't see a good way to remove this listener
-    // IS THIS A GOOD IDEA? Maybe not
-    this.$refs.canvas.addEventListener("contextmenu", event =>
-      event.preventDefault()
-    );
 
     // Create the tools/handlers
     this.selectTool = new SelectionHandler(this.layers);
@@ -290,6 +260,36 @@ export default class SphereFrame extends VueComponent {
     this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
     this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
     this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
+    // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
+    EventBus.listen("sphere-rotate", this.handleSphereRotation);
+    EventBus.listen("zoom-updated", this.updateView);
+    EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
+    EventBus.listen("construction-loaded", this.animateCanvas);
+  }
+
+  mounted(): void {
+    // Put the main Two.js instance into the canvas
+    this.twoInstance.appendTo(this.$refs.canvas);
+    // Set the main Two.js instance to refresh at 60 fps
+    this.twoInstance.play();
+
+    // Set up the listeners
+    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
+    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
+
+    // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
+    // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
+    // unpredictable. (In the case of the move tool, if the user first clicks, then presses ctrl, the behavior is fine.)
+    // source: https://www.sitepoint.com/community/t/how-do-i-disable-the-context-menu-in-chrome-on-a-mac/346738
+    // I can't see a good way to remove this listener
+    // IS THIS A GOOD IDEA? Maybe not
+    this.$refs.canvas.addEventListener("contextmenu", event =>
+      event.preventDefault()
+    );
+
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
     SEStore.setCanvas(this.$refs.canvas);

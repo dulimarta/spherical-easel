@@ -33,7 +33,7 @@
 
               <v-select label="Role"
                 v-model="userRole"
-                :items=" 
+                :items="
                 ['Student', 'Instructor'
                 , 'Community Member'
                 ]">
@@ -183,7 +183,7 @@ export default class Settings extends Vue {
       .then((ds: DocumentSnapshot) => {
         if (ds.exists) {
           const uProfile = ds.data() as UserProfile;
-          console.log("From Firestore", uProfile);
+          // console.log("From Firestore", uProfile);
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
           if (uProfile.role) this.userRole = uProfile.role;
@@ -200,7 +200,7 @@ export default class Settings extends Vue {
           this.userRole = "Community Member";
         }
 
-        console.log("Auth changed", u, this.profileEnabled);
+        // console.log("Auth changed", u, this.profileEnabled);
       }
     );
   }

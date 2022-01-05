@@ -144,7 +144,11 @@ export default class SE extends VuexModule implements AppState {
     this.initialStyleStates.splice(0);
     this.defaultStyleStates.splice(0);
     this.hasUnsavedNodules = false;
-    //this.temporaryNodules.clear(); // Do not clear the temporaryNodules array
+    this.temporaryNodules.clear();
+
+    // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
+
+    // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
   }

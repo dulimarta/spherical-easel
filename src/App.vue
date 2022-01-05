@@ -268,7 +268,7 @@ export default class App extends Vue {
 
   mounted(): void {
     console.log("Base URL is ", process.env.BASE_URL);
-    SEStore.init();
+    // SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
