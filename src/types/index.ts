@@ -488,3 +488,9 @@ export enum AngleMode {
   LINEANDSEGMENT,
   SEGMENTSORLINEANDSEGMENT
 }
+
+export enum SliderPlaybackMode {
+  ONCE,
+  LOOP,
+  REFLECT
+}
