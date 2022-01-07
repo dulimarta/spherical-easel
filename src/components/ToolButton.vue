@@ -7,16 +7,17 @@
     <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      :disabled="displayToolTips">
+      :disabled="displayToolTips || $attrs.disabled">
       <template v-slot:activator="{ on }">
         <v-btn icon
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
-          @click="
+          @click="() => {
+            if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
             setElevation()
-          "
+          }"
           x-large
           :elevation="elev">
           <v-flex xs12>
@@ -26,6 +27,7 @@
               v-html="$t('buttons.' + button.displayedName )">
             </p>
           </v-flex>
+          <slot name="overlay"></slot>
         </v-btn>
       </template>
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>

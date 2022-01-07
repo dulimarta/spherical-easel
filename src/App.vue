@@ -169,7 +169,7 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore } from "./store";
+import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
 
@@ -281,9 +281,13 @@ export default class App extends Vue {
             .get()
             .then((ds: DocumentSnapshot) => {
               if (ds.exists) {
-                const { profilePictureURL } = ds.data() as any;
+                console.debug("User data", ds.data())
+                const { profilePictureURL, role } = ds.data() as any;
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
+                }
+                if (role) {
+                  ACStore.setUserRole(role.toLowerCase());
                 }
               }
             });
@@ -311,6 +315,7 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
+    ACStore.setUserRole(undefined);
     this.uid = "";
     this.whoami = "";
   }

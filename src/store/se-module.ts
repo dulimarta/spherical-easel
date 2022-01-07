@@ -116,7 +116,6 @@ export default class SE extends VuexModule implements AppState {
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: HTMLDivElement | null = null;
   hasUnsavedNodules = false;
-  temporaryProfilePicture = "";
 
   //#endregion appState
 
@@ -720,10 +719,6 @@ export default class SE extends VuexModule implements AppState {
     this.hasUnsavedNodules = false;
   }
 
-  @Mutation
-  setTemporaryProfilePicture(imageHexString: string): void {
-    this.temporaryProfilePicture = imageHexString;
-  }
 
   //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {

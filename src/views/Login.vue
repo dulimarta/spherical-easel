@@ -27,7 +27,7 @@
                       :disabled="!validEntries">Signup</v-btn>
                   </v-col>
                   <v-col cols="auto">
-                    <v-btn :disabled="!isValidEmail">Reset Password</v-btn>
+                    <v-btn :disabled="!isValidEmail" @click="doReset">Reset Password</v-btn>
                   </v-col>
                   <v-col cols="auto">
                     <v-btn color="primary"
@@ -117,7 +117,6 @@ export default class Login extends Vue {
     this.$appAuth
       .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
       .then((cred: UserCredential) => {
-        console.debug("jsdf", cred);
         cred.user?.sendEmailVerification();
         EventBus.fire("show-alert", {
           key: "account.emailVerification",
@@ -160,6 +159,7 @@ export default class Login extends Vue {
   }
 
   doReset(): void {
+    console.debug("Sending password reset email to", this.userEmail);
     this.$appAuth.sendPasswordResetEmail(this.userEmail).then(() => {
       EventBus.fire("show-alert", {
         key: "account.passwordReset",

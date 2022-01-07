@@ -60,8 +60,12 @@ export interface AppState {
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
-  temporaryProfilePicture: string;
 }
+export interface AccountState {
+  temporaryProfilePicture: string;
+  userRole: string | undefined;
+}
+
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
   id: number;

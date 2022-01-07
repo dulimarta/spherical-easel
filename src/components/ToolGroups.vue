@@ -1,25 +1,50 @@
 <template>
   <div class="pa-1 accent"
     id="toolButtonContainer">
+    <v-btn elevation="2" v-if="userRole === 'instructor'"
+      fab small
+      color="primary"
+      @click="inEditMode = !inEditMode">
+      <v-icon>mdi-pencil</v-icon>
+    </v-btn>
 
-    <div>Grouped</div>
     <div v-for="(g,gpos) in buttonGroup"
       :key="gpos">
       <h3 v-show="g.children.length > 0"
         class="body-1 font-weight-bold">{{$t(`toolGroups.${g.group}`)}}
       </h3>
       <v-btn-toggle v-model="actionMode"
-        class="px-1 d-flex flex-wrap accent"
         @change="switchActionMode">
-        <ToolButton v-for="(button,tbpos) in g.children"
-          :key="tbpos"
-          :button="button"
-          v-on:display-only-this-tool-use-message="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+        <v-container>
+          <v-row class="accent">
+            <v-col cols="auto"
+              v-for="(button,bpos) in g.children"
+              :key="bpos">
+              <ToolButton z-index="10"
+                :disabled="inEditMode"
+                :button="button"
+                v-on:display-only-this-tool-use-message="displayOnlyThisToolUseMessageFunc">
+                <template #overlay
+                  v-if="inEditMode"
+                  z-index="5">
+                  <v-overlay absolute
+                    opacity="0.3">
+                    <v-icon color="red"
+                      v-if="toolIncluded(button.actionModeValue)"
+                      @click="excludeTool(button.actionModeValue)">
+                      mdi-close-circle</v-icon>
+                    <v-icon color="white"
+                      v-else
+                      @click="includeTool(button.actionModeValue)">
+                      mdi-plus-circle</v-icon>
+                  </v-overlay>
+                </template>
+              </ToolButton>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-btn-toggle>
     </div>
-
-    <div>Current</div>
 
     <div id="DeveloperToolGroup"
       v-show="developerButtonList.length > 0 && !inProductionMode">
@@ -29,7 +54,7 @@
       <v-btn-toggle v-model="actionMode"
         @change="switchActionMode"
         class="mr-2 d-flex flex-wrap accent">
-        <!--- Use Array.filter to select only edit tools -->
+
         <ToolButton v-for="(button, pos) in developerButtonList"
           :key="pos"
           :button="button"
@@ -47,11 +72,13 @@ import Vue from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
-import { ActionMode, ToolButtonType } from "@/types";
+import { AccountState, ActionMode, ToolButtonType } from "@/types";
 import { SEStore } from "@/store";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
-import { Group } from "two.js";
+import { namespace } from "vuex-class";
+
+const AC = namespace("acct");
 
 type ToolButtonGroup = {
   group: string;
@@ -63,6 +90,10 @@ type ToolButtonGroup = {
   components: { ToolButton }
 })
 export default class ToolGroups extends Vue {
+
+  @AC.State((s: AccountState) => s.userRole)
+  readonly userRole!: string | undefined;
+
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
@@ -75,16 +106,21 @@ export default class ToolGroups extends Vue {
 
   private elev = 24;
   private inProductionMode = false;
+  private inEditMode = false;
+  private includedTools: string[] = [];
 
   /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
-  private buttonDisplayList = SETTINGS.userButtonDisplayList;
+  // private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
   created(): void {
     this.inProductionMode = process.env.NODE_ENV === "production";
     this.buttonGroup.forEach((gr: ToolButtonGroup) => {
-      gr.children.sort((a:ToolButtonType, b:ToolButtonType) => a.id - b.id)
-    })
+      gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
+    });
+    this.includedTools = this.buttonGroup
+      .flatMap(g => g.children)
+      .map((b: ToolButtonType) => b.actionModeValue);
   }
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
@@ -100,7 +136,6 @@ export default class ToolGroups extends Vue {
   /* This turns off all other snackbar/toolUseMessage displays so that multiple
   snackbar/toolUseMessages are not displayed at the same time.  */
   displayOnlyThisToolUseMessageFunc(actionModeValue: string): void {
-    console.debug("Emitted event", actionModeValue);
     // Alternative solution: use Array high-order functions
     this.buttonGroup
       .flatMap(group => group.children)
@@ -108,6 +143,18 @@ export default class ToolGroups extends Vue {
       .forEach(btn => {
         btn.displayToolUseMessage = !btn.displayToolUseMessage;
       });
+  }
+
+  toolIncluded(name: string): boolean {
+    return this.includedTools.findIndex((s: string) => s === name) >= 0;
+  }
+
+  includeTool(name: string): void {
+    this.includedTools.push(name);
+  }
+  excludeTool(name: string): void {
+    const pos = this.includedTools.findIndex(s => s === name);
+    if (pos >= 0) this.includedTools.splice(pos, 1);
   }
 
   /* A list of all the buttons that are possible to display/use. Only those that the User has

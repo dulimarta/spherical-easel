@@ -37,9 +37,9 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import EventBus from "@/eventHandlers/EventBus";
-import { AppState } from "@/types";
-import { SEStore } from "@/store";
-const SE = namespace("se");
+import { AccountState } from "@/types";
+import { ACStore } from "@/store";
+const UserAcct = namespace("acct");
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -57,7 +57,7 @@ export default class PhotoCropper extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
 
-  @SE.State((s: AppState) => s.temporaryProfilePicture)
+  @UserAcct.State((s: AccountState) => s.temporaryProfilePicture)
   readonly temporaryProfilePicture!: string;
 
   inputImageBinary: ImageBitmap | null = null;
@@ -138,7 +138,7 @@ export default class PhotoCropper extends Vue {
             key: "Profile picture is saved to Firebase",
             type: "info"
           });
-          SEStore.setTemporaryProfilePicture("");
+          ACStore.setTemporaryProfilePicture("");
         })
         .catch((err: any) => {
           EventBus.fire("show-alert", {
@@ -149,7 +149,7 @@ export default class PhotoCropper extends Vue {
     }
   }
   cancelCrop(): void {
-    SEStore.setTemporaryProfilePicture("");
+    ACStore.setTemporaryProfilePicture("");
     this.$emit("no-capture", {});
     this.$router.go(-this.goBackSteps);
   }
