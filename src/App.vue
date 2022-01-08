@@ -281,6 +281,7 @@ export default class App extends Vue {
             .get()
             .then((ds: DocumentSnapshot) => {
               if (ds.exists) {
+                this.accountEnabled = true;
                 console.debug("User data", ds.data())
                 const { profilePictureURL, role } = ds.data() as any;
                 if (profilePictureURL) {

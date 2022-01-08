@@ -1,8 +1,10 @@
 <template>
   <div class="pa-1 accent"
     id="toolButtonContainer">
-    <v-btn elevation="2" v-if="userRole === 'instructor'"
-      fab small
+    <v-btn elevation="2"
+      v-if="userRole === 'instructor'"
+      fab
+      small
       color="primary"
       @click="inEditMode = !inEditMode">
       <v-icon>mdi-pencil</v-icon>
@@ -20,23 +22,26 @@
             <v-col cols="auto"
               v-for="(button,bpos) in g.children"
               :key="bpos">
-              <ToolButton z-index="10"
-                :disabled="inEditMode"
+              <ToolButton :disabled="inEditMode"
                 :button="button"
                 v-on:display-only-this-tool-use-message="displayOnlyThisToolUseMessageFunc">
                 <template #overlay
-                  v-if="inEditMode"
-                  z-index="5">
-                  <v-overlay absolute
-                    opacity="0.3">
-                    <v-icon color="red"
-                      v-if="toolIncluded(button.actionModeValue)"
+                  v-if="inEditMode">
+                  <v-overlay  v-if="toolIncluded(button.actionModeValue)" absolute
+                    opacity="0.25">
+                    <v-icon
+                      color="white"
+                      class="overlayicon"
                       @click="excludeTool(button.actionModeValue)">
-                      mdi-close-circle</v-icon>
-                    <v-icon color="white"
-                      v-else
+                      mdi-minus-circle</v-icon>
+                  </v-overlay>
+                  <v-overlay v-else absolute opacity="0.85">
+                    <v-icon
+                      color="primary"
+                      class="overlayicon"
                       @click="includeTool(button.actionModeValue)">
                       mdi-plus-circle</v-icon>
+
                   </v-overlay>
                 </template>
               </ToolButton>
@@ -90,7 +95,6 @@ type ToolButtonGroup = {
   components: { ToolButton }
 })
 export default class ToolGroups extends Vue {
-
   @AC.State((s: AccountState) => s.userRole)
   readonly userRole!: string | undefined;
 
@@ -515,4 +519,10 @@ export default class ToolGroups extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.overlayicon {
+  position: absolute;
+  top: -40px;
+  right: -32px;
+}
+</style>
