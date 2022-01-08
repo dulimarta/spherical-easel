@@ -64,19 +64,27 @@ export interface AppState {
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;
+  includedTools: Array<string>;
+  excludedTools: Array<string>;
 }
 
 /* This interface lists all the properties that each tool/button must have. */
-export interface ToolButtonType {
+export type ToolButtonGroup = {
+  group: string;
+  children: Array<ToolButtonType>;
+};
+
+export type ToolButtonType = {
   id: number;
   actionModeValue: string;
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
-  toolGroup: string;
+  // toolGroup: string;
   toolUseMessage: string;
   toolTipMessage: string;
-}
+};
+
 export type SavedNames =
   | "objectName"
   | "objectExists"

@@ -15176,6 +15176,7 @@ __metadata:
     file-saver: ^2.0.5
     firebase: ^8.6.2
     firestore-jest-mock: "https://github.com/dulimarta/firestore-jest-mock"
+    lodash.clonedeep: ^4.5.0
     markdown-it-texmath: ^0.7.2
     markdown-it-vuepress-code-snippet-enhanced: ^1.0.1
     moment: ^2.26.0

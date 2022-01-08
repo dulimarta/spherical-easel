@@ -264,6 +264,7 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
+    ACStore.resetToolset();
   }
 
   mounted(): void {
