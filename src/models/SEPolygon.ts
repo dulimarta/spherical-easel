@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import { Vector3, Matrix4, UniformsLib } from "three";
+import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import SETTINGS from "@/global-settings";

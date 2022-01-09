@@ -32,12 +32,6 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { SENodule } from "../models/SENodule";
-import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
-import SENoduleItem from "@/components/SENoduleItem.vue";
-import SESliderItem from "@/components/SESliderItem.vue";
-import { SESlider } from "@/models/SESlider";
-import EventBus from "@/eventHandlers/EventBus";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 
 @Component({ components: { ParametricTExpression } })

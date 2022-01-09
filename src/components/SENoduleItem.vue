@@ -222,7 +222,6 @@ import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SECalculation } from "../models/SECalculation";
 import { SEPointDistance } from "@/models/SEPointDistance";
-import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import { AppState, ObjectState, ValueDisplayMode } from "@/types";
@@ -245,8 +244,6 @@ import { SEStore } from "@/store";
 import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import DeleteHandler from "@/eventHandlers/DeleteHandler";
-import SETTINGS from "@/global-settings";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 
 const SE = namespace("se");

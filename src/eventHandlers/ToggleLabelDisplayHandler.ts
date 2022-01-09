@@ -2,7 +2,6 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEStore } from "@/store";

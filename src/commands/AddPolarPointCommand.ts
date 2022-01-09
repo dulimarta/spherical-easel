@@ -1,6 +1,5 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -8,9 +7,6 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
-import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";

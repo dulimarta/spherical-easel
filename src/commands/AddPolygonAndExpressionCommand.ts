@@ -3,13 +3,11 @@ import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import Polygon from "@/plottables/Polygon";
-import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolygonCommand extends Command {
@@ -238,9 +236,9 @@ export class AddPolygonCommand extends Command {
       );
     }
     throw new Error(
-      `AddPolygon: 
+      `AddPolygon:
       ${polygonAngleMarkerParents} or
-      ${polygonSegmentParents} 
+      ${polygonSegmentParents}
        is undefined`
     );
   }

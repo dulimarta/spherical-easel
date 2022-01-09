@@ -1,10 +1,8 @@
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -23,7 +21,6 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SECircle } from "@/models/SECircle";
-import Line from "@/plottables/Line";
 import i18n from "../i18n";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { AddPolarPointCommand } from "@/commands/AddPolarPointCommand";

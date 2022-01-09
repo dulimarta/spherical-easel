@@ -9,7 +9,7 @@ import { SENodule } from "../models/SENodule";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
 import { namespace } from "vuex-class";
-import EventBus from "@/eventHandlers/EventBus";
+
 const SE = namespace("se");
 @Component({ components: { FadeInCard } })
 export default class AdvancedStyle extends Vue {

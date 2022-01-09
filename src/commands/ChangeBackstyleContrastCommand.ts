@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { SEStore } from "@/store";
 
 export class ChangeBackStyleContrastCommand extends Command {

@@ -4,9 +4,7 @@ import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {

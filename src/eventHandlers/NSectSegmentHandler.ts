@@ -1,6 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
-import { NotEqualStencilFunc, Vector3 } from "three";
+import { Vector3 } from "three";
 import { SEStore } from "@/store";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";

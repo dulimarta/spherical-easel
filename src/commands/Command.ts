@@ -14,12 +14,10 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
-import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
+import { StyleEditPanels } from "@/types/Styles";
+
 export abstract class Command {
   protected static store = SEStore;
 
@@ -173,9 +171,9 @@ export abstract class Command {
   abstract do(): void;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
-   * and interpreted at runtime by calling the constructor of Command subclasses. 
+   * and interpreted at runtime by calling the constructor of Command subclasses.
    * The generated opcode shall include sufficient details for invoking the constructor.
-   * 
+   *
    * @returns Several possible return values:
 
    * - A simple command shall return a string

@@ -4,20 +4,12 @@ import { SELabel } from "@/models/SELabel";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import {
   SavedNames,
-  SEOneDimensional,
   SEOneDimensionalNotStraight
 } from "@/types";
-import Line from "@/plottables/Line";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import NonFreeLine from "@/plottables/NonFreeLine";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEParametric } from "@/models/SEParametric";
-import { SECircle } from "@/models/SECircle";
 import { StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 export class AddTangentLineThruPointCommand extends Command {

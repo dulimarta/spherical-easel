@@ -1,4 +1,4 @@
-import Two, { BoundingClientRect } from "two.js";
+import Two from "two.js";
 
 export class TextBox extends Two.Group {
   private box: Two.RoundedRectangle;

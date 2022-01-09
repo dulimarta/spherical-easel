@@ -32,16 +32,10 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { SENodule } from "../models/SENodule";
-import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
-import SENoduleItem from "@/components/SENoduleItem.vue";
-import SESliderItem from "@/components/SESliderItem.vue";
-import { SESlider } from "@/models/SESlider";
-import EventBus from "@/eventHandlers/EventBus";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
 @Component({ components: { ParametricCoordinate } })
-export default class SENoduleTree extends Vue {
+export default class ParametricCoordinates extends Vue {
   @Prop()
   readonly coordinateData!: [];
 

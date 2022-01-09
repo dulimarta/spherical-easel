@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
@@ -7,7 +6,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 

@@ -1,14 +1,10 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
-import Line from "@/plottables/Line";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
