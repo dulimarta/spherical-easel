@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
-// import serverless from "serverless-http";
 import { Socket, Server } from "socket.io";
 import { firebaseFirestore } from "./../firebase-backend";
 import {
@@ -32,7 +31,7 @@ io.on("connection", (socket: Socket) => {
     //     console.debug(`Socket id ${socket.id} deleted`);
     //   });
   });
-  socket.on("teacher-join", args => {
+  socket.on("teacher-join", (args:any) => {
     socket.join(`chat-${socket.id}`);
     console.debug("Server received 'teacher-join' event", args, socket.id);
     firebaseFirestore
@@ -57,16 +56,16 @@ io.on("connection", (socket: Socket) => {
     socket.to(arg.room).emit('notify-all', arg.message)
   });
 
-  socket.on("student-join", ({ session }) => {
+  socket.on("student-join", (arg :{ session:string }) => {
     console.debug(
       "Server received 'student-join' event",
-      session,
+      arg.session,
       "on socket",
       socket.id
     );
-    const roomId = `chat-${session}`;
+    const roomId = `chat-${arg.session}`;
     socket.join(roomId);
-    socket.to(roomId).emit("new-student", session);
+    socket.to(roomId).emit("new-student", arg.session);
   });
 });
 

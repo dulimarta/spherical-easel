@@ -1,0 +1,20 @@
+.idea
+.vscode
+.yarn
+node_modules
+dist
+
+latex-notes
+
+# Ignore test files
+tests
+**/*.spec.ts
+**/*.spek.ts
+cypress.json
+jest.config.js
+coverage
+cypress
+
+# Ignore deployment file
+.gitlab-ci.yml
+netlify.toml

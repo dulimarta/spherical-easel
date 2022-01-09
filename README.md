@@ -28,7 +28,7 @@ yarn install
 
 ```bash
 # Start the app on a local server
-yarn serve
+yarn app:serve
 ```
 
 After typing `yarn serve`, use your browser to open `localhost:8080` (or whatever port number used by `yarn serve`).
@@ -36,8 +36,7 @@ After typing `yarn serve`, use your browser to open `localhost:8080` (or whateve
 ### Optional commands
 
 ```bash
-yarn build        # to build for production
-yarn docs:build   # to build the documentation
+yarn app:build    # to build for production
 yarn lint         # to run linter program
 ```
 
@@ -58,3 +57,28 @@ yarn docs:build    # do this AFTER `yarn build`
 ```
 
 After a successful document build, you will find a new directory `dist/docs`.
+
+
+## Launching With Docker
+
+1. Build a docker image from `Dockerfile`
+
+   ```
+   # The image will be assigned a tag name easelgeo
+   docker build -t gvsu/easelgeo --no-cache .
+   ```
+
+2. Run the image
+
+
+   ```
+   docker run -it -p 9000:8080 --rm --name easelgeo-app gvsu/easelgeo
+   ```
+
+   or
+
+   ```
+   docker-compose up
+   ```
+
+3. Connect to `localhost:9000` from a browser (port 8080 in the container is mapped a port 9000 on the host)

@@ -1,0 +1,15 @@
+# To run
+#    docker-compose up
+
+version: '3'
+services:
+  vue-ui:
+    container_name: spherical-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:8080"    # Container port 8080 is mapped to port 9000 on the host
+    volumes:
+      - .:/usr/src/app/spherical
+      - /usr/src/app/spherical/node_modules

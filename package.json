@@ -22,7 +22,6 @@
     "@firebase/auth-types": "^0.10.3",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
-    "@types/socket.io": "^3.0.2",
     "@types/socket.io-client": "^3.0.0",
     "@types/three": "^0.135.0",
     "axios": "^0.24.0",
