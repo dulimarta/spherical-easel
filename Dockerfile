@@ -9,7 +9,7 @@ WORKDIR ./
 
 RUN apk add python3
 RUN npm install -g npm@8.3.0
-# RUN npm install -g http-server
+RUN npm install -g http-server
 
 # node-gyp must be installed globally
 # Reference: https://github.com/nodejs/node-gyp/blob/master/docs/Updating-npm-bundled-node-gyp.md
@@ -25,7 +25,8 @@ COPY package*.json /
 
 RUN npm install
 COPY . .
-# RUN npm run app:build
+RUN npm run app:build
 EXPOSE 8080
 
-CMD ["npm", "run", "app:serve"]
+# CMD ["npm", "run", "app:serve"]
+CMD ["http-server", "dist"]
