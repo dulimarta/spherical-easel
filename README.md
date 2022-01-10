@@ -72,13 +72,13 @@ After a successful document build, you will find a new directory `dist/docs`.
 
 
    ```
-   docker run -it -p 9000:8080 --rm --name easelgeo-app gvsu/easelgeo
+   docker run -it -p 9000:80 --rm --name easelgeo-app gvsu/easelgeo
    ```
 
    or
 
    ```
-   docker-compose up
+   docker-compose up --build
    ```
 
 3. Connect to `localhost:9000` from a browser (port 8080 in the container is mapped a port 9000 on the host)
