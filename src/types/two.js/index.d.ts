@@ -8,6 +8,10 @@
 // Modified by Hans Dulimarta <hans.dulimarta@gmail.com>
 
 // To enable access to Path.visible, Path.offset, Path.dashes
+
+// Modified by Will Dickinson <dickinsw@gvsu.edu>
+// To enable update to Ellipse parameters in the the latest version of two.js (0.13)
+//
 declare module "two.js" {
   type _Object = Two.Object;
 
