@@ -2,6 +2,9 @@
   "name": "spherical-vue",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "src/app-server"
+  ],
   "scripts": {
     "serve": "concurrently \"npm run mon\" \"npm run app:serve\" \"npm run docs:serve\"",
     "exp:serve": "netlify-lambda serve src/app-server",
@@ -28,14 +31,13 @@
     "browserslist": "^4.19.1",
     "core-js": "^3.20.1",
     "detect-browser": "^5.2.0",
-    "express": "^4.17.2",
     "file-saver": "^2.0.5",
     "firebase": "^8.10.0",
     "markdown-it-texmath": "^0.9.7",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
     "serverless-http": "^2.7.0",
-    "socket.io": "^4.4.0",
+    "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.0",
     "splitpanes": "^2.3.8",
     "three": "^0.136.0",
@@ -57,7 +59,6 @@
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/font": "^6.5.95",
     "@mdi/js": "^6.5.95",
-    "@types/express": "^4.17.13",
     "@types/jest": "~24.0.25",
     "@types/node": "^17.0.6",
     "@types/webpack": "~4.41.32",

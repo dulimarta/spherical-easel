@@ -65,14 +65,14 @@ After a successful document build, you will find a new directory `dist/docs`.
 
    ```
    # The image will be assigned a tag name easelgeo
-   docker build -t gvsu/easelgeo --no-cache .
+   docker build -t DDDDDDDD/easelgeo --no-cache .
    ```
 
-2. Run the image
+   To push the image to [Docker Hub](`docker.io`), use your Docker userid in place of `DDDDDDDD`.
 
 
    ```
-   docker run -it -p 9000:80 --rm --name easelgeo-app gvsu/easelgeo
+   docker run -it -p 9000:80 --rm --name easelgeo-app DDDDDDDD/easelgeo
    ```
 
    or

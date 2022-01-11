@@ -2,10 +2,10 @@ import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Socket, Server } from "socket.io";
 import { firebaseFirestore } from "./../firebase-backend";
-import {
-  QuerySnapshot,
-  QueryDocumentSnapshot
-} from "@firebase/firestore-types";
+// import {
+//   QuerySnapshot,
+//   QueryDocumentSnapshot
+// } from "@firebase/firestore-types";
 
 const app = express();
 const router = express.Router();
@@ -70,6 +70,8 @@ io.on("connection", (socket: Socket) => {
 });
 
 const APP_URL = "https://easelgeo.app";
+
+// Full path to this entry is /geo/sessions
 router.get("/sessions", (req: Request, res: Response) => {
   res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
 
