@@ -64,8 +64,8 @@ export interface AppState {
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;
-  includedTools: Array<string>;
-  excludedTools: Array<string>;
+  includedTools: Array<ActionMode>;
+  excludedTools: Array<ActionMode>;
 }
 
 /* This interface lists all the properties that each tool/button must have. */
@@ -76,7 +76,7 @@ export type ToolButtonGroup = {
 
 export type ToolButtonType = {
   id: number;
-  actionModeValue: string;
+  actionModeValue: ActionMode;
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
@@ -483,6 +483,8 @@ export interface ConstructionInFirestore {
   description: string;
   rotationMatrix?: string;
   preview?: string;
+  // A list of enabled tool buttons associated with this construction
+  tools: Array<ActionMode> | undefined;
 }
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {

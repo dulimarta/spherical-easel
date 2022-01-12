@@ -105,7 +105,7 @@ export default class ToolGroups extends Vue {
   readonly userRole!: string | undefined;
 
   @AC.State((s: AccountState) => s.includedTools)
-  readonly includedTools!: string[];
+  readonly includedTools!: ActionMode[];
 
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
@@ -121,6 +121,7 @@ export default class ToolGroups extends Vue {
   private inProductionMode = false;
   private inEditMode = false;
   private buttonGroup: Array<ToolButtonGroup> = [];
+  private currentToolset: Array<ActionMode> = [];
 
   /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
@@ -132,6 +133,7 @@ export default class ToolGroups extends Vue {
     this.buttonGroup.forEach((gr: ToolButtonGroup) => {
       gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
     });
+    this.currentToolset.push(...this.includedTools);
   }
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
@@ -175,14 +177,14 @@ export default class ToolGroups extends Vue {
     }
   }
 
-  toolIncluded(name: string): boolean {
+  toolIncluded(name: ActionMode): boolean {
     return this.includedTools.findIndex((s: string) => s === name) >= 0;
   }
 
-  includeTool(name: string): void {
+  includeTool(name: ActionMode): void {
     ACStore.includeToolName(name);
   }
-  excludeTool(name: string): void {
+  excludeTool(name: ActionMode): void {
     ACStore.excludeToolName(name);
   }
 
@@ -210,5 +212,23 @@ export default class ToolGroups extends Vue {
   position: absolute;
   top: -40px;
   right: -32px;
+  animation-name: shake;
+  animation-duration: 250ms;
+  animation-iteration-count: infinite;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0px);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(0px);
+  }
+  75% {
+    transform: translateX(+3px);
+  }
 }
 </style>

@@ -1,4 +1,9 @@
-import { AccountState, ToolButtonGroup, ToolButtonType } from "@/types";
+import {
+  AccountState,
+  ActionMode,
+  ToolButtonGroup,
+  ToolButtonType
+} from "@/types";
 import { VuexModule, Module, Mutation } from "vuex-module-decorators";
 import { toolGroups } from "@/components/toolgroups";
 
@@ -11,13 +16,12 @@ function insertAscending(newItem: string, arr: string[]): void {
   else arr.splice(k, 0, newItem); // insert in the middle somewhere
 }
 
-
 @Module({ name: "acct", namespaced: true })
 export default class Acct extends VuexModule implements AccountState {
   temporaryProfilePicture = "";
   userRole: string | undefined = undefined;
-  includedTools: string[] = [];
-  excludedTools: string[] = [];
+  includedTools: ActionMode[] = [];
+  excludedTools: ActionMode[] = [];
 
   @Mutation
   setTemporaryProfilePicture(imageHexString: string): void {
@@ -29,19 +33,22 @@ export default class Acct extends VuexModule implements AccountState {
     this.userRole = role;
   }
 
-
   @Mutation
-  resetToolset(): void {
+  resetToolset(includeAll = true): void {
     this.includedTools.splice(0);
     this.excludedTools.splice(0);
     const toolNames = toolGroups
       .flatMap((g: ToolButtonGroup) => g.children)
       .map((t: ToolButtonType) => t.actionModeValue);
-    this.includedTools.push(...toolNames);
+    if (includeAll) {
+      this.includedTools.push(...toolNames);
+    } else {
+      this.excludedTools.push(...toolNames);
+    }
   }
 
   @Mutation
-  includeToolName(name: string): void {
+  includeToolName(name: ActionMode): void {
     const pos = this.excludedTools.findIndex((tool: string) => tool === name);
     if (pos >= 0) {
       insertAscending(name, this.includedTools);
@@ -49,7 +56,7 @@ export default class Acct extends VuexModule implements AccountState {
     }
   }
   @Mutation
-  excludeToolName(name: string): void {
+  excludeToolName(name: ActionMode): void {
     const pos = this.includedTools.findIndex((tool: string) => tool === name);
     if (pos >= 0) {
       insertAscending(name, this.excludedTools);
