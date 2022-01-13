@@ -2,20 +2,17 @@
   "name": "spherical-vue",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "src/app-server"
-  ],
   "scripts": {
     "serve": "concurrently \"npm run mon\" \"npm run app:serve\" \"npm run docs:serve\"",
     "exp:serve": "netlify-lambda serve src/app-server",
-    "mon": "nodemon src/app-server/geo.ts",
+    "mon": "npx nodemon",
     "ts-check": "tsc --noEmit --lib ES2015 ./src/app-server/geo.ts",
     "build": "npm run app:build & npm run docs:build",
     "test:unit": "vue-cli-service test:unit --watch",
     "test:cyunit": "cypress open-ct",
     "lint": "vue-cli-service lint",
     "app:build": "vue-cli-service build",
-    "app:serve": "concurrently \"vue-cli-service serve\" \"nodemon src/app-server/geo.ts\"",
+    "app:serve": "concurrently \"vue-cli-service serve\" \"npx nodemon\"",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug",
@@ -33,10 +30,10 @@
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",
     "firebase": "^8.10.0",
+    "lodash.clonedeep": "^4.5.0",
     "markdown-it-texmath": "^0.9.7",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
-    "serverless-http": "^2.7.0",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.0",
     "splitpanes": "^2.3.8",
@@ -86,6 +83,7 @@
     "sass": "~1.32.13",
     "sass-loader": "~8.0.2",
     "ts-node": "^10.4.0",
+    "ts-node-dev": "^1.1.8",
     "typescript": "~4.0.8",
     "vue-cli-plugin-i18n": "~2.3.1",
     "vue-cli-plugin-vuetify": "~2.4.5",
@@ -131,5 +129,6 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "packageManager": "yarn@3.1.1"
 }

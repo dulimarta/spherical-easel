@@ -2,7 +2,6 @@
   "debug.node.autoAttach": "on",
   "peacock.color": "#905dc6",
   "prettier.htmlWhitespaceSensitivity": "ignore",
-  "prettier.packageManager": "yarn",
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": true,
   // "vetur.experimental.templateInterpolationService": true,

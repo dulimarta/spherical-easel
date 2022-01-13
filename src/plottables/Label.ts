@@ -1,7 +1,7 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import Two, { BoundingClientRect } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";

@@ -11,7 +11,6 @@ import {
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import AppStore from "@/store";
-import SE from "@/store/se-module";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();

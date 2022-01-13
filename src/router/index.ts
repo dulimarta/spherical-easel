@@ -4,7 +4,6 @@ import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
 import TeacherDashboard from "@/views/TeacherDashboard.vue";
-import StudioList from "@/views/StudioList.vue";
 import StudioActivity from "@/views/StudentStudioActivity.vue";
 
 Vue.use(VueRouter);
@@ -56,10 +55,6 @@ const routes: Array<RouteConfig> = [
     name: "Teacher Dashboard",
     path: "/teacher-dashboard",
     component: TeacherDashboard
-  },
-  {
-    path: "/studio-list",
-    component: StudioList
   },
   {
     name: "StudioActivity",

@@ -61,7 +61,7 @@
           v-if="myRole !== 'instructor' || !accountEnabled">
           <v-icon class="mx-2"
             v-on="on"
-            @click="joinStudio">mdi-google-classroom</v-icon>
+            @click="prepareToJoinStudio">mdi-google-classroom</v-icon>
         </template>
         <span>Join a studio</span>
       </v-tooltip>
@@ -177,6 +177,25 @@
       max-width="40%">
       You are about to create a new teacher session
     </Dialog>
+    <Dialog ref="studioListDialog"
+      max-width="40%"
+      yes-text="Cancel">
+      <p class="text-h4">Please select a studio to join</p>
+      <table>
+        <tr v-for="(s,pos) in availableSessions"
+          :key="pos">
+          <td class="text-body-1">{{s}}</td>
+          <td>
+            <v-btn @click="joinSession(s)">Join</v-btn>
+          </td>
+        </tr>
+      </table>
+    </Dialog>
+    <v-snackbar timeout="3000"
+      v-model="showBroadcastMessage">
+      Broadcast message: {{broadcastMessage}}
+
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -192,25 +211,28 @@ import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AppState, StudioState } from "./types";
+import { AccountState, AppState, StudioState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
   FirebaseFirestore,
   DocumentReference,
-  DocumentSnapshot
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  QuerySnapshot
 } from "@firebase/firestore-types";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore } from "./store";
+import { SEStore, ACStore, StudioStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
-import { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 //#region vuex-module-namespace
 const SE = namespace("se");
 const SD = namespace("sd");
+const AC = namespace("acct");
 //#endregion vuex-module-namespace
 
 // const socket = io("http://localhost:4000");
@@ -246,6 +268,11 @@ export default class App extends Vue {
   @SD.State((s: StudioState) => s.studioSocket)
   readonly studioSocket!: Socket | null;
 
+  @SD.State((s: StudioState) => s.studioSocket)
+  readonly studentStudioSocket!: Socket | null;
+
+  @AC.State((s: AccountState) => s.userRole)
+  myRole!: string;
   // @SE.State((s: AppState) => s.sePoints)
   // readonly sePoints!: SEPoint[];
 
@@ -256,6 +283,7 @@ export default class App extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appStorage!: FirebaseStorage;
   socket!: Socket;
+  availableSessions: Array<string> = [];
 
   clientBrowser: any;
   description = "";
@@ -264,12 +292,12 @@ export default class App extends Vue {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
     initiateSessionDialog: VueComponent & DialogAction;
+    studioListDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
-  myRole = "";
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
 
@@ -277,6 +305,8 @@ export default class App extends Vue {
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
   acceptedKeys = 0;
   accountEnabled = false;
+  showBroadcastMessage = false;
+  broadcastMessage = "";
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
@@ -316,11 +346,12 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
+    ACStore.resetToolset();
   }
 
   mounted(): void {
     console.log("Base URL is ", process.env.BASE_URL);
-    SEStore.init();
+    // SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
@@ -333,14 +364,16 @@ export default class App extends Vue {
             .get()
             .then((ds: DocumentSnapshot) => {
               if (ds.exists) {
-                const {
-                  profilePictureURL,
-                  role
-                } = ds.data() as UserDocOnFirebase;
+                this.accountEnabled = true;
+                console.debug("User data", ds.data());
+                const { profilePictureURL, role } =
+                  ds.data() as UserDocOnFirebase;
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }
-                this.myRole = role.toLowerCase();
+                if (role) {
+                  ACStore.setUserRole(role.toLowerCase());
+                }
               }
             });
         } else {
@@ -369,6 +402,7 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
+    ACStore.setUserRole(undefined);
     this.uid = "";
     this.whoami = "";
   }
@@ -496,10 +530,41 @@ export default class App extends Vue {
     this.$refs.initiateSessionDialog.hide();
   }
 
-  joinStudio(): void {
+  prepareToJoinStudio(): void {
     console.debug("About to join a studio");
-    if (this.studioSocket === null) this.$router.push({ path: "/studio-list" });
-    else this.$router.push({ path: "/in-studio" });
+    this.$appDB.collection("sessions").onSnapshot((qs: QuerySnapshot) => {
+      this.availableSessions.splice(0);
+      qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
+        this.availableSessions.push(qdoc.id);
+      });
+      if (this.availableSessions.length > 0) {
+        this.$refs.studioListDialog.show();
+      }
+    });
+
+    // if (this.studioSocket === null) this.$router.push({ path: "/studio-list" });
+    // else this.$router.push({ path: "/in-studio" });
+  }
+
+  joinSession(session: string): void {
+    console.debug("Attempt rejoin studio", session);
+    this.socket = io(
+      process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
+    );
+    StudioStore.setStudioSocket(this.socket);
+    this.$refs.studioListDialog.hide();
+    this.socket.on("connect", () => {
+      this.socket.emit("student-join", { who: "Hans", session });
+    });
+    this.socket.on("notify-all", (msg: string) => {
+      console.debug("Got a broadcast message", msg);
+      this.broadcastMessage = msg;
+      this.showBroadcastMessage = true;
+    });
+    // this.$router.push({
+    //   name: "StudioActivity",
+    //   params: { session }
+    // });
   }
 }
 </script>

@@ -23,7 +23,7 @@ export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
 
-export interface AppState {
+export type AppState = {
   layers: Two.Group[];
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   zoomTranslation: number[]; // current zoom translation vector
@@ -59,25 +59,36 @@ export interface AppState {
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
+};
+export type AccountState = {
   temporaryProfilePicture: string;
-}
+  userRole: string | undefined;
+  includedTools: Array<ActionMode>;
+  excludedTools: Array<ActionMode>;
+};
 
-export interface StudioState {
+export type StudioState = {
   // Socket.io ID associated with a teacher Studio
   studioSocket: Socket | null;
-}
+};
 
 /* This interface lists all the properties that each tool/button must have. */
-export interface ToolButtonType {
+export type ToolButtonGroup = {
+  group: string;
+  children: Array<ToolButtonType>;
+};
+
+export type ToolButtonType = {
   id: number;
-  actionModeValue: string;
+  actionModeValue: ActionMode;
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
-  toolGroup: string;
+  // toolGroup: string;
   toolUseMessage: string;
   toolTipMessage: string;
-}
+};
+
 export type SavedNames =
   | "objectName"
   | "objectExists"
@@ -492,4 +503,10 @@ export enum AngleMode {
   SEGMENTS,
   LINEANDSEGMENT,
   SEGMENTSORLINEANDSEGMENT
+}
+
+export enum SliderPlaybackMode {
+  ONCE,
+  LOOP,
+  REFLECT
 }

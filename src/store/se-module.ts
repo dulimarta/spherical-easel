@@ -117,7 +117,6 @@ export default class SE extends VuexModule implements AppState {
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: HTMLDivElement | null = null;
   hasUnsavedNodules = false;
-  temporaryProfilePicture = "";
 
 
   //#endregion appState
@@ -146,7 +145,11 @@ export default class SE extends VuexModule implements AppState {
     this.initialStyleStates.splice(0);
     this.defaultStyleStates.splice(0);
     this.hasUnsavedNodules = false;
-    //this.temporaryNodules.clear(); // Do not clear the temporaryNodules array
+    this.temporaryNodules.clear();
+
+    // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
+
+    // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
   }
@@ -718,10 +721,6 @@ export default class SE extends VuexModule implements AppState {
     this.hasUnsavedNodules = false;
   }
 
-  @Mutation
-  setTemporaryProfilePicture(imageHexString: string): void {
-    this.temporaryProfilePicture = imageHexString;
-  }
 
 
   //#region findNearbyGetter

@@ -85,6 +85,7 @@ import { SEStore } from "@/store";
 @Component({
   components: {
     ToolGroups,
+    // Use dynamic import so subcomponents are loaded on deman
     ObjectTree: () => import("@/components/ObjectTree.vue"),
     ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
   }
@@ -141,7 +142,7 @@ export default class Toolbox extends Vue {
 .slide-out-enter-active,
 .slide-out-leave-active {
   transition-property: all;
-  transition-duration: 250ms;
+  transition-duration: 150ms;
   transition-timing-function: ease;
 }
 
