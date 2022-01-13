@@ -11,14 +11,14 @@ const app = express();
 const router = express.Router();
 const my_server = createServer(app);
 
-const io = new Server(my_server, {
+const server_io = new Server(my_server, {
   cors: {
     origin: "http://localhost:8080",
     methods: ["GET", "POST"]
   }
 });
 
-io.on("connection", (socket: Socket) => {
+server_io.on("connection", (socket: Socket) => {
   console.debug("Got a new connection to ", socket.id);
 
   socket.on("disconnect", (why: string) => {
@@ -31,32 +31,26 @@ io.on("connection", (socket: Socket) => {
     //     console.debug(`Socket id ${socket.id} deleted`);
     //   });
   });
-  socket.on("teacher-join", (args:any) => {
+  socket.on("teacher-join", (args: any) => {
     socket.join(`chat-${socket.id}`);
     console.debug("Server received 'teacher-join' event", args, socket.id);
-    firebaseFirestore
-      .collection("sessions")
-      .doc(socket.id)
-      .set({
-        owner: "Hans"
-      });
+    firebaseFirestore.collection("sessions").doc(socket.id).set({
+      owner: "Hans"
+    });
   });
   socket.on("teacher-leave", () => {
     console.debug("Server received 'teacher-leave' event", socket.id);
     socket.leave(`chat-${socket.id}`);
     socket.disconnect();
-    firebaseFirestore
-      .collection("sessions")
-      .doc(socket.id)
-      .delete();
+    firebaseFirestore.collection("sessions").doc(socket.id).delete();
   });
 
-  socket.on('notify-all', (arg: {room: string, message: string}) => {
+  socket.on("notify-all", (arg: { room: string; message: string }) => {
     console.debug("Server received 'notify-all", arg.room);
-    socket.to(arg.room).emit('notify-all', arg.message)
+    socket.to(arg.room).emit("notify-all", arg.message);
   });
 
-  socket.on("student-join", (arg :{ session:string }) => {
+  socket.on("student-join", (arg: { session: string }) => {
     console.debug(
       "Server received 'student-join' event",
       arg.session,
@@ -74,18 +68,22 @@ const APP_URL = "https://easelgeo.app";
 // Full path to this entry is /geo/sessions
 router.get("/sessions", (req: Request, res: Response) => {
   res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  const rooms = server_io.of("/").adapter.rooms;
 
-  const rooms = io.of("/").adapter.rooms.keys();
   console.debug("Incoming request is", req.originalUrl);
   console.debug("Rooms", rooms);
 
-  res.write("<h1>List of rooms</h1>");
-  res.write("<ol>");
-  for (let r of rooms) {
-    console.debug("Room", r);
-    if (r.startsWith("chat-")) res.write(`<li>${r}</li>`);
+  if (rooms.size > 0) {
+    res.write("<h1>List of rooms</h1>");
+    res.write("<ol>");
+    for (let r of rooms.keys()) {
+      console.debug("Room", r);
+      if (r.startsWith("chat-")) res.write(`<li>${r}</li>`);
+    }
+    res.write("</ol>");
+  } else {
+    res.write("<h1>No active sessions detected </h1>");
   }
-  res.write("</ol>");
   res.end();
 });
 

@@ -15,7 +15,7 @@
     "test:cyunit": "cypress open-ct",
     "lint": "vue-cli-service lint",
     "app:build": "vue-cli-service build",
-    "app:serve": "vue-cli-service serve",
+    "app:serve": "concurrently \"vue-cli-service serve\" \"nodemon src/app-server/geo.ts\"",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug",
