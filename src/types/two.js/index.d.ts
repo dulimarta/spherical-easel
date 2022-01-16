@@ -153,7 +153,23 @@ declare module "two.js" {
       message: string;
     }
 
-    export class Path {
+    // WILL IS JUST MAKING THIS UP TO GET THE RETURN TYPES RIGHT
+    type threeVector = { x: number; y: number; z: number };
+
+    export class Matrix {
+      multiply(a: number, b: number, c: number): threeVector;
+    }
+    // WILL IS JUST MAKING THIS UP TO GET THE RETURN TYPES RIGHT
+    type madeUp = { vertices: Two.Vector[] };
+
+    export class Element {
+      renderer: madeUp;
+    }
+    export class Shape extends Element {
+      matrix: Matrix;
+    }
+
+    export class Path extends Shape {
       constructor(
         vertices: ReadonlyArray<Vector>,
         closed: boolean,

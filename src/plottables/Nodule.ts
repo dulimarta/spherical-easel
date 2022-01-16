@@ -22,6 +22,9 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
+  /**  A list of coordinates of point on the boundary. There are SETTINGS.circle.boundaryPoints such coordinates.*/
+  static boundaryCircleVertices: number[][];
+
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */

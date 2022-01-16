@@ -186,6 +186,16 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
+    // set the Boundary Circle Vertices for use in Circle.ts
+    for (let i = 0; i < SETTINGS.circle.numBoundaryPoints; i++) {
+      Nodule.boundaryCircleVertices.push([
+        SETTINGS.boundaryCircle.radius *
+          Math.cos((2 * Math.PI * i) / SETTINGS.circle.numBoundaryPoints),
+        SETTINGS.boundaryCircle.radius *
+          Math.sin((2 * Math.PI * i) / SETTINGS.circle.numBoundaryPoints)
+      ]);
+    }
+
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
     // const box2 = new Two.Rectangle(100, 150, 100, 150);
@@ -228,6 +238,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
+    EventBus.listen("update-two-instance", this.updateTwoInstance);
   }
 
   mounted(): void {
@@ -310,6 +321,12 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
+    EventBus.unlisten("update-two-instance");
+  }
+
+  // force an update of the two instance so that path.renderer.vertices are updated and can be queried (in circle.ts for example)
+  updateTwoInstance(): void {
+    this.twoInstance.update();
   }
 
   @Watch("canvasSize")
