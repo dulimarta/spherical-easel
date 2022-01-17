@@ -186,7 +186,7 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
-    // set the Boundary Circle Vertices for use in Circle.ts
+    // Set the Boundary Circle Vertices for use in Circle.ts
     for (let i = 0; i < SETTINGS.circle.numBoundaryPoints; i++) {
       Nodule.boundaryCircleVertices.push([
         SETTINGS.boundaryCircle.radius *

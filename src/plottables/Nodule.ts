@@ -23,7 +23,7 @@ const tmpVector = new Vector3();
  */
 export default abstract class Nodule implements Stylable, Resizeable {
   /**  A list of coordinates of point on the boundary. There are SETTINGS.circle.boundaryPoints such coordinates.*/
-  static boundaryCircleVertices: number[][];
+  static boundaryCircleVertices: number[][] = [];
 
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
@@ -52,7 +52,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * @param unitNormal The unitNormal to the circle in the current view
    * @param radius The radius of the circle 0<radius<pi
-   * @returns The data to create the projected ellipse from the circle with center unitNormal and radius radius
+   * @returns The data to create the projected ellipse from the circle with center unitNormal and radius radius on the sphere of radius SETTINGS.boundaryCircle.radius
    */
   static projectedEllipseData(
     unitNormal: Vector3,
@@ -62,7 +62,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     let centerY: number; // the center of the ellipse
     let tiltAngle: number; // between -Pi/2 and pi/2, the angle between the line containing the major axis (after tilting) and the x axis
     let minorAxis: number; //half the minor diameter parallel to the y axis (prior to tilting)
-    let majorAxis: number; //half the major diameter parallel to thee x axis (prior to tilting)
+    let majorAxis: number; //half the major diameter parallel to the x axis (prior to tilting)
     let position: EllipsePosition; // contained entirely in front/back or split
     let frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other.
     let frontEndAngle: number;
@@ -243,11 +243,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
 
     return {
-      centerX: centerX,
-      centerY: centerY,
+      centerX: centerX * SETTINGS.boundaryCircle.radius,
+      centerY: centerY * SETTINGS.boundaryCircle.radius,
       tiltAngle: tiltAngle,
-      minorAxis: minorAxis,
-      majorAxis: majorAxis,
+      minorAxis: minorAxis * SETTINGS.boundaryCircle.radius,
+      majorAxis: majorAxis * SETTINGS.boundaryCircle.radius,
       position: position,
       frontStartAngle: frontStartAngle,
       frontEndAngle: frontEndAngle
@@ -281,7 +281,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
       angle >= 2 * Math.PI + SETTINGS.tolerance
     ) {
       console.error("Ellipse Angle is negative or bigger than 2pi");
-      return 0;
+      return -1;
     }
 
     // first estimate the total arc length of the ellipse based on Series 2 of
