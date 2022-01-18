@@ -7,7 +7,7 @@ import {
   hslaColorType,
   plottableProperties,
   ProjectedEllipseData,
-  EllipsePosition
+  CirclePosition
 } from "@/types";
 import { PositionalAudio, Vector3 } from "three";
 
@@ -54,7 +54,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * @param radius The radius of the circle 0<radius<pi
    * @returns The data to create the projected ellipse from the circle with center unitNormal and radius radius on the sphere of radius SETTINGS.boundaryCircle.radius
    */
-  static projectedEllipseData(
+  static projectedCircleData(
     unitNormal: Vector3,
     radius: number
   ): ProjectedEllipseData {
@@ -63,7 +63,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     let tiltAngle: number; // between -Pi/2 and pi/2, the angle between the line containing the major axis (after tilting) and the x axis
     let minorAxis: number; //half the minor diameter parallel to the y axis (prior to tilting)
     let majorAxis: number; //half the major diameter parallel to the x axis (prior to tilting)
-    let position: EllipsePosition; // contained entirely in front/back or split
+    let position: CirclePosition; // contained entirely in front/back or split
     let frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other.
     let frontEndAngle: number;
     // First check to see if the unit normal is pointing directly at or away from the user, if so then the projection is a circle
@@ -82,14 +82,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
       frontEndAngle = 0;
       position =
         unitNormal.z > 0
-          ? EllipsePosition.ContainedEntirelyOnFront
-          : EllipsePosition.ContainedEntirelyOnBack;
+          ? CirclePosition.ContainedEntirelyOnFront
+          : CirclePosition.ContainedEntirelyOnBack;
     } else {
       // both unitNormal.x and unitNormal.y can't be zero as unitNormal.z is not one or minus one
       centerX = unitNormal.x * Math.cos(radius);
       centerY = unitNormal.y * Math.cos(radius);
       majorAxis = Math.sin(radius);
-      // alpha is the angle between the unitNormal and z axis
+      // alpha is the angle between the unitNormal and the positive z axis
       const alpha = Math.acos(unitNormal.z);
       minorAxis = Math.sin(radius) * Math.sin(Math.abs(Math.PI / 2 - alpha)); // Math.abs(Math.PI / 2 - alpha)) is the angle between the unit normal and the plane z=0
 
@@ -120,7 +120,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
       // Now figure out if the circle intersects the plane z=0
       if (Math.abs(radius - Math.PI / 2) < SETTINGS.tolerance) {
         //the circle is a line and must intersect z=0.
-        position = EllipsePosition.SplitBetweenFrontAndBack;
+        position = CirclePosition.SplitBetweenFrontAndBack;
         // the normal can point in either direction so it (by itself) is a bad way to figure out the front/positive start/end angel
         // determine a point on the line that projects to the part of the ellipse that should be on the front
         // Pick the highest point, the point on the line that is furthest from the z=0 plane.
@@ -155,15 +155,23 @@ export default abstract class Nodule implements Stylable, Resizeable {
       ) {
         // there is no intersection with z=0, to signal this set both the positiveZStart/EndAngle to zero
         // the projected ellipse is closed and contained entirely on either the front or the back
-        position =
-          unitNormal.z > 0
-            ? EllipsePosition.ContainedEntirelyOnFront
-            : EllipsePosition.ContainedEntirelyOnBack;
+        if (radius < Math.PI / 2) {
+          position =
+            unitNormal.z > 0
+              ? CirclePosition.ContainedEntirelyOnFront
+              : CirclePosition.ContainedEntirelyOnBack;
+        } else {
+          position =
+            unitNormal.z > 0
+              ? CirclePosition.ContainedEntirelyOnBack
+              : CirclePosition.ContainedEntirelyOnFront;
+        }
+
         frontStartAngle = 0;
         frontEndAngle = 0;
       } else {
         // there is an intersection with z=0
-        position = EllipsePosition.SplitBetweenFrontAndBack;
+        position = CirclePosition.SplitBetweenFrontAndBack;
 
         // the intersection points are the those between the line x*unitNormal.x+y*unitNormal.y=cos(radius) and x^2 + y^2 =1
         if (Math.abs(unitNormal.y) < SETTINGS.tolerance) {

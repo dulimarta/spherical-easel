@@ -13,7 +13,7 @@ import {
 import AppStore from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import SE from "@/store/se-module";
-import { EllipsePosition } from "@/types";
+import { CirclePosition, ProjectedEllipseData } from "@/types";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -40,14 +40,14 @@ export default class Circle extends Nodule {
    */
 
   /**
-   *  This the Euclidean radius of the circle in the plane of the spherical circle. It is always Math.sin(this.radius).
+   *  This the data the describes the projected circle.
    */
-  private projectedRadius = 0;
+  private projectedCircleData: ProjectedEllipseData;
 
   /**
    * Vuex global state
    */
-  protected store = AppStore; //
+  protected store = AppStore;
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -139,13 +139,15 @@ export default class Circle extends Nodule {
   /**
    * For temporary calculation with ThreeJS objects
    */
-  private tmpVector = new Vector3();
+  private tmpVector = new Vector3(0, 0, 1);
   private tmpMatrix = new Matrix4();
   private tmp1Vector = new Two.Vector(0, 0);
   private tmp2Vector = new Two.Vector(0, 0);
 
   constructor() {
     super();
+    // initialize the ellipse data (i.e. the projection of the circle to the x/y plane)
+    this.projectedCircleData = Nodule.projectedCircleData(this.tmpVector, 1);
     // Create the front/back parts of the projected circle
     // no cloning because that drops the resolution
     this.frontCirclePart = new Two.Ellipse(
@@ -199,8 +201,8 @@ export default class Circle extends Nodule {
     this.glowingBackCirclePart.noFill();
 
     //Turn off the glowing display initially but leave it on so that the temporary objects show up
-    // this.frontCirclePart.visible = true;
-    // this.backCirclePart.visible = true;
+    // this.frontCirclePart.visible = false;
+    // this.backCirclePart.visible = false;
     // this.glowingBackCirclePart.visible = false;
     // this.glowingFrontCirclePart.visible = false;
 
@@ -262,14 +264,30 @@ export default class Circle extends Nodule {
    */
   public updateDisplay(): void {
     //#region circleDisplay
-    const projectedEllipseData = Nodule.projectedEllipseData(
+    this.projectedCircleData = Nodule.projectedCircleData(
       this._centerVector,
       this._circleRadius
     );
-    //console.log(projectedEllipseData);
-    // console.log("tilt angle", projectedEllipseData.tiltAngle);
-    // console.log("start angle", projectedEllipseData.frontStartAngle);
-    // console.log("end angle", projectedEllipseData.frontEndAngle);
+    if (
+      this.projectedCircleData.position ===
+      CirclePosition.ContainedEntirelyOnFront
+    )
+      console.log("Entirely on Front");
+    if (
+      this.projectedCircleData.position ===
+      CirclePosition.ContainedEntirelyOnBack
+    )
+      console.log("Entirely on Back");
+    if (
+      this.projectedCircleData.position ===
+      CirclePosition.SplitBetweenFrontAndBack
+    )
+      console.log("Split Front/Back");
+
+    //console.log(this.projectedEllipseData);
+    // console.log("tilt angle", this.projectedEllipseData.tiltAngle);
+    // console.log("start angle", this.projectedEllipseData.frontStartAngle);
+    // console.log("end angle", this.projectedEllipseData.frontEndAngle);
     // console.log(
     //   "2, 10, pi/4 percent",
     //   Nodule.convertEllipseAngleToPercent(2, 10, Math.PI / 4)
@@ -278,50 +296,59 @@ export default class Circle extends Nodule {
 
     // Update the center of the ellipse
     if (
-      projectedEllipseData.position ===
-        EllipsePosition.ContainedEntirelyOnFront ||
-      projectedEllipseData.position === EllipsePosition.SplitBetweenFrontAndBack
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnFront ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
     ) {
-      this.frontCirclePart.translation.x = projectedEllipseData.centerX;
-      this.frontCirclePart.translation.y = projectedEllipseData.centerY;
-      this.glowingFrontCirclePart.translation.x = projectedEllipseData.centerX;
-      this.glowingFrontCirclePart.translation.y = projectedEllipseData.centerY;
+      this.frontCirclePart.translation.x = this.projectedCircleData.centerX;
+      this.frontCirclePart.translation.y = this.projectedCircleData.centerY;
+      this.glowingFrontCirclePart.translation.x =
+        this.projectedCircleData.centerX;
+      this.glowingFrontCirclePart.translation.y =
+        this.projectedCircleData.centerY;
       //update the width and height of the ellipse
-      this.frontCirclePart.width = 2 * projectedEllipseData.minorAxis;
-      this.glowingFrontCirclePart.width = 2 * projectedEllipseData.minorAxis;
-      this.frontCirclePart.height = 2 * projectedEllipseData.majorAxis;
-      this.glowingFrontCirclePart.height = 2 * projectedEllipseData.majorAxis;
+      this.frontCirclePart.width = 2 * this.projectedCircleData.minorAxis;
+      this.glowingFrontCirclePart.width =
+        2 * this.projectedCircleData.minorAxis;
+      this.frontCirclePart.height = 2 * this.projectedCircleData.majorAxis;
+      this.glowingFrontCirclePart.height =
+        2 * this.projectedCircleData.majorAxis;
 
       // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
       // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
       // that allows the user to draw the ellipse from startAngle to endAngle
       this.frontCirclePart.rotation =
-        projectedEllipseData.tiltAngle + Math.PI / 2; // minus pi/2 to move the start point of the beginning/ending to the lowest point (without the tilt angle) i.e. (0,-minorAxis)
+        this.projectedCircleData.tiltAngle + Math.PI / 2; // minus pi/2 to move the start point of the beginning/ending to the lowest point (without the tilt angle) i.e. (0,-minorAxis)
       this.glowingFrontCirclePart.rotation =
-        projectedEllipseData.tiltAngle + Math.PI / 2;
+        this.projectedCircleData.tiltAngle + Math.PI / 2;
     }
 
     if (
-      projectedEllipseData.position ===
-        EllipsePosition.ContainedEntirelyOnBack ||
-      projectedEllipseData.position === EllipsePosition.SplitBetweenFrontAndBack
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnBack ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
     ) {
-      this.backCirclePart.translation.x = projectedEllipseData.centerX;
-      this.backCirclePart.translation.y = projectedEllipseData.centerY;
-      this.glowingBackCirclePart.translation.x = projectedEllipseData.centerX;
-      this.glowingBackCirclePart.translation.y = projectedEllipseData.centerY;
+      this.backCirclePart.translation.x = this.projectedCircleData.centerX;
+      this.backCirclePart.translation.y = this.projectedCircleData.centerY;
+      this.glowingBackCirclePart.translation.x =
+        this.projectedCircleData.centerX;
+      this.glowingBackCirclePart.translation.y =
+        this.projectedCircleData.centerY;
       //update the width and height of the ellipse
-      this.backCirclePart.width = 2 * projectedEllipseData.majorAxis;
-      this.glowingBackCirclePart.width = 2 * projectedEllipseData.majorAxis;
-      this.backCirclePart.height = 2 * projectedEllipseData.minorAxis;
-      this.glowingBackCirclePart.height = 2 * projectedEllipseData.minorAxis;
+      this.backCirclePart.width = 2 * this.projectedCircleData.minorAxis;
+      this.glowingBackCirclePart.width = 2 * this.projectedCircleData.minorAxis;
+      this.backCirclePart.height = 2 * this.projectedCircleData.majorAxis;
+      this.glowingBackCirclePart.height =
+        2 * this.projectedCircleData.majorAxis;
       // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
       // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
       // that allows the user to draw the ellipse from startAngle to endAngle
       this.backCirclePart.rotation =
-        projectedEllipseData.tiltAngle - Math.PI / 2; // minus pi/2 to move the start point of the beginning/ending to the highest point (without the tilt angle) i.e. (0,+minorAxis)
+        this.projectedCircleData.tiltAngle - Math.PI / 2; // minus pi/2 to move the start point of the beginning/ending to the highest point (without the tilt angle) i.e. (0,+minorAxis)
       this.glowingBackCirclePart.rotation =
-        projectedEllipseData.tiltAngle - Math.PI / 2;
+        this.projectedCircleData.tiltAngle - Math.PI / 2;
     }
 
     // Create the front/back fill pools
@@ -334,20 +361,21 @@ export default class Circle extends Nodule {
     // console.log("pool size initially", pool.length);
 
     if (
-      projectedEllipseData.position === EllipsePosition.SplitBetweenFrontAndBack
+      this.projectedCircleData.position ===
+      CirclePosition.SplitBetweenFrontAndBack
     ) {
       //front(start|end)angle is the start/end angle draw if the ellipse was drawn with axes parallel to the x/y axes
       // and the center at (0,0)
       const frontStartTemp = Nodule.convertEllipseAngleToPercent(
-        projectedEllipseData.majorAxis,
-        projectedEllipseData.minorAxis,
-        projectedEllipseData.frontStartAngle
+        this.projectedCircleData.majorAxis,
+        this.projectedCircleData.minorAxis,
+        this.projectedCircleData.frontStartAngle
       );
 
       const frontEndTemp = Nodule.convertEllipseAngleToPercent(
-        projectedEllipseData.majorAxis,
-        projectedEllipseData.minorAxis,
-        projectedEllipseData.frontEndAngle
+        this.projectedCircleData.majorAxis,
+        this.projectedCircleData.minorAxis,
+        this.projectedCircleData.frontEndAngle
       );
       let frontCircleStartPercent: number;
       let frontCircleEndPercent: number;
@@ -462,8 +490,8 @@ export default class Circle extends Nodule {
 
       // the circle is entirely on the front or back
       if (
-        projectedEllipseData.position ===
-        EllipsePosition.ContainedEntirelyOnFront
+        this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnFront
       ) {
         this.frontCirclePart.closed = true; // Do I need to do this as frontCirclePart is an ellipse?
         //copy the vertices of the projected circle into the front fill
@@ -574,37 +602,79 @@ export default class Circle extends Nodule {
    */
   set circleRadius(arcLengthRadius: number) {
     this._circleRadius = arcLengthRadius;
-    this.projectedRadius = Math.sin(arcLengthRadius);
+    //this.projectedRadius = Math.sin(arcLengthRadius);
   }
   get circleRadius(): number {
     return this._circleRadius;
   }
 
   frontGlowingDisplay(): void {
-    console.log("here1");
-    this.frontCirclePart.visible = true;
-    this.glowingFrontCirclePart.visible = true;
-    this.frontFill.visible = true;
+    if (
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnFront ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
+    ) {
+      this.frontCirclePart.visible = true;
+      this.glowingFrontCirclePart.visible = true;
+      this.frontFill.visible = true;
+    } else {
+      this.frontCirclePart.visible = false;
+      this.glowingFrontCirclePart.visible = false;
+      this.frontFill.visible = false;
+    }
   }
   backGlowingDisplay(): void {
-    console.log("here2");
-    this.backCirclePart.visible = true;
-    this.glowingBackCirclePart.visible = true;
-    this.backFill.visible = true;
+    if (
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnBack ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
+    ) {
+      this.backCirclePart.visible = true;
+      this.glowingBackCirclePart.visible = true;
+      this.backFill.visible = true;
+    } else {
+      this.backCirclePart.visible = false;
+      this.glowingBackCirclePart.visible = false;
+      this.backFill.visible = false;
+    }
   }
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
   frontNormalDisplay(): void {
-    this.frontCirclePart.visible = true;
-    this.glowingFrontCirclePart.visible = false;
-    this.frontFill.visible = true;
+    if (
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnFront ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
+    ) {
+      this.frontCirclePart.visible = true;
+      this.glowingFrontCirclePart.visible = false;
+      this.frontFill.visible = true;
+    } else {
+      this.frontCirclePart.visible = false;
+      this.glowingFrontCirclePart.visible = false;
+      this.frontFill.visible = false;
+    }
   }
   backNormalDisplay(): void {
-    this.backCirclePart.visible = true;
-    this.glowingBackCirclePart.visible = false;
-    this.backFill.visible = true;
+    if (
+      this.projectedCircleData.position ===
+        CirclePosition.ContainedEntirelyOnBack ||
+      this.projectedCircleData.position ===
+        CirclePosition.SplitBetweenFrontAndBack
+    ) {
+      this.backCirclePart.visible = true;
+      this.glowingBackCirclePart.visible = false;
+      this.backFill.visible = true;
+    } else {
+      this.backCirclePart.visible = false;
+      this.glowingBackCirclePart.visible = false;
+      this.backFill.visible = false;
+    }
   }
   normalDisplay(): void {
     this.frontNormalDisplay();
@@ -646,69 +716,10 @@ export default class Circle extends Nodule {
     const dup = new Circle();
     dup._centerVector.copy(this._centerVector);
     dup._circleRadius = this._circleRadius;
-
-    dup.frontCirclePart = this.frontCirclePart.clone();
-    dup.backCirclePart = this.frontCirclePart.clone();
-    dup.glowingFrontCirclePart = this.glowingFrontCirclePart.clone();
-    dup.glowingBackCirclePart = this.glowingBackCirclePart.clone();
-    // Duplicate the non-glowing parts
-    // dup.frontCirclePart.closed = this.frontCirclePart.closed;
-    // dup.frontCirclePart.rotation = this.frontCirclePart.rotation;
-    // dup.frontCirclePart.translation.copy(this.frontCirclePart.translation);
-    // dup.backCirclePart.closed = this.backCirclePart.closed;
-    // dup.backCirclePart.rotation = this.backCirclePart.rotation;
-    // dup.backCirclePart.translation.copy(this.backCirclePart.translation);
-
-    // Duplicate the glowing parts
-    // dup.glowingFrontCirclePart.closed = this.glowingFrontCirclePart.closed;
-    // dup.glowingFrontCirclePart.rotation = this.glowingFrontCirclePart.rotation;
-    // dup.glowingFrontCirclePart.translation.copy(
-    //   this.glowingFrontCirclePart.translation
-    // );
-    // dup.glowingBackCirclePart.closed = this.glowingBackCirclePart.closed;
-    // dup.glowingBackCirclePart.rotation = this.glowingBackCirclePart.rotation;
-    // dup.glowingBackCirclePart.translation.copy(
-    //   this.glowingBackCirclePart.translation
-    // );
-
-    // // The clone (i.e. dup) initially has equal number of vertices for the front and back part
-    // //  so adjust to match `this`. If one of the this.front or this.back has more vertices then
-    // //  the corresponding dup part, then remove the excess vertices from the one with more and
-    // //  move them to the other
-    // while (
-    //   dup.frontCirclePart.vertices.length > this.frontCirclePart.vertices.length
-    // ) {
-    //   // Transfer from frontPart to backPart
-    //   dup.backCirclePart.vertices.push(dup.frontCirclePart.vertices.pop()!);
-    //   dup.glowingBackCirclePart.vertices.push(
-    //     dup.glowingFrontCirclePart.vertices.pop()!
-    //   );
-    // }
-    // while (
-    //   dup.backCirclePart.vertices.length > this.backCirclePart.vertices.length
-    // ) {
-    //   // Transfer from backPart to frontPart
-    //   dup.frontCirclePart.vertices.push(dup.backCirclePart.vertices.pop()!);
-    //   dup.glowingFrontCirclePart.vertices.push(
-    //     dup.glowingBackCirclePart.vertices.pop()!
-    //   );
-    // }
-    // // After the above two while statement execute this. glowing/not front/back and dup. glowing/not front/back are the same length
-    // // Now we can copy the vertices from the this.front/back to the dup.front/back
-    // dup.frontCirclePart.vertices.forEach((v: Two.Anchor, pos: number) => {
-    //   v.copy(this.frontCirclePart.vertices[pos]);
-    // });
-    // dup.backCirclePart.vertices.forEach((v: Two.Anchor, pos: number) => {
-    //   v.copy(this.backCirclePart.vertices[pos]);
-    // });
-    // dup.glowingFrontCirclePart.vertices.forEach(
-    //   (v: Two.Anchor, pos: number) => {
-    //     v.copy(this.glowingFrontCirclePart.vertices[pos]);
-    //   }
-    // );
-    // dup.glowingBackCirclePart.vertices.forEach((v: Two.Anchor, pos: number) => {
-    //   v.copy(this.glowingBackCirclePart.vertices[pos]);
-    // });
+    //clone the front|back circle parts
+    dup.updateDisplay(); // this calls the projectedCircleData method and
+    // updates dup rotation/translation/width/height glowing/front/back/start/end angle
+    // but not the fill because the renderer vertices are not up to date (I think)
 
     //Clone the front/back fill
     const frontFillPool = [];

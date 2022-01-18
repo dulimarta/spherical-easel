@@ -8,7 +8,7 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-import { EllipsePosition } from "@/types";
+import { CirclePosition } from "@/types";
 
 /**
  * A line segment
@@ -167,7 +167,7 @@ export default class Line extends Nodule {
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
-    const projectedEllipseData = Nodule.projectedEllipseData(
+    const projectedEllipseData = Nodule.projectedCircleData(
       this._normalVector, // When the radius is pi/2, either normal vector (ie. multiply this one by -1) will result in the same data
       Math.PI / 2 // the radius of a line is always Pi/2
     );
