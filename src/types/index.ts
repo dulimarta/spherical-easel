@@ -501,5 +501,7 @@ export interface ProjectedEllipseData {
 export enum CirclePosition {
   ContainedEntirelyOnFront,
   SplitBetweenFrontAndBack,
-  ContainedEntirelyOnBack
+  ContainedEntirelyOnBack,
+  HoleOnFront,
+  HoleOnBack
 }

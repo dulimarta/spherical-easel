@@ -412,6 +412,7 @@ declare module "two.js" {
       focal: Vector;
       spread: string;
       stops: Utils.Collection<Stop>;
+      units: string;
 
       clone(): this;
     }

@@ -394,6 +394,7 @@ export default class CircleHandler extends Highlighter {
         this.temporaryCircle.circleRadius = this.arcRadius;
         //update the display
         this.temporaryCircle.updateDisplay();
+        this.temporaryCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
       }
     }
     // else {
@@ -564,6 +565,8 @@ export default class CircleHandler extends Highlighter {
       this.temporaryCircle.circleRadius = this.arcRadius;
       //update the display
       this.temporaryCircle.updateDisplay();
+      this.temporaryCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
+
       if (
         this.circleSEPoint instanceof SEIntersectionPoint &&
         !this.circleSEPoint.isUserCreated
@@ -729,6 +732,7 @@ export default class CircleHandler extends Highlighter {
     this.temporaryCircle.circleRadius = this.arcRadius;
     //update the display
     this.temporaryCircle.updateDisplay();
+    this.temporaryCircle.normalDisplay();
 
     // check to make sure that this circle doesn't already exist
     if (

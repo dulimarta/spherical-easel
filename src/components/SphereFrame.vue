@@ -141,6 +141,9 @@ export default class SphereFrame extends VueComponent {
     // Clear layer array
     this.layers.splice(0, this.layers.length);
 
+    // Make the Two Instance accessible to the other components which need to refresh it (i.e. circle.ts)
+    SEStore.setTwoInstance(this.twoInstance);
+
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
     const textLayers = [
@@ -238,7 +241,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
-    EventBus.listen("update-two-instance", this.updateTwoInstance);
+    // EventBus.listen("update-two-instance", this.updateTwoInstance);
   }
 
   mounted(): void {
@@ -321,13 +324,13 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
-    EventBus.unlisten("update-two-instance");
+    //EventBus.unlisten("update-two-instance");
   }
 
-  // force an update of the two instance so that path.renderer.vertices are updated and can be queried (in circle.ts for example)
-  updateTwoInstance(): void {
-    this.twoInstance.update();
-  }
+  // // force an update of the two instance so that path.renderer.vertices are updated and can be queried (in circle.ts for example)
+  // updateTwoInstance(): void {
+  //   this.twoInstance.update();
+  // }
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {

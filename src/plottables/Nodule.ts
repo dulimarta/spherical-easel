@@ -80,10 +80,17 @@ export default abstract class Nodule implements Stylable, Resizeable {
       // the projected ellipse is closed and contained entirely on either the front or the back
       frontStartAngle = 0;
       frontEndAngle = 0;
-      position =
-        unitNormal.z > 0
-          ? CirclePosition.ContainedEntirelyOnFront
-          : CirclePosition.ContainedEntirelyOnBack;
+      if (radius < Math.PI / 2) {
+        position =
+          unitNormal.z > 0
+            ? CirclePosition.ContainedEntirelyOnFront
+            : CirclePosition.ContainedEntirelyOnBack;
+      } else {
+        position =
+          unitNormal.z > 0
+            ? CirclePosition.HoleOnBack
+            : CirclePosition.HoleOnFront;
+      }
     } else {
       // both unitNormal.x and unitNormal.y can't be zero as unitNormal.z is not one or minus one
       centerX = unitNormal.x * Math.cos(radius);
@@ -163,8 +170,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
         } else {
           position =
             unitNormal.z > 0
-              ? CirclePosition.ContainedEntirelyOnBack
-              : CirclePosition.ContainedEntirelyOnFront;
+              ? CirclePosition.HoleOnBack
+              : CirclePosition.HoleOnFront;
         }
 
         frontStartAngle = 0;
@@ -190,8 +197,12 @@ export default abstract class Nodule implements Stylable, Resizeable {
             //   tmpVector.y
             // );
             // the ellipse is traced out counterclockwise from above so start at the lower intersection point and head to the upper
-            frontStartAngle = Math.atan2(-Y - centerY, X - centerX).modTwoPi();
-            frontEndAngle = Math.atan2(Y - centerY, X - centerX).modTwoPi();
+            frontStartAngle = (
+              Math.atan2(-Y - centerY, X - centerX) - tiltAngle
+            ).modTwoPi();
+            frontEndAngle = (
+              Math.atan2(Y - centerY, X - centerX) - tiltAngle
+            ).modTwoPi();
           } else {
             // console.log(
             //   "the tmpVector is left of the vertical the line",
@@ -304,7 +315,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
         (h * h * h) / 256 +
         (25 * h * h * h * h) / 16384 +
         (49 * h * h * h * h * h) / 65536 +
-        (441 * h * h * h * h * h * h) / 1048576);
+        (441 * h * h * h * h * h * h) / 1048576 +
+        (1089 * h * h * h * h * h * h * h) / 4194304);
     // now we have to figure out the arc length along the ellipse from (a,0) to (a*cos(t),b*sin(t))
     // where the angle from the positive x axis to (a*cos(t),b*sin(t)) is angle
     // We can restrict to 0<=angle<= Pi/2 because
@@ -331,7 +343,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     //Now compute the arc length from 0 to tVal of the Ellipse.
     let arcLength = 0;
     //Estimate int_0^tVal sqrt(x'(t)^2+y'(t)^2) dt using Simpson's rule
-    const N = 10; // number of divisions, must be even
+    const N = 30; // number of divisions, must be even
     const deltaX = tVal / N; // Width of each sub interval
     function f(x: number): number {
       return Math.sqrt(
@@ -340,12 +352,19 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
     arcLength = f(0) + 4 * f(deltaX);
     for (let i = 2; i <= N - 2; i++) {
-      arcLength += (2 * ((i + 1) % 2) + 2) * f(deltaX * i); //i odd coeff is 2, i even coeff is 4
+      arcLength += (2 * (i % 2) + 2) * f(deltaX * i); //i odd coeff is 4, i even coeff is 2
     }
     arcLength += 4 * f(deltaX * (N - 1)) + f(deltaX * N);
     arcLength *= deltaX / 3;
 
-    //console.log("arclength", a, b, arcLength);
+    console.log(
+      "a b tVal arclength perimeter",
+      a,
+      b,
+      tVal,
+      arcLength,
+      perimeter
+    );
 
     let returnPercent = 0;
     if (0 <= angle && angle <= Math.PI / 2) {
