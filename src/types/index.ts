@@ -497,6 +497,8 @@ export interface ProjectedEllipseData {
   position: CirclePosition; // contained entirely in front/back or split
   frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other.
   frontEndAngle: number;
+  circleStartAngle: number; //If the circle is split between the front and back, this the angle from the center of the circle to the place where the start of the front of circle is traced out
+  circleEndAngle: number;
 }
 export enum CirclePosition {
   ContainedEntirelyOnFront,

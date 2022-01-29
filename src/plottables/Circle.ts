@@ -262,10 +262,7 @@ export default class Circle extends Nodule {
     this.backGradient.units = "userSpaceOnUse";
   }
   /**
-   * OLD: Reorient the unit circle in 3D and then project the points to 2D
-   * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
-   * This is only accurate if the centerVector and radius are correct so only
-   * call this method once those variables are updated.
+   *Project circle to the z=0 plane and determine if/where the projection (an ellipse) is tangent to the boundary circle
    */
   public updateDisplay(): void {
     //#region circleDisplay
@@ -273,36 +270,6 @@ export default class Circle extends Nodule {
       this._centerVector,
       this._circleRadius
     );
-    // if (
-    //   this.projectedCircleData.position ===
-    //   CirclePosition.ContainedEntirelyOnFront
-    // )
-    //   console.log("Entirely on Front");
-    // if (
-    //   this.projectedCircleData.position ===
-    //   CirclePosition.ContainedEntirelyOnBack
-    // )
-    //   console.log("Entirely on Back");
-    // if (
-    //   this.projectedCircleData.position ===
-    //   CirclePosition.SplitBetweenFrontAndBack
-    // )
-    //   console.log("Split Front/Back");
-
-    // if (this.projectedCircleData.position === CirclePosition.HoleOnBack)
-    //   console.log("Hole on Back");
-
-    // if (this.projectedCircleData.position === CirclePosition.HoleOnFront)
-    //   console.log("Hole on Front");
-    //console.log(this.projectedEllipseData);
-    // console.log("tilt angle", this.projectedEllipseData.tiltAngle);
-    // console.log("start angle", this.projectedEllipseData.frontStartAngle);
-    // console.log("end angle", this.projectedEllipseData.frontEndAngle);
-    // console.log(
-    //   "2, 10, pi/4 percent",
-    //   Nodule.convertEllipseAngleToPercent(2, 10, Math.PI / 4)
-    // );
-    // console.log("unit normal z", this._normalVector.z);
 
     // Update the center of the ellipse
     if (
@@ -366,7 +333,6 @@ export default class Circle extends Nodule {
     const backPool: Two.Anchor[] = [];
     backPool.push(...this.backFill.vertices.splice(0));
     backPool.push(...this.backFillStorageAnchors.splice(0));
-    // console.log("pool size initially", pool.length);
 
     if (
       this.projectedCircleData.position ===
@@ -380,13 +346,13 @@ export default class Circle extends Nodule {
         this.projectedCircleData.frontStartAngle
       );
 
+      // rather then compute this for the end, use the symmetry of the intersection of the circle with the plane z=0
+      // this is mirrored in the front(Start|End)Angle
       // const frontEndTemp = Nodule.convertEllipseAngleToPercent(
       //   this.projectedCircleData.minorAxis,
       //   this.projectedCircleData.majorAxis,
       //   this.projectedCircleData.frontEndAngle
       // );
-      // rather then compute this, use the symmetry of the intersection of the circle with the plane z=0
-      // this is mirrored in the front(Start|End)Angle
 
       let frontCircleStartPercent: number;
       let frontCircleEndPercent: number;
@@ -404,7 +370,7 @@ export default class Circle extends Nodule {
           this.projectedCircleData.tiltAngle - Math.PI / 2;
 
         frontCircleStartPercent = 0.25 + frontStartTemp;
-        frontCircleEndPercent = 0.75 - frontStartTemp; //0.25 + frontEndTemp;
+        frontCircleEndPercent = 0.75 - frontStartTemp; //=0.25 + frontEndTemp;
 
         // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
         // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
@@ -414,7 +380,7 @@ export default class Circle extends Nodule {
         this.glowingBackCirclePart.rotation =
           this.projectedCircleData.tiltAngle + Math.PI / 2;
 
-        backCircleStartPercent = 0.25 - frontStartTemp; // frontEndTemp - 0.25;
+        backCircleStartPercent = 0.25 - frontStartTemp; // = frontEndTemp - 0.25;
         backCircleEndPercent = 0.75 + frontStartTemp;
       } else if (frontStartTemp <= 0.5) {
         // more than half of the circle is on the front
@@ -428,7 +394,7 @@ export default class Circle extends Nodule {
           this.projectedCircleData.tiltAngle + Math.PI / 2;
 
         frontCircleStartPercent = frontStartTemp - 0.25;
-        frontCircleEndPercent = 0.75 + (0.5 - frontStartTemp); //0.75 + frontEndTemp;
+        frontCircleEndPercent = 0.75 + (0.5 - frontStartTemp); // = 0.75 + frontEndTemp;
 
         // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
         // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
@@ -438,7 +404,7 @@ export default class Circle extends Nodule {
         this.glowingBackCirclePart.rotation =
           this.projectedCircleData.tiltAngle - Math.PI / 2;
 
-        backCircleStartPercent = 0.25 + (0.5 - frontStartTemp); //0.25 + frontEndTemp;
+        backCircleStartPercent = 0.25 + (0.5 - frontStartTemp); // = 0.25 + frontEndTemp;
         backCircleEndPercent = 0.25 + frontStartTemp;
       } else if (frontStartTemp <= 0.75) {
         // less than half of the circle is on the front
@@ -452,7 +418,7 @@ export default class Circle extends Nodule {
           this.projectedCircleData.tiltAngle + Math.PI / 2;
 
         frontCircleStartPercent = frontStartTemp - 0.25;
-        frontCircleEndPercent = 0.75 - (frontStartTemp - 0.5); //frontEndTemp - 0.25;
+        frontCircleEndPercent = 0.75 - (frontStartTemp - 0.5); // = frontEndTemp - 0.25;
 
         // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
         // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
@@ -462,7 +428,7 @@ export default class Circle extends Nodule {
         this.glowingBackCirclePart.rotation =
           this.projectedCircleData.tiltAngle - Math.PI / 2;
 
-        backCircleStartPercent = 0.75 - frontStartTemp; //frontEndTemp - 0.75;
+        backCircleStartPercent = 0.75 - frontStartTemp; // = frontEndTemp - 0.75;
         backCircleEndPercent = 0.25 + frontStartTemp;
       } else {
         // more than half of the circle is on the front
@@ -476,7 +442,7 @@ export default class Circle extends Nodule {
           this.projectedCircleData.tiltAngle - Math.PI / 2;
 
         frontCircleStartPercent = frontStartTemp - 0.75;
-        frontCircleEndPercent = 1 - (frontStartTemp - 0.75); //frontEndTemp + 0.25;
+        frontCircleEndPercent = 1 - (frontStartTemp - 0.75); // = frontEndTemp + 0.25;
 
         // rotate the ellipse so that the start of the beginning is at the highest y coordinate for the back (when tilt=0) and the lowest y-coordinate for the front (when tilt=0)
         // this is because Two.js doesn't have a command like ellipse(centerX,centerY,majorAxis,minorAxis,startAngle,endAngle
@@ -486,7 +452,7 @@ export default class Circle extends Nodule {
         this.glowingBackCirclePart.rotation =
           this.projectedCircleData.tiltAngle + Math.PI / 2;
 
-        backCircleStartPercent = 0.5 - (frontStartTemp - 0.75); //frontEndTemp - 0.25;
+        backCircleStartPercent = 0.5 - (frontStartTemp - 0.75); // = frontEndTemp - 0.25;
         backCircleEndPercent = frontStartTemp - 0.25;
       }
       // the back/front parts are not closed in this case
@@ -494,28 +460,7 @@ export default class Circle extends Nodule {
       this.glowingFrontCirclePart.closed = false;
       this.backCirclePart.closed = false;
       this.glowingBackCirclePart.closed = false;
-      // console.log("###############");
-      // console.log(
-      //   "before front",
-      //   this.frontCirclePart.renderer.vertices.length
-      // );
-      // console.log("before back", this.backCirclePart.renderer.vertices.length);
-      // console.log(
-      //   "front start/end angle",
-      //   this.projectedCircleData.frontStartAngle,
-      //   this.projectedCircleData.frontEndAngle
-      // );
-      // console.log("front start/end temp", frontStartTemp, frontEndTemp);
-      // console.log(
-      //   "front start %, end %",
-      //   frontCircleStartPercent,
-      //   frontCircleEndPercent
-      // );
-      // console.log(
-      //   "back start %, end %",
-      //   backCircleStartPercent,
-      //   backCircleEndPercent
-      // );
+
       this.frontCirclePart.beginning = frontCircleStartPercent;
       this.glowingFrontCirclePart.beginning = frontCircleStartPercent;
       this.frontCirclePart.ending = frontCircleEndPercent;
@@ -529,14 +474,7 @@ export default class Circle extends Nodule {
       // The boundaries on the projected circle are set, now set the fills (which have one edge on the boundary circle)
 
       // Here we have to update the two.js instance in SphereFrame.vue so that this.(front|end)CirclePart.renderer.vertices are set properly
-      //EventBus.fire("update-two-instance", {}); // IS THIS AN ASYNCHRONOUS CALL? If so, the renderer.vertices won't necessarily be correct
       SEStore.twoInstance?.update();
-
-      // console.log(
-      //   "after front 1",
-      //   this.frontCirclePart.renderer.vertices.length
-      // );
-      // console.log("after back 1", this.backCirclePart.renderer.vertices.length);
 
       // add the vertices on the projected circle edge
       let localMatrix = this.frontCirclePart.matrix;
@@ -545,87 +483,23 @@ export default class Circle extends Nodule {
         const anchor = frontPool.pop()!; // there should *always* be an anchor in the pool
         anchor.x = temp.x;
         anchor.y = temp.y;
+        //console.log(temp.x, temp.y);
         this.frontFill.vertices.push(anchor);
       });
+
       localMatrix = this.backCirclePart.matrix;
       this.backCirclePart.renderer.vertices.forEach(v => {
         const temp = localMatrix.multiply(v.x, v.y, 1);
         const anchor = backPool.pop()!; // there should *always* be an anchor in the pool
         anchor.x = temp.x;
         anchor.y = temp.y;
+        //console.log(temp.x, temp.y);
         this.backFill.vertices.push(anchor);
       });
-      // reverse the front(or back?)array so that we can add the circle boundary part from start to end
-      //this.frontFill.vertices.reverse();
 
-      // Compute the angles associated with the boundary circle segment
-      // Get the first vertex of the rendered part of the projected ellipse
-      const firstFrontCircleVector = this.frontCirclePart.renderer.vertices[0];
-      // Get the last vertex of the rendered part of the projected ellipse
-      const lastFrontCircleVector =
-        this.frontCirclePart.renderer.vertices[
-          this.frontCirclePart.renderer.vertices.length - 1
-        ];
-      // Get the first vertex of the rendered part of the projected ellipse
-      const firstBackCircleVector = this.backCirclePart.renderer.vertices[0];
-      // Get the last vertex of the rendered part of the projected ellipse
-      const lastBackCircleVector =
-        this.backCirclePart.renderer.vertices[
-          this.backCirclePart.renderer.vertices.length - 1
-        ];
-
-      // Transform the first vertex of the rendered part of the projected ellipse using the local matrix
-      //  this should be on the boundary circle
-      const firstFrontCircleThreeVector = this.frontCirclePart.matrix.multiply(
-        firstFrontCircleVector.x,
-        firstFrontCircleVector.y,
-        1
-      );
-      // Transform the last vertex of the rendered part of the projected ellipse using the local matrix
-      //  this should be on the boundary circle
-      const lastFrontCircleThreeVector = this.frontCirclePart.matrix.multiply(
-        lastFrontCircleVector.x,
-        lastFrontCircleVector.y,
-        1
-      );
-
-      // Transform the first vertex of the rendered part of the projected ellipse using the local matrix
-      //  this should be on the boundary circle
-      const firstBackCircleThreeVector = this.backCirclePart.matrix.multiply(
-        firstBackCircleVector.x,
-        firstBackCircleVector.y,
-        1
-      );
-      // Transform the last vertex of the rendered part of the projected ellipse using the local matrix
-      //  this should be on the boundary circle
-      const lastBackCircleThreeVector = this.backCirclePart.matrix.multiply(
-        lastBackCircleVector.x,
-        lastBackCircleVector.y,
-        1
-      );
-
-      const firstFrontAngle = Math.atan2(
-        firstFrontCircleThreeVector.y,
-        firstFrontCircleThreeVector.x
-      ).modTwoPi();
-
-      const lastFrontAngle = Math.atan2(
-        lastFrontCircleThreeVector.y,
-        lastFrontCircleThreeVector.x
-      ).modTwoPi();
-
-      // console.log(
-      //   "norm of boundary vector 1, fristFrontAngle",
-      //   firstFrontCircleThreeVector.y * firstFrontCircleThreeVector.y +
-      //     firstFrontCircleThreeVector.x * firstFrontCircleThreeVector.x,
-      //   firstFrontAngle
-      // );
-      // console.log(
-      //   "norm of boundary vector 2, lastFrontAngle",
-      //   lastFrontCircleThreeVector.y * lastFrontCircleThreeVector.y +
-      //     lastFrontCircleThreeVector.x * lastFrontCircleThreeVector.x,
-      //   lastFrontAngle
-      // );
+      // Get the angles associated with the boundary circle segment
+      const firstFrontAngle = this.projectedCircleData.circleStartAngle;
+      const lastFrontAngle = this.projectedCircleData.circleEndAngle;
 
       let angularWidth = Math.abs(firstFrontAngle - lastFrontAngle); // the angular width of the intersection of the circle with the boundary circle
       if (
@@ -647,28 +521,18 @@ export default class Circle extends Nodule {
           this._centerVector.y,
           this._centerVector.x
         ).modTwoPi();
-        // console.log("#########");
-        // console.log("angular width", angularWidth);
-        // console.log("firstFrontAngel", firstFrontAngle);
-        // console.log("lastFrontAngel", lastFrontAngle);
-        // console.log("center angle", centerAngle);
-        // console.log(
-        //   "firstFrontAngle + angularWidth / 2).modTwoPi()=",
-        //   (firstFrontAngle + angularWidth / 2).modTwoPi()
-        // );
+
         if (
           Math.abs(
             (firstFrontAngle + angularWidth / 2).modTwoPi() - centerAngle
           ) < 0.001
         ) {
-          // console.log("here1");
           // firstFrontAngle is the start place for the circle interior traced out counterclockwise
           startIndex = Math.round(
             firstFrontAngle /
               ((2 * Math.PI) / SETTINGS.circle.numBoundaryPoints)
           );
         } else {
-          // console.log("here2");
           // lastFrontAngle is the start place for the circle interior traced out counterclockwise
           startIndex = Math.round(
             lastFrontAngle / ((2 * Math.PI) / SETTINGS.circle.numBoundaryPoints)
@@ -698,6 +562,30 @@ export default class Circle extends Nodule {
 
       // We must determine the order in which to add the boundary circle vertices to the front/back fill
       // check the distance from the startIndex boundary vertex to the front/back first/last fill vertex
+
+      // Get the first vertex of the rendered part of the projected ellipse
+      const firstFrontCircleVector = this.frontCirclePart.renderer.vertices[0];
+      // Get the last vertex of the rendered part of the projected ellipse
+      const lastFrontCircleVector =
+        this.frontCirclePart.renderer.vertices[
+          this.frontCirclePart.renderer.vertices.length - 1
+        ];
+
+      // Transform the first vertex of the rendered part of the projected ellipse using the local matrix
+      //  this should be on the boundary circle
+      const firstFrontCircleThreeVector = this.frontCirclePart.matrix.multiply(
+        firstFrontCircleVector.x,
+        firstFrontCircleVector.y,
+        1
+      );
+      // Transform the last vertex of the rendered part of the projected ellipse using the local matrix
+      //  this should be on the boundary circle
+      const lastFrontCircleThreeVector = this.frontCirclePart.matrix.multiply(
+        lastFrontCircleVector.x,
+        lastFrontCircleVector.y,
+        1
+      );
+
       const firstFrontDistanceToBoundary =
         (Nodule.boundaryCircleVertices[startIndex][0] -
           firstFrontCircleThreeVector.x) *
@@ -718,39 +606,9 @@ export default class Circle extends Nodule {
           (Nodule.boundaryCircleVertices[startIndex][1] -
             lastFrontCircleThreeVector.y);
 
-      const firstBackDistanceToBoundary =
-        (Nodule.boundaryCircleVertices[startIndex][0] -
-          firstBackCircleThreeVector.x) *
-          (Nodule.boundaryCircleVertices[startIndex][0] -
-            firstBackCircleThreeVector.x) +
-        (Nodule.boundaryCircleVertices[startIndex][1] -
-          firstBackCircleThreeVector.y) *
-          (Nodule.boundaryCircleVertices[startIndex][1] -
-            firstBackCircleThreeVector.y);
-
-      const lastBackDistanceToBoundary =
-        (Nodule.boundaryCircleVertices[startIndex][0] -
-          lastBackCircleThreeVector.x) *
-          (Nodule.boundaryCircleVertices[startIndex][0] -
-            lastBackCircleThreeVector.x) +
-        (Nodule.boundaryCircleVertices[startIndex][1] -
-          lastBackCircleThreeVector.y) *
-          (Nodule.boundaryCircleVertices[startIndex][1] -
-            lastBackCircleThreeVector.y);
-      // console.log(
-      //   "front dist to boundary",
-      //   firstFrontDistanceToBoundary,
-      //   lastFrontDistanceToBoundary
-      // );
-      // console.log(
-      //   "bck dist to boundary",
-      //   firstBackDistanceToBoundary,
-      //   lastBackDistanceToBoundary
-      // );
       const frontCountUp =
         firstFrontDistanceToBoundary > lastFrontDistanceToBoundary;
-      const backCountUp =
-        firstBackDistanceToBoundary > lastBackDistanceToBoundary;
+      const backCountUp = !frontCountUp; //front and back are always opposite
 
       let frontIndex: number;
       if (frontCountUp) {
@@ -814,7 +672,6 @@ export default class Circle extends Nodule {
       }
     } else {
       // Here we have to update the two.js instance in SphereFrame.vue so that this.(front|end)CirclePart.renderer.vertices are set properly
-      // EventBus.fire("update-two-instance", {}); // IS THIS AN ASYNCHRONOUS CALL? If so, the renderer.vertices won't necessarily be correct
       SEStore.twoInstance?.update();
 
       // the circle is entirely on the front or back (it may be a hole on front/back)
@@ -860,25 +717,6 @@ export default class Circle extends Nodule {
               ((2 * Math.PI) / SETTINGS.circle.numBoundaryPoints)
           );
 
-          // console.log(
-          //   "last anchor angle",
-          //   (
-          //     Math.atan2(lastAnchor.y, lastAnchor.x) +
-          //     this.projectedCircleData.tiltAngle
-          //   ).modTwoPi()
-          // );
-          // console.log(
-          //   "rotationIndex angle",
-          //   Math.atan2(
-          //     Nodule.boundaryCircleVertices[rotateIndex][1],
-          //     Nodule.boundaryCircleVertices[rotateIndex][0]
-          //   ).modTwoPi()
-          // );
-          // console.log(
-          //   "zero element of boundary circle vertices",
-          //   Nodule.boundaryCircleVertices[0][0],
-          //   Nodule.boundaryCircleVertices[0][1]
-          // );
           Nodule.boundaryCircleVertices.rotate(rotateIndex); // This makes the zero index of the new boundaryCircleVertices equal to the rotateIndex of the previous boundaryCircleVertices
           //reverse the boundary circle vertices so that they are traced out in the opposite direction as the inner circle.
           Nodule.boundaryCircleVertices.reverse();
@@ -904,22 +742,6 @@ export default class Circle extends Nodule {
           Nodule.boundaryCircleVertices.rotate(
             SETTINGS.circle.numBoundaryPoints - rotateIndex
           );
-          // console.log(
-          //   "zero element of boundary circle vertices",
-          //   Nodule.boundaryCircleVertices[0][0],
-          //   Nodule.boundaryCircleVertices[0][1]
-          // );
-
-          // this.frontFill.vertices.forEach((v, i) => {
-          //   console.log(
-          //     i,
-          //     (v.x - this.projectedCircleData.centerX) *
-          //       (v.x - this.projectedCircleData.centerX) +
-          //       (v.y - this.projectedCircleData.centerY) *
-          //         (v.y - this.projectedCircleData.centerY),
-          //     v.x * v.x + v.y * v.y
-          //   );
-          // });
         }
       } else {
         //the circle is entirely on the back or is a hole on the back
@@ -991,8 +813,6 @@ export default class Circle extends Nodule {
       this.frontFill.closed = true;
     }
     // return any unused fill anchors to storage
-    // console.log("Front Pool Remaining", frontPool.length);
-    // console.log("Back Pool Remaining", backPool.length);
     this.frontFillStorageAnchors.push(...frontPool.splice(0));
     this.backFillStorageAnchors.push(...backPool.splice(0));
   }
@@ -1457,7 +1277,6 @@ export default class Circle extends Nodule {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            console.log("here 2", backStyle?.fillColor);
             this.backFill.fill = this.backGradient;
           }
         }

@@ -64,8 +64,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
     let minorAxis: number; //half the minor diameter parallel to the y axis (prior to tilting)
     let majorAxis: number; //half the major diameter parallel to the x axis (prior to tilting)
     let position: CirclePosition; // contained entirely in front/back or split
-    let frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other.
+    let frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other. This angle is measured at the center of the ellipse from the horizontal(x) axis to the front start
     let frontEndAngle: number;
+    let circleStartAngle = -1; //If the circle is split between the front and back, this the angle from the x axis to the line from the center of the sphere to the place where the start/end of the front of circle is traced out between 0 and 2PI
+    let circleEndAngle = -1; // The circle doesn't intersect the front and back then both circleStartAngle, circleEndAngle are -1
+
     // First check to see if the unit normal is pointing directly at or away from the user, if so then the projection is a circle
     if (
       Math.abs(unitNormal.z - 1) < SETTINGS.tolerance ||
@@ -186,7 +189,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
           // the intersection points are (X,+/-Y)
           const X = Math.cos(radius) / unitNormal.x;
           const Y = Math.sqrt(1 - X * X);
-
+          // console.log(
+          //   "Split Intersection Points (",
+          //   X,
+          //   Y,
+          //   ") and (",
+          //   X - Y,
+          //   ")"
+          // );
           // tmpVector is the highest point on the circle so
           // tmpVector.x, tmpVector.y is a point on the ellipse that should correspond to the front
           // in this case, this point is either to the left or right of the line x= centerX
@@ -203,6 +213,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
             frontEndAngle = (
               Math.atan2(Y - centerY, X - centerX) - tiltAngle
             ).modTwoPi();
+            circleStartAngle = Math.atan2(-Y, X).modTwoPi();
+            circleEndAngle = Math.atan2(Y, X).modTwoPi();
           } else {
             // console.log(
             //   "the tmpVector is left of the vertical the line",
@@ -216,6 +228,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
             frontEndAngle = (
               Math.atan2(-Y - centerY, X - centerX) - tiltAngle
             ).modTwoPi();
+            circleStartAngle = Math.atan2(Y, X).modTwoPi();
+            circleEndAngle = Math.atan2(-Y, X).modTwoPi();
           }
         } else {
           //unitNormal.y is not zero the intersection points are those between y=mx+b (m =-unitNormal.x/unitNormal.y, b = cos(radius)/unitNormal.y ) and x^2 + y^2 =1
@@ -227,6 +241,18 @@ export default abstract class Nodule implements Stylable, Resizeable {
           const X2 = (-m * b + Math.sqrt(m * m - b * b + 1)) / (1 + m * m);
           const Y1 = m * X1 + b;
           const Y2 = m * X2 + b;
+          // console.log(
+          //   "Split Intersection Points (",
+          //   X1 * SETTINGS.boundaryCircle.radius,
+          //   Y1 * SETTINGS.boundaryCircle.radius,
+          //   ") and (",
+          //   X2 * SETTINGS.boundaryCircle.radius,
+          //   Y2 * SETTINGS.boundaryCircle.radius,
+          //   ")",
+          //   (X1 * X1 + Y1 * Y1) * SETTINGS.boundaryCircle.radius,
+          //   (X2 * X2 + Y2 * Y2) * SETTINGS.boundaryCircle.radius
+          // );
+
           const leftMostAngle = (
             Math.atan2(Y1 - centerY, X1 - centerX) - tiltAngle
           ).modTwoPi();
@@ -248,6 +274,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
             // );
             frontStartAngle = rightMostAngle;
             frontEndAngle = leftMostAngle;
+            circleStartAngle = Math.atan2(Y2, X2).modTwoPi();
+            circleEndAngle = Math.atan2(Y1, X1).modTwoPi();
           } else {
             // console.log(
             //   "the tmpVector is below the line",
@@ -256,6 +284,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
             // );
             frontStartAngle = leftMostAngle;
             frontEndAngle = rightMostAngle;
+            circleStartAngle = Math.atan2(Y1, X1).modTwoPi();
+            circleEndAngle = Math.atan2(Y2, X2).modTwoPi();
           }
         }
       }
@@ -269,7 +299,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
       majorAxis: majorAxis * SETTINGS.boundaryCircle.radius,
       position: position,
       frontStartAngle: frontStartAngle,
-      frontEndAngle: frontEndAngle
+      frontEndAngle: frontEndAngle,
+      circleStartAngle: circleStartAngle,
+      circleEndAngle: circleEndAngle
     };
   }
   /**
@@ -337,17 +369,17 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
     // Now that reduced angle is between 0 and pi/2, find the corresponding t value
     // That is, find t where x= a cos(t), y = b sin(t) for 0<=t<=Pi/2 is at reduced angle to positive x axis
-    const tVal = Math.atan((a / b) * Math.tan(reducedAngle));
+    const tVal = Math.atan((b / a) * Math.tan(reducedAngle));
     //console.log("angle/tVal", reducedAngle, tVal);
 
     //Now compute the arc length from 0 to tVal of the Ellipse.
     let arcLength = 0;
     //Estimate int_0^tVal sqrt(x'(t)^2+y'(t)^2) dt using Simpson's rule
-    const N = 30; // number of divisions, must be even
+    const N = 10; // number of divisions, must be even
     const deltaX = tVal / N; // Width of each sub interval
     function f(x: number): number {
       return Math.sqrt(
-        a * a * Math.sin(x) * Math.sin(x) + b * b * Math.cos(x) * Math.cos(x)
+        b * b * Math.sin(x) * Math.sin(x) + a * a * Math.cos(x) * Math.cos(x)
       );
     }
     arcLength = f(0) + 4 * f(deltaX);
@@ -357,14 +389,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
     arcLength += 4 * f(deltaX * (N - 1)) + f(deltaX * N);
     arcLength *= deltaX / 3;
 
-    console.log(
-      "a b tVal arclength perimeter",
-      a,
-      b,
-      tVal,
-      arcLength,
-      perimeter
-    );
+    // console.log(
+    //   "a b tVal arclength perimeter",
+    //   a,
+    //   b,
+    //   tVal,
+    //   arcLength,
+    //   perimeter
+    // );
 
     let returnPercent = 0;
     if (0 <= angle && angle <= Math.PI / 2) {

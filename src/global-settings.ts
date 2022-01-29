@@ -362,7 +362,7 @@ export const SETTINGS = {
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
     numBoundaryPoints: 40, // This number are used to draw the edge of the boundary circle.
-    numPoints: 30, // this the number of points used to draw front (back) parts of the projected circle
+    numPoints: 40, // this the number of points used to draw front (back) parts of the projected circle
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
