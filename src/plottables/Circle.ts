@@ -13,7 +13,7 @@ import {
 import AppStore, { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import SE from "@/store/se-module";
-import { CirclePosition, ProjectedEllipseData } from "@/types";
+import { CirclePosition, ProjectedCircleData } from "@/types";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -42,7 +42,7 @@ export default class Circle extends Nodule {
   /**
    *  This the data the describes the projected circle.
    */
-  private projectedCircleData: ProjectedEllipseData;
+  private projectedCircleData: ProjectedCircleData;
 
   /**
    * Vuex global state

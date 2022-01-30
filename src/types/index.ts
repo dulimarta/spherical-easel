@@ -488,7 +488,7 @@ export enum AngleMode {
   LINEANDSEGMENT,
   SEGMENTSORLINEANDSEGMENT
 }
-export interface ProjectedEllipseData {
+export interface ProjectedCircleData {
   centerX: number; // the center of the ellipse
   centerY: number; // the center of the ellipse
   tiltAngle: number; // between -Pi/2 and pi/2, the angle between the line containing the major axis (after tilting) and the x axis
@@ -497,8 +497,8 @@ export interface ProjectedEllipseData {
   position: CirclePosition; // contained entirely in front/back or split
   frontStartAngle: number; // To trace the part of the ellipse that is on the front start with this angle and end with the other.
   frontEndAngle: number;
-  circleStartAngle: number; //If the circle is split between the front and back, this the angle from the center of the circle to the place where the start of the front of circle is traced out
-  circleEndAngle: number;
+  circleStartAngle: number; //If the circle is split between the front and back, this the angle from the x axis to the line from the center of the sphere to the place where the start/end of the front of circle is traced out between 0 and 2PI
+  circleEndAngle: number; // The circle doesn't intersect the front and back then both circleStartAngle, circleEndAngle are -1
 }
 export enum CirclePosition {
   ContainedEntirelyOnFront,

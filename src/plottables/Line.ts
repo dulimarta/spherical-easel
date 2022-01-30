@@ -167,11 +167,10 @@ export default class Line extends Nodule {
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
-    const projectedEllipseData = Nodule.projectedCircleData(
+    const projectedLineData = Nodule.projectedCircleData(
       this._normalVector, // When the radius is pi/2, either normal vector (ie. multiply this one by -1) will result in the same data
       Math.PI / 2 // the radius of a line is always Pi/2
     );
-
     // no need to update the center of the ellipse because for lines it is always (0,0)
 
     // For lines the start angle is 0 or pi (NOTE: this is before rotating)
@@ -180,51 +179,41 @@ export default class Line extends Nodule {
     let frontEnd = 0;
     let backStart = 0;
     let backEnd = 0;
-    if (projectedEllipseData.frontStartAngle < SETTINGS.tolerance) {
-      //console.log("front is 0 to 0.5   #1");
+    if (projectedLineData.frontStartAngle < SETTINGS.tolerance) {
       frontStart = 0;
       frontEnd = 0.5;
       backStart = 0.5;
       backEnd = 1;
     } else {
-      //console.log("front is 0.5 to 1   #2");
       backStart = 0;
       backEnd = 0.5;
       frontStart = 0.5;
       frontEnd = 1;
     }
 
-    this.frontHalf.width =
-      2 * projectedEllipseData.majorAxis * SETTINGS.boundaryCircle.radius;
-    this.frontHalf.height =
-      2 * projectedEllipseData.minorAxis * SETTINGS.boundaryCircle.radius;
+    this.frontHalf.width = 2 * projectedLineData.majorAxis;
+    this.frontHalf.height = 2 * projectedLineData.minorAxis;
     this.frontHalf.beginning = frontStart;
     this.frontHalf.ending = frontEnd;
-    this.frontHalf.rotation = projectedEllipseData.tiltAngle;
+    this.frontHalf.rotation = projectedLineData.tiltAngle;
 
-    this.glowingFrontHalf.width =
-      2 * projectedEllipseData.majorAxis * SETTINGS.boundaryCircle.radius;
-    this.glowingFrontHalf.height =
-      2 * projectedEllipseData.minorAxis * SETTINGS.boundaryCircle.radius;
+    this.glowingFrontHalf.width = 2 * projectedLineData.majorAxis;
+    this.glowingFrontHalf.height = 2 * projectedLineData.minorAxis;
     this.glowingFrontHalf.beginning = frontStart;
     this.glowingFrontHalf.ending = frontEnd;
-    this.glowingFrontHalf.rotation = projectedEllipseData.tiltAngle;
+    this.glowingFrontHalf.rotation = projectedLineData.tiltAngle;
 
-    this.backHalf.width =
-      2 * projectedEllipseData.majorAxis * SETTINGS.boundaryCircle.radius;
-    this.backHalf.height =
-      2 * projectedEllipseData.minorAxis * SETTINGS.boundaryCircle.radius;
+    this.backHalf.width = 2 * projectedLineData.majorAxis;
+    this.backHalf.height = 2 * projectedLineData.minorAxis;
     this.backHalf.beginning = backStart;
     this.backHalf.ending = backEnd;
-    this.backHalf.rotation = projectedEllipseData.tiltAngle;
+    this.backHalf.rotation = projectedLineData.tiltAngle;
 
-    this.glowingBackHalf.width =
-      2 * projectedEllipseData.majorAxis * SETTINGS.boundaryCircle.radius;
-    this.glowingBackHalf.height =
-      2 * projectedEllipseData.minorAxis * SETTINGS.boundaryCircle.radius;
+    this.glowingBackHalf.width = 2 * projectedLineData.majorAxis;
+    this.glowingBackHalf.height = 2 * projectedLineData.minorAxis;
     this.glowingBackHalf.beginning = backStart;
     this.glowingBackHalf.ending = backEnd;
-    this.glowingBackHalf.rotation = projectedEllipseData.tiltAngle;
+    this.glowingBackHalf.rotation = projectedLineData.tiltAngle;
   }
 
   /**

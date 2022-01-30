@@ -6,7 +6,7 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import {
   hslaColorType,
   plottableProperties,
-  ProjectedEllipseData,
+  ProjectedCircleData,
   CirclePosition
 } from "@/types";
 import { PositionalAudio, Vector3 } from "three";
@@ -57,7 +57,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   static projectedCircleData(
     unitNormal: Vector3,
     radius: number
-  ): ProjectedEllipseData {
+  ): ProjectedCircleData {
     let centerX: number; // the center of the ellipse
     let centerY: number; // the center of the ellipse
     let tiltAngle: number; // between -Pi/2 and pi/2, the angle between the line containing the major axis (after tilting) and the x axis
@@ -83,7 +83,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
       // the projected ellipse is closed and contained entirely on either the front or the back
       frontStartAngle = 0;
       frontEndAngle = 0;
-      if (radius < Math.PI / 2) {
+      if (radius <= Math.PI / 2) {
         position =
           unitNormal.z > 0
             ? CirclePosition.ContainedEntirelyOnFront
@@ -146,6 +146,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
           // );
           frontStartAngle = 0;
           frontEndAngle = Math.PI;
+          circleStartAngle = tiltAngle.modTwoPi();
+          circleEndAngle = (tiltAngle + Math.PI).modTwoPi();
         } else {
           // console.log(
           //   "the tmpVector is below the line",
@@ -154,6 +156,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
           // );
           frontStartAngle = Math.PI;
           frontEndAngle = 2 * Math.PI;
+          circleStartAngle = (tiltAngle + Math.PI).modTwoPi();
+          circleEndAngle = tiltAngle.modTwoPi();
         }
       } // Now handle the circle (non-line) case
       else if (
@@ -189,23 +193,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
           // the intersection points are (X,+/-Y)
           const X = Math.cos(radius) / unitNormal.x;
           const Y = Math.sqrt(1 - X * X);
-          // console.log(
-          //   "Split Intersection Points (",
-          //   X,
-          //   Y,
-          //   ") and (",
-          //   X - Y,
-          //   ")"
-          // );
+
           // tmpVector is the highest point on the circle so
           // tmpVector.x, tmpVector.y is a point on the ellipse that should correspond to the front
           // in this case, this point is either to the left or right of the line x= centerX
           if (tmpVector.x > centerX) {
-            // console.log(
-            //   "the tmpVector is right of the vertical line",
-            //   tmpVector.x,
-            //   tmpVector.y
-            // );
             // the ellipse is traced out counterclockwise from above so start at the lower intersection point and head to the upper
             frontStartAngle = (
               Math.atan2(-Y - centerY, X - centerX) - tiltAngle
@@ -216,11 +208,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
             circleStartAngle = Math.atan2(-Y, X).modTwoPi();
             circleEndAngle = Math.atan2(Y, X).modTwoPi();
           } else {
-            // console.log(
-            //   "the tmpVector is left of the vertical the line",
-            //   tmpVector.x,
-            //   tmpVector.y
-            // );
             // the ellipse is traced out counterclockwise from above so start at the upper intersection point and head to the lower
             frontStartAngle = (
               Math.atan2(Y - centerY, X - centerX) - tiltAngle
@@ -241,17 +228,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
           const X2 = (-m * b + Math.sqrt(m * m - b * b + 1)) / (1 + m * m);
           const Y1 = m * X1 + b;
           const Y2 = m * X2 + b;
-          // console.log(
-          //   "Split Intersection Points (",
-          //   X1 * SETTINGS.boundaryCircle.radius,
-          //   Y1 * SETTINGS.boundaryCircle.radius,
-          //   ") and (",
-          //   X2 * SETTINGS.boundaryCircle.radius,
-          //   Y2 * SETTINGS.boundaryCircle.radius,
-          //   ")",
-          //   (X1 * X1 + Y1 * Y1) * SETTINGS.boundaryCircle.radius,
-          //   (X2 * X2 + Y2 * Y2) * SETTINGS.boundaryCircle.radius
-          // );
 
           const leftMostAngle = (
             Math.atan2(Y1 - centerY, X1 - centerX) - tiltAngle
@@ -267,21 +243,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
             Math.tan(tiltAngle) * (tmpVector.x - centerX) + centerY <
             tmpVector.y
           ) {
-            // console.log(
-            //   "the tmpVector is above the line",
-            //   tmpVector.x,
-            //   tmpVector.y
-            // );
             frontStartAngle = rightMostAngle;
             frontEndAngle = leftMostAngle;
             circleStartAngle = Math.atan2(Y2, X2).modTwoPi();
             circleEndAngle = Math.atan2(Y1, X1).modTwoPi();
           } else {
-            // console.log(
-            //   "the tmpVector is below the line",
-            //   tmpVector.x,
-            //   tmpVector.y
-            // );
             frontStartAngle = leftMostAngle;
             frontEndAngle = rightMostAngle;
             circleStartAngle = Math.atan2(Y1, X1).modTwoPi();
