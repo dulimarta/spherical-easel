@@ -300,6 +300,18 @@ export default abstract class Nodule implements Stylable, Resizeable {
       console.error("Ellipse Angle is negative or bigger than 2pi");
       return -1;
     }
+    // quickly return the multiplies of Pi/2
+    if (Math.abs(angle) < SETTINGS.tolerance) {
+      return 0;
+    } else if (Math.abs(angle - Math.PI / 2) < SETTINGS.tolerance) {
+      return 0.25;
+    } else if (Math.abs(angle - Math.PI) < SETTINGS.tolerance) {
+      return 0.5;
+    } else if (Math.abs(angle - (3 * Math.PI) / 2) < SETTINGS.tolerance) {
+      return 0.75;
+    } else if (Math.abs(angle - 2 * Math.PI) < SETTINGS.tolerance) {
+      return 1.0;
+    }
 
     // first estimate the total arc length of the ellipse based on Series 2 of
     // https://www.mathsisfun.com/geometry/ellipse-perimeter.html
@@ -312,9 +324,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
         (h * h) / 64 +
         (h * h * h) / 256 +
         (25 * h * h * h * h) / 16384 +
-        (49 * h * h * h * h * h) / 65536 +
-        (441 * h * h * h * h * h * h) / 1048576 +
-        (1089 * h * h * h * h * h * h * h) / 4194304);
+        (49 * h * h * h * h * h) / 65536);
+    // (441 * h * h * h * h * h * h) / 1048576 +
+    // (1089 * h * h * h * h * h * h * h) / 4194304);
     // now we have to figure out the arc length along the ellipse from (a,0) to (a*cos(t),b*sin(t))
     // where the angle from the positive x axis to (a*cos(t),b*sin(t)) is angle
     // We can restrict to 0<=angle<= Pi/2 because
@@ -350,7 +362,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
     arcLength = f(0) + 4 * f(deltaX);
     for (let i = 2; i <= N - 2; i++) {
-      arcLength += (2 * (i % 2) + 2) * f(deltaX * i); //i odd coeff is 4, i even coeff is 2
+      arcLength += (2 * (i % 2) + 2) * f(deltaX * i); //i odd coefficient is 4, i even coefficient is 2
     }
     arcLength += 4 * f(deltaX * (N - 1)) + f(deltaX * N);
     arcLength *= deltaX / 3;

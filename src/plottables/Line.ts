@@ -8,7 +8,6 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-import { CirclePosition } from "@/types";
 
 /**
  * A line segment
@@ -105,10 +104,10 @@ export default class Line extends Nodule {
     });
 
     // The line is not initially glowing but is visible for the temporary object
-    this.frontHalf.visible = true;
-    this.backHalf.visible = true;
-    this.glowingFrontHalf.visible = false;
-    this.glowingBackHalf.visible = false;
+    // this.frontHalf.visible = true;
+    // this.backHalf.visible = true;
+    // this.glowingFrontHalf.visible = false;
+    // this.glowingBackHalf.visible = false;
 
     // Set the style that never changes -- Fill and closed
     this.frontHalf.noFill();
@@ -160,8 +159,7 @@ export default class Line extends Nodule {
   }
 
   /**
-   * Update the display of line by Reorient the unit circle in 3D and then project the points to 2D
-   * Reorient the unit circle in 3D and then project the points to 2D
+   * Update the display of line by projecting to the plane where it is an ellipse
    * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
    * This is only accurate if the normal vector are correct so only
    * call this method once that vector is updated.

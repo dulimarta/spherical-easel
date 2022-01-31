@@ -507,3 +507,26 @@ export enum CirclePosition {
   HoleOnFront,
   HoleOnBack
 }
+
+export interface ProjectedSegmentData {
+  tiltAngle: number; // between -Pi/2 and pi/2, the angle between the line containing the major axis (after tilting) and the x axis
+  minorAxis: number; //half the minor diameter parallel to the y axis (prior to tilting)
+  majorAxis: number; //half the major diameter parallel to thee x axis (prior to tilting)
+  position: SegmentPosition; // contained entirely in front/back or split
+  frontStartAngle: number; // To trace the part of the ellipse (the projected segment) that is on the front start with this angle and end with the other.
+  frontEndAngle: number;
+  backStartAngle: number; // To trace the part of the ellipse (the projected segment) that is on the back start with this angle and end with the other.
+  backEndAngle: number;
+  frontExtraStartAngle: number; // To trace the part of the ellipse (the projected segment) that is on the front extra (in the SplitFrontBackFront case) start with this angle and end with the other.
+  frontExtraEndAngle: number;
+  backExtraStartAngle: number; // To trace the part of the ellipse (the projected segment) that is on the back extra (in the SplitBackFrontBack case) start with this angle and end with the other.
+  backExtraEndAngle: number;
+}
+
+export enum SegmentPosition {
+  ContainedEntirelyOnFront,
+  ContainedEntirelyOnBack,
+  SplitFrontBackOrBackFront,
+  SplitFrontBackFront,
+  SplitBackFrontBack
+}

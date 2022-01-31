@@ -24,8 +24,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_BACK_STYLE)
 ]);
 
-export class SESegment extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SESegment
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -413,6 +415,7 @@ export class SESegment extends SENodule
 
       ////////////////////////////////////////////////////////////////////////////////////////
       this.ref.startVector = this._startSEPoint.locationVector;
+      this.ref.endVector = this._endSEPoint.locationVector;
       this.ref.arcLength = this._arcLength;
       this.ref.normalVector = this._normalVector;
       // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing

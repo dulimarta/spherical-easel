@@ -53,8 +53,10 @@ export default class SegmentHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -220,6 +222,7 @@ export default class SegmentHandler extends Highlighter {
         this.startSEPoint = null;
       }
       this.temporaryEndMarker.positionVector = this.currentSphereVector;
+      this.temporarySegment.endVector = this.temporaryEndMarker.positionVector;
 
       // Set the booleans for describing the segment
       this.nearlyAntipodal = false;
@@ -303,7 +306,8 @@ export default class SegmentHandler extends Highlighter {
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
       if (!this.startLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryOneDimensional =
+          this.hitSEParametrics[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
@@ -351,7 +355,8 @@ export default class SegmentHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryPoint.locationVector;
+            this.temporaryStartMarker.positionVector =
+              this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.isTemporaryStartMarkerAdded = false;
@@ -359,9 +364,10 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryStartMarker.positionVector =
+            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
@@ -382,12 +388,15 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector = this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryEndMarker.positionVector =
+            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
+        this.temporarySegment.endVector =
+          this.temporaryEndMarker.positionVector;
 
         // If the temporary segment has *not* been added to the scene do so now (only once)
         if (!this.isTemporarySegmentAdded) {
@@ -412,6 +421,7 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.arcLength = this.arcLength;
         this.temporarySegment.normalVector = this.normalVector;
         this.temporarySegment.updateDisplay();
+        this.temporarySegment.normalDisplay();
       }
     }
     // else if (this.isTemporaryStartMarkerAdded) {
@@ -575,6 +585,7 @@ export default class SegmentHandler extends Highlighter {
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
       this.temporarySegment.updateDisplay();
+      this.temporarySegment.normalDisplay();
 
       if (
         this.endSEPoint instanceof SEIntersectionPoint &&
@@ -740,11 +751,13 @@ export default class SegmentHandler extends Highlighter {
 
     // update the location of the endMarker
     this.temporaryEndMarker.positionVector = this.endSEPoint.locationVector;
+    this.temporarySegment.endVector = this.temporaryEndMarker.positionVector;
 
     // Finally set the values for the unit vectors defining the segment and update the display
     this.temporarySegment.arcLength = this.arcLength;
     this.temporarySegment.normalVector = this.normalVector;
     this.temporarySegment.updateDisplay();
+    this.temporarySegment.normalDisplay();
 
     // make sure that this segment hasn't been added before
     if (
@@ -798,6 +811,7 @@ export default class SegmentHandler extends Highlighter {
     }
     // Clone the temporary segment and mark it removed from the scene,
     const newSegment = this.temporarySegment.clone();
+
     this.isTemporarySegmentAdded = false;
     // Stylize the new segment
     newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
