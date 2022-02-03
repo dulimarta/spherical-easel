@@ -247,7 +247,8 @@ export default class Segment extends Nodule {
     } else if (
       this.segmentData.position === SegmentPosition.SplitBackFrontBack ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnFront ||
-      this.segmentData.position === SegmentPosition.SplitFrontBackOrBackFront
+      this.segmentData.position === SegmentPosition.SplitFrontToBack ||
+      this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
       this._frontPart.visible = true;
       this.glowingFrontPart.visible = true;
@@ -271,7 +272,8 @@ export default class Segment extends Nodule {
     } else if (
       this.segmentData.position === SegmentPosition.SplitFrontBackFront ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnBack ||
-      this.segmentData.position === SegmentPosition.SplitFrontBackOrBackFront
+      this.segmentData.position === SegmentPosition.SplitFrontToBack ||
+      this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
       this._backPart.visible = true;
       this.glowingBackPart.visible = true;
@@ -295,7 +297,8 @@ export default class Segment extends Nodule {
     } else if (
       this.segmentData.position === SegmentPosition.SplitFrontBackFront ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnBack ||
-      this.segmentData.position === SegmentPosition.SplitFrontBackOrBackFront
+      this.segmentData.position === SegmentPosition.SplitFrontToBack ||
+      this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
       this._backPart.visible = true;
       this.glowingBackPart.visible = false;
@@ -303,7 +306,6 @@ export default class Segment extends Nodule {
       this.glowingBackExtra.visible = false;
     } else {
       // contained entirely on the front
-      // console.log("here back normal display");
       this._backPart.visible = false;
       this.glowingBackPart.visible = false;
       this._backExtra.visible = false;
@@ -320,9 +322,9 @@ export default class Segment extends Nodule {
     } else if (
       this.segmentData.position === SegmentPosition.SplitBackFrontBack ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnFront ||
-      this.segmentData.position === SegmentPosition.SplitFrontBackOrBackFront
+      this.segmentData.position === SegmentPosition.SplitFrontToBack ||
+      this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
-      // console.log("here front normal display");
       this._frontPart.visible = true;
       this.glowingFrontPart.visible = false;
       this._frontExtra.visible = false;
@@ -394,11 +396,6 @@ export default class Segment extends Nodule {
       this.segmentData.majorAxis,
       endAngle
     );
-    console.log("###########");
-    console.log("Start On front", this._firstVertexIsOnFront);
-    console.log("End is On front", this._lastVertexIsOnFront);
-    console.log("Start angle/percenter", startAngle, startAnglePercent);
-    console.log("End angle/percenter", endAngle, endAnglePercent);
 
     // Convert angles to percents
     let frontPartStart = 0;
@@ -535,7 +532,6 @@ export default class Segment extends Nodule {
           startAngle < endAngle ? endAnglePercent : startAnglePercent;
       }
     } else {
-      this.segmentData.position = SegmentPosition.SplitFrontBackOrBackFront;
       // Is the point at angle 0 or Pi on the segment?
       //NOTE: tmpVector1 = (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
       // gives the direction in which the segment is drawn
@@ -550,93 +546,149 @@ export default class Segment extends Nodule {
         Math.cos(this._arcLength / 4)
       );
 
+      const quarterVectorIsOnFront = this.tmpVector1.z > 0;
       const quarterAngle = (
         Math.atan2(this.tmpVector1.y, this.tmpVector1.x) -
         projectedSegmentData.tiltAngle
       ).modTwoPi();
-      // const smallerAngle = startAngle < endAngle ? startAngle : endAngle;
-      // const smallerAnglePercent =
-      //   startAngle < endAngle ? startAnglePercent : endAnglePercent;
-      // const lagerAngle = startAngle < endAngle ? endAngle : startAngle;
-      // const largerAnglePercent =
-      //   startAngle < endAngle ? endAnglePercent : startAnglePercent;
+      if (this._firstVertexIsOnFront && !this._lastVertexIsOnFront) {
+        this.segmentData.position = SegmentPosition.SplitFrontToBack;
 
-      if (projectedSegmentData.frontStartAngle < SETTINGS.tolerance) {
-        // the entire front is from 0 and pi and the back is from pi to 2pi
+        if (projectedSegmentData.frontStartAngle < SETTINGS.tolerance) {
+          // the entire front is from 0 and pi and the back is from pi to 2pi
+          if (
+            (quarterVectorIsOnFront && startAngle < quarterAngle) ||
+            (!quarterVectorIsOnFront && quarterAngle < endAngle)
+          ) {
+            // Region #1 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = startAngle;
+            frontPartStart = startAnglePercent;
 
-        // if quarterVector is on the front and start is less than quarter
-        // or
-        // quarterVector is on the back and quarter is less than end
-        if (
-          (this.tmpVector1.z > 0 && startAngle < quarterAngle) ||
-          (this.tmpVector1.z < 0 && quarterAngle < endAngle)
-        ) {
-          console.log("Here1");
-          this.segmentData.frontStartAngle = startAngle;
-          frontPartStart = startAnglePercent;
+            this.segmentData.frontEndAngle = Math.PI;
+            frontPartEnd = 0.5;
 
-          this.segmentData.frontEndAngle = Math.PI;
-          frontPartEnd = 0.5;
+            this.segmentData.backStartAngle = Math.PI;
+            backPartStart = 0.5;
 
-          this.segmentData.backStartAngle = Math.PI;
-          backPartStart = 0.5;
+            this.segmentData.backEndAngle = endAngle;
+            backPartEnd = endAnglePercent;
+          } else {
+            // Region #2 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = 0;
+            frontPartStart = 0;
 
-          this.segmentData.backEndAngle = endAngle;
-          backPartEnd = endAnglePercent;
+            this.segmentData.frontEndAngle = startAngle;
+            frontPartEnd = startAnglePercent;
+
+            this.segmentData.backStartAngle = endAngle;
+            backPartStart = endAnglePercent;
+
+            this.segmentData.backEndAngle = 2 * Math.PI;
+            backPartEnd = 1.0;
+          }
         } else {
-          console.log("Here2");
-          this.segmentData.frontStartAngle = 0;
-          frontPartStart = 0;
+          // the entire back is from 0 and pi and the front is from pi to 2pi
+          if (
+            (quarterVectorIsOnFront && quarterAngle < startAngle) ||
+            (!quarterVectorIsOnFront && endAngle < quarterAngle)
+          ) {
+            // Region #3 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = Math.PI;
+            frontPartStart = 0.5;
 
-          this.segmentData.frontEndAngle = startAngle;
-          frontPartEnd = startAnglePercent;
+            this.segmentData.frontEndAngle = startAngle;
+            frontPartEnd = startAnglePercent;
 
-          this.segmentData.backStartAngle = endAngle;
-          backPartStart = endAnglePercent;
+            this.segmentData.backStartAngle = endAngle;
+            backPartStart = endAnglePercent;
 
-          this.segmentData.backEndAngle = 2 * Math.PI;
-          backPartEnd = 1.0;
+            this.segmentData.backEndAngle = Math.PI;
+            backPartEnd = 0.5;
+          } else {
+            // Region #4 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = startAngle;
+            frontPartStart = startAnglePercent;
+
+            this.segmentData.frontEndAngle = 2 * Math.PI;
+            frontPartEnd = 1.0;
+
+            this.segmentData.backStartAngle = 0;
+            backPartStart = 0;
+
+            this.segmentData.backEndAngle = endAngle;
+            backPartEnd = endAnglePercent;
+          }
         }
       } else {
-        // the entire back is from 0 and pi and the front is from pi to 2pi
+        this.segmentData.position = SegmentPosition.SplitBackToFront;
+        if (projectedSegmentData.frontStartAngle < SETTINGS.tolerance) {
+          // the entire front is from 0 and pi and the back is from pi to 2pi
+          if (
+            (!quarterVectorIsOnFront && quarterAngle < startAngle) ||
+            (quarterVectorIsOnFront && endAngle < quarterAngle)
+          ) {
+            // Region #5 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = endAngle;
+            frontPartStart = endAnglePercent;
 
-        // if quarterVector is on the front and start is less than quarter
-        // or
-        // quarterVector is on the back and quarter is less than end
-        if (
-          (this.tmpVector1.z > 0 && startAngle < quarterAngle) ||
-          (this.tmpVector1.z < 0 && quarterAngle < endAngle)
-        ) {
-          console.log("Here3");
-          console.log("quarter angle", quarterAngle);
-          this.segmentData.frontStartAngle = startAngle;
-          frontPartStart = startAnglePercent;
+            this.segmentData.frontEndAngle = Math.PI;
+            frontPartEnd = 0.5;
 
-          this.segmentData.frontEndAngle = 2 * Math.PI;
-          frontPartEnd = 1.0;
+            this.segmentData.backStartAngle = Math.PI;
+            backPartStart = 0.5;
 
-          this.segmentData.backStartAngle = 0;
-          backPartStart = 0;
+            this.segmentData.backEndAngle = startAngle;
+            backPartEnd = startAnglePercent;
+          } else {
+            // Region #6 on SegmentCasesEllipseRewrite
+            this.segmentData.frontStartAngle = 0;
+            frontPartStart = 0;
 
-          this.segmentData.backEndAngle = endAngle;
-          backPartEnd = endAnglePercent;
+            this.segmentData.frontEndAngle = endAngle;
+            frontPartEnd = endAnglePercent;
+
+            this.segmentData.backStartAngle = startAngle;
+            backPartStart = startAnglePercent;
+
+            this.segmentData.backEndAngle = 2 * Math.PI;
+            backPartEnd = 1.0;
+          }
         } else {
-          console.log("Here4");
-          this.segmentData.frontStartAngle = Math.PI;
-          frontPartStart = 0.5;
+          // the entire back is from 0 and pi and the front is from pi to 2pi
+          if (
+            (!quarterVectorIsOnFront && startAngle < quarterAngle) ||
+            (quarterVectorIsOnFront && quarterAngle < endAngle)
+          ) {
+            // Region #7 on SegmentCasesEllipseRewrite
+            this.segmentData.backStartAngle = startAngle;
+            backPartStart = startAnglePercent;
 
-          this.segmentData.frontEndAngle = startAngle;
-          frontPartEnd = startAnglePercent;
+            this.segmentData.backEndAngle = Math.PI;
+            backPartEnd = 0.5;
 
-          this.segmentData.backStartAngle = endAngle;
-          backPartStart = endAnglePercent;
+            this.segmentData.frontStartAngle = Math.PI;
+            frontPartStart = 0.5;
 
-          this.segmentData.backEndAngle = Math.PI;
-          backPartEnd = 0.5;
+            this.segmentData.frontEndAngle = endAngle;
+            frontPartEnd = endAnglePercent;
+          } else {
+            // Region #8 on SegmentCasesEllipseRewrite
+            this.segmentData.backStartAngle = 0;
+            backPartStart = 0;
+
+            this.segmentData.backEndAngle = startAngle;
+            backPartEnd = startAnglePercent;
+
+            this.segmentData.frontStartAngle = endAngle;
+            frontPartStart = endAnglePercent;
+
+            this.segmentData.frontEndAngle = 2 * Math.PI;
+            frontPartEnd = 1.0;
+          }
         }
       }
     }
-    console.log("position", this.segmentData.position);
+
     if (this.segmentData.position !== SegmentPosition.ContainedEntirelyOnBack) {
       this._frontPart.width = 2 * projectedSegmentData.majorAxis;
       this._frontPart.height = 2 * projectedSegmentData.minorAxis;

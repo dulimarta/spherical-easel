@@ -526,7 +526,8 @@ export interface ProjectedSegmentData {
 export enum SegmentPosition {
   ContainedEntirelyOnFront,
   ContainedEntirelyOnBack,
-  SplitFrontBackOrBackFront,
+  SplitFrontToBack,
+  SplitBackToFront,
   SplitFrontBackFront,
   SplitBackFrontBack
 }
