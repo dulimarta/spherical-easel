@@ -114,5 +114,64 @@ describe("SphereFrame: Segment Length Measurement Tool", () => {
     expect(xCoord.value).toBeCloseTo(pt.locationVector.x, 5);
     expect(yCoord.value).toBeCloseTo(pt.locationVector.y, 5);
     expect(zCoord.value).toBeCloseTo(pt.locationVector.z, 5);
+  })
+
+  it("measures length of segment #2", async () => {
+
+    //update points
+    const v1 = new Vector3(0.053, 0.683, 0.729);
+    const v2 = new Vector3(0.667, 0.162, 0.727);
+    v2.applyAxisAngle(v2, 47.485);
+    const prevSegmentCount = SEStore.seSegments.length;
+    await drawOneDimensional(
+      wrapper,
+      "segment",
+      v1.x * R,
+      v1.y * R,
+      true,
+      v2.x * R,
+      v2.y * R,
+      true
+    );
+
+    //commented out this new point counter... not used
+    // const newPointCount = SEStore.sePoints.length;
+    // expect(newPointCount).toBeGreaterThanOrEqual(2);
+    // const p1: SEPoint = SEStore.sePoints[newPointCount - 2];
+    // const p2: SEPoint = SEStore.sePoints[newPointCount - 1];
+    const newSegmentCount = SEStore.seSegments.length;
+    expect(newSegmentCount).toEqual(prevSegmentCount + 1);
+    const aSegment = SEStore.seSegments[prevSegmentCount];
+    SEStore.setActionMode({
+      id: "segmentLength",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
+    const prevMeasurementCount = SEStore.expressions.length;
+
+    //v1 change
+    const targetPosition = aSegment.closestVector(v1);
+    await mouseClickOnSphere(
+      wrapper,
+      targetPosition.x * R,
+      targetPosition.y * R
+    );
+    const newMeasurementCount = SEStore.expressions.length;
+    expect(newMeasurementCount).toBe(prevMeasurementCount + 1);
+    const angle = aSegment.startSEPoint.locationVector.angleTo(
+      aSegment.endSEPoint.locationVector
+    );
+
+    const length = SEStore.expressions[prevMeasurementCount] as SEExpression;
+    expect(length.value).toBeCloseTo(angle, 5);
+
+    //tests measurment value
+    console.log("Observed: \t" + SEStore.expressions[prevMeasurementCount].value + "\nExpected:\t" + 0.828774);
+    const measurment = SEStore.expressions[prevMeasurementCount].value;
+    expect(measurment).toBeCloseTo(0.828774, 2);
+  });
+
+  it("measures triangle", async () => {
+    const p1 = new Vector3()
   });
 });
