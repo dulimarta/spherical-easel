@@ -69,4 +69,8 @@ describe("SphereFrame: Line Tool", () => {
         await runLineTest(pt1, pt2);
       }
   });
+
+  // test correct styling of line (default)
+
+  // change style of line and check if it's correct
 });
