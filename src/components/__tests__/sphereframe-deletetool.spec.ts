@@ -407,5 +407,95 @@ describe("SphereFrame: Delete Tool", () => {
     expect(SEStore.sePoints.length).toEqual(prevPointCount);
   });
 
+  //for this variation of deleting circles, we will make two connected circles
+  //as well as a cross where the circles connect and a point at the intersection of the cross, followed by deleting everything
+  //DISCLAIMER: The coordinates may need adjusting for this to test properly
+  it("deletes circles when clicking on the circle (part 2)", async () => {
+    async function runDeleteCircleTestVariation3(
+      isPt1Foreground: boolean,
+      isPt2Foreground: boolean
+    ): Promise<void> {
+      const prevCircleCount = SEStore.seCircles.length;
+      await drawOneDimensional(
+        wrapper,
+        "circle",
+        100,
+        100,
+        isPt1Foreground,
+        100,
+        200,
+        isPt2Foreground
+      );
+      await drawOneDimensional(
+        wrapper,
+        "circle",
+        100,
+        200,
+        isPt1Foreground,
+        100,
+        100,
+        isPt2Foreground
+      );
+      await drawOneDimensional(
+        wrapper,
+        "line",
+        100,
+        100,
+        isPt1Foreground,
+        100,
+        200,
+        isPt2Foreground
+      );
+      await drawOneDimensional(
+        wrapper,
+        "line",
+        -14.96551432328367,
+        171.2592235729355,
+        isPt1Foreground,
+        198.6068262959697,
+         104.20274438609354,
+         isPt2Foreground,
+      );
+      await drawOneDimensional(
+        wrapper,
+        "point",
+        100,
+        100,
+        isPt1Foreground,
+        100,
+        200,
+        isPt2Foreground
+      );
+      const newCircleCount = SEStore.seCircles.length;
+      expect(newCircleCount).toEqual(prevCircleCount + 2);
+      const aCircle = SEStore.seCircles[prevCircleCount];
+      SEStore.setActionMode({
+        id: "delete",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+      /* The segment is on the right hemisphere so the first point location will
+      dictate the click position */
+      const pointOn = aCircle.closestVector(new Vector3(0, 0, 1));
+      //delete second circle first (should cause delete tool to not work on second circle [Feb. 2, 2022])
+      await mouseClickOnSphere(
+        wrapper,
+        300,
+        200,
+        pointOn.z < 0
+      );
+      await mouseClickOnSphere(
+        wrapper,
+        100,
+        100,
+        pointOn.z < 0
+      );
+      expect(SEStore.seCircles.length).toEqual(prevCircleCount);
+    }
+
+    // TODO: add two more variations that mix fg and bg points
+    await runDeleteCircleTestVariation3(true, true);
+  });
+
   xit("deletes polar", () => {});
 });
