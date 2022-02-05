@@ -173,5 +173,10 @@ describe("SphereFrame: Segment Length Measurement Tool", () => {
 
   it("measures triangle", async () => {
     const p1 = new Vector3()
+
+    //update points
+    const v1 = new Vector3(0.053, 0.683, 0.729);
+    const v2 = new Vector3(0.667, 0.162, 0.727);
+    v2.applyAxisAngle(v2, 47.485);
   });
 });
