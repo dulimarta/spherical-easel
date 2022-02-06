@@ -217,15 +217,18 @@ export default class DeleteHandler extends Highlighter {
           seNoduleBeforeState.object instanceof SEIntersectionPoint &&
           (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
         ) {
-          // don't delete a user created intersection point, covert it back to not user created.
+          // to delete a user created intersection point, first convert it back to not user created then possibly delete it.
           deleteCommandGroup.addCommand(
             new ConvertUserCreatedInterToNotUserCreatedCommand(
               seNoduleBeforeState.object
             )
           );
-          deleteCommandGroup.addCommand(
-            new DeleteNoduleCommand(seNoduleBeforeState.object)
-          );
+          // only delete the user created point if it is child of the victim. If it is the victim do not delete it. If we didn't do this then deleting a user created intersection the only way to create it again would be to undo the delete
+          if (seNoduleBeforeState.object.id !== victim.id) {
+            deleteCommandGroup.addCommand(
+              new DeleteNoduleCommand(seNoduleBeforeState.object)
+            );
+          }
         } else {
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)
