@@ -458,7 +458,8 @@ export default class Line extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = (frontStyle?.strokeColor ?? "black") as Color;
+          this.frontHalf.stroke = (frontStyle?.strokeColor ??
+            "black") as Two.Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -497,7 +498,7 @@ export default class Line extends Nodule {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backHalf.noStroke();
           } else {
-            this.backHalf.stroke = backStyle?.strokeColor as Color;
+            this.backHalf.stroke = backStyle?.strokeColor as Two.Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()

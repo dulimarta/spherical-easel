@@ -1049,7 +1049,7 @@ export default class Circle extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
-          this.frontPart.stroke = frontStyle?.strokeColor as Color;
+          this.frontPart.stroke = frontStyle?.strokeColor as Two.Color;
         }
         // strokeWidthPercent is applied by adjustSize()
 

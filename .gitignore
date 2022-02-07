@@ -42,3 +42,6 @@ latex-notes/*.pdf
 
 # Generated files
 docs/.vuepress/dist
+
+# Cache
+.yarn/cache
