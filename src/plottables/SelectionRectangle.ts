@@ -1,4 +1,4 @@
-import Two, { BoundingClientRect } from "two.js";
+import Two from "two.js";
 
 export class SelectionRectangle extends Two.Group {
   private path: Two.Path;
@@ -29,7 +29,7 @@ export class SelectionRectangle extends Two.Group {
   /**
    * Change size and location of the rectangle based on the corners
    */
-  public move(corner1: number[], corner2: number[], onBack: boolean) {
+  public move(corner1: number[], corner2: number[], onBack: boolean): void {
     this.path.vertices[0].set(corner1[0], -corner1[1]);
     this.path.vertices[1].set(corner1[0], -corner2[1]);
     this.path.vertices[2].set(corner2[0], -corner2[1]);

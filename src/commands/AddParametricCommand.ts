@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
@@ -261,12 +260,12 @@ export class AddParametricCommand extends Command {
       );
     }
     throw new Error(
-      `AddParametric: 
-      ${parametricXCoordinateExpression}, 
-      ${parametricYCoordinateExpression}, 
-      ${parametricZCoordinateExpression}, 
-      ${parametricMinExpression}, 
-      ${parametricMaxExpression}, 
+      `AddParametric:
+      ${parametricXCoordinateExpression},
+      ${parametricYCoordinateExpression},
+      ${parametricZCoordinateExpression},
+      ${parametricMinExpression},
+      ${parametricMaxExpression},
       ${parametricMinNumber},
       ${parametricMaxNumber},
       ${parametricExpressionParents},

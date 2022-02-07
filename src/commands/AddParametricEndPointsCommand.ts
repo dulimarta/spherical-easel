@@ -5,7 +5,6 @@ import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";

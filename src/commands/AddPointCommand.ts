@@ -4,7 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleEditPanels } from "@/types/Styles";
 import Label from "@/plottables/Label";
 import Point from "@/plottables/Point";
 
