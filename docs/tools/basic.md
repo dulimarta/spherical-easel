@@ -9,24 +9,27 @@ These are the basic tools for constructing arrangements.
 
 ::: tool-title
 
-## Point
+## Point <IconBase notInline icon-name="point" />
 
 :::
 ::: tool-description
 Create a point.
 ::: tool-details
 
-- Mouse release at a location to create a point.
-- When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab).
+- Mouse press at a location to create a point.
+- When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab) <IconBase  icon-name="objectsTab" />.
+- Creating a point in a [Polygon](tools/measurement.html#polygon) <IconBase  icon-name="measurePolygon" /> or [Triangle](/tools/measurement.html#triangle) <IconBase  icon-name="measureTriangle" /> ,means that the point is constrained to be inside the polygon or triangle.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
+
+:::
 
 ::: tip Snap To Point
 
-When creating points with this tool, or any other tool that creates an object depending on points, Spherical Easel always assumes that if the user attempts to create
+When creating points with this tool, or any other tool that creates an object depending on points, Spherical Easel always assumes that if the user attempts to create a point _**near**_
 
-- a point _**near**_ a one-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object). That is, the [Point On Object Tool](/tools/construction.html#point-on-object) was used.
-- a point _**near**_ an intersection of two one-dimensional objects, the user would like the point to be an intersection of the objects. That is, the [Intersection Tool](/tools/construction.html#intersection) was used.
-- a point _**near**_ an existing point, the user would like to use the nearby point and not create a new one.
+- a one-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object). That is, the [Point On Object Tool](/tools/construction.html#point-on-object) <IconBase  icon-name="pointOnObject" /> was used.
+- an intersection of two one-dimensional objects, the user would like the point to be an intersection of the objects. That is, the [Intersection Tool](/tools/construction.html#intersection) <IconBase  icon-name="intersect" /> was used.
+- an existing point, the user would like to use the nearby point and not create a new one.
 
 These three features are a "snap to point" assumption that Spherical Easel always makes.
 
@@ -34,7 +37,7 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 
 ::: tool-title
 
-## Line <icon-base iconSize="64" iconName="line"> </icon-base>
+## Line <icon-base notInline iconName="line"> </icon-base>
 
 :::
 ::: tool-description
@@ -42,10 +45,11 @@ Create a line.
 
 ::: tool-details
 
-- Mouse press to declare one point on the line (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a second point on the line (this might be new free point or one that snaps to an existing point, object or intersection).
+- Mouse press to declare one point on the line (this might create a new free point or one that snaps to an existing point, object or intersection),
+- Mouse release to declare a second point on the line (this might create a new free point or one that snaps to an existing point, object or intersection).
 - The two points and a vector normal to the location of both of them (not displayed, but dynamically created as the user drags, for use in the case that the two points are antipodal or almost antipodal) determine a unique line.
-- When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with two points selected the above action is performed automatically creating a line and an arbitrary normal vector in the case that the points are antipodal.
+- When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> .
+- If this tool is activated with two points selected a line is automatically created and, in the case that the points are antipodal, a normal vector equal to the north pole of the displayed sphere.
   :::
 
 ::: tool-title
@@ -103,27 +107,6 @@ Create a circle.
 - If this tool is activated with two points selected the above action is performed automatically where the first point is the center and the second is the point on the circle.
 
 :::
-
-::: tool-title
-
-## Polygon
-
-:::
-
-::: tool-description
-
-Create a polygon. [This is a challenging tool to create because the shading will have to be done right! Imagine a polygon that is almost half the sphere -- the whole top or bottom half would have to be shaded! Perhaps it is not worth it...]
-
-::: tool-details
-
-- There are two ways to create a polygon:
-  - Select a cycle of line segments. A cycle of line segments is a ordered list of line segments $[s_1, s_2, s_3, \ldots , s_n]$ ($n \geq 3$), where for all indices $i$, the ending point of segment $s_i$ is the starting point of segment $s_{i+1}$ and the indices are counted modulo $n$.
-  - Create the vertices of the polygon, by clicking at a series of $n \leq 3$ locations. Temporary points (which might be new free points, existing points, intersection points, or points on objects) are created at each click location and temporary line segments are created in order between the points as they are created (also assuming the line segment has length less than $\pi$). To complete the polygon you must click on the first point that was created. Upon completion the temporary points and line segments are added to the arrangement.
-- The inside of the polygon is alway the region that is to the left of a person walking along the edges on the outside of the sphere.
-- When a polygon is created, a row describing some of its properties will appear in the Polygon Section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with a cycle of line segments, or a collection of points, selected the above action is performed automatically.
-- This is hard because the polygon is not necessarily convex and may be crossed! Perhaps restrict to convex polygons or only promise the user that the tool will work as described for convex polygons
-  :::
 
 ::: tool-title
 

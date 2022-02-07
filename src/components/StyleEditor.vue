@@ -371,6 +371,21 @@ export default class extends Vue {
     // console.log("record previous contrast", this.previousBackstyleContrast);
     this.previousSelectedNodules.splice(0);
     this.previousSelectedNodules.push(...this.selectedNodules);
+
+    if (this.hasStyle(/dashArray/)) {
+      let value: boolean;
+      if (this.activeStyleOptions.dashArray) {
+        if (
+          this.activeStyleOptions.dashArray[0] === 0 &&
+          this.activeStyleOptions.dashArray[1] === 0
+        ) {
+          value = true;
+        } else {
+          value = false;
+        }
+        EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
+      }
+    }
   }
 
   /**
@@ -485,12 +500,7 @@ export default class extends Vue {
       //   delete updatePayload.backStyleContrast;
       // }
       this.selectedNodules.forEach((n: Nodule) => {
-        // console.debug(
-        //   "Updating style of",
-        //   n,
-        //   "payload",
-        //   updatePayload
-        // );
+        console.debug("Updating style of", n, "payload", updatePayload);
         n.updateStyle(this.panel, updatePayload);
       });
     }

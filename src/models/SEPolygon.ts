@@ -168,16 +168,14 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     currentMagnificationFactor: number
   ): boolean {
     //first make sure the unitIdeal is not a point on any of the line segments
+    // use the tight bounds on the isHitAt method for segments, because with out this,
+    // the user can put a point a polygon, and then move it *just* outside of the polygon (the 1000 prevents this)
     if (
       this._seEdgeSegments.some(seg =>
-        seg.isHitAt(unitIdealVector, currentMagnificationFactor)
+        seg.isHitAt(unitIdealVector, currentMagnificationFactor, 1000)
       )
     ) {
-      // console.log(
-      //   "Here inside hit a segment showing?",
-      //   this.showing,
-      //   this.exists
-      // );
+      // console.log("Here inside hit a segment");
       return true;
     }
     // find the closest vertex of the polygon (to each edge, the vertex is the *last* one on the edge in the direction the edge is traced)
@@ -521,6 +519,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // check to see if the idealUnitSphereVector is inside of the polygon
     if (this.isHitAt(idealUnitSphereVector, SEStore.zoomMagnificationFactor)) {
+      // console.log("heree");
       return idealUnitSphereVector;
     }
     // the ideal unit vector is NOT inside the polygon

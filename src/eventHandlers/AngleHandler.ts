@@ -44,6 +44,14 @@ export default class AngleHandler extends Highlighter {
   private targetPoints: (SEPoint | null)[] = [];
   private targetLines: SELine[] = [];
   private targetSegments: SESegment[] = [];
+
+  /**
+   * Locations where the user clicked to select the lines in an angle.
+   * Used to attempt to display the correct angle
+   */
+  private lineClickLocation1 = new Vector3();
+  private lineClickLocation2 = new Vector3();
+
   /**
    * The angleMode tells us which SENodule objects make up the angle and grantees that
    * 1) If angleMode === AngleMode.POINTS, the angle is made of three points, the second is the vertex and
@@ -109,6 +117,7 @@ export default class AngleHandler extends Highlighter {
   /* temporary vector to help with computations */
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
 
   /**
    * If the user starts to make an angleMarker and mouse press at a location on the sphere (or not on the sphere), then moves
@@ -147,7 +156,6 @@ export default class AngleHandler extends Highlighter {
           .crossVectors(candidate, this.pointLocations[0])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
-     
         EventBus.fire("show-alert", {
           key: `handlers.antipodalPointMessage`,
           keyOptions: {},
@@ -161,7 +169,6 @@ export default class AngleHandler extends Highlighter {
           .crossVectors(candidate, this.pointLocations[1])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
-        console.log("here 2", this.pointLocations.length);
         EventBus.fire("show-alert", {
           key: `handlers.antipodalPointMessage2`,
           keyOptions: {},
@@ -173,11 +180,12 @@ export default class AngleHandler extends Highlighter {
     return true;
   }
 
-  private handleNextLine(candidate: SELine) {
+  private handleNextLine(candidate: SELine, clickLocation: Vector3) {
     // Check for duplicate lines
     const pos = this.targetLines.findIndex(x => x.id === candidate.id);
     if (pos < 0) {
       this.targetLines.push(candidate);
+      this.lineClickLocation2.copy(clickLocation);
     } else
       EventBus.fire("show-alert", {
         key: `handlers.duplicateLineMessage`,
@@ -214,7 +222,10 @@ export default class AngleHandler extends Highlighter {
     }
   }
 
-  private handleNextSegmentLineCombination(candidate: SESegment | SELine) {
+  private handleNextSegmentLineCombination(
+    candidate: SESegment | SELine,
+    clickLocation: Vector3
+  ) {
     // Make sure that one the of the endpoints of the segment is a point on the line or one of the points defining the line
     if (candidate instanceof SELine) {
       // a segment has already been selected
@@ -286,6 +297,7 @@ export default class AngleHandler extends Highlighter {
             // The user selected a line and is going to create an angle with another line or segment
             this.angleMode = AngleMode.SEGMENTSORLINEANDSEGMENT;
             this.targetLines.push(this.hitSELines[0]);
+            this.lineClickLocation1.copy(this.currentSphereVector);
             this.lineSelectedFirst = true;
             // select (to prevent unglowing by highlighter.ts) and glow the line
             this.hitSELines[0].glowing = true;
@@ -564,15 +576,21 @@ export default class AngleHandler extends Highlighter {
             // The user selects a line
             // Has the user previously selected a line or segment
             if (this.targetLines.length === 1) {
-              this.handleNextLine(this.hitSELines[0]);
+              this.handleNextLine(this.hitSELines[0], this.currentSphereVector);
             } else {
-              this.handleNextSegmentLineCombination(this.hitSELines[0]);
+              this.handleNextSegmentLineCombination(
+                this.hitSELines[0],
+                this.currentSphereVector
+              );
             }
           } else if (this.hitSESegments.length > 0) {
             // The user selects a segment
             // Has the user previously selected a line or segment
             if (this.targetLines.length === 1) {
-              this.handleNextSegmentLineCombination(this.hitSESegments[0]);
+              this.handleNextSegmentLineCombination(
+                this.hitSESegments[0],
+                this.currentSphereVector
+              );
             } else {
               this.handleNextSegment(this.hitSESegments[0]);
             }
@@ -591,7 +609,12 @@ export default class AngleHandler extends Highlighter {
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (this.targetLines.length === 2) {
-        if (this.makeAngleMarkerFromTwoLines()) {
+        if (
+          this.makeAngleMarkerFromTwoLines([
+            this.lineClickLocation1,
+            this.lineClickLocation2
+          ])
+        ) {
           EventBus.fire("show-alert", {
             key: `handlers.newAngleAdded`,
             keyOptions: {},
@@ -876,6 +899,8 @@ export default class AngleHandler extends Highlighter {
     //clear the arrays and prepare for the next angle
     this.targetPoints.splice(0);
     this.targetLines.splice(0);
+    this.lineClickLocation1.set(0, 0, 0);
+    this.lineClickLocation2.set(0, 0, 0);
     this.targetSegments.splice(0);
     this.pointLocations.splice(0);
     this.sePointOneDimensionalParents.splice(0);
@@ -913,6 +938,8 @@ export default class AngleHandler extends Highlighter {
     //clear the arrays and prepare for the next angle
     this.targetPoints.clear();
     this.targetLines.clear();
+    this.lineClickLocation1.set(0, 0, 0);
+    this.lineClickLocation2.set(0, 0, 0);
     this.targetSegments.clear();
     this.pointLocations.clear();
     this.sePointOneDimensionalParents.clear();
@@ -1121,7 +1148,7 @@ export default class AngleHandler extends Highlighter {
     return true;
   }
 
-  private makeAngleMarkerFromTwoLines(): boolean {
+  private makeAngleMarkerFromTwoLines(lineClickLocations: Vector3[]): boolean {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
@@ -1131,8 +1158,43 @@ export default class AngleHandler extends Highlighter {
           exp.parents[0].name === this.targetLines[0]?.name && // order matters in angles angle from L1 to L2 is different than from L2 to L1
           exp.parents[1].name === this.targetLines[1]?.name
         ) {
-          measurementName = exp.name;
-          return true;
+          // line direction matters too. This allows a user to measure a pair of vertical angles.
+          this.tmpVector // tmpVector is the vertex vector
+            .crossVectors(
+              this.targetLines[0]?.normalVector,
+              this.targetLines[1]?.normalVector
+            )
+            .normalize();
+          if (this.tmpVector.z * lineClickLocations[0].z < 0) {
+            //choose the intersection point that is on the front of the sphere unless the first click was on the back
+            this.tmpVector.multiplyScalar(-1);
+          }
+
+          this.tmpVector1
+            .crossVectors(this.tmpVector, this.targetLines[0]?.normalVector)
+            .normalize();
+
+          this.tmpVector2
+            .crossVectors(this.tmpVector, this.targetLines[1]?.normalVector)
+            .normalize();
+
+          if (
+            (this.tmpVector1.dot(
+              this.targetLines[0]?.closestVector(this.lineClickLocation1)
+            ) < 0 &&
+              exp.firstPointDirectionScalar === -1 &&
+              this.tmpVector.z * exp.vertexVector.z > 0) ||
+            (this.tmpVector1.dot(
+              this.targetLines[0]?.closestVector(this.lineClickLocation1)
+            ) > 0 &&
+              exp.firstPointDirectionScalar === 1 &&
+              this.tmpVector.z * exp.vertexVector.z > 0)
+          ) {
+            measurementName = exp.name;
+            return true;
+          } else {
+            return false;
+          }
         } else {
           return false;
         }
@@ -1161,7 +1223,10 @@ export default class AngleHandler extends Highlighter {
       newAngleMarker,
       AngleMode.LINES,
       this.targetLines[0],
-      this.targetLines[1]
+      this.targetLines[1],
+      undefined,
+      lineClickLocations[0],
+      lineClickLocations[1]
     );
 
     // Create the plottable and model label

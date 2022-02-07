@@ -247,7 +247,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
-    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the segment.
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -599,6 +599,13 @@ export const SETTINGS = {
     radiusScalePercent: 100,
     //The angular distance from the first angle marker arc to the second
     doubleArcGap: 0.05,
+    // Properties of the arrow head see Bill Casselman's PiScript Manual page 30 July 26,2013 11:12AM
+    arrowHeadTipAngleInner: (28 * Math.PI) / 180, // the angle between the shaft and the tip edge (half the whole tip angle) toward the angle marker
+    arrowHeadRearAngleInner: (70 * Math.PI) / 180, // the angle between the shaft and the rear edge (half the whole tip angle) toward the angle marker
+    arrowHeadTipAngleOuter: (28 * Math.PI) / 180, // the angle between the shaft and the tip edge (half the whole tip angle) away from the angle marker
+    arrowHeadRearAngleOuter: (70 * Math.PI) / 180, // the angle between the shaft and the rear edge (half the whole tip angle) away from the angle marker
+    arrowHeadLength: 0.01, // the length of the arrow head on the unit ideal sphere, Must be less than the default radius of angle marker
+    arrowHeadDisplay: true,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {

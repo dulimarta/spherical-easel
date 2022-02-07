@@ -32,6 +32,7 @@ export interface StyleOptions {
   angleMarkerRadiusPercent?: number;
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
+  angleMarkerArrowHeads?: boolean;
 }
 
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
@@ -153,6 +154,7 @@ export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: StyleOptions = {
   reverseDashArray: SETTINGS.angleMarker.drawn.dashArray.reverse.front,
   angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
   angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc,
+  angleMarkerArrowHeads: SETTINGS.angleMarker.arrowHeadDisplay,
   angleMarkerRadiusPercent: 100
 };
 
@@ -162,8 +164,6 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   strokeWidthPercent: 100,
   dashArray: SETTINGS.angleMarker.drawn.dashArray.back,
   reverseDashArray: SETTINGS.angleMarker.drawn.dashArray.reverse.back,
-  angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
-  angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc,
   angleMarkerRadiusPercent: 100,
   dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };

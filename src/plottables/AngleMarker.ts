@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, VertexColors } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -10,7 +10,7 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
+import AppStore, { SEStore } from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -80,6 +80,7 @@ export default class AngleMarker extends Nodule {
   private frontCirclePathTail: Two.Path;
   private backCirclePathStart: Two.Path;
   private backCirclePathTail: Two.Path;
+
   private frontCirclePathDoubleArcStart: Two.Path;
   private frontCirclePathDoubleArcTail: Two.Path;
   private backCirclePathDoubleArcStart: Two.Path;
@@ -89,6 +90,7 @@ export default class AngleMarker extends Nodule {
   private glowingFrontCirclePathTail: Two.Path;
   private glowingBackCirclePathStart: Two.Path;
   private glowingBackCirclePathTail: Two.Path;
+
   private glowingFrontCirclePathDoubleArcStart: Two.Path;
   private glowingFrontCirclePathDoubleArcTail: Two.Path;
   private glowingBackCirclePathDoubleArcStart: Two.Path;
@@ -106,6 +108,14 @@ export default class AngleMarker extends Nodule {
   private glowingBackStraightStart: Two.Path;
   private glowingFrontStraightEnd: Two.Path;
   private glowingBackStraightEnd: Two.Path;
+  /**
+   * The TwoJS object to display the arrow head for beginners.
+   */
+  private frontArrowHeadPath: Two.Path;
+  private backArrowHeadPath: Two.Path;
+  private glowingFrontArrowHeadPath: Two.Path;
+  private glowingBackArrowHeadPath: Two.Path;
+  private angleIsBigEnoughToDrawArrowHeads = true;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
@@ -196,6 +206,9 @@ export default class AngleMarker extends Nodule {
   static currentAngleMarkerRadiusDoubleArc =
     SETTINGS.angleMarker.defaultRadius + SETTINGS.angleMarker.doubleArcGap;
 
+  /** The size of the arrow head needs to scale with the zoom factor */
+  static currentAngleMarkerArrowHeadLength =
+    SETTINGS.angleMarker.arrowHeadLength;
   /**
    * Update all the current stroke widths
    * @param factor The ratio of the current magnification factor over the old magnification factor
@@ -213,16 +226,26 @@ export default class AngleMarker extends Nodule {
 
     AngleMarker.currentAngleMarkerRadius *= factor;
     AngleMarker.currentAngleMarkerRadiusDoubleArc *= factor;
+
+    AngleMarker.currentAngleMarkerArrowHeadLength *= factor;
   }
 
   /**
    * For temporary calculation with ThreeJS objects
    */
   private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   private tmpVectorDA = new Vector3();
   private tmpMatrixDA = new Matrix4();
   private tmpVectorStraight = new Vector3();
+  private tmpArrowHeadTip = new Vector3();
+  private tmpArrowHeadRear = new Vector3();
+  private tmpArrowHeadInner = new Vector3();
+  private tmpArrowHeadOuter = new Vector3();
+  private tmpNormal1 = new Vector3();
+  private tmpNormal2 = new Vector3();
+  private tmpNormal = new Vector3();
 
   constructor() {
     super();
@@ -479,6 +502,52 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
+    // Arrow Head Path Initialize
+    // Create the initial front and back vertices (front/back glowing/not)
+
+    const arrowHeadVertices: Two.Vector[] = [];
+    for (let k = 0; k < 4; k++) {
+      arrowHeadVertices.push(new Two.Vector(0, 0));
+    }
+    this.frontArrowHeadPath = new Two.Path(
+      arrowHeadVertices,
+      /* closed */ true,
+      /* curve */ false
+    );
+
+    // Create the other parts cloning the front arrow head path
+    this.glowingFrontArrowHeadPath = this.frontArrowHeadPath.clone();
+    this.backArrowHeadPath = this.frontArrowHeadPath.clone();
+    this.glowingBackArrowHeadPath = this.frontArrowHeadPath.clone();
+
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontArrowHeadPath.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backArrowHeadPath.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: false,
+      part: ""
+    });
+
+    // Set the style that never changes -- miter & glowing fill
+    this.frontArrowHeadPath.join = "miter";
+    this.backArrowHeadPath.join = "miter";
+    this.glowingFrontArrowHeadPath.join = "miter";
+    this.glowingBackArrowHeadPath.join = "miter";
+    this.glowingFrontArrowHeadPath.noFill();
+    this.glowingBackArrowHeadPath.noFill();
+
+    // The angle marker is not initially glowing
+    this.frontArrowHeadPath.visible = true;
+    this.backArrowHeadPath.visible = true;
+    this.glowingFrontArrowHeadPath.visible = false;
+    this.glowingBackArrowHeadPath.visible = false;
+
     // Now organize the fills
     // In total there are 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
     // anchors a cross all four fill regions.
@@ -558,6 +627,7 @@ export default class AngleMarker extends Nodule {
       DEFAULT_ANGLE_MARKER_BACK_STYLE
     );
   }
+
   /**
    * Map part of a circle in standard position to the location and orientation of the angleMarker
    * This method updates the TwoJS objects (frontCirclePath, , ...) for display
@@ -587,17 +657,13 @@ export default class AngleMarker extends Nodule {
     //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
     transformMatrixCircular.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
     transformMatrixCircularDA.makeBasis(
+      //DA = double arc
       desiredXAxis,
       desiredYAxis,
       desiredZAxis
     );
 
     //Now appropriately translate and scale the circle in standard position to the one in the desired location
-
-    // //Compute the angular/intrinsic radius of the circle
-    // const angleMarkerRadius = this._vertexVector.angleTo(this._startVector);
-
-    // console.log("AM Radius inside update display ", angleMarkerRadius);
 
     // translate along the Z of the local coordinate frame
     // The standard circle plane (z=0) is below the plane of the target circle so translate the plane z=0 to the
@@ -656,6 +722,49 @@ export default class AngleMarker extends Nodule {
     ).modTwoPi();
     // console.log("angularLength", angularLengthOfMarker);
 
+    // adjust drawn angular length (in the circle of the angle marker) if the arrowhead is drawn
+    const miterLength =
+      this.frontArrowHeadPath.linewidth /
+      (2 *
+        SETTINGS.boundaryCircle.radius *
+        Math.sin(
+          (SETTINGS.angleMarker.arrowHeadTipAngleInner +
+            SETTINGS.angleMarker.arrowHeadTipAngleOuter) /
+            2
+        )); // divide by the radius of the boundary circle because miter length with out that is a length on the sphere of radius boundaryCircle.radius.
+    const rearDeltaAngle = Math.atan(
+      Math.tan(AngleMarker.currentAngleMarkerArrowHeadLength + miterLength) /
+        Math.sin(this._angleMarkerRadius)
+    ); // right triangle trigonometry edges: vertex of angle marker to the point on the angle marker so
+    // that the tangent at that point to the circle of the angle marker has length miter length + arrow head
+    // length to the line that is the end of the angle marker. Since this is an angle computation, the radius of
+    // the sphere on which miter length, angle marker radius, and arrow head length don't matter, so
+    // long as they are all on the same size sphere. (miter length, arrow head length, and angle marker radius are all
+    // length on the unit sphere)
+
+    // console.log(
+    //   rearDeltaAngle,
+    //   angularLengthOfMarker,
+    //   miterLength,
+    // this.frontArrowHeadPath.linewidth
+    //   AngleMarker.currentAngleMarkerArrowHeadLength + miterLength,
+    //   Math.tan(AngleMarker.currentAngleMarkerArrowHeadLength + miterLength),
+    //   Math.sin(this._angleMarkerRadius)
+    // );
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    let angularLengthOfMarkerDraw: number;
+    if (
+      angularLengthOfMarker > 2 * rearDeltaAngle &&
+      frontStyle?.angleMarkerArrowHeads &&
+      frontStyle.angleMarkerArrowHeads === true
+    ) {
+      angularLengthOfMarkerDraw = angularLengthOfMarker - rearDeltaAngle;
+      this.angleIsBigEnoughToDrawArrowHeads = true;
+    } else {
+      angularLengthOfMarkerDraw = angularLengthOfMarker;
+      this.angleIsBigEnoughToDrawArrowHeads = false;
+    }
+    //this.angleIsBigEnoughToDrawArrowHeads = false;
     // Bring all the anchor points to a common pool
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
@@ -687,8 +796,7 @@ export default class AngleMarker extends Nodule {
     for (let pos = 0; pos < 2 * CIRCLEEDGESUBDIVISIONS; pos++) {
       // Generate a vector point on the equator of the Default Sphere
       const angle =
-        (pos / (2 * CIRCLEEDGESUBDIVISIONS - 1)) *
-        Math.abs(angularLengthOfMarker);
+        (pos / (2 * CIRCLEEDGESUBDIVISIONS - 1)) * angularLengthOfMarkerDraw;
       this.tmpVector
         .set(Math.cos(angle), Math.sin(angle), 0)
         .multiplyScalar(SETTINGS.boundaryCircle.radius);
@@ -697,7 +805,7 @@ export default class AngleMarker extends Nodule {
       this.tmpVector.applyMatrix4(transformMatrixCircular);
       const thisSign = Math.sign(this.tmpVector.z);
 
-      // CHeck for zero-crossing
+      // Check for zero-crossing
       if (lastSign !== thisSign) {
         // We have a zero crossing
         if (thisSign > 0) {
@@ -749,6 +857,210 @@ export default class AngleMarker extends Nodule {
         glowingActiveBack[negIndex].y = this.tmpVector.y;
         negIndex++;
       }
+    }
+
+    // Compute the arrow head vertices
+
+    // determine the rear arrow head vector
+    // offset from the end of the angle by the angular miter length  plus the angular arrow head length
+    // This is in terms of the angle drawing the angle marker
+    this.tmpArrowHeadRear
+      .set(
+        Math.cos(angularLengthOfMarkerDraw),
+        Math.sin(angularLengthOfMarkerDraw),
+        0
+      )
+      .multiplyScalar(SETTINGS.boundaryCircle.radius)
+      .applyMatrix4(transformMatrixCircular);
+
+    // determine the tip vector of the arrow head
+    // the tip vector is the vector so that the line containing the tip vector and the rear vector is tangent to the
+    // the anglemarker circle and the distance from tip vector to rear vector is  AngleMarker.currentAngleMarkerArrowHeadLength
+
+    this.tmpVector.crossVectors(this.tmpArrowHeadRear, this._vertexVector); // tmpVector is now the normal to the line through the vertex vector and the rear arrow head vector
+    this.tmpVector.cross(this.tmpArrowHeadRear).normalize(); // tmpVector is now the normal to the tangent line to the anglemarker at the arrow head rear
+    this.tmpVector1
+      .crossVectors(this.tmpVector, this.tmpArrowHeadRear)
+      .normalize()
+      .multiplyScalar(SETTINGS.boundaryCircle.radius); // tmpVector1 is the vector in the plane of the tangent to the anglemarker 90 degrees from rear arrow vector. It is the To vector
+
+    this.tmpArrowHeadTip
+      .copy(this.tmpArrowHeadRear)
+      .multiplyScalar(Math.cos(AngleMarker.currentAngleMarkerArrowHeadLength));
+    this.tmpArrowHeadTip.addScaledVector(
+      this.tmpVector1,
+      Math.sin(AngleMarker.currentAngleMarkerArrowHeadLength)
+    );
+
+    // console.log(
+    //   "head length diff",
+    //   this.tmpArrowHeadTip.angleTo(this.tmpArrowHeadRear) -
+    //     AngleMarker.currentAngleMarkerArrowHeadLength
+    // );
+
+    // Now determine the other two vertices of the arrow head
+    this.tmpNormal
+      .crossVectors(this.tmpArrowHeadRear, this.tmpArrowHeadTip)
+      .normalize(); // normal to the line from tip to rear of arrowhead
+    this.tmpNormal1
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadTip)
+      .normalize(); // a vector 90 degrees from the tip vector in the opposite direction of the rear vector
+
+    this.tmpNormal1
+      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadTipAngleInner))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(SETTINGS.angleMarker.arrowHeadTipAngleInner)
+      ); // this.tmpNormal1 is the vector that normal to the plane containing the tip vector that is at angle arrowHeadTipAngle from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle A diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal1) -
+    //     SETTINGS.angleMarker.arrowHeadTipAngleInner
+    // );
+
+    this.tmpNormal2
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadRear)
+      .normalize(); // a vector 90 degrees from the rear vector in the direction of the tip vector
+
+    this.tmpNormal2
+      .multiplyScalar(Math.sin(SETTINGS.angleMarker.arrowHeadRearAngleInner))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(SETTINGS.angleMarker.arrowHeadRearAngleInner)
+      ); // this.tmpNormal2 is the vector that normal to the plane containing the rear vector that is at angle arrowHeadRearAngle from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle B diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal2) -
+    //     SETTINGS.angleMarker.arrowHeadRearAngleInner
+    // );
+
+    this.tmpArrowHeadInner
+      .crossVectors(this.tmpNormal1, this.tmpNormal2)
+      .normalize()
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+    // make sure that the first arrow head 1 vector is near the tip
+
+    if (this.tmpArrowHeadTip.dot(this.tmpArrowHeadInner) < 0) {
+      this.tmpArrowHeadInner.multiplyScalar(-1);
+    }
+
+    //OLD
+    // now compute the other, second, arrow head vector by reflecting this.tmpArrowHead1 through the plane containing tip and rear vectors
+    // this.tmpArrowHeadOuter.copy(this.tmpArrowHeadInner);
+    // this.tmpArrowHeadOuter
+    //   .normalize()
+    //   .addScaledVector(
+    //     this.tmpNormal,
+    //     (-2 * this.tmpArrowHeadInner.dot(this.tmpNormal)) /
+    //       SETTINGS.boundaryCircle.radius
+    //   )
+    //   .normalize()
+    //   .multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+    // Now determine the other vertex of the arrow head
+    this.tmpNormal1
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadTip)
+      .normalize(); // a vector 90 degrees from the tip vector in the opposite direction of the rear vector
+
+    this.tmpNormal1
+      .multiplyScalar(Math.sin(-SETTINGS.angleMarker.arrowHeadTipAngleOuter))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(-SETTINGS.angleMarker.arrowHeadTipAngleOuter)
+      ); // this.tmpNormal1 is the vector that normal to the plane containing the tip vector that is at angle arrowHeadTipAngleOuter from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle A diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal1) -
+    //     SETTINGS.angleMarker.arrowHeadTipAngle
+    // );
+
+    this.tmpNormal2
+      .crossVectors(this.tmpNormal, this.tmpArrowHeadRear)
+      .normalize(); // a vector 90 degrees from the rear vector in the direction of the tip vector
+
+    this.tmpNormal2
+      .multiplyScalar(Math.sin(-SETTINGS.angleMarker.arrowHeadRearAngleOuter))
+      .addScaledVector(
+        this.tmpNormal,
+        Math.cos(-SETTINGS.angleMarker.arrowHeadRearAngleOuter)
+      ); // this.tmpNormal2 is the vector that normal to the plane containing the rear vector that is at angle arrowHeadRearAngle from the plane containing the tip and rear vectors
+
+    // console.log(
+    //   "angle B diff",
+    //   this.tmpNormal.angleTo(this.tmpNormal2) -
+    //     SETTINGS.angleMarker.arrowHeadRearAngle
+    // );
+
+    this.tmpArrowHeadOuter
+      .crossVectors(this.tmpNormal1, this.tmpNormal2)
+      .normalize()
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+    // make sure that the first arrow head 1 vector is near the tip
+
+    if (this.tmpArrowHeadTip.dot(this.tmpArrowHeadOuter) < 0) {
+      this.tmpArrowHeadOuter.multiplyScalar(-1);
+    }
+
+    // determine if the arrow head is on the front or the back of the sphere. This is
+    // determine by the z coordinate of the tip of the vector. The arrow should be so small that it
+    // doesn't matter if some of the vertices are on the front and some on the back. They will be lost in the
+    // thickness of the boundary circle
+
+    if (Math.sign(this.tmpArrowHeadTip.z) > 0) {
+      // the arrow head is on the front
+      this.frontArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
+      this.frontArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
+
+      this.frontArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.frontArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
+
+      this.frontArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
+      this.frontArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
+
+      this.frontArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.frontArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
+
+      // set the glowing front arrow head
+      this.glowingFrontArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
+      this.glowingFrontArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
+
+      this.glowingFrontArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.glowingFrontArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
+
+      this.glowingFrontArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
+      this.glowingFrontArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
+
+      this.glowingFrontArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.glowingFrontArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
+    } else {
+      // the arrow head is on the back
+      this.backArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
+      this.backArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
+
+      this.backArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.backArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
+
+      this.backArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
+      this.backArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
+
+      this.backArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.backArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
+
+      // set the glowing back arrow head
+      this.glowingBackArrowHeadPath.vertices[0].x = this.tmpArrowHeadTip.x;
+      this.glowingBackArrowHeadPath.vertices[0].y = this.tmpArrowHeadTip.y;
+
+      this.glowingBackArrowHeadPath.vertices[1].x = this.tmpArrowHeadInner.x;
+      this.glowingBackArrowHeadPath.vertices[1].y = this.tmpArrowHeadInner.y;
+
+      this.glowingBackArrowHeadPath.vertices[2].x = this.tmpArrowHeadRear.x;
+      this.glowingBackArrowHeadPath.vertices[2].y = this.tmpArrowHeadRear.y;
+
+      this.glowingBackArrowHeadPath.vertices[3].x = this.tmpArrowHeadOuter.x;
+      this.glowingBackArrowHeadPath.vertices[3].y = this.tmpArrowHeadOuter.y;
     }
 
     // Now do the same thing for the DoubleArc(DA) Paths
@@ -1968,6 +2280,18 @@ export default class AngleMarker extends Nodule {
       this.glowingFrontCirclePathDoubleArcStart.visible = false;
       this.glowingFrontCirclePathDoubleArcTail.visible = false;
     }
+
+    if (
+      frontStyle?.angleMarkerArrowHeads &&
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads === true
+    ) {
+      this.frontArrowHeadPath.visible = true;
+      this.glowingFrontArrowHeadPath.visible = true;
+    } else {
+      this.frontArrowHeadPath.visible = false;
+      this.glowingFrontArrowHeadPath.visible = false;
+    }
   }
   backGlowingDisplay(): void {
     this.backCirclePathStart.visible = true;
@@ -1983,10 +2307,12 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = true;
     this.glowingBackStraightEnd.visible = true;
 
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    // Double arc display on the back side is the same as the display on the front.
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     if (
-      backStyle?.angleMarkerDoubleArc &&
-      backStyle.angleMarkerDoubleArc === true
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
     ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
@@ -1997,6 +2323,18 @@ export default class AngleMarker extends Nodule {
       this.backCirclePathDoubleArcTail.visible = false;
       this.glowingBackCirclePathDoubleArcStart.visible = false;
       this.glowingBackCirclePathDoubleArcTail.visible = false;
+    }
+
+    if (
+      frontStyle?.angleMarkerArrowHeads &&
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads === true
+    ) {
+      this.backArrowHeadPath.visible = true;
+      this.glowingBackArrowHeadPath.visible = true;
+    } else {
+      this.backArrowHeadPath.visible = false;
+      this.glowingBackArrowHeadPath.visible = false;
     }
   }
   glowingDisplay(): void {
@@ -2033,6 +2371,17 @@ export default class AngleMarker extends Nodule {
       this.glowingFrontCirclePathDoubleArcStart.visible = false;
       this.glowingFrontCirclePathDoubleArcTail.visible = false;
     }
+    if (
+      frontStyle?.angleMarkerArrowHeads &&
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads
+    ) {
+      this.frontArrowHeadPath.visible = true;
+      this.glowingFrontArrowHeadPath.visible = false;
+    } else {
+      this.frontArrowHeadPath.visible = false;
+      this.glowingFrontArrowHeadPath.visible = false;
+    }
   }
   backNormalDisplay(): void {
     this.backCirclePathStart.visible = true;
@@ -2048,10 +2397,13 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    // Double arc display on the back side is the same as the display on the front.
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+
     if (
-      backStyle?.angleMarkerDoubleArc &&
-      backStyle.angleMarkerDoubleArc === true
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
     ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
@@ -2062,6 +2414,18 @@ export default class AngleMarker extends Nodule {
       this.backCirclePathDoubleArcTail.visible = false;
       this.glowingBackCirclePathDoubleArcStart.visible = false;
       this.glowingBackCirclePathDoubleArcTail.visible = false;
+    }
+
+    if (
+      frontStyle?.angleMarkerArrowHeads &&
+      frontStyle.angleMarkerArrowHeads === true &&
+      this.angleIsBigEnoughToDrawArrowHeads
+    ) {
+      this.backArrowHeadPath.visible = true;
+      this.glowingBackArrowHeadPath.visible = false;
+    } else {
+      this.backArrowHeadPath.visible = false;
+      this.glowingBackArrowHeadPath.visible = false;
     }
   }
   normalDisplay(): void {
@@ -2104,6 +2468,11 @@ export default class AngleMarker extends Nodule {
       this.glowingFrontCirclePathDoubleArcTail.visible = false;
       this.glowingBackCirclePathDoubleArcStart.visible = false;
       this.glowingBackCirclePathDoubleArcTail.visible = false;
+
+      this.frontArrowHeadPath.visible = false;
+      this.backArrowHeadPath.visible = false;
+      this.glowingFrontArrowHeadPath.visible = false;
+      this.glowingBackArrowHeadPath.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -2229,6 +2598,21 @@ export default class AngleMarker extends Nodule {
     dup.glowingBackCirclePathDoubleArcTail.rotation = this.glowingBackCirclePathDoubleArcTail.rotation;
     dup.glowingBackCirclePathDoubleArcTail.translation.copy(
       this.glowingBackCirclePathDoubleArcTail.translation
+    );
+
+    dup.frontArrowHeadPath.rotation = this.frontArrowHeadPath.rotation;
+    dup.frontArrowHeadPath.translation.copy(
+      this.frontArrowHeadPath.translation
+    );
+    dup.backArrowHeadPath.rotation = this.backArrowHeadPath.rotation;
+    dup.backArrowHeadPath.translation.copy(this.backArrowHeadPath.translation);
+    dup.glowingFrontArrowHeadPath.rotation = this.glowingFrontArrowHeadPath.rotation;
+    dup.glowingFrontArrowHeadPath.translation.copy(
+      this.glowingFrontArrowHeadPath.translation
+    );
+    dup.glowingBackArrowHeadPath.rotation = this.glowingBackArrowHeadPath.rotation;
+    dup.glowingBackArrowHeadPath.translation.copy(
+      this.glowingBackArrowHeadPath.translation
     );
 
     // The clone (i.e. dup) initially has equal number of vertices for the front and back path
@@ -2527,6 +2911,23 @@ export default class AngleMarker extends Nodule {
       v.copy(this.backFill2.vertices[pos]);
     });
 
+    dup.frontArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.frontArrowHeadPath.vertices[pos]);
+    });
+    dup.backArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.backArrowHeadPath.vertices[pos]);
+    });
+    dup.glowingFrontArrowHeadPath.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingFrontArrowHeadPath.vertices[pos]);
+      }
+    );
+    dup.glowingBackArrowHeadPath.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingBackArrowHeadPath.vertices[pos]);
+      }
+    );
+
     return dup as this;
   }
   /**
@@ -2536,13 +2937,31 @@ export default class AngleMarker extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
-    // this.frontFill.addTo(layers[LAYER.foreground]);
+    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
+
+    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontStraightStart.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+
+    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontStraightEnd.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+
+    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontCirclePathTail.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+
     this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
     this.glowingFrontCirclePathStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
-    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontStraightStart.addTo(
+
+    this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontArrowHeadPath.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
 
@@ -2553,15 +2972,41 @@ export default class AngleMarker extends Nodule {
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
 
-    // this.backFill.addTo(layers[LAYER.background]);
-    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePathStart.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
+    this.frontCirclePathDoubleArcTail.addTo(
+      layers[LAYER.foregroundAngleMarkers]
     );
+    this.glowingFrontCirclePathDoubleArcTail.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+
+    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
+
     this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
     this.glowingBackStraightStart.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
+
+    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackStraightEnd.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+
+    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackCirclePathStart.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+
+    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackCirclePathTail.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+
+    this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackArrowHeadPath.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+
     this.backCirclePathDoubleArcStart.addTo(
       layers[LAYER.backgroundAngleMarkers]
     );
@@ -2569,49 +3014,27 @@ export default class AngleMarker extends Nodule {
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
 
-    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontCirclePathTail.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontStraightEnd.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-    this.frontCirclePathDoubleArcTail.addTo(
-      layers[LAYER.foregroundAngleMarkers]
-    );
-    this.glowingFrontCirclePathDoubleArcTail.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-    // this.backFill.addTo(layers[LAYER.background]);
-    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePathTail.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackStraightEnd.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
     this.backCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkers]
     );
     this.glowingBackCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
-    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
   }
   removeFromLayers(): void {
+    this.frontArrowHeadPath.remove();
     this.frontCirclePathStart.remove();
     this.frontCirclePathDoubleArcStart.remove();
-    // this.frontFill.remove();
+
+    this.glowingFrontArrowHeadPath.remove();
     this.glowingFrontCirclePathStart.remove();
     this.glowingFrontCirclePathDoubleArcStart.remove();
+
+    this.backArrowHeadPath.remove();
     this.backCirclePathStart.remove();
     this.backCirclePathDoubleArcStart.remove();
-    // this.backFill.remove();
+
+    this.glowingBackArrowHeadPath.remove();
     this.glowingBackCirclePathStart.remove();
     this.glowingBackCirclePathDoubleArcStart.remove();
 
@@ -2619,6 +3042,7 @@ export default class AngleMarker extends Nodule {
     this.frontCirclePathDoubleArcTail.remove();
     this.glowingFrontCirclePathTail.remove();
     this.glowingFrontCirclePathDoubleArcTail.remove();
+
     this.backCirclePathTail.remove();
     this.backCirclePathDoubleArcTail.remove();
     this.glowingBackCirclePathTail.remove();
@@ -2649,7 +3073,6 @@ export default class AngleMarker extends Nodule {
     super.updateStyle(mode, options);
     this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
   }
-
   /**
    * Return the default style state
    */
@@ -2688,6 +3111,11 @@ export default class AngleMarker extends Nodule {
         frontStrokeWidthPercent) /
       100;
 
+    this.frontArrowHeadPath.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
+        frontStrokeWidthPercent) /
+      100;
+
     this.frontCirclePathTail.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
         frontStrokeWidthPercent) /
@@ -2704,6 +3132,13 @@ export default class AngleMarker extends Nodule {
       100;
 
     this.backCirclePathStart.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
+      100;
+
+    this.backArrowHeadPath.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -2735,6 +3170,10 @@ export default class AngleMarker extends Nodule {
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
         frontStrokeWidthPercent) /
       100;
+    this.glowingFrontArrowHeadPath.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
+        frontStrokeWidthPercent) /
+      100;
 
     this.glowingFrontCirclePathTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
@@ -2752,6 +3191,13 @@ export default class AngleMarker extends Nodule {
       100;
 
     this.glowingBackCirclePathStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
+      100;
+
+    this.glowingBackArrowHeadPath.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -2848,7 +3294,6 @@ export default class AngleMarker extends Nodule {
     // finally update the display
     this.updateDisplay();
   }
-
   /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the angle marker
    *
@@ -2891,6 +3336,8 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathTail.noStroke();
           this.frontStraightStart.noStroke();
           this.frontStraightEnd.noStroke();
+          this.frontArrowHeadPath.noStroke();
+          this.frontArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
         } else {
           this.frontCirclePathStart.stroke =
             SETTINGS.angleMarker.temp.strokeColor.front;
@@ -2900,6 +3347,10 @@ export default class AngleMarker extends Nodule {
             SETTINGS.angleMarker.temp.strokeColor.front;
           this.frontStraightEnd.stroke =
             SETTINGS.angleMarker.temp.strokeColor.front;
+          this.frontArrowHeadPath.stroke =
+            SETTINGS.angleMarker.temp.strokeColor.front;
+          this.frontArrowHeadPath.fill =
+            SETTINGS.angleMarker.temp.strokeColor.front; // arrow head fill is the same as the stroke of the circle path
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.frontCirclePathStart.linewidth =
@@ -2910,6 +3361,8 @@ export default class AngleMarker extends Nodule {
           AngleMarker.currentAngleMarkerStraightStrokeWidthFront;
         this.frontStraightEnd.linewidth =
           AngleMarker.currentAngleMarkerStraightStrokeWidthFront;
+        this.backArrowHeadPath.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
         if (
           SETTINGS.angleMarker.drawn.dashArray.front.length > 0 &&
@@ -2955,6 +3408,8 @@ export default class AngleMarker extends Nodule {
           this.backCirclePathTail.noStroke();
           this.backStraightStart.noStroke();
           this.backStraightEnd.noStroke();
+          this.backArrowHeadPath.noStroke();
+          this.backArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
         } else {
           this.backCirclePathStart.stroke =
             SETTINGS.angleMarker.temp.strokeColor.back;
@@ -2964,6 +3419,10 @@ export default class AngleMarker extends Nodule {
             SETTINGS.angleMarker.temp.strokeColor.back;
           this.backStraightEnd.stroke =
             SETTINGS.angleMarker.temp.strokeColor.back;
+          this.backArrowHeadPath.stroke =
+            SETTINGS.angleMarker.temp.strokeColor.back;
+          this.backArrowHeadPath.fill =
+            SETTINGS.angleMarker.temp.strokeColor.back; // arrow head fill is the same as the stroke of the circle path
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.backCirclePathStart.linewidth =
@@ -2974,6 +3433,8 @@ export default class AngleMarker extends Nodule {
           AngleMarker.currentAngleMarkerStraightStrokeWidthBack;
         this.backStraightEnd.linewidth =
           AngleMarker.currentAngleMarkerStraightStrokeWidthBack;
+        this.backArrowHeadPath.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
         if (
           SETTINGS.angleMarker.drawn.dashArray.back.length > 0 &&
@@ -2998,6 +3459,8 @@ export default class AngleMarker extends Nodule {
         this.glowingBackStraightStart.visible = false;
         this.glowingFrontCirclePathDoubleArcStart.visible = false;
         this.glowingBackCirclePathDoubleArcStart.visible = false;
+        this.glowingFrontArrowHeadPath.visible = false;
+        this.glowingBackArrowHeadPath.visible = false;
 
         this.glowingFrontCirclePathTail.visible = false;
         this.glowingBackCirclePathTail.visible = false;
@@ -3040,6 +3503,8 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathTail.noStroke();
           this.frontStraightEnd.noStroke();
           this.frontCirclePathDoubleArcTail.noStroke();
+          this.frontArrowHeadPath.noStroke();
+          this.frontArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
         } else {
           this.frontCirclePathStart.stroke = frontStyle?.strokeColor ?? "black";
           this.frontStraightStart.stroke = frontStyle?.strokeColor ?? "black";
@@ -3049,6 +3514,8 @@ export default class AngleMarker extends Nodule {
           this.frontStraightEnd.stroke = frontStyle?.strokeColor ?? "black";
           this.frontCirclePathDoubleArcTail.stroke =
             frontStyle?.strokeColor ?? "black";
+          this.frontArrowHeadPath.stroke = frontStyle?.strokeColor ?? "black";
+          this.frontArrowHeadPath.fill = frontStyle?.strokeColor ?? "black"; // arrow head fill is the same as the stroke of the circle path
         }
         // strokeWidthPercent is applied by adjustSize()
         if (
@@ -3143,6 +3610,8 @@ export default class AngleMarker extends Nodule {
             this.backCirclePathTail.noStroke();
             this.backStraightEnd.noStroke();
             this.backCirclePathDoubleArcTail.noStroke();
+            this.backArrowHeadPath.noStroke();
+            this.backArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
           } else {
             this.backCirclePathStart.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
@@ -3162,6 +3631,13 @@ export default class AngleMarker extends Nodule {
             this.backCirclePathDoubleArcTail.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
+
+            this.backArrowHeadPath.stroke = Nodule.contrastStrokeColor(
+              frontStyle?.strokeColor ?? "black"
+            );
+            this.backArrowHeadPath.fill = Nodule.contrastStrokeColor(
+              frontStyle?.strokeColor ?? "black" // arrow head fill is the same as the stroke of the circle path
+            );
           }
         } else {
           if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
@@ -3171,6 +3647,8 @@ export default class AngleMarker extends Nodule {
             this.backCirclePathTail.noStroke();
             this.backStraightEnd.noStroke();
             this.backCirclePathDoubleArcTail.noStroke();
+            this.backArrowHeadPath.noStroke();
+            this.backArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
           } else {
             this.backCirclePathStart.stroke = backStyle?.strokeColor ?? "black";
             this.backStraightStart.stroke = backStyle?.strokeColor ?? "black";
@@ -3180,6 +3658,8 @@ export default class AngleMarker extends Nodule {
             this.backStraightEnd.stroke = backStyle?.strokeColor ?? "black";
             this.backCirclePathDoubleArcTail.stroke =
               backStyle?.strokeColor ?? "black";
+            this.backArrowHeadPath.stroke = backStyle?.strokeColor ?? "black";
+            this.backArrowHeadPath.fill = backStyle?.strokeColor ?? "black"; // arrow head fill is the same as the stroke of the circle path
           }
         }
 
@@ -3229,6 +3709,7 @@ export default class AngleMarker extends Nodule {
         this.glowingFrontCirclePathTail.stroke = this.glowingStrokeColorFront;
         this.glowingFrontStraightEnd.stroke = this.glowingStrokeColorFront;
         this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontArrowHeadPath.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
         if (
@@ -3271,6 +3752,7 @@ export default class AngleMarker extends Nodule {
         this.glowingBackCirclePathTail.stroke = this.glowingStrokeColorBack;
         this.glowingBackStraightEnd.stroke = this.glowingStrokeColorBack;
         this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
+        this.glowingBackArrowHeadPath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
         if (

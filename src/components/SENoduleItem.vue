@@ -441,6 +441,8 @@ export default class SENoduleItem extends Vue {
       this.node.parents[0].markKidsOutOfDate();
       this.node.parents[0].update();
     }
+    this.visibilityUpdateKey += 1;
+    this.labelVisibilityUpdateKey += 1;
   }
 
   @Watch("parametricTime")

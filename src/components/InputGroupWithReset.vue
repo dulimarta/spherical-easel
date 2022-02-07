@@ -63,7 +63,6 @@ export default class InputGroup extends Vue {
     EventBus.listen(
       "update-input-group-with-selector",
       (ev: { inputSelector: string }): void => {
-        console.log("key", this.inputSelector, this.componentKey);
         if (this.inputSelector === ev.inputSelector) {
           this.componentKey += 1;
         }

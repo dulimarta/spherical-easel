@@ -42,18 +42,24 @@ export class RotationVisitor implements Visitor {
   actionOnLine(m: SELine): void {
     // lines depend on two two points that are on them and, if the points are antipodal, the normal vector
     // The points are updated by the action on point, so we don't worry about them
-    this.tmpVector.copy(m.normalVector); // Copy the old vector location of the SEPoint
-    this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-    m.normalVector = this.tmpVector;
+    // only update in this way if the points defining the line are nearly antipodal (otherwise the points will do the updating)
+    if (m.nearlyAntipodal) {
+      this.tmpVector.copy(m.normalVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      m.normalVector = this.tmpVector;
+    }
   }
 
   actionOnSegment(s: SESegment): void {
     // segment depend on two two points that are on them and, if the points are antipodal, the normal
     // vector (and the length, but that is unaffected by a rotation so remains the same)
     // The points are updated by the action on point, so we don't worry about them
-    this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
-    this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-    s.normalVector = this.tmpVector;
+    // only update in this way if the points are nearly antipodal (otherwise the points will do the updating)
+    if (s.nearlyAntipodal) {
+      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.normalVector = this.tmpVector;
+    }
   }
 
   // eslint-disable-next-line

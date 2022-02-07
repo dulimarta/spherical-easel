@@ -750,12 +750,45 @@ export default class PolygonHandler extends Highlighter {
 
       // make sure that this pair of segments has not been measured already
       const oldAngleMarker = SEStore.expressions.find(exp => {
-        if (
-          exp instanceof SEAngleMarker &&
-          exp.parents[0].name === seg0?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
-          exp.parents[1].name === seg1?.name
-        ) {
-          return true;
+        if (exp instanceof SEAngleMarker) {
+          if (exp.angleMode === AngleMode.SEGMENTS) {
+            if (
+              exp.parents[0].name === seg0?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
+              exp.parents[1].name === seg1?.name
+            ) {
+              return true;
+            } else {
+              return false;
+            }
+          } else if (exp.angleMode === AngleMode.POINTS) {
+            // now figure out if the angle was measured using points
+            const seg0Flipped = this.segmentIsFlipped[
+              (((index - 1) % n) + n) % n
+            ];
+            const seg1Flipped = this.segmentIsFlipped[((index % n) + n) % n];
+
+            const startPointName = seg0Flipped
+              ? seg0.endSEPoint.name
+              : seg0.startSEPoint.name;
+            const endPointName = seg1Flipped
+              ? seg1.startSEPoint.name
+              : seg1.endSEPoint.name;
+            console.log(
+              startPointName,
+              endPointName,
+              exp.parents[0].name,
+              exp.parents[1].name,
+              exp.parents[2].name
+            );
+            if (
+              exp.parents[0].name === startPointName && // order matters in angles angle from S1 to S2 is different than from S2 to S1
+              exp.parents[2].name === endPointName
+            ) {
+              return true;
+            } else {
+              return false;
+            }
+          }
         } else {
           return false;
         }

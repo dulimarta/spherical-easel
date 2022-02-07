@@ -384,11 +384,31 @@ export default class SphereFrame extends VueComponent {
     let newMagFactor = currentMagFactor;
     // Set the next magnification factor. Positive scroll fraction means zoom out, negative zoom in.
     if (scrollFraction < 0) {
-      if (currentMagFactor < SETTINGS.zoom.minMagnification) return;
+      if (currentMagFactor < SETTINGS.zoom.minMagnification) {
+        console.error(
+          `Exceeded zoom out limit ${SETTINGS.zoom.maxMagnification}`
+        );
+        EventBus.fire("show-alert", {
+          key: `handlers.panZoomHandlerZoomOutLimitReached`,
+          keyOptions: {},
+          type: "warning"
+        });
+        return;
+      }
       newMagFactor = (1 - Math.abs(scrollFraction)) * currentMagFactor;
     }
     if (scrollFraction > 0) {
-      if (currentMagFactor > SETTINGS.zoom.maxMagnification) return;
+      if (currentMagFactor > SETTINGS.zoom.maxMagnification) {
+        console.error(
+          `Exceeded zoom in limit ${SETTINGS.zoom.minMagnification}`
+        );
+        EventBus.fire("show-alert", {
+          key: `handlers.panZoomHandlerZoomInLimitReached`,
+          keyOptions: {},
+          type: "warning"
+        });
+        return;
+      }
       newMagFactor = (1 + scrollFraction) * currentMagFactor;
     }
     // Get the current translation vector to allow us to untransform the CSS transformation

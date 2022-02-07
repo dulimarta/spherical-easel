@@ -194,7 +194,6 @@ export default {
     ellipses: "Ellipses | Ellipse |ellipse",
     parametrics: "Parametrics | Parametric |parametric"
   },
-
   style: {
     dashArrayReverse: "Switch Dash and Gap",
     dashPatternReverseArrayToolTip:
@@ -375,7 +374,8 @@ export default {
     objectVisible: "Object Visible",
 
     cannotSelectLabels:
-      "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel."
+      "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel.",
+    angleMarkerArrowHeads: "Arrow Head"
   },
   handlers: {
     nEqualOneAngleNSect:
@@ -505,7 +505,6 @@ export default {
       "Mouse location determines the rotation. No object selected to rotate about.",
     rotationAboutEquator: "Rotating about the north pole of the screen sphere."
   },
-
   objectTree: {
     aMidLineOf: "The line bisecting angle {angle}.",
     anNsectLineOf:
@@ -639,7 +638,6 @@ export default {
     unableToComputeTheDerivativeOf:
       "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}"
   },
-
   constructions: {
     save: "Save",
     cancel: "Cancel",
