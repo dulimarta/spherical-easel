@@ -149,9 +149,8 @@ export default class DeleteHandler extends Highlighter {
             deletedObjectIDs.push(seNoduleID);
 
             // Get the SENodule via the beforeState
-            const seNoduleBeforeState = this.beforeDeleteStateMap.get(
-              seNoduleID
-            );
+            const seNoduleBeforeState =
+              this.beforeDeleteStateMap.get(seNoduleID);
 
             if (seNoduleBeforeState !== undefined) {
               if (
@@ -201,6 +200,9 @@ export default class DeleteHandler extends Highlighter {
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
     victim.update(this.beforeDeleteStateMap, this.beforeDeleteSENoduleIDList);
 
+    // this.beforeDeleteStateMap.forEach(n => console.log(n.kind, n.object.id));
+    // this.beforeDeleteSENoduleIDList.forEach(n => console.log(n));
+
     const deleteCommandGroup = new CommandGroup();
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
     // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
@@ -215,12 +217,18 @@ export default class DeleteHandler extends Highlighter {
           seNoduleBeforeState.object instanceof SEIntersectionPoint &&
           (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
         ) {
-          // don't delete a user created intersection point, covert it back to not user created.
+          // to delete a user created intersection point, first convert it back to not user created then possibly delete it.
           deleteCommandGroup.addCommand(
             new ConvertUserCreatedInterToNotUserCreatedCommand(
               seNoduleBeforeState.object
             )
           );
+          // only delete the user created point if it is child of the victim. If it is the victim do not delete it. If we didn't do this then deleting a user created intersection the only way to create it again would be to undo the delete
+          if (seNoduleBeforeState.object.id !== victim.id) {
+            deleteCommandGroup.addCommand(
+              new DeleteNoduleCommand(seNoduleBeforeState.object)
+            );
+          }
         } else {
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)
