@@ -19,7 +19,8 @@ const sampleData = () => {
       objectCount: 1,
       parsedScript: [],
       previewData: "data:image/png," + k,
-      sphereRotationMatrix: new Matrix4()
+      sphereRotationMatrix: new Matrix4(),
+      tools: [] /* FIXME */
     });
   }
   return arr;
