@@ -3,10 +3,9 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
-import { makePoint } from "./sphereframe-helper";
 import {
     TEST_MOUSE_X, TEST_MOUSE_Y,
-    drawPointAt, dragMouse,
+    makePoint, dragMouse, drawOneDimensional
   } from "./sphereframe-helper";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
@@ -44,11 +43,32 @@ describe("SphereFrame: Move Tool", () => {
       expect(p.locationVector).not.toEqual(initialLoc);
     }
 
-    it("moves a point on the sphere in Move mode", async () => {
+    it("moves a point in Move mode", async () => {
       for (const pt1 of [true, false])
         for (const pt2 of [true, false]) {
           SEStore.init();
           await movePointTest(pt1, pt2);
       }
     });
+  
+    it("moves a line in Move mode", async () => {
+      // (1) Create a line
+      const prevLineCount = SEStore.seLines.length;
+      await drawOneDimensional(wrapper, "line", -79, 173, true, 93, 127, true);
+      expect(SEStore.seLines.length).toEqual(prevLineCount + 1);
+      const aLine = SEStore.seLines[prevLineCount];
+
+      // (2) Move the line
+      SEStore.setActionMode({
+        id: "move",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+      const line = aLine.closestVector(new Vector3(0, 0, 1));
+      const startPos = new Vector3(line.x, line.y, line.z);
+      await dragMouse(wrapper, startPos.x * R, startPos.y * R, true, (startPos.x * R) + 10, (startPos.y * R) + 10, startPos.z < 0);
+      await wrapper.vm.$nextTick();
+      const endPos = new Vector3(line.x, line.y, line.z);
+      expect(endPos).not.toEqual(startPos);
+      });
   });
