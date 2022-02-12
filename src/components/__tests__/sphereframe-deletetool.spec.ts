@@ -408,14 +408,17 @@ describe("SphereFrame: Delete Tool", () => {
   });
 
   //for this variation of deleting circles, we will make two connected circles
-  //as well as a cross where the circles connect and a point at the intersection of the cross, followed by deleting everything
-  //DISCLAIMER: The coordinates may need adjusting for this to test properly
+  //as well as a cross where the circles union and a point at the intersection of the cross
+  //followed by deleting two circles and checking if they got deleted
   it("deletes circles when clicking on the circle (part 2)", async () => {
     async function runDeleteCircleTestVariation3(
       isPt1Foreground: boolean,
       isPt2Foreground: boolean
     ): Promise<void> {
+      //store number of circles
       const prevCircleCount = SEStore.seCircles.length;
+
+      //draw 2 circles with 2 perpendicular line segments in their union and a point where those lines intersect
       await drawOneDimensional(
         wrapper,
         "circle",
@@ -456,40 +459,63 @@ describe("SphereFrame: Delete Tool", () => {
          104.20274438609354,
          isPt2Foreground,
       );
-      await drawOneDimensional(
+      await SEStore.setActionMode({
+        id: "pointOnObject",
+        name: "Tool Name does not matter"
+      });
+      await mouseClickOnSphere(
         wrapper,
-        "point",
-        100,
-        100,
-        isPt1Foreground,
-        100,
-        200,
-        isPt2Foreground
+        104.00929959078515,
+        156.0139493861777,
+        false
       );
+
+      //store current circle length and make sure it is 2 more than previous one
       const newCircleCount = SEStore.seCircles.length;
       expect(newCircleCount).toEqual(prevCircleCount + 2);
-      const aCircle = SEStore.seCircles[prevCircleCount];
+      var aCircle = SEStore.seCircles[prevCircleCount];
+
+      // Calculate a different point on circle 1
+      var target = new Vector3().copy(aCircle.circleSEPoint.locationVector);
+      target.applyAxisAngle(
+        aCircle.centerSEPoint.locationVector,
+        Math.PI * 0.1
+      );
+      var R = SETTINGS.boundaryCircle.radius;
+      var prevPointCount = SEStore.sePoints.length;
+      //delete circle 1
       SEStore.setActionMode({
         id: "delete",
         name: "Tool Name does not matter"
       });
       await wrapper.vm.$nextTick();
-      /* The segment is on the right hemisphere so the first point location will
-      dictate the click position */
-      const pointOn = aCircle.closestVector(new Vector3(0, 0, 1));
-      //delete second circle first (should cause delete tool to not work on second circle [Feb. 2, 2022])
       await mouseClickOnSphere(
         wrapper,
-        300,
-        200,
-        pointOn.z < 0
+        target.x * R,
+        target.y * R,
+        target.z < 0
       );
+      //check that one circle was deleted
+      expect(SEStore.seCircles.length).toEqual(prevCircleCount + 1);
+
+      aCircle = SEStore.seCircles[prevCircleCount];
+      // Calculate a different point on circle 2
+      target = new Vector3().copy(aCircle.circleSEPoint.locationVector);
+      target.applyAxisAngle(
+        aCircle.centerSEPoint.locationVector,
+        Math.PI * 0.1
+      );
+      R = SETTINGS.boundaryCircle.radius;
+      prevPointCount = SEStore.sePoints.length;
+      //delete circle 2
+      await wrapper.vm.$nextTick();
       await mouseClickOnSphere(
         wrapper,
-        100,
-        100,
-        pointOn.z < 0
+        target.x * R,
+        target.y * R,
+        target.z < 0
       );
+      //check that both circles were deleted
       expect(SEStore.seCircles.length).toEqual(prevCircleCount);
     }
 
