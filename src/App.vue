@@ -19,8 +19,6 @@
       dark
       dense
       clipped-left>
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
@@ -55,7 +53,23 @@
       </div>
 
       <v-spacer></v-spacer>
+      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
+      <v-app-bar-nav-icon>
+      <div class="d-flex align-right">
+        <router-link to="/">
+          <v-img alt="Export Image"
+            class="shrink mr-2"
+            contain
+            src="../docs/.vuepress/public/export.png"
+            transition="scale-transition"
+            width="40" />
+        </router-link>
 
+      </div>
+
+
+
+      </v-app-bar-nav-icon>
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
