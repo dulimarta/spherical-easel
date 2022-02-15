@@ -62,12 +62,10 @@
             contain
             src="../docs/.vuepress/public/export.png"
             transition="scale-transition"
-            width="40" />
+            width="30" />
         </router-link>
 
       </div>
-
-
 
       </v-app-bar-nav-icon>
       <!-- This will open up the global settings view setting the language, decimals
