@@ -20,6 +20,8 @@
       dense
       clipped-left>
 
+    <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
       <div class="d-flex align-center">
         <router-link to="/">
           <v-img alt="Spherical Easel Logo"
@@ -53,21 +55,19 @@
       </div>
 
       <v-spacer></v-spacer>
+
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-      <v-app-bar-nav-icon>
-      <div class="d-flex align-right">
-        <router-link to="/">
-          <v-img alt="Export Image"
-            class="shrink mr-2"
-            contain
-            src="../docs/.vuepress/public/export.png"
-            transition="scale-transition"
-            width="30" />
-        </router-link>
 
-      </div>
+  <!-- click handler with function name, replace router, on image itself, use mdi- icon -->
+        <!-- <Dialog ref="shareConstructionDialog" -->
+          <!-- max-width="40%"> -->
+          <v-icon class="pr-3"
+                  >mdi-application-export</v-icon>
+          <!-- <p> -->
+            <!-- {{$t('constructions.shareConstructionDialog')}}</p> -->
 
-      </v-app-bar-nav-icon>
+        <!-- </Dialog> -->
+      
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
@@ -132,6 +132,7 @@
         {{$t('constructions.logoutDialog')}}</p>
 
     </Dialog>
+
     <Dialog ref="saveConstructionDialog"
       :title="$t('constructions.saveConstruction')"
       :yes-text="$t('constructions.save')"
@@ -229,6 +230,7 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
+    shareConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
