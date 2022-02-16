@@ -57,16 +57,16 @@
       <v-spacer></v-spacer>
 
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-
-  <!-- click handler with function name, replace router, on image itself, use mdi- icon -->
-        <!-- <Dialog ref="shareConstructionDialog" -->
-          <!-- max-width="40%"> -->
-          <v-icon class="pr-3"
-                  >mdi-application-export</v-icon>
-          <!-- <p> -->
-            <!-- {{$t('constructions.shareConstructionDialog')}}</p> -->
-
-        <!-- </Dialog> -->
+      <v-icon class="pr-3"
+          @click="$refs.shareConstructionDialog.show()"
+                  >mdi-application-export
+      </v-icon>
+      
+      <Dialog ref="shareConstructionDialog"
+        :title="$t('constructions.shareConstructionDialog') ">
+        <p>
+          {{$t('constructions.shareConstructionDialog')}}</p>
+      </Dialog>
       
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
