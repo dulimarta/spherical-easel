@@ -64,9 +64,10 @@
 
       <Dialog ref="shareConstructionDialog"
         :title="$t('constructions.shareConstructionDialog')"
+        :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')">
         <p>
-          {{$t('constructions.shareConstructionDialog')}}</p>
+          {{$t('constructions.shareLinkDialog')}}</p>
       </Dialog>
 
       <!-- This will open up the global settings view setting the language, decimals
