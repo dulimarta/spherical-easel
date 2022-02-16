@@ -61,13 +61,14 @@
           @click="$refs.shareConstructionDialog.show()"
                   >mdi-application-export
       </v-icon>
-      
+
       <Dialog ref="shareConstructionDialog"
-        :title="$t('constructions.shareConstructionDialog') ">
+        :title="$t('constructions.shareConstructionDialog')"
+        :no-text="$t('constructions.cancel')">
         <p>
           {{$t('constructions.shareConstructionDialog')}}</p>
       </Dialog>
-      
+
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
