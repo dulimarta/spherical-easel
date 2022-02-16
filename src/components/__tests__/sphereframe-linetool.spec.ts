@@ -11,6 +11,7 @@ import {
   TEST_MOUSE_Y,
   drawOneDimensional
 } from "./sphereframe-helper";
+import { SENodule } from "@/models/SENodule";
 describe("SphereFrame: Line Tool", () => {
   let wrapper: Wrapper<Vue>;
   beforeEach(async () => {
@@ -60,13 +61,21 @@ describe("SphereFrame: Line Tool", () => {
     );
     expect(newLine.endSEPoint.locationVector).toBeVector3CloseTo(endVector, 3);
     expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
+    // line points are properly labelled
+    expect(newLine.startSEPoint.label?.exists).toBe(true);
+    expect(newLine.startSEPoint.name).toBe("P" + (SEStore.sePoints.length - 1));
+    expect(newLine.endSEPoint.label?.exists).toBe(true);
+    expect(newLine.endSEPoint.name).toBe("P" + SEStore.sePoints.length);
   }
 
   it("adds a new line while in LineTool", async () => {
     for (const pt1 of [true, false])
       for (const pt2 of [true, false]) {
         SEStore.init();
+        SENodule.resetAllCounters();
         await runLineTest(pt1, pt2);
       }
   });
+
+  // TODO change style of line and check if correct
 });
