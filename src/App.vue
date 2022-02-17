@@ -64,10 +64,31 @@
 
       <Dialog ref="shareConstructionDialog"
         :title="$t('constructions.shareConstructionDialog')"
-        :yesText="$t('constructions.exportConstructionDialog')"
+        :yesText="$t('constructions.export')"
+        :yes-action="() => doExportConstruction()"
         :no-text="$t('constructions.cancel')">
         <p>
           {{$t('constructions.shareLinkDialog')}}</p>
+
+      </Dialog>
+
+
+      <Dialog ref="exportConstructionDialog"
+        :title="$t('constructions.exportConstructionDialog')"
+        :yesText="$t('constructions.export')"
+        :no-text="$t('constructions.cancel')">
+        {{$t(
+          <div>
+            <b-dropdown id="dropdown-1" text="Dropdown Button" class="m-md-2">
+              <b-dropdown-item>First Action</b-dropdown-item>
+              <b-dropdown-item>Second Action</b-dropdown-item>
+              <b-dropdown-item>Third Action</b-dropdown-item>
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item active>Active action</b-dropdown-item>
+              <b-dropdown-item disabled>Disabled action</b-dropdown-item>
+            </b-dropdown>
+          </div>
+        )}}
       </Dialog>
 
       <!-- This will open up the global settings view setting the language, decimals
@@ -233,6 +254,7 @@ export default class App extends Vue {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
     shareConstructionDialog: VueComponent & DialogAction;
+    exportConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -254,6 +276,11 @@ export default class App extends Vue {
     // Any objects must include at least one point
     return SEStore.sePoints.length > 0;
   }
+
+  doExportConstruction(): void {
+    this.$refs.shareConstructionDialog.hide();
+    this.$refs.exportConstructionDialog.show();
+}
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
