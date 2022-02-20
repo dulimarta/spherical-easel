@@ -7,16 +7,17 @@
     <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      :disabled="displayToolTips">
+      :disabled="displayToolTips || $attrs.disabled">
       <template v-slot:activator="{ on }">
         <v-btn icon
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
-          @click="
-            $emit('display-only-this-tool-use-message', button.id);
+          @click="() => {
+            if ($attrs.disabled) return;
+            $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
             setElevation()
-          "
+          }"
           x-large
           :elevation="elev">
           <v-flex xs12>
@@ -26,11 +27,15 @@
               v-html="$t('buttons.' + button.displayedName )">
             </p>
           </v-flex>
+          <slot name="overlay"></slot>
         </v-btn>
       </template>
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
-    <!--- To Check: Does the property multi-line allow the snackbars to be formated correctly
+
+    <!-- TODO: move the snackbar to ToolGroup? -->
+
+    <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
     automatically when the message is many lines long due to font or number of characters? --->
     <v-snackbar v-model="displayToolUseMessage"
       bottom
@@ -69,7 +74,6 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { State } from "vuex-class";
 import { AppState, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import { namespace } from "vuex-class";
@@ -86,16 +90,16 @@ export default class ToolButton extends Vue {
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
   private displayToolUseMessages = SETTINGS.toolUse.display;
 
-  /* This controls the display of the snackbar Tool Use Message. This is set to false by the 
+  /* This controls the display of the snackbar Tool Use Message. This is set to false by the
   $emit('displayOnlyThisToolUseMessage',button.id) <-- this turns off all other snackbar messages
-  that sends a message to the parent (ToolGroups.vue) that triggers the method 
-  displayOnlyThisToolUseMessageFunc 
+  that sends a message to the parent (ToolGroups.vue) that triggers the method
+  displayOnlyThisToolUseMessageFunc
   in the parent which changes the value of button.displayToolUseMessage (except in the button with
   id button.id), this is variable is being watched in this child and turns off the display of the
   snackbar/toolUseMessage  */
   private displayToolUseMessage = false;
 
-  /* This is a variable that does NOT belong in the global settings but I don't know where else to 
+  /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
 

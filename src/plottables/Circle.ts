@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3, Vector2, Matrix4 } from "three";
-import Two, { Color, RadialGradient } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -11,7 +11,6 @@ import {
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import AppStore from "@/store";
-import SE from "@/store/se-module";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();

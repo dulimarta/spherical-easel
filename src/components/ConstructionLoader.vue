@@ -75,7 +75,9 @@ import {
   ConstructionScript,
   SphericalConstruction,
   ConstructionInFirestore,
-  AppState
+  AppState,
+  AccountState,
+  ActionMode
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
@@ -85,13 +87,11 @@ import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 import { Watch } from "vue-property-decorator";
 import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
+import { ACStore, SEStore } from "@/store";
 import axios, { AxiosResponse } from "axios";
 const SE = namespace("se");
-
-@Component({
-  components: { Dialog, ConstructionList }
-})
+const AC = namespace("acct");
+@Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -99,6 +99,9 @@ export default class ConstructionLoader extends Vue {
 
   @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
+
+  @AC.State((s: AccountState) => s.includedTools)
+  readonly includedTools!: Array<ActionMode>;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -196,7 +199,8 @@ export default class ConstructionLoader extends Vue {
           dateCreated: doc.dateCreated,
           description: doc.description,
           sphereRotationMatrix,
-          previewData: svgData ?? ""
+          previewData: svgData ?? "",
+          tools: doc.tools ?? undefined
         });
       }
     });
@@ -222,9 +226,12 @@ export default class ConstructionLoader extends Vue {
     let pos = this.publicConstructions.findIndex(
       (c: SphericalConstruction) => c.id === this.selectedDocId
     );
+    let toolSet: ActionMode[] | undefined = undefined;
     if (pos >= 0) {
       script = this.publicConstructions[pos].parsedScript;
       rotationMatrix = this.publicConstructions[pos].sphereRotationMatrix;
+      if (this.publicConstructions[pos].tools)
+        toolSet = this.publicConstructions[pos].tools;
     } else {
       // Search in private list
       pos = this.privateConstructions.findIndex(
@@ -232,6 +239,19 @@ export default class ConstructionLoader extends Vue {
       );
       script = this.privateConstructions[pos].parsedScript;
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
+      if (this.privateConstructions[pos].tools)
+        toolSet = this.privateConstructions[pos].tools;
+    }
+    if (toolSet === undefined) {
+      console.debug("Include all tools");
+      ACStore.resetToolset(true);
+      /* include all tools */
+    } else {
+      console.debug("Exclude all tools");
+      ACStore.resetToolset(false /* exclude all */);
+      toolSet.forEach((toolAction: ActionMode) => {
+        ACStore.includeToolName(toolAction);
+      });
     }
 
     SEStore.removeAllFromLayers();

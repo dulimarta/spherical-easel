@@ -1,6 +1,13 @@
 import { LocaleMessages } from "vue-i18n";
 
 export default {
+  account: {
+    createError: "Unable to create a new account: {error}",
+    emailNotVeified: "Your account is not yet verified. Please check your email",
+    emailVerification: "Verification email has been sent to {emailAddr}",
+    loginError: "Unable to login: {error}",
+    passwordReset: "Check your email ({emailAddr}) to reset password"
+  },
   main: {
     ConstructionsTabToolTip: "Saved Constructions",
     ObjectsTabToolTip: "Objects",

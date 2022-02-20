@@ -39,11 +39,13 @@ export class DeleteNoduleCommand extends Command {
       if (nodule) {
         nodule.unregisterChild(this.seNodule);
       } else {
-        throw `Attempted to unregister child` +
+        throw (
+          `Attempted to unregister child ` +
           `${this.seNodule}` +
-          `from a non-existent nodule with ID` +
+          ` from a non-existent nodule with ID ` +
           `${this.parentIds[i]}` +
-          `in the DeleteNoduleCommand`;
+          ` in the DeleteNoduleCommand`
+        );
       }
     }
     // Remove object from the store and turn off the display
@@ -122,11 +124,13 @@ export class DeleteNoduleCommand extends Command {
       if (nodule) {
         nodule.registerChild(this.seNodule);
       } else {
-        throw `Attempted to register child` +
+        throw (
+          `Attempted to register child` +
           `${this.seNodule}` +
           `to a non-existent nodule with ID` +
           `${this.parentIds[i]}` +
-          `in the DeleteNoduleCommand`;
+          `in the DeleteNoduleCommand`
+        );
       }
     }
   }

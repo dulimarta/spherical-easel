@@ -53,7 +53,7 @@ import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { Route } from "vue-router";
 import EventBus from "@/eventHandlers/EventBus";
-import { SEStore } from "@/store";
+import { ACStore } from "@/store";
 @Component
 export default class PhotoCapture extends Vue {
   $refs!: {
@@ -141,7 +141,7 @@ export default class PhotoCapture extends Vue {
     const imageHex = this.$refs.canvas.toDataURL("image/png");
     this.imageData = imageHex;
     // this.stopCamera();
-    SEStore.setTemporaryProfilePicture(imageHex);
+    ACStore.setTemporaryProfilePicture(imageHex);
     this.$router.push({
       name: "PhotoCropper"
     });

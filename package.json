@@ -12,7 +12,7 @@
     "app:serve": "vue-cli-service serve",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
-    "docs:serve": "vuepress dev docs --debug --open",
+    "docs:serve": "vuepress dev docs --debug",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/assets/languages/**/*.json'"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",
     "firebase": "^8.6.2",
+    "lodash.clonedeep": "^4.5.0",
     "markdown-it-texmath": "^0.7.2",
     "moment": "^2.26.0",
     "newton-raphson-method": "^1.0.2",

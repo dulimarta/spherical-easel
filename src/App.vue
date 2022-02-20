@@ -158,7 +158,7 @@ import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AppState } from "./types";
+import { AccountState, AppState, ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
@@ -170,12 +170,13 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore } from "./store";
+import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
 const SE = namespace("se");
+const AC = namespace("acct");
 //#endregion vuex-module-namespace
 
 // Register vue router in-component navigation guard functions
@@ -197,6 +198,9 @@ export default class App extends Vue {
 
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
+
+  @AC.State((s: AccountState) => s.includedTools)
+  readonly includedTools!: Array<string>;
 
   // @SE.State((s: AppState) => s.sePoints)
   // readonly sePoints!: SEPoint[];
@@ -265,11 +269,12 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
+    ACStore.resetToolset();
   }
 
   mounted(): void {
     console.log("Base URL is ", process.env.BASE_URL);
-    SEStore.init();
+    // SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
@@ -282,9 +287,14 @@ export default class App extends Vue {
             .get()
             .then((ds: DocumentSnapshot) => {
               if (ds.exists) {
-                const { profilePictureURL } = ds.data() as any;
+                this.accountEnabled = true;
+                console.debug("User data", ds.data());
+                const { profilePictureURL, role } = ds.data() as any;
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
+                }
+                if (role) {
+                  ACStore.setUserRole(role.toLowerCase());
                 }
               }
             });
@@ -312,6 +322,7 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
+    ACStore.setUserRole(undefined);
     this.uid = "";
     this.whoami = "";
   }
@@ -374,8 +385,10 @@ export default class App extends Vue {
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements)
-      })
+        rotationMatrix: JSON.stringify(rotationMat.elements),
+        tools: this.includedTools,
+        script: "" // Use an empty string (for type checking only)
+      } as ConstructionInFirestore)
       .then((constructionDoc: DocumentReference) => {
         /* Task #2 */
         const scriptPromise: Promise<string> =

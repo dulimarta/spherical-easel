@@ -1162,7 +1162,7 @@ export const SETTINGS = {
     cycleNodeValueDisplayMode: {
       props: {
         emphasizeTypes: [[]],
-        mdiIcon: "mdi-recycle-variant",
+        mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
         filePath: ""
       }
     },

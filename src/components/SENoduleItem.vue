@@ -245,8 +245,6 @@ import { SEStore } from "@/store";
 import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import DeleteHandler from "@/eventHandlers/DeleteHandler";
-import SETTINGS from "@/global-settings";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 
 const SE = namespace("se");
