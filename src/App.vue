@@ -56,12 +56,6 @@
 
       <v-spacer></v-spacer>
 
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-      <v-icon class="pr-3"
-          @click="$refs.shareConstructionDialog.show()"
-                  >mdi-application-export
-      </v-icon>
-
       <Dialog ref="shareConstructionDialog"
         :title="$t('constructions.shareConstructionDialog')"
         :yesText="$t('constructions.exportConstructionDialog')"
@@ -95,14 +89,13 @@
           color="primary"
           v-text="$t('constructions.exportConstructionDialog')"
         ></v-btn>
-        
+
       </Dialog>
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
         <span>{{whoami}}</span>
-
         <v-img id="profilePic"
           v-if="profilePicUrl"
           class="mx-2"
@@ -114,12 +107,16 @@
         <v-icon v-else
           class="mx-2"
           @click="doLoginOrCheck">mdi-account</v-icon>
+        <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
+        <v-icon v-show="showExport" class="pr-3"
+          @click="$refs.shareConstructionDialog.show()"
+          >mdi-application-export</v-icon>
         <v-icon v-if="whoami !== ''"
           :disabled="!hasObjects"
           class="mr-2"
           @click="$refs.saveConstructionDialog.show()">$shareConstruction
         </v-icon>
-      </template>
+        </template>
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
       </router-link>
@@ -269,6 +266,7 @@ export default class App extends Vue {
   uid = "";
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
+  showExport = false;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -290,7 +288,7 @@ export default class App extends Vue {
   doExportConstruction(): void {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
-}
+  }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
@@ -331,6 +329,7 @@ export default class App extends Vue {
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) {
+          this.showExport = true;
           this.whoami = u.email ?? "unknown email";
           this.uid = u.uid;
           this.$appDB
