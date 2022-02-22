@@ -64,7 +64,7 @@
 
       <Dialog ref="shareConstructionDialog"
         :title="$t('constructions.shareConstructionDialog')"
-        :yesText="$t('constructions.export')"
+        :yesText="$t('constructions.exportConstructionDialog')"
         :yes-action="() => doExportConstruction()"
         :no-text="$t('constructions.cancel')">
         <p>
@@ -72,23 +72,30 @@
 
       </Dialog>
 
-
       <Dialog ref="exportConstructionDialog"
         :title="$t('constructions.exportConstructionDialog')"
-        :yesText="$t('constructions.export')"
+        :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')">
-        {{$t(
-          <div>
-            <b-dropdown id="dropdown-1" text="Dropdown Button" class="m-md-2">
-              <b-dropdown-item>First Action</b-dropdown-item>
-              <b-dropdown-item>Second Action</b-dropdown-item>
-              <b-dropdown-item>Third Action</b-dropdown-item>
-              <b-dropdown-divider></b-dropdown-divider>
-              <b-dropdown-item active>Active action</b-dropdown-item>
-              <b-dropdown-item disabled>Disabled action</b-dropdown-item>
-            </b-dropdown>
-          </div>
-        )}}
+        <p>TODO: Export preview image will go here.</p>
+
+        <v-col
+        class="d-flex"
+        cols="12"
+        sm="6"
+        >
+          <v-select
+            :items="formats"
+            label="Format"
+            solo
+          ></v-select>
+        </v-col>
+
+        <v-btn
+          elevation="2"
+          color="primary"
+          v-text="$t('constructions.exportConstructionDialog')"
+        ></v-btn>
+        
       </Dialog>
 
       <!-- This will open up the global settings view setting the language, decimals
@@ -267,6 +274,9 @@ export default class App extends Vue {
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
   acceptedKeys = 0;
   accountEnabled = false;
+
+  // target formats for export window
+  formats = ['SVG', 'PNG', 'GIF']
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
