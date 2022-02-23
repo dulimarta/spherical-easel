@@ -293,8 +293,7 @@ export default class App extends Vue {
   }
 
   doExportButton(): void {
-    console.debug("button clicked");
-    console.log("button clicked");
+    this.$refs.exportConstructionDialog.hide();
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
