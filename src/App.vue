@@ -70,6 +70,7 @@
         :title="$t('constructions.exportConstructionDialog')"
         :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')">
+
         <p>TODO: Export preview image will go here.</p>
 
         <v-col
@@ -88,6 +89,7 @@
           elevation="2"
           color="primary"
           v-text="$t('constructions.exportConstructionDialog')"
+          @click="doExportButton"
         ></v-btn>
 
       </Dialog>
@@ -288,6 +290,11 @@ export default class App extends Vue {
   doExportConstruction(): void {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
+  }
+
+  doExportButton(): void {
+    console.debug("button clicked");
+    console.log("button clicked");
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
