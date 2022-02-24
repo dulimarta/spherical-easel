@@ -71,7 +71,21 @@
         :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')">
 
-        <p>TODO: Export preview image will go here.</p>
+        <div v-if="selected === 'SVG'">
+          <v-col cols="12" md="4">
+            <p>SVG Selected</p>
+          </v-col>
+        </div>
+        <div v-if="selected === 'PNG'">
+          <v-col cols="12" md="4">
+            <p> PNG Selected</p>
+          </v-col>
+        </div>
+        <div v-if="selected === 'GIF'">
+          <v-col cols="12" md="4">
+            <p>GIF Selected</p>
+          </v-col>
+        </div>
 
         <v-col
         class="d-flex"
@@ -81,6 +95,7 @@
           <v-select
             :items="formats"
             label="Format"
+            v-model="selected"
             solo
           ></v-select>
         </v-col>
@@ -292,9 +307,13 @@ export default class App extends Vue {
     this.$refs.exportConstructionDialog.show();
   }
 
+  selected = "";
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
+    console.log(this.selected);
   }
+
+
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
