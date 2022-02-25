@@ -670,6 +670,12 @@ export default {
       "Share your construction",
     exportConstructionDialog:
       "Export",
+    selectedSVGExport:
+      "SVG was selected.",
+    selectedPNGExport:
+      "PNG was selected.",
+    selectedGIFExport:
+      "GIF was selected.",
     shareLinkDialog:
       "Share this link:",
     unsavedConstructionMsg:

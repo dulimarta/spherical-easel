@@ -59,8 +59,9 @@
       <Dialog ref="shareConstructionDialog"
         :title="$t('constructions.shareConstructionDialog')"
         :yesText="$t('constructions.exportConstructionDialog')"
-        :yes-action="() => doExportConstruction()"
-        :no-text="$t('constructions.cancel')">
+        :yes-action="() => doExportConstructionDialog()"
+        :no-text="$t('constructions.cancel')"
+        max-width="40%">
         <p>
           {{$t('constructions.shareLinkDialog')}}</p>
 
@@ -69,21 +70,23 @@
       <Dialog ref="exportConstructionDialog"
         :title="$t('constructions.exportConstructionDialog')"
         :yesText="$t('constructions.exportConstructionDialog')"
-        :no-text="$t('constructions.cancel')">
+        :no-text="$t('constructions.cancel')"
+        :yes-action="() => doExportButton()"
+        max-width="60%">
 
-        <div v-if="selected === 'SVG'">
+        <div v-if="selectedFormat === 'SVG'">
           <v-col cols="12" md="4">
-            <p>SVG Selected</p>
+            <p>{{$t('constructions.selectedSVGExport')}}</p>
           </v-col>
         </div>
-        <div v-if="selected === 'PNG'">
+        <div v-if="selectedFormat === 'PNG'">
           <v-col cols="12" md="4">
-            <p> PNG Selected</p>
+            <p>{{$t('constructions.selectedPNGExport')}}</p>
           </v-col>
         </div>
-        <div v-if="selected === 'GIF'">
+        <div v-if="selectedFormat === 'GIF'">
           <v-col cols="12" md="4">
-            <p>GIF Selected</p>
+            <p>{{$t('constructions.selectedGIFExport')}}</p>
           </v-col>
         </div>
 
@@ -95,17 +98,10 @@
           <v-select
             :items="formats"
             label="Format"
-            v-model="selected"
+            v-model="selectedFormat"
             solo
           ></v-select>
         </v-col>
-
-        <v-btn
-          elevation="2"
-          color="primary"
-          v-text="$t('constructions.exportConstructionDialog')"
-          @click="doExportButton"
-        ></v-btn>
 
       </Dialog>
 
@@ -228,6 +224,7 @@ import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
+import FileSaver from "file-saver";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -284,6 +281,7 @@ export default class App extends Vue {
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
   showExport = false;
+  selectedFormat = "";
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -301,19 +299,6 @@ export default class App extends Vue {
     // Any objects must include at least one point
     return SEStore.sePoints.length > 0;
   }
-
-  doExportConstruction(): void {
-    this.$refs.shareConstructionDialog.hide();
-    this.$refs.exportConstructionDialog.show();
-  }
-
-  selected = "";
-  doExportButton(): void {
-    this.$refs.exportConstructionDialog.hide();
-    console.log(this.selected);
-  }
-
-
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
@@ -409,6 +394,16 @@ export default class App extends Vue {
     } else {
       this.$router.replace({ path: "/account" });
     }
+  }
+
+  doExportConstructionDialog(): void {
+    this.$refs.shareConstructionDialog.hide();
+    this.$refs.exportConstructionDialog.show();
+  }
+  
+  doExportButton(): void {
+    this.$refs.exportConstructionDialog.hide();
+    console.log(this.selectedFormat);
   }
 
   async doShare(): Promise<void> {
