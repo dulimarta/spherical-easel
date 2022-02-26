@@ -90,6 +90,30 @@
           </v-col>
         </div>
 
+        <v-row>
+          <v-col class="pr-4">
+            <p>{{$t('constructions.sliderFileDimensions')}}</p>
+            <v-slider
+              v-model="slider"
+              class="align-center"
+              :max="sliderMax"
+              :min="sliderMin"
+              hide-details
+            >
+              <template v-slot:append>
+                <v-text-field
+                  v-model="slider"
+                  class="mt-0 pt-0"
+                  hide-details
+                  single-line
+                  type="number"
+                  style="width: 60px"
+                ></v-text-field>
+              </template>
+            </v-slider>
+          </v-col>
+        </v-row>
+
         <v-col
         class="d-flex"
         cols="12"
@@ -282,6 +306,9 @@ export default class App extends Vue {
   svgRoot!: SVGElement;
   showExport = false;
   selectedFormat = "";
+  slider = 200;
+  sliderMin = 200;
+  sliderMax = 1200;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */

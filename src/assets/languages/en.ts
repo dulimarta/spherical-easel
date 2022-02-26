@@ -676,6 +676,8 @@ export default {
       "PNG was selected.",
     selectedGIFExport:
       "GIF was selected.",
+    sliderFileDimensions:
+      "File dimensions in pixels:",
     shareLinkDialog:
       "Share this link:",
     unsavedConstructionMsg:
