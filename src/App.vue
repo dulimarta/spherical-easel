@@ -19,8 +19,8 @@
       dark
       dense
       clipped-left>
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
+    <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
@@ -56,11 +56,83 @@
 
       <v-spacer></v-spacer>
 
+      <Dialog ref="shareConstructionDialog"
+        :title="$t('constructions.shareConstructionDialog')"
+        :yesText="$t('constructions.exportConstructionDialog')"
+        :yes-action="() => doExportConstructionDialog()"
+        :no-text="$t('constructions.cancel')"
+        max-width="40%">
+        <p>
+          {{$t('constructions.shareLinkDialog')}}</p>
+
+      </Dialog>
+
+      <Dialog ref="exportConstructionDialog"
+        :title="$t('constructions.exportConstructionDialog')"
+        :yesText="$t('constructions.exportConstructionDialog')"
+        :no-text="$t('constructions.cancel')"
+        :yes-action="() => doExportButton()"
+        max-width="60%">
+
+        <div v-if="selectedFormat === 'SVG'">
+          <v-col cols="12" md="4">
+            <p>{{$t('constructions.selectedSVGExport')}}</p>
+          </v-col>
+        </div>
+        <div v-if="selectedFormat === 'PNG'">
+          <v-col cols="12" md="4">
+            <p>{{$t('constructions.selectedPNGExport')}}</p>
+          </v-col>
+        </div>
+        <div v-if="selectedFormat === 'GIF'">
+          <v-col cols="12" md="4">
+            <p>{{$t('constructions.selectedGIFExport')}}</p>
+          </v-col>
+        </div>
+
+        <v-row>
+          <v-col class="pr-4">
+            <p>{{$t('constructions.sliderFileDimensions')}}</p>
+            <v-slider
+              v-model="slider"
+              class="align-center"
+              :max="sliderMax"
+              :min="sliderMin"
+              hide-details
+            >
+              <template v-slot:append>
+                <v-text-field
+                  v-model="slider"
+                  class="mt-0 pt-0"
+                  hide-details
+                  single-line
+                  type="number"
+                  style="width: 60px"
+                ></v-text-field>
+              </template>
+            </v-slider>
+          </v-col>
+        </v-row>
+
+        <v-col
+        class="d-flex"
+        cols="12"
+        sm="6"
+        >
+          <v-select
+            :items="formats"
+            label="Format"
+            v-model="selectedFormat"
+            solo
+          ></v-select>
+        </v-col>
+
+      </Dialog>
+
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
         <span>{{whoami}}</span>
-
         <v-img id="profilePic"
           v-if="profilePicUrl"
           class="mx-2"
@@ -72,12 +144,16 @@
         <v-icon v-else
           class="mx-2"
           @click="doLoginOrCheck">mdi-account</v-icon>
+        <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
+        <v-icon v-show="showExport" class="pr-3"
+          @click="$refs.shareConstructionDialog.show()"
+          >mdi-application-export</v-icon>
         <v-icon v-if="whoami !== ''"
           :disabled="!hasObjects"
           class="mr-2"
           @click="$refs.saveConstructionDialog.show()">$shareConstruction
         </v-icon>
-      </template>
+        </template>
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
       </router-link>
@@ -120,6 +196,7 @@
         {{$t('constructions.logoutDialog')}}</p>
 
     </Dialog>
+
     <Dialog ref="saveConstructionDialog"
       :title="$t('constructions.saveConstruction')"
       :yes-text="$t('constructions.save')"
@@ -171,6 +248,7 @@ import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
+import FileSaver from "file-saver";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -217,6 +295,8 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
+    shareConstructionDialog: VueComponent & DialogAction;
+    exportConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -224,11 +304,19 @@ export default class App extends Vue {
   uid = "";
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
+  showExport = false;
+  selectedFormat = "";
+  slider = 200;
+  sliderMin = 200;
+  sliderMax = 1200;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
   acceptedKeys = 0;
   accountEnabled = false;
+
+  // target formats for export window
+  formats = ['SVG', 'PNG', 'GIF']
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
@@ -278,6 +366,7 @@ export default class App extends Vue {
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) {
+          this.showExport = true;
           this.whoami = u.email ?? "unknown email";
           this.uid = u.uid;
           this.$appDB
@@ -331,6 +420,31 @@ export default class App extends Vue {
       this.$refs.logoutDialog.show();
     } else {
       this.$router.replace({ path: "/account" });
+    }
+  }
+
+  doExportConstructionDialog(): void {
+    this.$refs.shareConstructionDialog.hide();
+    this.$refs.exportConstructionDialog.show();
+  }
+  
+  doExportButton(): void {
+    this.$refs.exportConstructionDialog.hide();
+
+    if (this.selectedFormat == "SVG") {
+      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+      svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svgElement.style.removeProperty("transform");
+      const svgBlob = new Blob([svgElement.outerHTML], {
+          type: "image/svg+xml;charset=utf-8"
+      });
+      const svgURL = URL.createObjectURL(svgBlob);
+      FileSaver.saveAs(svgURL, "construction.svg");
+      console.log("SVG exported");
+    } else if (this.selectedFormat == "PNG") {
+      console.log("PNG exported");
+    } else if (this.selectedFormat == "GIF") {
+      console.log("GIF exported");
     }
   }
 

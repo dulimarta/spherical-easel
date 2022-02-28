@@ -666,6 +666,20 @@ export default {
       "You are about to logout, any unsaved constructions will be discarded.",
     saveConstructionDialog:
       "Please provide a short description for your construction.",
+    shareConstructionDialog:
+      "Share your construction",
+    exportConstructionDialog:
+      "Export",
+    selectedSVGExport:
+      "SVG was selected.",
+    selectedPNGExport:
+      "PNG was selected.",
+    selectedGIFExport:
+      "GIF was selected.",
+    sliderFileDimensions:
+      "File dimensions in pixels:",
+    shareLinkDialog:
+      "Share this link:",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
