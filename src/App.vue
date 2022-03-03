@@ -249,8 +249,6 @@ import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
-import * as typesave from "types-save-svg-as-png";
-//import saveSvgAsPng from "save-svg-as-png";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -429,7 +427,7 @@ export default class App extends Vue {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
   }
-
+  
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
 
@@ -444,19 +442,40 @@ export default class App extends Vue {
       FileSaver.saveAs(svgURL, "construction.svg");
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
+
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       svgElement.style.removeProperty("transform");
       const svgBlob = new Blob([svgElement.outerHTML], {
-          type: "image/svg+xml;charset=utf-8"
+          type: "image/png+xml;charset=utf-8"
       });
-      const svgURL = URL.createObjectURL(svgBlob);
+      const blobURL = URL.createObjectURL(svgBlob);
 
-      //typesave.saveSvgAsPng(svgElement, "construction.png");
-      //typesave.saveSvgAsPng(svgBlob, "construction.png");
-      //typesave.saveSvgAsPng(svgURL, "construction.png");
-      //typesave.saveSvgAsPng(this.svgCanvas, "construction.png");
-      //typesave.saveSvgAsPng(this.svgRoot, "construction.png");
+      const image = new Image();
+
+    //   image.onload = () => {
+    //     const canvas: HTMLCanvasElement = 
+    //                   document.createElement('canvas');
+
+    //     // canvas.width = width;
+    //     // canvas.height = height;
+
+    //     const context: CanvasRenderingContext2D | null =
+    //       canvas.getContext('2d');
+    //     context?.drawImage(image, 0, 0, 500, 500);
+
+    //     //URL.revokeObjectURL(blobURL);
+
+    //     // resolve({
+    //     //   canvas,
+    //     //   index
+    //     // });
+    // };
+
+      //image.src = blobURL;
+
+      FileSaver.saveAs(blobURL, "construction.png");
+
       console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
