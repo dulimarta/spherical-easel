@@ -32,7 +32,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/types/two.js/index.d.ts",
-    "tests/*.d.ts"
+    "tests/*.d.ts",
+    "src/shims-decl.d.ts"
   ],
   "verbose": true
   // "globals": {
