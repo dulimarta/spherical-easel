@@ -443,38 +443,30 @@ export default class App extends Vue {
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
 
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      svgElement.style.removeProperty("transform");
-      const svgBlob = new Blob([svgElement.outerHTML], {
-          type: "image/png+xml;charset=utf-8"
+      const svgElement = this.svgCanvas?.querySelector("svg");
+      console.log(svgElement);
+      //const svgElement = this.svgRoot.querySelector("svg");
+      let {width, height} = svgElement!.getBBox();
+
+      const clonedSvgElement = svgElement!.cloneNode(true) as SVGElement;
+      
+      const svgBlob = new Blob([clonedSvgElement.outerHTML], {
+          type: "image/svg+xml;charset=utf-8"
       });
+
       const blobURL = URL.createObjectURL(svgBlob);
 
       const image = new Image();
+      image.src = blobURL;
 
-    //   image.onload = () => {
-    //     const canvas: HTMLCanvasElement = 
-    //                   document.createElement('canvas');
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context?.drawImage(image, 0, 0, width, height);
 
-    //     // canvas.width = width;
-    //     // canvas.height = height;
-
-    //     const context: CanvasRenderingContext2D | null =
-    //       canvas.getContext('2d');
-    //     context?.drawImage(image, 0, 0, 500, 500);
-
-    //     //URL.revokeObjectURL(blobURL);
-
-    //     // resolve({
-    //     //   canvas,
-    //     //   index
-    //     // });
-    // };
-
-      //image.src = blobURL;
-
-      FileSaver.saveAs(blobURL, "construction.png");
+      let png = canvas.toDataURL();
+      FileSaver.saveAs(png, "construction.png");
 
       console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
