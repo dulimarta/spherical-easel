@@ -249,6 +249,7 @@ import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
+import d3ToPng from "d3-svg-to-png";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -427,7 +428,7 @@ export default class App extends Vue {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
   }
-  
+
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
 
@@ -443,40 +444,9 @@ export default class App extends Vue {
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
 
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      svgElement.style.removeProperty("transform");
-      const svgBlob = new Blob([svgElement.outerHTML], {
-          type: "image/png+xml;charset=utf-8"
-      });
-      const blobURL = URL.createObjectURL(svgBlob);
+        var png = d3ToPng('#canvas svg', 'name');
 
-      const image = new Image();
-
-    //   image.onload = () => {
-    //     const canvas: HTMLCanvasElement = 
-    //                   document.createElement('canvas');
-
-    //     // canvas.width = width;
-    //     // canvas.height = height;
-
-    //     const context: CanvasRenderingContext2D | null =
-    //       canvas.getContext('2d');
-    //     context?.drawImage(image, 0, 0, 500, 500);
-
-    //     //URL.revokeObjectURL(blobURL);
-
-    //     // resolve({
-    //     //   canvas,
-    //     //   index
-    //     // });
-    // };
-
-      //image.src = blobURL;
-
-      FileSaver.saveAs(blobURL, "construction.png");
-
-      console.log("PNG exported");
+        console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
