@@ -442,10 +442,15 @@ export default class App extends Vue {
 
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+      svgElement.setAttribute("height", "1000px");
+      svgElement.setAttribute("width", "1000px");
+
+      svgElement.setAttribute("transform", "scale(2)");
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       svgElement.style.removeProperty("transform");
       const svgBlob = new Blob([svgElement.outerHTML], {
           type: "image/svg+xml;charset=utf-8"
+
       });
       const svgURL = URL.createObjectURL(svgBlob);
       FileSaver.saveAs(svgURL, "construction.svg");
