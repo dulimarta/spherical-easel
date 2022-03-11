@@ -84,11 +84,21 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 import { namespace } from "vuex-class";
-import { ACStore, SEStore } from "@/store";
+import { SEStore } from "@/store";
+import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
+import { mapActions, mapState } from "pinia";
 const SE = namespace("se");
-const AC = namespace("acct");
-@Component({ components: { Dialog, ConstructionList } })
+
+@Component({
+  components: { Dialog, ConstructionList },
+  computed: {
+    ...mapState(useAccountStore, ["includedTools"])
+  },
+  methods: {
+    ...mapActions(useAccountStore, ["resetToolset", "includeToolName"])
+  }
+})
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -97,8 +107,10 @@ export default class ConstructionLoader extends Vue {
   @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
 
-  @AC.State((s: AccountState) => s.includedTools)
   readonly includedTools!: Array<ActionMode>;
+
+  readonly includeToolName!: (t: string) => void;
+  readonly resetToolset!: (b: boolean) => void;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -233,13 +245,13 @@ export default class ConstructionLoader extends Vue {
     }
     if (toolSet === undefined) {
       console.debug("Include all tools");
-      ACStore.resetToolset(true);
+      this.resetToolset(true);
       /* include all tools */
     } else {
       console.debug("Exclude all tools");
-      ACStore.resetToolset(false /* exclude all */);
+      this.resetToolset(false /* exclude all */);
       toolSet.forEach((toolAction: ActionMode) => {
-        ACStore.includeToolName(toolAction);
+        this.includeToolName(toolAction);
       });
     }
 

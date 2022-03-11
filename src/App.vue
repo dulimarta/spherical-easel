@@ -169,13 +169,15 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore, ACStore } from "./store";
+import { SEStore } from "./store";
+import { useAccountStore } from "@/stores/account";
 import { detect } from "detect-browser";
+import { mapState, mapActions, mapWritableState } from "pinia";
+
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
 const SE = namespace("se");
-const AC = namespace("acct");
 //#endregion vuex-module-namespace
 
 // Register vue router in-component navigation guard functions
@@ -185,7 +187,16 @@ Component.registerHooks([
   "beforeRouteUpdate"
 ]);
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog } })
+@Component({
+  components: { MessageBox, Dialog },
+  methods: {
+    ...mapActions(useAccountStore, ["resetToolset"])
+  },
+  computed: {
+    ...mapState(useAccountStore, ["includedTools"]),
+    ...mapWritableState(useAccountStore, ["userRole"])
+  }
+})
 export default class App extends Vue {
   //#region activeToolName
   @SE.State((s: AppState) => s.activeToolName)
@@ -198,8 +209,10 @@ export default class App extends Vue {
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @AC.State((s: AccountState) => s.includedTools)
   readonly includedTools!: Array<string>;
+  resetToolset!: () => void;
+
+  userRole!: string | undefined;
 
   // @SE.State((s: AppState) => s.sePoints)
   // readonly sePoints!: SEPoint[];
@@ -268,7 +281,7 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
-    ACStore.resetToolset();
+    this.resetToolset();
   }
 
   mounted(): void {
@@ -293,7 +306,7 @@ export default class App extends Vue {
                   this.profilePicUrl = profilePictureURL;
                 }
                 if (role) {
-                  ACStore.setUserRole(role.toLowerCase());
+                  this.userRole = role.toLowerCase();
                 }
               }
             });
@@ -321,7 +334,7 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
-    ACStore.setUserRole(undefined);
+    this.userRole = undefined;
     this.uid = "";
     this.whoami = "";
   }

@@ -15,7 +15,10 @@ import "firebase/storage";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { config } from "vuex-module-decorators";
+import { createPinia, PiniaVuePlugin } from "pinia";
 Vue.use(VueI18n);
+Vue.use(PiniaVuePlugin);
+const pinia = createPinia();
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNA-9m5KvjcxAeTE6ixr_bhXr2Hs2zNys",
@@ -46,5 +49,6 @@ new Vue({
   router,
   store,
   vuetify,
+  pinia,
   render: (h: any) => h(App)
 }).$mount("#app");

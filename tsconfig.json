@@ -32,7 +32,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/types/two.js/index.d.ts",
-    "tests/*.d.ts"
+    "tests/*.d.ts",
+    "src/stores/se-module.tss"
   ],
   "verbose": true
   // "globals": {
