@@ -53,7 +53,7 @@ export default class SESliderItem extends Vue {
   playbackMode = SliderPlaybackMode.ONCE;
   playbackSpeed = 750;
   playbackForward = true;
-  timer: NodeJS.Timer | null = null;
+  timer: number | null = null;
 
   playbackSelections = [
     { text: "Once", value: SliderPlaybackMode.ONCE },
@@ -109,20 +109,20 @@ export default class SESliderItem extends Vue {
     if (this.timer === null) {
       switch (this.playbackMode) {
         case SliderPlaybackMode.ONCE:
-          this.timer = setInterval(
+          this.timer = window.setInterval(
             () => this.animate_once(),
             this.playbackSpeed
           );
           this.node.value = this.node.min;
           break;
         case SliderPlaybackMode.LOOP:
-          this.timer = setInterval(
-            () => this.animate_loop(),
+          this.timer = window.setInterval(
+            () => this.animate_loop,
             this.playbackSpeed
           );
           break;
         case SliderPlaybackMode.REFLECT:
-          this.timer = setInterval(
+          this.timer = window.setInterval(
             () => this.animate_loop_reverse(),
             this.playbackSpeed
           );
