@@ -77,15 +77,21 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { AppState, SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
 import axios, { AxiosResponse } from "axios";
-import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
-const SE = namespace("se");
+// import { namespace } from "vuex-class";
+import { mapState, mapWritableState } from "pinia";
+import { useSEStore } from "@/stores/se";
+// const SE = namespace("se");
 
-@Component
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["svgCanvas"]),
+    ...mapWritableState(useSEStore, ["inverseTotalRotationMatrix"])
+  }
+})
 export default class extends Vue {
   @Prop()
   readonly items!: Array<SphericalConstruction>;
@@ -93,11 +99,9 @@ export default class extends Vue {
   @Prop({ type: Boolean })
   readonly allowSharing!: boolean;
 
-  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
-  readonly inverseTotalRotationMatrix!: Matrix4;
+  inverseTotalRotationMatrix!: Matrix4;
 
   readonly $appAuth!: FirebaseAuth;
 
@@ -166,7 +170,7 @@ export default class extends Vue {
       this.svgParent.firstChild as SVGElement
     );
     // Restore the rotation matrix
-    SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
+    this.inverseTotalRotationMatrix = this.originalSphereMatrix;
     /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
     //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
     // setTimeout(() => {

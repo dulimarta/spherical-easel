@@ -7,7 +7,6 @@ import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPoint } from "@/models/SEPoint";
-import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 
@@ -116,13 +115,13 @@ export default class DeleteHandler extends Highlighter {
   }
   activate(): void {
     // Delete all selected objects
-    if (SEStore.selectedSENodules.length !== 0) {
+    if (DeleteHandler.store.selectedSENodules.length !== 0) {
       const deleteCommandGroup = new CommandGroup();
       //Keep track of the deleted objects ids
       // if the user selects object1 and object2 that is a dependent/descendent of object1, deleting object 1 will
       // also delete object2, so that you should not also try to delete object again.
       const deletedObjectIDs: number[] = [];
-      SEStore.selectedSENodules
+      DeleteHandler.store.selectedSENodules
         .filter(
           (object: SENodule) =>
             !(object instanceof SEIntersectionPoint) ||
@@ -181,7 +180,7 @@ export default class DeleteHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.deletedNodes`,
         keyOptions: {
-          number: `${SEStore.selectedSENodules.length}`
+          number: `${DeleteHandler.store.selectedSENodules.length}`
         },
         type: "success"
       });

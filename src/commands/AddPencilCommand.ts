@@ -1,7 +1,6 @@
 import { SENodule } from "@/models/SENodule";
 import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEStore } from "@/store";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 
@@ -14,9 +13,9 @@ export class AddPencilCommand extends Command {
   }
 
   do(): void {
-    SEStore.addPoint(this.pencil.commonPoint);
+    Command.store.addPoint(this.pencil.commonPoint);
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
-      SEStore.addLine(line);
+      Command.store.addLine(line);
       this.pencil.commonPoint.registerChild(line);
       this.pencil.commonParametric.registerChild(line);
     });

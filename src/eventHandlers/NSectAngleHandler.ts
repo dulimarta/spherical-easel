@@ -1,10 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
-import { NotEqualStencilFunc, Vector3 } from "three";
-import { SEStore } from "@/store";
-import { SESegment } from "@/models/SESegment";
-import { SENSectPoint } from "@/models/SENSectPoint";
-import Point from "@/plottables/Point";
+import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Two from "two.js";
 import NonFreePoint from "@/plottables/NonFreePoint";
@@ -13,7 +9,6 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionReturnType } from "@/types";
-import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 import Line from "@/plottables/Line";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SENSectLine } from "@/models/SENSectLine";
@@ -43,7 +38,7 @@ export default class NSectAngleHandler extends Highlighter {
     for (let i = 0; i < 9; i++) {
       this.temporaryLines.push(new Line());
       this.temporaryLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
-      SEStore.addTemporaryNodule(this.temporaryLines[i]);
+      NSectAngleHandler.store.addTemporaryNodule(this.temporaryLines[i]);
       this.temporaryLinesAdded.push(false);
     }
     if (bisectOnly === true) {
@@ -161,7 +156,7 @@ export default class NSectAngleHandler extends Highlighter {
     if (this.hitSEAngleMarkers.length > 0) {
       const candidateAngle = this.hitSEAngleMarkers[0];
       if (
-        SEStore.seLines
+        NSectAngleHandler.store.seLines
           .filter(line => line instanceof SENSectLine)
           .map(line => line as SENSectLine)
           .some(line => {
@@ -223,7 +218,7 @@ export default class NSectAngleHandler extends Highlighter {
     // glow a angle that hasn't been n-sected before
     if (this.hitSEAngleMarkers.length > 0) {
       if (
-        !SEStore.seLines
+        !NSectAngleHandler.store.seLines
           .filter(line => line instanceof SENSectLine)
           .map(line => line as SENSectLine)
           .some(line => {
@@ -272,7 +267,7 @@ export default class NSectAngleHandler extends Highlighter {
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
 
     // get the SEPoint at the vertex of the angle marker
-    const startSEPoint = SEStore.sePoints.find(pt =>
+    const startSEPoint = NSectAngleHandler.store.sePoints.find(pt =>
       this.tmpVector
         .subVectors(pt.locationVector, candidateAngle.vertexVector)
         .isZero()
@@ -318,7 +313,7 @@ export default class NSectAngleHandler extends Highlighter {
           .normalize();
 
         // make sure that this line doesn't already exist
-        const index = SEStore.seLines.findIndex(line =>
+        const index = NSectAngleHandler.store.seLines.findIndex(line =>
           this.tmpVector.subVectors(line.normalVector, normalVector).isZero()
         );
         if (index === -1) {
@@ -369,8 +364,9 @@ export default class NSectAngleHandler extends Highlighter {
           nSectingLineArray.push(nSectingLine);
 
           // Determine all new intersection points and add their creation to the command so it can be undone
-          SEStore.createAllIntersectionsWithLine(nSectingLine).forEach(
-            (item: SEIntersectionReturnType) => {
+          NSectAngleHandler.store
+            .createAllIntersectionsWithLine(nSectingLine)
+            .forEach((item: SEIntersectionReturnType) => {
               // Create the plottable label
               const newLabel = new Label();
               const newSELabel = new SELabel(
@@ -400,8 +396,7 @@ export default class NSectAngleHandler extends Highlighter {
               );
               item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
               newSELabel.showing = false;
-            }
-          );
+            });
         } else {
           console.log("An n-secting line already exists", i);
         }

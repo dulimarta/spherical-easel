@@ -22,6 +22,18 @@ export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
 
+export type PiniaAppState = {
+  actionMode: ActionMode;
+  previousActionMode: ActionMode;
+  activeToolName: string;
+  previousActiveToolName: string;
+  zoomMagnificationFactor: number;
+  zoomTranslation: number[];
+  hasUnsavedNodules: boolean;
+  svgCanvas: HTMLDivElement | null;
+  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  styleSavedFromPanel: StyleEditPanels;
+};
 export interface AppState {
   layers: Two.Group[];
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)

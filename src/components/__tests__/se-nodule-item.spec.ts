@@ -175,6 +175,7 @@ describe("SENoduleItem.vue", () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.POINTS,
+      1.0,
       createPoint(),
       createPoint(),
       createPoint()
@@ -195,6 +196,7 @@ describe("SENoduleItem.vue", () => {
   it("displays angles between two lines with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
+      1.0,
       AngleMode.LINES,
       createLine(),
       createLine()
@@ -215,6 +217,7 @@ describe("SENoduleItem.vue", () => {
   it("displays angles between two segments with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
+      1.0,
       AngleMode.SEGMENTS,
       createSegment(),
       createSegment()
@@ -235,6 +238,7 @@ describe("SENoduleItem.vue", () => {
   it("displays angles between a line and a segment with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
+      1.0,
       AngleMode.LINEANDSEGMENT,
       createLine(),
       createSegment()

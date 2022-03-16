@@ -169,15 +169,14 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore } from "./store";
 import { useAccountStore } from "@/stores/account";
+import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
-import { mapState, mapActions, mapWritableState } from "pinia";
+import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
 
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
-const SE = namespace("se");
 //#endregion vuex-module-namespace
 
 // Register vue router in-component navigation guard functions
@@ -190,27 +189,33 @@ Component.registerHooks([
 @Component({
   components: { MessageBox, Dialog },
   methods: {
-    ...mapActions(useAccountStore, ["resetToolset"])
+    ...mapActions(useAccountStore, ["resetToolset"]),
+    ...mapActions(useSEStore, ["clearUnsavedFlag"])
   },
   computed: {
     ...mapState(useAccountStore, ["includedTools"]),
-    ...mapWritableState(useAccountStore, ["userRole"])
+    ...mapState(useSEStore, [
+      "activeToolName",
+      "svgCanvas",
+      "inverseTotalRotationMatrix"
+    ]),
+    ...mapWritableState(useAccountStore, ["userRole"]),
+    ...mapGetters(useSEStore, ["hasObjects"])
   }
 })
 export default class App extends Vue {
   //#region activeToolName
-  @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
   //#endregion activeToolName
 
-  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
   readonly includedTools!: Array<string>;
-  resetToolset!: () => void;
+  readonly resetToolset!: () => void;
+  readonly hasObjects!: () => boolean;
+  readonly clearUnsavedFlag!: () => void;
 
   userRole!: string | undefined;
 
@@ -245,11 +250,6 @@ export default class App extends Vue {
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
-  }
-
-  get hasObjects(): boolean {
-    // Any objects must include at least one point
-    return SEStore.sePoints.length > 0;
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -437,7 +437,7 @@ export default class App extends Vue {
           keyOptions: { docId },
           type: "info"
         });
-        SEStore.clearUnsavedFlag();
+        this.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.error("Can't save document", err.message);

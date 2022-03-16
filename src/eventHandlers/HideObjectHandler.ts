@@ -5,7 +5,6 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { SEStore } from "@/store";
 import { SELabel } from "@/models/SELabel";
 
 export default class HideObjectHandler extends Highlighter {
@@ -24,7 +23,7 @@ export default class HideObjectHandler extends Highlighter {
     // See if the S key was pressed, if so show *all* hidden objects
     if (keyEvent.key.match("S")) {
       const setNoduleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules.forEach(seNodule => {
+      HideObjectHandler.store.seNodules.forEach(seNodule => {
         // don't do anything to the intersection points that are not user created
         if (
           seNodule instanceof SEIntersectionPoint &&
@@ -50,7 +49,7 @@ export default class HideObjectHandler extends Highlighter {
     } else if (keyEvent.key.match("s")) {
       // if the lower case s key was pushed restore/show only those objects that the user has hidden since activating the tool
       const setNoduleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules.forEach(seNodule => {
+      HideObjectHandler.store.seNodules.forEach(seNodule => {
         // don't do anything to the intersection points that are not user created
         if (
           seNodule instanceof SEIntersectionPoint &&
@@ -159,13 +158,13 @@ export default class HideObjectHandler extends Highlighter {
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
     // Record the showing status of all the SENodules
-    SEStore.seNodules.forEach(seNodule => {
+    HideObjectHandler.store.seNodules.forEach(seNodule => {
       this.initialShowingMap.set(seNodule.id, seNodule.showing);
     });
 
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
-    SEStore.selectedSENodules
+    HideObjectHandler.store.selectedSENodules
       .filter(
         // remove the intersection points that are not user created
         (object: SENodule) =>

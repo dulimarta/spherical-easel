@@ -83,13 +83,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
 import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
-import { SEStore } from "@/store";
 import { useAccountStore } from "@/stores/account";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { mapActions, mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 /* Declare the components used in this component. */
 @Component({
@@ -98,7 +98,8 @@ import { mapActions, mapState } from "pinia";
     ...mapState(useAccountStore, ["userRole", "includedTools"])
   },
   methods: {
-    ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"])
+    ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"]),
+    ...mapActions(useSEStore, ["setActionMode"])
   }
 })
 export default class ToolGroups extends Vue {
@@ -106,6 +107,7 @@ export default class ToolGroups extends Vue {
   readonly includedTools!: ActionMode[];
   readonly includeToolName!: (s: ActionMode) => void;
   readonly excludeToolName!: (s: ActionMode) => void;
+  readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
 
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
@@ -138,7 +140,7 @@ export default class ToolGroups extends Vue {
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
-    SEStore.setActionMode(this.actionMode);
+    this.setActionMode(this.actionMode);
   }
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */

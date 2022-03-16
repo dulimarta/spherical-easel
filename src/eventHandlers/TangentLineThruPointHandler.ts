@@ -28,7 +28,6 @@ import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
 // const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
-import { SEStore } from "@/store";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 
@@ -96,12 +95,16 @@ export default class TangentLineThruPointHandler extends Highlighter {
       tmpNormal: new Vector3()
     });
     this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.tempLines[0].line);
+    TangentLineThruPointHandler.store.addTemporaryNodule(
+      this.tempLines[0].line
+    );
 
     // Create and style the temporary point marking the point on the tangent being created
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPointMarker);
+    TangentLineThruPointHandler.store.addTemporaryNodule(
+      this.temporaryPointMarker
+    );
     this.temporaryPointAdded = false;
   }
 
@@ -387,7 +390,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVector = this.snapToTemporaryPoint.locationVector;
+            this.temporaryPointMarker.positionVector =
+              this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPointMarker.removeFromLayers();
             this.temporaryPointAdded = false;
@@ -395,9 +399,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapToTemporaryOneDimensional !== null) {
-          this.temporaryPointMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryPointMarker.positionVector =
+            this.snapToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapToTemporaryPoint == null) {
           this.temporaryPointMarker.positionVector = this.currentSphereVector;
         }
@@ -417,9 +422,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
         } else {
           vectorLocation = this.currentSphereVector;
         }
-        const normalList = this.oneDimensional.getNormalsToTangentLinesThru(
-          vectorLocation
-        );
+        const normalList =
+          this.oneDimensional.getNormalsToTangentLinesThru(vectorLocation);
 
         // Add more temporary line as needed
         while (this.tempLines.length < normalList.length) {
@@ -430,7 +434,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
             tmpNormal: new Vector3()
           });
           newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-          SEStore.addTemporaryNodule(newLine);
+          TangentLineThruPointHandler.store.addTemporaryNodule(newLine);
         }
 
         //set the display of the normals and the vectors
@@ -506,9 +510,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
           newPoint,
           sePointOneDimensionalParent
         );
-        this.sePoint.locationVector = sePointOneDimensionalParent.closestVector(
-          sePointVector
-        );
+        this.sePoint.locationVector =
+          sePointOneDimensionalParent.closestVector(sePointVector);
         const newSELabel = new SELabel(newLabel, this.sePoint);
         // Set the initial label location
         this.tmpVector
@@ -659,8 +662,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
       );
 
       // Determine all new intersection points and add their creation to the command so it can be undone
-      SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
-        (item: SEIntersectionReturnType) => {
+      TangentLineThruPointHandler.store
+        .createAllIntersectionsWithLine(newPerpLine)
+        .forEach((item: SEIntersectionReturnType) => {
           // Create the plottable label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -687,15 +691,14 @@ export default class TangentLineThruPointHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
-        }
-      );
+        });
     }
     addTangentLineGroup.execute();
   }
   activate(): void {
-    if (SEStore.selectedSENodules.length == 2) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
+    if (TangentLineThruPointHandler.store.selectedSENodules.length == 2) {
+      const object1 = TangentLineThruPointHandler.store.selectedSENodules[0];
+      const object2 = TangentLineThruPointHandler.store.selectedSENodules[1];
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (

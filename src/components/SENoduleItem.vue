@@ -241,14 +241,19 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
-import { SEStore } from "@/store";
 import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
+import { mapActions } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 const SE = namespace("se");
-@Component
+@Component({
+  methods: {
+    ...mapActions(useSEStore, ["unglowAllSENodules"])
+  }
+})
 export default class SENoduleItem extends Vue {
   @Prop() readonly node!: SENodule;
 
@@ -257,7 +262,7 @@ export default class SENoduleItem extends Vue {
 
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseRotationMatrix!: Matrix4;
-
+  readonly unglowAllSENodules!: () => void;
   private rotationMatrix = new Matrix4();
   private traceLocation = new Vector3();
   curve: SEParametric | null = null;
@@ -388,7 +393,7 @@ export default class SENoduleItem extends Vue {
     deleteCommandGroup.execute();
 
     // when deleting mesurements, the measure object(if any) must be unglowed
-    SEStore.unglowAllSENodules();
+    this.unglowAllSENodules();
   }
 
   cycleValueDisplayMode(): void {

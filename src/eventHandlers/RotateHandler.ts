@@ -1,4 +1,3 @@
-import MouseHandler from "./MouseHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
@@ -7,7 +6,6 @@ import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
-import { SEStore } from "@/store";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
@@ -551,7 +549,7 @@ export default class RotateHandler extends Highlighter {
     this.rotationObject = null;
     this.rotateAboutObjectMode = false;
     this.newObjectOfRotation = true;
-    SEStore.unglowAllSENodules();
+    RotateHandler.store.unglowAllSENodules();
   }
 
   // Delay the execution of a set of commands (but allow other threads to continue)
@@ -648,8 +646,8 @@ export default class RotateHandler extends Highlighter {
     let rotationObjectTypeKey: string | undefined = "";
     let rotationObjectName: string | undefined = "";
 
-    if (SEStore.selectedSENodules.length == 1) {
-      const object = SEStore.selectedSENodules[0];
+    if (RotateHandler.store.selectedSENodules.length == 1) {
+      const object = RotateHandler.store.selectedSENodules[0];
       if (object instanceof SEPoint) {
         this.rotationObject = object;
         this.oldAxisOfRotation.copy(this.axisOfRotation);

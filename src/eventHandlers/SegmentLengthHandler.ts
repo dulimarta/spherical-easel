@@ -9,8 +9,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
-import { SEStore } from "@/store";
-import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class SegmentLengthHandler extends Highlighter {
   /**
@@ -30,7 +28,7 @@ export default class SegmentLengthHandler extends Highlighter {
       }
       let measurementName = "";
       if (
-        SEStore.expressions.some(exp => {
+        SegmentLengthHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.targetSegment !== null &&
@@ -107,7 +105,7 @@ export default class SegmentLengthHandler extends Highlighter {
 
     const segmentList = this.hitSESegments.filter(seg => {
       if (
-        SEStore.expressions.some(exp => {
+        SegmentLengthHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             exp.seSegment.name === seg.name
@@ -143,13 +141,13 @@ export default class SegmentLengthHandler extends Highlighter {
     this.targetSegment = null;
   }
   activate(): void {
-    if (SEStore.selectedSENodules.length == 1) {
-      const object1 = SEStore.selectedSENodules[0];
+    if (SegmentLengthHandler.store.selectedSENodules.length == 1) {
+      const object1 = SegmentLengthHandler.store.selectedSENodules[0];
 
       if (object1 instanceof SESegment) {
         let measurementName = "";
         if (
-          SEStore.expressions.some(exp => {
+          SegmentLengthHandler.store.expressions.some(exp => {
             if (
               exp instanceof SESegmentLength &&
               exp.seSegment.name === object1.name

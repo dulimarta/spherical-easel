@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3 } from "three";
-import { SEStore } from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
@@ -16,6 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -59,6 +59,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEParametrics: SEParametric[] = [];
   protected hitSEPolygons: SEPolygon[] = [];
 
+  static store: SEStoreType;
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
    * This allow the created objects to be put in the correct layers
@@ -88,6 +89,9 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.previousScreenVector = new Two.Vector(0, 0);
     this.isOnSphere = false;
   }
+  static setGlobalStore(store: SEStoreType): void {
+    MouseHandler.store = store;
+  }
 
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
@@ -110,8 +114,8 @@ export default abstract class MouseHandler implements ToolStrategy {
     const mouseY = -(offsetY - this.canvas.translation.y);
 
     // Get the current zoom factor and vector
-    const mag = SEStore.zoomMagnificationFactor;
-    const zoomTransVec = SEStore.zoomTranslation;
+    const mag = MouseHandler.store.zoomMagnificationFactor;
+    const zoomTransVec = MouseHandler.store.zoomTranslation;
 
     // Transform the (mouseX, mouseY) pixel location to default screen
     // coordinates (i.e. to pre affine/css transformation)

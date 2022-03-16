@@ -12,7 +12,6 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
-import { SEStore } from "@/store";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -76,7 +75,7 @@ export class DeleteNoduleCommand extends Command {
         }
       } else if (
         this.seNodule instanceof SEPointCoordinate &&
-        SEStore.expressions
+        Command.store.expressions
           .filter(exp => exp instanceof SEPointCoordinate)
           .every(
             exp =>

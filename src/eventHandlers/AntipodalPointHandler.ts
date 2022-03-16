@@ -18,7 +18,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
-import { SEStore } from "@/store";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -28,7 +27,8 @@ export default class AntipodalPointHandler extends Highlighter {
   /**
    * If the user clicks on a one dimensional, create a point on that one dimensional *and* create the antipode of that point
    */
-  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null = null;
+  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null =
+    null;
 
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
@@ -59,10 +59,12 @@ export default class AntipodalPointHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryAntipodeMarker);
+    AntipodalPointHandler.store.addTemporaryNodule(
+      this.temporaryAntipodeMarker
+    );
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPointMarker);
+    AntipodalPointHandler.store.addTemporaryNodule(this.temporaryPointMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -73,7 +75,7 @@ export default class AntipodalPointHandler extends Highlighter {
         // The user selected an existing point
         this.parentPoint = this.hitSEPoints[0];
         // check to see if there is already an antipode
-        if (SEStore.hasNoAntipode(this.parentPoint)) {
+        if (AntipodalPointHandler.store.hasNoAntipode(this.parentPoint)) {
           this.parentPointVector.copy(this.parentPoint.locationVector);
           this.oneDimensionalContainingParentPoint = null;
         } else {
@@ -408,8 +410,8 @@ export default class AntipodalPointHandler extends Highlighter {
   }
   activate(): void {
     // If there is exactly one point selected, create its anitpode
-    if (SEStore.selectedSENodules.length == 1) {
-      const object = SEStore.selectedSENodules[0];
+    if (AntipodalPointHandler.store.selectedSENodules.length == 1) {
+      const object = AntipodalPointHandler.store.selectedSENodules[0];
       if (object instanceof SEPoint) {
         const newPoint = new NonFreePoint();
         // Set the display to the default values

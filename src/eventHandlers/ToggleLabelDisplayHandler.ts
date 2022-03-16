@@ -2,10 +2,8 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { SEStore } from "@/store";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
 
@@ -25,7 +23,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Show all labels of all visible objects (whose labels are not already showing) lower case s
     if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules
+      ToggleLabelDisplayHandler.store.seNodules
         .filter(
           // no non-user created points
           (object: SENodule) =>
@@ -40,7 +38,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already showing
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return !((object as unknown) as Labelable).label!.showing;
+              return !(object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -51,7 +49,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 true
               )
             );
@@ -63,7 +61,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Hide all labels of all visible objects (whose labels are not already hiding) lower case h
     if (keyEvent.code === "KeyH" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules
+      ToggleLabelDisplayHandler.store.seNodules
         .filter(
           // no non-user created points
           (object: SENodule) =>
@@ -78,7 +76,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already hidden
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return ((object as unknown) as Labelable).label!.showing;
+              return (object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -89,7 +87,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 false
               )
             );
@@ -195,9 +193,9 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   activate(): void {
     window.addEventListener("keydown", this.keyPressHandler);
     // Toggle the display of all selected objects
-    if (SEStore.selectedSENodules.length !== 0) {
+    if (ToggleLabelDisplayHandler.store.selectedSENodules.length !== 0) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.selectedSENodules
+      ToggleLabelDisplayHandler.store.selectedSENodules
         .filter(
           (object: SENodule) =>
             !(object instanceof SEIntersectionPoint) ||
@@ -208,8 +206,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
-                !((object as unknown) as Labelable).label!.showing
+                (object as unknown as Labelable).label!,
+                !(object as unknown as Labelable).label!.showing
               )
             );
           }

@@ -7,21 +7,13 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
-import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
-import { AddPointCommand } from "@/commands/AddPointCommand";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
-import { SEParametric } from "@/models/SEParametric";
 import Polygon from "@/plottables/Polygon";
 import { SEPolygon } from "@/models/SEPolygon";
 import { AddPolygonCommand } from "@/commands/AddPolygonAndExpressionCommand";
@@ -30,7 +22,6 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PolygonHandler extends Highlighter {
@@ -84,7 +75,7 @@ export default class PolygonHandler extends Highlighter {
     for (let i = 0; i < SETTINGS.polygon.numberOfTemporaryAngleMarkers; i++) {
       const tmpAm = new AngleMarker();
       tmpAm.stylize(DisplayStyle.ApplyTemporaryVariables);
-      SEStore.addTemporaryNodule(tmpAm);
+      PolygonHandler.store.addTemporaryNodule(tmpAm);
       this.temporaryAngleMarkers.push(tmpAm);
       this.temporaryAngleMarkersAdded.push(false);
     }
@@ -300,7 +291,7 @@ export default class PolygonHandler extends Highlighter {
         // makes sure that this polygon has not been measured before
         let measuredBefore = false;
         let token = "";
-        SEStore.sePolygons.forEach(poly => {
+        PolygonHandler.store.sePolygons.forEach(poly => {
           // if they have different lengths they are different
           if (poly.seEdgeSegments.length !== this.seEdgeSegments.length) {
             return;
@@ -476,7 +467,7 @@ export default class PolygonHandler extends Highlighter {
           this.triangleSelectionMode
         ) {
           // the user has selected at two segments, highlight all segments that have an endpoint in common, are acceptable *and* close the triangle
-          // Do I want to make this only high light the hit segments or all segments (i.e. change this.hitSESegments to SEStore.seSegments)
+          // Do I want to make this only high light the hit segments or all segments (i.e. change this.hitSESegments to PolygonHandler.store.seSegments)
           possibleSegments = this.hitSESegments
             .filter(seg => this.chainEndPointOnSegment(this.endSEPoint, seg)[0])
             .filter(seg => {
@@ -509,7 +500,7 @@ export default class PolygonHandler extends Highlighter {
           }
         } else {
           // the user has selected at least one segment, highlight all segments that have an endpoint in common and are acceptable
-          // Do I want to make this only high light the hit segments or all segments (i.e. change this.hitSESegments to SEStore.seSegments)
+          // Do I want to make this only high light the hit segments or all segments (i.e. change this.hitSESegments to PolygonHandler.store.seSegments)
           possibleSegments = this.hitSESegments
             .filter(seg => this.chainEndPointOnSegment(this.endSEPoint, seg)[0])
             .filter(seg => {
@@ -616,7 +607,7 @@ export default class PolygonHandler extends Highlighter {
     super.mouseLeave(event);
     // console.log("mouse leave");
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    PolygonHandler.store.unglowAllSENodules();
     this.infoText.hide();
     // unselect segments
     this.seEdgeSegments.forEach(l => (l.selected = false));
@@ -639,7 +630,7 @@ export default class PolygonHandler extends Highlighter {
   deactivate(): void {
     super.deactivate();
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    PolygonHandler.store.unglowAllSENodules();
     this.infoText.hide();
     // unselect segments
     this.seEdgeSegments.forEach(l => (l.selected = false));
@@ -727,10 +718,12 @@ export default class PolygonHandler extends Highlighter {
 
     for (let j = startIndex; j < seEdgeSegments.length - 1; j++) {
       if (
-        SEStore.findIntersectionPointsByParent(
-          potentialNewSegment.name,
-          seEdgeSegments[j].name
-        ).some(pt => pt.exists)
+        PolygonHandler.store
+          .findIntersectionPointsByParent(
+            potentialNewSegment.name,
+            seEdgeSegments[j].name
+          )
+          .some(pt => pt.exists)
       ) {
         // the potential new segment intersects the existing chain
         return false;
@@ -749,7 +742,7 @@ export default class PolygonHandler extends Highlighter {
       const seg0 = this.seEdgeSegments[(((index - 1) % n) + n) % n];
 
       // make sure that this pair of segments has not been measured already
-      const oldAngleMarker = SEStore.expressions.find(exp => {
+      const oldAngleMarker = PolygonHandler.store.expressions.find(exp => {
         if (exp instanceof SEAngleMarker) {
           if (exp.angleMode === AngleMode.SEGMENTS) {
             if (
@@ -762,9 +755,8 @@ export default class PolygonHandler extends Highlighter {
             }
           } else if (exp.angleMode === AngleMode.POINTS) {
             // now figure out if the angle was measured using points
-            const seg0Flipped = this.segmentIsFlipped[
-              (((index - 1) % n) + n) % n
-            ];
+            const seg0Flipped =
+              this.segmentIsFlipped[(((index - 1) % n) + n) % n];
             const seg1Flipped = this.segmentIsFlipped[((index % n) + n) % n];
 
             const startPointName = seg0Flipped
@@ -817,6 +809,7 @@ export default class PolygonHandler extends Highlighter {
 
       const newSEAngleMarker = new SEAngleMarker(
         newAngleMarker,
+        PolygonHandler.store.zoomMagnificationFactor,
         AngleMode.SEGMENTS,
         seg0,
         seg1
@@ -891,7 +884,7 @@ export default class PolygonHandler extends Highlighter {
   addMeasuredSegments(polygonCommandGroup: CommandGroup): void {
     this.seEdgeSegments.forEach(seg => {
       // make sure that this pair of segments has not been measured already
-      const oldSegmentLength = SEStore.expressions.find(exp => {
+      const oldSegmentLength = PolygonHandler.store.expressions.find(exp => {
         if (exp instanceof SESegmentLength && exp.seSegment.name === seg.name) {
           return true;
         } else {

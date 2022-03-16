@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { SEEllipse } from "@/models/SEEllipse";
 import Ellipse from "@/plottables/Ellipse";

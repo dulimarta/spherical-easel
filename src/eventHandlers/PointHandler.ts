@@ -14,7 +14,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
-import { SEStore } from "@/store";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -35,7 +34,7 @@ export default class PointHandler extends Highlighter {
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.startMarker);
+    PointHandler.store.addTemporaryNodule(this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -247,9 +246,10 @@ export default class PointHandler extends Highlighter {
       if (this.snapToTemporaryOneDimensional === null) {
         this.startMarker.positionVector = this.currentSphereVector;
       } else {
-        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-          this.currentSphereVector
-        );
+        this.startMarker.positionVector =
+          this.snapToTemporaryOneDimensional.closestVector(
+            this.currentSphereVector
+          );
       }
 
       // If there is a nearby (possibly user created or not) point turn off the temporary marker

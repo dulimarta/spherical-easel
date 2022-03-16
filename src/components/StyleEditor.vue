@@ -7,7 +7,6 @@ import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
 import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
@@ -19,6 +18,8 @@ import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+import { mapState, mapActions } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 const SE = namespace("se");
 type StyleOptionDiff = {
@@ -26,7 +27,14 @@ type StyleOptionDiff = {
   oldValue: string | number | Array<number> | undefined;
   newValue: string | number | Array<number> | undefined;
 };
-@Component
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["selectedSENodules"])
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setSelectedSENodules", "setOldSelection"])
+  }
+})
 export default class extends Vue {
   @Prop({ required: true }) readonly panel!: StyleEditPanels;
   // @Prop({ required: true }) readonly styleData!: StyleOptions | null;
@@ -39,8 +47,14 @@ export default class extends Vue {
   @Prop({ default: true }) automaticBackStyle!: boolean;
 
   // You are not allow to style labels directly so remove them from the selection and warn the user
-  @SE.State((s: AppState) => s.selectedSENodules)
-  readonly allSelectedSENodules!: SENodule[];
+
+  readonly selectedSENodules!: SENodule[];
+  readonly setSelectedSENodules!: (_: Array<SENodule>) => void;
+  readonly setOldSelection!: (_: Array<SENodule>) => void;
+  readonly recordStyleState!: (_: {
+    panel: StyleEditPanels;
+    selected: Nodule[];
+  }) => void;
 
   @SE.State((s: AppState) => s.initialStyleStatesMap)
   readonly initialStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
@@ -56,7 +70,6 @@ export default class extends Vue {
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
-  selectedSENodules: Array<SENodule> = [];
   selectedNodules: Array<Nodule> = [];
   previousSelectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
@@ -241,11 +254,11 @@ export default class extends Vue {
     this.activeStyleOptions = {};
 
     // console.debug("***********************");
-    this.selectedSENodules = newSelection.filter(this.noduleFilterFunction);
+    this.setSelectedSENodules(newSelection.filter(this.noduleFilterFunction));
     this.selectedNodules = this.selectedSENodules.map(this.noduleMapFunction);
     // console.debug("Selected SENodules", this.selectedSENodules);
     // console.debug("Selected plottables", this.selectedNodules);
-    SEStore.setOldSelection(this.selectedSENodules);
+    this.setOldSelection(this.selectedSENodules);
 
     // Save current state so we can reset to this state if needed to
     const styleOptionsOfSelected = this.selectedNodules.map((n: Nodule) => {
@@ -256,7 +269,7 @@ export default class extends Vue {
     //   "styleOptionsOfSelected",
     //   styleOptionsOfSelected[0]
     // );
-    SEStore.recordStyleState({
+    this.recordStyleState({
       panel: this.panel,
       selected: this.selectedNodules
     });
@@ -651,7 +664,7 @@ export default class extends Vue {
       // else {
       //   console.debug("Eveything stayed unchanged");
       // }
-      SEStore.setOldSelection([]);
+      this.setOldSelection([]);
     }
     // else {
     //   // console.debug("No dirty selection");

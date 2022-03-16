@@ -10,7 +10,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
-import { SEStore } from "@/store";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -37,7 +36,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.startMarker);
+    PointOnOneDimensionalHandler.store.addTemporaryNodule(this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -145,9 +144,10 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       if (this.snapToTemporaryOneDimensional === null) {
         this.startMarker.positionVector = this.currentSphereVector;
       } else {
-        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-          this.currentSphereVector
-        );
+        this.startMarker.positionVector =
+          this.snapToTemporaryOneDimensional.closestVector(
+            this.currentSphereVector
+          );
       }
       // if there is a nearby point or no objects nearby remove the temporary point
       if (this.hitSEPoints.length > 0 || this.hitSENodules.length === 0) {

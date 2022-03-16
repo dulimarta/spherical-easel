@@ -397,8 +397,8 @@ import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEStore } from "@/store";
+import { mapActions, mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 const SE = namespace("se");
 
 type ConflictItems = {
@@ -422,6 +422,16 @@ type ConflictItems = {
     OverlayWithFixButton,
     StyleEditor,
     InputGroup
+  },
+  methods: {
+    ...mapActions(useSEStore, ["changeBackContrast"])
+  },
+  computed: {
+    ...mapState(useSEStore, [
+      "selectedSENodules",
+      "oldStyleSelections",
+      "styleSavedFromPanel"
+    ])
   }
 })
 export default class FrontBackStyle extends Vue {
@@ -432,17 +442,13 @@ export default class FrontBackStyle extends Vue {
   readonly activePanel!: StyleEditPanels;
 
   // You are not allow to style labels  directly  so remove them from the selection and warn the user
-  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
-  // @SE.State((s: AppState) => s.initialBackStyleContrast)
-  // readonly initialBackStyleContrast!: number;
-
-  @SE.State((s: AppState) => s.oldSelections)
   readonly oldStyleSelection!: SENodule[];
 
-  @SE.State((s: AppState) => s.styleSavedFromPanel)
   readonly styleSavedFromPanel!: StyleEditPanels;
+
+  readonly changeBackContrast!: (_: number) => void;
 
   @Watch("selectedSENodules")
   resetAllItemsFromConflict(): void {
@@ -611,7 +617,7 @@ export default class FrontBackStyle extends Vue {
     "Same"
   ];
   setBackStyleContrast(): void {
-    SEStore.changeBackContrast(this.backStyleContrast);
+    this.changeBackContrast(this.backStyleContrast);
   }
 
   private conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.

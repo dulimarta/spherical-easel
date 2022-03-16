@@ -155,6 +155,7 @@ export class AddAngleMarkerCommand extends Command {
       const seAngleMarker = new SEAngleMarker(
         angleMarker,
         mode,
+        AddAngleMarkerCommand.store.zoomMagnificationFactor,
         firstParent,
         secondParent,
         thirdParentPoint

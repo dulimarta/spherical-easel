@@ -97,7 +97,6 @@ import { namespace } from "vuex-class";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import Parametric from "@/plottables/Parametric";
-import { SEStore } from "@/store";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -110,6 +109,8 @@ import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
+import { mapActions, mapState, mapGetters } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 const SE = namespace("se");
 
@@ -130,18 +131,22 @@ interface ParametricDataType {
     ParametricTNumber,
     ParametricTracingExpressions,
     ParametricCuspParameterValues
-  }
+  },
+  computed: {
+    ...mapState(useSEStore, ["expressions", "seParametrics"]),
+    ...mapGetters(useSEStore, ["createAllIntersectionsWithParametric"])
+  },
+  methods: {}
 })
 export default class ParametricForm extends Vue {
   mounted(): void {
     EventBus.listen("parametric-data-update", this.processParameticData);
   }
-  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
-
-  @SE.State((s: AppState) => s.seParametrics)
-  readonly oldParametrics!: SEParametric[];
-
+  readonly seParametrics!: SEParametric[];
+  readonly createAllIntersectionsWithParametric!: (
+    _: SEParametric
+  ) => SEIntersectionReturnType[];
   /**
    * These are string expressions that once set define the Parametric curve
    */
@@ -358,18 +363,21 @@ export default class ParametricForm extends Vue {
     // this.tExpressions.min = "0";
     // this.tExpressions.max = "M2";
 
-    this.coordinateExpressions.x = "(1/b)*((b-cos(w))*cos(t)+cos(w)*cos(t)*cos(b*t)+sin(t)*sin(b*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
-    this.coordinateExpressions.y = "(1/b)*((b-cos(w))*sin(t)+cos(w)*sin(t)*cos(b*t)-cos(t)*sin(b*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
-    this.coordinateExpressions.z = "(1/b)*sin(w)*(1-cos(b*t))*a-((a/b)-a*cos(w))/sin(w)"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
+    this.coordinateExpressions.x =
+      "(1/b)*((b-cos(w))*cos(t)+cos(w)*cos(t)*cos(b*t)+sin(t)*sin(b*t))*a"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
+    this.coordinateExpressions.y =
+      "(1/b)*((b-cos(w))*sin(t)+cos(w)*sin(t)*cos(b*t)-cos(t)*sin(b*t))*a"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
+    this.coordinateExpressions.z =
+      "(1/b)*sin(w)*(1-cos(b*t))*a-((a/b)-a*cos(w))/sin(w)"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
     // this.primeCoordinateExpressions.x = "(1/b)*(2*(-b+cos(w))*sin(t)*sin((b*t)/2)^2+cos(t)*(1-b*cos(w))*sin(b*t))*a"
     //   .replaceAll(`a`, a)
     //   .replaceAll(`w`, w)
@@ -410,26 +418,29 @@ export default class ParametricForm extends Vue {
     // this.tNumbers.max = 10 * Math.PI;
     // this.c1DiscontunityParameterValues = [];
     //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Cos[t]+d*Sin[t]*Sin[q*t]) Mathematica input
-    this.coordinateExpressions.x = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.x =
+      "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
     //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Sin[t]-d*Cos[t]*Sin[q*t]), Mathematica input
-    this.coordinateExpressions.y = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*sin(t)-d*cos(t)*sin(q*t))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.y =
+      "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*sin(t)-d*cos(t)*sin(q*t))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
     //                              e*(Sin[w]*(b-d*Cos[q*t])-(b-b*q*Cos[w])/Sin[w]) Mathematica input
-    this.coordinateExpressions.z = "e*(sin(w)*(b-d*cos(q*t))-(b-b*q*cos(w))/sin(w))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.z =
+      "e*(sin(w)*(b-d*cos(q*t))-(b-b*q*cos(w))/sin(w))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
   }
 
   beforeDestroy(): void {
@@ -477,7 +488,7 @@ export default class ParametricForm extends Vue {
   addParametricCurve(): void {
     // Do not allow adding the same parametric twice
     let duplicateCurve = false;
-    this.oldParametrics.forEach(para => {
+    this.seParametrics.forEach(para => {
       const coords = para.coordinateExpressions;
       if (
         this.coordinateExpressions.x === coords.x &&
@@ -627,16 +638,16 @@ export default class ParametricForm extends Vue {
     for (k in this.coordinateExpressions) {
       const exp = this.coordinateExpressions[k];
       for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-        const pos = SEStore.expressions.findIndex(z =>
+        const pos = this.expressions.findIndex(z =>
           z.name.startsWith(`${v[0]}`)
         );
         // add it to the calculationParents if it is not already added
         if (pos > -1) {
           const pos2 = calculationParents.findIndex(
-            parent => parent.name === SEStore.expressions[pos].name
+            parent => parent.name === this.expressions[pos].name
           );
           if (pos2 < 0) {
-            calculationParents.push(SEStore.expressions[pos]);
+            calculationParents.push(this.expressions[pos]);
           }
         }
       }
@@ -646,16 +657,16 @@ export default class ParametricForm extends Vue {
     for (l in this.tExpressions) {
       const exp = this.tExpressions[l];
       for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-        const pos = SEStore.expressions.findIndex(z =>
+        const pos = this.expressions.findIndex(z =>
           z.name.startsWith(`${v[0]}`)
         );
         // add it to the calculationParents if it is not already added
         if (pos > -1) {
           const pos2 = calculationParents.findIndex(
-            parent => parent.name === SEStore.expressions[pos].name
+            parent => parent.name === this.expressions[pos].name
           );
           if (pos2 < 0) {
-            calculationParents.push(SEStore.expressions[pos]);
+            calculationParents.push(this.expressions[pos]);
           }
         }
       }
@@ -770,7 +781,7 @@ export default class ParametricForm extends Vue {
     }
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the parametric command so they can be undone.
-    SEStore.createAllIntersectionsWithParametric(newSEParametric).forEach(
+    this.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();

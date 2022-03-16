@@ -18,12 +18,10 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
-import { SEStore } from "@/store";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SECircle } from "@/models/SECircle";
-import Line from "@/plottables/Line";
 import i18n from "../i18n";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { AddPolarPointCommand } from "@/commands/AddPolarPointCommand";
@@ -50,7 +48,8 @@ export default class PolarObjectHandler extends Highlighter {
   /**
    * If the user clicks on a circle or ellipse, create a point on that one dimensional *and* create the polar line of that point
    */
-  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null = null;
+  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null =
+    null;
 
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
@@ -93,21 +92,25 @@ export default class PolarObjectHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();
     this.temporaryPolarLineMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPolarLineMarker);
+    PolarObjectHandler.store.addTemporaryNodule(this.temporaryPolarLineMarker);
     this.temporaryPolarPointMarker1 = new NonFreePoint();
     this.temporaryPolarPointMarker1.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryPolarPointMarker1);
+    PolarObjectHandler.store.addTemporaryNodule(
+      this.temporaryPolarPointMarker1
+    );
     this.temporaryPolarPointMarker2 = new NonFreePoint();
     this.temporaryPolarPointMarker2.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryPolarPointMarker2);
+    PolarObjectHandler.store.addTemporaryNodule(
+      this.temporaryPolarPointMarker2
+    );
 
     this.temporaryPoint = new Point();
     this.temporaryPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint);
+    PolarObjectHandler.store.addTemporaryNodule(this.temporaryPoint);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -118,7 +121,7 @@ export default class PolarObjectHandler extends Highlighter {
         // The user selected an existing point
 
         // check to see if this polar line has already been created
-        const alreadyExists = SEStore.seLines.some(seLine => {
+        const alreadyExists = PolarObjectHandler.store.seLines.some(seLine => {
           return this.tmpVector
             .crossVectors(
               seLine.normalVector,
@@ -142,16 +145,18 @@ export default class PolarObjectHandler extends Highlighter {
       } else if (this.hitSESegments.length > 0 || this.hitSELines.length > 0) {
         // The user selected a segment or a line and we will create the polar points to it
         // check to see if the polar points have already been created
-        const alreadyExists = SEStore.sePoints.some(sePoint => {
-          return this.tmpVector
-            .subVectors(
-              sePoint.locationVector,
-              this.hitSESegments[0]
-                ? this.hitSESegments[0].normalVector
-                : this.hitSELines[0].normalVector
-            )
-            .isZero(SETTINGS.nearlyAntipodalIdeal);
-        });
+        const alreadyExists = PolarObjectHandler.store.sePoints.some(
+          sePoint => {
+            return this.tmpVector
+              .subVectors(
+                sePoint.locationVector,
+                this.hitSESegments[0]
+                  ? this.hitSESegments[0].normalVector
+                  : this.hitSELines[0].normalVector
+              )
+              .isZero(SETTINGS.nearlyAntipodalIdeal);
+          }
+        );
         if (!alreadyExists) {
           this.parentLineOrSegment = this.hitSESegments[0]
             ? this.hitSESegments[0]
@@ -234,7 +239,7 @@ export default class PolarObjectHandler extends Highlighter {
     // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are the only nearby objects
     if (this.hitSEPoints.length > 0) {
-      const alreadyExists = SEStore.seLines.some(seLine => {
+      const alreadyExists = PolarObjectHandler.store.seLines.some(seLine => {
         return this.tmpVector
           .crossVectors(seLine.normalVector, this.hitSEPoints[0].locationVector)
           .isZero(SETTINGS.nearlyAntipodalIdeal);
@@ -253,7 +258,7 @@ export default class PolarObjectHandler extends Highlighter {
         ? this.hitSESegments[0]
         : this.hitSELines[0];
 
-      const alreadyExists = SEStore.sePoints.some(sePoint => {
+      const alreadyExists = PolarObjectHandler.store.sePoints.some(sePoint => {
         return this.tmpVector
           .subVectors(
             sePoint.locationVector,
@@ -273,25 +278,29 @@ export default class PolarObjectHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSECircles[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSECircles[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEEllipses[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEEllipses[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEParametrics[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEParametrics[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEPolygons.length > 0) {
       this.hitSEPolygons[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEPolygons[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEPolygons[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
@@ -327,7 +336,8 @@ export default class PolarObjectHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPoint.positionVector = this.snapToTemporaryPoint.locationVector;
+            this.temporaryPoint.positionVector =
+              this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPoint.removeFromLayers();
             this.temporaryPointAdded = false;
@@ -337,9 +347,10 @@ export default class PolarObjectHandler extends Highlighter {
         else if (
           this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon !== null
         ) {
-          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryPoint.positionVector =
+            this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
+              this.currentSphereVector
+            );
         }
         // the user is not near anything
         else {
@@ -352,7 +363,8 @@ export default class PolarObjectHandler extends Highlighter {
           this.temporaryPolarLineAdded = true;
         }
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
-        this.temporaryPolarLineMarker.normalVector = this.temporaryPoint._locationVector;
+        this.temporaryPolarLineMarker.normalVector =
+          this.temporaryPoint._locationVector;
 
         //update the display
         this.temporaryPolarLineMarker.updateDisplay();
@@ -442,8 +454,8 @@ export default class PolarObjectHandler extends Highlighter {
   }
   activate(): void {
     // If there is exactly one point selected, create its polar line
-    if (SEStore.selectedSENodules.length == 1) {
-      const object = SEStore.selectedSENodules[0];
+    if (PolarObjectHandler.store.selectedSENodules.length == 1) {
+      const object = PolarObjectHandler.store.selectedSENodules[0];
       if (object instanceof SEPoint) {
         this.parentPoint = object;
         this.createPolarLine();
@@ -498,9 +510,8 @@ export default class PolarObjectHandler extends Highlighter {
 
     // Create the model object for the new point and link them
     const polarPoint2 = new SEPolarPoint(newPoint2, parentLineOrSegment, 1);
-    polarPoint2.locationVector = parentLineOrSegment.normalVector.multiplyScalar(
-      -1
-    );
+    polarPoint2.locationVector =
+      parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
     const newLabel2 = new Label();
@@ -666,8 +677,9 @@ export default class PolarObjectHandler extends Highlighter {
     newPolarLine.update();
 
     // Determine all new intersection points and add their creation to the command so it can be undone
-    SEStore.createAllIntersectionsWithLine(newPolarLine).forEach(
-      (item: SEIntersectionReturnType) => {
+    PolarObjectHandler.store
+      .createAllIntersectionsWithLine(newPolarLine)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -694,8 +706,7 @@ export default class PolarObjectHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      }
-    );
+      });
     polarLineCommandGroup.execute();
   }
 

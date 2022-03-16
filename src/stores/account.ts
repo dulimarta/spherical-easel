@@ -1,4 +1,4 @@
-import { defineStore, StoreState } from "pinia";
+import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
 import {
   AccountState,
   ActionMode,
@@ -78,8 +78,10 @@ export const useAccountStore = defineStore("acct", {
 // @Mutation
 // }
 
-// export type ReachableStore = //StoreActions<ReturnType<typeof useDef>> &
-//   // StoreGetters<ReturnType<typeof useDef>>; // &
-//   StoreState<ReturnType<typeof useDef>>;
+export type AccountStoreType = StoreActions<
+  ReturnType<typeof useAccountStore>
+> &
+  StoreGetters<ReturnType<typeof useAccountStore>> &
+  StoreState<ReturnType<typeof useAccountStore>>;
 
 // export const useAccountStore = (): ReachableStore => useDef();

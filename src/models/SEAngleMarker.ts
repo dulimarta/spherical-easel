@@ -14,7 +14,6 @@ import {
 } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
 import i18n from "@/i18n";
 
@@ -23,8 +22,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
-export class SEAngleMarker extends SEExpression
-  implements Visitable, Labelable {
+export class SEAngleMarker
+  extends SEExpression
+  implements Visitable, Labelable
+{
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
@@ -52,6 +53,7 @@ export class SEAngleMarker extends SEExpression
   // The type of SENodules that make up the angle
   private mode = AngleMode.NONE;
 
+  private zoomMagnificationFactor: number;
   /**
    * Used during this.move(): A matrix that is used to indicate the *change* in position of the
    * angleMarker on the sphere.
@@ -121,6 +123,7 @@ export class SEAngleMarker extends SEExpression
   constructor(
     angMar: AngleMarker,
     mode: AngleMode,
+    zoomMagnificationFactor: number,
     firstSEParent: SELine | SESegment | SEPoint,
     secondSEParent: SELine | SESegment | SEPoint,
     thirdSEParent?: SEPoint | undefined,
@@ -132,6 +135,7 @@ export class SEAngleMarker extends SEExpression
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
+    this.zoomMagnificationFactor = zoomMagnificationFactor;
     if (lineClickLocation1) this._lineClickLocation1 = lineClickLocation1;
     if (lineClickLocation2) this._lineClickLocation2 = lineClickLocation2;
     this.mode = mode;
@@ -352,16 +356,14 @@ export class SEAngleMarker extends SEExpression
             this._secondSEParent.locationVector
           )
           .isZero(
-            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
+            SETTINGS.nearlyAntipodalIdeal / this.zoomMagnificationFactor
           ) &&
         !this.tmpVector1
           .crossVectors(
             this._thirdSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .isZero(
-            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
-          );
+          .isZero(SETTINGS.nearlyAntipodalIdeal / this.zoomMagnificationFactor);
     }
 
     //update _vertexVector , _startVector , _endVector using _angleMarkerRadius (which is set in the )
@@ -917,7 +919,7 @@ export class SEAngleMarker extends SEExpression
 
     // if the unitIdealVector leads to a hit then return the unitIdealVector
     // console.debug("x before hit ", this._startVector.x);
-    if (this.isHitAt(unitIdealVector, SEStore.zoomMagnificationFactor)) {
+    if (this.isHitAt(unitIdealVector, this.zoomMagnificationFactor)) {
       // console.debug("hit");
       // console.debug("x after - hit ", this._startVector.x);
       return unitIdealVector;
@@ -1162,7 +1164,7 @@ export class SEAngleMarker extends SEExpression
     //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector1.angleTo(idealUnitSphereVector) <
-      SETTINGS.angleMarker.maxLabelDistance / SEStore.zoomMagnificationFactor
+      SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
     ) {
       return idealUnitSphereVector;
     } else {
@@ -1176,16 +1178,14 @@ export class SEAngleMarker extends SEExpression
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector3.multiplyScalar(
         Math.sin(
-          SETTINGS.angleMarker.maxLabelDistance /
-            SEStore.zoomMagnificationFactor
+          SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
         )
       );
       this.tmpVector3
         .addScaledVector(
           this.tmpVector1,
           Math.cos(
-            SETTINGS.angleMarker.maxLabelDistance /
-              SEStore.zoomMagnificationFactor
+            SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
           )
         )
         .normalize();

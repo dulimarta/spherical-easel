@@ -74,7 +74,6 @@ import {
   SphericalConstruction,
   ConstructionInFirestore,
   AppState,
-  AccountState,
   ActionMode
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
@@ -84,19 +83,28 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
 import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 const SE = namespace("se");
 
 @Component({
   components: { Dialog, ConstructionList },
   computed: {
-    ...mapState(useAccountStore, ["includedTools"])
+    ...mapState(useAccountStore, ["includedTools"]),
+    ...mapState(useSEStore, ["hasUnsavedNodules"])
   },
   methods: {
     ...mapActions(useAccountStore, ["resetToolset", "includeToolName"])
+    // ...mapActions(useSEStore, [
+    //   "removeAllFromLayers",
+    //   "init",
+    //   "rotateSphere",
+    //   "clearUnsavedFlag",
+    //   "updateDisplay",
+    //   "setActionMode"
+    // ])
   }
 })
 export default class ConstructionLoader extends Vue {
@@ -104,13 +112,16 @@ export default class ConstructionLoader extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
 
-  @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
-
   readonly includedTools!: Array<ActionMode>;
-
   readonly includeToolName!: (t: string) => void;
   readonly resetToolset!: (b: boolean) => void;
+  readonly removeAllFromLayers!: () => void;
+  readonly init!: () => void;
+  readonly rotateSphere!: (_: Matrix4) => void;
+  readonly clearUnsavedFlag!: () => void;
+  readonly updateDisplay!: () => void;
+  readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -255,8 +266,8 @@ export default class ConstructionLoader extends Vue {
       });
     }
 
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
@@ -266,15 +277,15 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    SEStore.rotateSphere(rotationMatrix);
+    this.rotateSphere(rotationMatrix);
     run(script);
-    SEStore.clearUnsavedFlag();
+    this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all
-    SEStore.updateDisplay();
+    this.updateDisplay();
 
     // set the mode to move because chances are high that the user wants this mode after loading.
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "move",
       name: "MoveDisplayedName"
     });

@@ -20,7 +20,6 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import EventBus from "./EventBus";
 export default class SegmentHandler extends Highlighter {
   /**
@@ -53,8 +52,10 @@ export default class SegmentHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -101,16 +102,16 @@ export default class SegmentHandler extends Highlighter {
     super(layers);
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporarySegment);
+    SegmentHandler.store.addTemporaryNodule(this.temporarySegment);
     this.isTemporarySegmentAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryStartMarker);
+    SegmentHandler.store.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryEndMarker);
+    SegmentHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -303,7 +304,8 @@ export default class SegmentHandler extends Highlighter {
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
       if (!this.startLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryOneDimensional =
+          this.hitSEParametrics[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
@@ -351,7 +353,8 @@ export default class SegmentHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryPoint.locationVector;
+            this.temporaryStartMarker.positionVector =
+              this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.isTemporaryStartMarkerAdded = false;
@@ -359,9 +362,10 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryStartMarker.positionVector =
+            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
@@ -382,9 +386,10 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector = this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryEndMarker.positionVector =
+            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
@@ -495,7 +500,7 @@ export default class SegmentHandler extends Highlighter {
     this.arcLength = 0;
 
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    SegmentHandler.store.unglowAllSENodules();
   }
 
   private makeSegment(event: MouseEvent): boolean {
@@ -748,7 +753,7 @@ export default class SegmentHandler extends Highlighter {
 
     // make sure that this segment hasn't been added before
     if (
-      SEStore.seSegments.some(
+      SegmentHandler.store.seSegments.some(
         seg =>
           ((this.tmpVector
             .subVectors(
@@ -834,8 +839,9 @@ export default class SegmentHandler extends Highlighter {
         newSELabel
       )
     );
-    SEStore.createAllIntersectionsWithSegment(newSESegment).forEach(
-      (item: SEIntersectionReturnType) => {
+    SegmentHandler.store
+      .createAllIntersectionsWithSegment(newSESegment)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -862,8 +868,7 @@ export default class SegmentHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      }
-    );
+      });
     segmentGroup.execute();
     return true;
   }
@@ -940,9 +945,9 @@ export default class SegmentHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected,
     // create a segment with the two points as the endpoints of length less than Pi
-    if (SEStore.selectedSENodules.length == 2) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
+    if (SegmentHandler.store.selectedSENodules.length == 2) {
+      const object1 = SegmentHandler.store.selectedSENodules[0];
+      const object2 = SegmentHandler.store.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
@@ -995,8 +1000,9 @@ export default class SegmentHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
-        SEStore.createAllIntersectionsWithSegment(newSESegment).forEach(
-          (item: SEIntersectionReturnType) => {
+        SegmentHandler.store
+          .createAllIntersectionsWithSegment(newSESegment)
+          .forEach((item: SEIntersectionReturnType) => {
             // Create the plottable label
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1023,8 +1029,7 @@ export default class SegmentHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          }
-        );
+          });
 
         segmentCommandGroup.execute();
       }
