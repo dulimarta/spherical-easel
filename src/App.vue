@@ -442,10 +442,13 @@ export default class App extends Vue {
 
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      svgElement.setAttribute("height", "1000px");
-      svgElement.setAttribute("width", "1000px");
+      svgElement.setAttribute("height", this.slider + "px");
+      svgElement.setAttribute("width", this.slider + "px");
 
-      svgElement.setAttribute("transform", "scale(2)");
+
+      svgElement.setAttribute("transform", "matrix(2 0 0 2 " + this.slider +" " + this.slider + ")");
+      //matrix( size x , 0, 0, size y, origin x coordinate, origin y coordinate)
+
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       svgElement.style.removeProperty("transform");
       const svgBlob = new Blob([svgElement.outerHTML], {
