@@ -61,10 +61,11 @@
         :yesText="$t('constructions.exportConstructionDialog')"
         :yes-action="() => doExportConstructionDialog()"
         :no-text="$t('constructions.cancel')"
-        max-width="40%">
+        max-width="40%"
+        content-class="shareConstructionClass">
         <p>
-          {{$t('constructions.shareLinkDialog')}}</p>
-
+          {{$t('constructions.shareLinkDialog')}}
+        </p>
       </Dialog>
 
       <Dialog ref="exportConstructionDialog"
@@ -196,6 +197,7 @@
       :yes-text="$t('constructions.proceed')"
       :yes-action="() => doLogout()"
       :no-text="$t('constructions.cancel')"
+      style = ""
       max-width="40%">
       <p>
         {{$t('constructions.logoutDialog')}}</p>
@@ -604,4 +606,13 @@ export default class App extends Vue {
 #profilePic {
   border-radius: 50%;
 }
+
+.shareConstructionClass {
+    width: 300px;
+    margin-top: 50px;
+    margin-bottom: auto;
+    margin-right: 30px;
+    margin-left: auto;
+  }
+
 </style>
