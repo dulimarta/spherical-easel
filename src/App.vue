@@ -446,6 +446,8 @@ export default class App extends Vue {
       svgElement.setAttribute("width", this.slider + "px");
       svgElement.setAttribute("transform", "matrix(" + this.slider/1500 +" 0 0 " + this.slider/1500 + " 0 0)");
       svgElement.setAttribute("style", "overflow: visible; transform-origin: top left;border: 3px solid black;");
+      // svgElement.setAttribute("height", "auto");
+      // svgElement.setAttribute("width", "auto");
 
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       svgElement.style.removeProperty("transform");
