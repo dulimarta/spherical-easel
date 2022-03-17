@@ -443,8 +443,17 @@ export default class App extends Vue {
       FileSaver.saveAs(svgURL, "construction.svg");
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
+        //get reference to SVG element and clone it
+        const node = document.querySelector('#canvas svg');
+        var clone = node?.cloneNode(true) as SVGElement;
 
-        var png = d3ToPng('#canvas svg', 'name');
+        //set the ID of the clone and append it to body
+        clone.id="clonedSVG";
+        document.body.append(clone);
+
+        //save cloned svg as png to local drive and remove it from the DOM tree
+        var png = d3ToPng('#clonedSVG','name');
+        clone.remove();
 
         console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
