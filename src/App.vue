@@ -90,6 +90,11 @@
           </v-col>
         </div>
 
+        <div id="preview-parent">
+          <p>Image preview here</p>
+          <svg id="preview"></svg>
+        </div>
+
         <v-row>
           <v-col class="pr-4">
             <p>{{$t('constructions.sliderFileDimensions')}}</p>
@@ -250,6 +255,7 @@ import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
+import { nextTick } from "vue/types/umd";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -424,14 +430,36 @@ export default class App extends Vue {
     }
   }
 
-  doExportConstructionDialog(): void {
+  async doExportConstructionDialog(): Promise<void> {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
+
+    // display construction preview
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgElement.style.removeProperty("transform");
+    const svgBlob = new Blob([svgElement.outerHTML], {
+        type: "image/svg+xml;charset=utf-8"
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+
+    await Vue.nextTick();
+
+    var node = document.querySelector('#preview');
+    console.log(node);
+    console.log(svgURL);
+    //node!.innerHTML = svgURL;
+    var node2 = document.querySelector('#preview-parent');
+    node2?.append(svgURL);
+    console.log(node2);
+
+    //node?.remove();
   }
 
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
 
+    // export construction to desired file format
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -495,6 +523,7 @@ export default class App extends Vue {
       type: "image/svg+xml;charset=utf-8"
     });
     const svgPreviewData = await toBase64(svgBlob);
+    console.log(svgPreviewData); // TODO delete
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");
