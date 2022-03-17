@@ -90,9 +90,9 @@
           </v-col>
         </div>
 
-        <div id="preview-parent">
+        <div>
           <p>Image preview here</p>
-          <svg id="preview"></svg>
+          <img id="preview">
         </div>
 
         <v-row>
@@ -434,7 +434,7 @@ export default class App extends Vue {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
 
-    // display construction preview
+    // copy sphere construction svg and get URL, then set the preview img src as that URL
     const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     svgElement.style.removeProperty("transform");
@@ -445,15 +445,8 @@ export default class App extends Vue {
 
     await Vue.nextTick();
 
-    var node = document.querySelector('#preview');
-    console.log(node);
-    console.log(svgURL);
-    //node!.innerHTML = svgURL;
-    var node2 = document.querySelector('#preview-parent');
-    node2?.append(svgURL);
-    console.log(node2);
-
-    //node?.remove();
+    var preview = document.getElementById('preview') as HTMLImageElement;
+    preview.src = svgURL;
   }
 
   doExportButton(): void {
