@@ -61,10 +61,11 @@
         :yesText="$t('constructions.exportConstructionDialog')"
         :yes-action="() => doExportConstructionDialog()"
         :no-text="$t('constructions.cancel')"
-        max-width="40%">
+        max-width="40%"
+        content-class="shareConstructionClass">
         <p>
-          {{$t('constructions.shareLinkDialog')}}</p>
-
+          {{$t('constructions.shareLinkDialog')}}
+        </p>
       </Dialog>
 
       <Dialog ref="exportConstructionDialog"
@@ -88,6 +89,11 @@
           <v-col cols="12" md="4">
             <p>{{$t('constructions.selectedGIFExport')}}</p>
           </v-col>
+        </div>
+
+        <div>
+          <p>Image preview here</p>
+          <img id="preview">
         </div>
 
         <v-row>
@@ -191,6 +197,7 @@
       :yes-text="$t('constructions.proceed')"
       :yes-action="() => doLogout()"
       :no-text="$t('constructions.cancel')"
+      style = ""
       max-width="40%">
       <p>
         {{$t('constructions.logoutDialog')}}</p>
@@ -249,6 +256,8 @@ import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
+import d3ToPng from "d3-svg-to-png";
+import { nextTick } from "vue/types/umd";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -432,14 +441,29 @@ export default class App extends Vue {
     }
   }
 
-  doExportConstructionDialog(): void {
+  async doExportConstructionDialog(): Promise<void> {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
+
+    // copy sphere construction svg and get URL, then set the preview img src as that URL
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgElement.style.removeProperty("transform");
+    const svgBlob = new Blob([svgElement.outerHTML], {
+        type: "image/svg+xml;charset=utf-8"
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+
+    await Vue.nextTick();
+
+    var preview = document.getElementById('preview') as HTMLImageElement;
+    preview.src = svgURL;
   }
 
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
 
+    // export construction to desired file format
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
       svgElement.setAttribute("height", this.slider + "px");
@@ -459,7 +483,19 @@ export default class App extends Vue {
       FileSaver.saveAs(svgURL, "construction.svg");
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
-      console.log("PNG exported");
+        //get reference to SVG element and clone it
+        const node = document.querySelector('#canvas svg');
+        var clone = node?.cloneNode(true) as SVGElement;
+
+        //set the ID of the clone and append it to body
+        clone.id="clonedSVG";
+        document.body.append(clone);
+
+        //save cloned svg as png to local drive and remove it from the DOM tree
+        var png = d3ToPng('#clonedSVG','name');
+        clone.remove();
+
+        console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
@@ -501,6 +537,7 @@ export default class App extends Vue {
       type: "image/svg+xml;charset=utf-8"
     });
     const svgPreviewData = await toBase64(svgBlob);
+    console.log(svgPreviewData); // TODO delete
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");
@@ -588,4 +625,13 @@ export default class App extends Vue {
 #profilePic {
   border-radius: 50%;
 }
+
+.shareConstructionClass {
+    width: 300px;
+    margin-top: 50px;
+    margin-bottom: auto;
+    margin-right: 30px;
+    margin-left: auto;
+  }
+
 </style>
