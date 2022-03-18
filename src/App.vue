@@ -99,7 +99,7 @@
               :max="sliderMax"
               :min="sliderMin"
               hide-details
-            >
+            >{{$t('constructions.displaySlider')}}
               <template v-slot:append>
                 <v-text-field
                   v-model="slider"
@@ -306,9 +306,18 @@ export default class App extends Vue {
   svgRoot!: SVGElement;
   showExport = false;
   selectedFormat = "";
-  slider = 200;
-  sliderMin = 200;
-  sliderMax = 1200;
+  slider= 600;
+  sliderMin= 200;
+  sliderMax= 1200;
+
+  // data () {
+  //       console.log("%d", slider);
+  //     return {
+  //       slider: 600,
+  //       sliderMin: 200,
+  //       sliderMax: 1200
+  //     }
+  // }
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -427,16 +436,24 @@ export default class App extends Vue {
     this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
   }
-  
+
   doExportButton(): void {
     this.$refs.exportConstructionDialog.hide();
 
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+      svgElement.setAttribute("height", this.slider + "px");
+      svgElement.setAttribute("width", this.slider + "px");
+      svgElement.setAttribute("transform", "matrix(" + this.slider/1500 +" 0 0 " + this.slider/1500 + " 0 0)");
+      svgElement.setAttribute("style", "overflow: visible; transform-origin: top left;border: 3px solid black;");
+      // svgElement.setAttribute("height", "auto");
+      // svgElement.setAttribute("width", "auto");
+
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       svgElement.style.removeProperty("transform");
       const svgBlob = new Blob([svgElement.outerHTML], {
           type: "image/svg+xml;charset=utf-8"
+
       });
       const svgURL = URL.createObjectURL(svgBlob);
       FileSaver.saveAs(svgURL, "construction.svg");
@@ -446,6 +463,8 @@ export default class App extends Vue {
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
+    console.log("Slider Value: " + this.slider);
+
   }
 
   async doShare(): Promise<void> {
