@@ -442,12 +442,13 @@ export default class App extends Vue {
 
     if (this.selectedFormat == "SVG") {
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      svgElement.setAttribute("height", this.slider + "px");
-      svgElement.setAttribute("width", this.slider + "px");
-       console.log("zoomMag = " + SEStore.zoomMagnificationFactor + "\nzTranX = " + SEStore.zoomTranslation[0]+ "\nzTrany = " + SEStore.zoomTranslation[1]);
-      svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
+      console.log("zoomMag = " + SEStore.zoomMagnificationFactor + "\nzTranX = " + SEStore.zoomTranslation[0]+ "\nzTrany = " + SEStore.zoomTranslation[1]);
+      // svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
+      // svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " 0 0)");
+      svgElement.setAttribute("transform", "matrix(1 0 0 1 " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
       svgElement.setAttribute("style", "overflow: visible; transform-origin: top left;border: 3px solid black;");
-      // svgElement.setAttribute("height", "auto");
+      svgElement.setAttribute("height", this.slider + "px");
+      svgElement.setAttribute("width", this.slider + "px");// svgElement.setAttribute("height", "auto");
       // svgElement.setAttribute("width", "auto");
 
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
