@@ -65,6 +65,12 @@
         <p>
           {{$t('constructions.shareLinkDialog')}}</p>
 
+        <input ref="shareLinkReference"
+          v-on:focus="$event.target.select()"
+          readonly
+          :value="shareLink"/>
+        <button @click="copyShareLink">Copy</button>
+
       </Dialog>
 
       <Dialog ref="exportConstructionDialog"
@@ -249,6 +255,7 @@ import { Matrix4 } from "three";
 import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
+import { InputMessage } from "vuetify";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -297,6 +304,7 @@ export default class App extends Vue {
     saveConstructionDialog: VueComponent & DialogAction;
     shareConstructionDialog: VueComponent & DialogAction;
     exportConstructionDialog: VueComponent & DialogAction;
+    shareLinkReference: VueComponent & HTMLElement;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -309,6 +317,7 @@ export default class App extends Vue {
   slider= 600;
   sliderMin= 200;
   sliderMax= 1200;
+  shareLink="--Placeholder for share link--";
 
   // data () {
   //       console.log("%d", slider);
@@ -572,6 +581,11 @@ export default class App extends Vue {
 
     this.$refs.saveConstructionDialog.hide();
   }
+
+  copyShareLink(): void {
+      this.$refs.shareLinkReference.focus();
+      document.execCommand('copy');
+    }
 }
 </script>
 
