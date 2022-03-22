@@ -256,6 +256,7 @@ import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
 import { InputMessage } from "vuetify";
+import SphereFrame from "./components/SphereFrame.vue";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -347,8 +348,9 @@ export default class App extends Vue {
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
-    if (!ev.altKey) return;
-    if (!ev.ctrlKey) return;
+    if (!ev.shiftKey) return;
+    //if (!ev.altKey) return;
+    //if (!ev.ctrlKey) return;
 
     if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
@@ -450,12 +452,17 @@ export default class App extends Vue {
     this.$refs.exportConstructionDialog.hide();
 
     if (this.selectedFormat == "SVG") {
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+      // Clone the SVG
+      const svgElement = this.svgRoot.cloneNode(true) as SVGElement
+      // For debugging -- TODO delete
       console.log("zoomMag = " + SEStore.zoomMagnificationFactor + "\nzTranX = " + SEStore.zoomTranslation[0]+ "\nzTrany = " + SEStore.zoomTranslation[1]);
-      // svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
+      // Scale SVG to fit in export dimensions
+      svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
+      const origin = this.slider / 2;
       // svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " 0 0)");
-      svgElement.setAttribute("transform", "matrix(1 0 0 1 " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
-      svgElement.setAttribute("style", "overflow: visible; transform-origin: top left;border: 3px solid black;");
+      // svgElement.setAttribute("transform", "matrix(1 0 0 1 " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
+      svgElement.setAttribute("style", "overflow: hidden; transform-origin: "+ origin + "px "+ origin +"px;border: 3px solid black;");
+      // Set dimensions of exported image based on slider values
       svgElement.setAttribute("height", this.slider + "px");
       svgElement.setAttribute("width", this.slider + "px");// svgElement.setAttribute("height", "auto");
       // svgElement.setAttribute("width", "auto");
@@ -467,6 +474,7 @@ export default class App extends Vue {
 
       });
       const svgURL = URL.createObjectURL(svgBlob);
+      // Save SVG file
       FileSaver.saveAs(svgURL, "construction.svg");
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
