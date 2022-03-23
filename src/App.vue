@@ -454,28 +454,28 @@ export default class App extends Vue {
     if (this.selectedFormat == "SVG") {
       // Clone the SVG
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement
-      // For debugging -- TODO delete
-      console.log("zoomMag = " + SEStore.zoomMagnificationFactor + "\nzTranX = " + SEStore.zoomTranslation[0]+ "\nzTrany = " + SEStore.zoomTranslation[1]);
-      // Scale SVG to fit in export dimensions
-      svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
-      const origin = this.slider / 2;
-      // svgElement.setAttribute("transform", "matrix(" + SEStore.zoomMagnificationFactor + " 0 0 " + SEStore.zoomMagnificationFactor + " 0 0)");
-      // svgElement.setAttribute("transform", "matrix(1 0 0 1 " + SEStore.zoomTranslation[0] + " " + SEStore.zoomTranslation[1] +")");
-      svgElement.setAttribute("style", "overflow: hidden; transform-origin: "+ origin + "px "+ origin +"px;border: 3px solid black;");
-      // Set dimensions of exported image based on slider values
-      svgElement.setAttribute("height", this.slider + "px");
-      svgElement.setAttribute("width", this.slider + "px");// svgElement.setAttribute("height", "auto");
-      // svgElement.setAttribute("width", "auto");
-
+      //required line of code for svg elements
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      svgElement.style.removeProperty("transform");
+
+      // Set dimensions of exported image based on slider values
+      svgElement.setAttribute("height", this.slider+"px");
+      svgElement.setAttribute("width", this.slider+"px");
+
+      //set the view of the image to be around the circle
+      svgElement.setAttribute("viewBox", "50 50 575 575");
+
+      //remove the transform so the circle shows up
+      //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
+      //svgElement.style.removeProperty("transform");
+
+      //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {
           type: "image/svg+xml;charset=utf-8"
 
       });
       const svgURL = URL.createObjectURL(svgBlob);
-      // Save SVG file
       FileSaver.saveAs(svgURL, "construction.svg");
+
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
       console.log("PNG exported");
