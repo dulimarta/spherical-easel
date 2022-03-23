@@ -452,7 +452,7 @@ export default class App extends Vue {
     this.$refs.exportConstructionDialog.hide();
 
     if (this.selectedFormat == "SVG") {
-      // Clone the SVG
+      //Clone the SVG
       const svgElement = this.svgRoot.cloneNode(true) as SVGElement
       //required line of code for svg elements
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -461,8 +461,13 @@ export default class App extends Vue {
       svgElement.setAttribute("height", this.slider+"px");
       svgElement.setAttribute("width", this.slider+"px");
 
+      //get the current height of canvas
+      const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+      const currentWidth = canvasReference.clientWidth;
+
       //set the view of the image to be around the circle
-      svgElement.setAttribute("viewBox", "50 50 575 575");
+      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+      svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
 
       //remove the transform so the circle shows up
       //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
@@ -471,7 +476,6 @@ export default class App extends Vue {
       //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {
           type: "image/svg+xml;charset=utf-8"
-
       });
       const svgURL = URL.createObjectURL(svgBlob);
       FileSaver.saveAs(svgURL, "construction.svg");
@@ -482,8 +486,6 @@ export default class App extends Vue {
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
-    console.log("Slider Value: " + this.slider);
-
   }
 
   async doShare(): Promise<void> {
