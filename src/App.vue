@@ -461,7 +461,7 @@ export default class App extends Vue {
       svgElement.setAttribute("height", this.slider+"px");
       svgElement.setAttribute("width", this.slider+"px");
 
-      //get the current height of canvas
+      //get the current width of canvas
       const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
       const currentWidth = canvasReference.clientWidth;
 
