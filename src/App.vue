@@ -98,7 +98,6 @@
         </div>
 
         <div>
-          <p>Image preview here</p>
           <img id="preview">
         </div>
 
@@ -345,9 +344,8 @@ export default class App extends Vue {
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
-    if (!ev.shiftKey) return;
-    //if (!ev.altKey) return;
-    //if (!ev.ctrlKey) return;
+    if (!ev.altKey) return;
+    if (!ev.ctrlKey) return;
 
     if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
@@ -448,6 +446,11 @@ export default class App extends Vue {
     const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     svgElement.style.removeProperty("transform");
+    const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+    const currentWidth = canvasReference.clientWidth;
+    svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+    svgElement.setAttribute("height", "400px");
+    svgElement.setAttribute("width", "400px");
     const svgBlob = new Blob([svgElement.outerHTML], {
         type: "image/svg+xml;charset=utf-8"
     });
