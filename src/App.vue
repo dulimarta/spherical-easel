@@ -64,8 +64,14 @@
         max-width="40%"
         content-class="shareConstructionClass">
         <p>
-          {{$t('constructions.shareLinkDialog')}}
-        </p>
+          {{$t('constructions.shareLinkDialog')}}</p>
+
+        <input ref="shareLinkReference"
+          v-on:focus="$event.target.select()"
+          readonly
+          :value="shareLink"/>
+        <button @click="copyShareLink">Copy</button>
+
       </Dialog>
 
       <Dialog ref="exportConstructionDialog"
@@ -92,7 +98,6 @@
         </div>
 
         <div>
-          <p>Image preview here</p>
           <img id="preview">
         </div>
 
@@ -257,7 +262,6 @@ import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
-import { nextTick } from "vue/types/umd";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -306,6 +310,7 @@ export default class App extends Vue {
     saveConstructionDialog: VueComponent & DialogAction;
     shareConstructionDialog: VueComponent & DialogAction;
     exportConstructionDialog: VueComponent & DialogAction;
+    shareLinkReference: VueComponent & HTMLElement;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
@@ -318,15 +323,7 @@ export default class App extends Vue {
   slider= 600;
   sliderMin= 200;
   sliderMax= 1200;
-
-  // data () {
-  //       console.log("%d", slider);
-  //     return {
-  //       slider: 600,
-  //       sliderMin: 200,
-  //       sliderMax: 1200
-  //     }
-  // }
+  shareLink="--Placeholder for share link--";
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -449,6 +446,11 @@ export default class App extends Vue {
     const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     svgElement.style.removeProperty("transform");
+    const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+    const currentWidth = canvasReference.clientWidth;
+    svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+    svgElement.setAttribute("height", "400px");
+    svgElement.setAttribute("width", "400px");
     const svgBlob = new Blob([svgElement.outerHTML], {
         type: "image/svg+xml;charset=utf-8"
     });
@@ -465,22 +467,34 @@ export default class App extends Vue {
 
     // export construction to desired file format
     if (this.selectedFormat == "SVG") {
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      svgElement.setAttribute("height", this.slider + "px");
-      svgElement.setAttribute("width", this.slider + "px");
-      svgElement.setAttribute("transform", "matrix(" + this.slider/1500 +" 0 0 " + this.slider/1500 + " 0 0)");
-      svgElement.setAttribute("style", "overflow: visible; transform-origin: top left;border: 3px solid black;");
-      // svgElement.setAttribute("height", "auto");
-      // svgElement.setAttribute("width", "auto");
-
+      //Clone the SVG
+      const svgElement = this.svgRoot.cloneNode(true) as SVGElement
+      //required line of code for svg elements
       svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      svgElement.style.removeProperty("transform");
+
+      // Set dimensions of exported image based on slider values
+      svgElement.setAttribute("height", this.slider+"px");
+      svgElement.setAttribute("width", this.slider+"px");
+
+      //get the current width of canvas
+      const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+      const currentWidth = canvasReference.clientWidth;
+
+      //set the view of the image to be around the circle
+      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+      svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+
+      //remove the transform so the circle shows up
+      //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
+      //svgElement.style.removeProperty("transform");
+
+      //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {
           type: "image/svg+xml;charset=utf-8"
-
       });
       const svgURL = URL.createObjectURL(svgBlob);
       FileSaver.saveAs(svgURL, "construction.svg");
+
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
         //get reference to SVG element and clone it
@@ -491,6 +505,21 @@ export default class App extends Vue {
         clone.id="clonedSVG";
         document.body.append(clone);
 
+        //required line of code for svg elements
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+        // Set dimensions of exported image based on slider values
+        clone.setAttribute("height", this.slider+"px");
+        clone.setAttribute("width", this.slider+"px");
+
+        //get the current width of canvas
+        const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+        const currentWidth = canvasReference.clientWidth;
+
+        //set the view of the image to be around the circle
+        //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+        clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+
         //save cloned svg as png to local drive and remove it from the DOM tree
         var png = d3ToPng('#clonedSVG','name');
         clone.remove();
@@ -499,8 +528,6 @@ export default class App extends Vue {
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
-    console.log("Slider Value: " + this.slider);
-
   }
 
   async doShare(): Promise<void> {
@@ -607,6 +634,11 @@ export default class App extends Vue {
 
     this.$refs.saveConstructionDialog.hide();
   }
+
+  copyShareLink(): void {
+      this.$refs.shareLinkReference.focus();
+      document.execCommand('copy');
+    }
 }
 </script>
 
