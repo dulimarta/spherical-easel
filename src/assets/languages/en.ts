@@ -680,6 +680,8 @@ export default {
       "GIF was selected.",
     sliderFileDimensions:
       "File dimensions in pixels:",
+    exportDimensionsInvalidWarning:
+      "Export dimensions must be between 200px and 1200px. Please try again.",
     shareLinkDialog:
       "Share your construction link here",
     unsavedConstructionMsg:

@@ -112,13 +112,13 @@
               hide-details
             >{{$t('constructions.displaySlider')}}
               <template v-slot:append>
-                <v-text-field
+                <v-text-field type="number"
                   v-model="slider"
                   class="mt-0 pt-0"
                   hide-details
                   single-line
-                  type="number"
-                  style="width: 60px"
+                  style="width: 120px"
+                  :rules="[exportDimensionsCheck]"
                 ></v-text-field>
               </template>
             </v-slider>
@@ -528,6 +528,16 @@ export default class App extends Vue {
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
     }
+  }
+
+  exportDimensionsCheck(txt: string | undefined): boolean | string {
+
+    if ((!txt) || (parseInt(txt) < 200) || (parseInt(txt) > 1200)) {
+      return this.$t("constructions.exportDimensionsInvalidWarning", {}) as string && false;
+    } else {
+      return true;
+    }
+
   }
 
   async doShare(): Promise<void> {
