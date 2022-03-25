@@ -462,7 +462,7 @@ export default class App extends Vue {
     preview.src = svgURL;
   }
 
-  doExportButton(): void {
+  async doExportButton(): Promise<void> {
     this.$refs.exportConstructionDialog.hide();
 
     // export construction to desired file format
@@ -519,9 +519,10 @@ export default class App extends Vue {
         //set the view of the image to be around the circle
         //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
         clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+        console.log("ZoomFactor: " + SEStore.zoomMagnificationFactor)
 
         //save cloned svg as png to local drive and remove it from the DOM tree
-        var png = d3ToPng('#clonedSVG','name');
+        var png = await d3ToPng('#clonedSVG','name');
         clone.remove();
 
         console.log("PNG exported");
