@@ -81,62 +81,68 @@
         :yes-action="() => doExportButton()"
         max-width="60%">
 
-        <div v-if="selectedFormat === 'SVG'">
+        <v-row align="center" justify="space-between">
           <v-col cols="12" md="4">
-            <p>{{$t('constructions.selectedSVGExport')}}</p>
+            <div>
+              <img id="preview">
+            </div>
           </v-col>
-        </div>
-        <div v-if="selectedFormat === 'PNG'">
-          <v-col cols="12" md="4">
-            <p>{{$t('constructions.selectedPNGExport')}}</p>
-          </v-col>
-        </div>
-        <div v-if="selectedFormat === 'GIF'">
-          <v-col cols="12" md="4">
-            <p>{{$t('constructions.selectedGIFExport')}}</p>
-          </v-col>
-        </div>
 
-        <div>
-          <img id="preview">
-        </div>
-
-        <v-row>
-          <v-col class="pr-4">
-            <p>{{$t('constructions.sliderFileDimensions')}}</p>
-            <v-slider
-              v-model="slider"
-              class="align-center"
-              :max="sliderMax"
-              :min="sliderMin"
-              hide-details
-            >{{$t('constructions.displaySlider')}}
-              <template v-slot:append>
-                <v-text-field type="number"
+          <v-col cols="12" md="7">
+            <v-row>
+              <v-col class="pr-4">
+                <p>{{$t('constructions.sliderFileDimensions')}}</p>
+                <v-slider
                   v-model="slider"
-                  class="mt-0 pt-0"
+                  class="align-center"
+                  :max="sliderMax"
+                  :min="sliderMin"
                   hide-details
-                  single-line
-                  style="width: 120px"
-                  :rules="[exportDimensionsCheck]"
-                ></v-text-field>
-              </template>
-            </v-slider>
+                >{{$t('constructions.displaySlider')}}
+                  <template v-slot:append>
+                    <v-text-field type="number"
+                      v-model="slider"
+                      class="mt-0 pt-0"
+                      hide-details
+                      single-line
+                      style="width: 120px"
+                      :rules="[exportDimensionsCheck]"
+                    ></v-text-field>
+                  </template>
+                </v-slider>
+              </v-col>
+            </v-row>
+
+            <v-col
+            class="d-flex"
+            cols="12"
+            sm="6"
+            >
+              <v-select
+                :items="formats"
+                label="Format"
+                v-model="selectedFormat"
+                solo
+              ></v-select>
+            </v-col>
+
+            <div v-if="selectedFormat === 'SVG'">
+              <v-col cols="12" md="4">
+                <p>{{$t('constructions.selectedSVGExport')}}</p>
+              </v-col>
+            </div>
+            <div v-if="selectedFormat === 'PNG'">
+              <v-col cols="12" md="4">
+                <p>{{$t('constructions.selectedPNGExport')}}</p>
+              </v-col>
+            </div>
+            <div v-if="selectedFormat === 'GIF'">
+              <v-col cols="12" md="4">
+                <p>{{$t('constructions.selectedGIFExport')}}</p>
+              </v-col>
+            </div>
           </v-col>
         </v-row>
-
-        <v-col
-        class="d-flex"
-        cols="12"
-        sm="6"
-        >
-          <v-select
-            :items="formats"
-            label="Format"
-            v-model="selectedFormat"
-            solo
-          ></v-select>
-        </v-col>
 
       </Dialog>
 
