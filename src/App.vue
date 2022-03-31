@@ -503,16 +503,14 @@ export default class App extends Vue {
 
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
-        //get reference to SVG element and clone it
-        const node = document.querySelector('#canvas svg');
-        var clone = node?.cloneNode(true) as SVGElement;
+        //Clone the SVG
+        const clone = this.svgRoot.cloneNode(true) as SVGElement
+        //required line of code for svg elements
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
         //set the ID of the clone and append it to body
         clone.id="clonedSVG";
         document.body.append(clone);
-
-        //required line of code for svg elements
-        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
         // Set dimensions of exported image based on slider values
         clone.setAttribute("height", this.slider+"px");
@@ -525,12 +523,15 @@ export default class App extends Vue {
         //set the view of the image to be around the circle
         //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
         clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
-        console.log("ZoomFactor: " + SEStore.zoomMagnificationFactor);
 
-        //save cloned svg as png to local drive and remove it from the DOM tree
-        var png = await d3ToPng('#clonedSVG','name');
+        //since d3ToPng exports the png as it appears in browser, we must remove the transform
+        clone.style.removeProperty("transform");
+
+        //export using module
+        var png = d3ToPng('#clonedSVG','name');
+
+        //clean up workspace and finish
         clone.remove();
-
         console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
       console.log("GIF exported");
