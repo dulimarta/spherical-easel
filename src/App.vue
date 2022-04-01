@@ -79,6 +79,7 @@
         :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')"
         :yes-action="() => doExportButton()"
+        v-bind:doExport="disableButton"
         max-width="60%">
 
         <v-row align="center" justify="space-between">
@@ -330,6 +331,7 @@ export default class App extends Vue {
   sliderMin= 200;
   sliderMax= 1200;
   shareLink="--Placeholder for share link--";
+  disableButton=false;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -538,11 +540,12 @@ export default class App extends Vue {
     }
   }
 
-  exportDimensionsCheck(txt: string | undefined): boolean | string {
-
+  exportDimensionsCheck(txt: string | undefined): boolean{
     if ((!txt) || (parseInt(txt) < 200) || (parseInt(txt) > 1200)) {
-      return this.$t("constructions.exportDimensionsInvalidWarning", {}) as string && false;
+      this.disableButton = true;
+      return false;
     } else {
+      this.disableButton = false;
       return true;
     }
 

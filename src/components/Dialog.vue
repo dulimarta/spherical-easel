@@ -12,6 +12,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn id="_test_posButton"
+          :disabled = "exportTrue"
           v-if="yesAction"
           color="primary"
           @click="yesAction()">{{yesLabel}}</v-btn>
@@ -48,6 +49,7 @@ export default class Dialog extends Vue implements DialogAction {
   @Prop() yesAction!: DialogFunc;
   @Prop() noText!: string | undefined;
   @Prop() noAction!: DialogFunc;
+  @Prop() doExport!: boolean;
 
   visible = false;
 
@@ -56,6 +58,9 @@ export default class Dialog extends Vue implements DialogAction {
   }
   get noLabel(): string {
     return this.noText ?? "No";
+  }
+  get exportTrue(): boolean {
+    return this.doExport;
   }
 
   show(): void {
