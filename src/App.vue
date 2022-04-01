@@ -79,17 +79,16 @@
         :yesText="$t('constructions.exportConstructionDialog')"
         :no-text="$t('constructions.cancel')"
         :yes-action="() => doExportButton()"
-        v-bind:doExport="disableButton"
+        :isDisabled="disableButton"
         max-width="60%">
 
         <v-row align="center" justify="space-between">
-          <v-col cols="12" md="4">
+          <v-col cols="12" xl="4">
             <div>
               <img id="preview">
             </div>
           </v-col>
-
-          <v-col cols="12" md="7">
+          <v-col cols="12" xl="7">
             <v-row>
               <v-col class="pr-4">
                 <p>{{$t('constructions.sliderFileDimensions')}}</p>
