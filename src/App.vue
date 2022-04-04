@@ -83,12 +83,12 @@
         max-width="60%">
 
         <v-row align="center" justify="space-between">
-          <v-col cols="12" lg="4">
+          <v-col cols="12" xl="4">
             <div>
               <img id="preview">
             </div>
           </v-col>
-          <v-col cols="12" lg="7">
+          <v-col cols="12" md="7">
             <v-row>
               <v-col class="pr-4">
                 <p>{{$t('constructions.sliderFileDimensions')}}</p>
