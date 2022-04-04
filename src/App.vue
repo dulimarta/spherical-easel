@@ -83,12 +83,12 @@
         max-width="60%">
 
         <v-row align="center" justify="space-between">
-          <v-col cols="12" xl="4">
+          <v-col cols="12" lg="4">
             <div>
               <img id="preview">
             </div>
           </v-col>
-          <v-col cols="12" xl="7">
+          <v-col cols="12" lg="7">
             <v-row>
               <v-col class="pr-4">
                 <p>{{$t('constructions.sliderFileDimensions')}}</p>
@@ -122,6 +122,7 @@
                 :items="formats"
                 label="Format"
                 v-model="selectedFormat"
+                :rules="[exportDimensionsCheck]"
                 solo
               ></v-select>
             </v-col>
@@ -331,6 +332,8 @@ export default class App extends Vue {
   sliderMax= 1200;
   shareLink="--Placeholder for share link--";
   disableButton=false;
+  lastText = "";
+  count = 0;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -540,7 +543,16 @@ export default class App extends Vue {
   }
 
   exportDimensionsCheck(txt: string | undefined): boolean{
-    if ((!txt) || (parseInt(txt) < 200) || (parseInt(txt) > 1200)) {
+    //checking if first action is format selection
+    if(this. count > 2 && (txt == "SVG" || txt == "PNG" || txt == "GIF")){
+      txt = this.lastText;
+    }else{
+      this.lastText = txt + "";
+    }
+    this.count++;
+
+    //Input validation
+    if ((!txt) || (parseInt(txt) < 200) || (parseInt(txt) > 1200) || (this.selectedFormat == "")) {
       this.disableButton = true;
       return false;
     } else {
