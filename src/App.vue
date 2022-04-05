@@ -517,12 +517,56 @@ export default class App extends Vue {
         clone.style.removeProperty("transform");
 
         //export using module
-        var png = d3ToPng('#clonedSVG','name');
+        var png = await d3ToPng('#clonedSVG','name');
 
         //clean up workspace and finish
         clone.remove();
         console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
+        //Clone the SVG
+        const clone = this.svgRoot.cloneNode(true) as SVGElement
+        //required line of code for svg elements
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+        //set the ID of the clone and append it to body
+        clone.id="clonedSVG";
+        document.body.append(clone);
+
+        // Set dimensions of exported image based on slider values
+        clone.setAttribute("height", this.slider+"px");
+        clone.setAttribute("width", this.slider+"px");
+
+        //get the current width of canvas
+        const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+        const currentWidth = canvasReference.clientWidth;
+
+        //set the view of the image to be around the circle
+        //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+        clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+
+        //since d3ToPng exports the png as it appears in browser, we must remove the transform
+        clone.style.removeProperty("transform");
+
+        //export using module
+        // var png1 = await d3ToPng('#clonedSVG','1', {
+        //   download: false
+        //   }).then(fileData => // do something with the PNG );
+
+        var png1 = await d3ToPng('#clonedSVG', '1');
+
+        await Vue.nextTick();
+
+        // make some change
+        clone.setAttribute("viewBox", "1 1 733 733");
+
+        await Vue.nextTick();
+
+        // export another image
+        var png2 = await d3ToPng('#clonedSVG', '2');
+
+        //clean up workspace and finish
+        clone.remove();
+        console.log("PNG exported");
       console.log("GIF exported");
     }
   }
