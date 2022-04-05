@@ -83,12 +83,12 @@
         max-width="60%">
 
         <v-row align="center" justify="space-between">
-          <v-col cols="12" xl="4">
+          <v-col cols="10" xs="10" sm="10" md="2" lg="3" xl="3">
             <div>
               <img id="preview">
             </div>
           </v-col>
-          <v-col cols="12" md="7">
+          <v-col cols="10" xs="10" sm="10" md="4" lg="6" xl="6">
             <v-row>
               <v-col class="pr-4">
                 <p>{{$t('constructions.sliderFileDimensions')}}</p>
@@ -126,22 +126,6 @@
                 solo
               ></v-select>
             </v-col>
-
-            <div v-if="selectedFormat === 'SVG'">
-              <v-col cols="12" md="4">
-                <p>{{$t('constructions.selectedSVGExport')}}</p>
-              </v-col>
-            </div>
-            <div v-if="selectedFormat === 'PNG'">
-              <v-col cols="12" md="4">
-                <p>{{$t('constructions.selectedPNGExport')}}</p>
-              </v-col>
-            </div>
-            <div v-if="selectedFormat === 'GIF'">
-              <v-col cols="12" md="4">
-                <p>{{$t('constructions.selectedGIFExport')}}</p>
-              </v-col>
-            </div>
           </v-col>
         </v-row>
 
@@ -354,8 +338,9 @@ export default class App extends Vue {
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
-    if (!ev.altKey) return;
-    if (!ev.ctrlKey) return;
+    //if (!ev.altKey) return;
+    //if (!ev.ctrlKey) return;
+    if (!ev.shiftKey) return;
 
     if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
