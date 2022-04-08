@@ -253,9 +253,7 @@ import { SEStore, ACStore } from "./store";
 import { detect } from "detect-browser";
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
-import GIFEncoder from "gifencoder";
-import * as fs from "fs";
-import * as path from "path";
+import GIF from "gif.js";
 // import { gzip } from "node-gzip";
 
 //#region vuex-module-namespace
@@ -525,15 +523,13 @@ export default class App extends Vue {
         clone.remove();
         console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
-        // encoder for GIF
-        const encoder = new GIFEncoder(this.slider, this.slider);
-        // stream PNG frames into gif as they become available
-        encoder.createReadStream().pipe(fs.createWriteStream('myconstruction.gif'));
-
-        encoder.start();
-        encoder.setRepeat(0); // 0 for loop, -1 for no loop
-        encoder.setDelay(500); // frame delay in ms
-        encoder.setQuality(10); // image quality (10 is default)
+        // create GIF to add frames to
+        var gif = new GIF({
+          workers: 2,
+          quality: 10,
+          width: this.slider,
+          height: this.slider
+        });
 
         //Clone the SVG
         const clone = this.svgRoot.cloneNode(true) as SVGElement
@@ -560,50 +556,29 @@ export default class App extends Vue {
         clone.style.removeProperty("transform");
 
         //export PNG to the gif stream
-        var png1 = await d3ToPng('#clonedSVG','1', {
-          download: false
+        var png3 = await d3ToPng('#clonedSVG','1', {
+          download: false,
+          format: 'png'
           }).then(fileData => {
-            encoder.addFrame(fileData);
+            var img = new Image();
+            img.src = fileData; // fileData is base64
+            gif.addFrame(img);
         });
-
-        await Vue.nextTick();
 
         // make some change
-        clone.setAttribute("viewBox", "1 1 733 733");
+        // clone.setAttribute("viewBox", "50 50 733 733");
 
-        await Vue.nextTick();
-
-        //export PNG to the gif stream
-        var png2 = await d3ToPng('#clonedSVG','1', {
-          download: false
-          }).then(fileData => {
-            encoder.addFrame(fileData);
-        });
+        // await Vue.nextTick();
 
         //clean up workspace and finish
         clone.remove();
-        encoder.finish();
 
         // process final GIF
-        const gifBuffer = encoder.out.getData();
-        // fs.writeFile(path.join(__dirname, 'output', 'mygif.gif'), buffer, (error: any) => {
-        //   if (error)
-        //     console.log("GIF EXPORT ERROR: " + error);
-        //   else {
-        //     console.log("GIF successfully exported");
-        //   }
-        // })
+        gif.on('finished', function(blob: any) {
+          window.open(URL.createObjectURL(blob));
+        });
 
-        //create blob and url, then call filesaver
-        // const svgBlob = new Blob([svgElement.outerHTML], {
-        //     type: "image/svg+xml;charset=utf-8"
-        // });
-        // const svgURL = URL.createObjectURL(svgBlob);
-        // FileSaver.saveAs(svgURL, "construction.svg");
-
-        var gifBlob = new Blob([gifBuffer]);
-        var gifURL = URL.createObjectURL(gifBlob);
-        FileSaver.saveAs(gifURL, "mygif.gif");
+        gif.render();
 
         console.log("GIF exported");
     }
