@@ -560,7 +560,7 @@ export default class App extends Vue {
           download: false,
           format: 'png'
           }).then(fileData => {
-            var img = new Image();
+            var img = new HTMLImageElement();
             img.src = fileData; // fileData is base64
             gif.addFrame(img);
         });
@@ -570,12 +570,12 @@ export default class App extends Vue {
 
         // await Vue.nextTick();
 
-        //clean up workspace and finish
-        clone.remove();
-
         // process final GIF
         gif.on('finished', function(blob: any) {
-          window.open(URL.createObjectURL(blob));
+          //window.open(URL.createObjectURL(blob));
+          const gifURL = URL.createObjectURL(blob);
+          FileSaver.saveAs(gifURL, "mygif.gif");
+          clone.remove();
         });
 
         gif.render();
