@@ -3,11 +3,9 @@ import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import Line from "@/plottables/Line";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 export class AddLineCommand extends Command {

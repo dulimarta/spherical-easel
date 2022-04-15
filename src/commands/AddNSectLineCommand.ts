@@ -1,24 +1,16 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { SESegment } from "@/models/SESegment";
-import { SELine } from "@/models/SELine";
-import { SEPolarPoint } from "@/models/SEPolarPoint";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
-import { SENSectPoint } from "@/models/SENSectPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Line from "@/plottables/Line";
 
 export class AddNSectLineCommand extends Command {
   private seNSectLine: SENSectLine;

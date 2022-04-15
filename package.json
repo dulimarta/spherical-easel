@@ -6,6 +6,7 @@
     "serve": "npm run app:serve & npm run docs:serve",
     "build": "npm run app:build & npm run docs:build",
     "test:unit": "vue-cli-service test:unit --watch",
+    "test:jest": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
     "test:cyunit": "cypress open-ct",
     "lint": "vue-cli-service lint",
     "app:build": "vue-cli-service build",
@@ -50,7 +51,7 @@
     "vuex-module-decorators": "^1.0.1"
   },
   "devDependencies": {
-    "@intlify/vue-i18n-loader": "~2.1.0",
+    "@intlify/vue-i18n-loader": "~2.0.3",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/gifencoder": "^2.0.1",

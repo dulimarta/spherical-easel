@@ -1,7 +1,4 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { Labelable } from "@/types";
-import SETTINGS from "@/global-settings";
 import { SESlider } from "@/models/SESlider";
 
 export class ChangeSliderCommand extends Command {
