@@ -2,11 +2,9 @@
 <script lang="ts">
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
-import { AppState } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
-import { namespace } from "vuex-class";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
@@ -21,7 +19,6 @@ import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContra
 import { mapState, mapActions } from "pinia";
 import { useSEStore } from "@/stores/se";
 
-const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
   oldValue: string | number | Array<number> | undefined;
@@ -29,7 +26,12 @@ type StyleOptionDiff = {
 };
 @Component({
   computed: {
-    ...mapState(useSEStore, ["selectedSENodules"])
+    ...mapState(useSEStore, [
+      "selectedSENodules",
+      "initialStyleStatesMap",
+      "defaultStyleStatesMap",
+      "oldStyleSelections"
+    ])
   },
   methods: {
     ...mapActions(useSEStore, ["setSelectedSENodules", "setOldSelection"])
@@ -55,18 +57,9 @@ export default class extends Vue {
     panel: StyleEditPanels;
     selected: Nodule[];
   }) => void;
-
-  @SE.State((s: AppState) => s.initialStyleStatesMap)
+  readonly oldStyleSelections!: Array<SENodule>;
   readonly initialStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-
-  @SE.State((s: AppState) => s.defaultStyleStatesMap)
   readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-
-  @SE.State((s: AppState) => s.oldSelections)
-  readonly oldSelections!: SENodule[];
-
-  // @SE.State((s: AppState) => s.initialBackStyleContrast)
-  // readonly initialBackStyleContrast!: number;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
@@ -635,7 +628,7 @@ export default class extends Vue {
       cmdGroup.addCommand(constrastCommand);
       subCommandCount++;
     }
-    if (this.oldSelections.length > 0) {
+    if (this.oldStyleSelections.length > 0) {
       // console.debug(
       //   "Number of previously selected object? ",
       //   this.previousSelectedNodules.length

@@ -11,7 +11,6 @@ import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { namespace } from "vuex-class";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
@@ -51,8 +50,6 @@ import Nodule from "@/plottables/Nodule";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
-
-const SE = namespace("se");
 
 @Component({
   computed: {

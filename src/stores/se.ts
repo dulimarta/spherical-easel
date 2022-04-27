@@ -61,8 +61,8 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
 const selectedSENodules: Array<SENodule> = [];
-const initialStyleStatesMap = new Map();
-const defaultStyleStatesMap = new Map();
+const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
+const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 
 export const useSEStore = defineStore("se", {
   state: (): PiniaAppState => ({
@@ -74,6 +74,7 @@ export const useSEStore = defineStore("se", {
     hasUnsavedNodules: false,
     zoomMagnificationFactor: 1,
     zoomTranslation: [0, 0],
+    canvasWidth: 0,
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -118,7 +119,7 @@ export const useSEStore = defineStore("se", {
       this.svgCanvas = c;
     },
     setCanvasWidth(w: number): void {
-      // TODO
+      this.canvasWidth = w;
     },
     setSphereRadius(r: number): void {
       // TODO
@@ -567,7 +568,12 @@ export const useSEStore = defineStore("se", {
     sePolygons: (): Array<SEPolygon> => sePolygons,
     expressions: (): Array<SEExpression> => expressions,
     selectedSENodules: (): Array<SENodule> => selectedSENodules,
+    temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
+    initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
+      initialStyleStatesMap,
+    defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
+      defaultStyleStatesMap,
     hasObjects(): boolean {
       return sePoints.length > 0;
     },

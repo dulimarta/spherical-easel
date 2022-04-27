@@ -81,10 +81,8 @@ import { SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
 import axios, { AxiosResponse } from "axios";
-// import { namespace } from "vuex-class";
 import { mapState, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
-// const SE = namespace("se");
 
 @Component({
   computed: {

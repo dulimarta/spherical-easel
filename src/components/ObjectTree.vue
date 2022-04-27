@@ -39,7 +39,7 @@
           class="my-3"
           v-show="points.length > 0">
           <SENoduleList i18LabelKey="objects.points"
-            :children="points"></SENoduleList>
+            :children="sePoints"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -47,7 +47,7 @@
           class="my-3"
           v-show="lines.length > 0">
           <SENoduleList i18LabelKey="objects.lines"
-            :children="lines"></SENoduleList>
+            :children="seLines"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -55,7 +55,7 @@
           class="my-3"
           v-show="segments.length > 0">
           <SENoduleList i18LabelKey="objects.segments"
-            :children="segments"></SENoduleList>
+            :children="seSegments"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -63,7 +63,7 @@
           class="my-3"
           v-show="circles.length > 0">
           <SENoduleList i18LabelKey="objects.circles"
-            :children="circles"></SENoduleList>
+            :children="seCircles"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -71,7 +71,7 @@
           class="my-3"
           v-show="ellipses.length > 0">
           <SENoduleList i18LabelKey="objects.ellipses"
-            :children="ellipses"></SENoduleList>
+            :children="seEllipses"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -79,7 +79,7 @@
           class="my-3"
           v-show="parametrics.length > 0">
           <SENoduleList i18LabelKey="objects.parametrics"
-            :children="parametrics"></SENoduleList>
+            :children="seParametrics"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -115,42 +115,38 @@ import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import ParametricForm from "@/components/ParametricForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
-import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
-import { namespace } from "vuex-class";
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 @Component({
-  components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm }
+  components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm },
+  computed: {
+    ...mapState(useSEStore, [
+      "sePoints",
+      "seLines",
+      "seSegments",
+      "seCircles",
+      "seEllipses",
+      "seParametrics",
+      "seNodules",
+      "expressions"
+    ])
+  }
 })
 export default class ObjectTree extends Vue {
-  @SE.State((s: AppState) => s.sePoints)
-  readonly points!: SENodule[];
-
-  @SE.State((s: AppState) => s.seLines)
-  readonly lines!: SENodule[];
-
-  @SE.State((s: AppState) => s.seSegments)
-  readonly segments!: SENodule[];
-
-  @SE.State((s: AppState) => s.seCircles)
-  readonly circles!: SENodule[];
-
-  @SE.State((s: AppState) => s.seEllipses)
-  readonly ellipses!: SENodule[];
-
-  @SE.State((s: AppState) => s.seParametrics)
-  readonly parametrics!: SENodule[];
-
-  @SE.State((s: AppState) => s.seNodules)
-  readonly nodules!: SENodule[];
-
-  @SE.State((s: AppState) => s.expressions)
+  readonly sePoints!: SENodule[];
+  readonly seLines!: SENodule[];
+  readonly seSegments!: SENodule[];
+  readonly seCircles!: SENodule[];
+  readonly seEllipses!: SENodule[];
+  readonly seParametrics!: SENodule[];
+  readonly seNodules!: SENodule[];
   readonly expressions!: SEExpression[];
 
   get zeroObjects(): boolean {
     return (
-      this.nodules.filter(n => n.exists).length === 0 &&
+      this.seNodules.filter(n => n.exists).length === 0 &&
       this.expressions.length === 0
     );
   }

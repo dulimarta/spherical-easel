@@ -266,13 +266,12 @@ import Vue from "vue";
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
-import { namespace } from "vuex-class";
 import { StyleEditPanels, StyleOptions } from "../types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import InputGroup from "@/components/InputGroupWithReset.vue";
-import { AppState, Labelable } from "@/types";
+import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
@@ -280,8 +279,8 @@ import i18n from "../i18n";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import StyleEditor from "@/components/StyleEditor.vue";
 import Label from "@/plottables/Label";
-import { SELabel } from "@/models/SELabel";
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 // import UI from "@/store/ui-styles";
 type labelDisplayModeItem = {
@@ -322,13 +321,15 @@ type ConflictItems = {
     OverlayWithFixButton,
     StyleEditor,
     InputGroup
+  },
+  computed: {
+    ...mapState(useSEStore, ["selectedSENodules"])
   }
 })
 export default class LabelStyle extends Vue {
   @Prop() readonly panel!: StyleEditPanels;
 
   // You are not allow to style labels  directly  so remove them from the selection and warn the user
-  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   @Watch("selectedSENodules")
@@ -347,7 +348,7 @@ export default class LabelStyle extends Vue {
 
   // Map each object to its plotabble label
   labelMapper(n: SENodule): Nodule {
-    return ((n as unknown) as Labelable).label!.ref!;
+    return (n as unknown as Labelable).label!.ref!;
   }
 
   // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
@@ -548,7 +549,7 @@ export default class LabelStyle extends Vue {
   get allLabelsShowing(): boolean {
     return this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.showing;
+        return (node as unknown as Labelable).label!.showing;
       } else {
         return true;
       }

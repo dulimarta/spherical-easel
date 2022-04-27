@@ -31,6 +31,7 @@ export type PiniaAppState = {
   zoomTranslation: number[];
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
+  canvasWidth: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   styleSavedFromPanel: StyleEditPanels;
 };

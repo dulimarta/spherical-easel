@@ -26,7 +26,6 @@ import { Prop } from "vue-property-decorator";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
 // import i18n from "@/i18n";
 // const SE = namespace("se");
 

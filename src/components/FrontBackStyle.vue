@@ -383,14 +383,12 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
-import Nodule, { DisplayStyle } from "../plottables/Nodule";
-import { namespace } from "vuex-class";
+import Nodule from "../plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import StyleEditor from "@/components/StyleEditor.vue";
 import InputGroup from "@/components/InputGroupWithReset.vue";
 import FadeInCard from "@/components/FadeInCard.vue";
-import { AppState } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
@@ -399,7 +397,6 @@ import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-const SE = namespace("se");
 
 type ConflictItems = {
   angleMarkerRadiusPercent: boolean;

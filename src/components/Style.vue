@@ -115,21 +115,24 @@ import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
-import { hslaColorType, AppState, Labelable } from "@/types";
+import { Labelable } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { namespace } from "vuex-class";
 import i18n from "../i18n";
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-const SE = namespace("se");
-
-@Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
+@Component({
+  components: { BasicFrontBackStyle, OverlayWithFixButton },
+  computed: {
+    ...mapState(useSEStore, ["selectedSENodules"])
+  }
+})
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -188,7 +191,7 @@ export default class Style extends Vue {
 
     this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.showing;
+        return (node as unknown as Labelable).label!.showing;
       } else {
         return true;
       }
@@ -307,7 +310,7 @@ export default class Style extends Vue {
       if (node.isLabelable()) {
         toggleLabelDisplayCommandGroup.addCommand(
           new SetNoduleDisplayCommand(
-            ((node as unknown) as Labelable).label!,
+            (node as unknown as Labelable).label!,
             this.allLabelsShowing
           )
         );

@@ -82,12 +82,10 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
-import { namespace } from "vuex-class";
 import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-const SE = namespace("se");
 
 @Component({
   components: { Dialog, ConstructionList },

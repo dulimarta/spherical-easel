@@ -74,14 +74,17 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { AppState, ToolButtonType } from "@/types";
+import { ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
-
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
-@Component
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["actionMode"])
+  }
+})
 export default class ToolButton extends Vue {
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -113,7 +116,6 @@ export default class ToolButton extends Vue {
 
   private color = "red";
 
-  @SE.State((s: AppState) => s.actionMode)
   readonly actionMode!: string;
 
   @Watch("actionMode")

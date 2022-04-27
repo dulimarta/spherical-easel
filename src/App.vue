@@ -153,11 +153,10 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AccountState, AppState, ConstructionInFirestore } from "./types";
+import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
@@ -218,12 +217,6 @@ export default class App extends Vue {
   readonly clearUnsavedFlag!: () => void;
 
   userRole!: string | undefined;
-
-  // @SE.State((s: AppState) => s.sePoints)
-  // readonly sePoints!: SEPoint[];
-
-  // @SE.Mutation init!: () => void;
-  // @SE.Mutation clearUnsavedFlag!: () => void;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;

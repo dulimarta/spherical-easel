@@ -225,7 +225,7 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { AppState, ObjectState, ValueDisplayMode } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -241,15 +241,16 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
-import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
-import { mapActions } from "pinia";
+import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 
-const SE = namespace("se");
 @Component({
+  computed: {
+    ...mapState(useSEStore, ["inverseTotalRotationMatrix"])
+  },
   methods: {
     ...mapActions(useSEStore, ["unglowAllSENodules"])
   }
@@ -260,7 +261,6 @@ export default class SENoduleItem extends Vue {
   private visibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
   private labelVisibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseRotationMatrix!: Matrix4;
   readonly unglowAllSENodules!: () => void;
   private rotationMatrix = new Matrix4();

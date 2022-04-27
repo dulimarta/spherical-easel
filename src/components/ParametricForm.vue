@@ -93,7 +93,6 @@ import ParametricTracingExpressions from "@/components/ParametricTracingExpressi
 import ParametricTNumber from "@/components/ParametricTNumber.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers/EventBus";
-import { namespace } from "vuex-class";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import Parametric from "@/plottables/Parametric";
@@ -109,10 +108,8 @@ import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { mapActions, mapState, mapGetters } from "pinia";
+import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-
-const SE = namespace("se");
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -133,8 +130,11 @@ interface ParametricDataType {
     ParametricCuspParameterValues
   },
   computed: {
-    ...mapState(useSEStore, ["expressions", "seParametrics"]),
-    ...mapGetters(useSEStore, ["createAllIntersectionsWithParametric"])
+    ...mapState(useSEStore, [
+      "expressions",
+      "seParametrics",
+      "createAllIntersectionsWithParametric"
+    ])
   },
   methods: {}
 })

@@ -273,7 +273,6 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
-import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
@@ -290,8 +289,6 @@ import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState, mapGetters } from "pinia";
-
-const SE = namespace("se");
 
 /**
  * Split panel width distribution (percentages):
@@ -314,7 +311,7 @@ const SE = namespace("se");
     ...mapActions(useSEStore, ["setActionMode"])
   },
   computed: {
-    ...mapState(useSEStore, []),
+    ...mapState(useSEStore, ["seNodules", "temporaryNodules"]),
     ...mapGetters(useSEStore, ["hasObjects"])
   }
 })
@@ -322,10 +319,8 @@ export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
 
-  @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];
 
-  @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
 
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
