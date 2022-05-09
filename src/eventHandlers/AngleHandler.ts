@@ -288,8 +288,10 @@ export default class AngleHandler extends Highlighter {
             this.pointLocations.push(
               this.tmpPointVector1.copy(this.hitSEPoints[0].locationVector)
             );
-            this.temporaryAngleMarker.startVector = this.hitSEPoints[0].locationVector;
-            this.temporaryFirstPoint.positionVector = this.hitSEPoints[0].locationVector;
+            this.temporaryAngleMarker.startVector =
+              this.hitSEPoints[0].locationVector;
+            this.temporaryFirstPoint.positionVector =
+              this.hitSEPoints[0].locationVector;
             // select (to prevent unglowing by highlighter.ts)  and glow the point
             this.hitSEPoints[0].glowing = true;
             this.hitSEPoints[0].selected = true;
@@ -321,12 +323,10 @@ export default class AngleHandler extends Highlighter {
                 this.hitSECircles[0].closestVector(this.currentSphereVector)
               )
             );
-            this.temporaryAngleMarker.startVector = this.hitSECircles[0].closestVector(
-              this.currentSphereVector
-            );
-            this.temporaryFirstPoint.positionVector = this.hitSECircles[0].closestVector(
-              this.currentSphereVector
-            );
+            this.temporaryAngleMarker.startVector =
+              this.hitSECircles[0].closestVector(this.currentSphereVector);
+            this.temporaryFirstPoint.positionVector =
+              this.hitSECircles[0].closestVector(this.currentSphereVector);
           } else if (this.hitSEEllipses.length > 0) {
             // The user clicked on a ellipse, assume they want to create an
             // from three points, the first of which is on a ellipse.
@@ -338,12 +338,10 @@ export default class AngleHandler extends Highlighter {
                 this.hitSEEllipses[0].closestVector(this.currentSphereVector)
               )
             );
-            this.temporaryAngleMarker.startVector = this.hitSEEllipses[0].closestVector(
-              this.currentSphereVector
-            );
-            this.temporaryFirstPoint.positionVector = this.hitSEEllipses[0].closestVector(
-              this.currentSphereVector
-            );
+            this.temporaryAngleMarker.startVector =
+              this.hitSEEllipses[0].closestVector(this.currentSphereVector);
+            this.temporaryFirstPoint.positionVector =
+              this.hitSEEllipses[0].closestVector(this.currentSphereVector);
           } else if (this.hitSEParametrics.length > 0) {
             // The user clicked on a parametric, assume they want to create an
             // from three points, the first of which is on a parametric.
@@ -355,12 +353,10 @@ export default class AngleHandler extends Highlighter {
                 this.hitSEParametrics[0].closestVector(this.currentSphereVector)
               )
             );
-            this.temporaryAngleMarker.startVector = this.hitSEParametrics[0].closestVector(
-              this.currentSphereVector
-            );
-            this.temporaryFirstPoint.positionVector = this.hitSEParametrics[0].closestVector(
-              this.currentSphereVector
-            );
+            this.temporaryAngleMarker.startVector =
+              this.hitSEParametrics[0].closestVector(this.currentSphereVector);
+            this.temporaryFirstPoint.positionVector =
+              this.hitSEParametrics[0].closestVector(this.currentSphereVector);
           } else if (this.hitSEPolygons.length > 0) {
             // The user clicked on a parametric, assume they want to create an
             // from three points, the first of which is on a parametric.
@@ -372,12 +368,10 @@ export default class AngleHandler extends Highlighter {
                 this.hitSEPolygons[0].closestVector(this.currentSphereVector)
               )
             );
-            this.temporaryAngleMarker.startVector = this.hitSEPolygons[0].closestVector(
-              this.currentSphereVector
-            );
-            this.temporaryFirstPoint.positionVector = this.hitSEPolygons[0].closestVector(
-              this.currentSphereVector
-            );
+            this.temporaryAngleMarker.startVector =
+              this.hitSEPolygons[0].closestVector(this.currentSphereVector);
+            this.temporaryFirstPoint.positionVector =
+              this.hitSEPolygons[0].closestVector(this.currentSphereVector);
           } else {
             // The user clicked on empty space, assume they want to create
             // an angle from three points, the first of which is a free point
@@ -401,14 +395,18 @@ export default class AngleHandler extends Highlighter {
               this.targetPoints.push(this.hitSEPoints[0]);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {
-                this.temporaryAngleMarker.vertexVector = this.hitSEPoints[0].locationVector;
-                this.temporarySecondPoint.positionVector = this.hitSEPoints[0].locationVector;
+                this.temporaryAngleMarker.vertexVector =
+                  this.hitSEPoints[0].locationVector;
+                this.temporarySecondPoint.positionVector =
+                  this.hitSEPoints[0].locationVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.hitSEPoints[0].locationVector)
                 );
               } else {
-                this.temporaryAngleMarker.endVector = this.hitSEPoints[0].locationVector;
-                this.temporaryThirdPoint.positionVector = this.hitSEPoints[0].locationVector;
+                this.temporaryAngleMarker.endVector =
+                  this.hitSEPoints[0].locationVector;
+                this.temporaryThirdPoint.positionVector =
+                  this.hitSEPoints[0].locationVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.hitSEPoints[0].locationVector)
                 );
@@ -555,14 +553,17 @@ export default class AngleHandler extends Highlighter {
               this.targetPoints.push(null);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {
-                this.temporaryAngleMarker.vertexVector = this.currentSphereVector;
-                this.temporarySecondPoint.positionVector = this.currentSphereVector;
+                this.temporaryAngleMarker.vertexVector =
+                  this.currentSphereVector;
+                this.temporarySecondPoint.positionVector =
+                  this.currentSphereVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.currentSphereVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.currentSphereVector;
-                this.temporaryThirdPoint.positionVector = this.currentSphereVector;
+                this.temporaryThirdPoint.positionVector =
+                  this.currentSphereVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.currentSphereVector)
                 );
@@ -761,7 +762,7 @@ export default class AngleHandler extends Highlighter {
             // Add the first temporary point marker only once if we are in NONE Or POINT angle mode
             if (!this.isTemporaryFirstPointAdded) {
               this.isTemporaryFirstPointAdded = true;
-              this.temporaryFirstPoint.addToLayers(this.layers);
+              this.temporaryFirstPoint.addToLayers();
             }
             //Update its location to the mouse
             this.temporaryFirstPoint.positionVector = this.currentSphereVector;
@@ -784,7 +785,7 @@ export default class AngleHandler extends Highlighter {
             // Add the second temporary point marker only once (We MUST be in AngleMode.POINTS)
             if (!this.isTemporarySecondPointAdded) {
               this.isTemporarySecondPointAdded = true;
-              this.temporarySecondPoint.addToLayers(this.layers);
+              this.temporarySecondPoint.addToLayers();
             }
             //Remove the second marker if there is a nearby point
             if (this.snapPoint !== null) {
@@ -793,13 +794,14 @@ export default class AngleHandler extends Highlighter {
             }
             //Update its location
             if (this.snapPoint !== null) {
-              this.temporarySecondPoint.positionVector = this.snapPoint.locationVector;
+              this.temporarySecondPoint.positionVector =
+                this.snapPoint.locationVector;
             } else if (this.snapOneDimensional !== null) {
-              this.temporarySecondPoint.positionVector = this.snapOneDimensional.closestVector(
-                this.currentSphereVector
-              );
+              this.temporarySecondPoint.positionVector =
+                this.snapOneDimensional.closestVector(this.currentSphereVector);
             } else {
-              this.temporarySecondPoint.positionVector = this.currentSphereVector;
+              this.temporarySecondPoint.positionVector =
+                this.currentSphereVector;
             }
 
             break;
@@ -807,7 +809,7 @@ export default class AngleHandler extends Highlighter {
             // Add the third temporary point marker only once (We MUST be in AngleMode.POINTS)
             if (!this.isTemporaryThirdPointAdded) {
               this.isTemporaryThirdPointAdded = true;
-              this.temporaryThirdPoint.addToLayers(this.layers);
+              this.temporaryThirdPoint.addToLayers();
             }
             //Remove the third marker if there is a nearby point
             if (this.snapPoint !== null) {
@@ -816,19 +818,20 @@ export default class AngleHandler extends Highlighter {
             }
             //Update its location
             if (this.snapPoint !== null) {
-              this.temporaryThirdPoint.positionVector = this.snapPoint.locationVector;
+              this.temporaryThirdPoint.positionVector =
+                this.snapPoint.locationVector;
             } else if (this.snapOneDimensional !== null) {
-              this.temporaryThirdPoint.positionVector = this.snapOneDimensional.closestVector(
-                this.currentSphereVector
-              );
+              this.temporaryThirdPoint.positionVector =
+                this.snapOneDimensional.closestVector(this.currentSphereVector);
             } else {
-              this.temporaryThirdPoint.positionVector = this.currentSphereVector;
+              this.temporaryThirdPoint.positionVector =
+                this.currentSphereVector;
             }
 
             // Add the temporary angle marker only once
             if (!this.isTemporaryAngleMarkerAdded) {
               this.isTemporaryAngleMarkerAdded = true;
-              this.temporaryAngleMarker.addToLayers(this.layers);
+              this.temporaryAngleMarker.addToLayers();
             }
 
             // update the temporary angle marker

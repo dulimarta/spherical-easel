@@ -41,6 +41,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   >();
 
   protected styleOptions: Map<StyleEditPanels, StyleOptions> = new Map();
+
   /**
    * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
    * when resetting/loading.
@@ -389,16 +390,16 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
     return returnPercent;
   }
+
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
-   * @param {Two.Group[]} layers
    */
-  abstract addToLayers(layers: Two.Group[]): void;
+  abstract addToLayers(): void;
 
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(layers?: Two.Group[]): void;
+  abstract removeFromLayers(): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;

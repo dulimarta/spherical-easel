@@ -47,8 +47,10 @@ export default class LineHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -267,7 +269,8 @@ export default class LineHandler extends Highlighter {
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
       if (!this.startLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryOneDimensional =
+          this.hitSEParametrics[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
@@ -303,7 +306,7 @@ export default class LineHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers(this.layers);
+          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -315,7 +318,8 @@ export default class LineHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryPoint.locationVector;
+            this.temporaryStartMarker.positionVector =
+              this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.isTemporaryStartMarkerAdded = false;
@@ -323,9 +327,10 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryStartMarker.positionVector =
+            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
@@ -334,12 +339,12 @@ export default class LineHandler extends Highlighter {
         // been removed due to leaving the sphere in mouse moved, but not triggering a mouse leave event)
         if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers(this.layers);
+          this.temporaryStartMarker.addToLayers();
         }
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers(this.layers);
+          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
@@ -348,9 +353,10 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector = this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryEndMarker.positionVector =
+            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
@@ -358,7 +364,7 @@ export default class LineHandler extends Highlighter {
         // If the temporary line has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryLineAdded) {
           this.isTemporaryLineAdded = true;
-          this.temporaryLine.addToLayers(this.layers);
+          this.temporaryLine.addToLayers();
         }
         // Compute the normal vector from the this.startVector, the (old) normal vector and this.temporaryEndMarker vector
         // Compute a temporary normal from the two points' vectors

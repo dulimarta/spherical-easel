@@ -139,15 +139,16 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
         // Add the temporary point to the appropriate layers
-        this.startMarker.addToLayers(this.layers);
+        this.startMarker.addToLayers();
       }
       // Move the temporary point to the location of the mouse event, and update the display, snap to a nearby one dimensional object (if there is one)
       if (this.snapToTemporaryOneDimensional === null) {
         this.startMarker.positionVector = this.currentSphereVector;
       } else {
-        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-          this.currentSphereVector
-        );
+        this.startMarker.positionVector =
+          this.snapToTemporaryOneDimensional.closestVector(
+            this.currentSphereVector
+          );
       }
       // if there is a nearby point or no objects nearby remove the temporary point
       if (this.hitSEPoints.length > 0 || this.hitSENodules.length === 0) {

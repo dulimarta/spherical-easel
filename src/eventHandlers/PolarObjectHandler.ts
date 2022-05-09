@@ -50,7 +50,8 @@ export default class PolarObjectHandler extends Highlighter {
   /**
    * If the user clicks on a circle or ellipse, create a point on that one dimensional *and* create the polar line of that point
    */
-  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null = null;
+  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null =
+    null;
 
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
@@ -273,25 +274,29 @@ export default class PolarObjectHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSECircles[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSECircles[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEEllipses[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEEllipses[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEParametrics[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEParametrics[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEPolygons.length > 0) {
       this.hitSEPolygons[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEPolygons[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon =
+        this.hitSEPolygons[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
@@ -315,7 +320,7 @@ export default class PolarObjectHandler extends Highlighter {
 
         // add the temporary point if it hasn't be added already
         if (!this.temporaryPointAdded) {
-          this.temporaryPoint.addToLayers(this.layers);
+          this.temporaryPoint.addToLayers();
           this.temporaryPointAdded = true;
         }
         //remove the point if there is a snap to point
@@ -327,7 +332,8 @@ export default class PolarObjectHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPoint.positionVector = this.snapToTemporaryPoint.locationVector;
+            this.temporaryPoint.positionVector =
+              this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPoint.removeFromLayers();
             this.temporaryPointAdded = false;
@@ -337,9 +343,10 @@ export default class PolarObjectHandler extends Highlighter {
         else if (
           this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon !== null
         ) {
-          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryPoint.positionVector =
+            this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
+              this.currentSphereVector
+            );
         }
         // the user is not near anything
         else {
@@ -348,11 +355,12 @@ export default class PolarObjectHandler extends Highlighter {
 
         // add the temporary line if it hasn't already been added
         if (!this.temporaryPolarLineAdded) {
-          this.temporaryPolarLineMarker.addToLayers(this.layers);
+          this.temporaryPolarLineMarker.addToLayers();
           this.temporaryPolarLineAdded = true;
         }
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
-        this.temporaryPolarLineMarker.normalVector = this.temporaryPoint._locationVector;
+        this.temporaryPolarLineMarker.normalVector =
+          this.temporaryPoint._locationVector;
 
         //update the display
         this.temporaryPolarLineMarker.updateDisplay();
@@ -373,8 +381,8 @@ export default class PolarObjectHandler extends Highlighter {
         // Add the pair of temporary polar points
         if (!this.temporaryPolarPointMarkersAdded) {
           // Remove the temporary objects from the display.
-          this.temporaryPolarPointMarker1.addToLayers(this.layers);
-          this.temporaryPolarPointMarker2.addToLayers(this.layers);
+          this.temporaryPolarPointMarker1.addToLayers();
+          this.temporaryPolarPointMarker2.addToLayers();
           this.temporaryPolarPointMarkersAdded = true;
         }
         let normal: Vector3;
@@ -498,9 +506,8 @@ export default class PolarObjectHandler extends Highlighter {
 
     // Create the model object for the new point and link them
     const polarPoint2 = new SEPolarPoint(newPoint2, parentLineOrSegment, 1);
-    polarPoint2.locationVector = parentLineOrSegment.normalVector.multiplyScalar(
-      -1
-    );
+    polarPoint2.locationVector =
+      parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
     const newLabel2 = new Label();

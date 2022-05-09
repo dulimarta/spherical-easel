@@ -241,15 +241,16 @@ export default class PointHandler extends Highlighter {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
         // Add the temporary point to the appropriate layers
-        this.startMarker.addToLayers(this.layers);
+        this.startMarker.addToLayers();
       }
       // Move the temporary point to the location of the mouse event, and update the display, snap to a nearby one dimensional object (if there is one)
       if (this.snapToTemporaryOneDimensional === null) {
         this.startMarker.positionVector = this.currentSphereVector;
       } else {
-        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-          this.currentSphereVector
-        );
+        this.startMarker.positionVector =
+          this.snapToTemporaryOneDimensional.closestVector(
+            this.currentSphereVector
+          );
       }
 
       // If there is a nearby (possibly user created or not) point turn off the temporary marker

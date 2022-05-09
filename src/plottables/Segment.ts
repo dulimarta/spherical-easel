@@ -15,6 +15,7 @@ import {
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
 import { ProjectedSegmentData, SegmentPosition } from "@/types";
+import { SEStore } from "@/store";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -225,116 +226,120 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.closed = false;
 
     // Turn off the display intitally, so that the temporary objects show up correctly
-    // this._frontPart.visible = true;
-    // this.glowingFrontPart.visible = false;
-    // this._backPart.visible = true;
-    // this.glowingBackPart.visible = false;
-    // this._frontExtra.visible = true;
-    // this.glowingFrontExtra.visible = false;
-    // this._backExtra.visible = true;
-    // this.glowingBackExtra.visible = false;
+    // this._frontPart.addTo(layers[LAYER.]);
+    // this.glowingFrontPart.remove();
+    // this._backPart.addTo(layers[LAYER.]);
+    // this.glowingBackPart.remove();
+    // this._frontExtra.addTo(layers[LAYER.]);
+    // this.glowingFrontExtra.remove();
+    // this._backExtra.addTo(layers[LAYER.]);
+    // this.glowingBackExtra.remove();
 
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_SEGMENT_FRONT_STYLE);
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_SEGMENT_BACK_STYLE);
   }
 
   frontGlowingDisplay(): void {
+    const layers = SEStore.layers;
     if (this.segmentData.position === SegmentPosition.SplitFrontBackFront) {
-      this._frontPart.visible = true;
-      this.glowingFrontPart.visible = true;
-      this._frontExtra.visible = true;
-      this.glowingFrontExtra.visible = true;
+      this._frontPart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+      this._frontExtra.addTo(layers[LAYER.foreground]);
+      this.glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
     } else if (
       this.segmentData.position === SegmentPosition.SplitBackFrontBack ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnFront ||
       this.segmentData.position === SegmentPosition.SplitFrontToBack ||
       this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
-      this._frontPart.visible = true;
-      this.glowingFrontPart.visible = true;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
+      this._frontPart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+      this._frontExtra.remove();
+      this.glowingFrontExtra.remove();
     } else {
       // contained entirely on the back
-      this._frontPart.visible = false;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
+      this._frontPart.remove();
+      this.glowingFrontPart.remove();
+      this._frontExtra.remove();
+      this.glowingFrontExtra.remove();
     }
   }
 
   backGlowingDisplay(): void {
+    const layers = SEStore.layers;
     if (this.segmentData.position === SegmentPosition.SplitBackFrontBack) {
-      this._backPart.visible = true;
-      this.glowingBackPart.visible = true;
-      this._backExtra.visible = true;
-      this.glowingBackExtra.visible = true;
+      this._backPart.addTo(layers[LAYER.background]);
+      this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
+      this._backExtra.addTo(layers[LAYER.background]);
+      this.glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
     } else if (
       this.segmentData.position === SegmentPosition.SplitFrontBackFront ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnBack ||
       this.segmentData.position === SegmentPosition.SplitFrontToBack ||
       this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
-      this._backPart.visible = true;
-      this.glowingBackPart.visible = true;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
+      this._backPart.addTo(layers[LAYER.background]);
+      this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
+      this._backExtra.remove();
+      this.glowingBackExtra.remove();
     } else {
       // contained entirely on the front
-      this._backPart.visible = false;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
+      this._backPart.remove();
+      this.glowingBackPart.remove();
+      this._backExtra.remove();
+      this.glowingBackExtra.remove();
     }
   }
 
   backNormalDisplay(): void {
+    const layers = SEStore.layers;
     if (this.segmentData.position === SegmentPosition.SplitBackFrontBack) {
-      this._backPart.visible = true;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = true;
-      this.glowingBackExtra.visible = false;
+      this._backPart.addTo(layers[LAYER.background]);
+      this.glowingBackPart.remove();
+      this._backExtra.addTo(layers[LAYER.background]);
+      this.glowingBackExtra.remove();
     } else if (
       this.segmentData.position === SegmentPosition.SplitFrontBackFront ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnBack ||
       this.segmentData.position === SegmentPosition.SplitFrontToBack ||
       this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
-      this._backPart.visible = true;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
+      this._backPart.addTo(layers[LAYER.background]);
+      this.glowingBackPart.remove();
+      this._backExtra.remove();
+      this.glowingBackExtra.remove();
     } else {
       // contained entirely on the front
-      this._backPart.visible = false;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
+      this._backPart.remove();
+      this.glowingBackPart.remove();
+      this._backExtra.remove();
+      this.glowingBackExtra.remove();
     }
   }
 
   frontNormalDisplay(): void {
+    const layers = SEStore.layers;
     if (this.segmentData.position === SegmentPosition.SplitFrontBackFront) {
-      this._frontPart.visible = true;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = true;
-      this.glowingFrontExtra.visible = false;
+      this._frontPart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontPart.remove();
+      this._frontExtra.addTo(layers[LAYER.foreground]);
+      this.glowingFrontExtra.remove();
     } else if (
       this.segmentData.position === SegmentPosition.SplitBackFrontBack ||
       this.segmentData.position === SegmentPosition.ContainedEntirelyOnFront ||
       this.segmentData.position === SegmentPosition.SplitFrontToBack ||
       this.segmentData.position === SegmentPosition.SplitBackToFront
     ) {
-      this._frontPart.visible = true;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
+      this._frontPart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontPart.remove();
+      this._frontExtra.remove();
+      this.glowingFrontExtra.remove();
     } else {
       // contained entirely on the back
-      this._frontPart.visible = false;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
+      this._frontPart.remove();
+      this.glowingFrontPart.remove();
+      this._frontExtra.remove();
+      this.glowingFrontExtra.remove();
     }
   }
 
@@ -805,14 +810,14 @@ export default class Segment extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this._frontPart.visible = false;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
-      this._backPart.visible = false;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
+      this._frontPart.remove();
+      this.glowingFrontPart.remove();
+      this._frontExtra.remove();
+      this.glowingFrontExtra.remove();
+      this._backPart.remove();
+      this.glowingBackPart.remove();
+      this._backExtra.remove();
+      this.glowingBackExtra.remove();
     } else {
       this.normalDisplay();
     }
@@ -875,7 +880,7 @@ export default class Segment extends Nodule {
     dup.glowingFrontPart.height = this.glowingFrontPart.height;
     dup.glowingFrontPart.beginning = this.glowingFrontPart.beginning;
     dup.glowingFrontPart.ending = this.glowingFrontPart.ending;
-    dup.glowingFrontPart.visible = false;
+    dup.glowingFrontPart.remove();
 
     dup._frontExtra.rotation = this._frontExtra.rotation;
     dup._frontExtra.width = this._frontExtra.width;
@@ -889,7 +894,7 @@ export default class Segment extends Nodule {
     dup.glowingFrontExtra.height = this.glowingFrontExtra.height;
     dup.glowingFrontExtra.beginning = this.glowingFrontExtra.beginning;
     dup.glowingFrontExtra.ending = this.glowingFrontExtra.ending;
-    dup.glowingFrontExtra.visible = false;
+    dup.glowingFrontExtra.remove();
 
     dup._backPart.rotation = this._backPart.rotation;
     dup._backPart.width = this._backPart.width;
@@ -903,7 +908,7 @@ export default class Segment extends Nodule {
     dup.glowingBackPart.height = this.glowingBackPart.height;
     dup.glowingBackPart.beginning = this.glowingBackPart.beginning;
     dup.glowingBackPart.ending = this.glowingBackPart.ending;
-    dup.glowingBackPart.visible = false;
+    dup.glowingBackPart.remove();
 
     dup._backExtra.rotation = this._backExtra.rotation;
     dup._backExtra.width = this._backExtra.width;
@@ -917,12 +922,13 @@ export default class Segment extends Nodule {
     dup.glowingBackExtra.height = this.glowingBackExtra.height;
     dup.glowingBackExtra.beginning = this.glowingBackExtra.beginning;
     dup.glowingBackExtra.ending = this.glowingBackExtra.ending;
-    dup.glowingBackExtra.visible = false;
+    dup.glowingBackExtra.remove();
 
     return dup as this;
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     this._frontPart.addTo(layers[LAYER.foreground]);
     this._frontExtra.addTo(layers[LAYER.foreground]);
     this._backPart.addTo(layers[LAYER.background]);
@@ -1086,10 +1092,10 @@ export default class Segment extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontPart.visible = false;
-        this.glowingBackPart.visible = false;
-        this.glowingFrontExtra.visible = false;
-        this.glowingBackExtra.visible = false;
+        this.glowingFrontPart.remove();
+        this.glowingBackPart.remove();
+        this.glowingFrontExtra.remove();
+        this.glowingBackExtra.remove();
         break;
       }
 

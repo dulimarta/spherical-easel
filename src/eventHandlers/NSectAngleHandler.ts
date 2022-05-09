@@ -105,7 +105,7 @@ export default class NSectAngleHandler extends Highlighter {
         } else {
           // add this temp line, but only once
           if (!this.temporaryLinesAdded[ind]) {
-            tempLine.addToLayers(this.layers);
+            tempLine.addToLayers();
             this.temporaryLinesAdded[ind] = true;
           }
           // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()

@@ -209,7 +209,7 @@ export default class SE extends VuexModule implements AppState {
     this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
     this.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
     this.seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
-    this.seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(this.layers));
+    this.seLabels.forEach((x: SELabel) => x.ref.removeFromLayers());
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
     this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
@@ -233,7 +233,7 @@ export default class SE extends VuexModule implements AppState {
   addPoint(point: SEPoint): void {
     this.sePoints.push(point);
     this.seNodules.push(point);
-    point.ref.addToLayers(this.layers);
+    point.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
   //#endregion addPoint
@@ -256,7 +256,7 @@ export default class SE extends VuexModule implements AppState {
   addLabel(label: SELabel): void {
     this.seLabels.push(label);
     this.seNodules.push(label);
-    label.ref.addToLayers(this.layers);
+    label.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -269,7 +269,7 @@ export default class SE extends VuexModule implements AppState {
       this.seLabels.splice(pos, 1);
       this.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
-      victimLabel.ref.removeFromLayers(this.layers);
+      victimLabel.ref.removeFromLayers();
       this.hasUnsavedNodules = true;
     }
   }
@@ -278,7 +278,7 @@ export default class SE extends VuexModule implements AppState {
   addLine(line: SELine): void {
     this.seLines.push(line);
     this.seNodules.push(line as SENodule);
-    line.ref.addToLayers(this.layers);
+    line.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -300,7 +300,7 @@ export default class SE extends VuexModule implements AppState {
   addSegment(segment: SESegment): void {
     this.seSegments.push(segment);
     this.seNodules.push(segment);
-    segment.ref.addToLayers(this.layers);
+    segment.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -321,7 +321,7 @@ export default class SE extends VuexModule implements AppState {
   addCircle(circle: SECircle): void {
     this.seCircles.push(circle);
     this.seNodules.push(circle);
-    circle.ref.addToLayers(this.layers);
+    circle.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -344,7 +344,7 @@ export default class SE extends VuexModule implements AppState {
   addEllipse(ellipse: SEEllipse): void {
     this.seEllipses.push(ellipse);
     this.seNodules.push(ellipse);
-    ellipse.ref.addToLayers(this.layers);
+    ellipse.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -369,7 +369,7 @@ export default class SE extends VuexModule implements AppState {
     this.seNodules.push(parametric);
     let ptr: Parametric | null = parametric.ref;
     while (ptr) {
-      ptr.addToLayers(this.layers);
+      ptr.addToLayers();
       ptr = ptr.next;
     }
     this.hasUnsavedNodules = true;
@@ -403,7 +403,7 @@ export default class SE extends VuexModule implements AppState {
   //   pencil.lines.forEach((ln: SEPerpendicularLineThruPoint) => {
   //     this.seLines.push(ln);
   //     this.seNodules.push(ln);
-  //     ln.ref.addToLayers(this.layers);
+  //     ln.ref.addToLayers();
   //   });
   //   this.hasUnsavedNodules = true;
   // }
@@ -428,7 +428,7 @@ export default class SE extends VuexModule implements AppState {
     this.expressions.push(angleMarker);
     this.seAngleMarkers.push(angleMarker);
     this.seNodules.push(angleMarker);
-    angleMarker.ref.addToLayers(this.layers);
+    angleMarker.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -461,7 +461,7 @@ export default class SE extends VuexModule implements AppState {
     this.expressions.push(polygon);
     this.sePolygons.push(polygon);
     this.seNodules.push(polygon);
-    polygon.ref.addToLayers(this.layers);
+    polygon.ref.addToLayers();
     this.hasUnsavedNodules = true;
   }
 

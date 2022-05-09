@@ -274,12 +274,15 @@ export default class AngleMarker extends Nodule {
     this.backCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
     this.glowingFrontCirclePathStart = this.frontCirclePathStart.clone();
-    this.glowingFrontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone();
     this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone();
-    this.glowingFrontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcTail =
+      this.frontCirclePathStart.clone();
 
     this.glowingBackCirclePathStart = this.frontCirclePathStart.clone();
-    this.glowingBackCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone();
     this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
@@ -402,26 +405,35 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail.cap = "butt";
     this.glowingBackCirclePathDoubleArcTail.cap = "butt";
 
+    const layers = SEStore.layers;
     // The angle marker is not initially glowing
-    this.frontCirclePathStart.visible = true;
-    this.frontCirclePathDoubleArcStart.visible = true;
-    this.frontCirclePathTail.visible = true;
-    this.frontCirclePathDoubleArcTail.visible = true;
+    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontCirclePathDoubleArcStart.addTo(
+      layers[LAYER.foregroundAngleMarkers]
+    );
+    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontCirclePathDoubleArcTail.addTo(
+      layers[LAYER.foregroundAngleMarkers]
+    );
 
-    this.backCirclePathStart.visible = true;
-    this.backCirclePathDoubleArcStart.visible = true;
-    this.backCirclePathTail.visible = true;
-    this.backCirclePathDoubleArcTail.visible = true;
+    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backCirclePathDoubleArcStart.addTo(
+      layers[LAYER.backgroundAngleMarkers]
+    );
+    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backCirclePathDoubleArcTail.addTo(
+      layers[LAYER.backgroundAngleMarkers]
+    );
 
-    this.glowingFrontCirclePathStart.visible = false;
-    this.glowingFrontCirclePathDoubleArcStart.visible = false;
-    this.glowingFrontCirclePathTail.visible = false;
-    this.glowingFrontCirclePathDoubleArcTail.visible = false;
+    this.glowingFrontCirclePathStart.remove();
+    this.glowingFrontCirclePathDoubleArcStart.remove();
+    this.glowingFrontCirclePathTail.remove();
+    this.glowingFrontCirclePathDoubleArcTail.remove();
 
-    this.glowingBackCirclePathStart.visible = false;
-    this.glowingBackCirclePathDoubleArcStart.visible = false;
-    this.glowingBackCirclePathTail.visible = false;
-    this.glowingBackCirclePathDoubleArcTail.visible = false;
+    this.glowingBackCirclePathStart.remove();
+    this.glowingBackCirclePathDoubleArcStart.remove();
+    this.glowingBackCirclePathTail.remove();
+    this.glowingBackCirclePathDoubleArcTail.remove();
 
     //Straight part initialize
     const verticesStraight: Two.Vector[] = [];
@@ -492,15 +504,15 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightEnd.cap = "square";
 
     // The angle marker is not initially glowing
-    this.frontStraightStart.visible = true;
-    this.backStraightStart.visible = true;
-    this.frontStraightEnd.visible = true;
-    this.backStraightEnd.visible = true;
+    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
 
-    this.glowingFrontStraightStart.visible = false;
-    this.glowingBackStraightStart.visible = false;
-    this.glowingFrontStraightEnd.visible = false;
-    this.glowingBackStraightEnd.visible = false;
+    this.glowingFrontStraightStart.remove();
+    this.glowingBackStraightStart.remove();
+    this.glowingFrontStraightEnd.remove();
+    this.glowingBackStraightEnd.remove();
 
     // Arrow Head Path Initialize
     // Create the initial front and back vertices (front/back glowing/not)
@@ -543,10 +555,10 @@ export default class AngleMarker extends Nodule {
     this.glowingBackArrowHeadPath.noFill();
 
     // The angle marker is not initially glowing
-    this.frontArrowHeadPath.visible = true;
-    this.backArrowHeadPath.visible = true;
-    this.glowingFrontArrowHeadPath.visible = false;
-    this.glowingBackArrowHeadPath.visible = false;
+    this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingFrontArrowHeadPath.remove();
+    this.glowingBackArrowHeadPath.remove();
 
     // Now organize the fills
     // In total there are 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -613,10 +625,10 @@ export default class AngleMarker extends Nodule {
     this.backFill2.noStroke();
 
     // The initial fill is showing
-    this.frontFill1.visible = true;
-    this.frontFill2.visible = true;
-    this.backFill1.visible = true;
-    this.backFill2.visible = true;
+    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
 
     this.styleOptions.set(
       StyleEditPanels.Front,
@@ -1096,8 +1108,8 @@ export default class AngleMarker extends Nodule {
     // "extra" paths
     let activeFrontDA = this.frontCirclePathDoubleArcStart.vertices;
     let activeBackDA = this.backCirclePathDoubleArcStart.vertices;
-    let glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcStart
-      .vertices;
+    let glowingActiveFrontDA =
+      this.glowingFrontCirclePathDoubleArcStart.vertices;
     let glowingActiveBackDA = this.glowingBackCirclePathDoubleArcStart.vertices;
     for (let pos = 0; pos < 2 * CIRCLEEDGESUBDIVISIONS; pos++) {
       // Generate a vector point on the equator of the Default Sphere
@@ -1120,8 +1132,8 @@ export default class AngleMarker extends Nodule {
           // The next chunk is a split front part
           if (toPosDA.length > 0) {
             activeFrontDA = this.frontCirclePathDoubleArcTail.vertices;
-            glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcTail
-              .vertices;
+            glowingActiveFrontDA =
+              this.glowingFrontCirclePathDoubleArcTail.vertices;
             posIndexDA = 0;
           }
           toPosDA.push(pos);
@@ -1131,8 +1143,8 @@ export default class AngleMarker extends Nodule {
         if (thisSignDA < 0) {
           if (toNegDA.length > 0) {
             activeBackDA = this.backCirclePathDoubleArcTail.vertices;
-            glowingActiveBackDA = this.glowingBackCirclePathDoubleArcTail
-              .vertices;
+            glowingActiveBackDA =
+              this.glowingBackCirclePathDoubleArcTail.vertices;
             negIndexDA = 0;
           }
           toNegDA.push(pos);
@@ -1232,18 +1244,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolStart.pop();
           if (cell2) this.glowingFrontStraightStart.vertices.push(cell2);
         }
-        this.frontStraightStart.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.frontStraightStart.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingFrontStraightStart.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingFrontStraightStart.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.frontStraightStart.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.frontStraightStart.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingFrontStraightStart.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingFrontStraightStart.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
         posIndexStraight++;
       } else {
         if (negIndexStraight === this.backStraightStart.vertices.length) {
@@ -1253,18 +1261,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolStart.pop();
           if (cell2) this.glowingBackStraightStart.vertices.push(cell2);
         }
-        this.backStraightStart.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.backStraightStart.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingBackStraightStart.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingBackStraightStart.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.backStraightStart.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.backStraightStart.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingBackStraightStart.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingBackStraightStart.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
         negIndexStraight++;
       }
     }
@@ -1325,18 +1329,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolEnd.pop();
           if (cell2) this.glowingFrontStraightEnd.vertices.push(cell2);
         }
-        this.frontStraightEnd.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.frontStraightEnd.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingFrontStraightEnd.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingFrontStraightEnd.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.frontStraightEnd.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.frontStraightEnd.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingFrontStraightEnd.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingFrontStraightEnd.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
         posIndexStraight++;
       } else {
         if (negIndexStraight === this.backStraightEnd.vertices.length) {
@@ -1346,18 +1346,14 @@ export default class AngleMarker extends Nodule {
           const vEndGlow = glowingPoolEnd.pop();
           if (vEndGlow) this.glowingBackStraightEnd.vertices.push(vEndGlow);
         }
-        this.backStraightEnd.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.backStraightEnd.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingBackStraightEnd.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingBackStraightEnd.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.backStraightEnd.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.backStraightEnd.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingBackStraightEnd.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingBackStraightEnd.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
         negIndexStraight++;
       }
     }
@@ -2251,34 +2247,51 @@ export default class AngleMarker extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontCirclePathStart.visible = true;
-    this.frontCirclePathTail.visible = true;
-    this.frontStraightStart.visible = true;
-    this.frontStraightEnd.visible = true;
+    const layers = SEStore.layers;
+    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
 
     this.frontFill1.visible =
       this.frontFill1.vertices.length > 0 ? true : false;
     this.frontFill2.visible =
       this.frontFill2.vertices.length > 0 ? true : false;
 
-    this.glowingFrontCirclePathStart.visible = true;
-    this.glowingFrontCirclePathTail.visible = true;
-    this.glowingFrontStraightStart.visible = true;
-    this.glowingFrontStraightEnd.visible = true;
+    this.glowingFrontCirclePathStart.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+    this.glowingFrontCirclePathTail.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+    this.glowingFrontStraightStart.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+    this.glowingFrontStraightEnd.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     if (
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
     ) {
-      this.frontCirclePathDoubleArcStart.visible = true;
-      this.frontCirclePathDoubleArcTail.visible = true;
-      this.glowingFrontCirclePathDoubleArcStart.visible = true;
-      this.glowingFrontCirclePathDoubleArcTail.visible = true;
+      this.frontCirclePathDoubleArcStart.addTo(
+        layers[LAYER.foregroundAngleMarkers]
+      );
+      this.frontCirclePathDoubleArcTail.addTo(
+        layers[LAYER.foregroundAngleMarkers]
+      );
+      this.glowingFrontCirclePathDoubleArcStart.addTo(
+        layers[LAYER.foregroundAngleMarkersGlowing]
+      );
+      this.glowingFrontCirclePathDoubleArcTail.addTo(
+        layers[LAYER.foregroundAngleMarkersGlowing]
+      );
     } else {
-      this.frontCirclePathDoubleArcStart.visible = false;
-      this.frontCirclePathDoubleArcTail.visible = false;
-      this.glowingFrontCirclePathDoubleArcStart.visible = false;
-      this.glowingFrontCirclePathDoubleArcTail.visible = false;
+      this.frontCirclePathDoubleArcStart.remove();
+      this.frontCirclePathDoubleArcTail.remove();
+      this.glowingFrontCirclePathDoubleArcStart.remove();
+      this.glowingFrontCirclePathDoubleArcTail.remove();
     }
 
     if (
@@ -2286,26 +2299,37 @@ export default class AngleMarker extends Nodule {
       frontStyle.angleMarkerArrowHeads === true &&
       this.angleIsBigEnoughToDrawArrowHeads === true
     ) {
-      this.frontArrowHeadPath.visible = true;
-      this.glowingFrontArrowHeadPath.visible = true;
+      this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
+      this.glowingFrontArrowHeadPath.addTo(
+        layers[LAYER.foregroundAngleMarkersGlowing]
+      );
     } else {
-      this.frontArrowHeadPath.visible = false;
-      this.glowingFrontArrowHeadPath.visible = false;
+      this.frontArrowHeadPath.remove();
+      this.glowingFrontArrowHeadPath.remove();
     }
   }
   backGlowingDisplay(): void {
-    this.backCirclePathStart.visible = true;
-    this.backCirclePathTail.visible = true;
-    this.backStraightStart.visible = true;
-    this.backStraightEnd.visible = true;
+    const layers = SEStore.layers;
+    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
 
     this.backFill1.visible = this.backFill1.vertices.length > 0 ? true : false;
     this.backFill2.visible = this.backFill2.vertices.length > 0 ? true : false;
 
-    this.glowingBackCirclePathStart.visible = true;
-    this.glowingBackCirclePathTail.visible = true;
-    this.glowingBackStraightStart.visible = true;
-    this.glowingBackStraightEnd.visible = true;
+    this.glowingBackCirclePathStart.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+    this.glowingBackCirclePathTail.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+    this.glowingBackStraightStart.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+    this.glowingBackStraightEnd.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
 
     //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     // Double arc display on the back side is the same as the display on the front.
@@ -2314,15 +2338,23 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
     ) {
-      this.backCirclePathDoubleArcStart.visible = true;
-      this.backCirclePathDoubleArcTail.visible = true;
-      this.glowingBackCirclePathDoubleArcStart.visible = true;
-      this.glowingBackCirclePathDoubleArcTail.visible = true;
+      this.backCirclePathDoubleArcStart.addTo(
+        layers[LAYER.backgroundAngleMarkers]
+      );
+      this.backCirclePathDoubleArcTail.addTo(
+        layers[LAYER.backgroundAngleMarkers]
+      );
+      this.glowingBackCirclePathDoubleArcStart.addTo(
+        layers[LAYER.backgroundAngleMarkersGlowing]
+      );
+      this.glowingBackCirclePathDoubleArcTail.addTo(
+        layers[LAYER.backgroundAngleMarkersGlowing]
+      );
     } else {
-      this.backCirclePathDoubleArcStart.visible = false;
-      this.backCirclePathDoubleArcTail.visible = false;
-      this.glowingBackCirclePathDoubleArcStart.visible = false;
-      this.glowingBackCirclePathDoubleArcTail.visible = false;
+      this.backCirclePathDoubleArcStart.remove();
+      this.backCirclePathDoubleArcTail.remove();
+      this.glowingBackCirclePathDoubleArcStart.remove();
+      this.glowingBackCirclePathDoubleArcTail.remove();
     }
 
     if (
@@ -2330,11 +2362,13 @@ export default class AngleMarker extends Nodule {
       frontStyle.angleMarkerArrowHeads === true &&
       this.angleIsBigEnoughToDrawArrowHeads === true
     ) {
-      this.backArrowHeadPath.visible = true;
-      this.glowingBackArrowHeadPath.visible = true;
+      this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
+      this.glowingBackArrowHeadPath.addTo(
+        layers[LAYER.backgroundAngleMarkersGlowing]
+      );
     } else {
-      this.backArrowHeadPath.visible = false;
-      this.glowingBackArrowHeadPath.visible = false;
+      this.backArrowHeadPath.remove();
+      this.glowingBackArrowHeadPath.remove();
     }
   }
   glowingDisplay(): void {
@@ -2342,60 +2376,66 @@ export default class AngleMarker extends Nodule {
     this.backGlowingDisplay();
   }
   frontNormalDisplay(): void {
-    this.frontCirclePathStart.visible = true;
-    this.frontCirclePathTail.visible = true;
-    this.frontStraightStart.visible = true;
-    this.frontStraightEnd.visible = true;
+    const layers = SEStore.layers;
+    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
 
     this.frontFill1.visible =
       this.frontFill1.vertices.length > 0 ? true : false;
     this.frontFill2.visible =
       this.frontFill2.vertices.length > 0 ? true : false;
 
-    this.glowingFrontCirclePathStart.visible = false;
-    this.glowingFrontCirclePathTail.visible = false;
-    this.glowingFrontStraightStart.visible = false;
-    this.glowingFrontStraightEnd.visible = false;
+    this.glowingFrontCirclePathStart.remove();
+    this.glowingFrontCirclePathTail.remove();
+    this.glowingFrontStraightStart.remove();
+    this.glowingFrontStraightEnd.remove();
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     if (
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
     ) {
-      this.frontCirclePathDoubleArcStart.visible = true;
-      this.frontCirclePathDoubleArcTail.visible = true;
-      this.glowingFrontCirclePathDoubleArcStart.visible = false;
-      this.glowingFrontCirclePathDoubleArcTail.visible = false;
+      this.frontCirclePathDoubleArcStart.addTo(
+        layers[LAYER.foregroundAngleMarkers]
+      );
+      this.frontCirclePathDoubleArcTail.addTo(
+        layers[LAYER.foregroundAngleMarkers]
+      );
+      this.glowingFrontCirclePathDoubleArcStart.remove();
+      this.glowingFrontCirclePathDoubleArcTail.remove();
     } else {
-      this.frontCirclePathDoubleArcStart.visible = false;
-      this.frontCirclePathDoubleArcTail.visible = false;
-      this.glowingFrontCirclePathDoubleArcStart.visible = false;
-      this.glowingFrontCirclePathDoubleArcTail.visible = false;
+      this.frontCirclePathDoubleArcStart.remove();
+      this.frontCirclePathDoubleArcTail.remove();
+      this.glowingFrontCirclePathDoubleArcStart.remove();
+      this.glowingFrontCirclePathDoubleArcTail.remove();
     }
     if (
       frontStyle?.angleMarkerArrowHeads &&
       frontStyle.angleMarkerArrowHeads === true &&
       this.angleIsBigEnoughToDrawArrowHeads
     ) {
-      this.frontArrowHeadPath.visible = true;
-      this.glowingFrontArrowHeadPath.visible = false;
+      this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
+      this.glowingFrontArrowHeadPath.remove();
     } else {
-      this.frontArrowHeadPath.visible = false;
-      this.glowingFrontArrowHeadPath.visible = false;
+      this.frontArrowHeadPath.remove();
+      this.glowingFrontArrowHeadPath.remove();
     }
   }
   backNormalDisplay(): void {
-    this.backCirclePathStart.visible = true;
-    this.backCirclePathTail.visible = true;
-    this.backStraightStart.visible = true;
-    this.backStraightEnd.visible = true;
+    const layers = SEStore.layers;
+    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
 
     this.backFill1.visible = this.backFill1.vertices.length > 0 ? true : false;
     this.backFill2.visible = this.backFill2.vertices.length > 0 ? true : false;
 
-    this.glowingBackCirclePathStart.visible = false;
-    this.glowingBackCirclePathTail.visible = false;
-    this.glowingBackStraightStart.visible = false;
-    this.glowingBackStraightEnd.visible = false;
+    this.glowingBackCirclePathStart.remove();
+    this.glowingBackCirclePathTail.remove();
+    this.glowingBackStraightStart.remove();
+    this.glowingBackStraightEnd.remove();
 
     //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     // Double arc display on the back side is the same as the display on the front.
@@ -2405,15 +2445,19 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
     ) {
-      this.backCirclePathDoubleArcStart.visible = true;
-      this.backCirclePathDoubleArcTail.visible = true;
-      this.glowingBackCirclePathDoubleArcStart.visible = false;
-      this.glowingBackCirclePathDoubleArcTail.visible = false;
+      this.backCirclePathDoubleArcStart.addTo(
+        layers[LAYER.backgroundAngleMarkers]
+      );
+      this.backCirclePathDoubleArcTail.addTo(
+        layers[LAYER.backgroundAngleMarkers]
+      );
+      this.glowingBackCirclePathDoubleArcStart.remove();
+      this.glowingBackCirclePathDoubleArcTail.remove();
     } else {
-      this.backCirclePathDoubleArcStart.visible = false;
-      this.backCirclePathDoubleArcTail.visible = false;
-      this.glowingBackCirclePathDoubleArcStart.visible = false;
-      this.glowingBackCirclePathDoubleArcTail.visible = false;
+      this.backCirclePathDoubleArcStart.remove();
+      this.backCirclePathDoubleArcTail.remove();
+      this.glowingBackCirclePathDoubleArcStart.remove();
+      this.glowingBackCirclePathDoubleArcTail.remove();
     }
 
     if (
@@ -2421,11 +2465,11 @@ export default class AngleMarker extends Nodule {
       frontStyle.angleMarkerArrowHeads === true &&
       this.angleIsBigEnoughToDrawArrowHeads
     ) {
-      this.backArrowHeadPath.visible = true;
-      this.glowingBackArrowHeadPath.visible = false;
+      this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
+      this.glowingBackArrowHeadPath.remove();
     } else {
-      this.backArrowHeadPath.visible = false;
-      this.glowingBackArrowHeadPath.visible = false;
+      this.backArrowHeadPath.remove();
+      this.glowingBackArrowHeadPath.remove();
     }
   }
   normalDisplay(): void {
@@ -2434,45 +2478,45 @@ export default class AngleMarker extends Nodule {
   }
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontCirclePathStart.visible = false;
-      this.frontCirclePathTail.visible = false;
-      this.backCirclePathStart.visible = false;
-      this.backCirclePathTail.visible = false;
+      this.frontCirclePathStart.remove();
+      this.frontCirclePathTail.remove();
+      this.backCirclePathStart.remove();
+      this.backCirclePathTail.remove();
 
-      this.frontStraightStart.visible = false;
-      this.frontStraightEnd.visible = false;
-      this.backStraightStart.visible = false;
-      this.backStraightEnd.visible = false;
+      this.frontStraightStart.remove();
+      this.frontStraightEnd.remove();
+      this.backStraightStart.remove();
+      this.backStraightEnd.remove();
 
-      this.frontFill1.visible = false;
-      this.frontFill2.visible = false;
-      this.backFill1.visible = false;
-      this.backFill2.visible = false;
+      this.frontFill1.remove();
+      this.frontFill2.remove();
+      this.backFill1.remove();
+      this.backFill2.remove();
 
-      this.frontCirclePathDoubleArcStart.visible = false;
-      this.frontCirclePathDoubleArcTail.visible = false;
-      this.backCirclePathDoubleArcStart.visible = false;
-      this.backCirclePathDoubleArcTail.visible = false;
+      this.frontCirclePathDoubleArcStart.remove();
+      this.frontCirclePathDoubleArcTail.remove();
+      this.backCirclePathDoubleArcStart.remove();
+      this.backCirclePathDoubleArcTail.remove();
 
-      this.glowingFrontCirclePathStart.visible = false;
-      this.glowingFrontCirclePathTail.visible = false;
-      this.glowingBackCirclePathStart.visible = false;
-      this.glowingBackCirclePathTail.visible = false;
+      this.glowingFrontCirclePathStart.remove();
+      this.glowingFrontCirclePathTail.remove();
+      this.glowingBackCirclePathStart.remove();
+      this.glowingBackCirclePathTail.remove();
 
-      this.glowingFrontStraightStart.visible = false;
-      this.glowingFrontStraightEnd.visible = false;
-      this.glowingBackStraightStart.visible = false;
-      this.glowingBackStraightEnd.visible = false;
+      this.glowingFrontStraightStart.remove();
+      this.glowingFrontStraightEnd.remove();
+      this.glowingBackStraightStart.remove();
+      this.glowingBackStraightEnd.remove();
 
-      this.glowingFrontCirclePathDoubleArcStart.visible = false;
-      this.glowingFrontCirclePathDoubleArcTail.visible = false;
-      this.glowingBackCirclePathDoubleArcStart.visible = false;
-      this.glowingBackCirclePathDoubleArcTail.visible = false;
+      this.glowingFrontCirclePathDoubleArcStart.remove();
+      this.glowingFrontCirclePathDoubleArcTail.remove();
+      this.glowingBackCirclePathDoubleArcStart.remove();
+      this.glowingBackCirclePathDoubleArcTail.remove();
 
-      this.frontArrowHeadPath.visible = false;
-      this.backArrowHeadPath.visible = false;
-      this.glowingFrontArrowHeadPath.visible = false;
-      this.glowingBackArrowHeadPath.visible = false;
+      this.frontArrowHeadPath.remove();
+      this.backArrowHeadPath.remove();
+      this.glowingFrontArrowHeadPath.remove();
+      this.glowingBackArrowHeadPath.remove();
     } else {
       this.normalDisplay();
     }
@@ -2512,11 +2556,13 @@ export default class AngleMarker extends Nodule {
     dup.backCirclePathStart.translation.copy(
       this.backCirclePathStart.translation
     );
-    dup.glowingFrontCirclePathStart.rotation = this.glowingFrontCirclePathStart.rotation;
+    dup.glowingFrontCirclePathStart.rotation =
+      this.glowingFrontCirclePathStart.rotation;
     dup.glowingFrontCirclePathStart.translation.copy(
       this.glowingFrontCirclePathStart.translation
     );
-    dup.glowingBackCirclePathStart.rotation = this.glowingBackCirclePathStart.rotation;
+    dup.glowingBackCirclePathStart.rotation =
+      this.glowingBackCirclePathStart.rotation;
     dup.glowingBackCirclePathStart.translation.copy(
       this.glowingBackCirclePathStart.translation
     );
@@ -2527,28 +2573,34 @@ export default class AngleMarker extends Nodule {
     );
     dup.backStraightStart.rotation = this.backStraightStart.rotation;
     dup.backStraightStart.translation.copy(this.backStraightStart.translation);
-    dup.glowingFrontStraightStart.rotation = this.glowingFrontStraightStart.rotation;
+    dup.glowingFrontStraightStart.rotation =
+      this.glowingFrontStraightStart.rotation;
     dup.glowingFrontStraightStart.translation.copy(
       this.glowingFrontStraightStart.translation
     );
-    dup.glowingBackStraightStart.rotation = this.glowingBackStraightStart.rotation;
+    dup.glowingBackStraightStart.rotation =
+      this.glowingBackStraightStart.rotation;
     dup.glowingBackStraightStart.translation.copy(
       this.glowingBackStraightStart.translation
     );
 
-    dup.frontCirclePathDoubleArcStart.rotation = this.frontCirclePathDoubleArcStart.rotation;
+    dup.frontCirclePathDoubleArcStart.rotation =
+      this.frontCirclePathDoubleArcStart.rotation;
     dup.frontCirclePathDoubleArcStart.translation.copy(
       this.frontCirclePathDoubleArcStart.translation
     );
-    dup.backCirclePathDoubleArcStart.rotation = this.backCirclePathDoubleArcStart.rotation;
+    dup.backCirclePathDoubleArcStart.rotation =
+      this.backCirclePathDoubleArcStart.rotation;
     dup.backCirclePathDoubleArcStart.translation.copy(
       this.backCirclePathDoubleArcStart.translation
     );
-    dup.glowingFrontCirclePathDoubleArcStart.rotation = this.glowingFrontCirclePathDoubleArcStart.rotation;
+    dup.glowingFrontCirclePathDoubleArcStart.rotation =
+      this.glowingFrontCirclePathDoubleArcStart.rotation;
     dup.glowingFrontCirclePathDoubleArcStart.translation.copy(
       this.glowingFrontCirclePathDoubleArcStart.translation
     );
-    dup.glowingBackCirclePathDoubleArcStart.rotation = this.glowingBackCirclePathDoubleArcStart.rotation;
+    dup.glowingBackCirclePathDoubleArcStart.rotation =
+      this.glowingBackCirclePathDoubleArcStart.rotation;
     dup.glowingBackCirclePathDoubleArcStart.translation.copy(
       this.glowingBackCirclePathDoubleArcStart.translation
     );
@@ -2561,11 +2613,13 @@ export default class AngleMarker extends Nodule {
     dup.backCirclePathTail.translation.copy(
       this.backCirclePathTail.translation
     );
-    dup.glowingFrontCirclePathTail.rotation = this.glowingFrontCirclePathTail.rotation;
+    dup.glowingFrontCirclePathTail.rotation =
+      this.glowingFrontCirclePathTail.rotation;
     dup.glowingFrontCirclePathTail.translation.copy(
       this.glowingFrontCirclePathTail.translation
     );
-    dup.glowingBackCirclePathTail.rotation = this.glowingBackCirclePathTail.rotation;
+    dup.glowingBackCirclePathTail.rotation =
+      this.glowingBackCirclePathTail.rotation;
     dup.glowingBackCirclePathTail.translation.copy(
       this.glowingBackCirclePathTail.translation
     );
@@ -2574,7 +2628,8 @@ export default class AngleMarker extends Nodule {
     dup.frontStraightEnd.translation.copy(this.frontStraightEnd.translation);
     dup.backStraightEnd.rotation = this.backStraightEnd.rotation;
     dup.backStraightEnd.translation.copy(this.backStraightEnd.translation);
-    dup.glowingFrontStraightEnd.rotation = this.glowingFrontStraightEnd.rotation;
+    dup.glowingFrontStraightEnd.rotation =
+      this.glowingFrontStraightEnd.rotation;
     dup.glowingFrontStraightEnd.translation.copy(
       this.glowingFrontStraightEnd.translation
     );
@@ -2583,19 +2638,23 @@ export default class AngleMarker extends Nodule {
       this.glowingBackStraightEnd.translation
     );
 
-    dup.frontCirclePathDoubleArcTail.rotation = this.frontCirclePathDoubleArcTail.rotation;
+    dup.frontCirclePathDoubleArcTail.rotation =
+      this.frontCirclePathDoubleArcTail.rotation;
     dup.frontCirclePathDoubleArcTail.translation.copy(
       this.frontCirclePathDoubleArcTail.translation
     );
-    dup.backCirclePathDoubleArcTail.rotation = this.backCirclePathDoubleArcTail.rotation;
+    dup.backCirclePathDoubleArcTail.rotation =
+      this.backCirclePathDoubleArcTail.rotation;
     dup.backCirclePathDoubleArcTail.translation.copy(
       this.backCirclePathDoubleArcTail.translation
     );
-    dup.glowingFrontCirclePathDoubleArcTail.rotation = this.glowingFrontCirclePathDoubleArcTail.rotation;
+    dup.glowingFrontCirclePathDoubleArcTail.rotation =
+      this.glowingFrontCirclePathDoubleArcTail.rotation;
     dup.glowingFrontCirclePathDoubleArcTail.translation.copy(
       this.glowingFrontCirclePathDoubleArcTail.translation
     );
-    dup.glowingBackCirclePathDoubleArcTail.rotation = this.glowingBackCirclePathDoubleArcTail.rotation;
+    dup.glowingBackCirclePathDoubleArcTail.rotation =
+      this.glowingBackCirclePathDoubleArcTail.rotation;
     dup.glowingBackCirclePathDoubleArcTail.translation.copy(
       this.glowingBackCirclePathDoubleArcTail.translation
     );
@@ -2606,11 +2665,13 @@ export default class AngleMarker extends Nodule {
     );
     dup.backArrowHeadPath.rotation = this.backArrowHeadPath.rotation;
     dup.backArrowHeadPath.translation.copy(this.backArrowHeadPath.translation);
-    dup.glowingFrontArrowHeadPath.rotation = this.glowingFrontArrowHeadPath.rotation;
+    dup.glowingFrontArrowHeadPath.rotation =
+      this.glowingFrontArrowHeadPath.rotation;
     dup.glowingFrontArrowHeadPath.translation.copy(
       this.glowingFrontArrowHeadPath.translation
     );
-    dup.glowingBackArrowHeadPath.rotation = this.glowingBackArrowHeadPath.rotation;
+    dup.glowingBackArrowHeadPath.rotation =
+      this.glowingBackArrowHeadPath.rotation;
     dup.glowingBackArrowHeadPath.translation.copy(
       this.glowingBackArrowHeadPath.translation
     );
@@ -2650,7 +2711,8 @@ export default class AngleMarker extends Nodule {
       // Transfer from frontPath to backPath
       const vFront = dup.frontCirclePathDoubleArcStart.vertices.pop();
       if (vFront) dup.backCirclePathDoubleArcStart.vertices.push(vFront);
-      const vFrontGlow = dup.glowingFrontCirclePathDoubleArcStart.vertices.pop();
+      const vFrontGlow =
+        dup.glowingFrontCirclePathDoubleArcStart.vertices.pop();
       if (vFrontGlow)
         dup.glowingBackCirclePathDoubleArcStart.vertices.push(vFrontGlow);
     }
@@ -2934,7 +2996,8 @@ export default class AngleMarker extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
@@ -3453,27 +3516,27 @@ export default class AngleMarker extends Nodule {
           }
         }
         // The temporary display is never highlighted
-        this.glowingFrontCirclePathStart.visible = false;
-        this.glowingBackCirclePathStart.visible = false;
-        this.glowingFrontStraightStart.visible = false;
-        this.glowingBackStraightStart.visible = false;
-        this.glowingFrontCirclePathDoubleArcStart.visible = false;
-        this.glowingBackCirclePathDoubleArcStart.visible = false;
-        this.glowingFrontArrowHeadPath.visible = false;
-        this.glowingBackArrowHeadPath.visible = false;
+        this.glowingFrontCirclePathStart.remove();
+        this.glowingBackCirclePathStart.remove();
+        this.glowingFrontStraightStart.remove();
+        this.glowingBackStraightStart.remove();
+        this.glowingFrontCirclePathDoubleArcStart.remove();
+        this.glowingBackCirclePathDoubleArcStart.remove();
+        this.glowingFrontArrowHeadPath.remove();
+        this.glowingBackArrowHeadPath.remove();
 
-        this.glowingFrontCirclePathTail.visible = false;
-        this.glowingBackCirclePathTail.visible = false;
-        this.glowingFrontStraightEnd.visible = false;
-        this.glowingBackStraightEnd.visible = false;
-        this.glowingFrontCirclePathDoubleArcTail.visible = false;
-        this.glowingBackCirclePathDoubleArcTail.visible = false;
+        this.glowingFrontCirclePathTail.remove();
+        this.glowingBackCirclePathTail.remove();
+        this.glowingFrontStraightEnd.remove();
+        this.glowingBackStraightEnd.remove();
+        this.glowingFrontCirclePathDoubleArcTail.remove();
+        this.glowingBackCirclePathDoubleArcTail.remove();
 
         //The double arc is never shown in the temporary display
-        this.backCirclePathDoubleArcStart.visible = false;
-        this.frontCirclePathDoubleArcStart.visible = false;
-        this.backCirclePathDoubleArcTail.visible = false;
-        this.frontCirclePathDoubleArcTail.visible = false;
+        this.backCirclePathDoubleArcStart.remove();
+        this.frontCirclePathDoubleArcStart.remove();
+        this.backCirclePathDoubleArcTail.remove();
+        this.frontCirclePathDoubleArcTail.remove();
         break;
       }
 
@@ -3619,18 +3682,16 @@ export default class AngleMarker extends Nodule {
             this.backStraightStart.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this.backCirclePathDoubleArcStart.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            this.backCirclePathDoubleArcStart.stroke =
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black");
             this.backCirclePathTail.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
             this.backStraightEnd.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this.backCirclePathDoubleArcTail.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            this.backCirclePathDoubleArcTail.stroke =
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black");
 
             this.backArrowHeadPath.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
@@ -3705,10 +3766,12 @@ export default class AngleMarker extends Nodule {
         // no fillColor for glowing circles
         this.glowingFrontCirclePathStart.stroke = this.glowingStrokeColorFront;
         this.glowingFrontStraightStart.stroke = this.glowingStrokeColorFront;
-        this.glowingFrontCirclePathDoubleArcStart.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcStart.stroke =
+          this.glowingStrokeColorFront;
         this.glowingFrontCirclePathTail.stroke = this.glowingStrokeColorFront;
         this.glowingFrontStraightEnd.stroke = this.glowingStrokeColorFront;
-        this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcTail.stroke =
+          this.glowingStrokeColorFront;
         this.glowingFrontArrowHeadPath.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
@@ -3748,10 +3811,12 @@ export default class AngleMarker extends Nodule {
         // no fillColor for glowing circles
         this.glowingBackCirclePathStart.stroke = this.glowingStrokeColorBack;
         this.glowingBackStraightStart.stroke = this.glowingStrokeColorBack;
-        this.glowingBackCirclePathDoubleArcStart.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcStart.stroke =
+          this.glowingStrokeColorBack;
         this.glowingBackCirclePathTail.stroke = this.glowingStrokeColorBack;
         this.glowingBackStraightEnd.stroke = this.glowingStrokeColorBack;
-        this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcTail.stroke =
+          this.glowingStrokeColorBack;
         this.glowingBackArrowHeadPath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object

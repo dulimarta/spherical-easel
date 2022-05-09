@@ -11,7 +11,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
-import AppStore from "@/store";
+import AppStore, { SEStore } from "@/store";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import Segment from "./Segment";
@@ -171,8 +171,8 @@ export default class Polygon extends Nodule {
       this.backFills[i].noStroke();
 
       //Turn off the glowing display initially but leave it on so that the temporary objects show up
-      this.frontFills[i].visible = true;
-      this.backFills[i].visible = true;
+      this.frontFills[i].addTo(SEStore.layers[LAYER.foregroundFills]);
+      this.backFills[i].addTo(SEStore.layers[LAYER.backgroundFills]);
     }
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = SETTINGS.polygon.drawn.fillColor.front;
@@ -904,7 +904,8 @@ export default class Polygon extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontFills.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.frontGlowingDisplay();
@@ -913,7 +914,8 @@ export default class Polygon extends Nodule {
   }
 
   backGlowingDisplay(): void {
-    this.backFills.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.backGlowingDisplay();
@@ -925,7 +927,8 @@ export default class Polygon extends Nodule {
     this.backGlowingDisplay();
   }
   frontNormalDisplay(): void {
-    this.frontFills.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.frontNormalDisplay();
@@ -933,7 +936,8 @@ export default class Polygon extends Nodule {
     });
   }
   backNormalDisplay(): void {
-    this.backFills.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.backNormalDisplay();
@@ -947,8 +951,8 @@ export default class Polygon extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontFills.forEach(part => (part.visible = false));
-      this.backFills.forEach(part => (part.visible = false));
+      this.frontFills.forEach(part => part.remove());
+      this.backFills.forEach(part => part.remove());
     } else {
       this.normalDisplay();
     }
@@ -970,7 +974,8 @@ export default class Polygon extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));

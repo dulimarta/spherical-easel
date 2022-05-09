@@ -201,10 +201,10 @@ export default class Circle extends Nodule {
     this.glowingBackCirclePart.noFill();
 
     //Turn off the glowing display initially but leave it on so that the temporary objects show up
-    // this.frontCirclePart.visible = false;
-    // this.backCirclePart.visible = false;
-    // this.glowingBackCirclePart.visible = false;
-    // this.glowingFrontCirclePart.visible = false;
+    // this.frontCirclePart.remove();
+    // this.backCirclePart.remove();
+    // this.glowingBackCirclePart.remove();
+    // this.glowingFrontCirclePart.remove();
 
     // Now organize the fills
     // In total there at most SETTINGS.circle.boundaryPoints + SETTINGS.circle.numPoints + 2 anchors in these paths.
@@ -246,8 +246,8 @@ export default class Circle extends Nodule {
     this.backFill.noStroke();
 
     //Turn on the display initially so it shows up for the temporary circle
-    // this.frontFill.visible = true;
-    // this.backFill.visible = true;
+    // this.frontFill.addTo(layers[LAYER.]);
+    // this.backFill.addTo(layers[LAYER.]);
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = SETTINGS.circle.drawn.fillColor.front;
@@ -838,185 +838,120 @@ export default class Circle extends Nodule {
     return this._circleRadius;
   }
 
-  // frontGlowingDisplay(): void {
-  //   if (
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.ContainedEntirelyOnFront ||
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.SplitBetweenFrontAndBack ||
-  //     this.projectedCircleData.position === CirclePosition.HoleOnFront
-  //   ) {
-  //     this.frontCirclePart.visible = true;
-  //     this.glowingFrontCirclePart.visible = true;
-  //     this.frontFill.visible = true;
-  //   } else {
-  //     this.frontCirclePart.visible = false;
-  //     this.glowingFrontCirclePart.visible = false;
-  //     this.frontFill.visible = false;
-  //   }
-  // }
-  // backGlowingDisplay(): void {
-  //   if (
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.ContainedEntirelyOnBack ||
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.SplitBetweenFrontAndBack ||
-  //     this.projectedCircleData.position === CirclePosition.HoleOnBack
-  //   ) {
-  //     this.backCirclePart.visible = true;
-  //     this.glowingBackCirclePart.visible = true;
-  //     this.backFill.visible = true;
-  //   } else {
-  //     this.backCirclePart.visible = false;
-  //     this.glowingBackCirclePart.visible = false;
-  //     this.backFill.visible = false;
-  //   }
-  // }
   glowingDisplay(): void {
+    const layers = SEStore.layers;
     if (
       this.projectedCircleData.position ===
       CirclePosition.ContainedEntirelyOnFront
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = true;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = false;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = false;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.addTo(layers[LAYER.foregroundGlowing]);
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.remove();
+      this.glowingBackCirclePart.remove();
+      this.backFill.remove();
     } else if (
       this.projectedCircleData.position ===
       CirclePosition.ContainedEntirelyOnBack
     ) {
-      this.frontCirclePart.visible = false;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = false;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = true;
-      this.backFill.visible = true;
+      this.frontCirclePart.remove();
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.remove();
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.addTo(layers[LAYER.backgroundGlowing]);
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position ===
       CirclePosition.SplitBetweenFrontAndBack
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = true;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = true;
-      this.backFill.visible = true;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.addTo(layers[LAYER.foregroundGlowing]);
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.addTo(layers[LAYER.backgroundGlowing]);
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position === CirclePosition.HoleOnFront
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = true;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = false;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = true;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.addTo(layers[LAYER.foregroundGlowing]);
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.remove();
+      this.glowingBackCirclePart.remove();
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position === CirclePosition.HoleOnBack
     ) {
-      this.frontCirclePart.visible = false;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = true;
-      this.backFill.visible = true;
+      this.frontCirclePart.remove();
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.addTo(layers[LAYER.backgroundGlowing]);
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     }
   }
-  // frontNormalDisplay(): void {
-  //   if (
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.ContainedEntirelyOnFront ||
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.SplitBetweenFrontAndBack ||
-  //     this.projectedCircleData.position === CirclePosition.HoleOnFront
-  //   ) {
-  //     this.frontCirclePart.visible = true;
-  //     this.glowingFrontCirclePart.visible = false;
-  //     this.frontFill.visible = false; //true;
-  //   } else {
-  //     this.frontCirclePart.visible = false;
-  //     this.glowingFrontCirclePart.visible = false;
-  //     this.frontFill.visible = false;
-  //   }
-  // }
-  // backNormalDisplay(): void {
-  //   if (
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.ContainedEntirelyOnBack ||
-  //     this.projectedCircleData.position ===
-  //       CirclePosition.SplitBetweenFrontAndBack ||
-  //     this.projectedCircleData.position === CirclePosition.HoleOnBack
-  //   ) {
-  //     this.backCirclePart.visible = true;
-  //     this.glowingBackCirclePart.visible = false;
-  //     this.backFill.visible = true;
-  //   } else {
-  //     this.backCirclePart.visible = false;
-  //     this.glowingBackCirclePart.visible = false;
-  //     this.backFill.visible = false;
-  //   }
-  // }
+
   normalDisplay(): void {
+    const layers = SEStore.layers;
     if (
       this.projectedCircleData.position ===
       CirclePosition.ContainedEntirelyOnFront
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = false;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = false;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.remove();
+      this.glowingBackCirclePart.remove();
+      this.backFill.remove();
     } else if (
       this.projectedCircleData.position ===
       CirclePosition.ContainedEntirelyOnBack
     ) {
-      this.frontCirclePart.visible = false;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = false;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = true;
+      this.frontCirclePart.remove();
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.remove();
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.remove();
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position ===
       CirclePosition.SplitBetweenFrontAndBack
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = true;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.remove();
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position === CirclePosition.HoleOnFront
     ) {
-      this.frontCirclePart.visible = true;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = false;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = true;
+      this.frontCirclePart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.remove();
+      this.glowingBackCirclePart.remove();
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     } else if (
       this.projectedCircleData.position === CirclePosition.HoleOnBack
     ) {
-      this.frontCirclePart.visible = false;
-      this.glowingFrontCirclePart.visible = false;
-      this.frontFill.visible = true;
-      this.backCirclePart.visible = true;
-      this.glowingBackCirclePart.visible = false;
-      this.backFill.visible = true;
+      this.frontCirclePart.remove();
+      this.glowingFrontCirclePart.remove();
+      this.frontFill.addTo(layers[LAYER.foregroundFills]);
+      this.backCirclePart.addTo(layers[LAYER.background]);
+      this.glowingBackCirclePart.remove();
+      this.backFill.addTo(layers[LAYER.backgroundFills]);
     }
   }
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontCirclePart.visible = false;
-      this.backCirclePart.visible = false;
-      this.frontFill.visible = false;
-      this.backFill.visible = false;
-      this.glowingBackCirclePart.visible = false;
-      this.glowingFrontCirclePart.visible = false;
+      this.frontCirclePart.remove();
+      this.backCirclePart.remove();
+      this.frontFill.remove();
+      this.backFill.remove();
+      this.glowingBackCirclePart.remove();
+      this.glowingFrontCirclePart.remove();
     } else {
       this.normalDisplay();
     }
@@ -1082,7 +1017,8 @@ export default class Circle extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill.addTo(layers[LAYER.foregroundFills]);
@@ -1224,8 +1160,8 @@ export default class Circle extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontCirclePart.visible = false;
-        this.glowingBackCirclePart.visible = false;
+        this.glowingFrontCirclePart.remove();
+        this.glowingBackCirclePart.remove();
         break;
       }
 

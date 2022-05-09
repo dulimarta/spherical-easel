@@ -8,6 +8,7 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
+import { SEStore } from "@/store";
 
 /**
  * A line segment
@@ -104,10 +105,10 @@ export default class Line extends Nodule {
     });
 
     // The line is not initially glowing but is visible for the temporary object
-    // this.frontHalf.visible = true;
-    // this.backHalf.visible = true;
-    // this.glowingFrontHalf.visible = false;
-    // this.glowingBackHalf.visible = false;
+    // this.frontHalf.addTo(layers[LAYER.]);
+    // this.backHalf.addTo(layers[LAYER.]);
+    // this.glowingFrontHalf.remove();
+    // this.glowingBackHalf.remove();
 
     // Set the style that never changes -- Fill and closed
     this.frontHalf.noFill();
@@ -129,13 +130,15 @@ export default class Line extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontHalf.visible = true;
-    this.glowingFrontHalf.visible = true;
+    const layers = SEStore.layers;
+    this.frontHalf.addTo(layers[LAYER.foreground]);
+    this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
   }
 
   backGlowingDisplay(): void {
-    this.backHalf.visible = true;
-    this.glowingBackHalf.visible = true;
+    const layers = SEStore.layers;
+    this.backHalf.addTo(layers[LAYER.background]);
+    this.glowingBackHalf.addTo(layers[LAYER.backgroundGlowing]);
   }
 
   glowingDisplay(): void {
@@ -144,13 +147,15 @@ export default class Line extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontHalf.visible = true;
-    this.glowingFrontHalf.visible = false;
+    const layers = SEStore.layers;
+    this.frontHalf.addTo(layers[LAYER.foreground]);
+    this.glowingFrontHalf.remove();
   }
 
   backNormalDisplay(): void {
-    this.backHalf.visible = true;
-    this.glowingBackHalf.visible = false;
+    const layers = SEStore.layers;
+    this.backHalf.addTo(layers[LAYER.background]);
+    this.glowingBackHalf.remove();
   }
 
   normalDisplay(): void {
@@ -224,10 +229,10 @@ export default class Line extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontHalf.visible = false;
-      this.glowingFrontHalf.visible = false;
-      this.backHalf.visible = false;
-      this.glowingBackHalf.visible = false;
+      this.frontHalf.remove();
+      this.glowingFrontHalf.remove();
+      this.backHalf.remove();
+      this.glowingBackHalf.remove();
     } else {
       this.normalDisplay();
     }
@@ -281,7 +286,8 @@ export default class Line extends Nodule {
     return dup as this;
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     this.frontHalf.addTo(layers[LAYER.foreground]);
     this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this.backHalf.addTo(layers[LAYER.background]);
@@ -402,8 +408,8 @@ export default class Line extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontHalf.visible = false;
-        this.glowingBackHalf.visible = false;
+        this.glowingFrontHalf.remove();
+        this.glowingBackHalf.remove();
         break;
       }
 

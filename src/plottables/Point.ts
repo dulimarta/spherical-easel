@@ -3,13 +3,14 @@
 import Two, { Color } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { Vector3 } from "three";
+import { Layers, Vector3 } from "three";
 import {
   StyleOptions,
   StyleEditPanels,
   DEFAULT_POINT_FRONT_STYLE,
   DEFAULT_POINT_BACK_STYLE
 } from "@/types/Styles";
+import { SEStore } from "@/store";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -106,10 +107,10 @@ export default class Point extends Nodule {
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
     // The points are not initially glowing but are visible for the temporary object
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = false;
+    this.frontPoint.addTo(SEStore.layers[LAYER.foregroundPoints]);
+    this.glowingFrontPoint.remove();
+    this.backPoint.addTo(SEStore.layers[LAYER.backgroundPoints]);
+    this.glowingBackPoint.remove();
 
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
@@ -159,17 +160,19 @@ export default class Point extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = true;
-    this.backPoint.visible = false;
-    this.glowingBackPoint.visible = false;
+    const layers = SEStore.layers;
+    this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
+    this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
+    this.backPoint.remove();
+    this.glowingBackPoint.remove();
   }
 
   backGlowingDisplay(): void {
-    this.frontPoint.visible = false;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = true;
+    const layers = SEStore.layers;
+    this.frontPoint.remove();
+    this.glowingFrontPoint.remove();
+    this.backPoint.addTo(layers[LAYER.backgroundPoints]);
+    this.glowingBackPoint.addTo(layers[LAYER.backgroundPointsGlowing]);
   }
 
   glowingDisplay(): void {
@@ -181,17 +184,19 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = false;
-    this.glowingBackPoint.visible = false;
+    const layers = SEStore.layers;
+    this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
+    this.glowingFrontPoint.remove();
+    this.backPoint.remove();
+    this.glowingBackPoint.remove();
   }
 
   backNormalDisplay(): void {
-    this.frontPoint.visible = false;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = false;
+    const layers = SEStore.layers;
+    this.frontPoint.remove();
+    this.glowingFrontPoint.remove();
+    this.backPoint.addTo(layers[LAYER.backgroundPoints]);
+    this.glowingBackPoint.remove();
   }
 
   normalDisplay(): void {
@@ -202,7 +207,8 @@ export default class Point extends Nodule {
     }
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
     this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
     this.backPoint.addTo(layers[LAYER.backgroundPoints]);
@@ -222,10 +228,10 @@ export default class Point extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontPoint.visible = false;
-      this.glowingFrontPoint.visible = false;
-      this.backPoint.visible = false;
-      this.glowingBackPoint.visible = false;
+      this.frontPoint.remove();
+      this.glowingFrontPoint.remove();
+      this.backPoint.remove();
+      this.glowingBackPoint.remove();
     } else {
       this.normalDisplay();
     }

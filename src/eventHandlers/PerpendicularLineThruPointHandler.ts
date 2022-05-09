@@ -139,7 +139,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             !this.sePoint.isUserCreated
           ) {
             this.temporaryPointMarker.positionVector = this.sePointVector;
-            this.temporaryPointMarker.addToLayers(this.layers);
+            this.temporaryPointMarker.addToLayers();
             this.temporaryPointAdded = true;
           }
         } else if (this.hitSESegments.length > 0) {
@@ -152,7 +152,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             )
           );
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSELines.length > 0) {
@@ -165,7 +165,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             )
           );
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSECircles.length > 0) {
@@ -178,7 +178,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             )
           );
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSEEllipses.length > 0) {
@@ -191,7 +191,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             )
           );
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSEParametrics.length > 0) {
@@ -204,7 +204,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             )
           );
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSEPolygons.length > 0) {
@@ -213,7 +213,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.positionVector = this.sePointVector;
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else {
@@ -222,7 +222,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPoint and Point
           this.temporaryPointMarker.positionVector = this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
           this.sePoint = null;
         }
@@ -446,7 +446,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       ) {
         // add the temporary point to the display and set its location to the currentSphereVector
         if (!this.temporaryPointAdded) {
-          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers();
           this.temporaryPointAdded = true;
         }
 
@@ -459,7 +459,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVector = this.snapToTemporaryPoint.locationVector;
+            this.temporaryPointMarker.positionVector =
+              this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPointMarker.removeFromLayers();
             this.temporaryPointAdded = false;
@@ -467,9 +468,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapToTemporaryOneDimensional !== null) {
-          this.temporaryPointMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryPointMarker.positionVector =
+            this.snapToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapToTemporaryPoint == null) {
           this.temporaryPointMarker.positionVector = this.currentSphereVector;
         }
@@ -489,10 +491,11 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         } else {
           vectorLocation = this.currentSphereVector;
         }
-        const normalList = this.oneDimensional.getNormalsToPerpendicularLinesThru(
-          vectorLocation,
-          this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
-        );
+        const normalList =
+          this.oneDimensional.getNormalsToPerpendicularLinesThru(
+            vectorLocation,
+            this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
+          );
 
         // Add new temporary lines as needed
         while (this.tempLines.length < normalList.length) {
@@ -521,7 +524,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             z.exist = true;
             z.tmpNormal.copy(normalList[ind].normal);
             z.line.normalVector = z.tmpNormal;
-            z.line.addToLayers(this.layers);
+            z.line.addToLayers();
           } else {
             z.exist = false;
             z.line.removeFromLayers();
@@ -588,9 +591,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           newPoint,
           sePointOneDimensionalParent
         );
-        this.sePoint.locationVector = sePointOneDimensionalParent.closestVector(
-          sePointVector
-        );
+        this.sePoint.locationVector =
+          sePointOneDimensionalParent.closestVector(sePointVector);
         const newSELabel = new SELabel(newLabel, this.sePoint);
         // Set the initial label location
         this.tmpVector

@@ -168,9 +168,6 @@ export default class SphereFrame extends VueComponent {
     }
     //#endregion addlayers
 
-    // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
-    //this.sphereCanvas = this.layers[LAYER.midground];
-    // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
     SEStore.setLayers(this.layers);
 

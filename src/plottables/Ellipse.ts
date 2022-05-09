@@ -10,7 +10,7 @@ import {
   DEFAULT_ELLIPSE_FRONT_STYLE,
   DEFAULT_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
+import AppStore, { SEStore } from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -323,10 +323,10 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.noFill();
 
     //Turn off the glowing display initially but leave it on so that the temporary objects show up
-    this.frontPart.visible = true;
-    this.backPart.visible = true;
-    this.glowingBackPart.visible = false;
-    this.glowingFrontPart.visible = false;
+    this.frontPart.addTo(SEStore.layers[LAYER.foreground]);
+    this.backPart.addTo(SEStore.layers[LAYER.background]);
+    this.glowingBackPart.remove();
+    this.glowingFrontPart.remove();
 
     // Now organize the fills
     // In total there are 4*SUBDIVISIONS+2 (The +2 two for the extra vertices to close up the annular region with the a and b values are
@@ -366,8 +366,8 @@ export default class Ellipse extends Nodule {
     this.backFill.noStroke();
 
     //Turn on the display initially so it shows up for the temporary ellipse
-    this.frontFill.visible = true;
-    this.backFill.visible = true;
+    this.frontFill.addTo(SEStore.layers[LAYER.foregroundFills]);
+    this.backFill.addTo(SEStore.layers[LAYER.backgroundFills]);
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = SETTINGS.ellipse.drawn.fillColor.front;
@@ -888,28 +888,32 @@ export default class Ellipse extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontPart.visible = true;
-    this.glowingFrontPart.visible = true;
-    this.frontFill.visible = true;
+    const layers = SEStore.layers;
+    this.frontPart.addTo(layers[LAYER.foreground]);
+    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+    this.frontFill.addTo(layers[LAYER.foregroundFills]);
   }
   backGlowingDisplay(): void {
-    this.backPart.visible = true;
-    this.glowingBackPart.visible = true;
-    this.backFill.visible = true;
+    const layers = SEStore.layers;
+    this.backPart.addTo(layers[LAYER.background]);
+    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
+    this.backFill.addTo(layers[LAYER.backgroundFills]);
   }
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
   frontNormalDisplay(): void {
-    this.frontPart.visible = true;
-    this.glowingFrontPart.visible = false;
-    this.frontFill.visible = true;
+    const layers = SEStore.layers;
+    this.frontPart.addTo(layers[LAYER.foreground]);
+    this.glowingFrontPart.remove();
+    this.frontFill.addTo(layers[LAYER.foregroundFills]);
   }
   backNormalDisplay(): void {
-    this.backPart.visible = true;
-    this.glowingBackPart.visible = false;
-    this.backFill.visible = true;
+    const layers = SEStore.layers;
+    this.backPart.addTo(layers[LAYER.background]);
+    this.glowingBackPart.remove();
+    this.backFill.addTo(layers[LAYER.backgroundFills]);
   }
   normalDisplay(): void {
     this.frontNormalDisplay();
@@ -918,12 +922,12 @@ export default class Ellipse extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontPart.visible = false;
-      this.backPart.visible = false;
-      this.frontFill.visible = false;
-      this.backFill.visible = false;
-      this.glowingBackPart.visible = false;
-      this.glowingFrontPart.visible = false;
+      this.frontPart.remove();
+      this.backPart.remove();
+      this.frontFill.remove();
+      this.backFill.remove();
+      this.glowingBackPart.remove();
+      this.glowingFrontPart.remove();
     } else {
       this.normalDisplay();
     }
@@ -1029,7 +1033,8 @@ export default class Ellipse extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill.addTo(layers[LAYER.foregroundFills]);
@@ -1175,8 +1180,8 @@ export default class Ellipse extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontPart.visible = false;
-        this.glowingBackPart.visible = false;
+        this.glowingFrontPart.remove();
+        this.glowingBackPart.remove();
         break;
       }
 

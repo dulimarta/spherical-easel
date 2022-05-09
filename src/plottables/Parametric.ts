@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, Layers } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -92,10 +92,10 @@ export default class Parametric extends Nodule {
   static currentGlowingParametricStrokeWidthBack =
     SETTINGS.parametric.drawn.strokeWidth.back +
     SETTINGS.parametric.glowing.edgeWidth;
-  foregroundLayer: Two.Group | null = null;
-  backgroundLayer: Two.Group | null = null;
-  glowingFgLayer: Two.Group | null = null;
-  glowingBgLayer: Two.Group | null = null;
+  // foregroundLayer: Two.Group | null = null;
+  // backgroundLayer: Two.Group | null = null;
+  // glowingFgLayer: Two.Group | null = null;
+  // glowingBgLayer: Two.Group | null = null;
 
   /**
    * Update all the current stroke widths
@@ -210,10 +210,10 @@ export default class Parametric extends Nodule {
       this.glowingBackParts[0].noFill();
 
       //Turn off the glowing display initially but leave it on so that the temporary objects show up
-      this.frontParts[0].visible = true;
-      this.backParts[0].visible = true;
-      this.glowingBackParts[0].visible = false;
-      this.glowingFrontParts[0].visible = false;
+      this.frontParts[0].addTo(SEStore.layers[LAYER.foreground]);
+      this.backParts[0].addTo(SEStore.layers[LAYER.background]);
+      this.glowingBackParts[0].remove();
+      this.glowingFrontParts[0].remove();
     } else {
       console.debug(
         `Parametric::buildCurve(). a rebuild of part-${this.partId} with number of anchors`,
@@ -324,10 +324,7 @@ export default class Parametric extends Nodule {
       for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
         const tValue =
           this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
-        const len = next
-          .copy(this.P(tValue))
-          .sub(curr)
-          .length();
+        const len = next.copy(this.P(tValue)).sub(curr).length();
 
         if (!isNaN(len)) {
           newArcLength += len;
@@ -446,14 +443,14 @@ export default class Parametric extends Nodule {
             const newPath = new Two.Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
-            newPath.visible = true;
-            if (this.backgroundLayer) newPath.addTo(this.backgroundLayer);
+            newPath.addTo(SEStore.layers[LAYER.background]);
+            //if (this.backgroundLayer) newPath.addTo(this.backgroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
             this.glowingBackParts.push(newGlowPath);
             newGlowPath.noFill();
-            newGlowPath.visible = false;
-            if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
+            newGlowPath.addTo(SEStore.layers[LAYER.backgroundGlowing]);
+            //if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
 
             Nodule.idPlottableDescriptionMap.set(
               String(this.backParts[currentBackPartIndex - 1].id),
@@ -501,14 +498,14 @@ export default class Parametric extends Nodule {
             const newPath = new Two.Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();
-            newPath.visible = true;
-            if (this.foregroundLayer) newPath.addTo(this.foregroundLayer);
+            newPath.addTo(SEStore.layers[LAYER.foreground]);
+            //if (this.foregroundLayer) newPath.addTo(this.foregroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
             this.glowingFrontParts.push(newGlowPath);
             newGlowPath.noFill();
-            newGlowPath.visible = true;
-            if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);
+            newGlowPath.addTo(SEStore.layers[LAYER.foreground]);
+            //if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);
 
             Nodule.idPlottableDescriptionMap.set(
               String(this.frontParts[currentFrontPartIndex - 1].id),
@@ -603,12 +600,18 @@ export default class Parametric extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontParts.forEach(part => (part.visible = true));
-    this.glowingFrontParts.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
+    this.glowingFrontParts.forEach(part =>
+      part.addTo(layers[LAYER.foregroundGlowing])
+    );
   }
   backGlowingDisplay(): void {
-    this.backParts.forEach(part => (part.visible = true));
-    this.glowingBackParts.forEach(part => (part.visible = true));
+    const layers = SEStore.layers;
+    this.backParts.forEach(part => part.addTo(layers[LAYER.background]));
+    this.glowingBackParts.forEach(part =>
+      part.addTo(layers[LAYER.backgroundGlowing])
+    );
   }
   glowingDisplay(): void {
     this.frontGlowingDisplay();
@@ -616,12 +619,14 @@ export default class Parametric extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontParts.forEach(part => (part.visible = true));
-    this.glowingFrontParts.forEach(part => (part.visible = false));
+    const layers = SEStore.layers;
+    this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
+    this.glowingFrontParts.forEach(part => part.remove());
   }
   backNormalDisplay(): void {
-    this.backParts.forEach(part => (part.visible = true));
-    this.glowingBackParts.forEach(part => (part.visible = false));
+    const layers = SEStore.layers;
+    this.backParts.forEach(part => part.addTo(layers[LAYER.background]));
+    this.glowingBackParts.forEach(part => part.remove());
   }
   normalDisplay(): void {
     this.frontNormalDisplay();
@@ -630,11 +635,11 @@ export default class Parametric extends Nodule {
 
   public setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontParts.forEach(part => (part.visible = false));
-      this.backParts.forEach(part => (part.visible = false));
+      this.frontParts.forEach(part => part.remove());
+      this.backParts.forEach(part => part.remove());
 
-      this.glowingBackParts.forEach(part => (part.visible = false));
-      this.glowingFrontParts.forEach(part => (part.visible = false));
+      this.glowingBackParts.forEach(part => part.remove());
+      this.glowingFrontParts.forEach(part => part.remove());
     } else {
       this.normalDisplay();
     }
@@ -659,14 +664,15 @@ export default class Parametric extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  public addToLayers(layers: Two.Group[]): void {
+  public addToLayers(): void {
+    const layers = SEStore.layers;
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
 
-    this.foregroundLayer = layers[LAYER.foreground];
-    this.backgroundLayer = layers[LAYER.background];
-    this.glowingFgLayer = layers[LAYER.foregroundGlowing];
-    this.glowingBgLayer = layers[LAYER.backgroundGlowing];
+    // this.foregroundLayer = layers[LAYER.foreground];
+    // this.backgroundLayer = layers[LAYER.background];
+    // this.glowingFgLayer = layers[LAYER.foregroundGlowing];
+    // this.glowingBgLayer = layers[LAYER.backgroundGlowing];
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -824,8 +830,8 @@ export default class Parametric extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontParts.forEach(part => (part.visible = false));
-        this.glowingBackParts.forEach(part => (part.visible = false));
+        this.glowingFrontParts.forEach(part => part.remove());
+        this.glowingBackParts.forEach(part => part.remove());
         break;
       }
 

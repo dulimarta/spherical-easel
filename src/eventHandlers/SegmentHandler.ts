@@ -343,7 +343,7 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers(this.layers);
+          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can be glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -375,11 +375,11 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary end/StartMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers(this.layers);
+          this.temporaryStartMarker.addToLayers();
         }
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers(this.layers);
+          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
@@ -401,7 +401,7 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary segment has *not* been added to the scene do so now (only once)
         if (!this.isTemporarySegmentAdded) {
           this.isTemporarySegmentAdded = true;
-          this.temporarySegment.addToLayers(this.layers);
+          this.temporarySegment.addToLayers();
         }
 
         //now set the normal and arcLength variables with the appropriate vector

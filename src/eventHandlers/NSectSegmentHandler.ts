@@ -97,7 +97,7 @@ export default class NSectSegmentHandler extends Highlighter {
         } else {
           // add this temp point, but only once
           if (!this.temporaryPointsAdded[ind]) {
-            tempPt.addToLayers(this.layers);
+            tempPt.addToLayers();
             this.temporaryPointsAdded[ind] = true;
           }
           //calculate the location of this point

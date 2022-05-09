@@ -28,7 +28,8 @@ export default class AntipodalPointHandler extends Highlighter {
   /**
    * If the user clicks on a one dimensional, create a point on that one dimensional *and* create the antipode of that point
    */
-  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null = null;
+  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null =
+    null;
 
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
@@ -300,12 +301,12 @@ export default class AntipodalPointHandler extends Highlighter {
       // If the temporary antipode has *not* been added to the scene do so now (only once)
       if (!this.isTemporaryAntipodeAdded) {
         this.isTemporaryAntipodeAdded = true;
-        this.temporaryAntipodeMarker.addToLayers(this.layers);
+        this.temporaryAntipodeMarker.addToLayers();
       }
       // If the temporary point has *not* been added to the scene do so now (only once)
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
-        this.temporaryPointMarker.addToLayers(this.layers);
+        this.temporaryPointMarker.addToLayers();
       }
       // Move the temporaryAntipodeMarker to the antipode of the current mouse location, and snap to one dimensional or point  (if appropriate)
       if (

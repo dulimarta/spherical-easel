@@ -322,7 +322,7 @@ export default class CircleHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.temporaryStartMarkerAdded) {
           this.temporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers(this.layers);
+          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -354,7 +354,7 @@ export default class CircleHandler extends Highlighter {
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.temporaryEndMarkerAdded) {
           this.temporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers(this.layers);
+          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
@@ -374,7 +374,7 @@ export default class CircleHandler extends Highlighter {
         // If the temporary circle has *not* been added to the scene do so now (only once)
         if (!this.temporaryCircleAdded) {
           this.temporaryCircleAdded = true;
-          this.temporaryCircle.addToLayers(this.layers);
+          this.temporaryCircle.addToLayers();
           this.temporaryCircle.updateDisplay(); // added in the update of circle.ts. This updates the projected circle data so the ellipse.position is set correctly
           this.temporaryCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
         }
@@ -780,6 +780,7 @@ export default class CircleHandler extends Highlighter {
       .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tmpVector;
+    newSELabel.showing = false;
 
     circleCommandGroup.addCommand(
       new AddCircleCommand(

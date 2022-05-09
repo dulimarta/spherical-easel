@@ -562,14 +562,14 @@ export default class PolygonHandler extends Highlighter {
               AngleMarker.currentAngleMarkerRadius
             );
             this.temporaryAngleMarkersAdded[ind] = true;
-            this.temporaryAngleMarkers[ind].addToLayers(this.layers);
+            this.temporaryAngleMarkers[ind].addToLayers();
             this.temporaryAngleMarkers[ind].updateDisplay();
           }
         });
 
         if (!this.temporaryAngleMarkersAdded[0]) {
           this.temporaryAngleMarkersAdded[0] = true;
-          this.temporaryAngleMarkers[0].addToLayers(this.layers);
+          this.temporaryAngleMarkers[0].addToLayers();
         }
 
         this.tmpVector3.copy(
@@ -762,9 +762,8 @@ export default class PolygonHandler extends Highlighter {
             }
           } else if (exp.angleMode === AngleMode.POINTS) {
             // now figure out if the angle was measured using points
-            const seg0Flipped = this.segmentIsFlipped[
-              (((index - 1) % n) + n) % n
-            ];
+            const seg0Flipped =
+              this.segmentIsFlipped[(((index - 1) % n) + n) % n];
             const seg1Flipped = this.segmentIsFlipped[((index % n) + n) % n];
 
             const startPointName = seg0Flipped

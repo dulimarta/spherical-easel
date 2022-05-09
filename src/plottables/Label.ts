@@ -24,6 +24,7 @@ import { ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
+import { SEStore } from "@/store";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -49,16 +50,16 @@ export default class Label extends Nodule {
    * The TwoJS objects that are used to display the label.
    * One is for the front, the other for the back. Only one is displayed at a time
    */
-  protected frontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected frontText: Two.Text = new Two.Text("Test0", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected backText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected backText: Two.Text = new Two.Text("Test1", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingFrontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingFrontText: Two.Text = new Two.Text("Test2", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingBackText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingBackText: Two.Text = new Two.Text("Test3", 1, 0, {
     size: SETTINGS.label.fontSize
   });
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
@@ -177,12 +178,6 @@ export default class Label extends Nodule {
     this.glowingBackText.translation = this.defaultScreenVectorLocation;
     this.backText.translation = this.defaultScreenVectorLocation;
 
-    // The text is not initially visible
-    this.frontText.visible = false;
-    this.glowingFrontText.visible = false;
-    this.backText.visible = false;
-    this.glowingBackText.visible = false;
-
     // Set the properties of the points that never change - stroke width and some glowing options
     this.frontText.noStroke();
     this.backText.noStroke();
@@ -194,6 +189,13 @@ export default class Label extends Nodule {
     this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
+
+    // The text is not initially visible
+    const layers = SEStore.layers;
+    layers[LAYER.foregroundText].remove(this.frontText);
+    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundText].remove(this.backText);
+    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
   }
   /**
    * Set and get the shortUserName
@@ -293,17 +295,29 @@ export default class Label extends Nodule {
     };
   }
   frontGlowingDisplay(): void {
-    this.frontText.visible = true;
-    this.glowingFrontText.visible = true;
-    this.backText.visible = false;
-    this.glowingBackText.visible = false;
+    const layers = SEStore.layers;
+    layers[LAYER.foregroundText].add(this.frontText);
+    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
+    layers[LAYER.backgroundText].remove(this.backText);
+    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+
+    // this.frontText.addTo(layers[LAYER.]);
+    // this.glowingFrontText.addTo(layers[LAYER.]);
+    // this.backText.remove();
+    // this.glowingBackText.remove();
   }
 
   backGlowingDisplay(): void {
-    this.frontText.visible = false;
-    this.glowingFrontText.visible = false;
-    this.backText.visible = true;
-    this.glowingBackText.visible = true;
+    const layers = SEStore.layers;
+    layers[LAYER.foregroundText].remove(this.frontText);
+    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundText].add(this.backText);
+    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+
+    // this.frontText.remove();
+    // this.glowingFrontText.remove();
+    // this.backText.addTo(layers[LAYER.]);
+    // this.glowingBackText.addTo(layers[LAYER.]);
   }
 
   glowingDisplay(): void {
@@ -315,17 +329,29 @@ export default class Label extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontText.visible = true;
-    this.glowingFrontText.visible = false;
-    this.backText.visible = false;
-    this.glowingBackText.visible = false;
+    const layers = SEStore.layers;
+    layers[LAYER.foregroundText].add(this.frontText);
+    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundText].remove(this.backText);
+    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+
+    // this.frontText.addTo(layers[LAYER.]);
+    // this.glowingFrontText.remove();
+    // this.backText.remove();
+    // this.glowingBackText.remove();
   }
 
   backNormalDisplay(): void {
-    this.frontText.visible = false;
-    this.glowingFrontText.visible = false;
-    this.backText.visible = true;
-    this.glowingBackText.visible = false;
+    const layers = SEStore.layers;
+    layers[LAYER.foregroundText].remove(this.frontText);
+    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundText].add(this.backText);
+    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+
+    // this.frontText.remove();
+    // this.glowingFrontText.remove();
+    // this.backText.addTo(layers[LAYER.]);
+    // this.glowingBackText.remove();
   }
 
   normalDisplay(): void {
@@ -336,14 +362,16 @@ export default class Label extends Nodule {
     }
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(): void {
+    const layers = SEStore.layers;
     layers[LAYER.foregroundText].add(this.frontText);
     layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
     layers[LAYER.backgroundText].add(this.backText);
     layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
   }
 
-  removeFromLayers(layers: Two.Group[]): void {
+  removeFromLayers(): void {
+    const layers = SEStore.layers;
     layers[LAYER.foregroundText].remove(this.frontText);
     layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
     layers[LAYER.backgroundText].remove(this.backText);
@@ -356,10 +384,15 @@ export default class Label extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontText.visible = false;
-      this.glowingFrontText.visible = false;
-      this.backText.visible = false;
-      this.glowingBackText.visible = false;
+      const layers = SEStore.layers;
+      layers[LAYER.foregroundText].remove(this.frontText);
+      layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+      layers[LAYER.backgroundText].remove(this.backText);
+      layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+      // this.frontText.remove();
+      // this.glowingFrontText.remove();
+      // this.backText.remove();
+      // this.glowingBackText.remove();
     } else {
       this.normalDisplay();
     }
