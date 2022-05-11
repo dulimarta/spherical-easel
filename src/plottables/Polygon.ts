@@ -208,8 +208,8 @@ export default class Polygon extends Nodule {
         "back extra length",
         seg.backPartExtra.renderer.vertices.length
       );
-      console.log("front length", seg.frontPart.renderer.vertices.length);
-      console.log("back length", seg.backPart.renderer.vertices.length);
+      // console.log("front length", seg.frontPart.renderer.vertices.length);
+      //console.log("back length", seg.backPart.renderer.vertices.length);
 
       // add the vertices on the projected circle edge
       //  let localMatrix = this.frontCirclePart.matrix;
