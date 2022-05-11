@@ -89,8 +89,8 @@ export default class RotateHandler extends Highlighter {
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {

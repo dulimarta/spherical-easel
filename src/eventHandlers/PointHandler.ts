@@ -26,16 +26,16 @@ export default class PointHandler extends Highlighter {
   /**
    * A temporary plottable (TwoJS) point created while the user is making a point
    */
-  protected startMarker: Point;
+  protected temporaryStartMarker: Point;
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     // Create and style the temporary points marking the object being created
-    this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.startMarker);
+    this.temporaryStartMarker = new Point();
+    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
+    SEStore.addTemporaryNodule(this.temporaryStartMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -196,7 +196,7 @@ export default class PointHandler extends Highlighter {
       }
     } else if (this.isTemporaryPointAdded) {
       // Remove the temporary object
-      this.startMarker.removeFromLayers();
+      this.temporaryStartMarker.removeAllPartsFromLayers();
       this.isTemporaryPointAdded = false;
     }
   }
@@ -240,14 +240,12 @@ export default class PointHandler extends Highlighter {
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
-        // Add the temporary point to the appropriate layers
-        this.startMarker.addToLayers();
       }
       // Move the temporary point to the location of the mouse event, and update the display, snap to a nearby one dimensional object (if there is one)
       if (this.snapToTemporaryOneDimensional === null) {
-        this.startMarker.positionVector = this.currentSphereVector;
+        this.temporaryStartMarker.positionVector = this.currentSphereVector;
       } else {
-        this.startMarker.positionVector =
+        this.temporaryStartMarker.positionVector =
           this.snapToTemporaryOneDimensional.closestVector(
             this.currentSphereVector
           );
@@ -257,14 +255,14 @@ export default class PointHandler extends Highlighter {
       if (this.hitSEPoints.length > 0) {
         if (this.isTemporaryPointAdded) {
           // Remove the temporary object
-          this.startMarker.removeFromLayers();
+          this.temporaryStartMarker.removeAllPartsFromLayers();
           this.isTemporaryPointAdded = false;
           this.snapToTemporaryOneDimensional = null;
         }
       }
     } else if (this.isTemporaryPointAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
-      this.startMarker.removeFromLayers();
+      this.temporaryStartMarker.removeAllPartsFromLayers();
       this.isTemporaryPointAdded = false;
       this.snapToTemporaryOneDimensional = null;
     }
@@ -279,7 +277,7 @@ export default class PointHandler extends Highlighter {
     super.mouseLeave(event);
 
     if (this.isTemporaryPointAdded) {
-      this.startMarker.removeFromLayers();
+      this.temporaryStartMarker.removeAllPartsFromLayers();
       this.isTemporaryPointAdded = false;
     }
     this.snapToTemporaryOneDimensional = null;

@@ -76,8 +76,8 @@ export default class PolygonHandler extends Highlighter {
   /** Has the temporary angleMarker been added to the scene?*/
   private temporaryAngleMarkersAdded: boolean[] = [];
 
-  constructor(layers: Two.Group[], selectOnlyTriangles?: boolean) {
-    super(layers);
+  constructor(selectOnlyTriangles?: boolean) {
+    super();
     this.triangleSelectionMode = selectOnlyTriangles ?? false;
 
     // Create and style the temporary angle markers
@@ -360,6 +360,8 @@ export default class PolygonHandler extends Highlighter {
         // Set the display to the default values
         newPolygon.stylize(DisplayStyle.ApplyCurrentVariables);
         newPolygon.adjustSize();
+        newPolygon.normalDisplay();
+        newPolygon.updateDisplay();
 
         // Create the model object for the new polygon and link them
         const vtx = new SEPolygon(
@@ -399,9 +401,10 @@ export default class PolygonHandler extends Highlighter {
             )
           )
           .execute();
+
         // Update the display
-        vtx.markKidsOutOfDate();
-        vtx.update();
+        //vtx.markKidsOutOfDate();
+        //vtx.update();
 
         // Update the display so the changes become apparent
         this.seEdgeSegments.forEach(seg => {
@@ -562,14 +565,13 @@ export default class PolygonHandler extends Highlighter {
               AngleMarker.currentAngleMarkerRadius
             );
             this.temporaryAngleMarkersAdded[ind] = true;
-            this.temporaryAngleMarkers[ind].addToLayers();
+            this.temporaryAngleMarkers[ind].normalDisplay();
             this.temporaryAngleMarkers[ind].updateDisplay();
           }
         });
 
         if (!this.temporaryAngleMarkersAdded[0]) {
           this.temporaryAngleMarkersAdded[0] = true;
-          this.temporaryAngleMarkers[0].addToLayers();
         }
 
         this.tmpVector3.copy(
@@ -601,7 +603,7 @@ export default class PolygonHandler extends Highlighter {
           AngleMarker.currentAngleMarkerRadius
         );
         // }
-
+        this.temporaryAngleMarkers[0].normalDisplay();
         this.temporaryAngleMarkers[0].updateDisplay();
       }
     }
@@ -628,7 +630,7 @@ export default class PolygonHandler extends Highlighter {
 
     // remove all temporary angle markers
     this.temporaryAngleMarkers.forEach((am, ind) => {
-      am.removeFromLayers();
+      am.removeAllPartsFromLayers();
       this.temporaryAngleMarkersAdded[ind] = false;
     });
   }
@@ -772,13 +774,13 @@ export default class PolygonHandler extends Highlighter {
             const endPointName = seg1Flipped
               ? seg1.startSEPoint.name
               : seg1.endSEPoint.name;
-            console.log(
-              startPointName,
-              endPointName,
-              exp.parents[0].name,
-              exp.parents[1].name,
-              exp.parents[2].name
-            );
+            // console.log(
+            //   startPointName,
+            //   endPointName,
+            //   exp.parents[0].name,
+            //   exp.parents[1].name,
+            //   exp.parents[2].name
+            // );
             if (
               exp.parents[0].name === startPointName && // order matters in angles angle from S1 to S2 is different than from S2 to S1
               exp.parents[2].name === endPointName
@@ -887,6 +889,7 @@ export default class PolygonHandler extends Highlighter {
     });
     return seAngleMarkers;
   }
+
   addMeasuredSegments(polygonCommandGroup: CommandGroup): void {
     this.seEdgeSegments.forEach(seg => {
       // make sure that this pair of segments has not been measured already

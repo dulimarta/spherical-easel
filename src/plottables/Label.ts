@@ -189,13 +189,6 @@ export default class Label extends Nodule {
     this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
-
-    // The text is not initially visible
-    const layers = SEStore.layers;
-    layers[LAYER.foregroundText].remove(this.frontText);
-    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
-    layers[LAYER.backgroundText].remove(this.backText);
-    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
   }
   /**
    * Set and get the shortUserName
@@ -362,15 +355,7 @@ export default class Label extends Nodule {
     }
   }
 
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    layers[LAYER.foregroundText].add(this.frontText);
-    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
-    layers[LAYER.backgroundText].add(this.backText);
-    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
-  }
-
-  removeFromLayers(): void {
+  removeAllPartsFromLayers(): void {
     const layers = SEStore.layers;
     layers[LAYER.foregroundText].remove(this.frontText);
     layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);

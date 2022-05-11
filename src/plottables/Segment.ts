@@ -225,16 +225,6 @@ export default class Segment extends Nodule {
     this._backExtra.closed = false;
     this.glowingBackExtra.closed = false;
 
-    // Turn off the display intitally, so that the temporary objects show up correctly
-    // this._frontPart.addTo(layers[LAYER.]);
-    // this.glowingFrontPart.remove();
-    // this._backPart.addTo(layers[LAYER.]);
-    // this.glowingBackPart.remove();
-    // this._frontExtra.addTo(layers[LAYER.]);
-    // this.glowingFrontExtra.remove();
-    // this._backExtra.addTo(layers[LAYER.]);
-    // this.glowingBackExtra.remove();
-
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_SEGMENT_FRONT_STYLE);
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_SEGMENT_BACK_STYLE);
   }
@@ -808,6 +798,40 @@ export default class Segment extends Nodule {
     return this._lastVertexIsOnFront;
   }
 
+  lengthOfFrontPartDisplayed(): number {
+    if (this.segmentData.position !== SegmentPosition.ContainedEntirelyOnBack) {
+      return this._frontPart.renderer.vertices.length;
+    } else {
+      return 0;
+    }
+  }
+
+  lengthOfBackPartDisplayed(): number {
+    if (
+      this.segmentData.position !== SegmentPosition.ContainedEntirelyOnFront
+    ) {
+      return this._backPart.renderer.vertices.length;
+    } else {
+      return 0;
+    }
+  }
+
+  lengthOfFrontExtraDisplayed(): number {
+    if (this.segmentData.position === SegmentPosition.SplitFrontBackFront) {
+      return this._frontExtra.renderer.vertices.length;
+    } else {
+      return 0;
+    }
+  }
+
+  lengthOfBackExtraDisplayed(): number {
+    if (this.segmentData.position === SegmentPosition.SplitBackFrontBack) {
+      return this._backExtra.renderer.vertices.length;
+    } else {
+      return 0;
+    }
+  }
+
   setVisible(flag: boolean): void {
     if (!flag) {
       this._frontPart.remove();
@@ -927,19 +951,7 @@ export default class Segment extends Nodule {
     return dup as this;
   }
 
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    this._frontPart.addTo(layers[LAYER.foreground]);
-    this._frontExtra.addTo(layers[LAYER.foreground]);
-    this._backPart.addTo(layers[LAYER.background]);
-    this._backExtra.addTo(layers[LAYER.background]);
-    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    this.glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
-    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
-    this.glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
-  }
-
-  removeFromLayers(): void {
+  removeAllPartsFromLayers(): void {
     this._frontPart.remove();
     this._frontExtra.remove();
     this._backPart.remove();

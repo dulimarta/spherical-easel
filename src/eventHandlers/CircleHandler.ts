@@ -76,8 +76,8 @@ export default class CircleHandler extends Highlighter {
    */
   private centerLocationSelected = false;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     this.centerVector = new Vector3();
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
@@ -322,7 +322,6 @@ export default class CircleHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.temporaryStartMarkerAdded) {
           this.temporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -337,7 +336,7 @@ export default class CircleHandler extends Highlighter {
             this.temporaryStartMarker.positionVector =
               this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
-            this.temporaryStartMarker.removeFromLayers();
+            this.temporaryStartMarker.removeAllPartsFromLayers();
             this.temporaryStartMarkerAdded = false;
           }
         }
@@ -354,11 +353,10 @@ export default class CircleHandler extends Highlighter {
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.temporaryEndMarkerAdded) {
           this.temporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
-          this.temporaryEndMarker.removeFromLayers();
+          this.temporaryEndMarker.removeAllPartsFromLayers();
           this.temporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
@@ -374,9 +372,8 @@ export default class CircleHandler extends Highlighter {
         // If the temporary circle has *not* been added to the scene do so now (only once)
         if (!this.temporaryCircleAdded) {
           this.temporaryCircleAdded = true;
-          this.temporaryCircle.addToLayers();
-          this.temporaryCircle.updateDisplay(); // added in the update of circle.ts. This updates the projected circle data so the ellipse.position is set correctly
           this.temporaryCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
+          this.temporaryCircle.updateDisplay(); // added in the update of circle.ts. This updates the projected circle data so the ellipse.position is set correctly
         }
 
         //compute the radius of the temporary circle
@@ -393,34 +390,10 @@ export default class CircleHandler extends Highlighter {
         // Set the radius of the temporary circle, the center was set in Mouse Press
         this.temporaryCircle.circleRadius = this.arcRadius;
         //update the display
-        this.temporaryCircle.updateDisplay();
         this.temporaryCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
+        this.temporaryCircle.updateDisplay();
       }
     }
-    // else {
-    //   // Remove the temporary objects from the display but don't reset for a new circle
-    //   // add the appropriate objects back if the user returns to the sphere with out
-    //   // triggering the mouse leave event.
-    //   if (this.temporaryEndMarkerAdded) {
-    //     this.temporaryEndMarker.removeFromLayers();
-    //     this.temporaryEndMarkerAdded = false;
-    //   }
-
-    //   if (this.temporaryStartMarkerAdded) {
-    //     this.temporaryStartMarker.removeFromLayers();
-    //     this.temporaryStartMarkerAdded = false;
-    //   }
-
-    //   if (this.temporaryCircleAdded) {
-    //     this.temporaryCircle.removeFromLayers();
-    //     this.temporaryCircleAdded = false;
-    //   }
-
-    //   this.snapStartMarkerToTemporaryOneDimensional = null;
-    //   this.snapEndMarkerToTemporaryOneDimensional = null;
-    //   this.snapStartMarkerToTemporaryPoint = null;
-    //   this.snapEndMarkerToTemporaryPoint = null;
-    // }
   }
 
   mouseReleased(_event: MouseEvent): void {
@@ -455,16 +428,16 @@ export default class CircleHandler extends Highlighter {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
     if (this.temporaryCircleAdded) {
-      this.temporaryCircle.removeFromLayers();
+      this.temporaryCircle.removeAllPartsFromLayers();
       this.temporaryCircleAdded = false;
       this.temporaryCircle.setVisible(false); //When circle.ts was updated to be a collection of ellipses this had to added to make sure that a copy of the temporary circle was not left behind
     }
     if (this.temporaryEndMarkerAdded) {
-      this.temporaryEndMarker.removeFromLayers();
+      this.temporaryEndMarker.removeAllPartsFromLayers();
       this.temporaryEndMarkerAdded = false;
     }
     if (this.temporaryStartMarkerAdded) {
-      this.temporaryStartMarker.removeFromLayers();
+      this.temporaryStartMarker.removeAllPartsFromLayers();
       this.temporaryStartMarkerAdded = false;
     }
 
@@ -757,8 +730,8 @@ export default class CircleHandler extends Highlighter {
     newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
     newCircle.adjustSize();
-    //newCircle.updateDisplay();
-    //newCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle
+    newCircle.normalDisplay(); // added in the update of circle.ts. To hide/show the appropriate parts of the projected circle and to make the updateDisplay() command effect the actual display
+    newCircle.updateDisplay();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     const newSECircle = new SECircle(
@@ -780,7 +753,6 @@ export default class CircleHandler extends Highlighter {
       .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tmpVector;
-    newSELabel.showing = false;
 
     circleCommandGroup.addCommand(
       new AddCircleCommand(
@@ -820,11 +792,11 @@ export default class CircleHandler extends Highlighter {
           )
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
       }
     );
 
     circleCommandGroup.execute();
+
     return true;
   }
 
@@ -896,7 +868,6 @@ export default class CircleHandler extends Highlighter {
               )
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
           }
         );
 

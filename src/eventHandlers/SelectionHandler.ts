@@ -52,10 +52,10 @@ export default class SelectionHandler extends Highlighter {
    */
   private keyPressSelection: SENodule[] = [];
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     this.selectionRectangle = new SelectionRectangle(
-      layers[LAYER.foregroundText]
+      SEStore.layers[LAYER.foregroundText]
     );
   }
   /**

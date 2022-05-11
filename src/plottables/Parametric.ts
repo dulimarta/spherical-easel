@@ -660,31 +660,7 @@ export default class Parametric extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  /**
-   * Adds the front/back/glowing/not parts to the correct layers
-   * @param layers
-   */
-  public addToLayers(): void {
-    const layers = SEStore.layers;
-    // These must always be executed even if the front/back part is empty
-    // Otherwise when they become non-empty they are not displayed
-
-    // this.foregroundLayer = layers[LAYER.foreground];
-    // this.backgroundLayer = layers[LAYER.background];
-    // this.glowingFgLayer = layers[LAYER.foregroundGlowing];
-    // this.glowingBgLayer = layers[LAYER.backgroundGlowing];
-    this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
-    this.glowingFrontParts.forEach(part =>
-      part.addTo(layers[LAYER.foregroundGlowing])
-    );
-
-    this.backParts.forEach(part => part.addTo(layers[LAYER.background]));
-    this.glowingBackParts.forEach(part =>
-      part.addTo(layers[LAYER.backgroundGlowing])
-    );
-  }
-
-  public removeFromLayers(/*layers: Two.Group[]*/): void {
+  public removeAllPartsFromLayers(): void {
     this.frontParts.forEach(part => part.remove());
 
     this.glowingFrontParts.forEach(part => part.remove());

@@ -392,14 +392,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
 
   /**
-   * Add various TwoJS (SVG) elements of this nodule to appropriate layers
+   * This operation removes all parts of the object from from layers
    */
-  abstract addToLayers(): void;
-
-  /**
-   * This operation reverses the action performed by addToLayers()
-   */
-  abstract removeFromLayers(): void;
+  abstract removeAllPartsFromLayers(): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;

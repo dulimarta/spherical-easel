@@ -125,7 +125,7 @@ export default abstract class Highlighter extends MouseHandler {
 
     if (text.length > 0) {
       // Show the names temporarily
-      this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+      this.infoText.showWithDelay(SEStore.layers[LAYER.foregroundText], 300);
       // Textbox is set to handle a ???? How does this work????
       this.infoText.text = text;
       this.infoText.translation.set(

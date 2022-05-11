@@ -78,8 +78,8 @@ export default class MoveHandler extends Highlighter {
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   mousePressed(event: MouseEvent): void {

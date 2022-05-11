@@ -28,8 +28,8 @@ export default class NSectSegmentHandler extends Highlighter {
 
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[], bisectOnly?: boolean) {
-    super(layers);
+  constructor(bisectOnly?: boolean) {
+    super();
 
     // Create and style the temporary antipode/point marking the antipode/point being created
     for (let i = 0; i < 9; i++) {
@@ -91,13 +91,12 @@ export default class NSectSegmentHandler extends Highlighter {
         if (ind > this.selectedNValue - 2) {
           // if this temp has been added before remove it
           if (this.temporaryPointsAdded[ind]) {
-            tempPt.removeFromLayers();
+            tempPt.removeAllPartsFromLayers();
             this.temporaryPointsAdded[ind] = false;
           }
         } else {
           // add this temp point, but only once
           if (!this.temporaryPointsAdded[ind]) {
-            tempPt.addToLayers();
             this.temporaryPointsAdded[ind] = true;
           }
           //calculate the location of this point
@@ -223,7 +222,7 @@ export default class NSectSegmentHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     // remove all temporary points
     this.temporaryPoints.forEach((tempPt, ind) => {
-      tempPt.removeFromLayers();
+      tempPt.removeAllPartsFromLayers();
       this.temporaryPointsAdded[ind] = false;
     });
     // set the temporary segment to null

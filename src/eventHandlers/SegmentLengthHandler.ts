@@ -18,8 +18,8 @@ export default class SegmentLengthHandler extends Highlighter {
    */
   private targetSegment: SESegment | null = null;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   mousePressed(event: MouseEvent): void {

@@ -106,12 +106,6 @@ export default class Point extends Nodule {
     this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
-    // The points are not initially glowing but are visible for the temporary object
-    this.frontPoint.addTo(SEStore.layers[LAYER.foregroundPoints]);
-    this.glowingFrontPoint.remove();
-    this.backPoint.addTo(SEStore.layers[LAYER.backgroundPoints]);
-    this.glowingBackPoint.remove();
-
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
     this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;
@@ -190,7 +184,6 @@ export default class Point extends Nodule {
     this.backPoint.remove();
     this.glowingBackPoint.remove();
   }
-
   backNormalDisplay(): void {
     const layers = SEStore.layers;
     this.frontPoint.remove();
@@ -207,15 +200,7 @@ export default class Point extends Nodule {
     }
   }
 
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
-    this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
-    this.backPoint.addTo(layers[LAYER.backgroundPoints]);
-    this.glowingBackPoint.addTo(layers[LAYER.backgroundPointsGlowing]);
-  }
-
-  removeFromLayers(): void {
+  removeAllPartsFromLayers(): void {
     this.frontPoint.remove();
     this.glowingFrontPoint.remove();
     this.backPoint.remove();

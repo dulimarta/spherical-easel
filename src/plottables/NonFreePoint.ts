@@ -29,11 +29,6 @@ export default class NonFreePoint extends Point {
     /**
      * Set the style variables for the non-Free point
      */
-    // Front
-    // this.fillColorFront = SETTINGS.point.nonFree.fillColor.front;
-    // this.strokeColorFront = SETTINGS.point.nonFree.strokeColor.front;
-    // this.pointRadiusPercentFront = 100;
-    // Back
     const initialStyle: StyleOptions = {
       fillColor: SETTINGS.point.dynamicBackStyle
         ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)

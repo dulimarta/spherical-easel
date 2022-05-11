@@ -15,8 +15,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    */
   private label: SELabel | null = null;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
@@ -40,7 +40,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already showing
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return !((object as unknown) as Labelable).label!.showing;
+              return !(object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -51,7 +51,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 true
               )
             );
@@ -78,7 +78,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already hidden
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return ((object as unknown) as Labelable).label!.showing;
+              return (object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -89,7 +89,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 false
               )
             );
@@ -208,8 +208,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
-                !((object as unknown) as Labelable).label!.showing
+                (object as unknown as Labelable).label!,
+                !(object as unknown as Labelable).label!.showing
               )
             );
           }

@@ -89,8 +89,8 @@ export default class PolarObjectHandler extends Highlighter {
   private temporaryPolarPointMarkersAdded = false;
   private temporaryPointAdded = false;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();
     this.temporaryPolarLineMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -313,14 +313,13 @@ export default class PolarObjectHandler extends Highlighter {
         // remove the pair of temporary polar points if added
         if (this.temporaryPolarPointMarkersAdded) {
           // Remove the temporary objects from the display.
-          this.temporaryPolarPointMarker1.removeFromLayers();
-          this.temporaryPolarPointMarker2.removeFromLayers();
+          this.temporaryPolarPointMarker1.removeAllPartsFromLayers();
+          this.temporaryPolarPointMarker2.removeAllPartsFromLayers();
           this.temporaryPolarPointMarkersAdded = false;
         }
 
         // add the temporary point if it hasn't be added already
         if (!this.temporaryPointAdded) {
-          this.temporaryPoint.addToLayers();
           this.temporaryPointAdded = true;
         }
         //remove the point if there is a snap to point
@@ -335,7 +334,7 @@ export default class PolarObjectHandler extends Highlighter {
             this.temporaryPoint.positionVector =
               this.snapToTemporaryPoint.locationVector;
           } else {
-            this.temporaryPoint.removeFromLayers();
+            this.temporaryPoint.removeAllPartsFromLayers();
             this.temporaryPointAdded = false;
           }
         }
@@ -355,7 +354,6 @@ export default class PolarObjectHandler extends Highlighter {
 
         // add the temporary line if it hasn't already been added
         if (!this.temporaryPolarLineAdded) {
-          this.temporaryPolarLineMarker.addToLayers();
           this.temporaryPolarLineAdded = true;
         }
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
@@ -369,20 +367,18 @@ export default class PolarObjectHandler extends Highlighter {
       else if (this.creating === Create.POLARPOINTS) {
         //remove the temporary polar line if added
         if (this.temporaryPolarLineAdded) {
-          this.temporaryPolarLineMarker.removeFromLayers();
+          this.temporaryPolarLineMarker.removeAllPartsFromLayers();
           this.temporaryPolarLineAdded = false;
         }
         // remove the temporary point if it has been added
         if (this.temporaryPointAdded) {
-          this.temporaryPoint.removeFromLayers();
+          this.temporaryPoint.removeAllPartsFromLayers();
           this.temporaryPointAdded = false;
         }
 
         // Add the pair of temporary polar points
         if (!this.temporaryPolarPointMarkersAdded) {
           // Remove the temporary objects from the display.
-          this.temporaryPolarPointMarker1.addToLayers();
-          this.temporaryPolarPointMarker2.addToLayers();
           this.temporaryPolarPointMarkersAdded = true;
         }
         let normal: Vector3;
@@ -429,19 +425,19 @@ export default class PolarObjectHandler extends Highlighter {
 
     if (this.temporaryPolarLineAdded) {
       // Remove the temporary objects from the display.
-      this.temporaryPolarLineMarker.removeFromLayers();
+      this.temporaryPolarLineMarker.removeAllPartsFromLayers();
     }
     this.temporaryPolarLineAdded = false;
 
     if (this.temporaryPolarPointMarkersAdded) {
       // Remove the temporary objects from the display.
-      this.temporaryPolarPointMarker1.removeFromLayers();
-      this.temporaryPolarPointMarker2.removeFromLayers();
+      this.temporaryPolarPointMarker1.removeAllPartsFromLayers();
+      this.temporaryPolarPointMarker2.removeAllPartsFromLayers();
     }
     this.temporaryPolarPointMarkersAdded = false;
 
     if (this.temporaryPointAdded) {
-      this.temporaryPoint.removeFromLayers();
+      this.temporaryPoint.removeAllPartsFromLayers();
     }
     this.temporaryPointAdded = false;
 

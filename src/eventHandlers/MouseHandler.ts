@@ -60,12 +60,6 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEPolygons: SEPolygon[] = [];
 
   /**
-   * Holds the layers for each type of object, background, glowing background, etc..
-   * This allow the created objects to be put in the correct layers
-   */
-  protected layers: Two.Group[];
-
-  /**
    * Temporary objects that help process the mouse event location
    */
   private mouseVector = new Vector3();
@@ -79,9 +73,8 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Abstract class, whose MouseMoved event sets the current/previous sphere/screen points
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
-    this.layers = layers;
-    this.canvas = layers[LAYER.midground];
+  constructor() {
+    this.canvas = SEStore.layers[LAYER.midground];
     this.currentSphereVector = new Vector3();
     this.currentScreenVector = new Two.Vector(0, 0);
     this.previousSphereVector = new Vector3();

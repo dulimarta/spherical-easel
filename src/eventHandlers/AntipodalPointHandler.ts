@@ -55,8 +55,8 @@ export default class AntipodalPointHandler extends Highlighter {
   private isTemporaryAntipodeAdded = false;
   private isTemporaryPointAdded = false;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -301,12 +301,10 @@ export default class AntipodalPointHandler extends Highlighter {
       // If the temporary antipode has *not* been added to the scene do so now (only once)
       if (!this.isTemporaryAntipodeAdded) {
         this.isTemporaryAntipodeAdded = true;
-        this.temporaryAntipodeMarker.addToLayers();
       }
       // If the temporary point has *not* been added to the scene do so now (only once)
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
-        this.temporaryPointMarker.addToLayers();
       }
       // Move the temporaryAntipodeMarker to the antipode of the current mouse location, and snap to one dimensional or point  (if appropriate)
       if (
@@ -324,7 +322,7 @@ export default class AntipodalPointHandler extends Highlighter {
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
-          this.temporaryPointMarker.removeFromLayers();
+          this.temporaryPointMarker.removeAllPartsFromLayers();
           this.isTemporaryPointAdded = false;
         }
       } else if (
@@ -348,7 +346,7 @@ export default class AntipodalPointHandler extends Highlighter {
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
-          this.temporaryPointMarker.removeFromLayers();
+          this.temporaryPointMarker.removeAllPartsFromLayers();
           this.isTemporaryPointAdded = false;
         }
       } else if (
@@ -366,19 +364,19 @@ export default class AntipodalPointHandler extends Highlighter {
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
-          this.temporaryPointMarker.removeFromLayers();
+          this.temporaryPointMarker.removeAllPartsFromLayers();
           this.isTemporaryPointAdded = false;
         }
       }
     } else {
       if (this.isTemporaryAntipodeAdded) {
         // Remove the temporary objects from the display.
-        this.temporaryAntipodeMarker.removeFromLayers();
+        this.temporaryAntipodeMarker.removeAllPartsFromLayers();
         this.isTemporaryAntipodeAdded = false;
       }
       if (this.isTemporaryPointAdded) {
         // Remove the temporary objects from the display.
-        this.temporaryPointMarker.removeFromLayers();
+        this.temporaryPointMarker.removeAllPartsFromLayers();
         this.isTemporaryPointAdded = false;
       }
       this.snapToTemporaryOneDimensional = null;
@@ -396,12 +394,12 @@ export default class AntipodalPointHandler extends Highlighter {
     this.parentPointVector.set(0, 0, 0);
     if (this.isTemporaryAntipodeAdded) {
       // Remove the temporary objects from the display.
-      this.temporaryAntipodeMarker.removeFromLayers();
+      this.temporaryAntipodeMarker.removeAllPartsFromLayers();
     }
     this.isTemporaryAntipodeAdded = false;
     if (this.isTemporaryPointAdded) {
       // Remove the temporary objects from the display.
-      this.temporaryPointMarker.removeFromLayers();
+      this.temporaryPointMarker.removeAllPartsFromLayers();
     }
     this.isTemporaryPointAdded = false;
     this.snapToTemporaryOneDimensional = null;

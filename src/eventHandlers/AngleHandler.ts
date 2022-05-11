@@ -126,8 +126,8 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
 
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();
@@ -762,7 +762,6 @@ export default class AngleHandler extends Highlighter {
             // Add the first temporary point marker only once if we are in NONE Or POINT angle mode
             if (!this.isTemporaryFirstPointAdded) {
               this.isTemporaryFirstPointAdded = true;
-              this.temporaryFirstPoint.addToLayers();
             }
             //Update its location to the mouse
             this.temporaryFirstPoint.positionVector = this.currentSphereVector;
@@ -776,7 +775,7 @@ export default class AngleHandler extends Highlighter {
                   p instanceof SESegment
               ).length > 0
             ) {
-              this.temporaryFirstPoint.removeFromLayers();
+              this.temporaryFirstPoint.removeAllPartsFromLayers();
               this.isTemporaryFirstPointAdded = false;
             }
 
@@ -785,11 +784,10 @@ export default class AngleHandler extends Highlighter {
             // Add the second temporary point marker only once (We MUST be in AngleMode.POINTS)
             if (!this.isTemporarySecondPointAdded) {
               this.isTemporarySecondPointAdded = true;
-              this.temporarySecondPoint.addToLayers();
             }
             //Remove the second marker if there is a nearby point
             if (this.snapPoint !== null) {
-              this.temporarySecondPoint.removeFromLayers();
+              this.temporarySecondPoint.removeAllPartsFromLayers();
               this.isTemporarySecondPointAdded = false;
             }
             //Update its location
@@ -809,11 +807,10 @@ export default class AngleHandler extends Highlighter {
             // Add the third temporary point marker only once (We MUST be in AngleMode.POINTS)
             if (!this.isTemporaryThirdPointAdded) {
               this.isTemporaryThirdPointAdded = true;
-              this.temporaryThirdPoint.addToLayers();
             }
             //Remove the third marker if there is a nearby point
             if (this.snapPoint !== null) {
-              this.temporaryThirdPoint.removeFromLayers();
+              this.temporaryThirdPoint.removeAllPartsFromLayers();
               this.isTemporaryThirdPointAdded = false;
             }
             //Update its location
@@ -831,7 +828,6 @@ export default class AngleHandler extends Highlighter {
             // Add the temporary angle marker only once
             if (!this.isTemporaryAngleMarkerAdded) {
               this.isTemporaryAngleMarkerAdded = true;
-              this.temporaryAngleMarker.addToLayers();
             }
 
             // update the temporary angle marker
@@ -841,7 +837,7 @@ export default class AngleHandler extends Highlighter {
               this.currentSphereVector,
               AngleMarker.currentAngleMarkerRadius
             );
-
+            this.temporaryAngleMarker.normalDisplay();
             this.temporaryAngleMarker.updateDisplay();
             break;
         }
@@ -851,33 +847,33 @@ export default class AngleHandler extends Highlighter {
       switch (this.pointLocations.length) {
         case 0:
           // remove all temporary points and angle marker
-          this.temporaryFirstPoint.removeFromLayers();
+          this.temporaryFirstPoint.removeAllPartsFromLayers();
           this.isTemporaryFirstPointAdded = false;
 
-          this.temporarySecondPoint.removeFromLayers();
+          this.temporarySecondPoint.removeAllPartsFromLayers();
           this.isTemporarySecondPointAdded = false;
 
-          this.temporaryThirdPoint.removeFromLayers();
+          this.temporaryThirdPoint.removeAllPartsFromLayers();
           this.isTemporaryThirdPointAdded = false;
 
-          this.temporaryAngleMarker.removeFromLayers();
+          this.temporaryAngleMarker.removeAllPartsFromLayers();
           this.isTemporaryAngleMarkerAdded = false;
           break;
         case 1:
-          this.temporarySecondPoint.removeFromLayers();
+          this.temporarySecondPoint.removeAllPartsFromLayers();
           this.isTemporarySecondPointAdded = false;
 
-          this.temporaryThirdPoint.removeFromLayers();
+          this.temporaryThirdPoint.removeAllPartsFromLayers();
           this.isTemporaryThirdPointAdded = false;
 
-          this.temporaryAngleMarker.removeFromLayers();
+          this.temporaryAngleMarker.removeAllPartsFromLayers();
           this.isTemporaryAngleMarkerAdded = false;
           break;
         case 2:
-          this.temporaryThirdPoint.removeFromLayers();
+          this.temporaryThirdPoint.removeAllPartsFromLayers();
           this.isTemporaryThirdPointAdded = false;
 
-          this.temporaryAngleMarker.removeFromLayers();
+          this.temporaryAngleMarker.removeAllPartsFromLayers();
           this.isTemporaryAngleMarkerAdded = false;
           break;
       }
@@ -910,13 +906,13 @@ export default class AngleHandler extends Highlighter {
     this.makingAnAngleMarker = false;
     this.angleMode = AngleMode.NONE;
     // Remove temporary objects
-    this.temporaryFirstPoint.removeFromLayers();
+    this.temporaryFirstPoint.removeAllPartsFromLayers();
     this.isTemporaryFirstPointAdded = false;
-    this.temporarySecondPoint.removeFromLayers();
+    this.temporarySecondPoint.removeAllPartsFromLayers();
     this.isTemporarySecondPointAdded = false;
-    this.temporaryThirdPoint.removeFromLayers();
+    this.temporaryThirdPoint.removeAllPartsFromLayers();
     this.isTemporaryThirdPointAdded = false;
-    this.temporaryAngleMarker.removeFromLayers();
+    this.temporaryAngleMarker.removeAllPartsFromLayers();
     this.isTemporaryAngleMarkerAdded = false;
     this.snapOneDimensional = null;
     this.snapPoint = null;
@@ -949,13 +945,13 @@ export default class AngleHandler extends Highlighter {
     this.makingAnAngleMarker = false;
     this.angleMode = AngleMode.NONE;
     // Remove temporary objects
-    this.temporaryFirstPoint.removeFromLayers();
+    this.temporaryFirstPoint.removeAllPartsFromLayers();
     this.isTemporaryFirstPointAdded = false;
-    this.temporarySecondPoint.removeFromLayers();
+    this.temporarySecondPoint.removeAllPartsFromLayers();
     this.isTemporarySecondPointAdded = false;
-    this.temporaryThirdPoint.removeFromLayers();
+    this.temporaryThirdPoint.removeAllPartsFromLayers();
     this.isTemporaryThirdPointAdded = false;
-    this.temporaryAngleMarker.removeFromLayers();
+    this.temporaryAngleMarker.removeAllPartsFromLayers();
     this.isTemporaryAngleMarkerAdded = false;
     this.snapOneDimensional = null;
     this.snapPoint = null;

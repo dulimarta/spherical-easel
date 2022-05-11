@@ -36,8 +36,8 @@ export default class NSectAngleHandler extends Highlighter {
 
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[], bisectOnly?: boolean) {
-    super(layers);
+  constructor(bisectOnly?: boolean) {
+    super();
 
     // Create and style the temporary lines
     for (let i = 0; i < 9; i++) {
@@ -99,13 +99,12 @@ export default class NSectAngleHandler extends Highlighter {
         if (ind > this.selectedNValue - 2) {
           // if this temp has been added before remove it
           if (this.temporaryLinesAdded[ind]) {
-            tempLine.removeFromLayers();
+            tempLine.removeAllPartsFromLayers();
             this.temporaryLinesAdded[ind] = false;
           }
         } else {
           // add this temp line, but only once
           if (!this.temporaryLinesAdded[ind]) {
-            tempLine.addToLayers();
             this.temporaryLinesAdded[ind] = true;
           }
           // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
@@ -249,7 +248,7 @@ export default class NSectAngleHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     // remove all temporary points
     this.temporaryLines.forEach((tempLine, ind) => {
-      tempLine.removeFromLayers();
+      tempLine.removeAllPartsFromLayers();
       this.temporaryLinesAdded[ind] = false;
     });
     // set the temporary angle to null

@@ -153,7 +153,7 @@ export default class Circle extends Nodule {
     this.frontCirclePart = new Two.Ellipse(
       0,
       0,
-      200,
+      100,
       100,
       SETTINGS.circle.numPoints
     );
@@ -167,8 +167,8 @@ export default class Circle extends Nodule {
     this.backCirclePart = new Two.Ellipse(
       0,
       0,
-      100,
-      100,
+      300,
+      300,
       SETTINGS.circle.numPoints
     );
     this.glowingBackCirclePart = new Two.Ellipse(
@@ -199,12 +199,6 @@ export default class Circle extends Nodule {
     this.glowingFrontCirclePart.noFill();
     this.backCirclePart.noFill();
     this.glowingBackCirclePart.noFill();
-
-    //Turn off the glowing display initially but leave it on so that the temporary objects show up
-    // this.frontCirclePart.remove();
-    // this.backCirclePart.remove();
-    // this.glowingBackCirclePart.remove();
-    // this.glowingFrontCirclePart.remove();
 
     // Now organize the fills
     // In total there at most SETTINGS.circle.boundaryPoints + SETTINGS.circle.numPoints + 2 anchors in these paths.
@@ -244,10 +238,6 @@ export default class Circle extends Nodule {
     // The front/back fill have no stroke because that is handled by the front/back part
     this.frontFill.noStroke();
     this.backFill.noStroke();
-
-    //Turn on the display initially so it shows up for the temporary circle
-    // this.frontFill.addTo(layers[LAYER.]);
-    // this.backFill.addTo(layers[LAYER.]);
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = SETTINGS.circle.drawn.fillColor.front;
@@ -970,8 +960,8 @@ export default class Circle extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
+   * This method is used to copy the temporary circle created with the Circle Tool into a
+   * permanent one in the scene.
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
@@ -1013,23 +1003,7 @@ export default class Circle extends Nodule {
     return dup as this;
   }
 
-  /**
-   * Adds the front/back/glowing/not parts to the correct layers
-   * @param layers
-   */
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    // These must always be executed even if the front/back part is empty
-    // Otherwise when they become non-empty they are not displayed
-    this.frontFill.addTo(layers[LAYER.foregroundFills]);
-    this.frontCirclePart.addTo(layers[LAYER.foreground]);
-    this.glowingFrontCirclePart.addTo(layers[LAYER.foregroundGlowing]);
-    this.backFill.addTo(layers[LAYER.backgroundFills]);
-    this.backCirclePart.addTo(layers[LAYER.background]);
-    this.glowingBackCirclePart.addTo(layers[LAYER.backgroundGlowing]);
-  }
-
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeAllPartsFromLayers(): void {
     this.frontCirclePart.remove();
     this.frontFill.remove();
     this.glowingFrontCirclePart.remove();

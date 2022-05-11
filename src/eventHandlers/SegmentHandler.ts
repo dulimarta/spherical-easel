@@ -99,8 +99,8 @@ export default class SegmentHandler extends Highlighter {
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
     SEStore.addTemporaryNodule(this.temporarySegment);
@@ -343,7 +343,6 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can be glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -358,7 +357,7 @@ export default class SegmentHandler extends Highlighter {
             this.temporaryStartMarker.positionVector =
               this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
-            this.temporaryStartMarker.removeFromLayers();
+            this.temporaryStartMarker.removeAllPartsFromLayers();
             this.isTemporaryStartMarkerAdded = false;
           }
         }
@@ -375,15 +374,13 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary end/StartMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers();
         }
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
-          this.temporaryEndMarker.removeFromLayers();
+          this.temporaryEndMarker.removeAllPartsFromLayers();
           this.isTemporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
@@ -401,7 +398,6 @@ export default class SegmentHandler extends Highlighter {
         // If the temporary segment has *not* been added to the scene do so now (only once)
         if (!this.isTemporarySegmentAdded) {
           this.isTemporarySegmentAdded = true;
-          this.temporarySegment.addToLayers();
         }
 
         //now set the normal and arcLength variables with the appropriate vector
@@ -420,8 +416,8 @@ export default class SegmentHandler extends Highlighter {
         // Finally set the values for the unit vectors defining the segment and update the display
         this.temporarySegment.arcLength = this.arcLength;
         this.temporarySegment.normalVector = this.normalVector;
-        this.temporarySegment.updateDisplay();
         this.temporarySegment.normalDisplay();
+        this.temporarySegment.updateDisplay();
       }
     }
     // else if (this.isTemporaryStartMarkerAdded) {
@@ -461,9 +457,9 @@ export default class SegmentHandler extends Highlighter {
         }
       } else {
         // Remove the temporary objects from the display.
-        this.temporarySegment.removeFromLayers();
-        this.temporaryStartMarker.removeFromLayers();
-        this.temporaryEndMarker.removeFromLayers();
+        this.temporarySegment.removeAllPartsFromLayers();
+        this.temporaryStartMarker.removeAllPartsFromLayers();
+        this.temporaryEndMarker.removeAllPartsFromLayers();
         this.isTemporaryStartMarkerAdded = false;
         this.isTemporaryEndMarkerAdded = false;
         this.isTemporarySegmentAdded = false;
@@ -479,9 +475,9 @@ export default class SegmentHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
 
-    this.temporarySegment.removeFromLayers();
-    this.temporaryStartMarker.removeFromLayers();
-    this.temporaryEndMarker.removeFromLayers();
+    this.temporarySegment.removeAllPartsFromLayers();
+    this.temporaryStartMarker.removeAllPartsFromLayers();
+    this.temporaryEndMarker.removeAllPartsFromLayers();
     this.isTemporarySegmentAdded = false;
     this.isTemporaryStartMarkerAdded = false;
     this.isTemporaryEndMarkerAdded = false;
@@ -584,9 +580,8 @@ export default class SegmentHandler extends Highlighter {
       // Start vector is already set in mouse press
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
-      this.temporarySegment.updateDisplay();
       this.temporarySegment.normalDisplay();
-
+      this.temporarySegment.updateDisplay();
       if (
         this.endSEPoint instanceof SEIntersectionPoint &&
         !this.endSEPoint.isUserCreated
@@ -756,8 +751,8 @@ export default class SegmentHandler extends Highlighter {
     // Finally set the values for the unit vectors defining the segment and update the display
     this.temporarySegment.arcLength = this.arcLength;
     this.temporarySegment.normalVector = this.normalVector;
-    this.temporarySegment.updateDisplay();
     this.temporarySegment.normalDisplay();
+    this.temporarySegment.updateDisplay();
 
     // make sure that this segment hasn't been added before
     if (
@@ -879,6 +874,7 @@ export default class SegmentHandler extends Highlighter {
       }
     );
     segmentGroup.execute();
+
     return true;
   }
 
@@ -1001,6 +997,8 @@ export default class SegmentHandler extends Highlighter {
           .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
           .normalize();
         newSELabel.locationVector = this.tmpVector;
+        newSELabel.showing = false;
+        newSegment.updateDisplay();
 
         const segmentCommandGroup = new CommandGroup();
         segmentCommandGroup.addCommand(

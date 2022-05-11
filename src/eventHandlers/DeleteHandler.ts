@@ -24,8 +24,8 @@ export default class DeleteHandler extends Highlighter {
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   mousePressed(event: MouseEvent): void {
@@ -149,9 +149,8 @@ export default class DeleteHandler extends Highlighter {
             deletedObjectIDs.push(seNoduleID);
 
             // Get the SENodule via the beforeState
-            const seNoduleBeforeState = this.beforeDeleteStateMap.get(
-              seNoduleID
-            );
+            const seNoduleBeforeState =
+              this.beforeDeleteStateMap.get(seNoduleID);
 
             if (seNoduleBeforeState !== undefined) {
               if (

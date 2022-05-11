@@ -142,38 +142,6 @@ export default class AngleMarker extends Nodule {
   private glowingStrokeColorBack =
     SETTINGS.angleMarker.glowing.strokeColor.back;
 
-  /**
-   * The stops and gradient for front/back fill shading (IF USED)
-   */
-  // private frontGradientColorCenter = new Two.Stop(
-  //   0,
-  //   SETTINGS.fill.frontWhite,
-  //   1
-  // );
-  // private frontGradientColor = new Two.Stop(
-  //   2 * SETTINGS.boundaryCircle.radius,
-  //   frontStyle?.fillColor,
-  //   1
-  // );
-  // private frontGradient = new Two.RadialGradient(
-  //   SETTINGS.fill.lightSource.x,
-  //   SETTINGS.fill.lightSource.y,
-  //   1 * SETTINGS.boundaryCircle.radius,
-  //   [this.frontGradientColorCenter, this.frontGradientColor]
-  // );
-  // private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  // private backGradientColor = new Two.Stop(
-  //   1 * SETTINGS.boundaryCircle.radius,
-  //   backStyle?.fillColor,
-  //   1
-  // );
-  // private backGradient = new Two.RadialGradient(
-  //   -SETTINGS.fill.lightSource.x,
-  //   -SETTINGS.fill.lightSource.y,
-  //   2 * SETTINGS.boundaryCircle.radius,
-  //   [this.backGradientColorCenter, this.backGradientColor]
-  // );
-
   /** Initialize the current line width that is *NOT* user adjustable (but does scale for zoom) */
   static currentAngleMarkerStraightStrokeWidthFront =
     SETTINGS.angleMarker.drawn.strokeWidth.straight.front;
@@ -405,36 +373,6 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail.cap = "butt";
     this.glowingBackCirclePathDoubleArcTail.cap = "butt";
 
-    const layers = SEStore.layers;
-    // The angle marker is not initially glowing
-    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontCirclePathDoubleArcStart.addTo(
-      layers[LAYER.foregroundAngleMarkers]
-    );
-    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontCirclePathDoubleArcTail.addTo(
-      layers[LAYER.foregroundAngleMarkers]
-    );
-
-    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.backCirclePathDoubleArcStart.addTo(
-      layers[LAYER.backgroundAngleMarkers]
-    );
-    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.backCirclePathDoubleArcTail.addTo(
-      layers[LAYER.backgroundAngleMarkers]
-    );
-
-    this.glowingFrontCirclePathStart.remove();
-    this.glowingFrontCirclePathDoubleArcStart.remove();
-    this.glowingFrontCirclePathTail.remove();
-    this.glowingFrontCirclePathDoubleArcTail.remove();
-
-    this.glowingBackCirclePathStart.remove();
-    this.glowingBackCirclePathDoubleArcStart.remove();
-    this.glowingBackCirclePathTail.remove();
-    this.glowingBackCirclePathDoubleArcTail.remove();
-
     //Straight part initialize
     const verticesStraight: Two.Vector[] = [];
     for (let k = 0; k < STRIAGHTEDGESUBDIVISIONS; k++) {
@@ -503,17 +441,6 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.cap = "square";
     this.glowingBackStraightEnd.cap = "square";
 
-    // The angle marker is not initially glowing
-    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
-
-    this.glowingFrontStraightStart.remove();
-    this.glowingBackStraightStart.remove();
-    this.glowingFrontStraightEnd.remove();
-    this.glowingBackStraightEnd.remove();
-
     // Arrow Head Path Initialize
     // Create the initial front and back vertices (front/back glowing/not)
 
@@ -554,11 +481,6 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontArrowHeadPath.noFill();
     this.glowingBackArrowHeadPath.noFill();
 
-    // The angle marker is not initially glowing
-    this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingFrontArrowHeadPath.remove();
-    this.glowingBackArrowHeadPath.remove();
 
     // Now organize the fills
     // In total there are 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -623,12 +545,6 @@ export default class AngleMarker extends Nodule {
     this.frontFill2.noStroke();
     this.backFill1.noStroke();
     this.backFill2.noStroke();
-
-    // The initial fill is showing
-    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
 
     this.styleOptions.set(
       StyleEditPanels.Front,
@@ -2992,99 +2908,7 @@ export default class AngleMarker extends Nodule {
 
     return dup as this;
   }
-  /**
-   * Adds the front/back/glowing/not parts to the correct layers
-   * @param layers
-   */
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    // These must always be executed even if the front/back part is empty
-    // Otherwise when they become non-empty they are not displayed
-    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
-
-    this.frontStraightStart.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontStraightStart.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontStraightEnd.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontStraightEnd.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontCirclePathTail.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontCirclePathStart.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontArrowHeadPath.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontArrowHeadPath.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontCirclePathDoubleArcStart.addTo(
-      layers[LAYER.foregroundAngleMarkers]
-    );
-    this.glowingFrontCirclePathDoubleArcStart.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.frontCirclePathDoubleArcTail.addTo(
-      layers[LAYER.foregroundAngleMarkers]
-    );
-    this.glowingFrontCirclePathDoubleArcTail.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
-
-    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
-
-    this.backStraightStart.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackStraightStart.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backStraightEnd.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackStraightEnd.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePathStart.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePathTail.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backArrowHeadPath.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackArrowHeadPath.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backCirclePathDoubleArcStart.addTo(
-      layers[LAYER.backgroundAngleMarkers]
-    );
-    this.glowingBackCirclePathDoubleArcStart.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-
-    this.backCirclePathDoubleArcTail.addTo(
-      layers[LAYER.backgroundAngleMarkers]
-    );
-    this.glowingBackCirclePathDoubleArcTail.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
-  }
-  removeFromLayers(): void {
+  removeAllPartsFromLayers(): void {
     this.frontArrowHeadPath.remove();
     this.frontCirclePathStart.remove();
     this.frontCirclePathDoubleArcStart.remove();

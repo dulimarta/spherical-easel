@@ -206,24 +206,26 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   removeAllFromLayers(): void {
-    this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
-    this.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
-    this.seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
-    this.seLabels.forEach((x: SELabel) => x.ref.removeFromLayers());
-    this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
-    this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
-    this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
-    this.sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
+    this.seAngleMarkers.forEach((x: SEAngleMarker) =>
+      x.ref.removeAllPartsFromLayers()
+    );
+    this.seCircles.forEach((x: SECircle) => x.ref.removeAllPartsFromLayers());
+    this.seEllipses.forEach((x: SEEllipse) => x.ref.removeAllPartsFromLayers());
+    this.seLabels.forEach((x: SELabel) => x.ref.removeAllPartsFromLayers());
+    this.seLines.forEach((x: SELine) => x.ref.removeAllPartsFromLayers());
+    this.sePoints.forEach((x: SEPoint) => x.ref.removeAllPartsFromLayers());
+    this.seSegments.forEach((x: SESegment) => x.ref.removeAllPartsFromLayers());
+    this.sePolygons.forEach((x: SEPolygon) => x.ref.removeAllPartsFromLayers());
     this.seParametrics.forEach((x: SEParametric) => {
       let ptr: Parametric | null = x.ref;
       while (ptr !== null) {
-        ptr.removeFromLayers();
+        ptr.removeAllPartsFromLayers();
         ptr = ptr.next;
       }
     });
     this.sePencils.forEach((p: SEPencil) => {
       p.lines.forEach((l: SEPerpendicularLineThruPoint) => {
-        l.ref.removeFromLayers();
+        l.ref.removeAllPartsFromLayers();
       });
     });
   }
@@ -233,7 +235,7 @@ export default class SE extends VuexModule implements AppState {
   addPoint(point: SEPoint): void {
     this.sePoints.push(point);
     this.seNodules.push(point);
-    point.ref.addToLayers();
+    //point.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
   //#endregion addPoint
@@ -247,7 +249,7 @@ export default class SE extends VuexModule implements AppState {
       this.sePoints.splice(pos, 1);
       this.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
-      victimPoint.ref.removeFromLayers();
+      victimPoint.ref.removeAllPartsFromLayers();
       this.hasUnsavedNodules = true;
     }
   }
@@ -256,7 +258,7 @@ export default class SE extends VuexModule implements AppState {
   addLabel(label: SELabel): void {
     this.seLabels.push(label);
     this.seNodules.push(label);
-    label.ref.addToLayers();
+    //label.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -269,7 +271,7 @@ export default class SE extends VuexModule implements AppState {
       this.seLabels.splice(pos, 1);
       this.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
-      victimLabel.ref.removeFromLayers();
+      victimLabel.ref.removeAllPartsFromLayers();
       this.hasUnsavedNodules = true;
     }
   }
@@ -278,7 +280,7 @@ export default class SE extends VuexModule implements AppState {
   addLine(line: SELine): void {
     this.seLines.push(line);
     this.seNodules.push(line as SENodule);
-    line.ref.addToLayers();
+    //line.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -289,7 +291,7 @@ export default class SE extends VuexModule implements AppState {
     if (pos >= 0) {
       /* victim line is found */
       const victimLine = this.seLines[pos];
-      victimLine.ref.removeFromLayers();
+      victimLine.ref.removeAllPartsFromLayers();
       this.seLines.splice(pos, 1); // Remove the line from the list
       this.seNodules.splice(pos2, 1);
       this.hasUnsavedNodules = true;
@@ -300,7 +302,7 @@ export default class SE extends VuexModule implements AppState {
   addSegment(segment: SESegment): void {
     this.seSegments.push(segment);
     this.seNodules.push(segment);
-    segment.ref.addToLayers();
+    //segment.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -310,7 +312,7 @@ export default class SE extends VuexModule implements AppState {
     const pos2 = this.seNodules.findIndex(x => x.id === segId);
     if (pos >= 0) {
       const victimSegment = this.seSegments[pos];
-      victimSegment.ref.removeFromLayers();
+      victimSegment.ref.removeAllPartsFromLayers();
       this.seSegments.splice(pos, 1);
       this.seNodules.splice(pos2, 1);
       this.hasUnsavedNodules = true;
@@ -321,7 +323,7 @@ export default class SE extends VuexModule implements AppState {
   addCircle(circle: SECircle): void {
     this.seCircles.push(circle);
     this.seNodules.push(circle);
-    circle.ref.addToLayers();
+    //circle.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -332,7 +334,7 @@ export default class SE extends VuexModule implements AppState {
     if (circlePos >= 0) {
       /* victim line is found */
       const victimCircle: SECircle = this.seCircles[circlePos];
-      victimCircle.ref.removeFromLayers();
+      victimCircle.ref.removeAllPartsFromLayers();
       // victimCircle.removeSelfSafely();
       this.seCircles.splice(circlePos, 1); // Remove the circle from the list
       this.seNodules.splice(pos2, 1);
@@ -344,7 +346,7 @@ export default class SE extends VuexModule implements AppState {
   addEllipse(ellipse: SEEllipse): void {
     this.seEllipses.push(ellipse);
     this.seNodules.push(ellipse);
-    ellipse.ref.addToLayers();
+    //ellipse.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -355,7 +357,7 @@ export default class SE extends VuexModule implements AppState {
     if (ellipsePos >= 0) {
       /* victim line is found */
       const victimEllipse: SEEllipse = this.seEllipses[ellipsePos];
-      victimEllipse.ref.removeFromLayers();
+      victimEllipse.ref.removeAllPartsFromLayers();
       // victimEllipse.removeSelfSafely();
       this.seEllipses.splice(ellipsePos, 1); // Remove the ellipse from the list
       this.seNodules.splice(pos2, 1);
@@ -367,11 +369,11 @@ export default class SE extends VuexModule implements AppState {
   addParametric(parametric: SEParametric): void {
     this.seParametrics.push(parametric);
     this.seNodules.push(parametric);
-    let ptr: Parametric | null = parametric.ref;
-    while (ptr) {
-      ptr.addToLayers();
-      ptr = ptr.next;
-    }
+    // let ptr: Parametric | null = parametric.ref;
+    // while (ptr) {
+    //   ptr.addTemporaryObjectToLayers();
+    //   ptr = ptr.next;
+    // }
     this.hasUnsavedNodules = true;
   }
 
@@ -386,7 +388,7 @@ export default class SE extends VuexModule implements AppState {
       const victimParametric: SEParametric = this.seParametrics[parametricPos];
       let ptr: Parametric | null = victimParametric.ref;
       while (ptr !== null) {
-        ptr.removeFromLayers();
+        ptr.removeAllPartsFromLayers();
         ptr = ptr.next;
       }
       // victimParametric.removeSelfSafely();
@@ -428,7 +430,7 @@ export default class SE extends VuexModule implements AppState {
     this.expressions.push(angleMarker);
     this.seAngleMarkers.push(angleMarker);
     this.seNodules.push(angleMarker);
-    angleMarker.ref.addToLayers();
+    // angleMarker.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -447,7 +449,7 @@ export default class SE extends VuexModule implements AppState {
       if (victimAngleMarker.label) {
         victimAngleMarker.label.ref.value = [];
       }
-      victimAngleMarker.ref.removeFromLayers();
+      victimAngleMarker.ref.removeAllPartsFromLayers();
       // victimCircle.removeSelfSafely();
       this.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
       this.seNodules.splice(pos2, 1);
@@ -461,7 +463,7 @@ export default class SE extends VuexModule implements AppState {
     this.expressions.push(polygon);
     this.sePolygons.push(polygon);
     this.seNodules.push(polygon);
-    polygon.ref.addToLayers();
+    //polygon.ref.addTemporaryObjectToLayers();
     this.hasUnsavedNodules = true;
   }
 
@@ -477,7 +479,7 @@ export default class SE extends VuexModule implements AppState {
       if (victimPolygon.label) {
         victimPolygon.label.ref.value = [];
       }
-      victimPolygon.ref.removeFromLayers();
+      victimPolygon.ref.removeAllPartsFromLayers();
       this.sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
       this.seNodules.splice(pos2, 1);
       this.expressions.splice(pos3, 1);

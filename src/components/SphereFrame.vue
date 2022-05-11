@@ -265,42 +265,37 @@ export default class SphereFrame extends VueComponent {
     );
 
     // Create the tools/handlers
-    this.selectTool = new SelectionHandler(this.layers);
-    this.currentTool = this.selectTool;
-    this.pointTool = new PointHandler(this.layers);
-    this.lineTool = new LineHandler(this.layers);
-    this.segmentTool = new SegmentHandler(this.layers);
-    this.circleTool = new CircleHandler(this.layers);
-    this.ellipseTool = new EllipseHandler(this.layers);
-    this.rotateTool = new RotateHandler(this.layers);
+    this.selectTool = new SelectionHandler();
+    this.pointTool = new PointHandler();
+    this.lineTool = new LineHandler();
+    this.segmentTool = new SegmentHandler();
+    this.currentTool = this.segmentTool; // DEFAULT Tool
+    this.circleTool = new CircleHandler();
+    this.ellipseTool = new EllipseHandler();
+    this.rotateTool = new RotateHandler();
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
     this.iconFactoryTool = new IconFactoryHandler();
-    this.moveTool = new MoveHandler(this.layers);
-    this.intersectTool = new IntersectionPointHandler(this.layers);
-    this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
-      this.layers
-    );
-    this.antipodalPointTool = new AntipodalPointHandler(this.layers);
-    this.polarObjectTool = new PolarObjectHandler(this.layers);
-    this.deleteTool = new DeleteHandler(this.layers);
-    this.hideTool = new HideObjectHandler(this.layers);
-    this.segmentLengthTool = new SegmentLengthHandler(this.layers);
-    this.pointDistanceTool = new PointDistanceHandler(this.layers);
-    this.angleTool = new AngleHandler(this.layers);
-    this.coordinateTool = new CoordinateHandler(this.layers);
-    this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
-    this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
-      this.layers
-    );
-    this.tangentLineThruPointTool = new TangentLineThruPointHandler(
-      this.layers
-    );
-    this.measureTriangleTool = new PolygonHandler(this.layers, true);
-    this.measurePolygonTool = new PolygonHandler(this.layers, false);
-    this.midpointTool = new NSectSegmentHandler(this.layers, true);
-    this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
-    this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
-    this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
+    this.moveTool = new MoveHandler();
+    this.intersectTool = new IntersectionPointHandler();
+    this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler();
+    this.antipodalPointTool = new AntipodalPointHandler();
+    this.polarObjectTool = new PolarObjectHandler();
+    this.deleteTool = new DeleteHandler();
+    this.hideTool = new HideObjectHandler();
+    this.segmentLengthTool = new SegmentLengthHandler();
+    this.pointDistanceTool = new PointDistanceHandler();
+    this.angleTool = new AngleHandler();
+    this.coordinateTool = new CoordinateHandler();
+    this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler();
+    this.perpendicularLineThruPointTool =
+      new PerpendicularLineThruPointHandler();
+    this.tangentLineThruPointTool = new TangentLineThruPointHandler();
+    this.measureTriangleTool = new PolygonHandler(true);
+    this.measurePolygonTool = new PolygonHandler(false);
+    this.midpointTool = new NSectSegmentHandler(true);
+    this.nSectSegmentTool = new NSectSegmentHandler(false);
+    this.angleBisectorTool = new NSectAngleHandler(true);
+    this.nSectAngleTool = new NSectAngleHandler(false);
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
     SEStore.setCanvas(this.$refs.canvas);

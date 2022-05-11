@@ -77,8 +77,8 @@ export default class EllipseHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     this.focus1Vector = new Vector3();
     this.focus2Vector = new Vector3();
     this.temporaryEllipse = new Ellipse();
@@ -449,7 +449,6 @@ export default class EllipseHandler extends Highlighter {
         // If the temporary focus1Marker has *not* been added to the scene do so now
         if (!this.temporaryFocus1MarkerAdded) {
           this.temporaryFocus1MarkerAdded = true;
-          this.temporaryFocus1Marker.addToLayers();
         }
         // Remove the temporary focus1Marker if there is a nearby point which can glowing
         if (this.snapTemporaryPointMarkerToPoint !== null) {
@@ -464,7 +463,7 @@ export default class EllipseHandler extends Highlighter {
             this.temporaryFocus1Marker.positionVector =
               this.snapTemporaryPointMarkerToPoint.locationVector;
           } else {
-            this.temporaryFocus1Marker.removeFromLayers();
+            this.temporaryFocus1Marker.removeAllPartsFromLayers();
             this.temporaryFocus1MarkerAdded = false;
           }
         }
@@ -483,7 +482,6 @@ export default class EllipseHandler extends Highlighter {
         // If the temporary focus2Marker has *not* been added to the scene do so now
         if (!this.temporaryFocus2MarkerAdded) {
           this.temporaryFocus2MarkerAdded = true;
-          this.temporaryFocus2Marker.addToLayers();
         }
         // Remove the temporary focus2Marker if there is a nearby point which can glowing
         if (this.snapTemporaryPointMarkerToPoint !== null) {
@@ -498,7 +496,7 @@ export default class EllipseHandler extends Highlighter {
             this.temporaryFocus2Marker.positionVector =
               this.snapTemporaryPointMarkerToPoint.locationVector;
           } else {
-            this.temporaryFocus2Marker.removeFromLayers();
+            this.temporaryFocus2Marker.removeAllPartsFromLayers();
             this.temporaryFocus2MarkerAdded = false;
           }
         }
@@ -517,7 +515,6 @@ export default class EllipseHandler extends Highlighter {
         // If the temporary EllipsePointMarker has *not* been added to the scene do so now
         if (!this.temporaryEllipsePointMarkerAdded) {
           this.temporaryEllipsePointMarkerAdded = true;
-          this.temporaryEllipsePointMarker.addToLayers();
         }
         // Remove the temporary EllipsePointMarker if there is a nearby point which can glowing
         if (this.snapTemporaryPointMarkerToPoint !== null) {
@@ -535,7 +532,7 @@ export default class EllipseHandler extends Highlighter {
             ) ||
             this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
-            this.temporaryEllipsePointMarker.removeFromLayers();
+            this.temporaryEllipsePointMarker.removeAllPartsFromLayers();
             this.temporaryEllipsePointMarkerAdded = false;
           }
         }
@@ -555,7 +552,6 @@ export default class EllipseHandler extends Highlighter {
         // If the temporary ellipse has *not* been added to the scene do so now (only once)
         if (!this.temporaryEllipseAdded) {
           this.temporaryEllipseAdded = true;
-          this.temporaryEllipse.addToLayers();
         }
         //compute the a and b values of the temporary ellipse
         this.a =
@@ -586,13 +582,14 @@ export default class EllipseHandler extends Highlighter {
               this.focus1Vector.angleTo(this.focus2Vector) -
               SETTINGS.ellipse.minimumAngleSumDifference
         ) {
-          this.temporaryEllipse.removeFromLayers();
+          this.temporaryEllipse.removeAllPartsFromLayers();
           this.temporaryEllipseAdded = false;
         } else {
           // Set the a, b values of the temporary ellipse (the focus vectors were set in MousePress)
           this.temporaryEllipse.a = this.a;
           this.temporaryEllipse.b = this.b;
           //update the display
+          this.temporaryEllipse.normalDisplay();
           this.temporaryEllipse.updateDisplay();
         }
       }
@@ -601,15 +598,15 @@ export default class EllipseHandler extends Highlighter {
     // Remove the temporary objects from the display.
     else {
       if (!this.focus1LocationSelected) {
-        this.temporaryFocus1Marker.removeFromLayers();
+        this.temporaryFocus1Marker.removeAllPartsFromLayers();
         this.temporaryFocus1MarkerAdded = false;
       } else if (!this.focus2LocationSelected) {
-        this.temporaryFocus2Marker.removeFromLayers();
+        this.temporaryFocus2Marker.removeAllPartsFromLayers();
         this.temporaryFocus2MarkerAdded = false;
       } else {
-        this.temporaryEllipsePointMarker.removeFromLayers();
+        this.temporaryEllipsePointMarker.removeAllPartsFromLayers();
         this.temporaryEllipsePointMarkerAdded = false;
-        this.temporaryEllipse.removeFromLayers();
+        this.temporaryEllipse.removeAllPartsFromLayers();
         this.temporaryEllipseAdded = false;
       }
       this.snapTemporaryPointMarkerToOneDimensional = null;
@@ -693,10 +690,10 @@ export default class EllipseHandler extends Highlighter {
 
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
-    this.temporaryEllipse.removeFromLayers();
-    this.temporaryFocus1Marker.removeFromLayers();
-    this.temporaryFocus2Marker.removeFromLayers();
-    this.temporaryEllipsePointMarker.removeFromLayers();
+    this.temporaryEllipse.removeAllPartsFromLayers();
+    this.temporaryFocus1Marker.removeAllPartsFromLayers();
+    this.temporaryFocus2Marker.removeAllPartsFromLayers();
+    this.temporaryEllipsePointMarker.removeAllPartsFromLayers();
     this.temporaryFocus1MarkerAdded = false;
     this.temporaryFocus2MarkerAdded = false;
     this.temporaryEllipsePointMarkerAdded = false;
@@ -869,16 +866,6 @@ export default class EllipseHandler extends Highlighter {
     // Check to see if the release location is near any points
     if (this.hitSEPoints.length > 0) {
       this.ellipseSEPoint = this.hitSEPoints[0];
-      // We shouldn't need this because this has already happened in mouse move
-      // //compute the radius of the temporary circle using the hit point
-      // this.a = this.temporaryEllipse.centerVector.angleTo(
-      //   this.ellipseSEPoint.locationVector
-      // );
-      // // Set the radius of the temporary circle, the center was set in Mouse Press
-      // this.temporaryEllipse.circleRadius = this.a;
-      // //update the display
-      // this.temporaryEllipse.updateDisplay();
-
       if (
         this.ellipseSEPoint instanceof SEIntersectionPoint &&
         !this.ellipseSEPoint.isUserCreated
@@ -1022,18 +1009,6 @@ export default class EllipseHandler extends Highlighter {
         .normalize();
       newSELabel.locationVector = this.tmpVector;
     }
-    // We shouldn't need this because this has been set in mouse move
-    // // Update the display of the ellipse based on a potentially new location of the circleSEPoint
-    // // Move the endMarker to the current mouse location
-    // this.temporaryEllipsePointMarker.positionVector = this.ellipseSEPoint.locationVector;
-    // //compute the radius of the temporary circle
-    // this.a = this.temporaryEllipse.centerVector.angleTo(
-    //   this.ellipseSEPoint.locationVector
-    // );
-    // // Set the radius of the temporary circle, the center was set in Mouse Press
-    // this.temporaryEllipse.circleRadius = this.a;
-    // //update the display
-    // this.temporaryEllipse.updateDisplay();
 
     const angleSumToEllipsePoint =
       this.focus1SEPoint.locationVector.angleTo(

@@ -21,8 +21,8 @@ export default class PointCoordinateHandler extends Highlighter {
    */
   private targetPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   mousePressed(event: MouseEvent): void {

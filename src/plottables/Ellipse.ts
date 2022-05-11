@@ -322,12 +322,6 @@ export default class Ellipse extends Nodule {
     this.glowingFrontPart.noFill();
     this.glowingBackPart.noFill();
 
-    //Turn off the glowing display initially but leave it on so that the temporary objects show up
-    this.frontPart.addTo(SEStore.layers[LAYER.foreground]);
-    this.backPart.addTo(SEStore.layers[LAYER.background]);
-    this.glowingBackPart.remove();
-    this.glowingFrontPart.remove();
-
     // Now organize the fills
     // In total there are 4*SUBDIVISIONS+2 (The +2 two for the extra vertices to close up the annular region with the a and b values are
     // bigger than Pi/2 and there is no front/back part and the ellipse is a 'hole')
@@ -364,10 +358,6 @@ export default class Ellipse extends Nodule {
     // The front/back fill have no stroke because that is handled by the front/back part
     this.frontFill.noStroke();
     this.backFill.noStroke();
-
-    //Turn on the display initially so it shows up for the temporary ellipse
-    this.frontFill.addTo(SEStore.layers[LAYER.foregroundFills]);
-    this.backFill.addTo(SEStore.layers[LAYER.backgroundFills]);
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = SETTINGS.ellipse.drawn.fillColor.front;
@@ -1029,23 +1019,7 @@ export default class Ellipse extends Nodule {
     return dup as this;
   }
 
-  /**
-   * Adds the front/back/glowing/not parts to the correct layers
-   * @param layers
-   */
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    // These must always be executed even if the front/back part is empty
-    // Otherwise when they become non-empty they are not displayed
-    this.frontFill.addTo(layers[LAYER.foregroundFills]);
-    this.frontPart.addTo(layers[LAYER.foreground]);
-    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    this.backFill.addTo(layers[LAYER.backgroundFills]);
-    this.backPart.addTo(layers[LAYER.background]);
-    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
-  }
-
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeAllPartsFromLayers(): void {
     this.frontPart.remove();
     this.frontFill.remove();
     this.glowingFrontPart.remove();

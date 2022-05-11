@@ -12,8 +12,8 @@ export default class PointDistantHandler extends Highlighter {
    */
   private targetPoints: SEPoint[] = [];
 
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
   }
 
   mousePressed(event: MouseEvent): void {

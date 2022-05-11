@@ -104,12 +104,6 @@ export default class Line extends Nodule {
       part: ""
     });
 
-    // The line is not initially glowing but is visible for the temporary object
-    // this.frontHalf.addTo(layers[LAYER.]);
-    // this.backHalf.addTo(layers[LAYER.]);
-    // this.glowingFrontHalf.remove();
-    // this.glowingBackHalf.remove();
-
     // Set the style that never changes -- Fill and closed
     this.frontHalf.noFill();
     this.glowingFrontHalf.noFill();
@@ -286,15 +280,8 @@ export default class Line extends Nodule {
     return dup as this;
   }
 
-  addToLayers(): void {
-    const layers = SEStore.layers;
-    this.frontHalf.addTo(layers[LAYER.foreground]);
-    this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
-    this.backHalf.addTo(layers[LAYER.background]);
-    this.glowingBackHalf.addTo(layers[LAYER.backgroundGlowing]);
-  }
 
-  removeFromLayers(): void {
+  removeAllPartsFromLayers(): void {
     this.frontHalf.remove();
     this.backHalf.remove();
     this.glowingFrontHalf.remove();

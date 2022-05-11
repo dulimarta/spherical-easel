@@ -81,8 +81,8 @@ export default class LineHandler extends Highlighter {
    * Make a line handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
-    super(layers);
+  constructor() {
+    super();
     // Create and style the temporary line
     this.temporaryLine = new Line();
     this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -306,7 +306,6 @@ export default class LineHandler extends Highlighter {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers();
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
         if (this.snapStartMarkerToTemporaryPoint !== null) {
@@ -321,7 +320,7 @@ export default class LineHandler extends Highlighter {
             this.temporaryStartMarker.positionVector =
               this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
-            this.temporaryStartMarker.removeFromLayers();
+            this.temporaryStartMarker.removeAllPartsFromLayers();
             this.isTemporaryStartMarkerAdded = false;
           }
         }
@@ -339,16 +338,14 @@ export default class LineHandler extends Highlighter {
         // been removed due to leaving the sphere in mouse moved, but not triggering a mouse leave event)
         if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
           this.isTemporaryStartMarkerAdded = true;
-          this.temporaryStartMarker.addToLayers();
         }
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
-          this.temporaryEndMarker.addToLayers();
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
-          this.temporaryEndMarker.removeFromLayers();
+          this.temporaryEndMarker.removeAllPartsFromLayers();
           this.isTemporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
@@ -364,7 +361,6 @@ export default class LineHandler extends Highlighter {
         // If the temporary line has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryLineAdded) {
           this.isTemporaryLineAdded = true;
-          this.temporaryLine.addToLayers();
         }
         // Compute the normal vector from the this.startVector, the (old) normal vector and this.temporaryEndMarker vector
         // Compute a temporary normal from the two points' vectors
@@ -404,24 +400,12 @@ export default class LineHandler extends Highlighter {
         this.temporaryLine.normalVector = this.normalVector;
 
         //update the display
+        this.temporaryLine.normalDisplay();
         this.temporaryLine.updateDisplay();
       }
     }
-    // else if (this.isTemporaryStartMarkerAdded) {
-    //   // Remove the temporary objects from the display.
-    //   this.temporaryLine.removeFromLayers();
-    //   this.temporaryStartMarker.removeFromLayers();
-    //   this.temporaryEndMarker.removeFromLayers();
-    //   this.isTemporaryStartMarkerAdded = false;
-    //   this.isTemporaryEndMarkerAdded = false;
-    //   this.isTemporaryLineAdded = false;
-
-    //   this.snapStartMarkerToTemporaryOneDimensional = null;
-    //   this.snapEndMarkerToTemporaryOneDimensional = null;
-    //   this.snapStartMarkerToTemporaryPoint = null;
-    //   this.snapEndMarkerToTemporaryPoint = null;
-    // }
   }
+
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a line
@@ -441,9 +425,9 @@ export default class LineHandler extends Highlighter {
           this.mouseLeave(event);
         }
       } else {
-        this.temporaryLine.removeFromLayers();
-        this.temporaryStartMarker.removeFromLayers();
-        this.temporaryEndMarker.removeFromLayers();
+        this.temporaryLine.removeAllPartsFromLayers();
+        this.temporaryStartMarker.removeAllPartsFromLayers();
+        this.temporaryEndMarker.removeAllPartsFromLayers();
         this.isTemporaryLineAdded = false;
         this.isTemporaryStartMarkerAdded = false;
         this.isTemporaryEndMarkerAdded = false;
@@ -459,9 +443,9 @@ export default class LineHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
 
-    this.temporaryLine.removeFromLayers();
-    this.temporaryStartMarker.removeFromLayers();
-    this.temporaryEndMarker.removeFromLayers();
+    this.temporaryLine.removeAllPartsFromLayers();
+    this.temporaryStartMarker.removeAllPartsFromLayers();
+    this.temporaryEndMarker.removeAllPartsFromLayers();
     this.isTemporaryLineAdded = false;
     this.isTemporaryStartMarkerAdded = false;
     this.isTemporaryEndMarkerAdded = false;
