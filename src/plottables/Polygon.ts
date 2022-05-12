@@ -211,16 +211,6 @@ export default class Polygon extends Nodule {
       // console.log("front length", seg.frontPart.renderer.vertices.length);
       //console.log("back length", seg.backPart.renderer.vertices.length);
 
-      // add the vertices on the projected circle edge
-      //  let localMatrix = this.frontCirclePart.matrix;
-      //  this.frontCirclePart.renderer.vertices.forEach(v => {
-      //    const temp = localMatrix.multiply(v.x, v.y, 1);
-      //    const anchor = frontPool.pop()!; // there should *always* be an anchor in the pool
-      //    anchor.x = temp.x;
-      //    anchor.y = temp.y;
-      //    //console.log(temp.x, temp.y);
-      //    this.frontFill.vertices.push(anchor);
-      //  });
       let localMatrix;
       if (this.segmentIsFlipped[index]) {
         // work from the end to the start in each part of the segment
