@@ -73,7 +73,6 @@ import {
   ConstructionScript,
   SphericalConstruction,
   ConstructionInFirestore,
-  AppState,
   ActionMode
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
@@ -94,15 +93,15 @@ import { useSEStore } from "@/stores/se";
     ...mapState(useSEStore, ["hasUnsavedNodules"])
   },
   methods: {
-    ...mapActions(useAccountStore, ["resetToolset", "includeToolName"])
-    // ...mapActions(useSEStore, [
-    //   "removeAllFromLayers",
-    //   "init",
-    //   "rotateSphere",
-    //   "clearUnsavedFlag",
-    //   "updateDisplay",
-    //   "setActionMode"
-    // ])
+    ...mapActions(useAccountStore, ["resetToolset", "includeToolName"]),
+    ...mapActions(useSEStore, [
+      "removeAllFromLayers",
+      "init",
+      "rotateSphere",
+      "clearUnsavedFlag",
+      "updateDisplay",
+      "setActionMode"
+    ])
   }
 })
 export default class ConstructionLoader extends Vue {

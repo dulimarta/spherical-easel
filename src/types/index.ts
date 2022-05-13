@@ -7,7 +7,6 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
@@ -17,7 +16,6 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
-
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
@@ -33,45 +31,9 @@ export type PiniaAppState = {
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  // sePoints: number[];
   styleSavedFromPanel: StyleEditPanels;
 };
-export interface AppState {
-  layers: Two.Group[];
-  sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
-  zoomTranslation: number[]; // current zoom translation vector
-  zoomMagnificationFactor: number; // current zoom magnification factor
-  // previousZoomMagnificationFactor: number;
-  canvasWidth: number;
-  actionMode: string;
-  previousActionMode: string;
-  activeToolName: string;
-  previousActiveToolName: string;
-  sePoints: SEPoint[];
-  seLines: SELine[];
-  seSegments: SESegment[];
-  seCircles: SECircle[];
-  seEllipses: SEEllipse[];
-  seParametrics: SEParametric[];
-  seAngleMarkers: SEAngleMarker[];
-  seLabels: SELabel[];
-  seNodules: SENodule[];
-  selectedSENodules: SENodule[];
-
-  intersections: SEIntersectionPoint[];
-  expressions: SEExpression[];
-  temporaryNodules: Nodule[];
-  // TODO: replace the following two arrays with the maps below
-  initialStyleStates: StyleOptions[];
-  defaultStyleStates: StyleOptions[];
-  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  oldSelections: SENodule[];
-  styleSavedFromPanel: StyleEditPanels;
-  // initialBackStyleContrast: number;
-  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  svgCanvas: HTMLDivElement | null;
-  hasUnsavedNodules: boolean;
-}
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;

@@ -80,7 +80,7 @@ export default class ParametricCoordinate extends Vue {
   private testTValue = 0;
 
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {

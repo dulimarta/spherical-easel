@@ -37,7 +37,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="points.length > 0">
+          v-show="sePoints.length > 0">
           <SENoduleList i18LabelKey="objects.points"
             :children="sePoints"></SENoduleList>
         </v-sheet>
@@ -45,7 +45,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="lines.length > 0">
+          v-show="seLines.length > 0">
           <SENoduleList i18LabelKey="objects.lines"
             :children="seLines"></SENoduleList>
         </v-sheet>
@@ -53,7 +53,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="segments.length > 0">
+          v-show="seSegments.length > 0">
           <SENoduleList i18LabelKey="objects.segments"
             :children="seSegments"></SENoduleList>
         </v-sheet>
@@ -61,7 +61,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="circles.length > 0">
+          v-show="seCircles.length > 0">
           <SENoduleList i18LabelKey="objects.circles"
             :children="seCircles"></SENoduleList>
         </v-sheet>
@@ -69,7 +69,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="ellipses.length > 0">
+          v-show="seEllipses.length > 0">
           <SENoduleList i18LabelKey="objects.ellipses"
             :children="seEllipses"></SENoduleList>
         </v-sheet>
@@ -77,7 +77,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="parametrics.length > 0">
+          v-show="seParametrics.length > 0">
           <SENoduleList i18LabelKey="objects.parametrics"
             :children="seParametrics"></SENoduleList>
         </v-sheet>

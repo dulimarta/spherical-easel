@@ -72,7 +72,7 @@ export default class ParametricTExpression extends Vue {
   private tValueResult = 0;
   private currentValueString = "";
   private parsingError = "";
-  private timerInstance: number | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -100,7 +100,7 @@ export default class ParametricTExpression extends Vue {
     // console.debug("Key press");
     this.parsingError = "";
     if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = window.setTimeout(() => {
+    this.timerInstance = setTimeout(() => {
       try {
         this.expressions.forEach((m: SEExpression) => {
           const measurementName = m.name;

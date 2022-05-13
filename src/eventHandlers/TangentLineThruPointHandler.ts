@@ -422,8 +422,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
         } else {
           vectorLocation = this.currentSphereVector;
         }
-        const normalList =
-          this.oneDimensional.getNormalsToTangentLinesThru(vectorLocation);
+        const normalList = this.oneDimensional.getNormalsToTangentLinesThru(
+          vectorLocation,
+          TangentLineThruPointHandler.store.zoomMagnificationFactor
+        );
 
         // Add more temporary line as needed
         while (this.tempLines.length < normalList.length) {
@@ -586,7 +588,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
       ).length;
     }
     normalVectors = oneDimensional
-      .getNormalsToTangentLinesThru(sePointVector)
+      .getNormalsToTangentLinesThru(
+        sePointVector,
+        TangentLineThruPointHandler.store.zoomMagnificationFactor
+      )
       .map(vec => vec.normalize());
     // normals is the array of normal vector to the plane containing the line tangent to the one Dimensional through the point
     // create a number of such lines (not the number of normals in normalVector because if the user creates the tangent when there

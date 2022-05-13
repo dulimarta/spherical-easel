@@ -20,7 +20,6 @@
 
 
 <script lang="ts">
-import SE from "@/store/se-module";
 import axios from "axios";
 import { Prop, Component, Vue } from "vue-property-decorator";
 //import SETTINGS from "@/global-settings";

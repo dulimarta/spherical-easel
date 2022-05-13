@@ -14,7 +14,6 @@ import {
 import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
@@ -26,8 +25,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
 
-export class SELine extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SELine
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The corresponding plottable TwoJS object
    */
@@ -160,18 +161,19 @@ export class SELine extends SENodule
    * Return the vector near the SELine (within SETTINGS.line.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  public closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
-
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.line.maxLabelDistance / mag
+      SETTINGS.line.maxLabelDistance / zoomMagnificationFactor
     ) {
       return idealUnitSphereVector;
     } else {
@@ -184,12 +186,12 @@ export class SELine extends SENodule
       this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.line.maxLabelDistance / mag)
+        Math.sin(SETTINGS.line.maxLabelDistance / zoomMagnificationFactor)
       );
       return this.tmpVector2
         .addScaledVector(
           this.tmpVector,
-          Math.cos(SETTINGS.line.maxLabelDistance / mag)
+          Math.cos(SETTINGS.line.maxLabelDistance / zoomMagnificationFactor)
         )
         .normalize();
     }

@@ -10,7 +10,6 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
-import AppStore, { SEStore } from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -68,10 +67,6 @@ export default class AngleMarker extends Nodule {
    */
   // private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
   // private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the *circular* front/back start/tail single/double parts and their glowing counterparts.

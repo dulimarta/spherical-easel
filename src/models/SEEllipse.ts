@@ -12,15 +12,16 @@ import {
 } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)
 ]);
-export class SEEllipse extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SEEllipse
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -298,13 +299,16 @@ export class SEEllipse extends SENodule
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  public closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
     // First find the closest point on the ellipse to the idealUnitSphereVector
     const closest = new Vector3();
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -392,15 +396,16 @@ export class SEEllipse extends SENodule
         this.tmpMatrix.getInverse(this.ref.ellipseFrame)
       );
 
-      const normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
-        // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
-        [], // Avoid these t values
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
-      );
+      const normalList =
+        SENodule.getNormalsToPerpendicularLinesThruParametrically(
+          // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          transformedToStandard,
+          this.ref.tMin,
+          this.ref.tMax,
+          [], // Avoid these t values
+          this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
       // const minAngle = Math.min(
       //   ...(normalList.map(vec => vec.angleTo(oldNormal)) as number[])
@@ -424,6 +429,7 @@ export class SEEllipse extends SENodule
    */
   public getNormalsToTangentLinesThru(
     sePointVector: Vector3,
+    zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
     const sumOfDistancesToFoci =
@@ -440,16 +446,16 @@ export class SEEllipse extends SENodule
     if (
       (this._a < Math.PI / 2 &&
         (Math.abs(sumOfDistancesToFoci - this.ellipseAngleSum) <
-          0.001 / SEStore.zoomMagnificationFactor ||
+          0.001 / zoomMagnificationFactor ||
           Math.abs(sumOfDistancesToAntipodesOfFoci - this.ellipseAngleSum) <
-            0.001 / SEStore.zoomMagnificationFactor)) ||
+            0.001 / zoomMagnificationFactor)) ||
       (this._a > Math.PI / 2 &&
         (Math.abs(
           sumOfDistancesToAntipodesOfFoci - 2 * Math.PI + this.ellipseAngleSum
         ) <
-          0.001 / SEStore.zoomMagnificationFactor ||
+          0.001 / zoomMagnificationFactor ||
           Math.abs(sumOfDistancesToFoci - 2 * Math.PI + this.ellipseAngleSum) <
-            0.001 / SEStore.zoomMagnificationFactor))
+            0.001 / zoomMagnificationFactor))
     ) {
       // console.log("here");
       const transformedToStandard = new Vector3();

@@ -54,7 +54,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
+// import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
@@ -77,7 +77,7 @@ export default class ExpressionForm extends Vue {
 
   private calcResult = 0;
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {

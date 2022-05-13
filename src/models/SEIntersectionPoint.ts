@@ -8,6 +8,8 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
+import { Matrix4 } from "three";
+import { useSEStore } from "@/stores/se";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -26,6 +28,8 @@ export class SEIntersectionPoint extends SEPoint {
    * The numbering of the intersection in the case of multiple intersection
    */
   private order: number;
+
+  private inverseTotalRotationMatrix: Matrix4;
   /**
    * Create an intersection point between two one-dimensional objects
    * @param pt the TwoJS point associated with this intersection
@@ -59,6 +63,7 @@ export class SEIntersectionPoint extends SEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
+    this.inverseTotalRotationMatrix = useSEStore().inverseTotalRotationMatrix;
   }
 
   public get noduleDescription(): string {
@@ -129,10 +134,12 @@ export class SEIntersectionPoint extends SEPoint {
     if (this._exists) {
       // console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
-        this.seParent1,
-        this.seParent2
-      );
+      const updatedIntersectionInfo: IntersectionReturnType[] =
+        intersectTwoObjects(
+          this.seParent1,
+          this.seParent2,
+          this.inverseTotalRotationMatrix
+        );
       if (updatedIntersectionInfo[this.order] !== undefined) {
         this._exists = updatedIntersectionInfo[this.order].exists;
         this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display

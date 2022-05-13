@@ -42,7 +42,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, AppState, plottableType } from "@/types";
+import { ActionMode, plottableType } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -496,18 +496,6 @@ export default class SphereFrame extends VueComponent {
     if (e.button === 0) {
       // When currentTool is NULL, the following line does nothing
       this.currentTool?.mouseReleased(e);
-      // console.debug(
-      //   SEStore.sePoints.length,
-      //   "P  ",
-      //   SEStore.seLines.length,
-      //   "L   ",
-      //   SEStore.seSegments.length,
-      //   "S   ",
-      //   SEStore.seCircles.length,
-      //   "C   ",
-      //   SEStore.seEllipses.length,
-      //   "E"
-      // );
     }
   }
 

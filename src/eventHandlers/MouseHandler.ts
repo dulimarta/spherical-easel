@@ -15,7 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
-import { SEStoreType, useSEStore } from "@/stores/se";
+import { SEStoreType } from "@/stores/se";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);

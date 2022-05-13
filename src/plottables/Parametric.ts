@@ -10,7 +10,7 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import { SEStore } from "@/store";
+import { useSEStore } from "@/stores/se";
 
 // const desiredXAxis = new Vector3();
 // const desiredYAxis = new Vector3();
@@ -114,7 +114,7 @@ export default class Parametric extends Nodule {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
-
+  private inverseTotalRotationMatrix: Matrix4;
   constructor(
     tGlobalMin = 0,
     tGlobalMax = 1,
@@ -135,6 +135,8 @@ export default class Parametric extends Nodule {
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
+    const store = useSEStore();
+    this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
   }
 
   public setRangeAndFunctions(
@@ -324,10 +326,7 @@ export default class Parametric extends Nodule {
       for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
         const tValue =
           this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
-        const len = next
-          .copy(this.P(tValue))
-          .sub(curr)
-          .length();
+        const len = next.copy(this.P(tValue)).sub(curr).length();
 
         if (!isNaN(len)) {
           newArcLength += len;
@@ -372,7 +371,7 @@ export default class Parametric extends Nodule {
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
     // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
-    transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    transformMatrix.getInverse(this.inverseTotalRotationMatrix);
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
@@ -573,7 +572,7 @@ export default class Parametric extends Nodule {
   }
 
   public endPointVector(minMax: boolean): Vector3 | undefined {
-    transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    transformMatrix.getInverse(this.inverseTotalRotationMatrix);
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,

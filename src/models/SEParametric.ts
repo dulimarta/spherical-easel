@@ -17,7 +17,6 @@ import {
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
 import { SEParametricEndPoint } from "./SEParametricEndPoint";
@@ -29,6 +28,7 @@ import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEExpression } from "./SEExpression";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SEParametricTracePoint } from "./SEParametricTracePoint";
+import { SEStoreType, useSEStore } from "@/stores/se";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -116,6 +116,8 @@ export class SEParametric
    */
   readonly prevVarMap = new Map<string, number>();
 
+  private store: SEStoreType;
+
   /**
    * Create a model SEParametric using:
    * @param parametric The plottable TwoJS Object associated to this object
@@ -129,6 +131,7 @@ export class SEParametric
     measurementParents: SEExpression[]
   ) {
     super();
+    this.store = useSEStore();
     this.ref = parametric;
     // Set the expressions for the curve, its derivative, and the tMin & tMax
     this.coordinateExpressions.x = coordinateExpressions.x;
@@ -474,7 +477,7 @@ export class SEParametric
     //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(idealUnitSphereVector);
-    transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+    transformedToStandard.applyMatrix4(this.store.inverseTotalRotationMatrix);
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = this.tMinMaxExpressionValues();
@@ -493,7 +496,7 @@ export class SEParametric
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
     return closestStandardVector.applyMatrix4(
-      this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+      this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
     );
   }
   /**
@@ -506,7 +509,7 @@ export class SEParametric
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = this.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -567,7 +570,7 @@ export class SEParametric
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
     transformedToStandard
-      .applyMatrix4(SEStore.inverseTotalRotationMatrix)
+      .applyMatrix4(this.store.inverseTotalRotationMatrix)
       .normalize();
 
     // find the tracing tMin and tMax
@@ -604,13 +607,13 @@ export class SEParametric
     normalList.forEach((pair: NormalVectorAndTValue) => {
       pair.normal
         .applyMatrix4(
-          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+          this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
         )
         .normalize();
       this.tmpVector1.copy(this.ref.P(pair.tVal));
       this.tmpVector1
         .applyMatrix4(
-          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+          this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
         )
         .normalize();
     });
@@ -625,12 +628,13 @@ export class SEParametric
    */
   public getNormalsToTangentLinesThru(
     sePointVector: Vector3,
+    zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
     transformedToStandard
-      .applyMatrix4(SEStore.inverseTotalRotationMatrix)
+      .applyMatrix4(this.store.inverseTotalRotationMatrix)
       .normalize();
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
@@ -644,7 +648,7 @@ export class SEParametric
     //If the vector is on the Parametric then there is at at least one tangent
     if (
       this.closestVector(sePointVector).angleTo(sePointVector) <
-      0.01 / SEStore.zoomMagnificationFactor
+      0.01 / this.store.zoomMagnificationFactor
     ) {
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
@@ -656,7 +660,7 @@ export class SEParametric
       ).tVal;
       const tangentVector = new Vector3();
       tangentVector.copy(this.ref.PPrime(coorespondingTVal));
-      tangentVector.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+      tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
       tangentVector.cross(this.ref.P(coorespondingTVal));
       avoidTValues.push(coorespondingTVal);
       normalList.push(tangentVector.normalize());
@@ -707,7 +711,7 @@ export class SEParametric
     //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
     //   );
     // }
-    this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix);
     return taggedList.map((z: NormalVectorAndTValue) => {
       z.normal.applyMatrix4(this.tmpMatrix).normalize();
       return z.normal;

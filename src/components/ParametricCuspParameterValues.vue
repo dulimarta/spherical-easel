@@ -44,7 +44,7 @@ export default class ParametricCuspParameterValues extends Vue {
   private tValueExpression = "";
   private tValueResults: number[] = [];
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {

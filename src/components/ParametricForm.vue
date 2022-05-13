@@ -80,7 +80,6 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import {
-  AppState,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,

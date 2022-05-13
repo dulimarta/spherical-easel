@@ -1,7 +1,7 @@
 import Vue from "*.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
-import { SEStore } from "@/store";
+// import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
 import {
   TEST_MOUSE_X,

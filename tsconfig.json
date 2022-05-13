@@ -26,14 +26,19 @@
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "__tests__", "**/tests/unit/**"],
+  "exclude": [
+    "node_modules",
+    "__tests__",
+    "**/tests/unit/**",
+    "**/__tests__/**"
+  ],
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/types/two.js/index.d.ts",
-    "tests/*.d.ts",
-    "src/stores/se-module.tss"
+    // "tests/*.d.ts",
+    "src/stores/unused-se-module.ts"
   ],
   "verbose": true
   // "globals": {

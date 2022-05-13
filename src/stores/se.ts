@@ -810,7 +810,8 @@ export const useSEStore = defineStore("se", {
         seParametrics.forEach((oldParametric: SEParametric) => {
           const intersectionInfo = intersectLineWithParametric(
             newLine,
-            oldParametric
+            oldParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -996,7 +997,8 @@ export const useSEStore = defineStore("se", {
         seParametrics.forEach((oldParametric: SEParametric) => {
           const intersectionInfo = intersectSegmentWithParametric(
             newSegment,
-            oldParametric
+            oldParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1184,7 +1186,8 @@ export const useSEStore = defineStore("se", {
         seParametrics.forEach((oldParametric: SEParametric) => {
           const intersectionInfo = intersectCircleWithParametric(
             newCircle,
-            oldParametric
+            oldParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1378,7 +1381,8 @@ export const useSEStore = defineStore("se", {
         seParametrics.forEach((oldParametric: SEParametric) => {
           const intersectionInfo = intersectEllipseWithParametric(
             newEllipse,
-            oldParametric
+            oldParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1437,7 +1441,8 @@ export const useSEStore = defineStore("se", {
         seLines.forEach((oldLine: SELine) => {
           const intersectionInfo = intersectLineWithParametric(
             oldLine,
-            newParametric
+            newParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1471,7 +1476,8 @@ export const useSEStore = defineStore("se", {
         seSegments.forEach((oldSegment: SESegment) => {
           const intersectionInfo = intersectSegmentWithParametric(
             oldSegment,
-            newParametric
+            newParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1505,7 +1511,8 @@ export const useSEStore = defineStore("se", {
         seCircles.forEach((oldCircle: SECircle) => {
           const intersectionInfo = intersectCircleWithParametric(
             oldCircle,
-            newParametric
+            newParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (
@@ -1539,7 +1546,8 @@ export const useSEStore = defineStore("se", {
         seEllipses.forEach((oldEllipse: SEEllipse) => {
           const intersectionInfo = intersectEllipseWithParametric(
             oldEllipse,
-            newParametric
+            newParametric,
+            inverseTotalRotationMatrix
           );
           intersectionInfo.forEach((info, index) => {
             if (

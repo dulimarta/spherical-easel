@@ -10,7 +10,6 @@ import {
   DEFAULT_CIRCLE_FRONT_STYLE,
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -49,11 +48,6 @@ export default class Circle extends Nodule {
    *  This the radius projected to the plane of the circle. It is always Math.sin(this.radius).
    */
   private projectedRadius = 0;
-
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.

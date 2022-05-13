@@ -11,7 +11,6 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
-import AppStore from "@/store";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
@@ -54,7 +53,7 @@ export default class Polygon extends Nodule {
   /**
    * Vuex global state
    */
-  protected store = AppStore; //
+  // protected store = AppStore; //
 
   /**
    * The area of the polygon. This must be updated before the updateDisplay can be called

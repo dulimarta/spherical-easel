@@ -274,7 +274,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
+import { ActionMode, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";

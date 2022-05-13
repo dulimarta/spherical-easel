@@ -4,7 +4,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
+// import store from "./store";
 import vuetify from "./plugins/vuetify";
 import VueI18n from "vue-i18n";
 import i18n from "./i18n";
@@ -50,7 +50,7 @@ new Vue({
     // renderer
   },
   router,
-  store,
+  // store,
   vuetify,
   pinia,
   render: (h: any) => h(App)

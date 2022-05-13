@@ -16,16 +16,18 @@ import {
   DEFAULT_SEGMENT_BACK_STYLE,
   DEFAULT_SEGMENT_FRONT_STYLE
 } from "@/types/Styles";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_BACK_STYLE)
 ]);
 
-export class SESegment extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SESegment
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -67,6 +69,7 @@ export class SESegment extends SENodule
   private tmpVector2 = new Vector3();
   private desiredZAxis = new Vector3();
   private toVector = new Vector3();
+  private store: SEStoreType;
 
   /**
    * Create a model SESegment using:
@@ -92,6 +95,7 @@ export class SESegment extends SENodule
 
     SENodule.SEGMENT_COUNT++;
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
+    this.store = useSEStore();
   }
 
   customStyles(): Set<string> {
@@ -459,7 +463,7 @@ export class SESegment extends SENodule
 
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = this.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

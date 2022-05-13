@@ -6,7 +6,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
 import { Labelable, ObjectState } from "@/types";
-import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
@@ -15,6 +14,7 @@ import { SEAngleMarker } from "./SEAngleMarker";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
 import { SEPolygon } from "./SEPolygon";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -37,6 +37,7 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
+  private store: SEStoreType;
   private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
@@ -46,10 +47,11 @@ export class SELabel extends SENodule implements Visitable {
   constructor(label: Label, parent: SENodule) {
     super();
 
+    this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
     label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
-    ((this.parent as unknown) as Labelable).label = this;
+    (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
     this.name = "La" + SENodule.LABEL_COUNT;
 
@@ -142,9 +144,9 @@ export class SELabel extends SENodule implements Visitable {
     if (this._exists) {
       this.tmpVector.copy(this._locationVector);
       this._locationVector.copy(
-        ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+        (this.parent as unknown as Labelable).closestLabelLocationVector(
           this.tmpVector,
-          SEStore.zoomMagnificationFactor
+          this.store.zoomMagnificationFactor
         )
       );
       //Update the location of the associate plottable Label (setter also updates the display)
@@ -190,9 +192,9 @@ export class SELabel extends SENodule implements Visitable {
     if (!this.parent.isOutOfDate()) {
       this._locationVector
         .copy(
-          ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+          (this.parent as unknown as Labelable).closestLabelLocationVector(
             pos,
-            SEStore.zoomMagnificationFactor
+            this.store.zoomMagnificationFactor
           )
         )
         .normalize();
@@ -225,7 +227,7 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = SEStore.canvasWidth;
+    const canvasSize = this.store.canvasWidth;
 
     return (
       boundingBox.left - canvasSize / 2 <
