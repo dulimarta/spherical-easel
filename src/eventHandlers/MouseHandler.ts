@@ -101,6 +101,12 @@ export default abstract class MouseHandler implements ToolStrategy {
    * @memberof MouseHandler
    */
   mouseMoved(event: MouseEvent): void {
+    this.trackMouseLocation(event);
+  }
+
+  // Provide this function to allow subclasses call directly without going through
+  // the inheritance hierarchy
+  trackMouseLocation(event: MouseEvent): void {
     // Using currentTarget is necessary. Otherwise, all the calculations
     // will be based on SVG elements whose bounding rectangle may spill
     // outside of the responsive viewport and produces inaccurate

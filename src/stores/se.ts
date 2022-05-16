@@ -41,6 +41,7 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
+import { RotationVisitor } from "@/visitors/RotationVisitor";
 
 const sePoints: Array<SEPoint> = [];
 const seNodules: Array<SENodule> = [];
@@ -64,7 +65,8 @@ const selectedSENodules: Array<SENodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 
-export const useSEStore = defineStore("se", {
+export const useSEStore = defineStore({
+  id: "se",
   state: (): PiniaAppState => ({
     actionMode: "rotate",
     previousActionMode: "rotate",
@@ -75,6 +77,7 @@ export const useSEStore = defineStore("se", {
     zoomMagnificationFactor: 1,
     zoomTranslation: [0, 0],
     canvasWidth: 0,
+    // sePoints: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -121,9 +124,9 @@ export const useSEStore = defineStore("se", {
     setCanvasWidth(w: number): void {
       this.canvasWidth = w;
     },
-    setSphereRadius(r: number): void {
-      // TODO
-    },
+    // setSphereRadius(r: number): void {
+    //   // TODO
+    // },
     setActionMode(mode: { id: ActionMode; name: string }): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (
@@ -420,20 +423,11 @@ export const useSEStore = defineStore("se", {
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat);
       inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
-      // rotationVisitor.setTransform(rotationMat);
-      // // apply the rotation to the line, segments, labels, then points. (Circles and ellipses are determined by their parent points so no need to update them)
-      // seLines.forEach((m: SELine) => {
-      //   m.accept(rotationVisitor); // Does no updating of the display
-      // });
-      // seSegments.forEach((s: SESegment) => {
-      //   s.accept(rotationVisitor); // Does no updating of the display
-      // });
-      // seLabels.forEach((l: SELabel) => {
-      //   l.accept(rotationVisitor); // Does no updating of the display
-      // });
-      // sePoints.forEach((p: SEPoint) => {
-      //   p.accept(rotationVisitor); // Does no updating of the display
-      // });
+      const rotationVisitor = new RotationVisitor();
+      rotationVisitor.setTransform(rotationMat);
+      sePoints.forEach((p: SEPoint) => {
+        p.accept(rotationVisitor); // Does no updating of the display
+      });
       // seParametrics.forEach((para: SEParametric) => {
       //   para.accept(rotationVisitor); //update the display because the parametric do not depend on any other geometric objects
       // });
@@ -577,7 +571,7 @@ export const useSEStore = defineStore("se", {
     hasObjects(): boolean {
       return sePoints.length > 0;
     },
-    hasNoAntipode(state: PiniaAppState): (_: SEPoint) => boolean {
+    hasNoAntipode: (): ((_: SEPoint) => boolean) => {
       return (testPoint: SEPoint): boolean => {
         // create the antipode location vector
         tmpVector.copy(testPoint.locationVector).multiplyScalar(-1);
@@ -622,15 +616,13 @@ export const useSEStore = defineStore("se", {
         }
       };
     },
-    getSENoduleById(state: PiniaAppState): (_: number) => SENodule | undefined {
+    getSENoduleById(): (_: number) => SENodule | undefined {
       return (id: number): SENodule | undefined => {
         return seNodules.find((z: SENodule) => z.id === id);
       };
     },
     //#region findNearbyGetter
-    findNearbySENodules(
-      state: PiniaAppState
-    ): (_p: Vector3, _s: Two.Vector) => SENodule[] {
+    findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
       return (
         unitIdealVector: Vector3,
         screenPosition: Two.Vector
@@ -644,9 +636,10 @@ export const useSEStore = defineStore("se", {
      * If one parent name is given, this returns a list of all intersection points that have a parent with that name.
      * If two parent names are given, this returns a list of all intersection points that a parent with the first name and a parent with the second name
      */
-    findIntersectionPointsByParent(
-      state: PiniaAppState
-    ): (parent1Name: string, parent2Name?: string) => SEIntersectionPoint[] {
+    findIntersectionPointsByParent(): (
+      parent1Name: string,
+      parent2Name?: string
+    ) => SEIntersectionPoint[] {
       return (
         parent1Name: string,
         parent2Name?: string
@@ -680,9 +673,9 @@ export const useSEStore = defineStore("se", {
      * If they have the same type put them in alphabetical order.
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
-    createAllIntersectionsWithLine(
-      state: PiniaAppState
-    ): (_: SELine) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithLine(): (
+      _: SELine
+    ) => SEIntersectionReturnType[] {
       return (newLine: SELine): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -843,7 +836,7 @@ export const useSEStore = defineStore("se", {
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithSegment(_: PiniaAppState) {
+    createAllIntersectionsWithSegment() {
       return (newSegment: SESegment): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1030,9 +1023,9 @@ export const useSEStore = defineStore("se", {
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithCircle(
-      _: PiniaAppState
-    ): (_: SECircle) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithCircle(): (
+      _: SECircle
+    ) => SEIntersectionReturnType[] {
       return (newCircle: SECircle): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1220,9 +1213,9 @@ export const useSEStore = defineStore("se", {
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithEllipse(
-      _: PiniaAppState
-    ): (_: SEEllipse) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithEllipse(): (
+      _: SEEllipse
+    ) => SEIntersectionReturnType[] {
       return (newEllipse: SEEllipse): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1414,9 +1407,9 @@ export const useSEStore = defineStore("se", {
         return [];
       };
     },
-    createAllIntersectionsWithParametric(
-      _: PiniaAppState
-    ): (_: SEParametric) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithParametric(): (
+      _: SEParametric
+    ) => SEIntersectionReturnType[] {
       return (newParametric: SEParametric): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];

@@ -294,7 +294,7 @@ export default class PanZoomHandler implements ToolStrategy {
     const currentTranslationVector = MouseHandler.store.zoomTranslation;
 
     const radius = size / 2 - 16; // 16-pixel gap
-    MouseHandler.store.setSphereRadius(radius);
+    // MouseHandler.store.setSphereRadius(radius);
 
     // The radius over the default radius is the magnification factor
     const newMagFactor = radius / SETTINGS.boundaryCircle.radius;

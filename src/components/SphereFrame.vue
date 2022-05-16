@@ -67,8 +67,9 @@ import { Matrix4 } from "three";
       "setLayers",
       "setCanvas",
       "rotateSphere",
-      "setSphereRadius",
-      "setCanvasWidth"
+      // "setSphereRadius",
+      "setCanvasWidth",
+      "revertActionMode"
     ])
   }
 })
@@ -85,7 +86,7 @@ export default class SphereFrame extends VueComponent {
   readonly setLayers!: (_: Array<Two.Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
-  readonly setSphereRadius!: (_: number) => void;
+  // readonly setSphereRadius!: (_: number) => void;
   readonly rotateSphere!: (_: Matrix4) => void;
   readonly revertActionMode!: () => void;
 
@@ -309,7 +310,7 @@ export default class SphereFrame extends VueComponent {
     });
 
     const radius = size / 2 - 16; // 16-pixel gap
-    this.setSphereRadius(radius);
+    // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
     this.zoomMagnificationFactor = ratio;

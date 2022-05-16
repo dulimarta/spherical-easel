@@ -288,7 +288,7 @@ import { Unsubscribe } from "@firebase/util";
 import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
-import { mapActions, mapState, mapGetters } from "pinia";
+import { mapActions, mapState } from "pinia";
 
 /**
  * Split panel width distribution (percentages):
@@ -311,8 +311,7 @@ import { mapActions, mapState, mapGetters } from "pinia";
     ...mapActions(useSEStore, ["setActionMode"])
   },
   computed: {
-    ...mapState(useSEStore, ["seNodules", "temporaryNodules"]),
-    ...mapGetters(useSEStore, ["hasObjects"])
+    ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
   }
 })
 export default class Easel extends Vue {

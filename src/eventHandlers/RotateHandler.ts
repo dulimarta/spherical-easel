@@ -9,6 +9,7 @@ import { SESegment } from "@/models/SESegment";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -86,9 +87,11 @@ export default class RotateHandler extends Highlighter {
 
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
+  private store: SEStoreType;
 
   constructor(layers: Two.Group[]) {
     super(layers);
+    this.store = useSEStore();
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {
@@ -305,7 +308,8 @@ export default class RotateHandler extends Highlighter {
 
   mouseMoved(event: MouseEvent): void {
     // Determine the current location on the sphere (on on screen) and highlight objects
-    super.mouseMoved(event);
+    this.trackMouseLocation(event);
+
     if (
       this.rotationObject !== null &&
       !this.userIsRotating &&
@@ -336,6 +340,7 @@ export default class RotateHandler extends Highlighter {
 
     // if the user is not rotating highlight lines, segments and points that the user can rotate about
     if (!this.userIsRotating) {
+      super.mouseMoved(event);
       if (this.hitSEPoints.length > 0) {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
@@ -459,9 +464,10 @@ export default class RotateHandler extends Highlighter {
         .normalize();
       // Apply the rotation to the sphere and update the display
       //#region sphereRotate
-      EventBus.fire("sphere-rotate", {
-        transform: this.changeInPositionRotationMatrix
-      });
+      // EventBus.fire("sphere-rotate", {
+      //   transform: this.changeInPositionRotationMatrix
+      // });
+      this.store.rotateSphere(this.changeInPositionRotationMatrix);
       this.saveRotationNeeded = true;
       //#endregion sphereRotate
     }

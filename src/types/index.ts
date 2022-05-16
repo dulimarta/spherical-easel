@@ -1,7 +1,5 @@
 // Declaration of all internal data types
 
-import Two from "two.js";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
@@ -9,9 +7,7 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
-import { SEExpression } from "@/models/SEExpression";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { StyleEditPanels } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -31,7 +27,6 @@ export type PiniaAppState = {
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  // sePoints: number[];
   styleSavedFromPanel: StyleEditPanels;
 };
 export interface AccountState {
