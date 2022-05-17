@@ -24,49 +24,58 @@ export class PointMoverVisitor implements Visitor {
    * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
    */
   //#region actionOnPoint
-  actionOnPoint(p: SEPoint): void {
+  actionOnPoint(p: SEPoint): boolean {
     // Don't use the usual location setter for points on one dimensional because that will move the label to the location on a possibly out of date parent.
     if (!(p instanceof SEPointOnOneOrTwoDimensional)) {
       p.locationVector = this.locationVector; // Set the new position vector
     } else {
       p.pointDirectLocationSetter(this.locationVector);
     }
+    return true;
   }
   //#endregion actionOnPoint
 
   // eslint-disable-next-line
-  actionOnLine(m: SELine): void {
+  actionOnLine(m: SELine): boolean {
     //m.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnSegment(s: SESegment): void {
+  actionOnSegment(s: SESegment): boolean {
     // s.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnCircle(c: SECircle): void {
+  actionOnCircle(c: SECircle): boolean {
     // c.update();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnLabel(l: SELabel): void {
+  actionOnLabel(l: SELabel): boolean {
     // l.update();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnEllipse(e: SEEllipse): void {
+  actionOnEllipse(e: SEEllipse): boolean {
     // e.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnAngleMarker(a: SEAngleMarker): void {
+  actionOnAngleMarker(a: SEAngleMarker): boolean {
     //a.update()
+    return false;
   }
   // eslint-disable-next-line
-  actionOnParametric(p: SEParametric): void {
+  actionOnParametric(p: SEParametric): boolean {
     // e.update();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnPolygon(p: SEPolygon): void {
+  actionOnPolygon(p: SEPolygon): boolean {
     // e.update();
+    return false;
   }
 }

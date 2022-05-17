@@ -336,6 +336,25 @@ export class SEAngleMarker
 
     this.setOutOfDate(false);
 
+    this.shallowUpdate();
+    // These angle markers are completely determined by their line/segment/point parents and an update on the parents
+    // will cause this angleMarker to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Anglemarker with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "angleMarker", object: this });
+    }
+
+    this.setOutOfDate(false);
+    this.updateKids(objectState, orderedSENoduleList);
+  }
+
+  public shallowUpdate(): void {
     this._exists = this._firstSEParent.exists && this._secondSEParent.exists;
 
     // If the third parent is not null it should exist in order for the angle marker to exist
@@ -881,21 +900,6 @@ export class SEAngleMarker
     } else {
       this.ref.setVisible(false);
     }
-    // These angle markers are completely determined by their line/segment/point parents and an update on the parents
-    // will cause this angleMarker to be put into the correct location. So we don't store any additional information
-    if (objectState && orderedSENoduleList) {
-      if (objectState.has(this.id)) {
-        console.log(
-          `Anglemarker with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
-        return;
-      }
-      orderedSENoduleList.push(this.id);
-      objectState.set(this.id, { kind: "angleMarker", object: this });
-    }
-
-    this.setOutOfDate(false);
-    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -1193,8 +1197,8 @@ export class SEAngleMarker
     }
   }
 
-  accept(v: Visitor): void {
-    v.actionOnAngleMarker(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnAngleMarker(this);
   }
 
   /**

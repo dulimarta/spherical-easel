@@ -113,15 +113,7 @@ export class SECircle
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
 
     if (this._exists) {
@@ -140,6 +132,16 @@ export class SECircle
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
@@ -227,8 +229,8 @@ export class SECircle
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnCircle(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnCircle(this);
   }
 
   /**

@@ -125,20 +125,11 @@ export class SELabel extends SENodule implements Visitable {
     this.ref.positionVector = this._locationVector;
   }
 
-  accept(v: Visitor): void {
-    v.actionOnLabel(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnLabel(this);
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // console.log("update SElabel");
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     //These labels don't exist when their parent doesn't exist
     this._exists = this.parent.exists;
     if (this._exists) {
@@ -159,6 +150,18 @@ export class SELabel extends SENodule implements Visitable {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // console.log("update SElabel");
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // Labels are NOT completely determined by their parents so we store additional information
     if (objectState && orderedSENoduleList) {

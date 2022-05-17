@@ -28,7 +28,7 @@ export class RotationVisitor implements Visitor {
    * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
    */
   //#region actionOnPoint
-  actionOnPoint(p: SEPoint): void {
+  actionOnPoint(p: SEPoint): boolean {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     if (p instanceof SEPointOnOneOrTwoDimensional) {
@@ -36,62 +36,82 @@ export class RotationVisitor implements Visitor {
     } else {
       p.locationVector = this.tmpVector; // Set the new position vector
     }
+    return true;
   }
   //#endregion actionOnPoint
 
-  actionOnLine(m: SELine): void {
+  actionOnLine(m: SELine): boolean {
     // lines depend on two two points that are on them and, if the points are antipodal, the normal vector
     // The points are updated by the action on point, so we don't worry about them
     // only update in this way if the points defining the line are nearly antipodal (otherwise the points will do the updating)
-    if (m.nearlyAntipodal) {
-      this.tmpVector.copy(m.normalVector); // Copy the old vector location of the SEPoint
-      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-      m.normalVector = this.tmpVector;
-    }
+    // if (m.nearlyAntipodal) {
+    // this.tmpVector.copy(m.normalVector); // Copy the old vector location of the SEPoint
+    // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+    // m.normalVector = this.tmpVector;
+    // m.ref.updateDisplay();
+    // }
+    return false;
   }
 
-  actionOnSegment(s: SESegment): void {
+  actionOnSegment(s: SESegment): boolean {
     // segment depend on two two points that are on them and, if the points are antipodal, the normal
     // vector (and the length, but that is unaffected by a rotation so remains the same)
     // The points are updated by the action on point, so we don't worry about them
     // only update in this way if the points are nearly antipodal (otherwise the points will do the updating)
-    if (s.nearlyAntipodal) {
-      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
-      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-      s.normalVector = this.tmpVector;
-    }
+    // if (s.nearlyAntipodal) {
+    // this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
+    // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+    // Both SESegment.ts and Segment.ts use a setter function to update the normal vector that copies the x,y,z values
+    // s.normalVector = this.tmpVector;
+    // s.ref.normalVector = this.tmpVector;
+
+    // this.tmpVector.copy(s.startSEPoint.locationVector);
+    // this.tmpVector.applyMatrix4(this.transformMatrix);
+    // s.startSEPoint.locationVector = this.tmpVector;
+    // s.ref.startVector = this.tmpVector;
+
+    // s.ref.updateDisplay();
+    return false;
+    // }
   }
 
   // eslint-disable-next-line
-  actionOnCircle(c: SECircle): void {
+  actionOnCircle(c: SECircle): boolean {
     //Circles are completely determined by two points they depend on so no need to update them
+    return false;
   }
-  actionOnLabel(l: SELabel): void {
+  actionOnLabel(l: SELabel): boolean {
     this.tmpVector.copy(l.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     l.labelDirectLocationSetter(this.tmpVector); // Set the new position vector directly because the parent might be out of date
+    return true;
   }
 
   // eslint-disable-next-line
-  actionOnEllipse(e: SEEllipse): void {
+  actionOnEllipse(e: SEEllipse): boolean {
     //Ellipses are completely determined by three points they depend on so no need to update them
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnAngleMarker(a: SEAngleMarker): void {
-    //AngleMarekrs are completely determined by their parents so no need to update them
+  actionOnAngleMarker(a: SEAngleMarker): boolean {
+    //AngleMarkers are completely determined by their parents so no need to update them
+    // a.ref.updateDisplay();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnParametric(e: SEParametric): void {
+  actionOnParametric(e: SEParametric): boolean {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
     let ptr: Parametric | null = e.ref;
     while (ptr) {
       ptr.updateDisplay();
       ptr = ptr.next;
     }
+    return true;
   }
-  actionOnPolygon(p: SEPolygon): void {
+  actionOnPolygon(p: SEPolygon): boolean {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
     p.ref.updateDisplay();
+    return true;
   }
 }

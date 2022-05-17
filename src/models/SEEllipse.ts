@@ -169,15 +169,7 @@ export class SEEllipse
     //   SETTINGS.ellipse.hitIdealDistance / currentMagnificationFactor;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists =
       // The three defining points must exist
       this._focus1SEPoint.exists &&
@@ -253,6 +245,17 @@ export class SEEllipse
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These ellipse are completely determined by their point parents and an update on the parents
     // will cause this ellipse to be put into the correct location.So we don't store any additional information
@@ -334,8 +337,8 @@ export class SEEllipse
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnEllipse(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnEllipse(this);
   }
 
   /**

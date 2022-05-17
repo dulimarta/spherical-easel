@@ -7,10 +7,12 @@ import {
 } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
 let NODE_COUNT = 0;
 
-export abstract class SENodule {
+export abstract class SENodule implements Visitable {
   public static POINT_COUNT = 0;
   public static SEGMENT_COUNT = 0;
   public static LINE_COUNT = 0;
@@ -93,6 +95,11 @@ export abstract class SENodule {
   ): void;
 
   /**
+   * The method to update the current SENodule without propagating the update to its kids
+   */
+  public abstract shallowUpdate(): void;
+
+  /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
@@ -108,6 +115,8 @@ export abstract class SENodule {
    * But Typescript does not support it (yet?)
    */
   public abstract customStyles(): Set<string>;
+
+  public abstract accept(v: Visitor): boolean;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {

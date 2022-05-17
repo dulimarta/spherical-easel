@@ -93,15 +93,7 @@ export class SEParametricTracePoint extends SEPoint {
     return this._parametricParent;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this.parametricParent.exists;
 
     const possibleVec = this._parametricParent.ref.P(this.parametricTime);
@@ -123,6 +115,16 @@ export class SEParametricTracePoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These parametric point are completely determined by their parametric parents and an update on the parents
     // will cause this point to be put into the correct location. So we don't store any additional information

@@ -102,8 +102,8 @@ export class SESegment
     return styleSet;
   }
 
-  accept(v: Visitor): void {
-    v.actionOnSegment(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnSegment(this);
   }
 
   // Returns true if the points defining the segment are nearly antipodal.
@@ -309,15 +309,7 @@ export class SESegment
     return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
 
     if (this._exists) {
@@ -427,7 +419,18 @@ export class SESegment
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
 
+    this.setOutOfDate(false);
+    // BEGIN CUT
+    this.shallowUpdate();
+    // END CUT
     // Segments are determined by more than their point parents so we store additional information
     // If the parent points of the segment are antipodal, the normal vector determines the
     // plane of the segment.  The points also don't determine the arcLength of the segments.

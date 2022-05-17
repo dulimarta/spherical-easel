@@ -3,6 +3,7 @@ import { ValueDisplayMode } from "@/types";
 import { SEOneOrTwoDimensional } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import { Visitor } from "@/visitors/Visitor";
 
 //const emptySet = new Set<string>();
 export abstract class SEExpression extends SENodule {
@@ -26,6 +27,9 @@ export abstract class SEExpression extends SENodule {
 
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
+  accept(v: Visitor): boolean {
+    return false;
+  }
 
   public get prettyValue(): string {
     switch (this._valueDisplayMode) {

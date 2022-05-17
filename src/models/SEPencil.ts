@@ -7,6 +7,7 @@ import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
+import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
 import { SEParametric } from "./SEParametric";
@@ -35,14 +36,11 @@ export class SEPencil extends SENodule {
     this.store = useSEStore();
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // This doesn't follow the usual outline of an update method because SEPencil is not in the DAG
+  public accept(v: Visitor): boolean {
+    return false;
+  }
 
-    console.debug("Updating SEPencil");
-
+  public shallowUpdate(): void {
     const normals = this._commonParent.getNormalsToPerpendicularLinesThru(
       this._commonPoint.locationVector,
       this._lines[0].normalVector
@@ -83,6 +81,16 @@ export class SEPencil extends SENodule {
         this.store.addLine(newPerpLine);
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // This doesn't follow the usual outline of an update method because SEPencil is not in the DAG
+
+    // console.debug("Updating SEPencil");
+
+    this.shallowUpdate();
     // SEPencil is not in the DAG so it has no kids and updateKids does not need to be called.
   }
 

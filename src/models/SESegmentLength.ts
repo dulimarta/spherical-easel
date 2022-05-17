@@ -37,13 +37,7 @@ export class SESegmentLength extends SEExpression {
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (!this.canUpdateNow()) return;
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this.exists = this.seSegment.exists;
 
     if (this.exists) {
@@ -52,6 +46,15 @@ export class SESegmentLength extends SEExpression {
         this.seSegment.label.ref.value = [this.value];
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (!this.canUpdateNow()) return;
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // These segment measurement is completely determined by its parent and an update on the parent
     // will cause this measurement update correctly. So we don't store any additional information

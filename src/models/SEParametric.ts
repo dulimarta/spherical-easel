@@ -418,15 +418,7 @@ export class SEParametric
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     // The measurement expressions parents must exist
     this._exists = this._seParentExpressions.every(exp => exp.exists);
 
@@ -452,6 +444,16 @@ export class SEParametric
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These parametric are completely determined by their measurement parents and an update on the parents
     // will cause this parametric to be put into the correct location. So we don't store any additional information
@@ -535,8 +537,8 @@ export class SEParametric
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnParametric(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnParametric(this);
   }
 
   private removeDuplicateVectors(arr: Array<NormalVectorAndTValue>): void {

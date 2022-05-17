@@ -388,15 +388,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     return totalNumberOfCrossings % 2 === 0;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     // All parent segments must exist (This is equivalent to checking that all the angle markers exist)
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
@@ -498,6 +490,16 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These polygons are completely determined by their line/segment/point parents and an update on the parents
     // will cause this polygon to be put into the correct location. So we don't store any additional information
@@ -588,8 +590,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnPolygon(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnPolygon(this);
   }
 
   public isLabelable(): boolean {

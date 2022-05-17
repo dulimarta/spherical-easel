@@ -55,15 +55,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return styleSet;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     //These points always exist - they have no parents to depend on
     this.ref.updateDisplay();
 
@@ -75,6 +67,17 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These are free points and are have no parents so we store additional information
     if (objectState && orderedSENoduleList) {
@@ -118,8 +121,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SEPoint";
   }
 
-  accept(v: Visitor): void {
-    v.actionOnPoint(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnPoint(this);
   }
   /**
    * Return the vector near the SELine (within SETTINGS.point.maxLabelDistance) that is closest to the idealUnitSphereVector

@@ -425,19 +425,52 @@ export const useSEStore = defineStore({
       inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
-      sePoints.forEach((p: SEPoint) => {
-        p.accept(rotationVisitor); // Does no updating of the display
-      });
-      // seParametrics.forEach((para: SEParametric) => {
-      //   para.accept(rotationVisitor); //update the display because the parametric do not depend on any other geometric objects
-      // });
-      // now do the update of the free points so that display is correct
-      sePoints.forEach((p: SEPoint) => {
-        if (p.isFreeToMove()) {
-          p.markKidsOutOfDate(); // so this does a topological sort and update is only executed once on each point
-          p.update();
+      const updateCandidates: Array<SENodule> = [];
+
+      function addCandidatesFrom(parent: SENodule) {
+        parent.kids.forEach((m: SENodule) => {
+          if (m.exists) {
+            // console.debug(parent.name, "invalidates", m.name);
+            if (m.canUpdateNow()) {
+              if (!updateCandidates.find((x: SENodule) => x.name === m.name))
+                updateCandidates.push(m);
+            } else {
+              // console.debug("!!! Dependent ", m.name, " can't be updated now");
+            }
+          }
+        });
+      }
+
+      // Begin updating those objects with no parents
+      sePoints
+        .filter((p: SENodule) => p.parents.length === 0)
+        .forEach((target: SENodule) => {
+          // console.debug("Seed update from ", target.name);
+          target.accept(rotationVisitor);
+          target.setOutOfDate(false);
+          target.markKidsOutOfDate();
+          addCandidatesFrom(target); // Expand the update tree
+        });
+      while (updateCandidates.length > 0) {
+        const target = updateCandidates.shift()!;
+        if (!target.accept(rotationVisitor)) {
+          // console.debug(
+          //   target.name,
+          //   "does not accept rotation visitor, try its shallowUpdate"
+          // );
+          target.shallowUpdate();
         }
-      });
+        target.setOutOfDate(false);
+        target.markKidsOutOfDate();
+
+        addCandidatesFrom(target);
+
+        // console.debug(
+        //   `Update candidate has ${updateCandidates.length} items`,
+        //   updateCandidates.map((n: SENodule) => n.name).join(", ")
+        // );
+      }
+      // console.debug("<<<<< End rotate sphere update");
     },
     //#endregion rotateSphere
 

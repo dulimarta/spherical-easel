@@ -118,6 +118,13 @@ export class SECalculation extends SEExpression {
     );
   }
 
+  public shallowUpdate(): void {
+    this.exists = this._calculationParents.every(parent => parent.exists);
+    if (this.exists) {
+      this.recalculate();
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -125,11 +132,7 @@ export class SECalculation extends SEExpression {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this.exists = this._calculationParents.every(parent => parent.exists);
-    if (this.exists) {
-      this.recalculate();
-    }
+    this.shallowUpdate();
 
     // This object and any of its children have no presence on the sphere canvas So we don't store any additional information
     if (objectState && orderedSENoduleList) {

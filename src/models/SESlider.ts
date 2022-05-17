@@ -55,6 +55,9 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
 
   public customStyles = (): Set<string> => emptySet;
 
+  shallowUpdate(): void {
+    console.error(`*** INCOMPLETE ${this.name} ***`);
+  }
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

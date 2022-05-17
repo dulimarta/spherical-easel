@@ -82,8 +82,8 @@ export class SELine
     return styleSet;
   }
 
-  accept(v: Visitor): void {
-    v.actionOnLine(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnLine(this);
   }
 
   get nearlyAntipodal(): boolean {
@@ -226,15 +226,7 @@ export class SELine
     return [{ normal: this.tmpVector3, tVal: NaN }];
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
 
     if (this._exists) {
@@ -270,6 +262,18 @@ export class SELine
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // Lines are NOT completely determined by their parents so we store additional information
     // If the parent points of the line are antipodal, the normal vector determines the

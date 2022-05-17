@@ -113,14 +113,7 @@ export class SEPointCoordinate extends SEExpression {
     }
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this.exists = this.point.exists;
 
     if (this.exists) {
@@ -139,6 +132,15 @@ export class SEPointCoordinate extends SEExpression {
         ];
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These point coordinates are completely determined by their parent and an update on the parent
     // will cause this point update correctly. So we don't store any additional information
