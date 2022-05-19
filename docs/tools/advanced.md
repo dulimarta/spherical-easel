@@ -79,10 +79,11 @@ Create some or all the lines to divide an angle into N equal angles.
 
 :::
 ::: tool-description
-Create a circle defined by three points.
+Create a circle (and center point) defined by three points.
 ::: tool-details
 
 - Click to declare three points (these might be new free points or ones that snap to an existing point, object or intersection) on the circle.
+- The center of the circle is also created in such a way that the radius of the circle is always less then $\frac{\pi}{2}$.
 - When an circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with three points selected, the above action is performed automatically.
   :::

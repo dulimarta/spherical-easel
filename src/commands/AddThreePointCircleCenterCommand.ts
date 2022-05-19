@@ -95,9 +95,9 @@ export class AddThreePointCircleCenterCommand extends Command {
       // Object specific attributes
       "threePointCircleParentPoint1Name=" +
         Command.symbolToASCIIDec(this.firstSEPoint.name),
-      "threePointCircleParentPoint1Name=" +
+      "threePointCircleParentPoint2Name=" +
         Command.symbolToASCIIDec(this.secondSEPoint.name),
-      "threePointCircleParentPoint1Name=" +
+      "threePointCircleParentPoint3Name=" +
         Command.symbolToASCIIDec(this.thirdSEPoint.name)
     ].join("&");
   }

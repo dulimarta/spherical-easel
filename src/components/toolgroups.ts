@@ -298,7 +298,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         actionModeValue: "threePointCircle",
         displayedName: "CreateThreePointCircleDisplayedName",
         icon: "$vuetify.icons.value.threePointCircle",
-        toolTipMessage: "CreateThreePointCircleTipMessage",
+        toolTipMessage: "CreateThreePointCircleToolTipMessage",
         toolUseMessage: "CreateThreePointCircleToolUseMessage",
         displayToolUseMessage: false
       }

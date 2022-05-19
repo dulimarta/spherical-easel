@@ -1010,9 +1010,9 @@ export const SETTINGS = {
     },
     threePointCircle: {
       props: {
-        mdiIcon: "mdi-google-circles-communities",
-        emphasizeTypes: [[]],
-        filePath: ""
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconThreePointCirclePaths.svg"
       }
     },
     angleBisector: {

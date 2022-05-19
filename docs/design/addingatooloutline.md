@@ -14,7 +14,7 @@ This section is an outline of the steps need to add a tool that takes a collecti
     - <span class="variable">id</span>: This is a number that controls the order that the tools within this group are listed.
     - <span class="variable">actionModeValue</span>: This is a unique string (the actionMode) that is used to activate the correct event handler when this button is pressed.
     - Add the <span class="variable">actionMode</span> string to the list in <span  class="file">types/index.ts</span>
-    - <span class="variable">icon</span>: Create an icon or select a name from the [Material Design Icons](https://cdn.materialdesignicons.com/5.0.45/) then record the icon information in <span class="file">scr/plugins/veuitfy.ts</span> and <span class="file">global-settings.ts</span>
+    - <span class="variable">icon</span>: Create a temporary icon from the [Material Design Icons](https://cdn.materialdesignicons.com/5.0.45/) then record the icon information in <span class="file">scr/plugins/veuitfy.ts</span> and <span class="file">global-settings.ts</span>.
     - Use the language feature to set up the following messages. Each of the variables below is a string pointer to an object in a file in the <span class="directory">languages</span> directory. English speakers will probably add to the <span class="file">en.json</span> file.
       - <span class="variable">displayedName</span> A short name for the tool displayed in footer. If this contains a non-breaking space, to make sure the tool tip is displayed correctly, add it to the list of displayNames that have this removed in <span class="file">ToolButton.vue</span>
       - <span class="variable">toolTipMessage</span> A short message to describe the tools use when the button is moused over.
@@ -63,8 +63,8 @@ This section is an outline of the steps need to add a tool that takes a collecti
     - A new mutations of the store may be required. Look in the <span class="file">mutations.ts</span> in the [Store](/design/#store). Although the <span class="string">RemovePoint</span> mutation might work.
     - Edge case questions to ask: What should the behavior be if...
       - The user mouse presses outside of the canvas, and mouse releases in the canvas (inside of the sphere or not)?
-      - The user mouse presses inside the canvas, mouse moves outside of the sphere (with out a mouse leave event, so still in the canvas), and then mouse releases inside of the canvas (inside of the sphere or not)?
-      - The user mouse presses inside the canvas, mouse moves outside of the sphere (_with_ a mouse leave event), and then mouse releases... inside of the canvas or not... inside of the sphere or not?
+      - The user mouse presses inside the canvas, mouse moves outside of the sphere (with out a mouse leave event, so still in the canvas), and then mouse releases inside of the canvas (outside the sphere)?
+      - The user mouse presses inside the canvas, mouse moves outside of the sphere (_with_ a mouse leave event), and then mouse releases?
       - The user presses and release in the same location.
 5.  Add the tool to the <span class="file">SphereFrame.vue</span> file.
 
@@ -77,10 +77,10 @@ This section is an outline of the steps need to add a tool that takes a collecti
 
 7.  Debug your tool. Play with it and make sure it behaves in many situations.
     - What is the behavior under all the edge condition list in step 4? How does undo and redo work in each of those edge cases?
-8.  Add at least ten new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
-9.  Update the documentation. Create a new description of the use of the tool in the
-    - [Tools Documents](/tools/edit.html)
-    - [Event Handlers](/design/#event-handlers)
+    - Does your new tool load and save properly?
+8.  Create a permanent icon for your tool _using_ your tool. First create a representative construction that illustrates your tool, then use the <span class="tool">Create Icon</span> tool to export the paths for the construction in SVG. Save the file as <span class="file">iconXXXPaths.svg</span> in the <span class="directory">../public/icons</span> directory. In <span class="file">global-settings.ts</span> change <span class="variable">mdiIcon</span> to false, select the <span class="variable">emphasizeTypes</span>, and set the <span class="variable">filePath</span>.
+9.  Add at least ten new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
+10. Update the documentation. Create a new description of the use of the tool in the [Tools Documents](/tools/edit.html)
 
 ## Adding a New Object Tool
 
