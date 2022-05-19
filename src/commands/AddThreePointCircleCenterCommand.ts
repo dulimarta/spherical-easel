@@ -1,0 +1,198 @@
+import { Command } from "./Command";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
+import { SENodule } from "@/models/SENodule";
+import { Matrix4, Vector3 } from "three";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import SETTINGS from "@/global-settings";
+import { SEEllipse } from "@/models/SEEllipse";
+import Ellipse from "@/plottables/Ellipse";
+import { StyleEditPanels } from "@/types/Styles";
+import { SavedNames } from "@/types";
+import { SECircle } from "@/models/SECircle";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
+import NonFreePoint from "@/plottables/NonFreePoint";
+
+export class AddThreePointCircleCenterCommand extends Command {
+  private seThreePointCircleCenter: SEThreePointCircleCenter;
+  private firstSEPoint: SEPoint;
+  private secondSEPoint: SEPoint;
+  private thirdSEPoint: SEPoint;
+  private seLabel: SELabel;
+  constructor(
+    seThreePointCircleCenter: SEThreePointCircleCenter,
+    firstSEPoint: SEPoint,
+    secondSEPoint: SEPoint,
+    thirdSEPoint: SEPoint,
+    seLabel: SELabel
+  ) {
+    super();
+    this.seThreePointCircleCenter = seThreePointCircleCenter;
+    this.firstSEPoint = firstSEPoint;
+    this.secondSEPoint = secondSEPoint;
+    this.thirdSEPoint = thirdSEPoint;
+    this.seLabel = seLabel;
+  }
+
+  do(): void {
+    this.firstSEPoint.registerChild(this.seThreePointCircleCenter);
+    this.secondSEPoint.registerChild(this.seThreePointCircleCenter);
+    this.thirdSEPoint.registerChild(this.seThreePointCircleCenter);
+    Command.store.addPoint(this.seThreePointCircleCenter);
+    Command.store.addLabel(this.seLabel);
+  }
+
+  saveState(): void {
+    this.lastState = this.seThreePointCircleCenter.id;
+  }
+
+  restoreState(): void {
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removePoint(this.lastState);
+    this.thirdSEPoint.unregisterChild(this.seThreePointCircleCenter);
+    this.secondSEPoint.unregisterChild(this.seThreePointCircleCenter);
+    this.firstSEPoint.unregisterChild(this.seThreePointCircleCenter);
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return [
+      "AddThreePointCircleCenter",
+      // Any attribute that could possibly have a "=" or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" +
+        Command.symbolToASCIIDec(this.seThreePointCircleCenter.name),
+      "objectExists=" + this.seThreePointCircleCenter.exists,
+      "objectShowing=" + this.seThreePointCircleCenter.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seThreePointCircleCenter.ref.currentStyleState(
+              StyleEditPanels.Front
+            )
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seThreePointCircleCenter.ref.currentStyleState(
+              StyleEditPanels.Back
+            )
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "threePointCircleParentPoint1Name=" +
+        Command.symbolToASCIIDec(this.firstSEPoint.name),
+      "threePointCircleParentPoint1Name=" +
+        Command.symbolToASCIIDec(this.secondSEPoint.name),
+      "threePointCircleParentPoint1Name=" +
+        Command.symbolToASCIIDec(this.thirdSEPoint.name)
+    ].join("&");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const sePoint1 = objMap.get(
+      propMap.get("threePointCircleParentPoint1Name") ?? ""
+    ) as SEPoint | undefined;
+
+    const sePoint2 = objMap.get(
+      propMap.get("threePointCircleParentPoint2Name") ?? ""
+    ) as SEPoint | undefined;
+
+    const sePoint3 = objMap.get(
+      propMap.get("threePointCircleParentPoint3Name") ?? ""
+    ) as SEPoint | undefined;
+
+    if (sePoint1 && sePoint2 && sePoint3) {
+      //make the three point circle center
+      const threePointCircleCenter = new ThreePointCircleCenter();
+      const seThreePointCircleCenter = new SEThreePointCircleCenter(
+        threePointCircleCenter,
+        sePoint1,
+        sePoint2,
+        sePoint3
+      );
+      //style the center
+      const centerPointFrontStyleString = propMap.get("objectFrontStyle");
+      if (centerPointFrontStyleString !== undefined)
+        threePointCircleCenter.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(centerPointFrontStyleString)
+        );
+      const centerPointBackStyleString = propMap.get("objectBackStyle");
+      if (centerPointBackStyleString !== undefined)
+        threePointCircleCenter.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(centerPointBackStyleString)
+        );
+
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seThreePointCircleCenter);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the center point in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seThreePointCircleCenter.name = propMap.get("objectName") ?? "";
+        seThreePointCircleCenter.showing =
+          propMap.get("objectShowing") === "true";
+        seThreePointCircleCenter.exists =
+          propMap.get("objectExists") === "true";
+        objMap.set(seThreePointCircleCenter.name, seThreePointCircleCenter);
+      } else {
+        throw new Error(
+          "AddThreePointCircleCenter: Center point name doesn't exist"
+        );
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddThreePointCircleCenter: Label Name doesn't exist");
+      }
+      return new AddThreePointCircleCenterCommand(
+        seThreePointCircleCenter,
+        sePoint1,
+        sePoint2,
+        sePoint3,
+        seLabel
+      );
+    }
+    throw new Error(
+      `AddThreePointCircleCenter: ${sePoint1}, ${sePoint2},or ${sePoint3}  is undefined`
+    );
+  }
+}

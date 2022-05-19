@@ -3,7 +3,8 @@ import { LocaleMessages } from "vue-i18n";
 export default {
   account: {
     createError: "Unable to create a new account: {error}",
-    emailNotVeified: "Your account is not yet verified. Please check your email",
+    emailNotVeified:
+      "Your account is not yet verified. Please check your email",
     emailVerification: "Verification email has been sent to {emailAddr}",
     loginError: "Unable to login: {error}",
     passwordReset: "Check your email ({emailAddr}) to reset password"
@@ -77,6 +78,11 @@ export default {
       "Divide a line segment into N equal pieces.",
     CreateNSectSegmentToolUseMessage:
       "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
+
+    CreateThreePointCircleDisplayedName: "Three Point<br>Circle",
+    CreateThreePointCircleToolTipMessage: "Create a circle from three points.",
+    CreateThreePointCircleToolUseMessage:
+      "Select three points (not all the same or antipodal) to create the circle through them.",
 
     CreateCircleDisplayedName: "Create<br>Circle",
     CreateCircleToolTipMessage: "Insert circle",
@@ -414,6 +420,12 @@ export default {
       "One focus of the ellipse selected. Now select a second non-antipodal focus.",
     ellipseInitiallyToSmall:
       "To create an ellipse initially you must select a point on the ellipse that is further away from each focus. Select a different location further from the foci.",
+    threePointCircleRepeatPointSelected:
+      "The two points of three points that determine a three point circle are not allowed to be identical. Select another location.",
+    threePointCircleFirstPointSelected:
+      "The first point of the three point circle have been selected. Now select another.",
+    threePointCircleSecondPointSelected:
+      "The second point of the three point circle have been selected. Now select another.",
 
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
@@ -474,6 +486,8 @@ export default {
       "There is already a circle with this center and radius.",
     ellipseCreationAttemptDuplicate:
       "There is already an ellipse with these foci and angle sum.",
+    threePointCircleCreationAttemptDuplicate:
+      "There is already circle with this center and radius.",
     segmentCreationAttemptDuplicate:
       "There is already a line segment with these endpoints, this normal vector, and length.",
     lineCreationAttemptDuplicate:
@@ -575,6 +589,8 @@ export default {
     distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
+    centerOfThreePointCircle:
+      "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
     ellipseThrough:

@@ -140,6 +140,12 @@ const vuetify = new Vuetify({
           iconName: "nSectLine" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
+      threePointCircle: {
+        component: IconBase,
+        props: {
+          iconName: "threePointCircle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
       coordinate: {
         component: IconBase,
         props: {

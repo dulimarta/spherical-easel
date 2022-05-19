@@ -1,6 +1,6 @@
 import { ToolButtonGroup } from "@/types";
 
-export const toolGroups: Array <ToolButtonGroup> =[
+export const toolGroups: Array<ToolButtonGroup> = [
   /* Note: the group names below must match the identifier of
      toolgroups.XXXXXX defined in the I18N translation files */
   {
@@ -13,7 +13,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.select",
         toolTipMessage: "SelectToolTipMessage",
         toolUseMessage: "SelectToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 5,
@@ -22,7 +22,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.delete",
         toolTipMessage: "DeleteToolTipMessage",
         toolUseMessage: "DeleteToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 25,
@@ -31,7 +31,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.zoomIn",
         toolTipMessage: "PanZoomInToolTipMessage",
         toolUseMessage: "PanZoomInToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 30,
@@ -40,7 +40,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.zoomOut",
         toolTipMessage: "PanZoomOutToolTipMessage",
         toolUseMessage: "PanZoomOutToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 35,
@@ -49,7 +49,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.zoomFit",
         toolTipMessage: "ZoomFitToolTipMessage",
         toolUseMessage: "ZoomFitToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   },
@@ -63,7 +63,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.hide",
         toolTipMessage: "HideObjectToolTipMessage",
         toolUseMessage: "HideObjectToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 5,
@@ -72,7 +72,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.toggleLabelDisplay",
         toolTipMessage: "ToggleLabelToolTipMessage",
         toolUseMessage: "ToggleLabelToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
 
       {
@@ -82,7 +82,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.move",
         toolTipMessage: "MoveObjectToolTipMessage",
         toolUseMessage: "MoveObjectToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 20,
@@ -91,7 +91,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.rotate",
         toolTipMessage: "RotateSphereToolTipMessage",
         toolUseMessage: "RotateSphereToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   },
@@ -105,7 +105,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.point",
         toolTipMessage: "CreatePointToolTipMessage",
         toolUseMessage: "CreatePointToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 5,
@@ -114,7 +114,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.line",
         toolTipMessage: "CreateLineToolTipMessage",
         toolUseMessage: "CreateLineToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 10,
@@ -123,7 +123,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.segment",
         toolTipMessage: "CreateLineSegmentToolTipMessage",
         toolUseMessage: "CreateLineSegmentToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 20,
@@ -132,7 +132,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.circle",
         toolTipMessage: "CreateCircleToolTipMessage",
         toolUseMessage: "CreateCircleToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   },
@@ -146,7 +146,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.midpoint",
         toolTipMessage: "CreateMidpointToolTipMessage",
         toolUseMessage: "CreateMidpointToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 5,
@@ -155,7 +155,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.angleBisector",
         toolTipMessage: "CreateAngleBisectorToolTipMessage",
         toolUseMessage: "CreateAngleBisectorToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 15,
@@ -164,7 +164,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.antipodalPoint",
         toolTipMessage: "CreateAntipodalPointToolTipMessage",
         toolUseMessage: "CreateAntipodalPointToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 20,
@@ -173,7 +173,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.polar",
         toolTipMessage: "CreatePolarToolTipMessage",
         toolUseMessage: "CreatePolarToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 25,
@@ -182,7 +182,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.tangent",
         toolTipMessage: "CreateTangentToolTipMessage",
         toolUseMessage: "CreateTangentToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 30,
@@ -191,7 +191,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.perpendicular",
         toolTipMessage: "CreatePerpendicularToolTipMessage",
         toolUseMessage: "CreatePerpendicularToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 50,
@@ -200,7 +200,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.intersect",
         toolTipMessage: "CreateIntersectionToolTipMessage",
         toolUseMessage: "CreateIntersectionToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 45,
@@ -209,7 +209,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.pointOnObject",
         toolTipMessage: "CreatePointOnOneDimToolTipMessage",
         toolUseMessage: "CreatePointOnOneDimToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   },
@@ -223,7 +223,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.segmentLength",
         toolTipMessage: "CreateSegmentLengthToolTipMessage",
         toolUseMessage: "CreateSegmentLengthToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 5,
@@ -232,7 +232,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.pointDistance",
         toolTipMessage: "CreatePointDistanceToolTipMessage",
         toolUseMessage: "CreatePointDistanceToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 10,
@@ -241,7 +241,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.angle",
         toolTipMessage: "CreateAngleToolTipMessage",
         toolUseMessage: "CreateAngleToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 15,
@@ -250,7 +250,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.coordinate",
         toolTipMessage: "CreateCoordinateToolTipMessage",
         toolUseMessage: "CreateCoordinateToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 20,
@@ -259,7 +259,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.measureTriangle",
         toolTipMessage: "MeasureTriangleToolTipMessage",
         toolUseMessage: "MeasureTriangleToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 25,
@@ -268,7 +268,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.measurePolygon",
         toolTipMessage: "MeasurePolygonToolTipMessage",
         toolUseMessage: "MeasurePolygonToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   },
@@ -282,7 +282,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.nSectPoint",
         toolTipMessage: "CreateNSectSegmentToolTipMessage",
         toolUseMessage: "CreateNSectSegmentToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       },
       {
         id: 15,
@@ -291,7 +291,16 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.nSectLine",
         toolTipMessage: "CreateNSectAngleToolTipMessage",
         toolUseMessage: "CreateNSectAngleToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
+      },
+      {
+        id: 20,
+        actionModeValue: "threePointCircle",
+        displayedName: "CreateThreePointCircleDisplayedName",
+        icon: "$vuetify.icons.value.threePointCircle",
+        toolTipMessage: "CreateThreePointCircleTipMessage",
+        toolUseMessage: "CreateThreePointCircleToolUseMessage",
+        displayToolUseMessage: false
       }
     ]
   },
@@ -305,7 +314,7 @@ export const toolGroups: Array <ToolButtonGroup> =[
         icon: "$vuetify.icons.value.ellipse",
         toolTipMessage: "CreateEllipseToolTipMessage",
         toolUseMessage: "CreateEllipseToolUseMessage",
-        displayToolUseMessage: false,
+        displayToolUseMessage: false
       }
     ]
   }

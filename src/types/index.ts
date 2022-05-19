@@ -203,7 +203,10 @@ export type SavedNames =
   | "sliderMeasurementMin"
   | "sliderMeasurementMax"
   | "sliderMeasurementStep"
-  | "sliderMeasurementValue";
+  | "sliderMeasurementValue"
+  | "threePointCircleParentPoint1Name"
+  | "threePointCircleParentPoint2Name"
+  | "threePointCircleParentPoint3Name";
 
 export type ActionMode =
   | "angle"
@@ -236,7 +239,8 @@ export type ActionMode =
   | "midpoint"
   | "nSectPoint"
   | "angleBisector"
-  | "nSectLine";
+  | "nSectLine"
+  | "threePointCircle";
 
 export type IconNames =
   | ActionMode
@@ -455,7 +459,8 @@ export type ObjectNames =
   | "segment"
   | "segmentLength"
   | "slider"
-  | "tangentLineThruPoint";
+  | "tangentLineThruPoint"
+  | "threePointCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

@@ -438,9 +438,8 @@ export default class SE extends VuexModule implements AppState {
     const pos3 = this.expressions.findIndex(x => x.id === angleMarkerId);
     if (angleMarkerPos >= 0) {
       /* victim angleMarker is found */
-      const victimAngleMarker: SEAngleMarker = this.seAngleMarkers[
-        angleMarkerPos
-      ];
+      const victimAngleMarker: SEAngleMarker =
+        this.seAngleMarkers[angleMarkerPos];
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
       if (victimAngleMarker.label) {
         victimAngleMarker.label.ref.value = [];
@@ -595,7 +594,6 @@ export default class SE extends VuexModule implements AppState {
   // Update the display of all free SEPoints to update the entire display
   @Mutation
   updateDisplay(): void {
-    // console.log("update display");
     this.seNodules
       .filter(obj => obj.isFreeToMove())
       .forEach(obj => {
@@ -718,7 +716,6 @@ export default class SE extends VuexModule implements AppState {
   clearUnsavedFlag(): void {
     this.hasUnsavedNodules = false;
   }
-
 
   //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {

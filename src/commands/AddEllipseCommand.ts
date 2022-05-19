@@ -86,9 +86,10 @@ export class AddEllipseCommand extends Command {
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "ellipseFocus1Name=" + this.focus1SEPoint.name,
-      "ellipseFocus2Name=" + this.focus2SEPoint.name,
-      "ellipsePointOnEllipseName=" + this.ellipseSEPoint.name
+      "ellipseFocus1Name=" + Command.symbolToASCIIDec(this.focus1SEPoint.name),
+      "ellipseFocus2Name=" + Command.symbolToASCIIDec(this.focus2SEPoint.name),
+      "ellipsePointOnEllipseName=" +
+        Command.symbolToASCIIDec(this.ellipseSEPoint.name)
     ].join("&");
   }
 

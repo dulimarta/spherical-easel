@@ -3,16 +3,16 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_NONFREE_LINE_FRONT_STYLE,
-  DEFAULT_NONFREE_LINE_BACK_STYLE
+  DEFAULT_NONFREE_CIRCLE_FRONT_STYLE,
+  DEFAULT_NONFREE_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
-import Line from "./Line";
+import Circle from "./Circle";
 
-export default class NonFreeLine extends Line {
+export default class NonFreeCircle extends Circle {
   /**
-   * non free lines are thinner by nonFreeLineScalePercent
+   * non free circles are thinner by nonFreeCircleScalePercent
    */
-  private nonFreeLineScalePercent = SETTINGS.line.nonFree.scalePercent;
+  private nonFreeCircleScalePercent = SETTINGS.circle.nonFree.scalePercent;
 
   constructor() {
     super();
@@ -22,11 +22,11 @@ export default class NonFreeLine extends Line {
     this.adjustSize();
     this.styleOptions.set(
       StyleEditPanels.Front,
-      DEFAULT_NONFREE_LINE_FRONT_STYLE
+      DEFAULT_NONFREE_CIRCLE_FRONT_STYLE
     );
     this.styleOptions.set(
       StyleEditPanels.Back,
-      DEFAULT_NONFREE_LINE_BACK_STYLE
+      DEFAULT_NONFREE_CIRCLE_BACK_STYLE
     );
   }
 
@@ -36,18 +36,18 @@ export default class NonFreeLine extends Line {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front:
-        return DEFAULT_NONFREE_LINE_FRONT_STYLE;
+        return DEFAULT_NONFREE_CIRCLE_FRONT_STYLE;
 
       case StyleEditPanels.Back:
         if (SETTINGS.line.dynamicBackStyle)
           return {
-            ...DEFAULT_NONFREE_LINE_BACK_STYLE,
+            ...DEFAULT_NONFREE_CIRCLE_BACK_STYLE,
             strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
             strokeColor: Nodule.contrastStrokeColor(
-              SETTINGS.line.nonFree.strokeColor.front
+              SETTINGS.circle.nonFree.strokeColor.front
             )
           };
-        else return DEFAULT_NONFREE_LINE_BACK_STYLE;
+        else return DEFAULT_NONFREE_CIRCLE_BACK_STYLE;
 
       default:
         return {};
@@ -61,29 +61,29 @@ export default class NonFreeLine extends Line {
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
-    this.frontHalf.linewidth =
-      ((Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100) *
-      (this.nonFreeLineScalePercent / 100);
+    this.frontPart.linewidth =
+      ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
+      (this.nonFreeCircleScalePercent / 100);
 
-    this.backHalf.linewidth =
-      ((Line.currentLineStrokeWidthBack *
+    this.backPart.linewidth =
+      ((Circle.currentCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
           : backStrokeWidthPercent)) /
         100) *
-      (this.nonFreeLineScalePercent / 100);
+      (this.nonFreeCircleScalePercent / 100);
 
-    this.glowingFrontHalf.linewidth =
-      ((Line.currentGlowingLineStrokeWidthFront * frontStrokeWidthPercent) /
+    this.glowingFrontPart.linewidth =
+      ((Circle.currentGlowingCircleStrokeWidthFront * frontStrokeWidthPercent) /
         100) *
-      (this.nonFreeLineScalePercent / 100);
+      (this.nonFreeCircleScalePercent / 100);
 
-    this.glowingBackHalf.linewidth =
-      ((Line.currentGlowingLineStrokeWidthBack *
+    this.glowingBackPart.linewidth =
+      ((Circle.currentGlowingCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
           : backStrokeWidthPercent)) /
         100) *
-      (this.nonFreeLineScalePercent / 100);
+      (this.nonFreeCircleScalePercent / 100);
   }
 }

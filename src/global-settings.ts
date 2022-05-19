@@ -357,10 +357,11 @@ export const SETTINGS = {
   },
   circle: {
     showLabelsInitially: false, // Should the labels be show upon creating the circle
+    showLabelsOfNonFreeCirclesInitially: false, // Should the labels be shown upon creating the non-free circle
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
+    minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points) Also this is the minimum distance between the initial points in a threePointCircle
     numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -411,6 +412,21 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
+    },
+    nonFree: {
+      // No fill for circles
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree circles when drawn
+      scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   ellipse: {
@@ -990,6 +1006,13 @@ export const SETTINGS = {
           ["point", "front"]
         ],
         filePath: "../../icons/iconNSectPointPaths.svg"
+      }
+    },
+    threePointCircle: {
+      props: {
+        mdiIcon: "mdi-google-circles-communities",
+        emphasizeTypes: [[]],
+        filePath: ""
       }
     },
     angleBisector: {

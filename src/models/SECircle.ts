@@ -20,8 +20,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_BACK_STYLE)
 ]);
-export class SECircle extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SECircle
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
