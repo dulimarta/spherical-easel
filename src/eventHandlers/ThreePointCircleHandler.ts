@@ -423,7 +423,6 @@ export default class ThreePointCircleHandler extends Highlighter {
     } else {
       this.snapTemporaryPointMarkerToOneDimensional = null;
       this.snapTemporaryPointMarkerToPoint = null;
-      SEStore.unglowAllSENodules();
     }
 
     if (possiblyGlowing !== null) {
@@ -662,7 +661,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         }
       }
     }
-    // Remove the temporary objects from the display, but do so in a way that doesn't undo any of the user's work to this point
+    // Remove the temporary objects from the display, but do so in a way that doesn't undo any of the user's work to this point unless they leave the sphere canvas
     // Remove the temporary objects from the display.
     else {
       if (!this.point1LocationSelected) {
@@ -685,50 +684,6 @@ export default class ThreePointCircleHandler extends Highlighter {
 
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere && this.point2LocationSelected) {
-      console.log(
-        "vector 1 x2",
-        this.point1Vector.x,
-        this.point1Vector.y,
-        this.point1Vector.z
-      );
-      console.log(
-        "vector 2 x2",
-        this.point2Vector.x,
-        this.point2Vector.y,
-        this.point2Vector.z
-      );
-
-      console.log(
-        "temp3vector x2 normalize",
-        this.temporaryPoint3Marker.positionVector.x /
-          SETTINGS.boundaryCircle.radius,
-        this.temporaryPoint3Marker.positionVector.y /
-          SETTINGS.boundaryCircle.radius,
-        this.temporaryPoint3Marker.positionVector.z /
-          SETTINGS.boundaryCircle.radius
-      );
-      console.log(
-        "temp to vector2",
-        this.tmpVector
-          .subVectors(
-            this.tmpVector1
-              .copy(this.temporaryPoint3Marker.positionVector)
-              .normalize(),
-            this.point2Vector
-          )
-          .length()
-      );
-      console.log(
-        "temp to vector1",
-        this.tmpVector
-          .subVectors(
-            this.tmpVector1
-              .copy(this.temporaryPoint3Marker.positionVector)
-              .normalize(),
-            this.point1Vector
-          )
-          .length()
-      );
       // make sure the release point is not on the previous two vectors
       if (
         !this.tmpVector

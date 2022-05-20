@@ -23,17 +23,41 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 
 import { SEStore } from "@/store";
+import { SEExpression } from "@/models/SEExpression";
 const tmpVector = new Vector3();
 
-export default class CircleHandler extends Highlighter {
+export default class MeasuredCircleHandler extends Highlighter {
   /**
    * Center vector of the created circle
    */
   private centerVector: Vector3;
-  /**  The temporary plottable TwoJS circle displayed as the user moves the mouse or drags after selecting one point */
-  private temporaryCircle: Circle;
   /**  The model object point that is the center of the circle (if any) */
   private centerSEPoint: SEPoint | null = null;
+  /** The possible parent of the centerSEPoint*/
+  private centerSEPointOneDimensionalParent: SEOneOrTwoDimensional | null =
+    null;
+  /** The measurement object that determines the radius of the temporary circle (along the surface of the sphere) */
+  private measurementObject: SEExpression | null = null;
+
+  /**  The temporary plottable TwoJS circle displayed as the user moves the mouse over a measurement object (or measurable object) after selecting one point */
+  private temporaryCircle: Circle;
+  private arcRadius = 0;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected temporaryStartMarker: Point;
+
+  /** Has the temporary circle/tempStartMarker/tempEndMarker been added to the scene?*/
+  private temporaryCircleAdded = false;
+  private temporaryStartMarkerAdded = false;
+
+  /**
+   * As the user moves the pointer around snap the temporary marker to these objects temporarily
+   */
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
+  protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
+
   /**
    * If the user starts to make a circle and mouse press at a location on the sphere (or not on the sphere), then moves
    * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
@@ -41,38 +65,9 @@ export default class CircleHandler extends Highlighter {
    */
   private centerLocationSelected = false;
 
-  /** The model object point that is a point on the circle (if any) */
-  private circleSEPoint: SEPoint | null = null;
-  /** The possible parent of the centerSEPoint*/
-  private centerSEPointOneDimensionalParent: SEOneOrTwoDimensional | null =
-    null;
-
-  /** The radius of the temporary circle (along the surface of the sphere) */
-  private arcRadius = 0;
-  /**
-   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
-   */
-  protected temporaryStartMarker: Point;
-  /**
-   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
-   */
-  protected temporaryEndMarker: Point;
-
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
-
-  /** Has the temporary circle/tempStartMarker/tempEndMarker been added to the scene?*/
-  private temporaryCircleAdded = false;
-  private temporaryStartMarkerAdded = false;
-  private temporaryEndMarkerAdded = false;
-
-  /**
-   * As the user moves the pointer around snap the temporary marker to these objects temporarily
-   */
-  protected snapTemporaryPointMarkerToOneDimensional: SEOneOrTwoDimensional | null =
-    null;
-  protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -85,9 +80,6 @@ export default class CircleHandler extends Highlighter {
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     SEStore.addTemporaryNodule(this.temporaryStartMarker);
-    this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -198,9 +190,8 @@ export default class CircleHandler extends Highlighter {
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
       }
-      this.temporaryEndMarker.positionVector = this.currentSphereVector;
       EventBus.fire("show-alert", {
-        key: `handlers.circleCenterSelected`,
+        key: `handlers.measuredCircleCenterSelected`,
         keyOptions: {},
         type: "info"
       });
@@ -210,47 +201,112 @@ export default class CircleHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-
-    // Only object can be interacted with at a given time, so set the first point nearby to glowing
+    // Only one object can be interacted with at a given time, so set the first point nearby to glowing
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
     if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+      this.hitSEPoints[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
+      }
     } else if (this.hitSESegments.length > 0) {
-      possiblyGlowing = this.hitSESegments[0];
+      this.hitSESegments[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else if (this.hitSELines.length > 0) {
-      possiblyGlowing = this.hitSELines[0];
+      this.hitSELines[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else if (this.hitSECircles.length > 0) {
-      possiblyGlowing = this.hitSECircles[0];
+      this.hitSECircles[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else if (this.hitSEEllipses.length > 0) {
-      possiblyGlowing = this.hitSEEllipses[0];
+      this.hitSEEllipses[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else if (this.hitSEParametrics.length > 0) {
-      possiblyGlowing = this.hitSEParametrics[0];
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional =
+          this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else if (this.hitSEPolygons.length > 0) {
-      possiblyGlowing = this.hitSEPolygons[0];
+      this.hitSEPolygons[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else {
-      this.snapTemporaryPointMarkerToOneDimensional = null;
-      this.snapTemporaryPointMarkerToPoint = null;
+      this.snapStartMarkerToTemporaryOneDimensional = null;
+      this.snapEndMarkerToTemporaryOneDimensional = null;
+      this.snapStartMarkerToTemporaryPoint = null;
+      this.snapEndMarkerToTemporaryPoint = null;
     }
 
-    if (possiblyGlowing !== null) {
-      if (possiblyGlowing instanceof SEPoint) {
-        possiblyGlowing.glowing = true;
-        this.snapTemporaryPointMarkerToOneDimensional = null;
-        this.snapTemporaryPointMarkerToPoint = possiblyGlowing;
-      }
-      // possiblyGlowing is a oneDimensional Object
-      else {
-        possiblyGlowing.glowing = true;
-        this.snapTemporaryPointMarkerToOneDimensional = possiblyGlowing;
-        this.snapTemporaryPointMarkerToPoint = null;
-      }
-    }
     // Make sure that the event is on the sphere
     if (this.isOnSphere) {
-      // The user has not selected a center point
+      // The user has selected a center point
       if (!this.centerLocationSelected) {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.temporaryStartMarkerAdded) {
@@ -258,29 +314,29 @@ export default class CircleHandler extends Highlighter {
           this.temporaryStartMarker.addToLayers(this.layers);
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
-        if (this.snapTemporaryPointMarkerToPoint !== null) {
+        if (this.snapStartMarkerToTemporaryPoint !== null) {
           // if the user is over a non user created intersection point (which can't be selected so will not remain
           // glowing when the user select that location and then moves the mouse away - see line 115) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
+            this.snapStartMarkerToTemporaryPoint instanceof
               SEIntersectionPoint &&
-            !this.snapTemporaryPointMarkerToPoint.isUserCreated
+            !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
             this.temporaryStartMarker.positionVector =
-              this.snapTemporaryPointMarkerToPoint.locationVector;
+              this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.temporaryStartMarkerAdded = false;
           }
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
-        if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
+        if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
           this.temporaryStartMarker.positionVector =
-            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
+            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
-        } else if (this.snapTemporaryPointMarkerToPoint == null) {
+        } else if (this.snapStartMarkerToTemporaryPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
       } else {
@@ -290,26 +346,14 @@ export default class CircleHandler extends Highlighter {
           this.temporaryEndMarker.addToLayers(this.layers);
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
-        if (this.snapTemporaryPointMarkerToPoint !== null) {
-          // if the user is over a non user created intersection point (which can't be selected so will not remain
-          // glowing when the user select that location and then moves the mouse away - see line 115) we don't
-          // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
-          if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
-            !this.snapTemporaryPointMarkerToPoint.isUserCreated
-          ) {
-            this.temporaryEndMarker.positionVector =
-              this.snapTemporaryPointMarkerToPoint.locationVector;
-          } else {
-            this.temporaryEndMarker.removeFromLayers();
-            this.temporaryEndMarkerAdded = false;
-          }
+        if (this.snapEndMarkerToTemporaryPoint !== null) {
+          this.temporaryEndMarker.removeFromLayers();
+          this.temporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-        if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
+        if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
           this.temporaryEndMarker.positionVector =
-            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
+            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else {
@@ -323,13 +367,13 @@ export default class CircleHandler extends Highlighter {
         }
 
         //compute the radius of the temporary circle
-        if (this.snapTemporaryPointMarkerToPoint === null) {
+        if (this.snapEndMarkerToTemporaryPoint === null) {
           this.arcRadius = this.temporaryCircle.centerVector.angleTo(
             this.temporaryEndMarker.positionVector
           );
         } else {
           this.arcRadius = this.temporaryCircle.centerVector.angleTo(
-            this.snapTemporaryPointMarkerToPoint.locationVector
+            this.snapEndMarkerToTemporaryPoint.locationVector
           );
         }
 
@@ -338,22 +382,31 @@ export default class CircleHandler extends Highlighter {
         //update the display
         this.temporaryCircle.updateDisplay();
       }
-    } else {
-      // Remove the temporary objects from the display but don't reset for a new circle
-      // add the appropriate objects back if the user returns to the sphere with out
-      // triggering the mouse leave event.
-      if (!this.centerLocationSelected) {
-        this.temporaryStartMarker.removeFromLayers();
-        this.temporaryStartMarkerAdded = false;
-      } else {
-        this.temporaryEndMarker.removeFromLayers();
-        this.temporaryEndMarkerAdded = false;
-        this.temporaryCircle.removeFromLayers();
-        this.temporaryCircleAdded = false;
-      }
-      this.snapTemporaryPointMarkerToOneDimensional = null;
-      this.snapTemporaryPointMarkerToPoint = null;
     }
+    // else {
+    //   // Remove the temporary objects from the display but don't reset for a new circle
+    //   // add the appropriate objects back if the user returns to the sphere with out
+    //   // triggering the mouse leave event.
+    //   if (this.temporaryEndMarkerAdded) {
+    //     this.temporaryEndMarker.removeFromLayers();
+    //     this.temporaryEndMarkerAdded = false;
+    //   }
+
+    //   if (this.temporaryStartMarkerAdded) {
+    //     this.temporaryStartMarker.removeFromLayers();
+    //     this.temporaryStartMarkerAdded = false;
+    //   }
+
+    //   if (this.temporaryCircleAdded) {
+    //     this.temporaryCircle.removeFromLayers();
+    //     this.temporaryCircleAdded = false;
+    //   }
+
+    //   this.snapStartMarkerToTemporaryOneDimensional = null;
+    //   this.snapEndMarkerToTemporaryOneDimensional = null;
+    //   this.snapStartMarkerToTemporaryPoint = null;
+    //   this.snapEndMarkerToTemporaryPoint = null;
+    // }
   }
 
   mouseReleased(_event: MouseEvent): void {
@@ -387,18 +440,23 @@ export default class CircleHandler extends Highlighter {
 
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
+    if (this.temporaryCircleAdded) {
+      this.temporaryCircle.removeFromLayers();
+      this.temporaryCircleAdded = false;
+    }
+    if (this.temporaryEndMarkerAdded) {
+      this.temporaryEndMarker.removeFromLayers();
+      this.temporaryEndMarkerAdded = false;
+    }
+    if (this.temporaryStartMarkerAdded) {
+      this.temporaryStartMarker.removeFromLayers();
+      this.temporaryStartMarkerAdded = false;
+    }
 
-    this.temporaryCircle.removeFromLayers();
-    this.temporaryCircleAdded = false;
-
-    this.temporaryEndMarker.removeFromLayers();
-    this.temporaryEndMarkerAdded = false;
-
-    this.temporaryStartMarker.removeFromLayers();
-    this.temporaryStartMarkerAdded = false;
-
-    this.snapTemporaryPointMarkerToOneDimensional = null;
-    this.snapTemporaryPointMarkerToPoint = null;
+    this.snapStartMarkerToTemporaryOneDimensional = null;
+    this.snapEndMarkerToTemporaryOneDimensional = null;
+    this.snapStartMarkerToTemporaryPoint = null;
+    this.snapEndMarkerToTemporaryPoint = null;
 
     // Clear old points and values to get ready for creating the next circle.
     if (this.centerSEPoint !== null) {

@@ -426,7 +426,8 @@ export default {
       "The first point of the three point circle have been selected. Now select another.",
     threePointCircleSecondPointSelected:
       "The second point of the three point circle have been selected. Now select another.",
-
+    measuredCircleCenterSelected:
+      "Center of circle selected. Now select a measurement, measurable object, or measurement label.",
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
