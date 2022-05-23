@@ -26,6 +26,7 @@ export default {
     AdvancedTools: "Advanced Tools",
     TransformationalTools: "Transformational Tools",
     MeasurementTools: "Measurement Tools",
+    MeasuredObjectTools: "Measured Objects Tools",
     DeveloperOnlyTools: "Developer Only Tools"
   },
   buttons: {
@@ -98,6 +99,11 @@ export default {
     CreateEllipseToolTipMessage: "Insert ellipse",
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
+
+    CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
+    CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
+    CreateMeasuredCircleToolUseMessage:
+      "Select a center point and a measurement or measurable object to determine the radius.",
 
     CreateIntersectionDisplayedName: "Intersection<br>Point(s)",
     CreateIntersectionToolTipMessage: "Intersect two one-dimensional objects",
@@ -485,6 +491,8 @@ export default {
     pointCreationAttemptDuplicate: "There is already a point at this location.",
     circleCreationAttemptDuplicate:
       "There is already a circle with this center and radius.",
+    measuredCircleCreationAttemptDuplicate:
+      "There is already a circle with this center and measurement for the radius.",
     ellipseCreationAttemptDuplicate:
       "There is already an ellipse with these foci and angle sum.",
     threePointCircleCreationAttemptDuplicate:
@@ -594,6 +602,8 @@ export default {
       "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
+    measuredCircle:
+      "Circle with center {center} with radius {measurementToken}",
     ellipseThrough:
       "Ellipse with foci {focus1} and {focus2} through point {through}",
     intersectionPoint:

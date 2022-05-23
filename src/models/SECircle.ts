@@ -35,11 +35,11 @@ export class SECircle
   /**
    * The model SE object that is the center of the circle
    */
-  private _centerSEPoint: SEPoint;
+  protected _centerSEPoint: SEPoint;
   /**
    * The model SE object that is on the circle
    */
-  private _circleSEPoint: SEPoint;
+  protected _circleSEPoint: SEPoint;
 
   /**
    * Used during this.move(): A matrix that is used to indicate the *change* in position of the
@@ -381,6 +381,9 @@ export class SECircle
   }
 
   public isLabelable(): boolean {
+    return true;
+  }
+  public isMeasurable(): boolean {
     return true;
   }
 }

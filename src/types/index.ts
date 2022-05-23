@@ -105,6 +105,7 @@ export type SavedNames =
   | "circleRadius"
   | "circleCenterPointName"
   | "circlePointOnCircleName"
+  | "measuredCircleRadiusExpression"
   | "ellipseFocus1Name"
   | "ellipseFocus2Name"
   | "ellipsePointOnEllipseName"
@@ -240,7 +241,8 @@ export type ActionMode =
   | "nSectPoint"
   | "angleBisector"
   | "nSectLine"
-  | "threePointCircle";
+  | "threePointCircle"
+  | "measuredCircle";
 
 export type IconNames =
   | ActionMode
@@ -405,6 +407,13 @@ export type SEOneDimensional =
   | SECircle
   | SEEllipse
   | SEParametric;
+
+export type SEMeasurable =
+  | SESegment
+  | SECircle
+  | SEPolygon
+  | SEAngleMarker
+  | SEExpression;
 
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 

@@ -1015,6 +1015,13 @@ export const SETTINGS = {
         filePath: "../../icons/iconThreePointCirclePaths.svg"
       }
     },
+    measuredCircle: {
+      props: {
+        mdiIcon: "mdi-swap-horizontal-circle-outline",
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconThreePointCirclePaths.svg"
+      }
+    },
     angleBisector: {
       props: {
         mdiIcon: false,

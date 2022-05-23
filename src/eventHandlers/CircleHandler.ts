@@ -91,10 +91,6 @@ export default class CircleHandler extends Highlighter {
   }
 
   mousePressed(_event: MouseEvent): void {
-    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
-    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
-    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
-    //super.mouseMoved(event);
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {
       // The user is making a circle

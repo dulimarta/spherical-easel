@@ -68,9 +68,9 @@ export abstract class SENodule {
   }
 
   /* If the object doesn't exist then exists= false (For example the intersection of two circles
-        can exist only if the two circles are close enough to each other, but even when they are 
+        can exist only if the two circles are close enough to each other, but even when they are
         far apart and the intersections don't exist, the user might drag the circles back to where
-        the intersections exist). If an object doesn't exist then all of the objects that are 
+        the intersections exist). If an object doesn't exist then all of the objects that are
         descendants of the object don't exist. */
   protected _exists = true;
 
@@ -120,9 +120,9 @@ export abstract class SENodule {
   }
 
   /* This is called to check and see if any of the parents of the current SENodule are outOfDate
-    if any of the parents are outOfDate then this function returns false. 
+    if any of the parents are outOfDate then this function returns false.
     <SENodule>.updateNow()
-    is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
+    is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
   public canUpdateNow(): boolean {
     return !this._parents.some(item => item.isOutOfDate());
@@ -181,12 +181,12 @@ export abstract class SENodule {
     if (idx >= 0) this._kids.splice(idx, 1);
   }
 
-  /* This registers a given SENodule as a child of the current SENodule by 
+  /* This registers a given SENodule as a child of the current SENodule by
     1) putting the given SENodule,n ,as an element in the kids array
-    2) declaring that the parent of the given SENodule is the current node  
-    For example, if we are creating the intersection point P of two circles (C1 and C2) 
-    that already exist. Then we would create a point P and call 
-    C1.registerChild(P)  
+    2) declaring that the parent of the given SENodule is the current node
+    For example, if we are creating the intersection point P of two circles (C1 and C2)
+    that already exist. Then we would create a point P and call
+    C1.registerChild(P)
     C2.registerChild(P)
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
@@ -196,15 +196,15 @@ export abstract class SENodule {
     n.addParent(this);
   }
 
-  /* Unregister 1) removes the given SENodule,n, from the kids array and 2) removes the 
+  /* Unregister 1) removes the given SENodule,n, from the kids array and 2) removes the
     current SENodule from the parents array of the given SENodule. If P was a registeredChild of circles
     C1 and C2, then to unregister it we would call
     C1.unregisterChild(P)
     C2.unregisterChild(P)
-    this is never used on its own - it is called as part of a routine for removing an SENodule 
-    from the object tree entirely, so all SENodules that are descendants (kids, grand kids, etc.)of 
-    P must be recursively removed from object tree and this is accomplished with the remove 
-    function. 
+    this is never used on its own - it is called as part of a routine for removing an SENodule
+    from the object tree entirely, so all SENodules that are descendants (kids, grand kids, etc.)of
+    P must be recursively removed from object tree and this is accomplished with the remove
+    function.
     */
   public unregisterChild(n: SENodule): void {
     this.removeKid(n);
@@ -229,7 +229,7 @@ export abstract class SENodule {
   //   }
   // }
 
-  /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
+  /* This removes the current node and all descendants (kids, grand kids, etc.) from the
     object tree by using the unregister function and remove recursively */
   public removeThisNode(): void {
     //remove the current node from all of its parent SENodules
@@ -289,7 +289,7 @@ export abstract class SENodule {
   public isLineWithAntipodalPoints(): boolean {
     return false;
   }
-
+  //only returns true if this an SENodule that is free to move (free points, points on objects, labels, segments of length pi, line between antipodal points)
   public isFreeToMove(): boolean {
     if (
       this.isFreePoint() ||
@@ -304,6 +304,20 @@ export abstract class SENodule {
       return false;
     }
     return this._parents.every(n => n.isFreePoint());
+  }
+  // only returns true for SENodules that can be measured (
+  //   segments => length,
+  //   circles => radius,
+  //   ellipses => sum of distance to foci,
+  //   angleMarkers => angle measure
+  //   polygon => area
+  //   calculation => value
+  public isMeasurable(): boolean {
+    return false;
+  }
+
+  public isNonFreeCirle(): boolean {
+    return false;
   }
 
   //Getters and Setters
@@ -406,7 +420,7 @@ export abstract class SENodule {
   ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
 
@@ -414,14 +428,14 @@ export abstract class SENodule {
     //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
     // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
 
-    const dp: (t: number) => number = function(t: number): number {
+    const dp: (t: number) => number = function (t: number): number {
       return PPrime(t).dot(unitVec);
     };
 
     // use (P''(t) /dot unitVec) as the second derivative if necessary
     let dpp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dpp = function(t: number): number {
+      dpp = function (t: number): number {
         return PPPrime(t).dot(unitVec);
       };
     } else {
@@ -513,13 +527,13 @@ export abstract class SENodule {
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
     // This means we want the dot product to be zero
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       return PPrime(t).dot(unitVec);
     };
     // use (P''(t) /dot unitVec) as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dp = function(t: number): number {
+      dp = function (t: number): number {
         return PPPrime(t).dot(unitVec);
       };
     } else {
@@ -603,7 +617,7 @@ export abstract class SENodule {
     // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
 
     // This means we want the dot product to be zero
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       const tmpVec = new Vector3();
       tmpVec.crossVectors(P(t), unitVec);
       return tmpVec.dot(PPrime(t));
@@ -611,7 +625,7 @@ export abstract class SENodule {
     // use (P(t)xP''(t)).unitVect as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dp = function(t: number): number {
+      dp = function (t: number): number {
         const tmpVec = new Vector3();
         tmpVec.crossVectors(P(t), PPPrime(t));
         return tmpVec.dot(unitVec);

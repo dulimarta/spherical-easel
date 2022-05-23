@@ -10,7 +10,8 @@ There are two different types of tools in Sphere Easel: those that create new ge
 
 This section is an outline of the steps need to add a tool that takes a collection of objects (geometric and measurement) and produces the parameters to locate and size a non-custom existing <span class="class">Nodule</span> object (i.e. <span class="class">Point</span>,<span class="class">Segment</span>,<span class="class">Line</span>, <span class="class">Circle</span>, <span class="class">Ellipse</span>) based on the selected collection of objects. This will involve creating a new <span class="class">SENodule</span> object and a new eventHandler to construct the <span class="class">SENodule</span> object and associated it to an exist <span class="class">Nodule</span> object. In all cases attempt to follow the naming conventions outlined by the other variables and files.
 
-1.  Create a new entry in the <span class="variable">buttonList</span> found in the <span class="file">ToolGroups.vue</span> file. Decide on
+1.  Create a new entry in the <span class="variable">toolGroups</span> found in the <span class="file">toolGroups.ts</span> file. You may have to create a new tool group or simply add your new entry in an existing tool group's children. Decide on
+
     - <span class="variable">id</span>: This is a number that controls the order that the tools within this group are listed.
     - <span class="variable">actionModeValue</span>: This is a unique string (the actionMode) that is used to activate the correct event handler when this button is pressed.
     - Add the <span class="variable">actionMode</span> string to the list in <span  class="file">types/index.ts</span>
@@ -20,32 +21,10 @@ This section is an outline of the steps need to add a tool that takes a collecti
       - <span class="variable">toolTipMessage</span> A short message to describe the tools use when the button is moused over.
       - <span class="variable">toolUseMessage</span> A longer message to describe more fully the use of the tool.
     - <span class="variable">displayToolUseMessage</span>: A flag to control the display of the tool use message.
-    - <span class="variable">toolGroup</span>: This is the group that the tool will appear in. Picking an existing group is the easiest way to get the tool displayed. If a new tool group is created, this section of code in <span class="file">ToolGroups.vue</span> will have to be duplicated:
-    ```vue
-    <!--
-       The XXXXXX Tool Group only shown if the user has permission to use a tool in this
-       group. Note the use of the translation $t(key_value).
-     -->
-    <div id="XXXXXXXToolGroup" v-show="nonEmptyGroup('XXXXXX')">
-       <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.XXXXXXTools") }}</h3>
-       <v-btn-toggle
-         v-model="actionMode"
-         @change="switchActionMode"
-         class="mr-2 d-flex flex-wrap accent"
-       >
-         <ToolButton
-           v-for="(button, pos) in buttonList"
-           :key="pos"
-           :button="button"
-           toolGroup="XXXXXX"
-           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-         ></ToolButton>
-       </v-btn-toggle>
-     </div>
-    ```
+
 2.  If necessary, write a new <span class="class">Nodule</span> file by **extending** an existing [plottable type](/design/#plottables-directory). If you are not extending an existing class, then you are writing a New Object Tool and you should follow the [directions below first](/design/addingatooloutline.html#adding-a-new-object-tool).
 
-3.  Write a new <span class="class">SENodule</span> file. These files always start with the letters SE. See the [Models Directory](/design/#models-directory).
+3.  Write a new <span class="class">SENodule</span> file by extend an an existing one, if possible. These files always start with the letters SE. See the [Models Directory](/design/#models-directory).
 
     - Copy the form of the <span class="method">update</span> method. In particular this should start with
 

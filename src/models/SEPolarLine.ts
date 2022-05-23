@@ -7,8 +7,10 @@ import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 
-export class SEPolarLine extends SELine
-  implements Visitable, OneDimensional, Labelable {
+export class SEPolarLine
+  extends SELine
+  implements Visitable, OneDimensional, Labelable
+{
   private polarPointParent: SEPoint;
   private tempVector = new Vector3();
   /**
@@ -64,7 +66,7 @@ export class SEPolarLine extends SELine
         0
       );
       // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
-      if (this.tempVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+      if (this.tempVector.isZero()) {
         this.tempVector.set(
           0,
           -this.polarPointParent.locationVector.z,

@@ -317,5 +317,19 @@ export const toolGroups: Array<ToolButtonGroup> = [
         displayToolUseMessage: false
       }
     ]
+  },
+  {
+    group: "MeasuredObjectTools",
+    children: [
+      {
+        id: 15,
+        actionModeValue: "measuredCircle",
+        displayedName: "CreateMeasuredCircleDisplayedName",
+        icon: "$vuetify.icons.value.measuredCircle",
+        toolTipMessage: "CreateMeasuredCircleToolTipMessage",
+        toolUseMessage: "CreateMeasuredCircleToolUseMessage",
+        displayToolUseMessage: false
+      }
+    ]
   }
 ];
