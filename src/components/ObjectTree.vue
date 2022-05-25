@@ -85,7 +85,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="expressions.length > 0">
+          v-show="showExpressionSheet">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
@@ -118,6 +118,8 @@ import SliderForm from "@/components/SliderForm.vue";
 import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { namespace } from "vuex-class";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEStore } from "@/store";
 const SE = namespace("se");
 
 @Component({
@@ -148,6 +150,8 @@ export default class ObjectTree extends Vue {
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
 
+  private displayExpressionSheetAgain = true;
+
   get zeroObjects(): boolean {
     return (
       this.nodules.filter(n => n.exists).length === 0 &&
@@ -155,6 +159,44 @@ export default class ObjectTree extends Vue {
     );
   }
 
+  // mounted(): void {
+  //   // If the user selects the measured circle tool and there are no expressions/measurements
+  //   // the user is told to create a measurement to use
+  //   // This only displays this message the first time the object tree is displayed
+  //   // if (
+  //   //   SEStore.actionMode === "measuredCircle" &&
+  //   //   this.expressions.length === 0
+  //   // ) {
+  //   //   EventBus.fire("show-alert", {
+  //   //     key: "objectTree.createMeasurementForMeasuredCircle",
+  //   //     type: "info"
+  //   //   });
+  //   // }
+  // }
+
+  get showExpressionSheet(): boolean {
+    //This message will appear once each time the number of expressions is zero and the measure circle tool is active
+    // console.log("here show espression sheet");
+    if (
+      SEStore.actionMode === "measuredCircle" &&
+      this.expressions.length === 0 &&
+      this.displayExpressionSheetAgain
+    ) {
+      this.displayExpressionSheetAgain = false;
+      EventBus.fire("show-alert", {
+        key: "objectTree.createMeasurementForMeasuredCircle",
+        type: "info"
+      });
+    }
+
+    if (
+      SEStore.actionMode === "measuredCircle" &&
+      this.expressions.length > 0
+    ) {
+      this.displayExpressionSheetAgain = true;
+    }
+    return this.expressions.length > 0;
+  }
   // calculateExpression(): void {
   // this.varMap.clear();
   // try {

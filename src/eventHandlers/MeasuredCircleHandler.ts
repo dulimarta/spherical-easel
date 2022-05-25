@@ -365,7 +365,8 @@ export default class MeasuredCircleHandler extends Highlighter {
               type: "error"
             });
           }
-          this.mouseLeave(_event);
+          //reset the tool to handle the next circle
+          this.prepareForNextCircle();
         }
       }
     }
@@ -373,7 +374,9 @@ export default class MeasuredCircleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+  }
 
+  prepareForNextCircle(): void {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
 
@@ -398,6 +401,42 @@ export default class MeasuredCircleHandler extends Highlighter {
     this.measurementSEParent = null;
     // call an unglow all command
     SEStore.unglowAllSENodules();
+  }
+
+  displayTemporaryCircle(flag: boolean, radius: number): void {
+    // console.log("Center Location Selected", this.centerLocationSelected);
+    // console.log("inputs", flag, radius);
+    // do nothing if the center location is not set
+    if (this.centerLocationSelected) {
+      if (flag) {
+        if (!this.temporaryCircleAdded) {
+          this.temporaryCircleAdded = true;
+          this.temporaryCircle.addToLayers(this.layers);
+        }
+        // Set the radius of the temporary circle,
+        this.temporaryCircle.circleRadius = radius.modPi();
+        //update the display
+        this.temporaryCircle.updateDisplay();
+      } else {
+        this.temporaryCircle.removeFromLayers();
+        this.temporaryCircleAdded = false;
+      }
+    }
+  }
+  setExpression(expression: SEExpression): void {
+    // do nothing if the center location is not set
+    if (this.centerLocationSelected) {
+      this.measurementSEParent = expression;
+      if (!this.makeCircle()) {
+        EventBus.fire("show-alert", {
+          key: `handlers.measuredCircleCreationAttemptDuplicate`,
+          keyOptions: {},
+          type: "error"
+        });
+      }
+      //reset the tool to handle the next circle
+      this.prepareForNextCircle();
+    }
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
@@ -706,5 +745,6 @@ export default class MeasuredCircleHandler extends Highlighter {
   }
   deactivate(): void {
     super.deactivate();
+    this.prepareForNextCircle();
   }
 }

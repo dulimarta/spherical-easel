@@ -670,7 +670,11 @@ export default {
       "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
     duplicateParametricCurve: "Duplicate parametric curves are not allowed.",
     unableToComputeTheDerivativeOf:
-      "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}"
+      "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
+    createMeasurementForMeasuredCircle:
+      "Create a measurement to use as the radius of a measured circle.",
+    selectAMeasurementForMeasuredCircle:
+      "An selecting a center point, select a measurement to use as the radius of a measured circle."
   },
   constructions: {
     save: "Save",

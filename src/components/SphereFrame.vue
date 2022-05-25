@@ -52,6 +52,7 @@ import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEExpression } from "@/models/SEExpression";
 
 const SE = namespace("se");
 
@@ -273,6 +274,14 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
+    EventBus.listen(
+      "measured-circle-set-temporary-radius",
+      this.measuredCircleSetTemporaryRadius
+    );
+    EventBus.listen(
+      "measured-circle-set-expression",
+      this.measuredCircleSetExpression
+    );
   }
 
   mounted(): void {
@@ -318,6 +327,8 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
+    EventBus.unlisten("measured-circle-set-temporary-radius");
+    EventBus.unlisten("measured-circle-set-expression");
   }
 
   @Watch("canvasSize")
@@ -623,6 +634,20 @@ export default class SphereFrame extends VueComponent {
     setTimeout(() => {
       this.$refs.canvas.classList.remove("spin");
     }, 1200);
+  }
+
+  measuredCircleSetTemporaryRadius(e: {
+    display: boolean;
+    radius: number;
+  }): void {
+    if (this.currentTool instanceof MeasuredCircleHandler) {
+      this.currentTool.displayTemporaryCircle(e.display, e.radius);
+    }
+  }
+  measuredCircleSetExpression(e: { expression: SEExpression }): void {
+    if (this.currentTool instanceof MeasuredCircleHandler) {
+      this.currentTool.setExpression(e.expression);
+    }
   }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
