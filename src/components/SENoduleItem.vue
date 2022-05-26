@@ -620,7 +620,9 @@ export default class SENoduleItem extends Vue {
   }
   //only shake the measurement icons initially when the measured circle tool is selected (There should also be a message displayed telling the user to select a measurement)
   get shakeMeasurementDisplay(): string {
-    return SEStore.actionMode === "measuredCircle" ? "shake" : "";
+    return SEStore.actionMode === "measuredCircle" && this.isMeasurement
+      ? "shake"
+      : "";
   }
 
   get shortDisplayText(): string {
@@ -634,7 +636,7 @@ export default class SENoduleItem extends Vue {
 
 <style scoped lang="scss">
 .shake {
-  animation: shake 3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: shake 2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   transform: translate3d(0, 0, 0);
 }
 @keyframes shake {

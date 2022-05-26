@@ -193,3 +193,38 @@ export async function drawEllipse(
   await mouseClickOnSphere(wrapper, focus2_x, focus2_y, !isFocus2Foreground);
   await mouseClickOnSphere(wrapper, x3, y3, !isPoint3Foreground);
 }
+
+/**
+ *
+ * @param wrapper
+ * @param point1_x
+ * @param point1_y
+ * @param isPoint1Foreground
+ * @param point2_x
+ * @param point2_y
+ * @param isPoint2Foreground
+ * @param point3_x
+ * @param point3_y
+ * @param isPoint3Foreground
+ */
+export async function drawThreePointCircle(
+  wrapper: Wrapper<Vue>,
+  point1_x: number,
+  point1_y: number,
+  isPoint1Foreground: boolean,
+  point2_x: number,
+  point2_y: number,
+  isPoint2Foreground: boolean,
+  point3_x: number,
+  point3_y: number,
+  isPoint3Foreground: boolean
+): Promise<void> {
+  SEStore.setActionMode({
+    id: "threePointCircle",
+    name: "Tool Name does not matter"
+  });
+  await wrapper.vm.$nextTick();
+  await mouseClickOnSphere(wrapper, point1_x, point1_y, !isPoint1Foreground);
+  await mouseClickOnSphere(wrapper, point2_x, point2_y, !isPoint2Foreground);
+  await mouseClickOnSphere(wrapper, point3_x, point3_y, !isPoint3Foreground);
+}

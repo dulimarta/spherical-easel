@@ -159,21 +159,6 @@ export default class ObjectTree extends Vue {
     );
   }
 
-  // mounted(): void {
-  //   // If the user selects the measured circle tool and there are no expressions/measurements
-  //   // the user is told to create a measurement to use
-  //   // This only displays this message the first time the object tree is displayed
-  //   // if (
-  //   //   SEStore.actionMode === "measuredCircle" &&
-  //   //   this.expressions.length === 0
-  //   // ) {
-  //   //   EventBus.fire("show-alert", {
-  //   //     key: "objectTree.createMeasurementForMeasuredCircle",
-  //   //     type: "info"
-  //   //   });
-  //   // }
-  // }
-
   get showExpressionSheet(): boolean {
     //This message will appear once each time the number of expressions is zero and the measure circle tool is active
     // console.log("here show espression sheet");
@@ -197,32 +182,6 @@ export default class ObjectTree extends Vue {
     }
     return this.expressions.length > 0;
   }
-  // calculateExpression(): void {
-  // this.varMap.clear();
-  // try {
-  //   // no code
-  //   this.calcResult =
-  //     this.calcExpression.length > 0
-  //       ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-  //       : 0;
-  // } catch (err) {
-  //   this.parsingError = err.message;
-  // }
-  // }
-  // when the user clicks on an expression, this event is triggered
-  // It enables the user to add measurement references to the calculation/expression builder
-  // onExpressionSelect(x: any): void {
-  //   console.debug("bob");
-  //   const pos = this.nodules.findIndex(n => n.id === x.id);
-  //   console.debug("****Selection", x, "at", pos);
-  //   if (pos >= 0) {
-  //     const pos1 = this.nodules[pos].name.indexOf("-");
-  //     const varName = this.nodules[pos].name.substring(0, pos1);
-  //     EventBus.fire("measurement-selected", varName);
-  //     // this.calcExpression += varName;
-  //     // this.onKeyPressed(); // emulate a key prress
-  //   }
-  // }
 }
 </script>
 
