@@ -12,6 +12,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
+import { Group } from "two.js/src/group";
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -24,7 +25,7 @@ export default class NSectSegmentHandler extends Highlighter {
 
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[], bisectOnly?: boolean) {
+  constructor(layers: Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary antipode/point marking the antipode/point being created

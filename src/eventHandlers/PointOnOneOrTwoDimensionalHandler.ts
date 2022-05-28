@@ -10,6 +10,7 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
+import { Group } from "two.js/src/group";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -31,7 +32,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();

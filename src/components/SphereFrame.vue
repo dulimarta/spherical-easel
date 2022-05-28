@@ -42,7 +42,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, plottableType } from "@/types";
+import { ActionMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -50,6 +50,9 @@ import Nodule from "@/plottables/Nodule";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
+import { Circle } from "two.js/src/shapes/circle";
+import { Group } from "two.js/src/group";
+import { Vector } from "two.js/src/vector";
 
 @Component({
   computed: {
@@ -83,7 +86,7 @@ export default class SphereFrame extends VueComponent {
   readonly seLabels!: SELabel[];
 
   readonly init!: () => void;
-  readonly setLayers!: (_: Array<Two.Group>) => void;
+  readonly setLayers!: (_: Array<Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
@@ -94,18 +97,18 @@ export default class SphereFrame extends VueComponent {
     canvas: HTMLDivElement;
   };
   /**
-   * The main (the only one) TwoJS object that contains the layers (each a Two.Group) making up the screen graph
-   * First layers  (Two.Groups) are added to the twoInstance (index by the enum LAYER from
-   * global-settings.ts), then TwoJs objects (Two.Path, Two.Ellipse, etc..) are added to the
+   * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
+   * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
+   * global-settings.ts), then TwoJs objects (Path, Ellipse, etc..) are added to the
    * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
    */
   private twoInstance!: Two;
 
-  // private sphereCanvas!: Two.Group;
+  // private sphereCanvas!: Group;
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
-  private boundaryCircle!: Two.Circle;
+  private boundaryCircle!: Circle;
   /**
    * The Global Vuex Store
    */
@@ -147,14 +150,14 @@ export default class SphereFrame extends VueComponent {
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  private layers: Two.Group[] = [];
+  private layers: Group[] = [];
 
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
       height: this.canvasSize,
-      autostart: true,
-      ratio: window.devicePixelRatio
+      autostart: true
+      // ratio: window.devicePixelRatio
     });
     // Clear layer array
     this.layers.splice(0, this.layers.length);
@@ -177,7 +180,7 @@ export default class SphereFrame extends VueComponent {
         // Don't flip the y-coord of text layers
         if (textLayers.indexOf(layerIdx) < 0) {
           // Not in textLayers
-          newLayer.scale = new Two.Vector(1, -1);
+          newLayer.scale = new Vector(1, -1);
         }
       }
     }
@@ -192,10 +195,10 @@ export default class SphereFrame extends VueComponent {
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
-    this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
+    this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    this.layers[LAYER.midground].add(this.boundaryCircle);
+    this.boundaryCircle.addTo(this.layers[LAYER.midground]);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
@@ -205,14 +208,14 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
-    // const box1 = new Two.Rectangle(-100, 150, 100, 150);
+    // const box1 = new Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
-    // const box2 = new Two.Rectangle(100, 150, 100, 150);
+    // const box2 = new Rectangle(100, 150, 100, 150);
     // box2.fill = "red";
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    // const t1 = new Two.Text(
+    // const t1 = new Text(
     //   "Text must &#13;&#10; be upright 2\u{1D7B9}",
     //   50,
     //   80,
@@ -231,15 +234,15 @@ export default class SphereFrame extends VueComponent {
     // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
-    // const hLine = new Two.Line(-R, 0, R, 0);
-    // const vLine = new Two.Line(0, -R, 0, R);
+    // const hLine = new Line(-R, 0, R, 0);
+    // const vLine = new Line(0, -R, 0, R);
     // hLine.stroke = "red";
     // vLine.stroke = "green";
     // this.sphereCanvas.add(
     //   hLine,
     //   vLine,
-    //   new Two.Line(100, -R, 100, R),
-    //   new Two.Line(-R, 100, R, 100)
+    //   new Line(100, -R, 100, R),
+    //   new Line(-R, 100, R, 100)
     // );
     //this.visitor = new RotationVisitor();
 
@@ -257,9 +260,9 @@ export default class SphereFrame extends VueComponent {
   }
 
   mounted(): void {
-    // Put the main Two.js instance into the canvas
+    // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
-    // Set the main Two.js instance to refresh at 60 fps
+    // Set the main js instance to refresh at 60 fps
     this.twoInstance.play();
 
     // Set up the listeners

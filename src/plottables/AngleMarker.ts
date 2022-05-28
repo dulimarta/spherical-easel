@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -10,6 +9,9 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
+import { Path } from "two.js/src/path";
+import { Anchor } from "two.js/src/anchor";
+import { Group } from "two.js/src/group";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -71,45 +73,45 @@ export default class AngleMarker extends Nodule {
   /**
    * The TwoJS objects to display the *circular* front/back start/tail single/double parts and their glowing counterparts.
    */
-  private frontCirclePathStart: Two.Path;
-  private frontCirclePathTail: Two.Path;
-  private backCirclePathStart: Two.Path;
-  private backCirclePathTail: Two.Path;
+  private frontCirclePathStart: Path;
+  private frontCirclePathTail: Path;
+  private backCirclePathStart: Path;
+  private backCirclePathTail: Path;
 
-  private frontCirclePathDoubleArcStart: Two.Path;
-  private frontCirclePathDoubleArcTail: Two.Path;
-  private backCirclePathDoubleArcStart: Two.Path;
-  private backCirclePathDoubleArcTail: Two.Path;
+  private frontCirclePathDoubleArcStart: Path;
+  private frontCirclePathDoubleArcTail: Path;
+  private backCirclePathDoubleArcStart: Path;
+  private backCirclePathDoubleArcTail: Path;
 
-  private glowingFrontCirclePathStart: Two.Path;
-  private glowingFrontCirclePathTail: Two.Path;
-  private glowingBackCirclePathStart: Two.Path;
-  private glowingBackCirclePathTail: Two.Path;
+  private glowingFrontCirclePathStart: Path;
+  private glowingFrontCirclePathTail: Path;
+  private glowingBackCirclePathStart: Path;
+  private glowingBackCirclePathTail: Path;
 
-  private glowingFrontCirclePathDoubleArcStart: Two.Path;
-  private glowingFrontCirclePathDoubleArcTail: Two.Path;
-  private glowingBackCirclePathDoubleArcStart: Two.Path;
-  private glowingBackCirclePathDoubleArcTail: Two.Path;
+  private glowingFrontCirclePathDoubleArcStart: Path;
+  private glowingFrontCirclePathDoubleArcTail: Path;
+  private glowingBackCirclePathDoubleArcStart: Path;
+  private glowingBackCirclePathDoubleArcTail: Path;
 
   /**
    * The TwoJS objects to display the straight front/back start (from vertex to start)/end (from vertex end) parts and their glowing counterparts.
    */
 
-  private frontStraightStart: Two.Path;
-  private backStraightStart: Two.Path;
-  private frontStraightEnd: Two.Path;
-  private backStraightEnd: Two.Path;
-  private glowingFrontStraightStart: Two.Path;
-  private glowingBackStraightStart: Two.Path;
-  private glowingFrontStraightEnd: Two.Path;
-  private glowingBackStraightEnd: Two.Path;
+  private frontStraightStart: Path;
+  private backStraightStart: Path;
+  private frontStraightEnd: Path;
+  private backStraightEnd: Path;
+  private glowingFrontStraightStart: Path;
+  private glowingBackStraightStart: Path;
+  private glowingFrontStraightEnd: Path;
+  private glowingBackStraightEnd: Path;
   /**
    * The TwoJS object to display the arrow head for beginners.
    */
-  private frontArrowHeadPath: Two.Path;
-  private backArrowHeadPath: Two.Path;
-  private glowingFrontArrowHeadPath: Two.Path;
-  private glowingBackArrowHeadPath: Two.Path;
+  private frontArrowHeadPath: Path;
+  private backArrowHeadPath: Path;
+  private glowingFrontArrowHeadPath: Path;
+  private glowingBackArrowHeadPath: Path;
   private angleIsBigEnoughToDrawArrowHeads = true;
 
   /**
@@ -119,13 +121,13 @@ export default class AngleMarker extends Nodule {
    *  the boundary circle can intersect an angle marker and one of the has a disconnected pair of regions on the
    *  same side of the front/back divide. This means that we need two of each front/back fill region.
    */
-  private frontFill1: Two.Path;
-  private backFill1: Two.Path;
-  private frontFill2: Two.Path;
-  private backFill2: Two.Path;
+  private frontFill1: Path;
+  private backFill1: Path;
+  private frontFill2: Path;
+  private backFill2: Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the anglemarker*/
-  private fillStorageAnchors: Two.Anchor[] = [];
+  private fillStorageAnchors: Anchor[] = [];
 
   /**
    * The styling variables for the drawn angle marker. The user can modify these.
@@ -140,29 +142,29 @@ export default class AngleMarker extends Nodule {
   /**
    * The stops and gradient for front/back fill shading (IF USED)
    */
-  // private frontGradientColorCenter = new Two.Stop(
+  // private frontGradientColorCenter = new Stop(
   //   0,
   //   SETTINGS.fill.frontWhite,
   //   1
   // );
-  // private frontGradientColor = new Two.Stop(
+  // private frontGradientColor = new Stop(
   //   2 * SETTINGS.boundaryCircle.radius,
   //   frontStyle?.fillColor,
   //   1
   // );
-  // private frontGradient = new Two.RadialGradient(
+  // private frontGradient = new RadialGradient(
   //   SETTINGS.fill.lightSource.x,
   //   SETTINGS.fill.lightSource.y,
   //   1 * SETTINGS.boundaryCircle.radius,
   //   [this.frontGradientColorCenter, this.frontGradientColor]
   // );
-  // private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  // private backGradientColor = new Two.Stop(
+  // private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  // private backGradientColor = new Stop(
   //   1 * SETTINGS.boundaryCircle.radius,
   //   backStyle?.fillColor,
   //   1
   // );
-  // private backGradient = new Two.RadialGradient(
+  // private backGradient = new RadialGradient(
   //   -SETTINGS.fill.lightSource.x,
   //   -SETTINGS.fill.lightSource.y,
   //   2 * SETTINGS.boundaryCircle.radius,
@@ -248,38 +250,49 @@ export default class AngleMarker extends Nodule {
     // Circular Part Initialize
     // Create the initial front and back vertices (glowing/not doubleArc/not start/tail)
 
-    const vertices: Two.Vector[] = [];
+    const vertices: Anchor[] = [];
     for (let k = 0; k < CIRCLEEDGESUBDIVISIONS; k++) {
-      vertices.push(new Two.Vector(0, 0));
+      vertices.push(new Anchor(0, 0));
     }
-    this.frontCirclePathStart = new Two.Path(
+    this.frontCirclePathStart = new Path(
       vertices,
       /* closed */ false,
       /* curve */ false
     );
 
     // Create the other parts cloning the front circle path start
-    this.frontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
-    this.frontCirclePathTail = this.frontCirclePathStart.clone();
-    this.frontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
+    this.frontCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.frontCirclePathTail =
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.frontCirclePathDoubleArcTail =
+      this.frontCirclePathStart.clone() as Path as Path;
 
-    this.backCirclePathStart = this.frontCirclePathStart.clone();
-    this.backCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
-    this.backCirclePathTail = this.frontCirclePathStart.clone();
-    this.backCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
+    this.backCirclePathStart =
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.backCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.backCirclePathTail = this.frontCirclePathStart.clone() as Path as Path;
+    this.backCirclePathDoubleArcTail =
+      this.frontCirclePathStart.clone() as Path as Path;
 
-    this.glowingFrontCirclePathStart = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathStart =
+      this.frontCirclePathStart.clone() as Path as Path;
     this.glowingFrontCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone();
-    this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone();
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.glowingFrontCirclePathTail =
+      this.frontCirclePathStart.clone() as Path as Path;
     this.glowingFrontCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone();
+      this.frontCirclePathStart.clone() as Path as Path;
 
-    this.glowingBackCirclePathStart = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathStart =
+      this.frontCirclePathStart.clone() as Path as Path;
     this.glowingBackCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone();
-    this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
-    this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.glowingBackCirclePathTail =
+      this.frontCirclePathStart.clone() as Path as Path;
+    this.glowingBackCirclePathDoubleArcTail =
+      this.frontCirclePathStart.clone() as Path as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontCirclePathStart.id), {
@@ -345,7 +358,7 @@ export default class AngleMarker extends Nodule {
     );
 
     // The clear() extension function works only on JS Array, but
-    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
+    // not on JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
 
     this.frontCirclePathTail.vertices.splice(0);
     this.frontCirclePathDoubleArcTail.vertices.splice(0);
@@ -422,25 +435,25 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail.visible = false;
 
     //Straight part initialize
-    const verticesStraight: Two.Vector[] = [];
+    const verticesStraight: Anchor[] = [];
     for (let k = 0; k < STRIAGHTEDGESUBDIVISIONS; k++) {
-      verticesStraight.push(new Two.Vector(0, 0));
+      verticesStraight.push(new Anchor(0, 0));
     }
-    this.frontStraightStart = new Two.Path(
+    this.frontStraightStart = new Path(
       verticesStraight,
       /* closed */ false,
       /* curve */ false
     );
 
     // Create the other parts cloning the front straight path start
-    this.backStraightStart = this.frontStraightStart.clone();
-    this.frontStraightEnd = this.frontStraightStart.clone();
-    this.backStraightEnd = this.frontStraightStart.clone();
+    this.backStraightStart = this.frontStraightStart.clone() as Path;
+    this.frontStraightEnd = this.frontStraightStart.clone() as Path;
+    this.backStraightEnd = this.frontStraightStart.clone() as Path;
 
-    this.glowingFrontStraightStart = this.frontStraightStart.clone();
-    this.glowingBackStraightStart = this.frontStraightStart.clone();
-    this.glowingFrontStraightEnd = this.frontStraightStart.clone();
-    this.glowingBackStraightEnd = this.frontStraightStart.clone();
+    this.glowingFrontStraightStart = this.frontStraightStart.clone() as Path;
+    this.glowingBackStraightStart = this.frontStraightStart.clone() as Path;
+    this.glowingFrontStraightEnd = this.frontStraightStart.clone() as Path;
+    this.glowingBackStraightEnd = this.frontStraightStart.clone() as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontStraightStart.id), {
@@ -503,20 +516,20 @@ export default class AngleMarker extends Nodule {
     // Arrow Head Path Initialize
     // Create the initial front and back vertices (front/back glowing/not)
 
-    const arrowHeadVertices: Two.Vector[] = [];
+    const arrowHeadVertices: Anchor[] = [];
     for (let k = 0; k < 4; k++) {
-      arrowHeadVertices.push(new Two.Vector(0, 0));
+      arrowHeadVertices.push(new Anchor(0, 0));
     }
-    this.frontArrowHeadPath = new Two.Path(
+    this.frontArrowHeadPath = new Path(
       arrowHeadVertices,
       /* closed */ true,
       /* curve */ false
     );
 
     // Create the other parts cloning the front arrow head path
-    this.glowingFrontArrowHeadPath = this.frontArrowHeadPath.clone();
-    this.backArrowHeadPath = this.frontArrowHeadPath.clone();
-    this.glowingBackArrowHeadPath = this.frontArrowHeadPath.clone();
+    this.glowingFrontArrowHeadPath = this.frontArrowHeadPath.clone() as Path;
+    this.backArrowHeadPath = this.frontArrowHeadPath.clone() as Path;
+    this.glowingBackArrowHeadPath = this.frontArrowHeadPath.clone() as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontArrowHeadPath.id), {
@@ -550,7 +563,7 @@ export default class AngleMarker extends Nodule {
     // In total there are 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
     // anchors a cross all four fill regions.
 
-    const verticesFill: Two.Vector[] = [];
+    const verticesFill: Anchor[] = [];
     for (
       let k = 0;
       k <
@@ -559,18 +572,18 @@ export default class AngleMarker extends Nodule {
         BOUNDARYCIRCLEEDGESUBDIVISIONS;
       k++
     ) {
-      verticesFill.push(new Two.Vector(0, 0));
+      verticesFill.push(new Anchor(0, 0));
     }
-    this.frontFill1 = new Two.Path(
+    this.frontFill1 = new Path(
       verticesFill,
       /* closed */ true,
       /* curve */ false
     );
 
     // Create the other parts cloning the front straight path start
-    this.frontFill2 = this.frontFill1.clone();
-    this.backFill1 = this.frontFill1.clone();
-    this.backFill2 = this.frontFill1.clone();
+    this.frontFill2 = this.frontFill1.clone() as Path;
+    this.backFill1 = this.frontFill1.clone() as Path;
+    this.backFill2 = this.frontFill1.clone() as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontFill1.id), {
@@ -766,12 +779,12 @@ export default class AngleMarker extends Nodule {
     // Bring all the anchor points to a common pool
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
-    const pool: Two.Anchor[] = [];
+    const pool: Anchor[] = [];
     pool.push(...this.frontCirclePathStart.vertices.splice(0));
     pool.push(...this.frontCirclePathTail.vertices.splice(0));
     pool.push(...this.backCirclePathStart.vertices.splice(0));
     pool.push(...this.backCirclePathTail.vertices.splice(0));
-    const glowingPool: Two.Anchor[] = [];
+    const glowingPool: Anchor[] = [];
     glowingPool.push(...this.glowingFrontCirclePathStart.vertices.splice(0));
     glowingPool.push(...this.glowingFrontCirclePathTail.vertices.splice(0));
     glowingPool.push(...this.glowingBackCirclePathStart.vertices.splice(0));
@@ -1063,12 +1076,12 @@ export default class AngleMarker extends Nodule {
 
     // Now do the same thing for the DoubleArc(DA) Paths
 
-    const poolDA: Two.Anchor[] = [];
+    const poolDA: Anchor[] = [];
     poolDA.push(...this.frontCirclePathDoubleArcStart.vertices.splice(0));
     poolDA.push(...this.frontCirclePathDoubleArcTail.vertices.splice(0));
     poolDA.push(...this.backCirclePathDoubleArcStart.vertices.splice(0));
     poolDA.push(...this.backCirclePathDoubleArcTail.vertices.splice(0));
-    const glowingPoolDA: Two.Anchor[] = [];
+    const glowingPoolDA: Anchor[] = [];
     glowingPoolDA.push(
       ...this.glowingFrontCirclePathDoubleArcStart.vertices.splice(0)
     );
@@ -1197,10 +1210,10 @@ export default class AngleMarker extends Nodule {
     // Each half  path will pull anchor points from
     // this pool as needed
 
-    const poolStart: Two.Anchor[] = [];
+    const poolStart: Anchor[] = [];
     poolStart.push(...this.frontStraightStart.vertices.splice(0));
     poolStart.push(...this.backStraightStart.vertices.splice(0));
-    const glowingPoolStart: Two.Anchor[] = [];
+    const glowingPoolStart: Anchor[] = [];
     glowingPoolStart.push(...this.glowingFrontStraightStart.vertices.splice(0));
     glowingPoolStart.push(...this.glowingBackStraightStart.vertices.splice(0));
 
@@ -1281,10 +1294,10 @@ export default class AngleMarker extends Nodule {
     // Bring all the anchor points to a common pool
     // Each half  path will pull anchor points from
     // this pool as needed
-    const poolEnd: Two.Anchor[] = [];
+    const poolEnd: Anchor[] = [];
     poolEnd.push(...this.frontStraightEnd.vertices.splice(0));
     poolEnd.push(...this.backStraightEnd.vertices.splice(0));
-    const glowingPoolEnd: Two.Anchor[] = [];
+    const glowingPoolEnd: Anchor[] = [];
     glowingPoolEnd.push(...this.glowingFrontStraightEnd.vertices.splice(0));
     glowingPoolEnd.push(...this.glowingBackStraightEnd.vertices.splice(0));
 
@@ -1353,7 +1366,7 @@ export default class AngleMarker extends Nodule {
     // Bring all the anchor points to a common pool
     // Each half  path will pull anchor points from
     // this pool as needed
-    const poolFill: Two.Anchor[] = [];
+    const poolFill: Anchor[] = [];
     poolFill.push(...this.fillStorageAnchors.splice(0));
     poolFill.push(...this.frontFill1.vertices.splice(0));
     poolFill.push(...this.frontFill2.vertices.splice(0));
@@ -1365,42 +1378,44 @@ export default class AngleMarker extends Nodule {
     // console.log("pool Fill #", poolFill.length);
     // The possible legs in an outline of an angle marker cut by the boundary circle
     const leg1F: number[][] = [];
-    this.frontStraightStart.vertices.forEach(node =>
+    this.frontStraightStart.vertices.forEach((node: Anchor) =>
       leg1F.push([node.x, node.y])
     );
 
     const leg1B: number[][] = [];
-    this.backStraightStart.vertices.forEach(node =>
+    this.backStraightStart.vertices.forEach((node: Anchor) =>
       leg1B.push([node.x, node.y])
     );
 
     const leg2F: number[][] = [];
-    this.frontCirclePathStart.vertices.forEach(node =>
+    this.frontCirclePathStart.vertices.forEach((node: Anchor) =>
       leg2F.push([node.x, node.y])
     );
 
     const leg2B: number[][] = [];
-    this.backCirclePathStart.vertices.forEach(node =>
+    this.backCirclePathStart.vertices.forEach((node: Anchor) =>
       leg2B.push([node.x, node.y])
     );
 
     const leg3F: number[][] = [];
-    this.frontCirclePathTail.vertices.forEach(node =>
+    this.frontCirclePathTail.vertices.forEach((node: Anchor) =>
       leg3F.push([node.x, node.y])
     );
 
     const leg3B: number[][] = [];
-    this.backCirclePathTail.vertices.forEach(node =>
+    this.backCirclePathTail.vertices.forEach((node: Anchor) =>
       leg3B.push([node.x, node.y])
     );
 
     const leg4F: number[][] = [];
-    this.frontStraightEnd.vertices.forEach(node =>
+    this.frontStraightEnd.vertices.forEach((node: Anchor) =>
       leg4F.push([node.x, node.y])
     );
 
     const leg4B: number[][] = [];
-    this.backStraightEnd.vertices.forEach(node => leg4B.push([node.x, node.y]));
+    this.backStraightEnd.vertices.forEach((node: Anchor) =>
+      leg4B.push([node.x, node.y])
+    );
 
     let boundaryVertices1: number[][] = []; // The new vertices on the boundary of the circle
     let boundaryVertices2: number[][] = []; // The new vertices on the boundary of the circle
@@ -2788,145 +2803,131 @@ export default class AngleMarker extends Nodule {
     // After the above statements execute this.front/back/start/tail and dup.front/back/start/tail are the same length
 
     // Now we can copy the vertices from the this.front/back start/tail to the dup.front/back start/tail
-    dup.frontCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontCirclePathStart.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontCirclePathStart.vertices[pos]);
     });
-    dup.backCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backCirclePathStart.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backCirclePathStart.vertices[pos]);
     });
     dup.glowingFrontCirclePathStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathStart.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathStart.vertices[pos]);
       }
     );
 
-    dup.frontStraightStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontStraightStart.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontStraightStart.vertices[pos]);
     });
-    dup.backStraightStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backStraightStart.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backCirclePathStart.vertices[pos]);
     });
-    dup.glowingFrontStraightStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingFrontStraightStart.vertices[pos]);
-      }
-    );
-    dup.glowingBackStraightStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingBackStraightStart.vertices[pos]);
-      }
-    );
+    dup.glowingFrontStraightStart.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingFrontStraightStart.vertices[pos]);
+    });
+    dup.glowingBackStraightStart.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingBackStraightStart.vertices[pos]);
+    });
 
     dup.frontCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.frontCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.backCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.backCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.glowingFrontCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathDoubleArcStart.vertices[pos]);
       }
     );
 
-    dup.frontCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontCirclePathTail.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontCirclePathTail.vertices[pos]);
     });
-    dup.backCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backCirclePathTail.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backCirclePathTail.vertices[pos]);
     });
     dup.glowingFrontCirclePathTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathTail.vertices[pos]);
       }
     );
-    dup.glowingBackCirclePathTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingBackCirclePathTail.vertices[pos]);
-      }
-    );
+    dup.glowingBackCirclePathTail.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingBackCirclePathTail.vertices[pos]);
+    });
 
-    dup.frontStraightEnd.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontStraightEnd.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontStraightEnd.vertices[pos]);
     });
-    dup.backStraightEnd.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backStraightEnd.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backStraightEnd.vertices[pos]);
     });
-    dup.glowingFrontStraightEnd.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingFrontStraightEnd.vertices[pos]);
-      }
-    );
-    dup.glowingBackStraightEnd.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingBackStraightEnd.vertices[pos]);
-      }
-    );
+    dup.glowingFrontStraightEnd.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingFrontStraightEnd.vertices[pos]);
+    });
+    dup.glowingBackStraightEnd.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingBackStraightEnd.vertices[pos]);
+    });
 
     dup.frontCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.frontCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.backCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.backCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.glowingFrontCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
+      (v: Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathDoubleArcTail.vertices[pos]);
       }
     );
 
-    dup.frontFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontFill1.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontFill1.vertices[pos]);
     });
-    dup.frontFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontFill2.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontFill2.vertices[pos]);
     });
-    dup.backFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backFill1.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backFill1.vertices[pos]);
     });
-    dup.backFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backFill2.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backFill2.vertices[pos]);
     });
 
-    dup.frontArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.frontArrowHeadPath.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontArrowHeadPath.vertices[pos]);
     });
-    dup.backArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
+    dup.backArrowHeadPath.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backArrowHeadPath.vertices[pos]);
     });
-    dup.glowingFrontArrowHeadPath.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingFrontArrowHeadPath.vertices[pos]);
-      }
-    );
-    dup.glowingBackArrowHeadPath.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingBackArrowHeadPath.vertices[pos]);
-      }
-    );
+    dup.glowingFrontArrowHeadPath.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingFrontArrowHeadPath.vertices[pos]);
+    });
+    dup.glowingBackArrowHeadPath.vertices.forEach((v: Anchor, pos: number) => {
+      v.copy(this.glowingBackArrowHeadPath.vertices[pos]);
+    });
 
     return dup as this;
   }
@@ -2934,7 +2935,7 @@ export default class AngleMarker extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
@@ -3065,7 +3066,7 @@ export default class AngleMarker extends Nodule {
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
@@ -3298,19 +3299,19 @@ export default class AngleMarker extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the angle marker
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         //FRONT
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.front
           )
         ) {
@@ -3328,7 +3329,7 @@ export default class AngleMarker extends Nodule {
           this.frontFill2.fill = SETTINGS.angleMarker.temp.fillColor.front;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.front
           )
         ) {
@@ -3382,7 +3383,7 @@ export default class AngleMarker extends Nodule {
         }
         //BACK
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.back
           )
         ) {
@@ -3400,7 +3401,7 @@ export default class AngleMarker extends Nodule {
           this.backFill2.fill = SETTINGS.angleMarker.temp.fillColor.back;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.back
           )
         ) {
@@ -3478,11 +3479,11 @@ export default class AngleMarker extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
         } else {
@@ -3492,11 +3493,11 @@ export default class AngleMarker extends Nodule {
           // this.frontFill2.fill = this.frontGradient;
 
           // If the angle markers are not shaded
-          this.frontFill1.fill = frontStyle?.fillColor ?? "black";
-          this.frontFill2.fill = frontStyle?.fillColor ?? "black";
+          this.frontFill1.fill = frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
+          this.frontFill2.fill = frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
         }
 
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontCirclePathStart.noStroke();
           this.frontStraightStart.noStroke();
           this.frontCirclePathDoubleArcStart.noStroke();
@@ -3560,7 +3561,7 @@ export default class AngleMarker extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -3583,7 +3584,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
@@ -3600,7 +3601,7 @@ export default class AngleMarker extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -3638,7 +3639,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
             this.backCirclePathDoubleArcStart.noStroke();

@@ -1,4 +1,3 @@
-import Two, { Vector } from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddPerpendicularLineThruPointCommand } from "@/commands/AddPerpendicularLineThruPointCommand";
@@ -35,6 +34,7 @@ import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
+import { Group } from "two.js/src/group";
 
 type TemporaryLine = {
   line: Line;
@@ -90,7 +90,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
    */
   private numberOfPerpendiculars = 1;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
 
     // Create and style the temporary line (initially allocate one)

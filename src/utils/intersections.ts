@@ -151,7 +151,7 @@ export function intersectLineWithSegment(
 export function intersectLineWithCircle(
   line: SELine,
   circle: SECircle
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   if (
     line instanceof SETangentLineThruPoint &&
@@ -205,7 +205,7 @@ export function intersectLineWithCircle(
 export function intersectLineWithEllipse(
   line: SELine,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   if (
     line instanceof SETangentLineThruPoint &&
@@ -335,7 +335,7 @@ export function intersectLineWithParametric(
   line: SELine,
   parametric: SEParametric,
   inverseTotalRotationMatrix: Matrix4
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
   const avoidTValues: number[] = [];
@@ -539,7 +539,7 @@ export function intersectSegmentWithCircle(
 export function intersectSegmentWithEllipse(
   segment: SESegment,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the segment into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
@@ -602,7 +602,7 @@ export function intersectSegmentWithParametric(
   segment: SESegment,
   parametric: SEParametric,
   inverseTotalRotationMatrix: Matrix4
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
@@ -809,7 +809,7 @@ export function intersectCircles(
 export function intersectCircleWithEllipse(
   circle: SECircle,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the circle into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
@@ -892,7 +892,7 @@ export function intersectCircleWithParametric(
   circle: SECircle,
   parametric: SEParametric,
   inverseTotalRotationMatrix: Matrix4
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();

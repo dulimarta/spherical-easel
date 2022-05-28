@@ -35,13 +35,14 @@ import {
   intersectSegmentWithSegment
 } from "@/utils/intersections";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import Two from "two.js";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
+import { Group } from "two.js/src/group";
+import { Vector } from "two.js/src/vector";
 
 const sePoints: Array<SEPoint> = [];
 const seNodules: Array<SENodule> = [];
@@ -56,7 +57,7 @@ const seEllipses: Array<SEEllipse> = [];
 const seParametrics: Array<SEParametric> = [];
 const sePencils: Array<SEPencil> = [];
 const sePolygons: Array<SEPolygon> = [];
-const layers: Array<Two.Group> = [];
+const layers: Array<Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
@@ -114,7 +115,7 @@ export const useSEStore = defineStore({
       // because the constructors of the tools (handlers) place the temporary Nodules
       // in this array *before* the this.init is called in App.vue mount.
     },
-    setLayers(grp: Array<Two.Group>): void {
+    setLayers(grp: Array<Group>): void {
       layers.splice(0);
       layers.push(...grp);
     },
@@ -655,11 +656,8 @@ export const useSEStore = defineStore({
       };
     },
     //#region findNearbyGetter
-    findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
-      return (
-        unitIdealVector: Vector3,
-        screenPosition: Two.Vector
-      ): SENodule[] => {
+    findNearbySENodules(): (_p: Vector3, _s: Vector) => SENodule[] {
+      return (unitIdealVector: Vector3, screenPosition: Vector): SENodule[] => {
         return seNodules.filter((obj: SENodule) => {
           return obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor);
         });

@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -14,6 +13,11 @@ import { location, visitedIndex } from "@/types";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
+import { Path } from "two.js/src/path";
+import { Anchor } from "two.js/src/anchor";
+import { Stop } from "two.js/src/effects/stop";
+import { RadialGradient } from "two.js/src/effects/radial-gradient";
+import { Group } from "two.js/src/group";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -62,39 +66,35 @@ export default class Polygon extends Nodule {
   /**
    * The TwoJS objects to display the front/back fill parts.
    */
-  private frontFills: Two.Path[] = [];
-  private backFills: Two.Path[] = [];
+  private frontFills: Path[] = [];
+  private backFills: Path[] = [];
 
-  private pool: Two.Anchor[] = []; //The pool of vertices
+  private pool: Anchor[] = []; //The pool of vertices
 
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Two.Stop(
-    0,
-    SETTINGS.fill.frontWhite,
-    1
-  );
-  private frontGradientColor = new Two.Stop(
+  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
+  private frontGradientColor = new Stop(
     2 * SETTINGS.boundaryCircle.radius,
     SETTINGS.polygon.drawn.fillColor.front,
     1
   );
 
-  private frontGradient = new Two.RadialGradient(
+  private frontGradient = new RadialGradient(
     SETTINGS.fill.lightSource.x,
     SETTINGS.fill.lightSource.y,
     1 * SETTINGS.boundaryCircle.radius,
     [this.frontGradientColorCenter, this.frontGradientColor]
   );
 
-  private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Two.Stop(
+  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColor = new Stop(
     1 * SETTINGS.boundaryCircle.radius,
     SETTINGS.polygon.drawn.fillColor.back,
     1
   );
-  private backGradient = new Two.RadialGradient(
+  private backGradient = new RadialGradient(
     -SETTINGS.fill.lightSource.x,
     -SETTINGS.fill.lightSource.y,
     2 * SETTINGS.boundaryCircle.radius,
@@ -121,7 +121,7 @@ export default class Polygon extends Nodule {
     // To render the polygon we use the number of vertices in each segment plus 2*BOUNDARYSUBDIVISIONS plus 2 (the extra 2 are to close up the annular region when the polygon is a hole on the front or back)
 
     // Each segment (all parts) is rendered with 2*SETTINGS.segment.numPoints
-    const verticesFill: Two.Vector[] = [];
+    const verticesFill: Anchor[] = [];
     for (
       let k = 0;
       k <
@@ -130,9 +130,9 @@ export default class Polygon extends Nodule {
         1;
       k++
     ) {
-      verticesFill.push(new Two.Vector(0, 0));
+      verticesFill.push(new Anchor(0, 0));
     }
-    this.frontFills[0] = new Two.Path(
+    this.frontFills[0] = new Path(
       verticesFill,
       /* closed */ true,
       /* curve */ false
@@ -141,11 +141,11 @@ export default class Polygon extends Nodule {
     // now create, record ids, and set noStroke (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
     for (let i = 0; i < this.edgeSegments.length; i++) {
       // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
-      this.backFills[i] = this.frontFills[0].clone();
+      this.backFills[i] = this.frontFills[0].clone() as Path;
 
       if (i > 0) {
         // clear the vectors from all the parts so that the total number (between front and back) of vectors is 2*SUBDIVISIONS
-        this.frontFills[i] = this.frontFills[0].clone();
+        this.frontFills[i] = this.frontFills[0].clone() as Path;
         this.frontFills[i].vertices.splice(0);
         this.backFills[i].vertices.splice(0);
       }
@@ -705,7 +705,7 @@ export default class Polygon extends Nodule {
         2 * Math.PI
       );
       // In this case set the frontFillVertices to the entire boundary circle which are boundary,
-      boundary.forEach((v, ind) => {
+      boundary.forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -718,7 +718,7 @@ export default class Polygon extends Nodule {
         }
       });
       // In this case the backFillVertices must trace out first the boundary circle  and then the polygon
-      boundary.reverse().forEach((v, ind) => {
+      boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -788,7 +788,7 @@ export default class Polygon extends Nodule {
       //   this.pool.length
       // );
       // In this case set the backFillVertices to the entire boundary circle which are boundary,
-      boundary.forEach((v, ind) => {
+      boundary.forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -802,7 +802,7 @@ export default class Polygon extends Nodule {
       });
       // console.log("1 pool size", this.pool.length);
       // In this case the frontFillVertices must trace out first the boundary circle and then the polygon
-      boundary.reverse().forEach((v, ind) => {
+      boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -967,14 +967,14 @@ export default class Polygon extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));
     this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeFromLayers(/*layers: Group[]*/): void {
     this.frontFills.forEach(part => part.remove());
     this.backFills.forEach(part => part.remove());
   }
@@ -1008,10 +1008,10 @@ export default class Polygon extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the Polygon
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -1021,12 +1021,12 @@ export default class Polygon extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
 
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
@@ -1037,7 +1037,7 @@ export default class Polygon extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -1050,7 +1050,7 @@ export default class Polygon extends Nodule {
             this.backFills.forEach(fill => (fill.fill = this.backGradient));
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";

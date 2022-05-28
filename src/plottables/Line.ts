@@ -1,5 +1,4 @@
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -8,6 +7,9 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
+import { Path } from "two.js/src/path";
+import { Anchor } from "two.js/src/anchor";
+import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -33,10 +35,10 @@ export default class Line extends Nodule {
   /**
    * A line has half on the front and half on the back.There are glowing counterparts for each part.
    */
-  protected frontHalf: Two.Path;
-  protected backHalf: Two.Path;
-  protected glowingFrontHalf: Two.Path;
-  protected glowingBackHalf: Two.Path;
+  protected frontHalf: Path;
+  protected backHalf: Path;
+  protected glowingFrontHalf: Path;
+  protected glowingBackHalf: Path;
 
   // /**
   //  * What are these for?
@@ -86,28 +88,24 @@ export default class Line extends Nodule {
     super();
 
     const radius = SETTINGS.boundaryCircle.radius;
-    const vertices: Two.Vector[] = [];
-    const glowingVertices: Two.Vector[] = [];
+    const vertices: Anchor[] = [];
+    const glowingVertices: Anchor[] = [];
 
     // Generate 2D coordinates of a half circle
     for (let k = 0; k < SUBDIVS; k++) {
       const angle = (k * Math.PI) / SUBDIVS;
       const px = radius * Math.cos(angle);
       const py = radius * Math.sin(angle);
-      vertices.push(new Two.Vector(px, py));
-      glowingVertices.push(new Two.Vector(px, py));
+      vertices.push(new Anchor(px, py));
+      glowingVertices.push(new Anchor(px, py));
     }
 
-    this.frontHalf = new Two.Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
+    this.frontHalf = new Path(vertices, /* closed */ false, /* curve */ false);
 
     // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone();
-    this.glowingBackHalf = this.frontHalf.clone();
-    this.glowingFrontHalf = this.frontHalf.clone();
+    this.backHalf = this.frontHalf.clone() as Path;
+    this.glowingBackHalf = this.frontHalf.clone() as Path;
+    this.glowingFrontHalf = this.frontHalf.clone() as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
@@ -229,7 +227,7 @@ export default class Line extends Nodule {
       lastSign = thisSign;
       if (this.tmpVector.z > 0) {
         if (posIndex === this.frontHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
+          let extra: Anchor | undefined;
           extra = this.backHalf.vertices.pop();
           if (extra) this.frontHalf.vertices.push(extra);
           extra = this.glowingBackHalf.vertices.pop();
@@ -242,7 +240,7 @@ export default class Line extends Nodule {
         posIndex++;
       } else {
         if (negIndex === this.backHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
+          let extra: Anchor | undefined;
           extra = this.frontHalf.vertices.pop();
           if (extra) this.backHalf.vertices.push(extra);
           extra = this.glowingFrontHalf.vertices.pop();
@@ -308,22 +306,22 @@ export default class Line extends Nodule {
     dup.backHalf.rotation = this.backHalf.rotation;
     // dup.frontArcLen = this.frontArcLen;
     // dup.backArcLen = this.backArcLen;
-    dup.frontHalf.vertices.forEach((v, pos) => {
+    dup.frontHalf.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.frontHalf.vertices[pos]);
     });
-    dup.backHalf.vertices.forEach((v, pos) => {
+    dup.backHalf.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.backHalf.vertices[pos]);
     });
-    dup.glowingFrontHalf.vertices.forEach((v, pos) => {
+    dup.glowingFrontHalf.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.glowingFrontHalf.vertices[pos]);
     });
-    dup.glowingBackHalf.vertices.forEach((v, pos) => {
+    dup.glowingBackHalf.vertices.forEach((v: Anchor, pos: number) => {
       v.copy(this.glowingBackHalf.vertices[pos]);
     });
     return dup as this;
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
     this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this.backHalf.addTo(layers[LAYER.background]);
@@ -388,20 +386,20 @@ export default class Line extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the line
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         // Front
         // no fillColor
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
         ) {
           this.frontHalf.noStroke();
         } else {
@@ -423,7 +421,7 @@ export default class Line extends Nodule {
         // Back
         // no fill color
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
         ) {
           this.backHalf.noStroke();
         } else {
@@ -450,16 +448,15 @@ export default class Line extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // Front
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = (frontStyle?.strokeColor ??
-            "black") as Two.Color;
+          this.frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -484,7 +481,7 @@ export default class Line extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -495,10 +492,10 @@ export default class Line extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backHalf.noStroke();
           } else {
-            this.backHalf.stroke = backStyle?.strokeColor as Two.Color;
+            this.backHalf.stroke = backStyle?.strokeColor ?? "black";
           }
         }
         // strokeWidthPercent applied by adjustSize()

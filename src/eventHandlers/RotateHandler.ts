@@ -10,6 +10,7 @@ import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import { Group } from "two.js/src/group";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -89,7 +90,7 @@ export default class RotateHandler extends Highlighter {
   // private tempVector2 = new Vector3();
   private store: SEStoreType;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.store = useSEStore();
   }

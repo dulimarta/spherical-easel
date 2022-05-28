@@ -10,13 +10,14 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { Group } from "two.js/src/group";
 export default class SegmentLengthHandler extends Highlighter {
   /**
    * Segment to measure
    */
   private targetSegment: SESegment | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

@@ -6,6 +6,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
+import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -13,7 +14,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    */
   private label: SELabel | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 
