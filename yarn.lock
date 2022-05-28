@@ -11955,7 +11955,7 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-two.js@^0.8.7:
+two.js@^0.8.3:
   version "0.8.7"
   resolved "https://registry.yarnpkg.com/two.js/-/two.js-0.8.7.tgz#b3dfe6f113fcfcff6a78a16d2c526180923c915e"
   integrity sha512-RYTUZlwSyNR0HVl0nE9zPPVJB7kzRoj9wRx3OWQ/T28TrOtD2SmqEHr04ZVUxgUarA9Wk6tOEJj0PH+aBRDBYQ==

@@ -153,13 +153,13 @@ declare module "two.js/src/events" {
 }
 declare module "two.js/src/vector" {
   /**
-     * @name Two.Vector
-     * @class
+   * @name Two.Vector
+   * @class
 
-     * @param {Number} [x=0] - Any number to represent the horizontal x-component of the vector.
-     * @param {Number} [y=0] - Any number to represent the vertical y-component of the vector.
-     * @description A class to store x / y component vector data. In addition to storing data `Two.Vector` has suped up methods for commonplace mathematical operations.
-     */
+   * @param {Number} [x=0] - Any number to represent the horizontal x-component of the vector.
+   * @param {Number} [y=0] - Any number to represent the vertical y-component of the vector.
+   * @description A class to store x / y component vector data. In addition to storing data `Two.Vector` has suped up methods for commonplace mathematical operations.
+   */
   export class Vector extends Events {
     /**
      * @name Two.Vector.zero
@@ -526,18 +526,18 @@ declare module "two.js/src/vector" {
 }
 declare module "two.js/src/anchor" {
   /**
-     * @class
-     * @name Two.Anchor
-     * @param {Number} [x=0] - The x position of the root anchor point.
-     * @param {Number} [y=0] - The y position of the root anchor point.
-     * @param {Number} [lx=0] - The x position of the left handle point.
-     * @param {Number} [ly=0] - The y position of the left handle point.
-     * @param {Number} [rx=0] - The x position of the right handle point.
-     * @param {Number} [ry=0] - The y position of the right handle point.
-     * @param {String} [command=Two.Commands.move] - The command to describe how to render. Applicable commands are {@link Two.Commands}
+   * @class
+   * @name Two.Anchor
+   * @param {Number} [x=0] - The x position of the root anchor point.
+   * @param {Number} [y=0] - The y position of the root anchor point.
+   * @param {Number} [lx=0] - The x position of the left handle point.
+   * @param {Number} [ly=0] - The y position of the left handle point.
+   * @param {Number} [rx=0] - The x position of the right handle point.
+   * @param {Number} [ry=0] - The y position of the right handle point.
+   * @param {String} [command=Two.Commands.move] - The command to describe how to render. Applicable commands are {@link Two.Commands}
 
-     * @description An object that holds 3 {@link Two.Vector}s, the anchor point and its corresponding handles: `left` and `right`. In order to properly describe the bezier curve about the point there is also a command property to describe what type of drawing should occur when Two.js renders the anchors.
-     */
+   * @description An object that holds 3 {@link Two.Vector}s, the anchor point and its corresponding handles: `left` and `right`. In order to properly describe the bezier curve about the point there is also a command property to describe what type of drawing should occur when Two.js renders the anchors.
+   */
   export class Anchor extends Vector {
     static makeBroadcast(scope: any): () => void;
     constructor(
@@ -788,11 +788,11 @@ declare module "two.js/src/utils/underscore" {
 }
 declare module "two.js/src/element" {
   /**
-     * @name Two.Element
-     * @class
+   * @name Two.Element
+   * @class
 
-     * @description The foundational object for the Two.js scenegraph.
-     */
+   * @description The foundational object for the Two.js scenegraph.
+   */
   export class Element extends Events {
     /**
      * @name Two.Element#_flagId
@@ -1070,11 +1070,11 @@ declare module "two.js/src/matrix" {
 }
 declare module "two.js/src/shape" {
   /**
-     * @name Two.Shape
-     * @class
+   * @name Two.Shape
+   * @class
 
-     * @description The foundational transformation object for the Two.js scenegraph.
-     */
+   * @description The foundational transformation object for the Two.js scenegraph.
+   */
   export class Shape extends Element {
     /**
      * @name Two.Shape#_flagMatrix
@@ -1224,11 +1224,11 @@ declare module "two.js/src/shape" {
 }
 declare module "two.js/src/collection" {
   /**
-     * @name Two.Collection
-     * @class
+   * @name Two.Collection
+   * @class
 
-     * @description An `Array` like object with additional event propagation on actions. `pop`, `shift`, and `splice` trigger `removed` events. `push`, `unshift`, and `splice` with more than 2 arguments trigger 'inserted'. Finally, `sort` and `reverse` trigger `order` events.
-     */
+   * @description An `Array` like object with additional event propagation on actions. `pop`, `shift`, and `splice` trigger `removed` events. `push`, `unshift`, and `splice` with more than 2 arguments trigger 'inserted'. Finally, `sort` and `reverse` trigger `order` events.
+   */
   export class Collection extends Array<any> {
     constructor(...args: any[]);
     /**
@@ -1251,11 +1251,11 @@ declare module "two.js/src/collection" {
 }
 declare module "two.js/src/children" {
   /**
-     * @class
-     * @name Two.Group.Children
+   * @class
+   * @name Two.Group.Children
 
-     * @description A children collection which is accesible both by index and by object `id`.
-     */
+   * @description A children collection which is accesible both by index and by object `id`.
+   */
   export class Children extends Collection {
     constructor(children?: Element[]);
     constructor(...args: Element[]);
@@ -1284,13 +1284,13 @@ declare module "two.js/src/children" {
 }
 declare module "two.js/src/group" {
   /**
-     * @name Two.Group
-     * @class
+   * @name Two.Group
+   * @class
 
-     * @param {Shape[]} [children] - A list of objects that inherit {@link Two.Shape}. For instance, the array could be a {@link Two.Path}, {@link Two.Text}, and {@link Two.RoundedRectangle}.
-     * @description This is the primary class for grouping objects that are then drawn in Two.js. In Illustrator this is a group, in After Effects it would be a Null Object. Whichever the case, the `Two.Group` contains a transformation matrix and commands to style its children, but it by itself doesn't render to the screen.
-     * @nota-bene The {@link Two#scene} is an instance of `Two.Group`.
-     */
+   * @param {Shape[]} [children] - A list of objects that inherit {@link Two.Shape}. For instance, the array could be a {@link Two.Path}, {@link Two.Text}, and {@link Two.RoundedRectangle}.
+   * @description This is the primary class for grouping objects that are then drawn in Two.js. In Illustrator this is a group, in After Effects it would be a Null Object. Whichever the case, the `Two.Group` contains a transformation matrix and commands to style its children, but it by itself doesn't render to the screen.
+   * @nota-bene The {@link Two#scene} is an instance of `Two.Group`.
+   */
   export class Group extends Shape {
     static Children: Children;
     /**
@@ -1562,20 +1562,21 @@ declare module "two.js/src/group" {
      */
     clone(parent?: Group): Group;
   }
+  import { Vector } from "two.js/src/vector";
   import { Shape } from "two.js/src/shape";
   import { Children } from "two.js/src/children";
 }
 declare module "two.js/src/renderers/canvas" {
   /**
-     * @name Two.CanvasRenderer
-     * @class
+   * @name Two.CanvasRenderer
+   * @class
 
-     * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
-     * @param {Element} [parameters.domElement] - The `<canvas />` to draw to. If none given a new one will be constructed.
-     * @param {Boolean} [parameters.overdraw] - Determines whether the canvas should clear the background or not. Defaults to `true`.
-     * @param {Boolean} [parameters.smoothing=true] - Determines whether the canvas should antialias drawing. Set it to `false` when working with pixel art. `false` can lead to better performance, since it would use a cheaper interpolation algorithm.
-     * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.canvas`. It takes Two.js' scenegraph and renders it to a `<canvas />`.
-     */
+   * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
+   * @param {Element} [parameters.domElement] - The `<canvas />` to draw to. If none given a new one will be constructed.
+   * @param {Boolean} [parameters.overdraw] - Determines whether the canvas should clear the background or not. Defaults to `true`.
+   * @param {Boolean} [parameters.smoothing=true] - Determines whether the canvas should antialias drawing. Set it to `false` when working with pixel art. `false` can lead to better performance, since it would use a cheaper interpolation algorithm.
+   * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.canvas`. It takes Two.js' scenegraph and renders it to a `<canvas />`.
+   */
   export class Renderer extends Events {
     /**
      * @name Two.CanvasRenderer.Utils
@@ -1762,14 +1763,14 @@ declare module "two.js/src/utils/shape" {
 }
 declare module "two.js/src/effects/stop" {
   /**
-     * @name Two.Stop
-     * @class
+   * @name Two.Stop
+   * @class
 
-     * @param {Number} [offset] - The offset percentage of the stop represented as a zero-to-one value. Default value flip flops from zero-to-one as new stops are created.
-     * @param {String} [color] - The color of the stop. Default value flip flops from white to black as new stops are created.
-     * @param {Number} [opacity] - The opacity value. Default value is 1, cannot be lower than 0.
-     * @nota-bene Used specifically in conjunction with {@link Two.Gradient}s to control color graduation.
-     */
+   * @param {Number} [offset] - The offset percentage of the stop represented as a zero-to-one value. Default value flip flops from zero-to-one as new stops are created.
+   * @param {String} [color] - The color of the stop. Default value flip flops from white to black as new stops are created.
+   * @param {Number} [opacity] - The opacity value. Default value is 1, cannot be lower than 0.
+   * @nota-bene Used specifically in conjunction with {@link Two.Gradient}s to control color graduation.
+   */
   export class Stop extends Element {
     /**
      * @name Two.Stop.Index
@@ -1854,12 +1855,12 @@ declare module "two.js/src/effects/stop" {
 }
 declare module "two.js/src/effects/gradient" {
   /**
-     * @name Two.Gradient
-     * @class
+   * @name Two.Gradient
+   * @class
 
-     * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
-     * @description This is the base class for constructing different types of gradients with Two.js. The two common gradients are {@link Two.LinearGradient} and {@link Two.RadialGradient}.
-     */
+   * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
+   * @description This is the base class for constructing different types of gradients with Two.js. The two common gradients are {@link Two.LinearGradient} and {@link Two.RadialGradient}.
+   */
   export class Gradient extends Element {
     /**
      * @name Two.Gradient.Stop
@@ -1933,16 +1934,16 @@ declare module "two.js/src/effects/gradient" {
 }
 declare module "two.js/src/effects/linear-gradient" {
   /**
-     * @name Two.LinearGradient
-     * @class
+   * @name Two.LinearGradient
+   * @class
 
-     * @param {Number} [x1=0] - The x position of the first end point of the linear gradient.
-     * @param {Number} [y1=0] - The y position of the first end point of the linear gradient.
-     * @param {Number} [x2=0] - The x position of the second end point of the linear gradient.
-     * @param {Number} [y2=0] - The y position of the second end point of the linear gradient.
-     * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
-     * @nota-bene The linear gradient lives within the space of the parent object's matrix space.
-     */
+   * @param {Number} [x1=0] - The x position of the first end point of the linear gradient.
+   * @param {Number} [y1=0] - The y position of the first end point of the linear gradient.
+   * @param {Number} [x2=0] - The x position of the second end point of the linear gradient.
+   * @param {Number} [y2=0] - The y position of the second end point of the linear gradient.
+   * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
+   * @nota-bene The linear gradient lives within the space of the parent object's matrix space.
+   */
   export class LinearGradient extends Gradient {
     constructor(
       x1?: number,
@@ -1976,17 +1977,17 @@ declare module "two.js/src/effects/linear-gradient" {
 }
 declare module "two.js/src/effects/radial-gradient" {
   /**
-     * @name Two.RadialGradient
-     * @class
+   * @name Two.RadialGradient
+   * @class
 
-     * @param {Number} [x=0] - The x position of the origin of the radial gradient.
-     * @param {Number} [y=0] - The y position of the origin of the radial gradient.
-     * @param {Number} [radius=0] - The radius of the radial gradient.
-     * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
-     * @param {Number} [focalX=0] - The x position of the focal point on the radial gradient.
-     * @param {Number} [focalY=0] - The y position of the focal point on the radial gradient.
-     * @nota-bene The radial gradient lives within the space of the parent object's matrix space.
-     */
+   * @param {Number} [x=0] - The x position of the origin of the radial gradient.
+   * @param {Number} [y=0] - The y position of the origin of the radial gradient.
+   * @param {Number} [radius=0] - The radius of the radial gradient.
+   * @param {Stop[]} [stops] - A list of {@link Two.Stop}s that contain the gradient fill pattern for the gradient.
+   * @param {Number} [focalX=0] - The x position of the focal point on the radial gradient.
+   * @param {Number} [focalY=0] - The y position of the focal point on the radial gradient.
+   * @nota-bene The radial gradient lives within the space of the parent object's matrix space.
+   */
   export class RadialGradient extends Gradient {
     constructor(
       cx?: number,
@@ -2036,13 +2037,13 @@ declare module "two.js/src/effects/radial-gradient" {
 }
 declare module "two.js/src/effects/texture" {
   /**
-     * @name Two.Texture
-     * @class
+   * @name Two.Texture
+   * @class
 
-     * @param {String|HTMLImageElement} [src] - The URL path to an image file or an `<img />` element.
-     * @param {Function} [callback] - An optional callback function once the image has been loaded.
-     * @description Fundamental to work with bitmap data, a.k.a. pregenerated imagery, in Two.js. Supported formats include jpg, png, gif, and tiff. See {@link Two.Texture.RegularExpressions} for a full list of supported formats.
-     */
+   * @param {String|HTMLImageElement} [src] - The URL path to an image file or an `<img />` element.
+   * @param {Function} [callback] - An optional callback function once the image has been loaded.
+   * @description Fundamental to work with bitmap data, a.k.a. pregenerated imagery, in Two.js. Supported formats include jpg, png, gif, and tiff. See {@link Two.Texture.RegularExpressions} for a full list of supported formats.
+   */
   export class Texture extends Element {
     /**
      * @name Two.Texture.Properties
@@ -2243,15 +2244,15 @@ declare module "two.js/src/effects/texture" {
 }
 declare module "two.js/src/path" {
   /**
-     * @name Two.Path
-     * @class
+   * @name Two.Path
+   * @class
 
-     * @param {Anchor[]} [vertices] - A list of {@link Two.Anchor}s that represent the order and coordinates to construct the rendered shape.
-     * @param {Boolean} [closed=false] - Describes whether the shape is closed or open.
-     * @param {Boolean} [curved=false] - Describes whether the shape automatically calculates bezier handles for each vertex.
-     * @param {Boolean} [manual=false] - Describes whether the developer controls how vertices are plotted or if Two.js automatically plots coordinates based on closed and curved booleans.
-     * @description This is the primary primitive class for creating all drawable shapes in Two.js. Unless specified methods return their instance of `Two.Path` for the purpose of chaining.
-     */
+   * @param {Anchor[]} [vertices] - A list of {@link Two.Anchor}s that represent the order and coordinates to construct the rendered shape.
+   * @param {Boolean} [closed=false] - Describes whether the shape is closed or open.
+   * @param {Boolean} [curved=false] - Describes whether the shape automatically calculates bezier handles for each vertex.
+   * @param {Boolean} [manual=false] - Describes whether the developer controls how vertices are plotted or if Two.js automatically plots coordinates based on closed and curved booleans.
+   * @description This is the primary primitive class for creating all drawable shapes in Two.js. Unless specified methods return their instance of `Two.Path` for the purpose of chaining.
+   */
   export class Path extends Shape {
     /**
      * @name Two.Path.Properties
@@ -2441,6 +2442,7 @@ declare module "two.js/src/path" {
      * @see {@link Two.Path#dashes}
      */
     private _dashes;
+    closed: boolean;
     /**
      * @name Two.Path#beginning
      * @property {Number} - Number between zero and one to state the beginning of where the path is rendered.
@@ -2527,7 +2529,6 @@ declare module "two.js/src/path" {
      * @see {@link https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray} for more information on the SVG stroke-dasharray attribute.
      */
     dashes: any[];
-    closed: boolean;
     /**
      * @name Two.Path#toObject
      * @function
@@ -2601,6 +2602,8 @@ declare module "two.js/src/path" {
     private _updateLength;
     _lengths: any[];
   }
+  import { Texture } from "two.js/src/effects/texture";
+  import { Gradient } from "two.js/src/effects/gradient";
   import { Anchor } from "two.js/src/anchor";
   import { Shape } from "two.js/src/shape";
   /**
@@ -2651,14 +2654,14 @@ declare module "two.js/src/path" {
 }
 declare module "two.js/src/shapes/rectangle" {
   /**
-     * @name Two.Rectangle
-     * @class
+   * @name Two.Rectangle
+   * @class
 
-     * @param {Number} [x=0] - The x position of the rectangle.
-     * @param {Number} [y=0] - The y position of the rectangle.
-     * @param {Number} [width=1] - The width value of the rectangle.
-     * @param {Number} [height=1] - The width value of the rectangle.
-     */
+   * @param {Number} [x=0] - The x position of the rectangle.
+   * @param {Number} [y=0] - The y position of the rectangle.
+   * @param {Number} [width=1] - The width value of the rectangle.
+   * @param {Number} [height=1] - The width value of the rectangle.
+   */
   export class Rectangle extends Path {
     constructor(x?: number, y?: number, width?: number, height?: number);
     /**
@@ -2707,17 +2710,17 @@ declare module "two.js/src/shapes/rectangle" {
 }
 declare module "two.js/src/effects/sprite" {
   /**
-     * @name Two.Sprite
-     * @class
+   * @name Two.Sprite
+   * @class
 
-     * @param {String|Texture} [path] - The URL path or {@link Two.Texture} to be used as the bitmap data displayed on the sprite.
-     * @param {Number} [ox=0] - The initial `x` position of the Two.Sprite.
-     * @param {Number} [oy=0] - The initial `y` position of the Two.Sprite.
-     * @param {Number} [cols=1] - The number of columns the sprite contains.
-     * @param {Number} [rows=1] - The number of rows the sprite contains.
-     * @param {Number} [frameRate=0] - The frame rate at which the partitions of the image should playback at.
-     * @description A convenient package to display still or animated images through a tiled image source. For more information on the principals of animated imagery through tiling see [Texture Atlas](https://en.wikipedia.org/wiki/Texture_atlas) on Wikipedia.
-     */
+   * @param {String|Texture} [path] - The URL path or {@link Two.Texture} to be used as the bitmap data displayed on the sprite.
+   * @param {Number} [ox=0] - The initial `x` position of the Two.Sprite.
+   * @param {Number} [oy=0] - The initial `y` position of the Two.Sprite.
+   * @param {Number} [cols=1] - The number of columns the sprite contains.
+   * @param {Number} [rows=1] - The number of rows the sprite contains.
+   * @param {Number} [frameRate=0] - The frame rate at which the partitions of the image should playback at.
+   * @description A convenient package to display still or animated images through a tiled image source. For more information on the principals of animated imagery through tiling see [Texture Atlas](https://en.wikipedia.org/wiki/Texture_atlas) on Wikipedia.
+   */
   export class Sprite extends Rectangle {
     constructor(
       path?: any,
@@ -2870,14 +2873,14 @@ declare module "two.js/src/effects/sprite" {
 }
 declare module "two.js/src/shapes/circle" {
   /**
-     * @name Two.Circle
-     * @class
+   * @name Two.Circle
+   * @class
 
-     * @param {Number} [x=0] - The x position of the circle.
-     * @param {Number} [y=0] - The y position of the circle.
-     * @param {Number} [radius=0] - The radius value of the circle.
-     * @param {Number} [resolution=4] - The number of vertices used to construct the circle.
-     */
+   * @param {Number} [x=0] - The x position of the circle.
+   * @param {Number} [y=0] - The y position of the circle.
+   * @param {Number} [radius=0] - The radius value of the circle.
+   * @param {Number} [resolution=4] - The number of vertices used to construct the circle.
+   */
   export class Circle extends Path {
     /**
      * @name Two.Circle#_flagRadius
@@ -2898,15 +2901,15 @@ declare module "two.js/src/shapes/circle" {
 }
 declare module "two.js/src/shapes/ellipse" {
   /**
-     * @name Two.Ellipse
-     * @class
+   * @name Two.Ellipse
+   * @class
 
-     * @param {Number} [x=0] - The x position of the ellipse.
-     * @param {Number} [y=0] - The y position of the ellipse.
-     * @param {Number} [rx=0] - The radius value of the ellipse in the x direction.
-     * @param {Number} [ry=0] - The radius value of the ellipse in the y direction.
-     * @param {Number} [resolution=4] - The number of vertices used to construct the ellipse.
-     */
+   * @param {Number} [x=0] - The x position of the ellipse.
+   * @param {Number} [y=0] - The y position of the ellipse.
+   * @param {Number} [rx=0] - The radius value of the ellipse in the x direction.
+   * @param {Number} [ry=0] - The radius value of the ellipse in the y direction.
+   * @param {Number} [resolution=4] - The number of vertices used to construct the ellipse.
+   */
   export class Ellipse extends Path {
     constructor(
       x?: number,
@@ -2946,14 +2949,14 @@ declare module "two.js/src/shapes/ellipse" {
 }
 declare module "two.js/src/shapes/line" {
   /**
-     * @name Two.Line
-     * @class
+   * @name Two.Line
+   * @class
 
-     * @param {Number} [x1=0] - The x position of the first vertex on the line.
-     * @param {Number} [y1=0] - The y position of the first vertex on the line.
-     * @param {Number} [x2=0] - The x position of the second vertex on the line.
-     * @param {Number} [y2=0] - The y position of the second vertex on the line.
-     */
+   * @param {Number} [x1=0] - The x position of the first vertex on the line.
+   * @param {Number} [y1=0] - The y position of the first vertex on the line.
+   * @param {Number} [x2=0] - The x position of the second vertex on the line.
+   * @param {Number} [y2=0] - The y position of the second vertex on the line.
+   */
   export class Line extends Path {
     constructor(x1?: number, y1?: number, x2?: number, y2?: number);
   }
@@ -2961,16 +2964,16 @@ declare module "two.js/src/shapes/line" {
 }
 declare module "two.js/src/shapes/rounded-rectangle" {
   /**
-     * @name Two.RoundedRectangle
-     * @class
+   * @name Two.RoundedRectangle
+   * @class
 
-     * @param {Number} [x=0] - The x position of the rounded rectangle.
-     * @param {Number} [y=0] - The y position of the rounded rectangle.
-     * @param {Number} [width=0] - The width value of the rounded rectangle.
-     * @param {Number} [height=0] - The width value of the rounded rectangle.
-     * @param {Number} [radius=0] - The radius value of the rounded rectangle.
-     * @param {Number} [resolution=12] - The number of vertices used to construct the rounded rectangle.
-     */
+   * @param {Number} [x=0] - The x position of the rounded rectangle.
+   * @param {Number} [y=0] - The y position of the rounded rectangle.
+   * @param {Number} [width=0] - The width value of the rounded rectangle.
+   * @param {Number} [height=0] - The width value of the rounded rectangle.
+   * @param {Number} [radius=0] - The radius value of the rounded rectangle.
+   * @param {Number} [resolution=12] - The number of vertices used to construct the rounded rectangle.
+   */
   export class RoundedRectangle extends Path {
     constructor(
       x?: number,
@@ -3024,16 +3027,16 @@ declare module "two.js/src/shapes/rounded-rectangle" {
 }
 declare module "two.js/src/text" {
   /**
-     * @name Two.Text
-     * @class
+   * @name Two.Text
+   * @class
 
-     * @param {String} [message] - The String to be rendered to the scene.
-     * @param {Number} [x=0] - The position in the x direction for the object.
-     * @param {Number} [y=0] - The position in the y direction for the object.
-     * @param {Object} [styles] - An object where styles are applied. Attribute must exist in Two.Text.Properties.
-     * @description This is a primitive class for creating drawable text that can be added to the scenegraph.
-     * @returns {Text}
-     */
+   * @param {String} [message] - The String to be rendered to the scene.
+   * @param {Number} [x=0] - The position in the x direction for the object.
+   * @param {Number} [y=0] - The position in the y direction for the object.
+   * @param {Object} [styles] - An object where styles are applied. Attribute must exist in Two.Text.Properties.
+   * @description This is a primitive class for creating drawable text that can be added to the scenegraph.
+   * @returns {Text}
+   */
   export class Text extends Shape {
     /**
      * @name Two.Text.Ratio
@@ -3324,15 +3327,15 @@ declare module "two.js/src/utils/xhr" {
 }
 declare module "two.js/src/effects/image-sequence" {
   /**
-     * @name Two.ImageSequence
-     * @class
+   * @name Two.ImageSequence
+   * @class
 
-     * @param {String|String[]|Texture|Texture[]} paths - A list of URLs or {@link Two.Texture}s.
-     * @param {Number} [ox=0] - The initial `x` position of the Two.ImageSequence.
-     * @param {Number} [oy=0] - The initial `y` position of the Two.ImageSequence.
-     * @param {Number} [frameRate=30] - The frame rate at which the images should playback at.
-     * @description A convenient package to display still or animated images organized as a series of still images.
-     */
+   * @param {String|String[]|Texture|Texture[]} paths - A list of URLs or {@link Two.Texture}s.
+   * @param {Number} [ox=0] - The initial `x` position of the Two.ImageSequence.
+   * @param {Number} [oy=0] - The initial `y` position of the Two.ImageSequence.
+   * @param {Number} [frameRate=30] - The frame rate at which the images should playback at.
+   * @description A convenient package to display still or animated images organized as a series of still images.
+   */
   export class ImageSequence extends Rectangle {
     /**
      * @name Two.ImageSequence.DefaultFrameRate
@@ -3455,17 +3458,17 @@ declare module "two.js/src/effects/image-sequence" {
 }
 declare module "two.js/src/shapes/arc-segment" {
   /**
-     * @name Two.ArcSegment
-     * @class
+   * @name Two.ArcSegment
+   * @class
 
-     * @param {Number} [x=0] - The x position of the arc segment.
-     * @param {Number} [y=0] - The y position of the arc segment.
-     * @param {Number} [innerRadius=0] - The inner radius value of the arc segment.
-     * @param {Number} [outerRadius=0] - The outer radius value of the arc segment.
-     * @param {Number} [startAngle=0] - The start angle of the arc segment in Number.
-     * @param {Number} [endAngle=6.2831] - The end angle of the arc segment in Number.
-     * @param {Number} [resolution=24] - The number of vertices used to construct the arc segment.
-     */
+   * @param {Number} [x=0] - The x position of the arc segment.
+   * @param {Number} [y=0] - The y position of the arc segment.
+   * @param {Number} [innerRadius=0] - The inner radius value of the arc segment.
+   * @param {Number} [outerRadius=0] - The outer radius value of the arc segment.
+   * @param {Number} [startAngle=0] - The start angle of the arc segment in Number.
+   * @param {Number} [endAngle=6.2831] - The end angle of the arc segment in Number.
+   * @param {Number} [resolution=24] - The number of vertices used to construct the arc segment.
+   */
   export class ArcSegment extends Path {
     constructor(
       ox?: number,
@@ -3533,12 +3536,12 @@ declare module "two.js/src/shapes/arc-segment" {
 }
 declare module "two.js/src/shapes/points" {
   /**
-     * @name Two.Points
-     * @class
+   * @name Two.Points
+   * @class
 
-     * @param {Vector[]} [vertices] - A list of {@link Two.Vector}s that represent the order and coordinates to construct a rendered set of points.
-     * @description This is a primary primitive class for quickly and easily drawing points in Two.js. Unless specified methods return their instance of `Two.Points` for the purpose of chaining.
-     */
+   * @param {Vector[]} [vertices] - A list of {@link Two.Vector}s that represent the order and coordinates to construct a rendered set of points.
+   * @description This is a primary primitive class for quickly and easily drawing points in Two.js. Unless specified methods return their instance of `Two.Points` for the purpose of chaining.
+   */
   export class Points extends Shape {
     static Properties: string[];
     constructor(vertices?: any[]);
@@ -3679,14 +3682,14 @@ declare module "two.js/src/shapes/points" {
 }
 declare module "two.js/src/shapes/polygon" {
   /**
-     * @name Two.Polygon
-     * @class
+   * @name Two.Polygon
+   * @class
 
-     * @param {Number} [x=0] - The x position of the polygon.
-     * @param {Number} [y=0] - The y position of the polygon.
-     * @param {Number} [radius=0] - The radius value of the polygon.
-     * @param {Number} [sides=12] - The number of vertices used to construct the polygon.
-     */
+   * @param {Number} [x=0] - The x position of the polygon.
+   * @param {Number} [y=0] - The y position of the polygon.
+   * @param {Number} [radius=0] - The radius value of the polygon.
+   * @param {Number} [sides=12] - The number of vertices used to construct the polygon.
+   */
   export class Polygon extends Path {
     /**
      * @name Two.Polygon#_flagWidth
@@ -3734,15 +3737,15 @@ declare module "two.js/src/shapes/polygon" {
 }
 declare module "two.js/src/shapes/star" {
   /**
-     * @name Two.Star
-     * @class
+   * @name Two.Star
+   * @class
 
-     * @param {Number} [x=0] - The x position of the star.
-     * @param {Number} [y=0] - The y position of the star.
-     * @param {Number} [innerRadius=0] - The inner radius value of the star.
-     * @param {Number} [outerRadius=0] - The outer radius value of the star.
-     * @param {Number} [sides=5] - The number of sides used to construct the star.
-     */
+   * @param {Number} [x=0] - The x position of the star.
+   * @param {Number} [y=0] - The y position of the star.
+   * @param {Number} [innerRadius=0] - The inner radius value of the star.
+   * @param {Number} [outerRadius=0] - The outer radius value of the star.
+   * @param {Number} [sides=5] - The number of sides used to construct the star.
+   */
   export class Star extends Path {
     constructor(
       ox?: number,
@@ -3796,13 +3799,13 @@ declare module "two.js/src/shapes/star" {
 }
 declare module "two.js/src/renderers/svg" {
   /**
-     * @name Two.SVGRenderer
-     * @class
+   * @name Two.SVGRenderer
+   * @class
 
-     * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
-     * @param {Element} [parameters.domElement] - The `<svg />` to draw to. If none given a new one will be constructed.
-     * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.svg` (the default type). It takes Two.js' scenegraph and renders it to a `<svg />`.
-     */
+   * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
+   * @param {Element} [parameters.domElement] - The `<svg />` to draw to. If none given a new one will be constructed.
+   * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.svg` (the default type). It takes Two.js' scenegraph and renders it to a `<svg />`.
+   */
   export class Renderer extends Events {
     /**
      * @name Two.SVGRenderer.Utils
@@ -3909,16 +3912,16 @@ declare module "two.js/src/utils/shaders" {
 }
 declare module "two.js/src/renderers/webgl" {
   /**
-     * @name Two.WebGLRenderer
-     * @class
+   * @name Two.WebGLRenderer
+   * @class
 
-     * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
-     * @param {Element} [parameters.domElement] - The `<canvas />` to draw to. If none given a new one will be constructed.
-     * @param {HTMLCanvasElement} [parameters.offscreenElement] - The offscreen two dimensional `<canvas />` to render each element on WebGL texture updates.
-     * @param {Boolean} [parameters.antialias] - Determines whether the canvas should clear render with antialias on.
-     * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.webgl`. It takes Two.js' scenegraph and renders it to a `<canvas />` through the WebGL api.
-     * @see {@link https://www.khronos.org/registry/webgl/specs/latest/1.0/}
-     */
+   * @param {Object} [parameters] - This object is inherited when constructing a new instance of {@link Two}.
+   * @param {Element} [parameters.domElement] - The `<canvas />` to draw to. If none given a new one will be constructed.
+   * @param {HTMLCanvasElement} [parameters.offscreenElement] - The offscreen two dimensional `<canvas />` to render each element on WebGL texture updates.
+   * @param {Boolean} [parameters.antialias] - Determines whether the canvas should clear render with antialias on.
+   * @description This class is used by {@link Two} when constructing with `type` of `Two.Types.webgl`. It takes Two.js' scenegraph and renders it to a `<canvas />` through the WebGL api.
+   * @see {@link https://www.khronos.org/registry/webgl/specs/latest/1.0/}
+   */
   export class Renderer extends Events {
     /**
      * @name Two.WebGLRenderer.Utils
@@ -3937,11 +3940,11 @@ declare module "two.js/src/renderers/webgl" {
       group: {
         removeChild: (child: any, gl: any) => void;
         /**
-                 * @function
-                 // * @type {(gl: any, programs: any) => any}
-                 * @param {WebGLContext} gl
-                 * @param {Object} programs
-                 */
+               * @function
+               // * @type {(gl: any, programs: any) => any}
+               * @param {WebGLContext} gl
+               * @param {Object} programs
+               */
         render: (gl: any, programs: any) => any;
       };
       path: {
@@ -4041,20 +4044,20 @@ declare module "two.js/src/renderers/webgl" {
 }
 declare module "two.js" {
   /**
-     * @name Two
-     * @class
-     * @global
+   * @name Two
+   * @class
+   * @global
 
-     * @param {Object} [options]
-     * @param {Boolean} [options.fullscreen=false] - Set to `true` to automatically make the stage adapt to the width and height of the parent document. This parameter overrides `width` and `height` parameters if set to `true`. This overrides `options.fitted` as well.
-     * @param {Boolean} [options.fitted=false] = Set to `true` to automatically make the stage adapt to the width and height of the parent element. This parameter overrides `width` and `height` parameters if set to `true`.
-     * @param {Number} [options.width=640] - The width of the stage on construction. This can be set at a later time.
-     * @param {Number} [options.height=480] - The height of the stage on construction. This can be set at a later time.
-     * @param {String} [options.type=Two.Types.svg] - The type of renderer to setup drawing with. See {@link Two.Types} for available options.
-     * @param {Boolean} [options.autostart=false] - Set to `true` to add the instance to draw on `requestAnimationFrame`. This is a convenient substitute for {@link Two#play}.
-     * @param {Element} [options.domElement] - The canvas or SVG element to draw into. This overrides the `options.type` argument.
-     * @description The entrypoint for Two.js. Instantiate a `new Two` in order to setup a scene to render to. `Two` is also the publicly accessible namespace that all other sub-classes, functions, and utilities attach to.
-     */
+   * @param {Object} [options]
+   * @param {Boolean} [options.fullscreen=false] - Set to `true` to automatically make the stage adapt to the width and height of the parent document. This parameter overrides `width` and `height` parameters if set to `true`. This overrides `options.fitted` as well.
+   * @param {Boolean} [options.fitted=false] = Set to `true` to automatically make the stage adapt to the width and height of the parent element. This parameter overrides `width` and `height` parameters if set to `true`.
+   * @param {Number} [options.width=640] - The width of the stage on construction. This can be set at a later time.
+   * @param {Number} [options.height=480] - The height of the stage on construction. This can be set at a later time.
+   * @param {String} [options.type=Two.Types.svg] - The type of renderer to setup drawing with. See {@link Two.Types} for available options.
+   * @param {Boolean} [options.autostart=false] - Set to `true` to add the instance to draw on `requestAnimationFrame`. This is a convenient substitute for {@link Two#play}.
+   * @param {Element} [options.domElement] - The canvas or SVG element to draw into. This overrides the `options.type` argument.
+   * @description The entrypoint for Two.js. Instantiate a `new Two` in order to setup a scene to render to. `Two` is also the publicly accessible namespace that all other sub-classes, functions, and utilities attach to.
+   */
   export default class Two {
     static nextFrameID: any;
     /**

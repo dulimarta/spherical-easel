@@ -14,6 +14,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import EventBus from "@/eventHandlers/EventBus";
 import i18n from "../i18n";
+
 // import { TranslateResult } from "vue-i18n";
 
 interface MessageType {
