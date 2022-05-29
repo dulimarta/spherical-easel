@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "esnext",
+    "module": "commonjs",
     "strict": true,
     "declaration": true,
     "jsx": "preserve",
@@ -28,7 +28,7 @@
   },
   "exclude": [
     "node_modules",
-    "__tests__",
+    "**/__tests__/**",
     "**/tests/unit/**",
     "**/__tests__/**"
   ],
@@ -36,7 +36,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/types/two.js/index.d.ts",
+    // "src/types/two.js/index.d.ts",
     // "tests/*.d.ts",
     "src/stores/unused-se-module.ts"
   ],

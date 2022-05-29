@@ -373,10 +373,10 @@ export default class Circle extends Nodule {
     }
 
     // Parts becomes closed when the other parts vanishes
-    this.frontPart.closed = backLen === 0;
-    this.backPart.closed = frontLen === 0;
-    this.glowingFrontPart.closed = backLen === 0;
-    this.glowingBackPart.closed = frontLen === 0;
+    this.frontPart["_closed"] = backLen === 0;
+    this.backPart["_closed"] = frontLen === 0;
+    this.glowingFrontPart["_closed"] = backLen === 0;
+    this.glowingBackPart["_closed"] = frontLen === 0;
 
     //Now build the front/back fill objects based on the front/back parts
 
@@ -802,18 +802,18 @@ export default class Circle extends Nodule {
     dup._circleRadius = this._circleRadius;
 
     // Duplicate the non-glowing parts
-    dup.frontPart.closed = this.frontPart.closed;
+    dup.frontPart["_closed"] = this.frontPart["_closed"];
     dup.frontPart.rotation = this.frontPart.rotation;
     dup.frontPart.translation.copy(this.frontPart.translation);
-    dup.backPart.closed = this.backPart.closed;
+    dup.backPart["_closed"] = this.backPart["_closed"];
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
 
     // Duplicate the glowing parts
-    dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
+    dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
     dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
     dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
-    dup.glowingBackPart.closed = this.glowingBackPart.closed;
+    dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
     dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
     dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
 
@@ -967,7 +967,7 @@ export default class Circle extends Nodule {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
-          this.frontFill.fill = this.frontGradient;
+          this.frontFill.fill = this.frontGradient.toObject();
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
@@ -995,7 +995,7 @@ export default class Circle extends Nodule {
           this.backFill.noFill();
         } else {
           this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
-          this.backFill.fill = this.backGradient;
+          this.backFill.fill = this.backGradient.toObject();
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
@@ -1033,7 +1033,7 @@ export default class Circle extends Nodule {
         } else {
           this.frontGradientColor.color =
             frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
-          this.frontFill.fill = this.frontGradient;
+          this.frontFill.fill = this.frontGradient.toObject();
         }
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
@@ -1066,7 +1066,7 @@ export default class Circle extends Nodule {
               frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
             );
 
-            this.backFill.fill = this.backGradient;
+            this.backFill.fill = this.backGradient.toObject();
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
@@ -1074,7 +1074,7 @@ export default class Circle extends Nodule {
           } else {
             this.backGradientColor.color =
               backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
-            this.backFill.fill = this.backGradient;
+            this.backFill.fill = this.backGradient.toObject();
           }
         }
 

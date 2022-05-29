@@ -180,7 +180,7 @@ export default class SphereFrame extends VueComponent {
         // Don't flip the y-coord of text layers
         if (textLayers.indexOf(layerIdx) < 0) {
           // Not in textLayers
-          newLayer.scale = new Vector(1, -1);
+          (newLayer.scale as any) = new Vector(1, -1);
         }
       }
     }

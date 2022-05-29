@@ -1030,7 +1030,9 @@ export default class Polygon extends Nodule {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
-          this.frontFills.forEach(fill => (fill.fill = this.frontGradient));
+          this.frontFills.forEach(fill => {
+            fill.fill = this.frontGradient.toObject();
+          });
         }
 
         // BACK
@@ -1047,14 +1049,18 @@ export default class Polygon extends Nodule {
               frontStyle?.fillColor ?? "black"
             );
 
-            this.backFills.forEach(fill => (fill.fill = this.backGradient));
+            this.backFills.forEach(fill => {
+              fill.fill = this.backGradient.toObject();
+            });
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFills.forEach(fill => (fill.fill = this.backGradient));
+            this.backFills.forEach(fill => {
+              fill.fill = this.backGradient.toObject();
+            });
           }
         }
         break;
