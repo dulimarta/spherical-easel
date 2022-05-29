@@ -51,7 +51,7 @@
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/jest": "~24.0.19",
-    "@types/webpack": "~4.41.18",
+    "@types/webpack": "~5.28.0",
     "@typescript-eslint/eslint-plugin": "~4.24.0",
     "@typescript-eslint/parser": "~4.24.0",
     "@vue/cli-plugin-babel": "~4.5.13",

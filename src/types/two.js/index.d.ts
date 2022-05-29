@@ -549,11 +549,11 @@ declare module "two.js/src/anchor" {
       by?: number,
       command?: string
     );
+    _command: string;
     controls: {
       left: Vector;
       right: Vector;
     };
-    _command: string;
     _relative: boolean;
     _rx: number;
     _ry: number;
