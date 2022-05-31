@@ -53,6 +53,7 @@ import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
+import { Shape } from "two.js/src/shape";
 
 @Component({
   computed: {
@@ -180,7 +181,29 @@ export default class SphereFrame extends VueComponent {
         // Don't flip the y-coord of text layers
         if (textLayers.indexOf(layerIdx) < 0) {
           // Not in textLayers
-          (newLayer.scale as any) = new Vector(1, -1);
+
+          console.log("layer id", newLayer.id);
+          console.log("old scale", newLayer.scale);
+          console.log("old matrix", newLayer.matrix.elements[0]);
+          newLayer.scale = new Vector(1, -1);
+          // newLayer["_scale"] = new Vector(1, -1);
+          // newLayer["_flagScale"] = true;
+          // newLayer["_flagMatrix"] = true;
+          console.log(
+            "new scale",
+            newLayer.scale,
+            "new matrix",
+            newLayer.matrix.elements[0],
+            newLayer.matrix.elements[1],
+            newLayer.matrix.elements[2],
+            newLayer.matrix.elements[3],
+            newLayer.matrix.elements[4],
+            newLayer.matrix.elements[5],
+            newLayer.matrix.elements[6],
+
+            "current matrix",
+            newLayer.matrix
+          );
         }
       }
     }
@@ -340,10 +363,13 @@ export default class SphereFrame extends VueComponent {
 
     // Get the DOM element to apply the transform to
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
+    console.log("mag and transVector", mag, transVector[0], transVector[1]);
     // Set the transform
     const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`;
+    console.log("mat", mat);
     // console.debug("CSS transform matrix: ", mat);
     el.style.transform = mat;
+    console.log(el.style.transform);
     // Set the origin of the transform
     const origin = this.canvasSize / 2;
     el.style.transformOrigin = `${origin}px ${origin}px`;

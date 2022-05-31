@@ -492,10 +492,14 @@ export default class Ellipse extends Nodule {
     }
 
     // Parts becomes closed when the other parts vanishes
-    this.frontPart["_closed"] = backLen === 0;
-    this.backPart["_closed"] = frontLen === 0;
-    this.glowingFrontPart["_closed"] = backLen === 0;
-    this.glowingBackPart["_closed"] = frontLen === 0;
+    this.frontPart.closed = backLen === 0;
+    this.backPart.closed = frontLen === 0;
+    this.glowingFrontPart.closed = backLen === 0;
+    this.glowingBackPart.closed = frontLen === 0;
+    // this.frontPart["_closed"] = backLen === 0;
+    // this.backPart["_closed"] = frontLen === 0;
+    // this.glowingFrontPart["_closed"] = backLen === 0;
+    // this.glowingBackPart["_closed"] = frontLen === 0;
 
     //Now build the front/back fill objects based on the front/back parts
 
@@ -946,18 +950,22 @@ export default class Ellipse extends Nodule {
     dup._b = this._b;
 
     // Duplicate the non-glowing parts
-    dup.frontPart["_closed"] = this.frontPart["_closed"];
+    dup.frontPart.closed = this.frontPart.closed;
+    // dup.frontPart["_closed"] = this.frontPart["_closed"];
     dup.frontPart.rotation = this.frontPart.rotation;
     dup.frontPart.translation.copy(this.frontPart.translation);
-    dup.backPart["_closed"] = this.backPart["_closed"];
+    dup.backPart.closed = this.backPart.closed;
+    // dup.backPart["_closed"] = this.backPart["_closed"];
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
 
     // Duplicate the glowing parts
-    dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
+    dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
+    // dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
     dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
     dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
-    dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
+    dup.glowingBackPart.closed = this.glowingBackPart.closed;
+    //dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
     dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
     dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
 
@@ -1115,7 +1123,7 @@ export default class Ellipse extends Nodule {
           this.frontFill.noFill();
         } else {
           this.frontGradientColor.color = SETTINGS.ellipse.temp.fillColor.front;
-          this.frontFill.fill = this.frontGradient.toObject();
+          this.frontFill.fill = this.frontGradient;
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.front)
@@ -1143,7 +1151,7 @@ export default class Ellipse extends Nodule {
           this.backFill.noFill();
         } else {
           this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
-          this.backFill.fill = this.backGradient.toObject();
+          this.backFill.fill = this.backGradient;
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.back)
@@ -1182,7 +1190,7 @@ export default class Ellipse extends Nodule {
         } else {
           this.frontGradientColor.color =
             frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
-          this.frontFill.fill = this.frontGradient.toObject();
+          this.frontFill.fill = this.frontGradient;
         }
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
@@ -1222,14 +1230,14 @@ export default class Ellipse extends Nodule {
               frontStyle?.fillColor ?? "black"
             );
 
-            this.backFill.fill = this.backGradient.toObject();
+            this.backFill.fill = this.backGradient;
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFill.fill = this.backGradient.toObject();
+            this.backFill.fill = this.backGradient;
           }
         }
 
