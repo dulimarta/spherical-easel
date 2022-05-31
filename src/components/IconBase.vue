@@ -469,6 +469,7 @@ export default class IconBase extends Vue {
     if (yTranslate !== undefined) {
       vals[5] = yTranslate;
     }
+
     return (
       "matrix(" +
       newScale * Math.sign(vals[0]) +

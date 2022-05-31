@@ -52,8 +52,7 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
-import { Text } from "two.js/src/text";
+
 @Component({
   computed: {
     ...mapState(useSEStore, [
@@ -329,6 +328,7 @@ export default class SphereFrame extends VueComponent {
 
     // Get the DOM element to apply the transform to
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
+    console.log("mag and transVector", mag, transVector[0], transVector[1]);
     // Set the transform
     const mat = `matrix(${mag},0,0,${-mag},${mag * origin},${-mag * origin})`;
     console.debug("CSS transform matrix: ", mat);

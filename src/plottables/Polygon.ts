@@ -1031,7 +1031,7 @@ export default class Polygon extends Nodule {
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
           this.frontFills.forEach(fill => {
-            fill.fill = this.frontGradient.toObject();
+            fill.fill = this.frontGradient;
           });
         }
 
@@ -1050,7 +1050,7 @@ export default class Polygon extends Nodule {
             );
 
             this.backFills.forEach(fill => {
-              fill.fill = this.backGradient.toObject();
+              fill.fill = this.backGradient;
             });
           }
         } else {
@@ -1059,7 +1059,7 @@ export default class Polygon extends Nodule {
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
             this.backFills.forEach(fill => {
-              fill.fill = this.backGradient.toObject();
+              fill.fill = this.backGradient;
             });
           }
         }
