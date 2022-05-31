@@ -53,7 +53,7 @@ import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
-
+import { Text } from "two.js/src/text";
 @Component({
   computed: {
     ...mapState(useSEStore, [
@@ -175,13 +175,14 @@ export default class SphereFrame extends VueComponent {
       if (!isNaN(layerIdx)) {
         // Create the layers
         const newLayer = this.twoInstance.makeGroup();
+        // newLayer.translation.set(this.canvasSize / 2, this.canvasSize / 2);
         this.layers.push(newLayer);
 
         // Don't flip the y-coord of text layers
-        if (textLayers.indexOf(layerIdx) < 0) {
-          // Not in textLayers
-          (newLayer.scale as any) = new Vector(1, -1);
-        }
+        // if (textLayers.indexOf(layerIdx) < 0) {
+        // Not in textLayers
+        // (newLayer.scale as any) = new Vector(1, -1);
+        // }
       }
     }
     //#endregion addlayers
@@ -208,30 +209,6 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
-    // const box1 = new Rectangle(-100, 150, 100, 150);
-    // box1.fill = "hsl(200,80%,50%)";
-    // const box2 = new Rectangle(100, 150, 100, 150);
-    // box2.fill = "red";
-    // box1.addTo(this.layers[LAYER.background]);
-    // box2.addTo(this.layers[LAYER.foregroundText]);
-
-    // const t1 = new Text(
-    //   "Text must &#13;&#10; be upright 2\u{1D7B9}",
-    //   50,
-    //   80,
-    //   {}
-    // );
-    // t1.size = 12;
-    // t1.noStroke();
-    // t1.fill = "#000";
-    // (t1 as any).leading = 50;
-    // // (t1 as any).linewidth = 30;
-    // (t1 as any).id = "mytext";
-    // (t1 as any).className = "myclass";
-    // t1.decoration = "strikethrough";
-
-    // this.layers[LAYER.foregroundText].add(t1);
-    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
     // const hLine = new Line(-R, 0, R, 0);
@@ -264,7 +241,11 @@ export default class SphereFrame extends VueComponent {
     this.twoInstance.appendTo(this.$refs.canvas);
     // Set the main js instance to refresh at 60 fps
     this.twoInstance.play();
-
+    // Draw a line in the first quadrant, just to test the X-Y orientation
+    const testLine = this.twoInstance.makeLine(0, 0, 50, 100);
+    testLine.stroke = "orange";
+    testLine.linewidth = 4;
+    //
     // Set up the listeners
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
@@ -285,6 +266,7 @@ export default class SphereFrame extends VueComponent {
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
     this.setCanvas(this.$refs.canvas);
+    this.updateView();
   }
 
   beforeDestroy(): void {
@@ -306,20 +288,25 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    (this.twoInstance.renderer as any).setSize(size, size);
+    this.twoInstance.width = size;
+    this.twoInstance.height = size;
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
-      z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
+      z.translation.set(size / 2, size / 2);
     });
 
     const radius = size / 2 - 16; // 16-pixel gap
     // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
+    console.debug(
+      `On canvas requested resize to ${size} pixels, currently ${this.canvasSize} ratio to ideal sphere ${ratio}`
+    );
     this.zoomMagnificationFactor = ratio;
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
     this.zoomTranslation.splice(0);
+    // this.zoomTranslation.push(size / 2, size / 2);
     this.zoomTranslation.push(0, 0);
 
     this.updateView();
@@ -334,19 +321,18 @@ export default class SphereFrame extends VueComponent {
 
   //#region updateView
   private updateView() {
-    // Get the current maginiication factor and translation vector
+    console.debug("UpdateView called?", this.zoomTranslation);
+    // Get the current maginification factor and translation vector
     const mag = this.zoomMagnificationFactor;
     const transVector = this.zoomTranslation;
+    const origin = this.canvasSize / 2;
 
     // Get the DOM element to apply the transform to
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
     // Set the transform
-    const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`;
-    // console.debug("CSS transform matrix: ", mat);
+    const mat = `matrix(${mag},0,0,${-mag},${mag * origin},${-mag * origin})`;
+    console.debug("CSS transform matrix: ", mat);
     el.style.transform = mat;
-    // Set the origin of the transform
-    const origin = this.canvasSize / 2;
-    el.style.transformOrigin = `${origin}px ${origin}px`;
     // What does this do?
     el.style.overflow = "visible";
     //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
@@ -357,7 +343,7 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    // console.debug("Mouse Wheel Zoom!");
+    console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -605,6 +591,7 @@ export default class SphereFrame extends VueComponent {
    */
   @Watch("actionMode")
   switchActionMode(mode: ActionMode): void {
+    console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary
