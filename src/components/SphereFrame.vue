@@ -52,6 +52,7 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+import { Line } from "two.js/src/shapes/line";
 
 @Component({
   computed: {
@@ -154,12 +155,13 @@ export default class SphereFrame extends VueComponent {
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
-      height: this.canvasSize,
-      autostart: true
+      height: this.canvasSize
+      // autostart: true
       // ratio: window.devicePixelRatio
     });
+    this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
-    this.layers.splice(0, this.layers.length);
+    // this.layers.splice(0);
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
@@ -169,36 +171,50 @@ export default class SphereFrame extends VueComponent {
       LAYER.foregroundTextGlowing,
       LAYER.backgroundTextGlowing
     ].map(Number); // shortcut for .map(x => Number(x))
+    let groups: Group[] = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
-        const newLayer = this.twoInstance.makeGroup();
+        const newLayer = new Group();
+        newLayer.matrix.manual = true;
         // newLayer.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-        this.layers.push(newLayer);
-
         // Don't flip the y-coord of text layers
-        // if (textLayers.indexOf(layerIdx) < 0) {
-        // Not in textLayers
-        // (newLayer.scale as any) = new Vector(1, -1);
-        // }
+        if (textLayers.indexOf(layerIdx) >= 0) {
+          // Not in textLayers
+          newLayer.matrix.scale(1, -1);
+        }
+
+        groups.push(newLayer);
+        newLayer.addTo(this.twoInstance.scene);
       }
     }
+    // this.twoInstance.update();
     //#endregion addlayers
+    // const testLine = new Line(0, 0, 50, 100);
+    // testLine.stroke = "orange";
+    // testLine.linewidth = 4;
+    // testLine.addTo(groups[4]);
 
     // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
     //this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
     this.init();
-    this.setLayers(this.layers);
+    this.setLayers(groups);
+
+    // FIXME: uncommenting the following two lines will mess up
+    // the SVG group organization in the SVG tree
+    // But without this, the event handlers won't work correctly
+    // this.layers.splice(0);
+    // this.layers.push(...groups);
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
     this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    this.boundaryCircle.addTo(this.layers[LAYER.midground]);
+    this.boundaryCircle.addTo(groups[Number(LAYER.midground)]);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
@@ -238,13 +254,6 @@ export default class SphereFrame extends VueComponent {
   mounted(): void {
     // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
-    // Set the main js instance to refresh at 60 fps
-    this.twoInstance.play();
-    // Draw a line in the first quadrant, just to test the X-Y orientation
-    const testLine = this.twoInstance.makeLine(0, 0, 50, 100);
-    testLine.stroke = "orange";
-    testLine.linewidth = 4;
-    //
     // Set up the listeners
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
@@ -289,10 +298,9 @@ export default class SphereFrame extends VueComponent {
   onCanvasResize(size: number): void {
     this.twoInstance.width = size;
     this.twoInstance.height = size;
-    // Move the origin of all layers to the center of the viewport
-    this.layers.forEach(z => {
-      z.translation.set(size / 2, size / 2);
-    });
+    // this.layers.forEach(z => {
+    //   z.translation.set(size / 2, size / 2);
+    // });
 
     const radius = size / 2 - 16; // 16-pixel gap
     // this.setSphereRadius(radius);
@@ -330,15 +338,17 @@ export default class SphereFrame extends VueComponent {
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
     console.log("mag and transVector", mag, transVector[0], transVector[1]);
     // Set the transform
-    const mat = `matrix(${mag},0,0,${-mag},${mag * origin},${-mag * origin})`;
-    console.debug("CSS transform matrix: ", mat);
-    el.style.transform = mat;
-    // What does this do?
-    el.style.overflow = "visible";
-    //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
+    // const mat = `matrix(${mag},0,0,${-mag},${mag * origin},${-mag * origin})`;
+    // console.debug("CSS transform matrix: ", mat);
+    this.twoInstance.scene.matrix
+      .identity()
+      .translate(origin, origin) // Order of these two operations
+      .scale(mag, -mag); // (translate & scale) is important
+    //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
       l.update();
     });
+    this.twoInstance.update();
   }
   //#endregion updateView
 
