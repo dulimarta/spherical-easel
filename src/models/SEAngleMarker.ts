@@ -23,8 +23,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
-export class SEAngleMarker extends SEExpression
-  implements Visitable, Labelable {
+export class SEAngleMarker
+  extends SEExpression
+  implements Visitable, Labelable
+{
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
@@ -460,7 +462,7 @@ export class SEAngleMarker extends SEExpression
               this._firstSEParent.closestVector(this._lineClickLocation1)
             ) < 0
           ) {
-            console.log("first point reverse! -1");
+            // console.log("first point reverse! -1");
             this._firstPointDirectionScalar = -1;
           } else {
             this._firstPointDirectionScalar = 1;
@@ -1327,6 +1329,9 @@ export class SEAngleMarker extends SEExpression
 
   // Override the isLabelable method in SEExpression
   public isLabelable(): boolean {
+    return true;
+  }
+  public isMeasurable(): boolean {
     return true;
   }
 }

@@ -53,7 +53,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
-    this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
@@ -82,10 +81,11 @@ export class SEPerpendicularLineThruPoint extends SELine {
       tVec.copy(this._normalVector);
       // console.log("before x", this.name, this._normalVector.x);
       // Get the normal(s) vector to the line
-      const normals = this.seParentOneDimensional.getNormalsToPerpendicularLinesThru(
-        this.seParentPoint.locationVector,
-        this._normalVector // the soon to be old normal vector
-      );
+      const normals =
+        this.seParentOneDimensional.getNormalsToPerpendicularLinesThru(
+          this.seParentPoint.locationVector,
+          this._normalVector // the soon to be old normal vector
+        );
 
       // console.log(
       //   "angle change with returned normals",
@@ -174,8 +174,8 @@ export class SEPerpendicularLineThruPoint extends SELine {
       i18n.t(`objectTree.perpendicularLineThru`, {
         pt: this.seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
-        oneDimensionalParent: this.seParentOneDimensional.label?.ref
-          .shortUserName,
+        oneDimensionalParent:
+          this.seParentOneDimensional.label?.ref.shortUserName,
         index: this._index
       })
     );

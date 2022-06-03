@@ -287,7 +287,7 @@ export abstract class SENodule {
   public isLineWithAntipodalPoints(): boolean {
     return false;
   }
-
+  //only returns true if this an SENodule that is free to move (free points, points on objects, labels, segments of length pi, line between antipodal points)
   public isFreeToMove(): boolean {
     if (
       this.isFreePoint() ||
@@ -302,6 +302,20 @@ export abstract class SENodule {
       return false;
     }
     return this._parents.every(n => n.isFreePoint());
+  }
+  // only returns true for SENodules that can be measured (
+  //   segments => length,
+  //   circles => radius,
+  //   ellipses => sum of distance to foci,
+  //   angleMarkers => angle measure
+  //   polygon => area
+  //   calculation => value
+  public isMeasurable(): boolean {
+    return false;
+  }
+
+  public isNonFreeCirle(): boolean {
+    return false;
   }
 
   //Getters and Setters

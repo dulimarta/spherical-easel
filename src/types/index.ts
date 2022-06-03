@@ -103,6 +103,7 @@ export type SavedNames =
   | "circleRadius"
   | "circleCenterPointName"
   | "circlePointOnCircleName"
+  | "measuredCircleRadiusExpression"
   | "ellipseFocus1Name"
   | "ellipseFocus2Name"
   | "ellipsePointOnEllipseName"
@@ -201,7 +202,10 @@ export type SavedNames =
   | "sliderMeasurementMin"
   | "sliderMeasurementMax"
   | "sliderMeasurementStep"
-  | "sliderMeasurementValue";
+  | "sliderMeasurementValue"
+  | "threePointCircleParentPoint1Name"
+  | "threePointCircleParentPoint2Name"
+  | "threePointCircleParentPoint3Name";
 
 export type ActionMode =
   | "angle"
@@ -234,7 +238,9 @@ export type ActionMode =
   | "midpoint"
   | "nSectPoint"
   | "angleBisector"
-  | "nSectLine";
+  | "nSectLine"
+  | "threePointCircle"
+  | "measuredCircle";
 
 export type IconNames =
   | ActionMode
@@ -257,7 +263,8 @@ export type IconNames =
   | "appSettings"
   | "clearConstruction"
   | "undo"
-  | "redo";
+  | "redo"
+  | "copyToClipboard";
 
 /**
  * Intersection Vector3 and if that intersection exists
@@ -400,6 +407,13 @@ export type SEOneDimensional =
   | SEEllipse
   | SEParametric;
 
+export type SEMeasurable =
+  | SESegment
+  | SECircle
+  | SEPolygon
+  | SEAngleMarker
+  | SEExpression;
+
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
@@ -453,7 +467,8 @@ export type ObjectNames =
   | "segment"
   | "segmentLength"
   | "slider"
-  | "tangentLineThruPoint";
+  | "tangentLineThruPoint"
+  | "threePointCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

@@ -459,7 +459,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVector = this.snapToTemporaryPoint.locationVector;
+            this.temporaryPointMarker.positionVector =
+              this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPointMarker.removeFromLayers();
             this.temporaryPointAdded = false;
@@ -467,9 +468,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapToTemporaryOneDimensional !== null) {
-          this.temporaryPointMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryPointMarker.positionVector =
+            this.snapToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapToTemporaryPoint == null) {
           this.temporaryPointMarker.positionVector = this.currentSphereVector;
         }
@@ -489,10 +491,11 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         } else {
           vectorLocation = this.currentSphereVector;
         }
-        const normalList = this.oneDimensional.getNormalsToPerpendicularLinesThru(
-          vectorLocation,
-          this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
-        );
+        const normalList =
+          this.oneDimensional.getNormalsToPerpendicularLinesThru(
+            vectorLocation,
+            this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
+          );
 
         // Add new temporary lines as needed
         while (this.tempLines.length < normalList.length) {
@@ -588,9 +591,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           newPoint,
           sePointOneDimensionalParent
         );
-        this.sePoint.locationVector = sePointOneDimensionalParent.closestVector(
-          sePointVector
-        );
+        this.sePoint.locationVector =
+          sePointOneDimensionalParent.closestVector(sePointVector);
         const newSELabel = new SELabel(newLabel, this.sePoint);
         // Set the initial label location
         this.tmpVector
@@ -729,7 +731,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
         newPerpLine.exists = false;
-        // console.log("normal doesn't exist 1", vec.x, vec.y, vec.z);
       }
       // Update the display of the perpendicular line
       newPerpLine.markKidsOutOfDate();
@@ -766,10 +767,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // Determine all new intersection points and add their creation to the command so it can be undone
       SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
         (item: SEIntersectionReturnType) => {
-          console.debug(
-            "Got intersection point at",
-            item.SEIntersectionPoint.locationVector.toFixed(4)
-          );
           // Create the plottable label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);

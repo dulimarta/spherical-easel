@@ -22,6 +22,8 @@ import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
 export abstract class Command {
   protected static store = SEStore;
+  protected static tmpVector = new Vector3();
+  protected static tmpVector1 = new Vector3();
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -173,9 +175,9 @@ export abstract class Command {
   abstract do(): void;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
-   * and interpreted at runtime by calling the constructor of Command subclasses. 
+   * and interpreted at runtime by calling the constructor of Command subclasses.
    * The generated opcode shall include sufficient details for invoking the constructor.
-   * 
+   *
    * @returns Several possible return values:
 
    * - A simple command shall return a string

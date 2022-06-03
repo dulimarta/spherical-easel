@@ -652,4 +652,8 @@ export class SESegment extends SENodule
   public isLabelable(): boolean {
     return true;
   }
+
+  public isMeasurable(): boolean {
+    return true;
+  }
 }

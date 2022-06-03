@@ -41,6 +41,8 @@ import EllipseHandler from "@/eventHandlers/EllipseHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
+import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
+import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -49,6 +51,8 @@ import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEExpression } from "@/models/SEExpression";
 
 const SE = namespace("se");
 
@@ -122,6 +126,8 @@ export default class SphereFrame extends VueComponent {
   private nSectSegmentTool!: NSectSegmentHandler;
   private angleBisectorTool!: NSectAngleHandler;
   private nSectAngleTool!: NSectAngleHandler;
+  private threePointCircleTool!: ThreePointCircleHandler;
+  private measuredCircleTool!: MeasuredCircleHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -260,11 +266,22 @@ export default class SphereFrame extends VueComponent {
     this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
     this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
     this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
+    this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
+    this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
+    EventBus.listen(
+      "measured-circle-set-temporary-radius",
+      this.measuredCircleSetTemporaryRadius
+    );
+    EventBus.listen(
+      "measured-circle-set-expression",
+      this.measuredCircleSetExpression
+    );
   }
 
   mounted(): void {
@@ -310,6 +327,8 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
+    EventBus.unlisten("measured-circle-set-temporary-radius");
+    EventBus.unlisten("measured-circle-set-expression");
   }
 
   @Watch("canvasSize")
@@ -459,12 +478,12 @@ export default class SphereFrame extends VueComponent {
       Command.commandHistory[commandStackLength - 1] instanceof
       ZoomSphereCommand
     ) {
-      (Command.commandHistory[
-        commandStackLength - 1
-      ] as ZoomSphereCommand).setMagnificationFactor = newMagFactor;
-      (Command.commandHistory[
-        commandStackLength - 1
-      ] as ZoomSphereCommand).setTranslationVector = newTranslationVector;
+      (
+        Command.commandHistory[commandStackLength - 1] as ZoomSphereCommand
+      ).setMagnificationFactor = newMagFactor;
+      (
+        Command.commandHistory[commandStackLength - 1] as ZoomSphereCommand
+      ).setTranslationVector = newTranslationVector;
     } else {
       // Store the zoom as a command that can be undone or redone
       const zoomCommand = new ZoomSphereCommand(
@@ -616,6 +635,20 @@ export default class SphereFrame extends VueComponent {
       this.$refs.canvas.classList.remove("spin");
     }, 1200);
   }
+
+  measuredCircleSetTemporaryRadius(e: {
+    display: boolean;
+    radius: number;
+  }): void {
+    if (this.currentTool instanceof MeasuredCircleHandler) {
+      this.currentTool.displayTemporaryCircle(e.display, e.radius);
+    }
+  }
+  measuredCircleSetExpression(e: { expression: SEExpression }): void {
+    if (this.currentTool instanceof MeasuredCircleHandler) {
+      this.currentTool.setExpression(e.expression);
+    }
+  }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -746,6 +779,12 @@ export default class SphereFrame extends VueComponent {
         break;
       case "nSectLine":
         this.currentTool = this.nSectAngleTool;
+        break;
+      case "threePointCircle":
+        this.currentTool = this.threePointCircleTool;
+        break;
+      case "measuredCircle":
+        this.currentTool = this.measuredCircleTool;
         break;
       default:
         this.currentTool = null;

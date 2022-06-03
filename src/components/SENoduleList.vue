@@ -52,6 +52,9 @@ export default class SENoduleTree extends Vue {
   readonly i18LabelKey!: string; /** When defined, label takes over the node name */
 
   private expanded = false;
+  created(): void {
+    EventBus.listen("expand-measurement-sheet", this.expandMeasurementSheet);
+  }
 
   get hasExistingChildren(): boolean {
     return this.existingChildren.length > 0;
@@ -67,7 +70,23 @@ export default class SENoduleTree extends Vue {
       else return n.exists;
     });
   }
-
+  //When the user activates the measured circle tool
+  // the object tool tab is open and the existing measurements sheet is expanded and the others are closed
+  expandMeasurementSheet(): void {
+    // console.log("here1");
+    if (this.i18LabelKey === "objects.measurements") {
+      if (this.hasExistingChildren) {
+        this.expanded = true;
+        EventBus.fire("show-alert", {
+          key: `objectTree.selectAMeasurementForMeasuredCircle`,
+          type: "info"
+        });
+      }
+    } else {
+      this.expanded = false;
+    }
+    // console.log("------------");
+  }
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
   onExpressionSelect(x: any): void {
     const pos = this.children.findIndex(n => n.id === x.id);
@@ -78,6 +97,9 @@ export default class SENoduleTree extends Vue {
   }
   isSlider(n: SENodule): boolean {
     return n instanceof SESlider;
+  }
+  beforeDestroy(): void {
+    EventBus.unlisten("expand-measurement-sheet");
   }
 }
 </script>

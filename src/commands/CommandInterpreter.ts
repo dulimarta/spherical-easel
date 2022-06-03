@@ -27,6 +27,8 @@ import { AddNSectLineCommand } from "./AddNSectLineCommand";
 import { AddNSectPointCommand } from "./AddNSectPointCommand";
 import { AddPolarLineCommand } from "./AddPolarLineCommand";
 import { AddSliderMeasurementCommand } from "./AddSliderMeasurementCommand";
+import { AddThreePointCircleCenterCommand } from "./AddThreePointCircleCenterCommand";
+import { AddMeasuredCircleCommand } from "./AddMeasuredCircleCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -56,8 +58,12 @@ function executeIndividual(command: string): Command {
       return AddLineCommand.parse(command, noduleDictionary);
     case "AddCircle":
       return AddCircleCommand.parse(command, noduleDictionary);
+    case "AddMeasuredCircle":
+      return AddMeasuredCircleCommand.parse(command, noduleDictionary);
     case "AddEllipse":
       return AddEllipseCommand.parse(command, noduleDictionary);
+    case "AddThreePointCircleCenter":
+      return AddThreePointCircleCenterCommand.parse(command, noduleDictionary);
     case "AddAntipodalPoint":
       return AddAntipodalPointCommand.parse(command, noduleDictionary);
     case "AddPolarPoint":

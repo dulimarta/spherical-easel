@@ -146,4 +146,5 @@ export class SECalculation extends SEExpression {
   }
 
   public customStyles = (): Set<string> => emptySet;
+
 }

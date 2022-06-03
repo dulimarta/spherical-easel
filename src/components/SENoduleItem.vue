@@ -64,31 +64,38 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-          <v-icon v-else-if="isAngle"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isAngle"
             medium>
             $vuetify.icons.value.angle
           </v-icon>
-          <v-icon v-else-if="isMeasureTriangle"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isMeasureTriangle"
             medium>
             $vuetify.icons.value.measureTriangle
           </v-icon>
-          <v-icon v-else-if="isMeasurePolygon"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isMeasurePolygon"
             medium>
             $vuetify.icons.value.measurePolygon
           </v-icon>
-          <v-icon v-else-if="isSegmentLength"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isSegmentLength"
             medium>
             $vuetify.icons.value.segmentLength
           </v-icon>
-          <v-icon v-else-if="isPointDistance"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isPointDistance"
             medium>
             $vuetify.icons.value.pointDistance
           </v-icon>
-          <v-icon v-else-if="isCalculation"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isCalculation"
             medium>
             $vuetify.icons.value.calculationObject
           </v-icon>
-          <v-icon v-else-if="isMeasurement"
+          <v-icon :class="shakeMeasurementDisplay"
+            v-else-if="isMeasurement"
             medium>
             $vuetify.icons.value.measurementObject
           </v-icon>
@@ -101,7 +108,7 @@
                 class="contentText"
                 @click="selectMe"
                 v-on="on"
-                :class="showClass">
+                :class="[showClass,shakeMeasurementDisplay]">
                 <span class="text-truncate">{{ shortDisplayText }}</span>
               </div>
             </template>
@@ -115,12 +122,27 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
+                  <div id="_test_copy_to_clipboard"
+                    v-if="isMeasurement && supportsClipboard"
+                    v-on="on"
+                    @click="copyToClipboard">
+                    <v-icon small>
+                      $vuetify.icons.value.copyToClipboard
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
                   <div id="_test_toggle_format"
-                    v-show="isExpressionAndNotCoordinate"
+                    v-if="isExpressionAndNotCoordinate"
                     v-on="on"
                     @click="cycleValueDisplayMode">
                     <v-icon small>
-                      $cycleNodeValueDisplayMode
+                      $vuetify.icons.value.cycleNodeValueDisplayMode
                     </v-icon>
                   </div>
                 </template>
@@ -131,7 +153,7 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
                   <div id="_test_toggle_visibility"
-                    v-show="isPlottable"
+                    v-if="isPlottable"
                     v-on="on"
                     @click="toggleVisibility">
                     <v-icon small
@@ -154,7 +176,7 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
                   <div id="_toggle_label_display"
-                    v-show="isPlottable"
+                    v-if="isPlottable"
                     v-on="on"
                     @click="toggleLabelDisplay">
                     <v-icon small
@@ -246,6 +268,7 @@ import { namespace } from "vuex-class";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
+import EventBus from "@/eventHandlers/EventBus";
 
 const SE = namespace("se");
 @Component
@@ -260,6 +283,7 @@ export default class SENoduleItem extends Vue {
 
   private rotationMatrix = new Matrix4();
   private traceLocation = new Vector3();
+
   curve: SEParametric | null = null;
   curvePoint: SEParametricTracePoint | null = null;
   parametricTime = 0;
@@ -267,11 +291,19 @@ export default class SENoduleItem extends Vue {
   parametricTMax = 1;
   parametricTStep = 0.01;
 
+  supportsClipboard = false; //For copying the value of a measurement to the clipboard
+
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
+
+  created() {
+    if (navigator.clipboard) {
+      this.supportsClipboard = true;
+    }
+  }
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
@@ -308,12 +340,22 @@ export default class SENoduleItem extends Vue {
       const target = this.node.point as SEPoint;
       target.glowing = flag;
     }
+
+    if (this.node instanceof SEExpression) {
+      EventBus.fire("measured-circle-set-temporary-radius", {
+        display: flag,
+        radius: this.node.value
+      });
+    }
   }
 
   selectMe(): void {
+    // console.log("Clicked", this.node.name);
     if (this.node instanceof SEExpression) {
-      // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
+      EventBus.fire("measured-circle-set-expression", {
+        expression: this.node
+      });
     }
   }
 
@@ -344,6 +386,24 @@ export default class SENoduleItem extends Vue {
     this.visibilityUpdateKey += 1;
     this.labelVisibilityUpdateKey += 1;
   }
+  copyToClipboard(): void {
+    if (this.node instanceof SEExpression) {
+      navigator.clipboard.writeText(String(this.node.value)).then(() =>
+        EventBus.fire("show-alert", {
+          key: "objectTree.copiedMeasurementSuccessfullyToClipboard",
+          type: "success"
+        })
+      );
+    }
+  }
+  //   .then(() => {
+  //     console.log('Text is on the clipboard.');
+  //     this.message = 'Code copied to clipboard.';
+  //   })
+  // .catch(e => {
+  //   console.error(e);
+  //   this.message = 'Sorry, unable to copy to clipboard.'
+  // });    }
 
   deleteNode(): void {
     /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLCIATION BE ELIMINATED?
@@ -599,6 +659,12 @@ export default class SENoduleItem extends Vue {
     this.labelVisibilityUpdateKey += 1; //
     return this.node.showing ? "visibleNode" : "invisibleNode";
   }
+  //only shake the measurement icons initially when the measured circle tool is selected (There should also be a message displayed telling the user to select a measurement)
+  get shakeMeasurementDisplay(): string {
+    return SEStore.actionMode === "measuredCircle" && this.isMeasurement
+      ? "shake"
+      : "";
+  }
 
   get shortDisplayText(): string {
     return this.node.noduleItemText;
@@ -606,16 +672,33 @@ export default class SENoduleItem extends Vue {
   get definitionText(): string {
     return this.node.noduleDescription;
   }
-
-  // TODO: the following getter definition is recursive
-  // and is not currently used. DO we need this?
-  // get magnificationLevel(): number {
-  //   return this.magnificationLevel;
-  // }
 }
 </script>
 
 <style scoped lang="scss">
+.shake {
+  animation: shake 2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
 .invisibleNode {
   color: gray;
   font-style: italic;
@@ -635,7 +718,6 @@ export default class SENoduleItem extends Vue {
     // Icons should not grow, just fit to content
     // flex-grow: 0;
   }
-
   &:hover {
     /* Change background on mouse hover only for nodes
        i.e. do not change bbackground on labels */

@@ -19,8 +19,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)
 ]);
-export class SEEllipse extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SEEllipse
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -392,15 +394,16 @@ export class SEEllipse extends SENodule
         this.tmpMatrix.getInverse(this.ref.ellipseFrame)
       );
 
-      const normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
-        // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
-        [], // Avoid these t values
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
-      );
+      const normalList =
+        SENodule.getNormalsToPerpendicularLinesThruParametrically(
+          // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          transformedToStandard,
+          this.ref.tMin,
+          this.ref.tMax,
+          [], // Avoid these t values
+          this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
       // const minAngle = Math.min(
       //   ...(normalList.map(vec => vec.angleTo(oldNormal)) as number[])

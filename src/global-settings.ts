@@ -357,10 +357,11 @@ export const SETTINGS = {
   },
   circle: {
     showLabelsInitially: false, // Should the labels be show upon creating the circle
+    showLabelsOfNonFreeCirclesInitially: false, // Should the labels be shown upon creating the non-free circle
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
+    minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points) Also this is the minimum distance between the initial points in a threePointCircle
     numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -411,6 +412,26 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
+    },
+    nonFree: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+      },
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree circles when drawn
+      scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   ellipse: {
@@ -992,6 +1013,20 @@ export const SETTINGS = {
         filePath: "../../icons/iconNSectPointPaths.svg"
       }
     },
+    threePointCircle: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconThreePointCirclePaths.svg"
+      }
+    },
+    measuredCircle: {
+      props: {
+        mdiIcon: "mdi-swap-horizontal-circle-outline",
+        emphasizeTypes: [["point", "front"]],
+        filePath: ""
+      }
+    },
     angleBisector: {
       props: {
         mdiIcon: false,
@@ -1228,17 +1263,24 @@ export const SETTINGS = {
         mdiIcon: "mdi-redo",
         filePath: ""
       }
+    },
+    copyToClipboard: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-content-copy",
+        filePath: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
     openDelay: 500,
-    closeDelay: 250,
+    closeDelay: 1000,
     disableDisplay: false // controls if all tooltips should be displayed
   },
   /* Sets the length of time (in ms) that the tool use display message is displayed in a snackbar */
   toolUse: {
-    delay: 2000,
+    delay: 3000,
     display: true // controls if they should be displayed
   },
   parameterization: {
