@@ -54,7 +54,7 @@ This is automatically generated when the object was created, but the user can ch
 - Ro - [Rotation](/tools/transformation.html#create-measured-rotation)
 - Tr - [Translation](/tools/transformation.html#create-translation)
 - In - [Inversion](/tools/transformation.html#create-inversion)
-- Calc - [Calculation](/userguide/toolsobjectspanel.html#calculations)
+- Calc - [Calculation](/userguide/toolsobjectspanel.html#expression-panel)
 - Sl - [Slider](/tools/measurement.html#slider)
 - Tx - [Text](/tools/basic.html#text)
 - Am - Angle Marker
@@ -124,7 +124,7 @@ This tab allows the user to adjust the style features of the selected object(s) 
 If the box is unchecked the selected styles are used to render the object on the back of the sphere. If the box is checked the styles are automatically computed based on a contrast constant and the front style (and the style choices are ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings).
 contrast = 1 => no difference between front and back
 Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
-  
+
 They include pickers for the following attributes:
 
 - Fill Color And No Fill Option
@@ -143,5 +143,5 @@ This tab allows the user to adjust some of the style features of the selected ob
 - The user can write a real valued expression that controls the Red, Blue, or Green component of the color of either the fill (in the case of points) or the stroke color (in the case of one-dimensional objects).
 - For [Line Segments](/tools/basic.html#line-segment) and [Circular Arc](/tools/advanced.html#circular-arc) the extension value is set here. The user can enter a fix number or a Measurement Token to control the length of the Line Segment or Circular Arc. Details can be found in the tool descriptions.
 - For [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined) this is the tab where the parametric description $P(t)$, lower bound ($t_l$), upper bound ($t_u$), and open/closed options are entered. Details can be found in the tool description.
-- The user can edit a [Calculation](/userguide/toolsobjectspanel.html#calculations) in this tab.
+- The user can edit a [Calculation](/userguide/toolsobjectspanel.html#expression-panel) in this tab.
 - The user edit a [Slider](/tools/measurement.html#slider) in this tab. The user can adjust the lower and upper bounds of the slider, the step size, and if the slider should be animated.

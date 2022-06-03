@@ -39,7 +39,7 @@ export default class NonFreeCircle extends Circle {
         return DEFAULT_NONFREE_CIRCLE_FRONT_STYLE;
 
       case StyleEditPanels.Back:
-        if (SETTINGS.line.dynamicBackStyle)
+        if (SETTINGS.circle.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_CIRCLE_BACK_STYLE,
             strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
@@ -57,6 +57,7 @@ export default class NonFreeCircle extends Circle {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    // console.debug("Non free circle: adjust size");
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -64,7 +65,17 @@ export default class NonFreeCircle extends Circle {
     this.frontPart.linewidth =
       ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeCircleScalePercent / 100);
-
+    // console.debug(
+    //   "  currrentCirleStr5okeWidth",
+    //   Circle.currentCircleStrokeWidthBack
+    // );
+    // console.debug("  frontStrokeWidthPercent", frontStrokeWidthPercent);
+    // console.debug(
+    //   "  linewidth",
+    //   this.frontPart.linewidth,
+    //   ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
+    //     (this.nonFreeCircleScalePercent / 100)
+    // );
     this.backPart.linewidth =
       ((Circle.currentCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle

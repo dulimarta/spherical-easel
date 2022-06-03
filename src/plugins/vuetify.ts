@@ -337,6 +337,12 @@ const vuetify = new Vuetify({
         props: {
           iconName: "redo"
         }
+      },
+      copyToClipboard: {
+        component: IconBase,
+        props: {
+          iconName: "copyToClipboard"
+        }
       }
     }
   },

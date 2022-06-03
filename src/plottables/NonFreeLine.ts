@@ -57,6 +57,7 @@ export default class NonFreeLine extends Line {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    //console.debug("Non free line");
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -64,7 +65,7 @@ export default class NonFreeLine extends Line {
     this.frontHalf.linewidth =
       ((Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeLineScalePercent / 100);
-
+    //console.debug("  linewidth", this.frontHalf.linewidth);
     this.backHalf.linewidth =
       ((Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle

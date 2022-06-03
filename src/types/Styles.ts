@@ -123,6 +123,7 @@ export const DEFAULT_CIRCLE_BACK_STYLE: StyleOptions = {
 };
 export const DEFAULT_NONFREE_CIRCLE_FRONT_STYLE: StyleOptions = {
   strokeColor: SETTINGS.circle.nonFree.strokeColor.front,
+  fillColor: SETTINGS.circle.nonFree.fillColor.front,
   dashArray: SETTINGS.circle.nonFree.dashArray.front,
   reverseDashArray: SETTINGS.circle.nonFree.dashArray.reverse.front,
   strokeWidthPercent: SETTINGS.circle.nonFree.scalePercent
@@ -130,6 +131,7 @@ export const DEFAULT_NONFREE_CIRCLE_FRONT_STYLE: StyleOptions = {
 
 export const DEFAULT_NONFREE_CIRCLE_BACK_STYLE: StyleOptions = {
   strokeColor: SETTINGS.circle.nonFree.strokeColor.back,
+  fillColor: SETTINGS.circle.nonFree.fillColor.back,
   strokeWidthPercent: SETTINGS.circle.nonFree.scalePercent,
   dashArray: SETTINGS.circle.nonFree.dashArray.back,
   reverseDashArray: SETTINGS.circle.nonFree.dashArray.reverse.back,

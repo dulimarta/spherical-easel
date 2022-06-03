@@ -768,7 +768,6 @@ export default class ThreePointCircleHandler extends Highlighter {
    * Add a new three point circle if it hasn't already been added
    */
   makeThreePointCircleAndCenter(): boolean {
-    console.log("make three point circle executed");
     // Create a command group to add the points defining the three point circle and the three point to the store
     // This way a single undo click will undo all (potentially five) operations.
     const threePointCircleCommandGroup = new CommandGroup();
@@ -1112,15 +1111,20 @@ export default class ThreePointCircleHandler extends Highlighter {
     );
 
     // Clone the current three point circle
-    const newThreePointCircle = this.temporaryThreePointCircle.clone();
+    // const newNonFreeCircle = this.temporaryThreePointCircle.clone();
+    const newNonFreeCircle = new NonFreeCircle();
+    newNonFreeCircle.centerVector = this.temporaryThreePointCircle.centerVector;
+    newNonFreeCircle.circleRadius = this.temporaryThreePointCircle.circleRadius;
+
     // Set the display to the default values
-    newThreePointCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+    newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    newThreePointCircle.adjustSize();
+    newNonFreeCircle.adjustSize();
+    newNonFreeCircle.updateDisplay();
 
     //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
     const newSECircle = new SECircle(
-      newThreePointCircle,
+      newNonFreeCircle,
       newSEThreePointCircleCenter,
       this.point1SEPoint
     );
@@ -1262,23 +1266,24 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
 
         // a new  circle
-        const newThreePointCircle = new NonFreeCircle();
+        const newNonFreeCircle = new NonFreeCircle();
 
         // Set the display to the default values
-        newThreePointCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the stroke width to the current zoom magnification factor
-        newThreePointCircle.adjustSize();
-        newThreePointCircle.circleRadius =
+        newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+
+        newNonFreeCircle.circleRadius =
           newThreePointCircleCenter._locationVector.angleTo(
             object1.locationVector
           );
-        newThreePointCircle.centerVector =
+        newNonFreeCircle.centerVector =
           newThreePointCircleCenter._locationVector;
-        newThreePointCircle.updateDisplay();
+        // Adjust the stroke width to the current zoom magnification factor
+        newNonFreeCircle.adjustSize();
+        newNonFreeCircle.updateDisplay();
 
         //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
         const newSECircle = new SECircle(
-          newThreePointCircle,
+          newNonFreeCircle,
           newSEThreePointCircleCenter,
           object1
         );
@@ -1300,6 +1305,7 @@ export default class ThreePointCircleHandler extends Highlighter {
             newSELabel1
           )
         );
+        newSECircle.update();
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the ellipse command so they can be undone.

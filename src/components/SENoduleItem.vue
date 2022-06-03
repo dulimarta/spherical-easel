@@ -122,12 +122,27 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
+                  <div id="_test_copy_to_clipboard"
+                    v-if="isMeasurement && supportsClipboard"
+                    v-on="on"
+                    @click="copyToClipboard">
+                    <v-icon small>
+                      $vuetify.icons.value.copyToClipboard
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
                   <div id="_test_toggle_format"
-                    v-show="isExpressionAndNotCoordinate"
+                    v-if="isExpressionAndNotCoordinate"
                     v-on="on"
                     @click="cycleValueDisplayMode">
                     <v-icon small>
-                      $cycleNodeValueDisplayMode
+                      $vuetify.icons.value.cycleNodeValueDisplayMode
                     </v-icon>
                   </div>
                 </template>
@@ -138,7 +153,7 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
                   <div id="_test_toggle_visibility"
-                    v-show="isPlottable"
+                    v-if="isPlottable"
                     v-on="on"
                     @click="toggleVisibility">
                     <v-icon small
@@ -161,7 +176,7 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
                   <div id="_toggle_label_display"
-                    v-show="isPlottable"
+                    v-if="isPlottable"
                     v-on="on"
                     @click="toggleLabelDisplay">
                     <v-icon small
@@ -276,11 +291,19 @@ export default class SENoduleItem extends Vue {
   parametricTMax = 1;
   parametricTStep = 0.01;
 
+  supportsClipboard = false; //For copying the value of a measurement to the clipboard
+
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
+
+  created() {
+    if (navigator.clipboard) {
+      this.supportsClipboard = true;
+    }
+  }
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
@@ -363,6 +386,24 @@ export default class SENoduleItem extends Vue {
     this.visibilityUpdateKey += 1;
     this.labelVisibilityUpdateKey += 1;
   }
+  copyToClipboard(): void {
+    if (this.node instanceof SEExpression) {
+      navigator.clipboard.writeText(String(this.node.value)).then(() =>
+        EventBus.fire("show-alert", {
+          key: "objectTree.copiedMeasurementSuccessfullyToClipboard",
+          type: "success"
+        })
+      );
+    }
+  }
+  //   .then(() => {
+  //     console.log('Text is on the clipboard.');
+  //     this.message = 'Code copied to clipboard.';
+  //   })
+  // .catch(e => {
+  //   console.error(e);
+  //   this.message = 'Sorry, unable to copy to clipboard.'
+  // });    }
 
   deleteNode(): void {
     /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLCIATION BE ELIMINATED?

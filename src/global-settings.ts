@@ -414,7 +414,12 @@ export const SETTINGS = {
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
-      // No fill for circles
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+      },
       strokeColor: {
         front: "hsla(200, 90%, 61%, 1)",
         back: "hsla(200, 90%, 80%, 1)"
@@ -1019,7 +1024,7 @@ export const SETTINGS = {
       props: {
         mdiIcon: "mdi-swap-horizontal-circle-outline",
         emphasizeTypes: [["point", "front"]],
-        filePath: "../../icons/iconThreePointCirclePaths.svg"
+        filePath: ""
       }
     },
     angleBisector: {
@@ -1258,17 +1263,24 @@ export const SETTINGS = {
         mdiIcon: "mdi-redo",
         filePath: ""
       }
+    },
+    copyToClipboard: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-content-copy",
+        filePath: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
     openDelay: 500,
-    closeDelay: 250,
+    closeDelay: 1000,
     disableDisplay: false // controls if all tooltips should be displayed
   },
   /* Sets the length of time (in ms) that the tool use display message is displayed in a snackbar */
   toolUse: {
-    delay: 2000,
+    delay: 3000,
     display: true // controls if they should be displayed
   },
   parameterization: {

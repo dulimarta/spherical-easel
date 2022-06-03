@@ -42,6 +42,7 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
+import { SENodule } from "@/models/SENodule";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -609,7 +610,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         );
       }
     } else {
-      measurementSEExpression = this.measurementSEParent;
+      measurementSEExpression = this.measurementSEParent as SEExpression;
     }
 
     // check to make sure that this measured circle doesn't already exist
@@ -663,10 +664,10 @@ export default class MeasuredCircleHandler extends Highlighter {
 
       // create the new non free circle
       const newCircle = new NonFreeCircle();
-      // // Set the display to the default values
-      // newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-      // // Adjust the stroke width to the current zoom magnification factor
-      // newCircle.adjustSize();
+      // Set the display to the default values
+      newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the stroke width to the current zoom magnification factor
+      newCircle.adjustSize();
       // set the radius, center and update the display
       newCircle.centerVector = this.centerSEPoint.locationVector;
       newCircle.circleRadius = newRadius;

@@ -265,7 +265,8 @@ export type IconNames =
   | "appSettings"
   | "clearConstruction"
   | "undo"
-  | "redo";
+  | "redo"
+  | "copyToClipboard";
 
 /**
  * Intersection Vector3 and if that intersection exists

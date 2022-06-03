@@ -65,9 +65,10 @@ export default {
       "Select a line segment to create its midpoint.",
 
     CreateAngleBisectorDisplayedName: "Angle<br>Bisector",
-    CreateAngleBisectorToolTipMessage: "Create the angle bisector of an angle.",
+    CreateAngleBisectorToolTipMessage:
+      "Create the angle bisector of a measured angle.",
     CreateAngleBisectorToolUseMessage:
-      "Select an angle to create its bisector.",
+      "You must first measure an angle with the Measure Angle tool and then select it to create its bisector.",
 
     CreateNSectAngleDisplayedName: "N-Sect<br>Angle",
     CreateNSectAngleToolTipMessage: "Divide an angle into N equal pieces.",
@@ -563,6 +564,9 @@ export default {
     startOfInput: "Start of input",
     cycleValueDisplayMode:
       "Click to cycle to the next value display mode including multiples of pi and degrees.",
+    copyToClipboard: "Copy the value of the measurement to the clipboard.",
+    copiedMeasurementSuccessfullyToClipboard:
+      "Successfully copied the measurement value to the clipboard!",
     toggleDisplay: "Toggle the display of the corresponding object.",
     toggleLabelDisplay:
       "Toggle the  display of the corresponding object's label.",

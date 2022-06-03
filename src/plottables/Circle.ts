@@ -116,7 +116,7 @@ export default class Circle extends Nodule {
     [this.backGradientColorCenter, this.backGradientColor]
   );
 
-  /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
+  /** Initialize the current circle width that is adjust by the zoom level and the user widthPercent */
   static currentCircleStrokeWidthFront =
     SETTINGS.circle.drawn.strokeWidth.front;
   static currentCircleStrokeWidthBack = SETTINGS.circle.drawn.strokeWidth.back;
