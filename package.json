@@ -32,12 +32,9 @@
     "moment": "^2.26.0",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
-    "save-svg-as-png": "^1.4.17",
     "splitpanes": "^2.3.6",
-    "svgpng": "^4.1.0",
     "three": "^0.118.3",
     "two.js": "^0.7.13",
-    "types-save-svg-as-png": "^1.0.1",
     "vue": "~2.6.14",
     "vue-advanced-cropper": "^1.7.0",
     "vue-class-component": "^7.2.6",
@@ -51,7 +48,7 @@
     "vuex-module-decorators": "^1.0.1"
   },
   "devDependencies": {
-    "@intlify/vue-i18n-loader": "~2.0.3",
+    "@intlify/vue-i18n-loader": "~2.1.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/gifencoder": "^2.0.1",
