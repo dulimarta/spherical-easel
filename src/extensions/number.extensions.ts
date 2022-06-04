@@ -15,6 +15,9 @@ Number.prototype.toRadians = function (): number {
 Number.prototype.modTwoPi = function (): number {
   return ((Number(this) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 };
+Number.prototype.modPi = function (): number {
+  return ((Number(this) % Math.PI) + Math.PI) % Math.PI;
+};
 
 Array.prototype.rotate = function (count: number) {
   const len = this.length >>> 0;

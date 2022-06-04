@@ -85,7 +85,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="expressions.length > 0">
+          v-show="showExpressionSheet">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
@@ -118,6 +118,8 @@ import SliderForm from "@/components/SliderForm.vue";
 import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { namespace } from "vuex-class";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEStore } from "@/store";
 const SE = namespace("se");
 
 @Component({
@@ -148,6 +150,8 @@ export default class ObjectTree extends Vue {
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
 
+  private displayExpressionSheetAgain = true;
+
   get zeroObjects(): boolean {
     return (
       this.nodules.filter(n => n.exists).length === 0 &&
@@ -155,32 +159,29 @@ export default class ObjectTree extends Vue {
     );
   }
 
-  // calculateExpression(): void {
-  // this.varMap.clear();
-  // try {
-  //   // no code
-  //   this.calcResult =
-  //     this.calcExpression.length > 0
-  //       ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-  //       : 0;
-  // } catch (err) {
-  //   this.parsingError = err.message;
-  // }
-  // }
-  // when the user clicks on an expression, this event is triggered
-  // It enables the user to add measurement references to the calculation/expression builder
-  // onExpressionSelect(x: any): void {
-  //   console.debug("bob");
-  //   const pos = this.nodules.findIndex(n => n.id === x.id);
-  //   console.debug("****Selection", x, "at", pos);
-  //   if (pos >= 0) {
-  //     const pos1 = this.nodules[pos].name.indexOf("-");
-  //     const varName = this.nodules[pos].name.substring(0, pos1);
-  //     EventBus.fire("measurement-selected", varName);
-  //     // this.calcExpression += varName;
-  //     // this.onKeyPressed(); // emulate a key prress
-  //   }
-  // }
+  get showExpressionSheet(): boolean {
+    //This message will appear once each time the number of expressions is zero and the measure circle tool is active
+    // console.log("here show espression sheet");
+    if (
+      SEStore.actionMode === "measuredCircle" &&
+      this.expressions.length === 0 &&
+      this.displayExpressionSheetAgain
+    ) {
+      this.displayExpressionSheetAgain = false;
+      EventBus.fire("show-alert", {
+        key: "objectTree.createMeasurementForMeasuredCircle",
+        type: "info"
+      });
+    }
+
+    if (
+      SEStore.actionMode === "measuredCircle" &&
+      this.expressions.length > 0
+    ) {
+      this.displayExpressionSheetAgain = true;
+    }
+    return this.expressions.length > 0;
+  }
 }
 </script>
 

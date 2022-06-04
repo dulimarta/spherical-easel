@@ -33,8 +33,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
 ]);
-export class SEParametric extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SEParametric
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -731,8 +733,24 @@ export class SEParametric extends SENodule
   public isOneDimensional(): boolean {
     return true;
   }
-  
+
   public isLabelable(): boolean {
     return true;
+  }
+
+  // Factor out specialized glowing setter from SENodule
+  // to SEParametric to remove dependency from SENodule to Parametric
+  set glowing(b: boolean) {
+    let ptr: Parametric | null = this.ref;
+    if (b)
+      while (ptr !== null) {
+        ptr.glowingDisplay();
+        ptr = ptr.next;
+      }
+    else
+      while (ptr !== null) {
+        ptr.normalDisplay();
+        ptr = ptr.next;
+      }
   }
 }

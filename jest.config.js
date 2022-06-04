@@ -8,7 +8,7 @@ module.exports = {
     // Skip parsing CSS files
     "\\.(css|less)$": "<rootDir>/src/assets/css/__mocks__/styleMock.js"
   },
-  // moduleFileExtensions: ["js", "ts", "vue"],
+  moduleFileExtensions: ["js", "ts", "vue"],
   // transform: {
   //   "^.+\\.vue$": "vue-jest",
   //   "^.+\\.ts$": "ts-jest"
@@ -25,7 +25,7 @@ module.exports = {
   // roots: ["<rootDir>/src", "<rootDir>/tests"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
   snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     "<rootDir>/src/**/*.ts",
     "<rootDir>/src/components/*.vue",

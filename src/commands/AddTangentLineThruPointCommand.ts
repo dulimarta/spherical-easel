@@ -2,22 +2,11 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
-import {
-  SavedNames,
-  SEOneDimensional,
-  SEOneDimensionalNotStraight
-} from "@/types";
-import Line from "@/plottables/Line";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import NonFreeLine from "@/plottables/NonFreeLine";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEParametric } from "@/models/SEParametric";
-import { SECircle } from "@/models/SECircle";
 import { StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 export class AddTangentLineThruPointCommand extends Command {
@@ -165,17 +154,15 @@ export class AddTangentLineThruPointCommand extends Command {
         tangentLineThruPointIndex
       );
       //style the tangent Line
-      const tangentThruPointLineFrontStyleString = propMap.get(
-        "objectFrontStyle"
-      );
+      const tangentThruPointLineFrontStyleString =
+        propMap.get("objectFrontStyle");
       if (tangentThruPointLineFrontStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Front,
           JSON.parse(tangentThruPointLineFrontStyleString)
         );
-      const tangentThruPointLineBackStyleString = propMap.get(
-        "objectBackStyle"
-      );
+      const tangentThruPointLineBackStyleString =
+        propMap.get("objectBackStyle");
       if (tangentThruPointLineBackStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Back,

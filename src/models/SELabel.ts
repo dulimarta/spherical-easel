@@ -49,7 +49,7 @@ export class SELabel extends SENodule implements Visitable {
     this.ref = label;
     this.parent = parent;
     label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
-    ((this.parent as unknown) as Labelable).label = this;
+    (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
     this.name = "La" + SENodule.LABEL_COUNT;
 
@@ -142,7 +142,7 @@ export class SELabel extends SENodule implements Visitable {
     if (this._exists) {
       this.tmpVector.copy(this._locationVector);
       this._locationVector.copy(
-        ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+        (this.parent as unknown as Labelable).closestLabelLocationVector(
           this.tmpVector,
           SEStore.zoomMagnificationFactor
         )
@@ -190,7 +190,7 @@ export class SELabel extends SENodule implements Visitable {
     if (!this.parent.isOutOfDate()) {
       this._locationVector
         .copy(
-          ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+          (this.parent as unknown as Labelable).closestLabelLocationVector(
             pos,
             SEStore.zoomMagnificationFactor
           )

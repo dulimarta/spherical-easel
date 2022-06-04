@@ -1388,13 +1388,13 @@ function (_super) {
   };
 
   return Special;
-}(DviCommand); // 243	fnt_def1	k[1], c[4], s[4], d[4], 
+}(DviCommand); // 243	fnt_def1	k[1], c[4], s[4], d[4],
 // a[1], l[1], n[a+l]	define the meaning of a font number
-// 244	fnt_def2	k[2], c[4], s[4], d[4], 
+// 244	fnt_def2	k[2], c[4], s[4], d[4],
 // a[1], l[1], n[a+l]
-// 245	fnt_def3	k[3], c[4], s[4], d[4], 
+// 245	fnt_def3	k[3], c[4], s[4], d[4],
 // a[1], l[1], n[a+l]
-// 246	fnt_def4	k[4], c[4], s[4], d[4], 
+// 246	fnt_def4	k[4], c[4], s[4], d[4],
 // a[1], l[1], n[a+l]
 
 
@@ -3765,7 +3765,7 @@ function () {
   /* The fist 24 bytes (6 words) of a TFM file contain twelve 16-bit
      integers that give the lengths of the various subsequent
      portions of the file. These twelve integers are, in order:
-       
+
      * lf = length of the entire file, in words;
      * lh = length of the header data, in words;
      * bc = smallest character code in the font;
@@ -3778,14 +3778,14 @@ function () {
      * nk = number of words in the kern table;
      * ne = number of words in the extensible character table;
      * np = number of font parameter words.
-     
+
     They are all nonnegative and less than 2**15. We must have
     ``bc - 1 <= ec <= 255``, ``ne <= 256``, and
-       
+
     ``lf = 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np``.
      Note that a font may contain as many as 256 characters (if ``bc = 0`` and ``ec = 255``), and
     as few as 0 characters (if ``bc = ec + 1``).
-    
+
     The rest of the TFM file may be regarded as a sequence of ten data arrays having the
     informal specification:
      ========== ===================== ====================
@@ -3869,7 +3869,7 @@ function () {
         em.  The other dimensions must be less than 16 design-size units in absolute value; thus,
         ``header[1]`` and ``param[1]`` are the only fix word entries in the whole TFM file whose
         first byte might be something besides 0 or 255.
-        
+
         ``header[2 ... 11]``, if present, contains 40 bytes that identify the character coding
         scheme.  The first byte, which must be between 0 and 39, is the number of subsequent ASCII
         bytes actually relevant in this string, which is intended to specify what
@@ -3903,13 +3903,13 @@ function () {
     var character_coding_scheme;
     if (position < character_info_table_position) character_coding_scheme = this.read_bcpl(); // Read header[12 ... 16] if there
 
-    var character_coding_scheme_length = 40; // bytes (11 - 2 + 1) * 4 = 10 * 4 
+    var character_coding_scheme_length = 40; // bytes (11 - 2 + 1) * 4 = 10 * 4
 
     position += character_coding_scheme_length;
     var family;
     if (position < character_info_table_position) family = this.read_bcpl(position); // Read header[12 ... 16] if there
 
-    var family_length = 20; // bytes (16 - 12 +1) * 4 = 5 * 4 
+    var family_length = 20; // bytes (16 - 12 +1) * 4 = 5 * 4
 
     position += family_length;
 
@@ -3990,7 +3990,7 @@ function () {
   the current character and next char; then the current character is deleted if ``b = 0``, and
   next char is deleted if ``c = 0``; then we pass over a characters to reach the next current
   character (which may have a ligature/kerning program of its own).
-  
+
   Notice that if ``a = 0`` and ``b = 1``, the current character is unchanged; if ``a = b`` and
   ``c = 1``, the current character is changed but the next character is unchanged.
    If the very first instruction of the lig kern array has ``skip_byte = 255``, the

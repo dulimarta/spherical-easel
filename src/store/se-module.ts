@@ -51,6 +51,7 @@ import { SEPolygon } from "@/models/SEPolygon";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
+import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -438,9 +439,8 @@ export default class SE extends VuexModule implements AppState {
     const pos3 = this.expressions.findIndex(x => x.id === angleMarkerId);
     if (angleMarkerPos >= 0) {
       /* victim angleMarker is found */
-      const victimAngleMarker: SEAngleMarker = this.seAngleMarkers[
-        angleMarkerPos
-      ];
+      const victimAngleMarker: SEAngleMarker =
+        this.seAngleMarkers[angleMarkerPos];
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
       if (victimAngleMarker.label) {
         victimAngleMarker.label.ref.value = [];
@@ -595,7 +595,6 @@ export default class SE extends VuexModule implements AppState {
   // Update the display of all free SEPoints to update the entire display
   @Mutation
   updateDisplay(): void {
-    // console.log("update display");
     this.seNodules
       .filter(obj => obj.isFreeToMove())
       .forEach(obj => {
@@ -718,7 +717,6 @@ export default class SE extends VuexModule implements AppState {
   clearUnsavedFlag(): void {
     this.hasUnsavedNodules = false;
   }
-
 
   //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
@@ -1126,10 +1124,16 @@ export default class SE extends VuexModule implements AppState {
     return (newCircle: SECircle): SEIntersectionReturnType[] => {
       // Avoid creating an intersection where any SEPoint already exists
       const avoidVectors: Vector3[] = [];
-      // First add the two parent points of the newLine, if they are new, then
+      // First add the two parent points of the newcircle, if they are new, then
       //  they won't have been added to the state.points array yet so add them first
       avoidVectors.push(newCircle.centerSEPoint.locationVector);
-      avoidVectors.push(newCircle.circleSEPoint.locationVector);
+      // In the measured circle class, the circle point is hidden and
+      // is auto generated SEPoint (never added to the state)
+      // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
+      if (!(newCircle instanceof SEMeasuredCircle)) {
+        avoidVectors.push(newCircle.circleSEPoint.locationVector);
+      }
+
       this.sePoints.forEach(pt => {
         if (!pt.locationVector.isZero()) {
           avoidVectors.push(pt.locationVector);

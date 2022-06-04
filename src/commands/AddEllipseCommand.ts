@@ -3,9 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Matrix4, Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { SEEllipse } from "@/models/SEEllipse";
 import Ellipse from "@/plottables/Ellipse";
 import { StyleEditPanels } from "@/types/Styles";
@@ -86,9 +84,10 @@ export class AddEllipseCommand extends Command {
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "ellipseFocus1Name=" + this.focus1SEPoint.name,
-      "ellipseFocus2Name=" + this.focus2SEPoint.name,
-      "ellipsePointOnEllipseName=" + this.ellipseSEPoint.name
+      "ellipseFocus1Name=" + Command.symbolToASCIIDec(this.focus1SEPoint.name),
+      "ellipseFocus2Name=" + Command.symbolToASCIIDec(this.focus2SEPoint.name),
+      "ellipsePointOnEllipseName=" +
+        Command.symbolToASCIIDec(this.ellipseSEPoint.name)
     ].join("&");
   }
 

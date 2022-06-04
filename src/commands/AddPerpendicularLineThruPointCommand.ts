@@ -3,12 +3,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SavedNames, SEOneDimensional } from "@/types";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
@@ -160,17 +157,15 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         perpendicularLineThruPointIndex
       );
       //style the perpendicular Line
-      const perpendicularThruPointLineFrontStyleString = propMap.get(
-        "objectFrontStyle"
-      );
+      const perpendicularThruPointLineFrontStyleString =
+        propMap.get("objectFrontStyle");
       if (perpendicularThruPointLineFrontStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Front,
           JSON.parse(perpendicularThruPointLineFrontStyleString)
         );
-      const perpendicularThruPointLineBackStyleString = propMap.get(
-        "objectBackStyle"
-      );
+      const perpendicularThruPointLineBackStyleString =
+        propMap.get("objectBackStyle");
       if (perpendicularThruPointLineBackStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Back,

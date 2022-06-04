@@ -12,8 +12,6 @@ import {
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
 import AppStore from "@/store";
-import { SEExpression } from "@/models/SEExpression";
-import { ExpressionParser } from "@/expression/ExpressionParser";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";

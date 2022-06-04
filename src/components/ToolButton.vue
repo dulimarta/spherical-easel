@@ -13,6 +13,7 @@
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
+           measuredCircleToolAction();
             if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
@@ -77,6 +78,8 @@ import { Prop, Watch } from "vue-property-decorator";
 import { AppState, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import { namespace } from "vuex-class";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEStore } from "@/store";
 
 const SE = namespace("se");
 
@@ -125,6 +128,23 @@ export default class ToolButton extends Vue {
     } else {
       this.elev = 0;
       this.weight = "normal";
+    }
+  }
+
+  //When switching to the measured circle tool...
+  measuredCircleToolAction(): void {
+    if (this.button.actionModeValue === "measuredCircle") {
+      //...open the object tree tab,
+      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (SEStore.expressions.length > 0) {
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForMeasuredCircle",
+          type: "info"
+        });
+      }
     }
   }
   // @Prop({ default: 0 }) readonly elev?: number;

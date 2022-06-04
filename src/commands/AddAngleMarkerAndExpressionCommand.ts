@@ -6,7 +6,6 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import AngleMarker from "@/plottables/AngleMarker";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames } from "@/types";

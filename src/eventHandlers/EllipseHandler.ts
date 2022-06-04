@@ -39,8 +39,10 @@ export default class EllipseHandler extends Highlighter {
   /** The model object point that is a point on the ellipse (if any) */
   private ellipseSEPoint: SEPoint | null = null;
   /** The possible parent of the foci(1|2)SEPoint*/
-  private focus1SEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
-  private focus2SEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
+  private focus1SEPointOneDimensionalParent: SEOneOrTwoDimensional | null =
+    null;
+  private focus2SEPointOneDimensionalParent: SEOneOrTwoDimensional | null =
+    null;
 
   /** Depending on where the user is in selecting the point, we know what to temporary objects to add to the scene */
   private focus1LocationSelected = false;
@@ -71,7 +73,8 @@ export default class EllipseHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapTemporaryPointMarkerToOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapTemporaryPointMarkerToOneDimensional: SEOneOrTwoDimensional | null =
+    null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
   constructor(layers: Two.Group[]) {
@@ -362,7 +365,8 @@ export default class EllipseHandler extends Highlighter {
           type: "info"
         });
       } else {
-        this.temporaryEllipsePointMarker.positionVector = this.currentSphereVector;
+        this.temporaryEllipsePointMarker.positionVector =
+          this.currentSphereVector;
         EventBus.fire("show-alert", {
           key: `handlers.ellipseFocus2Selected`,
           keyOptions: {},
@@ -457,7 +461,8 @@ export default class EllipseHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
-            this.temporaryFocus1Marker.positionVector = this.snapTemporaryPointMarkerToPoint.locationVector;
+            this.temporaryFocus1Marker.positionVector =
+              this.snapTemporaryPointMarkerToPoint.locationVector;
           } else {
             this.temporaryFocus1Marker.removeFromLayers();
             this.temporaryFocus1MarkerAdded = false;
@@ -465,9 +470,10 @@ export default class EllipseHandler extends Highlighter {
         }
         // Set the location of the temporary focus1Marker by snapping to appropriate object (if any)
         if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
-          this.temporaryFocus1Marker.positionVector = this.snapTemporaryPointMarkerToOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryFocus1Marker.positionVector =
+            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         }
         // otherwise move the focus1marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
@@ -489,7 +495,8 @@ export default class EllipseHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
-            this.temporaryFocus2Marker.positionVector = this.snapTemporaryPointMarkerToPoint.locationVector;
+            this.temporaryFocus2Marker.positionVector =
+              this.snapTemporaryPointMarkerToPoint.locationVector;
           } else {
             this.temporaryFocus2Marker.removeFromLayers();
             this.temporaryFocus2MarkerAdded = false;
@@ -497,9 +504,10 @@ export default class EllipseHandler extends Highlighter {
         }
         // Set the location of the temporary focus2Marker by snapping to appropriate object (if any)
         if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
-          this.temporaryFocus2Marker.positionVector = this.snapTemporaryPointMarkerToOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryFocus2Marker.positionVector =
+            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         }
         // otherwise move the focus2marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
@@ -515,7 +523,8 @@ export default class EllipseHandler extends Highlighter {
         if (this.snapTemporaryPointMarkerToPoint !== null) {
           // Even if this temporary point marker is removed, set the location of the temporary marker so that the sum of angles to foci
           // can be found using this.temporaryEllipsePointMarker.positionVector
-          this.temporaryEllipsePointMarker.positionVector = this.snapTemporaryPointMarkerToPoint.locationVector;
+          this.temporaryEllipsePointMarker.positionVector =
+            this.snapTemporaryPointMarkerToPoint.locationVector;
           // if the user is over a non user created intersection point (which can't be selected so will not remain
           // glowing when the user select that location and then moves the mouse away - see line 128) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
@@ -532,13 +541,15 @@ export default class EllipseHandler extends Highlighter {
         }
         // Set the location of the temporary ellipse point Marker by snapping to appropriate object (if any)
         if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
-          this.temporaryEllipsePointMarker.positionVector = this.snapTemporaryPointMarkerToOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryEllipsePointMarker.positionVector =
+            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         }
         // otherwise move the EllipsePointMarker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryEllipsePointMarker.positionVector = this.currentSphereVector;
+          this.temporaryEllipsePointMarker.positionVector =
+            this.currentSphereVector;
         }
 
         // If the temporary ellipse has *not* been added to the scene do so now (only once)
@@ -607,74 +618,49 @@ export default class EllipseHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    if (this.isOnSphere) {
-      // if (this.focus1LocationSelected) {
-      if (this.focus2LocationSelected) {
-        if (
-          this.currentSphereVector.angleTo(this.focus1Vector) >
-            SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
-          this.currentSphereVector.angleTo(this.focus2Vector) >
-            SETTINGS.ellipse.minimumCreationDistance
-        ) {
-          const angleSumToEllipsePoint =
-            this.temporaryEllipse.focus1Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            ) +
-            this.temporaryEllipse.focus2Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            );
+    if (this.isOnSphere && this.focus2LocationSelected) {
+      if (
+        this.currentSphereVector.angleTo(this.focus1Vector) >
+          SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
+        this.currentSphereVector.angleTo(this.focus2Vector) >
+          SETTINGS.ellipse.minimumCreationDistance
+      ) {
+        const angleSumToEllipsePoint =
+          this.temporaryEllipse.focus1Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          ) +
+          this.temporaryEllipse.focus2Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          );
 
-          //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
-          if (
-            angleSumToEllipsePoint -
-              this.focus1Vector.angleTo(this.focus2Vector) >
-              SETTINGS.ellipse.minimumAngleSumDifference &&
-            angleSumToEllipsePoint <
-              2 * Math.PI -
-                this.focus1Vector.angleTo(this.focus2Vector) -
-                SETTINGS.ellipse.minimumAngleSumDifference
-          ) {
-            if (!this.makeEllipse()) {
-              EventBus.fire("show-alert", {
-                key: `handlers.ellipseCreationAttemptDuplicate`,
-                keyOptions: {},
-                type: "error"
-              });
-            }
-            // reset to get ready to make a new ellipse
-            this.mouseLeave(event);
+        //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
+        if (
+          angleSumToEllipsePoint -
+            this.focus1Vector.angleTo(this.focus2Vector) >
+            SETTINGS.ellipse.minimumAngleSumDifference &&
+          angleSumToEllipsePoint <
+            2 * Math.PI -
+              this.focus1Vector.angleTo(this.focus2Vector) -
+              SETTINGS.ellipse.minimumAngleSumDifference
+        ) {
+          if (!this.makeEllipse()) {
+            EventBus.fire("show-alert", {
+              key: `handlers.ellipseCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
           }
-        } else {
-          EventBus.fire("show-alert", {
-            key: `handlers.ellipseInitiallyToSmall`,
-            keyOptions: {},
-            type: "info"
-          });
+          // reset to get ready to make a new ellipse
+          this.mouseLeave(event);
         }
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.ellipseInitiallyToSmall`,
+          keyOptions: {},
+          type: "info"
+        });
       }
     }
-    // else {
-    //   // Remove the temporary objects from the scene and mark the temporary object
-    //   //  not added to the scene clear snap objects
-    //   this.temporaryEllipse.removeFromLayers();
-    //   this.temporaryEllipseAdded = false;
-
-    //   this.temporaryFocus1Marker.removeFromLayers();
-    //   this.temporaryFocus1MarkerAdded = false;
-    //   this.snapFocus1MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus1MarkerToTemporaryPoint = null;
-
-    //   this.temporaryFocus2Marker.removeFromLayers();
-    //   this.temporaryFocus2MarkerAdded = false;
-    //   this.snapFocus2MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus2MarkerToTemporaryPoint = null;
-
-    //   this.temporaryEllipsePointMarker.removeFromLayers();
-    //   this.temporaryEllipsePointMarkerAdded = false;
-    //   this.snapEllipsePointMarkerToTemporaryOneDimensional = null;
-    //   this.snapEllipsePointMarkerToTemporaryPoint = null;
-    // }
-    // }
   }
 
   mouseLeave(event: MouseEvent): void {

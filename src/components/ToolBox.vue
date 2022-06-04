@@ -82,11 +82,12 @@ import ToolGroups from "@/components/ToolGroups.vue";
 
 import SETTINGS from "@/global-settings";
 import { SEStore } from "@/store";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component({
   components: {
     ToolGroups,
-    // Use dynamic import so subcomponents are loaded on deman
+    // Use dynamic import so subcomponents are loaded on demand
     ObjectTree: () => import("@/components/ObjectTree.vue"),
     ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
   }
@@ -104,7 +105,9 @@ export default class Toolbox extends Vue {
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = 0;
 
-  // private scene!: Two.Group;
+  created(): void {
+    EventBus.listen("left-panel-set-active-tab", this.setActiveTab);
+  }
 
   mounted(): void {
     // this.scene = this.layers[LAYER.midground];
@@ -114,11 +117,20 @@ export default class Toolbox extends Vue {
     // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
-      SEStore.setActionMode({
-        id: "move",
-        name: "MoveDisplayedName"
-      });
+      // change to the move mode, but only if we are not using the measured circle tool
+      if (SEStore.actionMode !== "measuredCircle") {
+        SEStore.setActionMode({
+          id: "move",
+          name: "MoveDisplayedName"
+        });
+      }
     }
+  }
+  setActiveTab(e: { tabNumber: number }): void {
+    this.activeLeftDrawerTab = e.tabNumber;
+  }
+  beforeDestroy(): void {
+    EventBus.unlisten("left-panel-set-active-tab");
   }
 }
 </script>

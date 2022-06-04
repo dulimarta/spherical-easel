@@ -58,10 +58,10 @@ export default class Circle extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontPart: Two.Path;
-  private backPart: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingBackPart: Two.Path;
+  protected frontPart: Two.Path;
+  protected backPart: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingBackPart: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
@@ -116,7 +116,7 @@ export default class Circle extends Nodule {
     [this.backGradientColorCenter, this.backGradientColor]
   );
 
-  /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
+  /** Initialize the current circle width that is adjust by the zoom level and the user widthPercent */
   static currentCircleStrokeWidthFront =
     SETTINGS.circle.drawn.strokeWidth.front;
   static currentCircleStrokeWidthBack = SETTINGS.circle.drawn.strokeWidth.back;
@@ -801,8 +801,8 @@ export default class Circle extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
+   * This method is used to copy the temporary circle created with the Circle Tool  into a
+   * permanent one in the scene .
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the

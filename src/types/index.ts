@@ -13,12 +13,10 @@ import { Matrix4, Vector3 } from "three";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -105,6 +103,7 @@ export type SavedNames =
   | "circleRadius"
   | "circleCenterPointName"
   | "circlePointOnCircleName"
+  | "measuredCircleRadiusExpression"
   | "ellipseFocus1Name"
   | "ellipseFocus2Name"
   | "ellipsePointOnEllipseName"
@@ -203,7 +202,10 @@ export type SavedNames =
   | "sliderMeasurementMin"
   | "sliderMeasurementMax"
   | "sliderMeasurementStep"
-  | "sliderMeasurementValue";
+  | "sliderMeasurementValue"
+  | "threePointCircleParentPoint1Name"
+  | "threePointCircleParentPoint2Name"
+  | "threePointCircleParentPoint3Name";
 
 export type ActionMode =
   | "angle"
@@ -236,7 +238,9 @@ export type ActionMode =
   | "midpoint"
   | "nSectPoint"
   | "angleBisector"
-  | "nSectLine";
+  | "nSectLine"
+  | "threePointCircle"
+  | "measuredCircle";
 
 export type IconNames =
   | ActionMode
@@ -259,7 +263,8 @@ export type IconNames =
   | "appSettings"
   | "clearConstruction"
   | "undo"
-  | "redo";
+  | "redo"
+  | "copyToClipboard";
 
 /**
  * Intersection Vector3 and if that intersection exists
@@ -402,6 +407,13 @@ export type SEOneDimensional =
   | SEEllipse
   | SEParametric;
 
+export type SEMeasurable =
+  | SESegment
+  | SECircle
+  | SEPolygon
+  | SEAngleMarker
+  | SEExpression;
+
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
@@ -455,7 +467,8 @@ export type ObjectNames =
   | "segment"
   | "segmentLength"
   | "slider"
-  | "tangentLineThruPoint";
+  | "tangentLineThruPoint"
+  | "threePointCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

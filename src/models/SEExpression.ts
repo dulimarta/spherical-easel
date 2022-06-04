@@ -56,4 +56,7 @@ export abstract class SEExpression extends SENodule {
   ): boolean {
     return false;
   }
+  public isMeasurable(): boolean {
+    return true;
+  }
 }

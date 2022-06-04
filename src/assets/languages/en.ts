@@ -3,7 +3,8 @@ import { LocaleMessages } from "vue-i18n";
 export default {
   account: {
     createError: "Unable to create a new account: {error}",
-    emailNotVeified: "Your account is not yet verified. Please check your email",
+    emailNotVeified:
+      "Your account is not yet verified. Please check your email",
     emailVerification: "Verification email has been sent to {emailAddr}",
     loginError: "Unable to login: {error}",
     passwordReset: "Check your email ({emailAddr}) to reset password"
@@ -25,6 +26,7 @@ export default {
     AdvancedTools: "Advanced Tools",
     TransformationalTools: "Transformational Tools",
     MeasurementTools: "Measurement Tools",
+    MeasuredObjectTools: "Measured Objects Tools",
     DeveloperOnlyTools: "Developer Only Tools"
   },
   buttons: {
@@ -63,9 +65,10 @@ export default {
       "Select a line segment to create its midpoint.",
 
     CreateAngleBisectorDisplayedName: "Angle<br>Bisector",
-    CreateAngleBisectorToolTipMessage: "Create the angle bisector of an angle.",
+    CreateAngleBisectorToolTipMessage:
+      "Create the angle bisector of a measured angle.",
     CreateAngleBisectorToolUseMessage:
-      "Select an angle to create its bisector.",
+      "You must first measure an angle with the Measure Angle tool and then select it to create its bisector.",
 
     CreateNSectAngleDisplayedName: "N-Sect<br>Angle",
     CreateNSectAngleToolTipMessage: "Divide an angle into N equal pieces.",
@@ -77,6 +80,11 @@ export default {
       "Divide a line segment into N equal pieces.",
     CreateNSectSegmentToolUseMessage:
       "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
+
+    CreateThreePointCircleDisplayedName: "Three Point<br>Circle",
+    CreateThreePointCircleToolTipMessage: "Create a circle from three points.",
+    CreateThreePointCircleToolUseMessage:
+      "Select three points (not all the same or antipodal) to create the circle through them.",
 
     CreateCircleDisplayedName: "Create<br>Circle",
     CreateCircleToolTipMessage: "Insert circle",
@@ -92,6 +100,11 @@ export default {
     CreateEllipseToolTipMessage: "Insert ellipse",
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
+
+    CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
+    CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
+    CreateMeasuredCircleToolUseMessage:
+      "Select a center point and a measurement or measurable object to determine the radius.",
 
     CreateIntersectionDisplayedName: "Intersection<br>Point(s)",
     CreateIntersectionToolTipMessage: "Intersect two one-dimensional objects",
@@ -414,7 +427,14 @@ export default {
       "One focus of the ellipse selected. Now select a second non-antipodal focus.",
     ellipseInitiallyToSmall:
       "To create an ellipse initially you must select a point on the ellipse that is further away from each focus. Select a different location further from the foci.",
-
+    threePointCircleRepeatPointSelected:
+      "The two points of three points that determine a three point circle are not allowed to be identical. Select another location.",
+    threePointCircleFirstPointSelected:
+      "The first point of the three point circle have been selected. Now select another.",
+    threePointCircleSecondPointSelected:
+      "The second point of the three point circle have been selected. Now select another.",
+    measuredCircleCenterSelected:
+      "Center of circle selected. Now select a measurement, measurable object, or measurement label.",
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
@@ -472,8 +492,12 @@ export default {
     pointCreationAttemptDuplicate: "There is already a point at this location.",
     circleCreationAttemptDuplicate:
       "There is already a circle with this center and radius.",
+    measuredCircleCreationAttemptDuplicate:
+      "There is already a circle with this center and measurement for the radius.",
     ellipseCreationAttemptDuplicate:
       "There is already an ellipse with these foci and angle sum.",
+    threePointCircleCreationAttemptDuplicate:
+      "There is already circle with this center and radius.",
     segmentCreationAttemptDuplicate:
       "There is already a line segment with these endpoints, this normal vector, and length.",
     lineCreationAttemptDuplicate:
@@ -540,6 +564,9 @@ export default {
     startOfInput: "Start of input",
     cycleValueDisplayMode:
       "Click to cycle to the next value display mode including multiples of pi and degrees.",
+    copyToClipboard: "Copy the value of the measurement to the clipboard.",
+    copiedMeasurementSuccessfullyToClipboard:
+      "Successfully copied the measurement value to the clipboard!",
     toggleDisplay: "Toggle the display of the corresponding object.",
     toggleLabelDisplay:
       "Toggle the  display of the corresponding object's label.",
@@ -575,8 +602,12 @@ export default {
     distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
+    centerOfThreePointCircle:
+      "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
+    measuredCircle:
+      "Circle with center {center} with radius {measurementToken}",
     ellipseThrough:
       "Ellipse with foci {focus1} and {focus2} through point {through}",
     intersectionPoint:
@@ -643,7 +674,11 @@ export default {
       "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
     duplicateParametricCurve: "Duplicate parametric curves are not allowed.",
     unableToComputeTheDerivativeOf:
-      "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}"
+      "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
+    createMeasurementForMeasuredCircle:
+      "Create a measurement to use as the radius of a measured circle.",
+    selectAMeasurementForMeasuredCircle:
+      "An selecting a center point, select a measurement to use as the radius of a measured circle."
   },
   constructions: {
     save: "Save",
@@ -666,6 +701,24 @@ export default {
       "You are about to logout, any unsaved constructions will be discarded.",
     saveConstructionDialog:
       "Please provide a short description for your construction.",
+    shareLinkReference:
+      "--placeholder shareeeee--",
+    shareConstructionDialog:
+      "Share your construction",
+    exportConstructionDialog:
+      "Export",
+    selectedSVGExport:
+      "SVG was selected.",
+    selectedPNGExport:
+      "PNG was selected.",
+    selectedGIFExport:
+      "GIF was selected.",
+    sliderFileDimensions:
+      "File dimensions in pixels:",
+    exportDimensionsInvalidWarning:
+      "Export dimensions must be between 200px and 1200px. Please try again.",
+    shareLinkDialog:
+      "Share your construction link here",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
