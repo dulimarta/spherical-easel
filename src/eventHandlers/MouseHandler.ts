@@ -117,8 +117,8 @@ export default abstract class MouseHandler implements ToolStrategy {
     // Don't rely on e.offsetX or e.offsetY, they may not be accurate
     const offsetX = event.clientX - boundingRect.left;
     const offsetY = event.clientY - boundingRect.top;
-    const mouseX = offsetX - this.canvas.translation.x;
-    const mouseY = -(offsetY - this.canvas.translation.y);
+    const mouseX = offsetX - boundingRect.width / 2;
+    const mouseY = boundingRect.height / 2 - offsetY;
 
     // Get the current zoom factor and vector
     const mag = MouseHandler.store.zoomMagnificationFactor;

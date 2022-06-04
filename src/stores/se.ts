@@ -602,6 +602,7 @@ export const useSEStore = defineStore({
       initialStyleStatesMap,
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
+    layers: (): Array<Group> => layers,
     hasObjects(): boolean {
       return sePoints.length > 0;
     },

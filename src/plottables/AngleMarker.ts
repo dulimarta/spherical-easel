@@ -262,37 +262,32 @@ export default class AngleMarker extends Nodule {
 
     // Create the other parts cloning the front circle path start
     this.frontCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Path as Path;
-    this.frontCirclePathTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
+    this.frontCirclePathTail = this.frontCirclePathStart.clone() as Path;
     this.frontCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
 
-    this.backCirclePathStart =
-      this.frontCirclePathStart.clone() as Path as Path;
+    this.backCirclePathStart = this.frontCirclePathStart.clone() as Path;
     this.backCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Path as Path;
-    this.backCirclePathTail = this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
+    this.backCirclePathTail = this.frontCirclePathStart.clone() as Path;
     this.backCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
 
     this.glowingFrontCirclePathStart =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
     this.glowingFrontCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Path as Path;
-    this.glowingFrontCirclePathTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
+    this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone() as Path;
     this.glowingFrontCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
 
-    this.glowingBackCirclePathStart =
-      this.frontCirclePathStart.clone() as Path as Path;
+    this.glowingBackCirclePathStart = this.frontCirclePathStart.clone() as Path;
     this.glowingBackCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Path as Path;
-    this.glowingBackCirclePathTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
+    this.glowingBackCirclePathTail = this.frontCirclePathStart.clone() as Path;
     this.glowingBackCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Path as Path;
+      this.frontCirclePathStart.clone() as Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontCirclePathStart.id), {
@@ -3493,8 +3488,10 @@ export default class AngleMarker extends Nodule {
           // this.frontFill2.fill = this.frontGradient;
 
           // If the angle markers are not shaded
-          this.frontFill1.fill = frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
-          this.frontFill2.fill = frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
+          this.frontFill1.fill =
+            frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
+          this.frontFill2.fill =
+            frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
         }
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {

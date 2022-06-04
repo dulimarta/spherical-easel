@@ -60,7 +60,8 @@ import { Line } from "two.js/src/shapes/line";
       "actionMode",
       "zoomMagnificationFactor",
       "zoomTranslation",
-      "seLabels"
+      "seLabels",
+      "layers"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
@@ -150,15 +151,16 @@ export default class SphereFrame extends VueComponent {
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  private layers: Group[] = [];
+  readonly layers!: Group[];
 
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
-      height: this.canvasSize
-      // autostart: true
+      height: this.canvasSize,
+      autostart: true
       // ratio: window.devicePixelRatio
     });
+    console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
     this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
     // this.layers.splice(0);
@@ -171,30 +173,28 @@ export default class SphereFrame extends VueComponent {
       LAYER.foregroundTextGlowing,
       LAYER.backgroundTextGlowing
     ].map(Number); // shortcut for .map(x => Number(x))
-    let groups: Group[] = [];
+
+    // Create a detached group to prevent duplicate group ID
+    // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
+    const dummy_group = new Group();
+    let groups: Array<Group> = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
         const newLayer = new Group();
         newLayer.matrix.manual = true;
-        // newLayer.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-        // Don't flip the y-coord of text layers
+        // Undo the y-flip on text layers
         if (textLayers.indexOf(layerIdx) >= 0) {
           // Not in textLayers
           newLayer.matrix.scale(1, -1);
         }
 
-        groups.push(newLayer);
         newLayer.addTo(this.twoInstance.scene);
+        groups.push(newLayer);
       }
     }
-    // this.twoInstance.update();
     //#endregion addlayers
-    // const testLine = new Line(0, 0, 50, 100);
-    // testLine.stroke = "orange";
-    // testLine.linewidth = 4;
-    // testLine.addTo(groups[4]);
 
     // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
     //this.sphereCanvas = this.layers[LAYER.midground];
@@ -203,18 +203,12 @@ export default class SphereFrame extends VueComponent {
     this.init();
     this.setLayers(groups);
 
-    // FIXME: uncommenting the following two lines will mess up
-    // the SVG group organization in the SVG tree
-    // But without this, the event handlers won't work correctly
-    // this.layers.splice(0);
-    // this.layers.push(...groups);
-
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
     this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    this.boundaryCircle.addTo(groups[Number(LAYER.midground)]);
+    this.boundaryCircle.addTo(this.layers[Number(LAYER.midground)]);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
@@ -306,9 +300,6 @@ export default class SphereFrame extends VueComponent {
     // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    console.debug(
-      `On canvas requested resize to ${size} pixels, currently ${this.canvasSize} ratio to ideal sphere ${ratio}`
-    );
     this.zoomMagnificationFactor = ratio;
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
@@ -328,18 +319,11 @@ export default class SphereFrame extends VueComponent {
 
   //#region updateView
   private updateView() {
-    console.debug("UpdateView called?", this.zoomTranslation);
     // Get the current maginification factor and translation vector
     const mag = this.zoomMagnificationFactor;
     const transVector = this.zoomTranslation;
     const origin = this.canvasSize / 2;
 
-    // Get the DOM element to apply the transform to
-    const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
-    console.log("mag and transVector", mag, transVector[0], transVector[1]);
-    // Set the transform
-    // const mat = `matrix(${mag},0,0,${-mag},${mag * origin},${-mag * origin})`;
-    // console.debug("CSS transform matrix: ", mat);
     this.twoInstance.scene.matrix
       .identity()
       .translate(origin, origin) // Order of these two operations
@@ -348,7 +332,6 @@ export default class SphereFrame extends VueComponent {
     this.seLabels.forEach((l: SELabel) => {
       l.update();
     });
-    this.twoInstance.update();
   }
   //#endregion updateView
 
