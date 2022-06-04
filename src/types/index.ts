@@ -17,6 +17,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETransformation } from "@/models/SETransformation";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -41,9 +42,9 @@ export interface AppState {
   seParametrics: SEParametric[];
   seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
+  seTransformations: SETransformation[];
   seNodules: SENodule[];
   selectedSENodules: SENodule[];
-
   intersections: SEIntersectionPoint[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
@@ -205,7 +206,8 @@ export type SavedNames =
   | "sliderMeasurementValue"
   | "threePointCircleParentPoint1Name"
   | "threePointCircleParentPoint2Name"
-  | "threePointCircleParentPoint3Name";
+  | "threePointCircleParentPoint3Name"
+  | "translationSegmentParentName";
 
 export type ActionMode =
   | "angle"
@@ -240,7 +242,8 @@ export type ActionMode =
   | "angleBisector"
   | "nSectLine"
   | "threePointCircle"
-  | "measuredCircle";
+  | "measuredCircle"
+  | "translate";
 
 export type IconNames =
   | ActionMode
@@ -468,7 +471,9 @@ export type ObjectNames =
   | "segmentLength"
   | "slider"
   | "tangentLineThruPoint"
-  | "threePointCircleCenter";
+  | "threePointCircleCenter"
+  | "translation"
+  | "transformedPoint";
 
 export interface ObjectState {
   kind: ObjectNames;

@@ -146,6 +146,12 @@ const vuetify = new Vuetify({
           iconName: "threePointCircle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
+      translate: {
+        component: IconBase,
+        props: {
+          iconName: "translate" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
       measuredCircle: {
         component: IconBase,
         props: {

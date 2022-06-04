@@ -21,6 +21,12 @@ export abstract class SENodule {
   public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
   public static POLYGON_COUNT = 0;
+  public static TRANSFORMATION_COUNT = 0;
+  public static TRANSLATION_COUNT = 0;
+  public static ROTATION_COUNT = 0;
+  public static REFLECTION_COUNT = 0;
+  public static INVERSION_COUNT = 0;
+  public static REFLECTION_OVER_POINT_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -34,6 +40,12 @@ export abstract class SENodule {
     SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
     SENodule.POLYGON_COUNT = 0;
+    SENodule.TRANSFORMATION_COUNT = 0;
+    SENodule.TRANSLATION_COUNT = 0;
+    SENodule.ROTATION_COUNT = 0;
+    SENodule.REFLECTION_COUNT = 0;
+    SENodule.INVERSION_COUNT = 0;
+    SENodule.REFLECTION_OVER_POINT_COUNT = 0;
   }
 
   /**
@@ -318,6 +330,9 @@ export abstract class SENodule {
     return false;
   }
 
+  public isTransformation(): boolean {
+    return false;
+  }
   //Getters and Setters
 
   public abstract get noduleItemText(): string;

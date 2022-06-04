@@ -4,7 +4,6 @@ import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEStore } from "@/store";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
 const parser = new ExpressionParser();
 export class SECalculation extends SEExpression {
@@ -65,7 +64,7 @@ export class SECalculation extends SEExpression {
   get calculationParents(): SENodule[] {
     return this._calculationParents;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   // public get prettyValue(): string {
   //   if (this._valueDisplayMode) {
   //     return (
@@ -144,7 +143,4 @@ export class SECalculation extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
-
 }

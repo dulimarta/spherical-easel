@@ -43,6 +43,7 @@ import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
+import TranslationHandler from "@/eventHandlers/TranslationHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -128,6 +129,7 @@ export default class SphereFrame extends VueComponent {
   private nSectAngleTool!: NSectAngleHandler;
   private threePointCircleTool!: ThreePointCircleHandler;
   private measuredCircleTool!: MeasuredCircleHandler;
+  private translationTool!: TranslationHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -268,6 +270,7 @@ export default class SphereFrame extends VueComponent {
     this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
     this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
     this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+    this.translationTool = new TranslationHandler(this.layers);
 
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -785,6 +788,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "measuredCircle":
         this.currentTool = this.measuredCircleTool;
+        break;
+      case "translate":
+        this.currentTool = this.translationTool;
         break;
       default:
         this.currentTool = null;

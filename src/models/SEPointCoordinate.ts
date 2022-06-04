@@ -4,13 +4,13 @@ import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+const emptySet = new Set<string>();
 
 export enum CoordinateSelection {
   X_VALUE,
   Y_VALUE,
   Z_VALUE
 }
-const emptySet = new Set<string>();
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   readonly point: SEPoint;
@@ -26,7 +26,7 @@ export class SEPointCoordinate extends SEExpression {
     this.selector = selector;
     this.point = point;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get value(): number {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
@@ -44,7 +44,6 @@ export class SEPointCoordinate extends SEExpression {
   get sePoint(): SEPoint {
     return this.point;
   }
-  public customStyles = (): Set<string> => emptySet;
 
   public get noduleDescription(): string {
     switch (this.selector) {

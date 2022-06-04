@@ -101,7 +101,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._polygonNumber = SENodule.POLYGON_COUNT;
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 

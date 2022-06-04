@@ -53,6 +53,16 @@ export class SEThreePointCircleCenter extends SEPoint {
       "No Label Short Name In SEThreePointCircleCenter"
     );
   }
+
+  get seParentPoint1(): SEPoint {
+    return this._sePointParent1;
+  }
+  get seParentPoint2(): SEPoint {
+    return this._sePointParent2;
+  }
+  get seParentPoint3(): SEPoint {
+    return this._sePointParent3;
+  }
   // #region updateview
   public update(
     objectState?: Map<number, ObjectState>,

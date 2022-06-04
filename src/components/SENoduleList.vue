@@ -3,7 +3,10 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header"
       class="accent">
-      <span class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
+      <span v-if="children.length===1"
+        class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
+      <span v-else
+        class="text-subtitle-1">{{$tc(i18LabelKey,0)}}</span>
       <v-btn small
         v-show="hasExistingChildren"
         @click="expanded = !expanded">

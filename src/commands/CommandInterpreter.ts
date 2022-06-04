@@ -29,6 +29,7 @@ import { AddPolarLineCommand } from "./AddPolarLineCommand";
 import { AddSliderMeasurementCommand } from "./AddSliderMeasurementCommand";
 import { AddThreePointCircleCenterCommand } from "./AddThreePointCircleCenterCommand";
 import { AddMeasuredCircleCommand } from "./AddMeasuredCircleCommand";
+import { AddTranslationCommand } from "./AddTranslationCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -107,6 +108,8 @@ function executeIndividual(command: string): Command {
       return AddNSectLineCommand.parse(command, noduleDictionary);
     case "AddSliderMeasurement":
       return AddSliderMeasurementCommand.parse(command, noduleDictionary);
+    case "AddTranslation":
+      return AddTranslationCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

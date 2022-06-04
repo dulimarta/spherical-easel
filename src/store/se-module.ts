@@ -52,6 +52,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
+import { SETransformation } from "@/models/SETransformation";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -102,6 +103,7 @@ export default class SE extends VuexModule implements AppState {
   seAngleMarkers: SEAngleMarker[] = []; // An array of all SEAngleMarkers
   sePolygons: SEPolygon[] = []; // An array of all SEAngleMarkers
   seLabels: SELabel[] = []; // An array of all SELabels
+  seTransformations: SETransformation[] = []; // An array of all SETransformations
   temporaryNodules: Nodule[] = []; // An array of all Nodules that are temporary - created by the handlers.
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
@@ -139,6 +141,7 @@ export default class SE extends VuexModule implements AppState {
     this.sePencils.splice(0);
     this.seLabels.splice(0);
     this.selectedSENodules.splice(0);
+    this.seTransformations.splice(0);
     this.intersections.splice(0);
     this.expressions.splice(0);
     this.initialStyleStates.splice(0);
@@ -498,6 +501,32 @@ export default class SE extends VuexModule implements AppState {
       // const victimSegment = this.measurements[pos];
       this.expressions.splice(pos, 1);
       this.seNodules.splice(pos2, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
+  @Mutation
+  addTransformation(transformation: SETransformation): void {
+    this.seTransformations.push(transformation);
+    this.seNodules.push(transformation);
+    // transformation.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removeTransformation(transformationId: number): void {
+    const pos = this.seTransformations.findIndex(
+      (x: SETransformation) => x.id === transformationId
+    );
+    const pos2 = this.seNodules.findIndex(
+      (x: SENodule) => x.id === transformationId
+    );
+    if (pos >= 0) {
+      // const victimTransformation = this.seTransformations[pos];
+      this.seTransformations.splice(pos, 1);
+      this.seNodules.splice(pos2, 1);
+      // Remove the associated plottable (Nodule) object from being rendered
+      //victimTransformation.ref.removeFromLayers(this.layers);
       this.hasUnsavedNodules = true;
     }
   }

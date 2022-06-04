@@ -15,6 +15,8 @@ import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
@@ -89,6 +91,25 @@ export class SECircle
   }
 
   public get noduleDescription(): string {
+    //change the description for three point circle
+    if (this._centerSEPoint instanceof SEThreePointCircleCenter) {
+      if (
+        Math.abs(
+          this._centerSEPoint.locationVector.angleTo(
+            this._centerSEPoint.seParentPoint1.locationVector
+          ) - this.circleRadius
+        ) < SETTINGS.tolerance
+      ) {
+        // this circle is a three point circle
+        return String(
+          i18n.t(`objectTree.threePointCircleThrough`, {
+            pt1: this._centerSEPoint.seParentPoint1.label?.ref.shortUserName,
+            pt2: this._centerSEPoint.seParentPoint2.label?.ref.shortUserName,
+            pt3: this._centerSEPoint.seParentPoint3.label?.ref.shortUserName
+          })
+        );
+      }
+    }
     return String(
       i18n.t(`objectTree.circleThrough`, {
         center: this._centerSEPoint.label?.ref.shortUserName,

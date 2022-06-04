@@ -149,7 +149,7 @@ export class SEAngleMarker
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 

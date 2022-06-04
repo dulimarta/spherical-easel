@@ -85,6 +85,14 @@
           color="accent"
           :elevation="4"
           class="my-3"
+          v-show="transformations.length">
+          <SENoduleList i18LabelKey="objects.transformations"
+            :children="transformations"></SENoduleList>
+        </v-sheet>
+        <v-sheet rounded
+          color="accent"
+          :elevation="4"
+          class="my-3"
           v-show="showExpressionSheet">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
@@ -120,6 +128,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { namespace } from "vuex-class";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEStore } from "@/store";
+import { SETransformation } from "@/models/SETransformation";
 const SE = namespace("se");
 
 @Component({
@@ -149,6 +158,9 @@ export default class ObjectTree extends Vue {
 
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
+
+  @SE.State((s: AppState) => s.seTransformations)
+  readonly transformations!: SETransformation[];
 
   private displayExpressionSheetAgain = true;
 

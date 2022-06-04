@@ -273,6 +273,20 @@ export const toolGroups: Array<ToolButtonGroup> = [
     ]
   },
   {
+    group: "ConicTools",
+    children: [
+      {
+        id: 0,
+        actionModeValue: "ellipse",
+        displayedName: "CreateEllipseDisplayedName",
+        icon: "$vuetify.icons.value.ellipse",
+        toolTipMessage: "CreateEllipseToolTipMessage",
+        toolUseMessage: "CreateEllipseToolUseMessage",
+        displayToolUseMessage: false
+      }
+    ]
+  },
+  {
     group: "AdvancedTools",
     children: [
       {
@@ -305,15 +319,15 @@ export const toolGroups: Array<ToolButtonGroup> = [
     ]
   },
   {
-    group: "ConicTools",
+    group: "TransformationTools",
     children: [
       {
-        id: 0,
-        actionModeValue: "ellipse",
-        displayedName: "CreateEllipseDisplayedName",
-        icon: "$vuetify.icons.value.ellipse",
-        toolTipMessage: "CreateEllipseToolTipMessage",
-        toolUseMessage: "CreateEllipseToolUseMessage",
+        id: 15,
+        actionModeValue: "translate",
+        displayedName: "CreateTranslateDisplayedName",
+        icon: "$vuetify.icons.value.translate",
+        toolTipMessage: "CreateTranslateToolTipMessage",
+        toolUseMessage: "CreateTranslateToolUseMessage",
         displayToolUseMessage: false
       }
     ]

@@ -64,6 +64,10 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
+          <v-icon v-else-if="isTranslation"
+            medium>
+            $vuetify.icons.value.translate
+          </v-icon>
           <v-icon :class="shakeMeasurementDisplay"
             v-else-if="isAngle"
             medium>
@@ -269,6 +273,8 @@ import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
 import EventBus from "@/eventHandlers/EventBus";
+import { SETransformation } from "@/models/SETransformation";
+import { SETranslation } from "@/models/SETranslation";
 
 const SE = namespace("se");
 @Component
@@ -339,6 +345,9 @@ export default class SENoduleItem extends Vue {
     } else if (this.node instanceof SEPointCoordinate) {
       const target = this.node.point as SEPoint;
       target.glowing = flag;
+    } else if (this.node instanceof SETranslation) {
+      const target = this.node.seSegment as SESegment;
+      target.glowing = flag;
     }
 
     if (this.node instanceof SEExpression) {
@@ -406,7 +415,7 @@ export default class SENoduleItem extends Vue {
   // });    }
 
   deleteNode(): void {
-    /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLCIATION BE ELIMINATED?
+    /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLICATION BE ELIMINATED?
     // Clear the delete array and map
     this.beforeDeleteStateMap.clear();
     this.beforeDeleteSENoduleIDList.splice(0);
@@ -639,6 +648,10 @@ export default class SENoduleItem extends Vue {
   }
   get isNSectLine(): boolean {
     return this.node instanceof SENSectLine;
+  }
+
+  get isTranslation(): boolean {
+    return this.node instanceof SETranslation;
   }
 
   get isPlottable(): boolean {

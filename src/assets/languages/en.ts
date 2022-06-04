@@ -24,7 +24,7 @@ export default {
     ConicTools: "Conic Tools",
     ConstructionTools: "Construction Tools",
     AdvancedTools: "Advanced Tools",
-    TransformationalTools: "Transformational Tools",
+    TransformationTools: "Transformational Tools",
     MeasurementTools: "Measurement Tools",
     MeasuredObjectTools: "Measured Objects Tools",
     DeveloperOnlyTools: "Developer Only Tools"
@@ -100,6 +100,11 @@ export default {
     CreateEllipseToolTipMessage: "Insert ellipse",
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
+
+    CreateTranslateDisplayedName: "Create<br>Translation",
+    CreateTranslateToolTipMessage: "Create a translation mapping.",
+    CreateTranslateToolUseMessage:
+      "Create a translation mapping object by selecting a line segment to translate along.",
 
     CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
     CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
@@ -211,6 +216,7 @@ export default {
     circles: "Circles | Circle| circle",
     segments: "Line Segments | Line Segment | line segment",
     measurements: "Measurements | Measurement | measurement",
+    transformations: "Transformations | Transformation | transformation",
     ellipses: "Ellipses | Ellipse |ellipse",
     parametrics: "Parametrics | Parametric |parametric"
   },
@@ -444,9 +450,12 @@ export default {
     selectAnotherPoint: "Select the next point.",
     duplicatePointCoordinateMeasurement:
       "The coordinates of point {ptName} have already been measured.",
+    newTranslationAdded: "New translation {name} added.",
     newSegmentMeasurementAdded: "New measurement {name} added.",
+    duplicateTranslation:
+      "The selected line segment already defines the translation {trans}.",
     duplicateSegmentMeasurement:
-      "The selected segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
+      "The selected line segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
     duplicateLineMessage: "Duplicate line. Select another.",
     duplicateLineAngleMeasurement:
       "The angle between lines {line0Name} and {line1Name} has already been measured. This angle is measurement {measurementName}.",
@@ -606,6 +615,8 @@ export default {
       "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
+    threePointCircleThrough:
+      "Circle through the points {pt1}, {pt2}, and {pt3}.",
     measuredCircle:
       "Circle with center {center} with radius {measurementToken}",
     ellipseThrough:
@@ -678,7 +689,10 @@ export default {
     createMeasurementForMeasuredCircle:
       "Create a measurement to use as the radius of a measured circle.",
     selectAMeasurementForMeasuredCircle:
-      "An selecting a center point, select a measurement to use as the radius of a measured circle."
+      "An selecting a center point, select a measurement to use as the radius of a measured circle.",
+    translationAlongLineSegment:
+      "Translation along line segment {along} by angle {angle}.",
+    transformedPoint: "Image of point {pt} under the transformation {trans}."
   },
   constructions: {
     save: "Save",
@@ -701,24 +715,16 @@ export default {
       "You are about to logout, any unsaved constructions will be discarded.",
     saveConstructionDialog:
       "Please provide a short description for your construction.",
-    shareLinkReference:
-      "--placeholder shareeeee--",
-    shareConstructionDialog:
-      "Share your construction",
-    exportConstructionDialog:
-      "Export",
-    selectedSVGExport:
-      "SVG was selected.",
-    selectedPNGExport:
-      "PNG was selected.",
-    selectedGIFExport:
-      "GIF was selected.",
-    sliderFileDimensions:
-      "File dimensions in pixels:",
+    shareLinkReference: "--placeholder shareeeee--",
+    shareConstructionDialog: "Share your construction",
+    exportConstructionDialog: "Export",
+    selectedSVGExport: "SVG was selected.",
+    selectedPNGExport: "PNG was selected.",
+    selectedGIFExport: "GIF was selected.",
+    sliderFileDimensions: "File dimensions in pixels:",
     exportDimensionsInvalidWarning:
       "Export dimensions must be between 200px and 1200px. Please try again.",
-    shareLinkDialog:
-      "Share your construction link here",
+    shareLinkDialog: "Share your construction link here",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:
