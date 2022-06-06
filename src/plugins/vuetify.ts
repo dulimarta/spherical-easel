@@ -146,10 +146,34 @@ const vuetify = new Vuetify({
           iconName: "threePointCircle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
-      translate: {
+      translation: {
         component: IconBase,
         props: {
-          iconName: "translate" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+          iconName: "translation" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      rotation: {
+        component: IconBase,
+        props: {
+          iconName: "rotation" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      reflection: {
+        component: IconBase,
+        props: {
+          iconName: "reflection" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      pointReflection: {
+        component: IconBase,
+        props: {
+          iconName: "pointReflection" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      inversion: {
+        component: IconBase,
+        props: {
+          iconName: "inversion" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
       measuredCircle: {

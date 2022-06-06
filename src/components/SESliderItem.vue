@@ -74,7 +74,7 @@ export default class SESliderItem extends Vue {
     if (this.node instanceof SEExpression) {
       // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
-      EventBus.fire("measured-circle-set-expression", {
+      EventBus.fire("set-expression-for-tool", {
         expression: this.node
       });
     }

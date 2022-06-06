@@ -30,6 +30,10 @@ import { AddSliderMeasurementCommand } from "./AddSliderMeasurementCommand";
 import { AddThreePointCircleCenterCommand } from "./AddThreePointCircleCenterCommand";
 import { AddMeasuredCircleCommand } from "./AddMeasuredCircleCommand";
 import { AddTranslationCommand } from "./AddTranslationCommand";
+import { AddRotationCommand } from "./AddRotationCommand";
+import { AddReflectionCommand } from "./AddReflectionCommand";
+import { AddInversionCommand } from "./AddInversionCommand";
+import { AddPointReflectionCommand } from "./AddPointReflectionCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -110,6 +114,14 @@ function executeIndividual(command: string): Command {
       return AddSliderMeasurementCommand.parse(command, noduleDictionary);
     case "AddTranslation":
       return AddTranslationCommand.parse(command, noduleDictionary);
+    case "AddRotation":
+      return AddRotationCommand.parse(command, noduleDictionary);
+    case "AddReflection":
+      return AddReflectionCommand.parse(command, noduleDictionary);
+    case "AddPointReflection":
+      return AddPointReflectionCommand.parse(command, noduleDictionary);
+    case "AddInversion":
+      return AddInversionCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

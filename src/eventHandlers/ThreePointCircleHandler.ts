@@ -1109,6 +1109,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         newSELabel
       )
     );
+    newSEThreePointCircleCenter.update();
 
     // Clone the current three point circle
     // const newNonFreeCircle = this.temporaryThreePointCircle.clone();

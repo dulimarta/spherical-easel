@@ -101,10 +101,30 @@ export default {
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
 
-    CreateTranslateDisplayedName: "Create<br>Translation",
-    CreateTranslateToolTipMessage: "Create a translation mapping.",
-    CreateTranslateToolUseMessage:
-      "Create a translation mapping object by selecting a line segment to translate along.",
+    CreateTranslationDisplayedName: "Create<br>Translation",
+    CreateTranslationToolTipMessage: "Create a translation mapping.",
+    CreateTranslationToolUseMessage:
+      "Create a translation mapping object by selecting a line segment or line to translate along and then a measurement or measurable object to determine the length of translation.",
+
+    CreateRotationDisplayedName: "Create<br>Rotation",
+    CreateRotationToolTipMessage: "Create a rotation mapping.",
+    CreateRotationToolUseMessage:
+      "Create a rotation mapping object by selecting a point to rotate about and then a measurement or measurable object to determine the angle of rotation.",
+
+    CreatePointReflectionDisplayedName: "Create Point<br>Reflection",
+    CreatePointReflectionToolTipMessage: "Create a point reflection mapping.",
+    CreatePointReflectionToolUseMessage:
+      "Create a point reflection mapping object by selecting a point to reflect through.",
+
+    CreateReflectionDisplayedName: "Create <br>Reflection",
+    CreateReflectionToolTipMessage: "Create a reflection mapping.",
+    CreateReflectionToolUseMessage:
+      "Create a reflection mapping object by selecting a line or line segment to reflect through.",
+
+    CreateInversionDisplayedName: "Create <br>Inversion",
+    CreateInversionToolTipMessage: "Create a inversion mapping.",
+    CreateInversionToolUseMessage:
+      "Create a inversion mapping object by selecting a circle to invert over.",
 
     CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
     CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
@@ -441,6 +461,16 @@ export default {
       "The second point of the three point circle have been selected. Now select another.",
     measuredCircleCenterSelected:
       "Center of circle selected. Now select a measurement, measurable object, or measurement label.",
+    firstMustCreateMeasurable:
+      "To use this tool you must first create a measurement or measurable object.",
+    measuredCircleSelect:
+      "Select a circle or a line segment to create the measurement object to use to determine the radius.",
+
+    rotationPointSelected:
+      "Rotation point selected. Now select a measurement, measurable object, or measurement label.",
+    translationLineOrSegmentSelected:
+      "Axis of translation selected. Now select a measurement, measurable object, or measurement label.",
+
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
@@ -448,12 +478,28 @@ export default {
       "The distance between points {pt0Name} and {pt1Name} has already been measured. This distance is measurement {measurementName}.",
     newMeasurementAdded: "New measurement {name} added.",
     selectAnotherPoint: "Select the next point.",
+
+    newSegmentMeasurementAdded: "New measurement {name} added.",
+    newTranslationAdded: "New translation {name} added.",
+    newInversionAdded: "New inversion {name} added.",
+    newPointReflectionAdded: "New point reflection {name} added.",
+    newReflectionAdded: "New reflection {name} added.",
+
     duplicatePointCoordinateMeasurement:
       "The coordinates of point {ptName} have already been measured.",
-    newTranslationAdded: "New translation {name} added.",
-    newSegmentMeasurementAdded: "New measurement {name} added.",
+    duplicateInversion:
+      "The selected circle already defines the inversion {trans}.",
+    duplicatePointReflection:
+      "The selected point already defines the point reflection {trans}.",
+    duplicateReflectionLine:
+      "The selected line already defines the reflection {trans}.",
+    duplicateReflectionSegment:
+      "The selected segment already defines the reflection {trans}.",
+    duplicateRotation:
+      "The selected point and rotation able already defines a rotation.",
     duplicateTranslation:
-      "The selected line segment already defines the translation {trans}.",
+      "The selected axis and translation distance able already defines a translation.",
+
     duplicateSegmentMeasurement:
       "The selected line segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
     duplicateLineMessage: "Duplicate line. Select another.",
@@ -688,11 +734,23 @@ export default {
       "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
     createMeasurementForMeasuredCircle:
       "Create a measurement to use as the radius of a measured circle.",
+    createMeasurementForTranslation:
+      "Create a measurement to use as the translation distance.",
+    createMeasurementForRotation:
+      "Create a measurement to use as the angle of rotation.",
     selectAMeasurementForMeasuredCircle:
-      "An selecting a center point, select a measurement to use as the radius of a measured circle.",
+      "After selecting a center point, select a measurement to use as the radius of a measured circle.",
+    selectAMeasurementForTranslation:
+      "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
+    selectAMeasurementForRotation:
+      "After selecting a rotation point, select a measurement to use as the angle of rotation.",
     translationAlongLineSegment:
-      "Translation along line segment {along} by angle {angle}.",
-    transformedPoint: "Image of point {pt} under the transformation {trans}."
+      "Translation along axis (line or line segment) {along} by angle {angle}.",
+    transformedPoint: "Image of point {pt} under the transformation {trans}.",
+    rotationAboutPoint: "Rotation about point {pt} by angle {angle}.",
+    reflectionOverLine: "Reflection over the line {line}.",
+    reflectOverPoint: "Reflection over the point {pt}.",
+    invertOverCircle: "Inversion over the circle {circle}."
   },
   constructions: {
     save: "Save",

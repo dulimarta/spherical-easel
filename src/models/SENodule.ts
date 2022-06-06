@@ -26,7 +26,7 @@ export abstract class SENodule {
   public static ROTATION_COUNT = 0;
   public static REFLECTION_COUNT = 0;
   public static INVERSION_COUNT = 0;
-  public static REFLECTION_OVER_POINT_COUNT = 0;
+  public static POINT_REFLECTION_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -45,7 +45,7 @@ export abstract class SENodule {
     SENodule.ROTATION_COUNT = 0;
     SENodule.REFLECTION_COUNT = 0;
     SENodule.INVERSION_COUNT = 0;
-    SENodule.REFLECTION_OVER_POINT_COUNT = 0;
+    SENodule.POINT_REFLECTION_COUNT = 0;
   }
 
   /**

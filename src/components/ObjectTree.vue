@@ -173,21 +173,41 @@ export default class ObjectTree extends Vue {
 
   get showExpressionSheet(): boolean {
     //This message will appear once each time the number of expressions is zero and the measure circle tool is active
-    // console.log("here show espression sheet");
+    // console.log("here show expression sheet");
     if (
-      SEStore.actionMode === "measuredCircle" &&
+      (SEStore.actionMode === "measuredCircle" ||
+        SEStore.actionMode === "translation" ||
+        SEStore.actionMode === "rotation") &&
       this.expressions.length === 0 &&
       this.displayExpressionSheetAgain
     ) {
       this.displayExpressionSheetAgain = false;
-      EventBus.fire("show-alert", {
-        key: "objectTree.createMeasurementForMeasuredCircle",
-        type: "info"
-      });
+      switch (SEStore.actionMode) {
+        case "measuredCircle":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForMeasuredCircle",
+            type: "info"
+          });
+          break;
+        case "translation":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForTranslation",
+            type: "info"
+          });
+          break;
+        case "rotation":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForRotation",
+            type: "info"
+          });
+          break;
+      }
     }
 
     if (
-      SEStore.actionMode === "measuredCircle" &&
+      (SEStore.actionMode === "measuredCircle" ||
+        SEStore.actionMode === "translation" ||
+        SEStore.actionMode === "rotation") &&
       this.expressions.length > 0
     ) {
       this.displayExpressionSheetAgain = true;

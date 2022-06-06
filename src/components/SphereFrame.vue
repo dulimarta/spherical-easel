@@ -43,7 +43,7 @@ import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
-import TranslationHandler from "@/eventHandlers/TranslationHandler";
+import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -54,6 +54,10 @@ import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEExpression } from "@/models/SEExpression";
+import RotationTransformationHandler from "@/eventHandlers/RotationTranformationHandler";
+import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
+import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
+import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
 
 const SE = namespace("se");
 
@@ -129,7 +133,11 @@ export default class SphereFrame extends VueComponent {
   private nSectAngleTool!: NSectAngleHandler;
   private threePointCircleTool!: ThreePointCircleHandler;
   private measuredCircleTool!: MeasuredCircleHandler;
-  private translationTool!: TranslationHandler;
+  private translationTool!: TranslationTransformationHandler;
+  private rotationTool!: RotationTransformationHandler;
+  private reflectionTool!: ReflectionTransformationHandler;
+  private pointReflectionTool!: PointReflectionTransformationHandler;
+  private inversionTool!: InversionTransformationHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -270,7 +278,13 @@ export default class SphereFrame extends VueComponent {
     this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
     this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
     this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
-    this.translationTool = new TranslationHandler(this.layers);
+    this.translationTool = new TranslationTransformationHandler(this.layers);
+    this.rotationTool = new RotationTransformationHandler(this.layers);
+    this.reflectionTool = new ReflectionTransformationHandler(this.layers);
+    this.pointReflectionTool = new PointReflectionTransformationHandler(
+      this.layers
+    );
+    this.inversionTool = new InversionTransformationHandler(this.layers);
 
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -281,10 +295,7 @@ export default class SphereFrame extends VueComponent {
       "measured-circle-set-temporary-radius",
       this.measuredCircleSetTemporaryRadius
     );
-    EventBus.listen(
-      "measured-circle-set-expression",
-      this.measuredCircleSetExpression
-    );
+    EventBus.listen("set-expression-for-tool", this.setExpressionForTool);
   }
 
   mounted(): void {
@@ -331,7 +342,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
     EventBus.unlisten("measured-circle-set-temporary-radius");
-    EventBus.unlisten("measured-circle-set-expression");
+    EventBus.unlisten("set-expression-for-tool");
   }
 
   @Watch("canvasSize")
@@ -647,8 +658,13 @@ export default class SphereFrame extends VueComponent {
       this.currentTool.displayTemporaryCircle(e.display, e.radius);
     }
   }
-  measuredCircleSetExpression(e: { expression: SEExpression }): void {
-    if (this.currentTool instanceof MeasuredCircleHandler) {
+
+  setExpressionForTool(e: { expression: SEExpression }): void {
+    if (
+      this.currentTool instanceof MeasuredCircleHandler ||
+      this.currentTool instanceof RotationTransformationHandler ||
+      this.currentTool instanceof TranslationTransformationHandler
+    ) {
       this.currentTool.setExpression(e.expression);
     }
   }
@@ -789,8 +805,20 @@ export default class SphereFrame extends VueComponent {
       case "measuredCircle":
         this.currentTool = this.measuredCircleTool;
         break;
-      case "translate":
+      case "translation":
         this.currentTool = this.translationTool;
+        break;
+      case "rotation":
+        this.currentTool = this.rotationTool;
+        break;
+      case "reflection":
+        this.currentTool = this.reflectionTool;
+        break;
+      case "pointReflection":
+        this.currentTool = this.pointReflectionTool;
+        break;
+      case "inversion":
+        this.currentTool = this.inversionTool;
         break;
       default:
         this.currentTool = null;

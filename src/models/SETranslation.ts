@@ -4,21 +4,32 @@ import { SETransformation } from "./SETransformation";
 import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEExpression } from "./SEExpression";
+import { SELine } from "./SELine";
 
 export class SETranslation extends SETransformation {
-  private _lineSegment: SESegment;
+  private _lineOrSegment: SESegment | SELine;
+  private _translationDistanceExpression: SEExpression;
+
   private _matrix = new Matrix4();
 
-  constructor(lineSegment: SESegment) {
+  constructor(
+    lineOrSegment: SESegment | SELine,
+    translationDistanceExpression: SEExpression
+  ) {
     super();
-    this._lineSegment = lineSegment;
-    this.ref = lineSegment.ref;
+    this._lineOrSegment = lineOrSegment;
+    this._translationDistanceExpression = translationDistanceExpression;
+    this.ref = lineOrSegment.ref;
     SETransformation.TRANSLATION_COUNT++;
     this.name = `Tr${SETransformation.TRANSLATION_COUNT}`;
   }
 
-  get seSegment(): SESegment {
-    return this._lineSegment;
+  get seLineOrSegment(): SESegment | SELine {
+    return this._lineOrSegment;
+  }
+  get translationDistanceExpression(): SEExpression {
+    return this._translationDistanceExpression;
   }
   /**
    * f is the central transformation whose inputs are before the transformation
@@ -38,12 +49,13 @@ export class SETranslation extends SETransformation {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists = this._lineSegment.exists;
+    this._exists =
+      this._lineOrSegment.exists && this._translationDistanceExpression.exists;
     if (this._exists) {
       //determine the direction to rotate?
       this._matrix.makeRotationAxis(
-        this._lineSegment.normalVector,
-        this._lineSegment.arcLength
+        this._lineOrSegment.normalVector,
+        this._translationDistanceExpression.value
       );
     }
 
@@ -70,8 +82,8 @@ export class SETranslation extends SETransformation {
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.translationAlongLineSegment`, {
-        along: this._lineSegment.label?.ref.shortUserName,
-        angle: this._lineSegment.arcLength
+        along: this._lineOrSegment.label?.ref.shortUserName,
+        angle: this._translationDistanceExpression.name
       })
     );
   }

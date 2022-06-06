@@ -322,12 +322,48 @@ export const toolGroups: Array<ToolButtonGroup> = [
     group: "TransformationTools",
     children: [
       {
+        id: 0,
+        actionModeValue: "pointReflection",
+        displayedName: "CreatePointReflectionDisplayedName",
+        icon: "$vuetify.icons.value.pointReflection",
+        toolTipMessage: "CreatePointReflectionToolTipMessage",
+        toolUseMessage: "CreatePointReflectionToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 5,
+        actionModeValue: "reflection",
+        displayedName: "CreateReflectionDisplayedName",
+        icon: "$vuetify.icons.value.reflection",
+        toolTipMessage: "CreateReflectionToolTipMessage",
+        toolUseMessage: "CreateReflectionToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 10,
+        actionModeValue: "rotation",
+        displayedName: "CreateRotationDisplayedName",
+        icon: "$vuetify.icons.value.rotation",
+        toolTipMessage: "CreateRotationToolTipMessage",
+        toolUseMessage: "CreateRotationToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
         id: 15,
-        actionModeValue: "translate",
-        displayedName: "CreateTranslateDisplayedName",
-        icon: "$vuetify.icons.value.translate",
-        toolTipMessage: "CreateTranslateToolTipMessage",
-        toolUseMessage: "CreateTranslateToolUseMessage",
+        actionModeValue: "translation",
+        displayedName: "CreateTranslationDisplayedName",
+        icon: "$vuetify.icons.value.translation",
+        toolTipMessage: "CreateTranslationToolTipMessage",
+        toolUseMessage: "CreateTranslationToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 20,
+        actionModeValue: "inversion",
+        displayedName: "CreateInversionDisplayedName",
+        icon: "$vuetify.icons.value.inversion",
+        toolTipMessage: "CreateInversionToolTipMessage",
+        toolUseMessage: "CreateInversionToolUseMessage",
         displayToolUseMessage: false
       }
     ]

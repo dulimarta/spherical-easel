@@ -207,7 +207,13 @@ export type SavedNames =
   | "threePointCircleParentPoint1Name"
   | "threePointCircleParentPoint2Name"
   | "threePointCircleParentPoint3Name"
-  | "translationSegmentParentName";
+  | "translationSegmentParentName"
+  | "translationDistanceExpressionName"
+  | "rotationPointName"
+  | "rotationAngleExpressionName"
+  | "reflectionLineOrSegmentName"
+  | "pointReflectionPointName"
+  | "inversionCircleName";
 
 export type ActionMode =
   | "angle"
@@ -243,7 +249,11 @@ export type ActionMode =
   | "nSectLine"
   | "threePointCircle"
   | "measuredCircle"
-  | "translate";
+  | "translation"
+  | "rotation"
+  | "reflection"
+  | "pointReflection"
+  | "inversion";
 
 export type IconNames =
   | ActionMode
@@ -473,6 +483,10 @@ export type ObjectNames =
   | "tangentLineThruPoint"
   | "threePointCircleCenter"
   | "translation"
+  | "rotation"
+  | "reflection"
+  | "inversion"
+  | "pointReflection"
   | "transformedPoint";
 
 export interface ObjectState {

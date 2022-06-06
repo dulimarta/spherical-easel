@@ -103,6 +103,26 @@ export default class MeasuredCircleHandler extends Highlighter {
   mousePressed(_event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {
+      // next decide if this tool can be used
+      if (
+        SEStore.seCircles.length === 0 &&
+        SEStore.seSegments.length === 0 &&
+        SEStore.expressions.length === 0
+      ) {
+        // warn the user
+        EventBus.fire("show-alert", {
+          key: "handlers.firstMustCreateMeasurable",
+          type: "error"
+        });
+        // switch to tools tab
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
+        // Change the tool
+        SEStore.setActionMode({
+          id: "segment",
+          name: "CreateLineSegmentDisplayedName"
+        });
+        return;
+      }
       // The user is making a circle
       this.centerLocationSelected = true;
       // Check to see if the current location is near any points
@@ -204,11 +224,22 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
       }
-      EventBus.fire("show-alert", {
-        key: `handlers.measuredCircleCenterSelected`,
-        keyOptions: {},
-        type: "info"
-      });
+
+      if (SEStore.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+        EventBus.fire("show-alert", {
+          key: `handlers.measuredCircleCenterSelected`,
+          keyOptions: {},
+          type: "info"
+        });
+      } else {
+        EventBus.fire("show-alert", {
+          key: "handlers.measuredCircleSelect",
+          type: "info"
+        });
+      }
     }
   }
 
@@ -346,8 +377,10 @@ export default class MeasuredCircleHandler extends Highlighter {
         this.temporaryCircleAdded = false;
       }
     }
-    // Not on the sphere -- remove the temporary circle
+    // Not on the sphere -- remove the temporary circle and point
     else {
+      this.temporaryCenterMarker.removeFromLayers();
+      this.temporaryCenterMarkerAdded = false;
       this.temporaryCircle.removeFromLayers();
       this.temporaryCircleAdded = false;
     }
@@ -623,7 +656,7 @@ export default class MeasuredCircleHandler extends Highlighter {
               circ.centerSEPoint.locationVector,
               this.centerSEPoint
                 ? this.centerSEPoint.locationVector
-                : this.tmpVector
+                : this.tmpVector1
             )
             .isZero() &&
           measurementSEExpression?.name ===

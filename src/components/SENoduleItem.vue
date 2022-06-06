@@ -66,7 +66,23 @@
           </v-icon>
           <v-icon v-else-if="isTranslation"
             medium>
-            $vuetify.icons.value.translate
+            $vuetify.icons.value.translation
+          </v-icon>
+          <v-icon v-else-if="isRotation"
+            medium>
+            $vuetify.icons.value.rotation
+          </v-icon>
+          <v-icon v-else-if="isReflection"
+            medium>
+            $vuetify.icons.value.reflection
+          </v-icon>
+          <v-icon v-else-if="isPointReflection"
+            medium>
+            $vuetify.icons.value.pointReflection
+          </v-icon>
+          <v-icon v-else-if="isInversion"
+            medium>
+            $vuetify.icons.value.inversion
           </v-icon>
           <v-icon :class="shakeMeasurementDisplay"
             v-else-if="isAngle"
@@ -275,6 +291,10 @@ import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/Conve
 import EventBus from "@/eventHandlers/EventBus";
 import { SETransformation } from "@/models/SETransformation";
 import { SETranslation } from "@/models/SETranslation";
+import { SEPointReflection } from "@/models/SEPointReflection";
+import { SEReflection } from "@/models/SEReflection";
+import { SERotation } from "@/models/SERotation";
+import { SEInversion } from "@/models/SEInversion";
 
 const SE = namespace("se");
 @Component
@@ -346,7 +366,19 @@ export default class SENoduleItem extends Vue {
       const target = this.node.point as SEPoint;
       target.glowing = flag;
     } else if (this.node instanceof SETranslation) {
-      const target = this.node.seSegment as SESegment;
+      const target = this.node.seLineOrSegment as SESegment;
+      target.glowing = flag;
+    } else if (this.node instanceof SEPointReflection) {
+      const target = this.node.sePointOfReflection as SEPoint;
+      target.glowing = flag;
+    } else if (this.node instanceof SEReflection) {
+      const target = this.node.seLineOrSegment as SESegment;
+      target.glowing = flag;
+    } else if (this.node instanceof SERotation) {
+      const target = this.node.seRotationPoint as SEPoint;
+      target.glowing = flag;
+    } else if (this.node instanceof SEInversion) {
+      const target = this.node.seCircleOfInversion as SECircle;
       target.glowing = flag;
     }
 
@@ -362,7 +394,7 @@ export default class SENoduleItem extends Vue {
     // console.log("Clicked", this.node.name);
     if (this.node instanceof SEExpression) {
       this.$emit("object-select", { id: this.node.id });
-      EventBus.fire("measured-circle-set-expression", {
+      EventBus.fire("set-expression-for-tool", {
         expression: this.node
       });
     }
@@ -652,6 +684,22 @@ export default class SENoduleItem extends Vue {
 
   get isTranslation(): boolean {
     return this.node instanceof SETranslation;
+  }
+
+  get isRotation(): boolean {
+    return this.node instanceof SERotation;
+  }
+
+  get isReflection(): boolean {
+    return this.node instanceof SEReflection;
+  }
+
+  get isPointReflection(): boolean {
+    return this.node instanceof SEPointReflection;
+  }
+
+  get isInversion(): boolean {
+    return this.node instanceof SEInversion;
   }
 
   get isPlottable(): boolean {

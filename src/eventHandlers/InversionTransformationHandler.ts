@@ -15,11 +15,14 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SETransformation } from "@/models/SETransformation";
 import { SETranslation } from "@/models/SETranslation";
 import { AddTranslationCommand } from "@/commands/AddTranslationCommand";
-export default class TranslationHandler extends Highlighter {
+import { SECircle } from "@/models/SECircle";
+import { SEInversion } from "@/models/SEInversion";
+import { AddInversionCommand } from "@/commands/AddInversionCommand";
+export default class InversionTransformationHandler extends Highlighter {
   /**
-   * Segment to measure
+   * Circle of inversion
    */
-  private targetSegment: SESegment | null = null;
+  private targetCircleOfInversion: SECircle | null = null;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -27,17 +30,15 @@ export default class TranslationHandler extends Highlighter {
 
   mousePressed(event: MouseEvent): void {
     //Select an object to measure
-    if (this.isOnSphere) {
-      if (this.hitSESegments.length > 0) {
-        this.targetSegment = this.hitSESegments[0];
-      }
+    if (this.isOnSphere && this.hitSECircles.length > 0) {
+      this.targetCircleOfInversion = this.hitSECircles[0];
       let transformationName = "";
       if (
         SEStore.seTransformations.some(trans => {
           if (
-            trans instanceof SETranslation &&
-            this.targetSegment !== null &&
-            trans.seSegment.name === this.targetSegment.name
+            trans instanceof SEInversion &&
+            this.targetCircleOfInversion !== null &&
+            trans.seCircleOfInversion.name === this.targetCircleOfInversion.name
           ) {
             transformationName = trans.name;
             return true;
@@ -47,7 +48,7 @@ export default class TranslationHandler extends Highlighter {
         })
       ) {
         EventBus.fire("show-alert", {
-          key: `handlers.duplicateTranslation`,
+          key: `handlers.duplicateInversion`,
           keyOptions: {
             trans: `${transformationName}`
           },
@@ -57,25 +58,25 @@ export default class TranslationHandler extends Highlighter {
       }
 
       if (
-        this.targetSegment !== null &&
-        this.targetSegment.label !== undefined
+        this.targetCircleOfInversion !== null &&
+        this.targetCircleOfInversion.label !== undefined
       ) {
-        const newTranslation = new SETranslation(this.targetSegment);
+        const newInversion = new SEInversion(this.targetCircleOfInversion);
         EventBus.fire("show-alert", {
-          key: `handlers.newTranslationAdded`,
-          keyOptions: { name: `${newTranslation.name}` },
+          key: `handlers.newInverstionAdded`,
+          keyOptions: { name: `${newInversion.name}` },
           type: "success"
         });
-        const translationCommandGroup = new CommandGroup();
-        translationCommandGroup.addCommand(
-          new AddTranslationCommand(newTranslation, this.targetSegment)
+        const inversionCommandGroup = new CommandGroup();
+        inversionCommandGroup.addCommand(
+          new AddInversionCommand(newInversion, this.targetCircleOfInversion)
         );
 
-        translationCommandGroup.execute();
+        inversionCommandGroup.execute();
         // Update the display so the changes become apparent
-        this.targetSegment.markKidsOutOfDate();
-        this.targetSegment.update();
-        this.targetSegment = null;
+        this.targetCircleOfInversion.markKidsOutOfDate();
+        this.targetCircleOfInversion.update();
+        this.targetCircleOfInversion = null;
       }
     }
   }
@@ -84,12 +85,12 @@ export default class TranslationHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
-    const segmentList = this.hitSESegments.filter(seg => {
+    const circleList = this.hitSECircles.filter(circ => {
       if (
         SEStore.seTransformations.some(trans => {
           if (
-            trans instanceof SETranslation &&
-            trans.seSegment.name === seg.name
+            trans instanceof SEInversion &&
+            trans.seCircleOfInversion.name === circ.name
           ) {
             return true;
           } else {
@@ -102,10 +103,10 @@ export default class TranslationHandler extends Highlighter {
         return true;
       }
     });
-    if (segmentList.length > 0) {
+    if (circleList.length > 0) {
       // Glow the first SESegment that hasn't been measured
-      segmentList[0].glowing = true;
-      this.targetSegment = segmentList[0];
+      circleList[0].glowing = true;
+      this.targetCircleOfInversion = circleList[0];
     }
   }
 
@@ -115,21 +116,21 @@ export default class TranslationHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // Reset the targetSegment in preparation for another deletion.
-    this.targetSegment = null;
+    this.targetCircleOfInversion = null;
   }
   activate(): void {
     if (SEStore.selectedSENodules.length == 1) {
       const object1 = SEStore.selectedSENodules[0];
 
-      if (object1 instanceof SESegment) {
-        let measurementName = "";
+      if (object1 instanceof SECircle) {
+        let inversionName = "";
         if (
-          SEStore.expressions.some(exp => {
+          SEStore.seTransformations.some(trans => {
             if (
-              exp instanceof SESegmentLength &&
-              exp.seSegment.name === object1.name
+              trans instanceof SEInversion &&
+              trans.seCircleOfInversion.name === object1.name
             ) {
-              measurementName = exp.name;
+              inversionName = trans.name;
               return true;
             } else {
               return false;
@@ -137,47 +138,21 @@ export default class TranslationHandler extends Highlighter {
           })
         ) {
           EventBus.fire("show-alert", {
-            key: `handlers.duplicateSegmentMeasurement`,
+            key: `handlers.duplicateInversion`,
             keyOptions: {
-              segName: `${object1.name}`,
-              measurementName: `${measurementName}`
+              trans: `${inversionName}`
             },
             type: "error"
           });
         } else {
-          const lenMeasure = new SESegmentLength(object1);
+          const inversion = new SEInversion(object1);
           EventBus.fire("show-alert", {
-            key: `handlers.newSegmentMeasurementAdded`,
-            keyOptions: { name: `${lenMeasure.name}` },
+            key: `handlers.newInversionAdded`,
+            keyOptions: { name: `${inversion.name}` },
             type: "success"
           });
 
-          const segmentCommandGroup = new CommandGroup();
-          segmentCommandGroup.addCommand(
-            new AddLengthMeasurementCommand(lenMeasure, object1)
-          );
-          // Set the selected segment's Label to display and to show NameAndValue in an undoable way
-          segmentCommandGroup.addCommand(
-            new StyleNoduleCommand(
-              [object1.label!.ref],
-              StyleEditPanels.Front,
-              [
-                {
-                  // panel: StyleEditPanels.Front,
-                  // labelVisibility: true,
-                  labelDisplayMode: LabelDisplayMode.NameAndValue
-                }
-              ],
-              [
-                {
-                  // panel: StyleEditPanels.Front,
-                  // labelVisibility: object1.label!.showing,
-                  labelDisplayMode: object1.label!.ref.labelDisplayMode
-                }
-              ]
-            )
-          );
-          segmentCommandGroup.execute();
+          new AddInversionCommand(inversion, object1).execute();
           // make the change show up in the sphere
           object1.markKidsOutOfDate();
           object1.update();

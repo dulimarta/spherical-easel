@@ -13,7 +13,7 @@
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
-           measuredCircleToolAction();
+           possibleToolAction();
             if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
@@ -102,10 +102,6 @@ export default class ToolButton extends Vue {
   snackbar/toolUseMessage  */
   private displayToolUseMessage = false;
 
-  /* This is a variable that does NOT belong in the global settings but I don't know where else to
-  put it. This is the list of tools that should be displayed*/
-  private buttonDisplayList = SETTINGS.userButtonDisplayList;
-
   /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
   child */
   @Prop({ default: null })
@@ -131,8 +127,8 @@ export default class ToolButton extends Vue {
     }
   }
 
-  //When switching to the measured circle tool...
-  measuredCircleToolAction(): void {
+  //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
+  possibleToolAction(): void {
     if (this.button.actionModeValue === "measuredCircle") {
       //...open the object tree tab,
       EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
@@ -142,6 +138,30 @@ export default class ToolButton extends Vue {
       } else {
         EventBus.fire("show-alert", {
           key: "objectTree.createMeasurementForMeasuredCircle",
+          type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "translation") {
+      //...open the object tree tab,
+      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (SEStore.expressions.length > 0) {
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForTranslation",
+          type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "rotation") {
+      //...open the object tree tab,
+      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (SEStore.expressions.length > 0) {
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForRotation",
           type: "info"
         });
       }

@@ -118,7 +118,11 @@ export default class Toolbox extends Vue {
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
       // change to the move mode, but only if we are not using the measured circle tool
-      if (SEStore.actionMode !== "measuredCircle") {
+      if (
+        SEStore.actionMode !== "measuredCircle" &&
+        SEStore.actionMode !== "translation" &&
+        SEStore.actionMode !== "rotation"
+      ) {
         SEStore.setActionMode({
           id: "move",
           name: "MoveDisplayedName"

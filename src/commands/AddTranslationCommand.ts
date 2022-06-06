@@ -3,32 +3,37 @@ import { SENodule } from "@/models/SENodule";
 import { SETranslation } from "@/models/SETranslation";
 import { SESegment } from "@/models/SESegment";
 import { SavedNames } from "@/types";
+import { SELine } from "@/models/SELine";
+import { SEExpression } from "@/models/SEExpression";
 
 export class AddTranslationCommand extends Command {
   private seTranslation: SETranslation;
-  private seSegment: SESegment;
-  /**
-   *
-   * @param SETranslation The translation object being added
-   * @param parent The line segment parent
-   *
-   */
-  constructor(seTranslation: SETranslation, parent: SESegment) {
+  private seLineOrSegment: SESegment | SELine;
+  private seTranslationDistanceExpression: SEExpression;
+
+  constructor(
+    seTranslation: SETranslation,
+    parent: SESegment | SELine,
+    distanceParent: SEExpression
+  ) {
     super();
     this.seTranslation = seTranslation;
-    this.seSegment = parent;
+    this.seLineOrSegment = parent;
+    this.seTranslationDistanceExpression = distanceParent;
   }
   do(): void {
     Command.store.addTransformation(this.seTranslation);
-    this.seSegment.registerChild(this.seTranslation);
+    this.seLineOrSegment.registerChild(this.seTranslation);
+    this.seTranslationDistanceExpression.registerChild(this.seTranslation);
   }
 
   saveState(): void {
-    this.lastState = this.seSegment.id;
+    this.lastState = this.seLineOrSegment.id;
   }
 
   restoreState(): void {
-    this.seSegment.unregisterChild(this.seTranslation);
+    this.seTranslationDistanceExpression.unregisterChild(this.seTranslation);
+    this.seLineOrSegment.unregisterChild(this.seTranslation);
     Command.store.removeTransformation(this.lastState);
   }
 
@@ -43,7 +48,9 @@ export class AddTranslationCommand extends Command {
 
       // Object specific attributes
       "translationSegmentParentName=" +
-        Command.symbolToASCIIDec(this.seSegment.name)
+        Command.symbolToASCIIDec(this.seLineOrSegment.name),
+      "translationDistanceExpressionName=" +
+        Command.symbolToASCIIDec(this.seTranslationDistanceExpression.name)
     ].join("&");
   }
 
@@ -60,10 +67,17 @@ export class AddTranslationCommand extends Command {
     // get the object specific attributes
     const segmentParent = objMap.get(
       propMap.get("translationSegmentParentName") ?? ""
-    ) as SESegment | undefined;
+    ) as SESegment | SELine | undefined;
 
-    if (segmentParent) {
-      const translation = new SETranslation(segmentParent);
+    const translationDistanceExpression = objMap.get(
+      propMap.get("translationDistanceExpressionName") ?? ""
+    ) as SEExpression | undefined;
+
+    if (segmentParent && translationDistanceExpression) {
+      const translation = new SETranslation(
+        segmentParent,
+        translationDistanceExpression
+      );
 
       //put the translation in the object map
       if (propMap.get("objectName") !== undefined) {
@@ -76,8 +90,14 @@ export class AddTranslationCommand extends Command {
           "AddTranslationCommand:  translation name doesn't exist"
         );
       }
-      return new AddTranslationCommand(translation, segmentParent);
+      return new AddTranslationCommand(
+        translation,
+        segmentParent,
+        translationDistanceExpression
+      );
     }
-    throw new Error(`AddTranslationCommand: ${segmentParent} is undefined`);
+    throw new Error(
+      `AddTranslationCommand: ${segmentParent} or ${translationDistanceExpression} is undefined`
+    );
   }
 }

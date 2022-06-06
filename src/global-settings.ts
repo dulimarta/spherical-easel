@@ -1271,9 +1271,37 @@ export const SETTINGS = {
         filePath: ""
       }
     },
-    translate: {
+    translation: {
       props: {
         mdiIcon: "mdi-call-made",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    rotation: {
+      props: {
+        mdiIcon: "mdi-screen-rotation",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    pointReflection: {
+      props: {
+        mdiIcon: "mdi-ferris-wheel",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    inversion: {
+      props: {
+        mdiIcon: "mdi-yeast",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    reflection: {
+      props: {
+        mdiIcon: "mdi-mirror",
         emphasizeTypes: [[]],
         filePath: ""
       }
@@ -1298,20 +1326,7 @@ export const SETTINGS = {
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.0001 // If the change in arcLength is less than this, return the value
   },
-  /*A list of which buttons to display - adjusted by the users settings.
-  This does NOT belong here but I don't know where else to put it at the moment*/
-  userButtonDisplayList: [
-    "rotate",
-    "point",
-    "circle",
-    "move",
-    "line",
-    "segment",
-    "select",
-    "zoomIn",
-    "zoomOut",
-    "intersect"
-  ],
+
   supportedLanguages: [
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }

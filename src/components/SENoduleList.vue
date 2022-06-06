@@ -45,6 +45,7 @@ import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEStore } from "@/store";
 
 @Component({ components: { SENoduleItem, SESliderItem } })
 export default class SENoduleTree extends Vue {
@@ -80,10 +81,26 @@ export default class SENoduleTree extends Vue {
     if (this.i18LabelKey === "objects.measurements") {
       if (this.hasExistingChildren) {
         this.expanded = true;
-        EventBus.fire("show-alert", {
-          key: `objectTree.selectAMeasurementForMeasuredCircle`,
-          type: "info"
-        });
+        switch (SEStore.actionMode) {
+          case "measuredCircle":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForMeasuredCircle",
+              type: "info"
+            });
+            break;
+          case "translation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForTranslation",
+              type: "info"
+            });
+            break;
+          case "rotation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForRotation",
+              type: "info"
+            });
+            break;
+        }
       }
     } else {
       this.expanded = false;
