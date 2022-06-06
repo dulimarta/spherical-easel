@@ -52,7 +52,6 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
-import { Line } from "two.js/src/shapes/line";
 
 @Component({
   computed: {
@@ -249,11 +248,26 @@ export default class SphereFrame extends VueComponent {
     // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
     // Set up the listeners
-    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
-    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
-    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mousemove",
+      this.handleMouseMoved
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mousedown",
+      this.handleMousePressed
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mouseup",
+      this.handleMouseReleased
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mouseleave",
+      this.handleMouseLeave
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "wheel",
+      this.handleMouseWheel
+    );
 
     // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
     // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -272,11 +286,26 @@ export default class SphereFrame extends VueComponent {
   }
 
   beforeDestroy(): void {
-    this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
-    this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
-    this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
-    this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mousemove",
+      this.handleMouseMoved
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mousedown",
+      this.handleMousePressed
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mouseup",
+      this.handleMouseReleased
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mouseleave",
+      this.handleMouseLeave
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "wheel",
+      this.handleMouseWheel
+    );
     // Does this remove the context menu listener? I'm not sure.
     this.$refs.canvas.removeEventListener("contextmenu", event =>
       event.preventDefault()
@@ -326,7 +355,7 @@ export default class SphereFrame extends VueComponent {
 
     this.twoInstance.scene.matrix
       .identity()
-      .translate(origin, origin) // Order of these two operations
+      .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
       .scale(mag, -mag); // (translate & scale) is important
     //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
@@ -336,7 +365,6 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
