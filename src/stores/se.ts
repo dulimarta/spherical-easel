@@ -443,7 +443,7 @@ export const useSEStore = defineStore({
       }
 
       // Begin updating those objects with no parents
-      sePoints
+      seNodules
         .filter((p: SENodule) => p.parents.length === 0)
         .forEach((target: SENodule) => {
           // console.debug("Seed update from ", target.name);
