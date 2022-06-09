@@ -309,7 +309,13 @@ export abstract class SENodule {
       this.isLineWithAntipodalPoints()
     )
       return true;
-    if (this.isNonFreeLine() || this.isNonFreePoint()) {
+    if (
+      this.isNonFreeLine() ||
+      this.isNonFreePoint() ||
+      this.isNonFreeCirle() ||
+      this.isNonFreeSegment() ||
+      this.isNonFreeEllipse()
+    ) {
       // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
     }
@@ -327,6 +333,14 @@ export abstract class SENodule {
   }
 
   public isNonFreeCirle(): boolean {
+    return false;
+  }
+
+  public isNonFreeSegment(): boolean {
+    return false;
+  }
+
+  public isNonFreeEllipse(): boolean {
     return false;
   }
 

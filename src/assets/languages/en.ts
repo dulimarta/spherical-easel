@@ -109,22 +109,26 @@ export default {
     CreateRotationDisplayedName: "Create<br>Rotation",
     CreateRotationToolTipMessage: "Create a rotation mapping.",
     CreateRotationToolUseMessage:
-      "Create a rotation mapping object by selecting a point to rotate about and then a measurement or measurable object to determine the angle of rotation.",
+      "Create a rotation transformation object by selecting a point to rotate about and then a measurement or measurable object to determine the angle of rotation.",
 
     CreatePointReflectionDisplayedName: "Create Point<br>Reflection",
     CreatePointReflectionToolTipMessage: "Create a point reflection mapping.",
     CreatePointReflectionToolUseMessage:
-      "Create a point reflection mapping object by selecting a point to reflect through.",
+      "Create a point reflection transformation object by selecting a point to reflect through.",
 
-    CreateReflectionDisplayedName: "Create <br>Reflection",
+    CreateReflectionDisplayedName: "Create<br>Reflection",
     CreateReflectionToolTipMessage: "Create a reflection mapping.",
     CreateReflectionToolUseMessage:
-      "Create a reflection mapping object by selecting a line or line segment to reflect through.",
+      "Create a reflection transformation object by selecting a line or line segment to reflect through.",
 
-    CreateInversionDisplayedName: "Create <br>Inversion",
+    CreateInversionDisplayedName: "Create<br>Inversion",
     CreateInversionToolTipMessage: "Create a inversion mapping.",
     CreateInversionToolUseMessage:
-      "Create a inversion mapping object by selecting a circle to invert over.",
+      "Create a inversion transformation object by selecting a circle to invert over.",
+    ApplyTransformationDisplayedName: "Apply<br>Transformation",
+    ApplyTransformationToolTipMessage: "Apply a transformation.",
+    ApplyTransformationToolUseMessage:
+      "Apply a transformation by first selecting transformation object and then selecting geometric objects to apply it to.",
 
     CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
     CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
@@ -231,14 +235,21 @@ export default {
     title: "Preferences"
   },
   objects: {
-    points: "Points | Point | point",
-    lines: "Lines | Line | line",
-    circles: "Circles | Circle| circle",
-    segments: "Line Segments | Line Segment | line segment",
-    measurements: "Measurements | Measurement | measurement",
-    transformations: "Transformations | Transformation | transformation",
-    ellipses: "Ellipses | Ellipse |ellipse",
-    parametrics: "Parametrics | Parametric |parametric"
+    points: "Points | Point | point | points",
+    lines: "Lines | Line | line | lines",
+    circles: "Circles | Circle| circle | circles",
+    segments: "Line Segments | Line Segment | line segment | line segments",
+    measurements: "Measurements | Measurement | measurement | measurements",
+    transformations:
+      "Transformations | Transformation | transformation | transformations",
+    ellipses: "Ellipses | Ellipse | ellipse | ellipses",
+    parametrics: "Parametrics | Parametric | parametric | parametrics",
+    translations: "Translations | Translation | translation | translations",
+    rotations: "Rotations | Rotation | rotation | rotations",
+    reflections: "Reflections | Reflection | reflection | reflections",
+    pointReflections:
+      "Point reflections | Point reflection | point reflection | point reflections",
+    inversions: "Inversions | Inversion | inversion | inversions"
   },
   style: {
     dashArrayReverse: "Switch Dash and Gap",
@@ -424,6 +435,15 @@ export default {
     angleMarkerArrowHeads: "Arrow Head"
   },
   handlers: {
+    duplicateTransformedObject:
+      "The {object} {name} has already been transformed by {type} {trans}.",
+    newIsometrySegmentAdded: "New isometry line segment {name} added.",
+    newIsometryLineAdded: "New isometry Line {name} added.",
+    newIsometryCircleAdded: "New isometry circle {name} added.",
+    newIsometryEllipseAdded: "New isometry Ellipse {name} added.",
+    newTransformedPointAdded: "New transformed point {name} added.",
+    applyTransformationSelectTransformation:
+      "You must select a transformation before you can use this tool.",
     nEqualOneAngleNSect:
       "You must choose to divide angles into more than 1 equal pieces.",
     nSetAngleNSect: "You are dividing angles into {number} equal pieces.",
@@ -669,6 +689,8 @@ export default {
       "Ellipse with foci {focus1} and {focus2} through point {through}",
     intersectionPoint:
       "Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
+    transformationObject:
+      "The image of {object} {name} under {tranType} {trans}.",
     lineThrough:
       "Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
     polarLine:
@@ -740,6 +762,7 @@ export default {
       "Create a measurement to use as the angle of rotation.",
     selectAMeasurementForMeasuredCircle:
       "After selecting a center point, select a measurement to use as the radius of a measured circle.",
+    selectATransformation: "Select a transformation to apply.",
     selectAMeasurementForTranslation:
       "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
     selectAMeasurementForRotation:
@@ -750,7 +773,9 @@ export default {
     rotationAboutPoint: "Rotation about point {pt} by angle {angle}.",
     reflectionOverLine: "Reflection over the line {line}.",
     reflectOverPoint: "Reflection over the point {pt}.",
-    invertOverCircle: "Inversion over the circle {circle}."
+    invertOverCircle: "Inversion over the circle {circle}.",
+    createATransformation:
+      "To apply a transformation you must first create a transformation object."
   },
   constructions: {
     save: "Save",

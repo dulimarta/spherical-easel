@@ -58,6 +58,8 @@ import RotationTransformationHandler from "@/eventHandlers/RotationTranformation
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
 import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
+import { SETransformation } from "@/models/SETransformation";
+import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 
 const SE = namespace("se");
 
@@ -138,6 +140,7 @@ export default class SphereFrame extends VueComponent {
   private reflectionTool!: ReflectionTransformationHandler;
   private pointReflectionTool!: PointReflectionTransformationHandler;
   private inversionTool!: InversionTransformationHandler;
+  private applyTransformationTool!: ApplyTransformationHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -285,6 +288,7 @@ export default class SphereFrame extends VueComponent {
       this.layers
     );
     this.inversionTool = new InversionTransformationHandler(this.layers);
+    this.applyTransformationTool = new ApplyTransformationHandler(this.layers);
 
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -296,6 +300,10 @@ export default class SphereFrame extends VueComponent {
       this.measuredCircleSetTemporaryRadius
     );
     EventBus.listen("set-expression-for-tool", this.setExpressionForTool);
+    EventBus.listen(
+      "set-transformation-for-tool",
+      this.setTransformationForTool
+    );
   }
 
   mounted(): void {
@@ -343,6 +351,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("construction-loaded");
     EventBus.unlisten("measured-circle-set-temporary-radius");
     EventBus.unlisten("set-expression-for-tool");
+    EventBus.unlisten("set-transformation-for-tool");
   }
 
   @Watch("canvasSize")
@@ -668,6 +677,12 @@ export default class SphereFrame extends VueComponent {
       this.currentTool.setExpression(e.expression);
     }
   }
+
+  setTransformationForTool(e: { transformation: SETransformation }): void {
+    if (this.currentTool instanceof ApplyTransformationHandler) {
+      this.currentTool.setTransformation(e.transformation);
+    }
+  }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -819,6 +834,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "inversion":
         this.currentTool = this.inversionTool;
+        break;
+      case "applyTransformation":
+        this.currentTool = this.applyTransformationTool;
         break;
       default:
         this.currentTool = null;

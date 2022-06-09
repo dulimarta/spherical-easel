@@ -287,6 +287,21 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dashing pattern is copied from the default drawn version
+    },
+    nonFree: {
+      // No fill for lines
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree line when drawn
+      scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   line: {
@@ -491,6 +506,26 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
+    },
+    nonFree: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+      },
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree circles when drawn
+      scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   parametric: {
@@ -1302,6 +1337,48 @@ export const SETTINGS = {
     reflection: {
       props: {
         mdiIcon: "mdi-mirror",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedPoint: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedCircle: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedLine: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedSegment: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedEllipse: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    applyTransformation: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
         emphasizeTypes: [[]],
         filePath: ""
       }

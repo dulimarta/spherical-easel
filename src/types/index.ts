@@ -18,6 +18,10 @@ import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETransformation } from "@/models/SETransformation";
+import { SETranslation } from "@/models/SETranslation";
+import { SERotation } from "@/models/SERotation";
+import { SEReflection } from "@/models/SEReflection";
+import { SEPointReflection } from "@/models/SEPointReflection";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -213,7 +217,26 @@ export type SavedNames =
   | "rotationAngleExpressionName"
   | "reflectionLineOrSegmentName"
   | "pointReflectionPointName"
-  | "inversionCircleName";
+  | "inversionCircleName"
+  | "transformedPointParentTransformationName"
+  | "transformedPointParentName"
+  | "isometrySegmentParentIsometryName"
+  | "isometrySegmentParentName"
+  | "isometrySegmentStartSEPointName"
+  | "isometrySegmentEndSEPointName"
+  | "isometryLineParentIsometryName"
+  | "isometryLineParentName"
+  | "isometryLineStartSEPointName"
+  | "isometryLineEndSEPointName"
+  | "isometryCircleParentIsometryName"
+  | "isometryCircleParentName"
+  | "isometryCircleCenterSEPointName"
+  | "isometryCircleCircleSEPointName"
+  | "isometryEllipseParentIsometryName"
+  | "isometryEllipseParentName"
+  | "isometryEllipseFocus1SEPointName"
+  | "isometryEllipseFocus2SEPointName"
+  | "isometryEllipseEllipseSEPointName";
 
 export type ActionMode =
   | "angle"
@@ -253,7 +276,8 @@ export type ActionMode =
   | "rotation"
   | "reflection"
   | "pointReflection"
-  | "inversion";
+  | "inversion"
+  | "applyTransformation";
 
 export type IconNames =
   | ActionMode
@@ -454,6 +478,11 @@ export enum LabelDisplayMode {
 }
 
 /*******************************************UPDATE TYPES **********************/
+export type SEIsometry =
+  | SETranslation
+  | SERotation
+  | SEReflection
+  | SEPointReflection;
 
 export type ObjectNames =
   | "angleMarker"
@@ -487,7 +516,11 @@ export type ObjectNames =
   | "reflection"
   | "inversion"
   | "pointReflection"
-  | "transformedPoint";
+  | "transformedPoint"
+  | "isometrySegment"
+  | "isometryLine"
+  | "isometryCircle"
+  | "isometryEllipse";
 
 export interface ObjectState {
   kind: ObjectNames;

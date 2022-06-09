@@ -3,39 +3,50 @@ import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SETransformation } from "./SETransformation";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEInversion } from "./SEInversion";
 
 export class SETransformedPoint extends SEPoint {
   /**
-   * The point parent of this SETransformedPoint
+   * The parents of this SETransformationPoint
    */
-  private _transformedPointParent: SEPoint;
+  private _seParentPoint: SEPoint;
+  private _seParentTransformation: SETransformation;
+  private transType = "";
 
-  /**
-   * The transformation parent of this SETransformedPoint
-   */
-  private _transformationParent: SETransformation;
-
-  /**
-   * Create an intersection point between two one-dimensional objects
-   * @param point the TwoJS point associated with this intersection
-   * @param transformedPointParent The parent point
-   * @param transformationParent The parent transformation
-   */
-  constructor(
-    point: Point,
-    transformedPointParent: SEPoint,
-    transformationParent: SETransformation
-  ) {
-    super(point);
-    this._transformedPointParent = transformedPointParent;
-    this._transformationParent = transformationParent;
+  constructor(pt: Point, sePoint: SEPoint, seTransformation: SETransformation) {
+    super(pt);
+    this.ref = pt;
+    this._seParentPoint = sePoint;
+    this._seParentTransformation = seTransformation;
+    if (this._seParentTransformation instanceof SETranslation) {
+      this.transType = i18n.tc("objects.translations", 3);
+    } else if (this._seParentTransformation instanceof SERotation) {
+      this.transType = i18n.tc("objects.rotations", 3);
+    } else if (this._seParentTransformation instanceof SEReflection) {
+      this.transType = i18n.tc("objects.reflections", 3);
+    } else if (this._seParentTransformation instanceof SEPointReflection) {
+      this.transType = i18n.tc("objects.pointReflections", 3);
+    } else if (this._seParentTransformation instanceof SEInversion) {
+      this.transType = i18n.tc("objects.inversions", 3);
+    }
   }
-
+  get parentPoint(): SEPoint {
+    return this._seParentPoint;
+  }
+  get parentTransformation(): SETransformation {
+    return this._seParentTransformation;
+  }
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.transformedPoint`, {
-        pt: this._transformedPointParent.label?.ref.shortUserName,
-        trans: this._transformationParent.name
+      i18n.t(`objectTree.transformationObject`, {
+        object: i18n.tc(`objects.points`, 3),
+        pt: this._seParentPoint.label?.ref.shortUserName,
+        trans: this._seParentTransformation.name,
+        transType: this.transType
       })
     );
   }
@@ -43,7 +54,7 @@ export class SETransformedPoint extends SEPoint {
   public get noduleItemText(): string {
     return (
       this.label?.ref.shortUserName ??
-      "No Label Short Name In SETransformationPoint"
+      "No Label Short Name In SETransformedPoint"
     );
   }
 
@@ -57,24 +68,22 @@ export class SETransformedPoint extends SEPoint {
     this.setOutOfDate(false);
 
     this._exists =
-      this._transformedPointParent.exists && this._transformationParent.exists;
-
+      this._seParentPoint.exists && this._seParentTransformation.exists;
     if (this._exists) {
-      // Update the current location with the opposite of the antipodal parent vector location
-      this._locationVector.copy(this._transformedPointParent.locationVector);
-      this._locationVector = this._transformationParent.f(this._locationVector);
-      this.ref.positionVector = this._locationVector;
+      this.locationVector = this._seParentTransformation.f(
+        this._seParentPoint.locationVector
+      );
     }
 
     // Update visibility
-    if (this._showing && this._exists) {
+    if (this._exists && this._showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
 
-    // These transformation points are completely determined by their point parent and the transformation and an update on the parents
-    // will cause this transformed point to be put into the correct location. So we don't store any additional information
+    // Intersection Points are completely determined by their parents and an update on the parents
+    // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
         console.log(
@@ -88,6 +97,7 @@ export class SETransformedPoint extends SEPoint {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
+
   public isNonFreePoint(): boolean {
     return true;
   }

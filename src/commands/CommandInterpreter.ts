@@ -34,6 +34,11 @@ import { AddRotationCommand } from "./AddRotationCommand";
 import { AddReflectionCommand } from "./AddReflectionCommand";
 import { AddInversionCommand } from "./AddInversionCommand";
 import { AddPointReflectionCommand } from "./AddPointReflectionCommand";
+import { AddTransformedPointCommand } from "./AddTransformedPointCommand";
+import { AddIsometrySegmentCommand } from "./AddIsometrySegmentCommand";
+import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
+import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
+import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -122,6 +127,17 @@ function executeIndividual(command: string): Command {
       return AddPointReflectionCommand.parse(command, noduleDictionary);
     case "AddInversion":
       return AddInversionCommand.parse(command, noduleDictionary);
+    case "AddTransformedPoint":
+      return AddTransformedPointCommand.parse(command, noduleDictionary);
+    case "AddIsometrySegment":
+      return AddIsometrySegmentCommand.parse(command, noduleDictionary);
+    case "AddIsometryLine":
+      return AddIsometryLineCommand.parse(command, noduleDictionary);
+    case "AddIsometryCircle":
+      return AddIsometryCircleCommand.parse(command, noduleDictionary);
+    case "AddIsometryEllipse":
+      return AddIsometryEllipseCommand.parse(command, noduleDictionary);
+
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

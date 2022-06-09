@@ -31,9 +31,17 @@
             medium>
             $vuetify.icons.value.nSectPoint
           </v-icon>
+          <v-icon v-else-if="isTransformedPoint"
+            medium>
+            $vuetify.icons.value.transformedPoint
+          </v-icon>
           <v-icon v-else-if="isPoint"
             medium>
             $vuetify.icons.value.point</v-icon>
+          <v-icon v-else-if="isTransformedSegment"
+            medium>
+            $vuetify.icons.value.transformedSegment
+          </v-icon>
           <v-icon v-else-if="isLineSegment"
             medium>
             $vuetify.icons.value.segment</v-icon>
@@ -49,12 +57,24 @@
           <v-icon v-else-if="isNSectLine"
             medium>
             $vuetify.icons.value.nSectLine</v-icon>
+          <v-icon v-else-if="isTransformedLine"
+            medium>
+            $vuetify.icons.value.transformedLine
+          </v-icon>
           <v-icon v-else-if="isLine"
             medium>
             $vuetify.icons.value.line</v-icon>
+          <v-icon v-else-if="isTransformedCircle"
+            medium>
+            $vuetify.icons.value.transformedCircle
+          </v-icon>
           <v-icon v-else-if="isCircle"
             medium>
             $vuetify.icons.value.circle
+          </v-icon>
+          <v-icon v-else-if="isTransformedEllipse"
+            medium>
+            $vuetify.icons.value.transformedEllipse
           </v-icon>
           <v-icon v-else-if="isEllipse"
             medium>
@@ -64,23 +84,28 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-          <v-icon v-else-if="isTranslation"
+          <v-icon :class="shakeTransformationDisplay"
+            v-else-if="isTranslation"
             medium>
             $vuetify.icons.value.translation
           </v-icon>
-          <v-icon v-else-if="isRotation"
+          <v-icon :class="shakeTransformationDisplay"
+            v-else-if="isRotation"
             medium>
             $vuetify.icons.value.rotation
           </v-icon>
-          <v-icon v-else-if="isReflection"
+          <v-icon :class="shakeTransformationDisplay"
+            v-else-if="isReflection"
             medium>
             $vuetify.icons.value.reflection
           </v-icon>
-          <v-icon v-else-if="isPointReflection"
+          <v-icon :class="shakeTransformationDisplay"
+            v-else-if="isPointReflection"
             medium>
             $vuetify.icons.value.pointReflection
           </v-icon>
-          <v-icon v-else-if="isInversion"
+          <v-icon :class="shakeTransformationDisplay"
+            v-else-if="isInversion"
             medium>
             $vuetify.icons.value.inversion
           </v-icon>
@@ -128,7 +153,7 @@
                 class="contentText"
                 @click="selectMe"
                 v-on="on"
-                :class="[showClass,shakeMeasurementDisplay]">
+                :class="[showClass,shakeMeasurementDisplay,shakeTransformationDisplay]">
                 <span class="text-truncate">{{ shortDisplayText }}</span>
               </div>
             </template>
@@ -295,6 +320,7 @@ import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEReflection } from "@/models/SEReflection";
 import { SERotation } from "@/models/SERotation";
 import { SEInversion } from "@/models/SEInversion";
+import { SETransformedPoint } from "@/models/SETransformedPoint";
 
 const SE = namespace("se");
 @Component
@@ -397,6 +423,10 @@ export default class SENoduleItem extends Vue {
       EventBus.fire("set-expression-for-tool", {
         expression: this.node
       });
+    } else if (this.node instanceof SETransformation) {
+      EventBus.fire("set-transformation-for-tool", {
+        expression: this.node
+      });
     }
   }
 
@@ -407,7 +437,6 @@ export default class SENoduleItem extends Vue {
   }
   toggleLabelDisplay(): void {
     if (
-      // this.isPlottable
       this.node instanceof SEPoint ||
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
@@ -437,14 +466,6 @@ export default class SENoduleItem extends Vue {
       );
     }
   }
-  //   .then(() => {
-  //     console.log('Text is on the clipboard.');
-  //     this.message = 'Code copied to clipboard.';
-  //   })
-  // .catch(e => {
-  //   console.error(e);
-  //   this.message = 'Sorry, unable to copy to clipboard.'
-  // });    }
 
   deleteNode(): void {
     /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLICATION BE ELIMINATED?
@@ -577,7 +598,6 @@ export default class SENoduleItem extends Vue {
   }
   get isLabelHidden(): boolean {
     if (
-      // this.isPlottable
       this.node instanceof SEPoint ||
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
@@ -701,7 +721,38 @@ export default class SENoduleItem extends Vue {
   get isInversion(): boolean {
     return this.node instanceof SEInversion;
   }
-
+  get isTransformedPoint(): boolean {
+    return this.node instanceof SETransformedPoint;
+  }
+  get isTransformedLine(): boolean {
+    return false;
+    //return this.node instanceof SETransformedLine;
+  }
+  get isTransformedSegment(): boolean {
+    return false;
+    //return this.node instanceof SETransformedSegment;
+  }
+  get isTransformedCircle(): boolean {
+    return (
+      this.node instanceof SECircle &&
+      this.node.circleSEPoint instanceof SETransformedPoint &&
+      this.node.centerSEPoint instanceof SETransformedPoint &&
+      this.node.circleSEPoint.parentTransformation.name ===
+        this.node.centerSEPoint.parentTransformation.name
+    );
+  }
+  get isTransformedEllipse(): boolean {
+    return (
+      this.node instanceof SEEllipse &&
+      this.node.focus1SEPoint instanceof SETransformedPoint &&
+      this.node.focus2SEPoint instanceof SETransformedPoint &&
+      this.node.ellipseSEPoint instanceof SETransformedPoint &&
+      this.node.focus1SEPoint.parentTransformation.name ===
+        this.node.focus2SEPoint.parentTransformation.name &&
+      this.node.focus1SEPoint.parentTransformation.name ===
+        this.node.ellipseSEPoint.parentTransformation.name
+    );
+  }
   get isPlottable(): boolean {
     return (
       this.node instanceof SEPoint ||
@@ -722,7 +773,16 @@ export default class SENoduleItem extends Vue {
   }
   //only shake the measurement icons initially when the measured circle tool is selected (There should also be a message displayed telling the user to select a measurement)
   get shakeMeasurementDisplay(): string {
-    return SEStore.actionMode === "measuredCircle" && this.isMeasurement
+    return SEStore.actionMode === "measuredCircle" &&
+      this.node instanceof SEExpression
+      ? "shake"
+      : "";
+  }
+
+  //only shake the transformation icons initially when the apply transformations tool is selected (There should also be a message displayed telling the user to select a translation)
+  get shakeTransformationDisplay(): string {
+    return SEStore.actionMode === "applyTransformation" &&
+      this.node instanceof SETransformation
       ? "shake"
       : "";
   }

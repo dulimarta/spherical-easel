@@ -365,6 +365,15 @@ export const toolGroups: Array<ToolButtonGroup> = [
         toolTipMessage: "CreateInversionToolTipMessage",
         toolUseMessage: "CreateInversionToolUseMessage",
         displayToolUseMessage: false
+      },
+      {
+        id: 25,
+        actionModeValue: "applyTransformation",
+        displayedName: "ApplyTransformationDisplayedName",
+        icon: "$vuetify.icons.value.applyTransformation",
+        toolTipMessage: "ApplyTransformationToolTipMessage",
+        toolUseMessage: "ApplyTransformationToolUseMessage",
+        displayToolUseMessage: false
       }
     ]
   },

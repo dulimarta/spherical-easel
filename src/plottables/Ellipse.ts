@@ -155,18 +155,18 @@ export default class Ellipse extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontPart: Two.Path;
-  private backPart: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingBackPart: Two.Path;
+  protected frontPart: Two.Path;
+  protected backPart: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingBackPart: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  private frontFill: Two.Path;
-  private backFill: Two.Path;
+  protected frontFill: Two.Path;
+  protected backFill: Two.Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
   private fillStorageAnchors: Two.Anchor[] = [];

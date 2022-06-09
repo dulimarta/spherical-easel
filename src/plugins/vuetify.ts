@@ -373,6 +373,42 @@ const vuetify = new Vuetify({
         props: {
           iconName: "copyToClipboard"
         }
+      },
+      applyTransformation: {
+        component: IconBase,
+        props: {
+          iconName: "applyTransformation"
+        }
+      },
+      transformedPoint: {
+        component: IconBase,
+        props: {
+          iconName: "transformedPoint"
+        }
+      },
+      transformedCircle: {
+        component: IconBase,
+        props: {
+          iconName: "transformedCircle"
+        }
+      },
+      transformedSegment: {
+        component: IconBase,
+        props: {
+          iconName: "transformedSegment"
+        }
+      },
+      transformedLine: {
+        component: IconBase,
+        props: {
+          iconName: "transformedLine"
+        }
+      },
+      transformedEllipse: {
+        component: IconBase,
+        props: {
+          iconName: "transformedEllipse"
+        }
       }
     }
   },

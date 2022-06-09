@@ -134,6 +134,12 @@ export class SEEllipse
   get a(): number {
     return this._a;
   }
+  set a(a: number) {
+    this._a = a;
+  }
+  set b(b: number) {
+    this._b = b;
+  }
   get b(): number {
     return this._b;
   }

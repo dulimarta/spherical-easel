@@ -130,10 +130,10 @@ export default class ToolButton extends Vue {
   //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
   possibleToolAction(): void {
     if (this.button.actionModeValue === "measuredCircle") {
-      //...open the object tree tab,
-      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       //...open the measurement panel and close the others or tell the user to create a measurement
       if (SEStore.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
@@ -142,10 +142,10 @@ export default class ToolButton extends Vue {
         });
       }
     } else if (this.button.actionModeValue === "translation") {
-      //...open the object tree tab,
-      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       //...open the measurement panel and close the others or tell the user to create a measurement
       if (SEStore.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
@@ -154,15 +154,27 @@ export default class ToolButton extends Vue {
         });
       }
     } else if (this.button.actionModeValue === "rotation") {
-      //...open the object tree tab,
-      EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       //...open the measurement panel and close the others or tell the user to create a measurement
       if (SEStore.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
           key: "objectTree.createMeasurementForRotation",
           type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "applyTransformation") {
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (SEStore.seTransformations.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-transformation-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createATransformation",
+          type: "error"
         });
       }
     }

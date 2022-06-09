@@ -58,6 +58,10 @@ export default class SENoduleTree extends Vue {
   private expanded = false;
   created(): void {
     EventBus.listen("expand-measurement-sheet", this.expandMeasurementSheet);
+    EventBus.listen(
+      "expand-transformation-sheet",
+      this.expandTransformationSheet
+    );
   }
 
   get hasExistingChildren(): boolean {
@@ -107,6 +111,27 @@ export default class SENoduleTree extends Vue {
     }
     // console.log("------------");
   }
+
+  // When the user activates the apply transformation tool, the transformation sheet is expanded and the others are closed
+  expandTransformationSheet(): void {
+    // console.log("here1");
+    if (this.i18LabelKey === "objects.transformations") {
+      if (this.hasExistingChildren) {
+        this.expanded = true;
+        switch (SEStore.actionMode) {
+          case "applyTransformation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectATransformation",
+              type: "info"
+            });
+            break;
+        }
+      }
+    } else {
+      this.expanded = false;
+    }
+    // console.log("------------");
+  }
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
   onExpressionSelect(x: any): void {
     const pos = this.children.findIndex(n => n.id === x.id);
@@ -120,6 +145,7 @@ export default class SENoduleTree extends Vue {
   }
   beforeDestroy(): void {
     EventBus.unlisten("expand-measurement-sheet");
+    EventBus.unlisten("expand-transformation-sheet");
   }
 }
 </script>

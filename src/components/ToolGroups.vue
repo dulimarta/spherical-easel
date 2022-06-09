@@ -188,9 +188,6 @@ export default class ToolGroups extends Vue {
     ACStore.excludeToolName(name);
   }
 
-  /* A list of all the buttons that are possible to display/use. Only those that the User has
-  permission to use will be available. */
-
   private developerButtonList: ToolButtonType[] = [
     {
       id: 0,
