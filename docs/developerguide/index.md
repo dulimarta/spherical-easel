@@ -5,13 +5,13 @@ lang: en-US
 
 # Developer Manual
 
-## Install Build Tools 
+## Install Build Tools
 
 1. Install NodeJS
 2. Install Yarn
 3. Install Jest
 
-## Running Development Server
+## Running Development Server (Option #1)
 
 The `scripts` section of `package.json` includes two entries for launching the development servers.
 
@@ -28,11 +28,20 @@ To mimic the setup when the app is deployed at a non-root path, we use `/dev` as
 :::tip
 A non-root path is required when you don't have access to the machine web server configuration file and the
 host server requires you use your own `public_html` directory associated with your account.
-This typical setup applies to most educational institutions where the school website is deployed at `https://your.school.name.edu` and 
+This typical setup applies to most educational institutions where the school website is deployed at `https://your.school.name.edu` and
 faculty/student websites must be deployed at `https://your.school.name.edu/youruserid`.
 In this particular case, `youruserid` is the URL deployment path.
 
 :::
+
+
+## Running Development Server with Docker (Option #2)
+
+Use this option only to activate both the VueJS front end and the ExpressJS back end.
+
+```
+docker-compose up --build
+```
 
 ## Deployment
 

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "exp:serve": "nodemon geo.ts"
+  },
   "dependencies": {
     "express": "^4.17.2",
     "firebase": "^8.10.0",

@@ -56,15 +56,21 @@
 
       <v-spacer></v-spacer>
 
-      <v-tooltip bottom>
-        <template #activator="{on}"
-          v-if="myRole !== 'instructor' || !accountEnabled">
-          <v-icon class="mx-2"
-            v-on="on"
-            @click="prepareToJoinStudio">mdi-google-classroom</v-icon>
+      <template v-if="myRole !== 'instructor' || !accountEnabled">
+        <template v-if="!studioName">
+          <v-tooltip bottom>
+            <template #activator="{on}">
+              <v-icon class="mx-2"
+                v-on="on"
+                @click="prepareToJoinStudio">mdi-google-classroom</v-icon>
+            </template>
+            <span>Join a studio</span>
+          </v-tooltip>
         </template>
-        <span>Join a studio</span>
-      </v-tooltip>
+        <template v-else>
+          <span>In {{studioName}}</span>
+        </template>
+      </template>
       <template v-if="accountEnabled">
 
         <v-tooltip bottom
@@ -299,6 +305,7 @@ export default class App extends Vue {
   whoami = "";
   uid = "";
   profilePicUrl: string | null = null;
+  studioName: string | null = null;
   svgRoot!: SVGElement;
 
   /* User account feature is initialy disabled. To unlock this feature
@@ -518,6 +525,7 @@ export default class App extends Vue {
   }
 
   prepareToLaunchStudio(): void {
+    console.debug("Prepareing to lauch studio?", this.studioSocket);
     if (this.studioSocket) {
       this.doLaunchStudio();
     } else {
@@ -548,6 +556,7 @@ export default class App extends Vue {
 
   joinSession(session: string): void {
     console.debug("Attempt rejoin studio", session);
+    this.studioName = session;
     this.socket = io(
       process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
     );

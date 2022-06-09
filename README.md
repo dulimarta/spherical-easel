@@ -26,12 +26,13 @@ yarn install
 
 ### Compiles and hot-reloads for development
 
+The following will launch the VueJS front-end on port 8080 and the ExpressJS backend on port 4000.
+
 ```bash
-# Start the app on a local server
 yarn app:serve
 ```
 
-After typing `yarn serve`, use your browser to open `localhost:8080` (or whatever port number used by `yarn serve`).
+Then use your browser to open `localhost:8080`.
 
 ### Optional commands
 
@@ -68,13 +69,14 @@ After a successful document build, you will find a new directory `dist/docs`.
    docker build -t DDDDDDDD/easelgeo --no-cache .
    ```
 
-   To push the image to [Docker Hub](`docker.io`), use your Docker userid in place of `DDDDDDDD`.
+   In order to push the image to [Docker Hub](`docker.io`), `DDDDDDDD` must be replaced with your Docker userid.
 
+
+2. Run using docker
 
    ```
    docker run -it -p 9000:80 --rm --name easelgeo-app DDDDDDDD/easelgeo
    ```
-
    or
 
    ```

@@ -7,7 +7,7 @@ FROM node:14.15-alpine as build-stage
 # Copy from local into the image
 WORKDIR ./
 
-RUN apk add python3 && \
+RUN apk add python3 git && \
     npm install -g npm@8.3.0 && \
     npm explore npm/node_modules/@npmcli/run-script -g -- npm_config_global=false npm install node-gyp@latest
 
