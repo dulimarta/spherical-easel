@@ -20,14 +20,11 @@
 
 <script lang="ts">
 import { io, Socket } from "socket.io-client";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { useSDStore } from "@/stores/sd";
 import { mapActions, mapState } from "pinia";
 
 @Component({
-  methods: {
-    ...mapActions(useSDStore, ["setStudioSocket"])
-  },
   computed: {
     ...mapState(useSDStore, ["studioSocket"])
   }
@@ -44,20 +41,20 @@ export default class TeacherDashboard extends Vue {
   }
 
   mounted(): void {
-    console.debug("TeacherDashboard::mounted()", process.env);
-    if (this.studioSocket == null) {
-      console.debug("About to create a new Studio...");
-      const socket = io(
-        process.env.VUE_APP_Studio_SERVER_URL || "http://localhost:4000"
-      );
-      socket.on("connect", () => {
-        console.debug("Teacher socket connected to ", this.studioSocket?.id);
-        this.setStudioSocket(this.studioSocket);
-        socket?.emit("teacher-join", { who: "Just me", isTeacher: true });
+    console.debug("TeacherDashboard::mounted()", this.studioSocket);
+    if (this.studioSocket !== null) {
+      //   console.debug("About to create a new Studio...");
+      //   this.studioSocket?.on("connect", () => {
+      //     console.debug("Teacher socket connected to ", socket.id);
+      //     this.setStudioSocket(socket);
+      this.studioSocket.emit("teacher-join", {
+        who: "Just me",
+        isTeacher: true
       });
-      socket.on("new-student", arg => {
-        console.debug("A student just joined", arg);
-      });
+      //   });
+      //   socket.on("new-student", arg => {
+      //     console.debug("A student just joined", arg);
+      //   });
     }
   }
 

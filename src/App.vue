@@ -56,33 +56,9 @@
 
       <v-spacer></v-spacer>
 
-      <template v-if="myRole !== 'instructor' || !accountEnabled">
-        <template v-if="!studioName">
-          <v-tooltip bottom>
-            <template #activator="{on}">
-              <v-icon class="mx-2"
-                v-on="on"
-                @click="prepareToJoinStudio">mdi-google-classroom</v-icon>
-            </template>
-            <span>Join a studio</span>
-          </v-tooltip>
-        </template>
-        <template v-else>
-          <span>In {{studioName}}</span>
-        </template>
-      </template>
+      <StudioSession></StudioSession>
       <template v-if="accountEnabled">
 
-        <v-tooltip bottom
-          left>
-          <template #activator="{on}">
-            <v-icon v-if="myRole === 'instructor'"
-              v-on="on"
-              class="mx-2"
-              @click="prepareToLaunchStudio">mdi-human-male-board</v-icon>
-          </template>
-          <span>Create a new studio</span>
-        </v-tooltip>
         <span class="mx=2">{{whoami}}</span>
         <v-img id="profilePic"
           v-if="profilePicUrl"
@@ -175,33 +151,7 @@
         :disabled="uid.length === 0"
         :label="$t('constructions.makePublic')"></v-switch>
     </Dialog>
-    <Dialog ref="initiateSessionDialog"
-      title="Session"
-      yes-text="Create"
-      no-text="Cancel"
-      :yes-action="doLaunchStudio"
-      max-width="40%">
-      You are about to create a new teacher session
-    </Dialog>
-    <Dialog ref="studioListDialog"
-      max-width="40%"
-      yes-text="Cancel">
-      <p class="text-h4">Please select a studio to join</p>
-      <table>
-        <tr v-for="(s,pos) in availableSessions"
-          :key="pos">
-          <td class="text-body-1">{{s}}</td>
-          <td>
-            <v-btn @click="joinSession(s)">Join</v-btn>
-          </td>
-        </tr>
-      </table>
-    </Dialog>
-    <v-snackbar timeout="3000"
-      v-model="showBroadcastMessage">
-      Broadcast message: {{broadcastMessage}}
 
-    </v-snackbar>
   </v-app>
 </template>
 
@@ -214,6 +164,7 @@
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
 import MessageBox from "@/components/MessageBox.vue";
+import StudioSession from "@/components/StudioSession.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
@@ -222,9 +173,7 @@ import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
   FirebaseFirestore,
   DocumentReference,
-  DocumentSnapshot,
-  QueryDocumentSnapshot,
-  QuerySnapshot
+  DocumentSnapshot
 } from "@firebase/firestore-types";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
@@ -232,12 +181,10 @@ import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
-import { useSDStore } from "@/stores/sd";
 import { detect } from "detect-browser";
-import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
+import { mapState, mapActions, mapWritableState } from "pinia";
 
 // import { gzip } from "node-gzip";
-import { io, Socket } from "socket.io-client";
 //#region vuex-module-namespace
 //#endregion vuex-module-namespace
 
@@ -259,11 +206,10 @@ interface UserDocOnFirebase {
 
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({
-  components: { MessageBox, Dialog },
+  components: { MessageBox, Dialog, StudioSession },
   methods: {
     ...mapActions(useAccountStore, ["resetToolset"]),
-    ...mapActions(useSEStore, ["clearUnsavedFlag"]),
-    ...mapActions(useSDStore, ["setStudioSocket"])
+    ...mapActions(useSEStore, ["clearUnsavedFlag"])
   },
   computed: {
     ...mapState(useAccountStore, ["includedTools"]),
@@ -289,15 +235,12 @@ export default class App extends Vue {
   readonly resetToolset!: () => void;
   readonly hasObjects!: () => boolean;
   readonly clearUnsavedFlag!: () => void;
-  readonly setStudioSocket!: (s: Socket | null) => void;
 
   userRole!: string | undefined;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   readonly $appStorage!: FirebaseStorage;
-  studioSocket!: Socket;
-  availableSessions: Array<string> = [];
 
   clientBrowser: any;
   description = "";
@@ -305,23 +248,18 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
-    initiateSessionDialog: VueComponent & DialogAction;
-    studioListDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
   profilePicUrl: string | null = null;
-  studioName: string | null = null;
   svgRoot!: SVGElement;
 
   /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
   acceptedKeys = 0;
   accountEnabled = false;
-  showBroadcastMessage = false;
-  broadcastMessage = "";
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
@@ -394,8 +332,6 @@ export default class App extends Vue {
     );
     // Get the top-level SVG element
     this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
-
-    // socket.on()
   }
 
   beforeDestroy(): void {
@@ -527,58 +463,6 @@ export default class App extends Vue {
       });
 
     this.$refs.saveConstructionDialog.hide();
-  }
-
-  prepareToLaunchStudio(): void {
-    console.debug("Prepareing to lauch studio?", this.studioSocket);
-    if (this.studioSocket) {
-      this.doLaunchStudio();
-    } else {
-      this.$refs.initiateSessionDialog.show();
-    }
-  }
-
-  doLaunchStudio(): void {
-    this.$router.push({ path: "/teacher-dashboard" });
-    this.$refs.initiateSessionDialog.hide();
-  }
-
-  prepareToJoinStudio(): void {
-    console.debug("About to join a studio");
-    this.$appDB.collection("sessions").onSnapshot((qs: QuerySnapshot) => {
-      this.availableSessions.splice(0);
-      qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
-        this.availableSessions.push(qdoc.id);
-      });
-      if (this.availableSessions.length > 0) {
-        this.$refs.studioListDialog.show();
-      }
-    });
-
-    // if (this.studioSocket === null) this.$router.push({ path: "/studio-list" });
-    // else this.$router.push({ path: "/in-studio" });
-  }
-
-  joinSession(session: string): void {
-    console.debug("Attempt rejoin studio", session);
-    this.studioName = session;
-    this.studioSocket = io(
-      process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
-    );
-    this.setStudioSocket(this.studioSocket);
-    this.$refs.studioListDialog.hide();
-    this.studioSocket.on("connect", () => {
-      this.studioSocket.emit("student-join", { who: "Hans", session });
-    });
-    this.studioSocket.on("notify-all", (msg: string) => {
-      console.debug("Got a broadcast message", msg);
-      this.broadcastMessage = msg;
-      this.showBroadcastMessage = true;
-    });
-    // this.$router.push({
-    //   name: "StudioActivity",
-    //   params: { session }
-    // });
   }
 }
 </script>

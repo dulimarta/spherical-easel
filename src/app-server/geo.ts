@@ -19,7 +19,7 @@ const server_io = new Server(my_server, {
 });
 
 server_io.on("connection", (socket: Socket) => {
-  console.debug("Got a new connection to ", socket.id);
+  console.debug(`Got a new connection from client ${socket.id}`);
 
   socket.on("disconnect", (why: string) => {
     console.debug(`Socket ${socket.id} disconnected because ${why}`);
@@ -38,11 +38,12 @@ server_io.on("connection", (socket: Socket) => {
       owner: "Hans"
     });
   });
-  socket.on("teacher-leave", () => {
+
+  socket.on("teacher-leave", async () => {
     console.debug("Server received 'teacher-leave' event", socket.id);
     socket.leave(`chat-${socket.id}`);
     socket.disconnect();
-    firebaseFirestore.collection("sessions").doc(socket.id).delete();
+    await firebaseFirestore.collection("sessions").doc(socket.id).delete();
   });
 
   socket.on("notify-all", (arg: { room: string; message: string }) => {
@@ -77,7 +78,6 @@ router.get("/sessions", (req: Request, res: Response) => {
     res.write("<h1>List of rooms</h1>");
     res.write("<ol>");
     for (let r of rooms.keys()) {
-      console.debug("Room", r);
       if (r.startsWith("chat-")) res.write(`<li>${r}</li>`);
     }
     res.write("</ol>");
