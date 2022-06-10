@@ -1,16 +1,21 @@
 <template>
   <div>
     <span>
+
       <template v-if="userRole === 'instructor'">
-        <v-tooltip bottom
-          left>
-          <template #activator="{on}">
-            <v-icon v-on="on"
-              class="mx-2"
-              @click="prepareToLaunchStudio">mdi-human-male-board</v-icon>
-          </template>
-          <span>Create a new studio</span>
-        </v-tooltip>
+        <template v-if="!$route.path.endsWith('teacher-dashboard')">
+          <v-tooltip bottom
+            left>
+            <template #activator="{on}">
+              <v-icon v-on="on"
+                class="mx-2"
+                @click="prepareToLaunchStudio">mdi-human-male-board
+              </v-icon>
+            </template>
+            <span v-if="studioSocket === null">Create a new studio</span>
+            <span v-else>Studio {{studioSocket.id}}</span>
+          </v-tooltip>
+        </template>
       </template>
       <template v-else>
         <template v-if="!studioName">
@@ -88,20 +93,22 @@ import {
     ...mapActions(useSDStore, ["setStudioSocket"])
   },
   computed: {
-    ...mapState(useAccountStore, ["userRole"])
+    ...mapState(useAccountStore, ["userRole"]),
+    ...mapState(useSDStore, ["studioSocket"])
   }
 })
 export default class StudioSession extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly setStudioSocket!: (s: Socket | null) => void;
   readonly userRole!: string;
+  readonly studioSocket!: Socket | null;
+
   $refs!: {
     initiateSessionDialog: VueComponent & DialogAction;
     studioListDialog: VueComponent & DialogAction;
   };
   studioName: string | null = null;
   myRole = "none";
-  studioSocket: Socket | null = null;
   showBroadcastMessage = false;
   broadcastMessage = "";
 
@@ -110,23 +117,28 @@ export default class StudioSession extends Vue {
   prepareToLaunchStudio(): void {
     console.debug("Preparing to launch studio?", this.studioSocket);
     if (this.studioSocket) {
-      this.$router.push({ path: "/teacher-dashboard" });
+      this.$router.push({
+        name: "Teacher Dashboard"
+      });
     } else {
       this.$refs.initiateSessionDialog.show();
     }
   }
 
   doLaunchStudio(): void {
-    // Create a client socket that connects to
+    // Create a client socket that connects to our backend server
     const socket = io(
       process.env.VUE_APP_Studio_SERVER_URL || "http://localhost:4000"
     );
-    // socket.on("connect", () => {
-    //   console.debug(`Socket ${socket.id} received a new connection`);
-    // });
     this.setStudioSocket(socket);
-    this.$refs.initiateSessionDialog.hide();
-    this.$router.push({ name: "Teacher Dashboard" });
+    socket.on("connect", () => {
+      console.debug("Socket connected", socket.id);
+      // Transition to the next route ONLY after the socket is connected
+      this.$refs.initiateSessionDialog.hide();
+      this.$router.push({
+        name: "Teacher Dashboard"
+      });
+    });
   }
 
   prepareToJoinStudio(): void {
@@ -152,19 +164,19 @@ export default class StudioSession extends Vue {
   joinSession(session: string): void {
     console.debug("Attempt rejoin studio", session);
     this.studioName = session;
-    this.studioSocket = io(
-      process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
-    );
-    this.setStudioSocket(this.studioSocket);
-    this.$refs.studioListDialog.hide();
-    this.studioSocket.on("connect", () => {
-      this.studioSocket?.emit("student-join", { who: "Hans", session });
-    });
-    this.studioSocket.on("notify-all", (msg: string) => {
-      console.debug("Got a broadcast message", msg);
-      this.broadcastMessage = msg;
-      this.showBroadcastMessage = true;
-    });
+    // this.studioSocket = io(
+    //   process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
+    // );
+    // this.setStudioSocket(this.studioSocket);
+    // this.$refs.studioListDialog.hide();
+    // this.studioSocket.on("connect", () => {
+    //   this.studioSocket?.emit("student-join", { who: "Hans", session });
+    // });
+    // this.studioSocket.on("notify-all", (msg: string) => {
+    //   console.debug("Got a broadcast message", msg);
+    //   this.broadcastMessage = msg;
+    //   this.showBroadcastMessage = true;
+    // });
     // this.$router.push({
     //   name: "StudioActivity",
     //   params: { session }

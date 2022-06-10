@@ -1,7 +1,10 @@
 <template>
   <div>
-    <h1>Teacher Session Dashboard</h1>
-    <v-btn @click="stopStudio">Terminate Session</v-btn>
+    <h1>Teacher Studio Dashboard</h1>
+    <v-btn @click="stopStudio"
+      small>
+      <v-icon left>mdi-close</v-icon>Close Studio
+    </v-btn>
     <code>Socket ID: {{socketID}}</code>
     <p v-for="(m,pos) in sentMessages"
       :key="pos">
@@ -19,29 +22,32 @@
 </template>
 
 <script lang="ts">
-import { io, Socket } from "socket.io-client";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Socket } from "socket.io-client";
+import { Component, Vue } from "vue-property-decorator";
 import { useSDStore } from "@/stores/sd";
 import { mapActions, mapState } from "pinia";
 
 @Component({
+  methods: {
+    ...mapActions(useSDStore, ["setStudioSocket"])
+  },
   computed: {
     ...mapState(useSDStore, ["studioSocket"])
   }
 })
 export default class TeacherDashboard extends Vue {
   readonly studioSocket!: Socket | null;
-
   readonly setStudioSocket!: (s: Socket | null) => void;
   message = "";
   sentMessages: Array<string> = [];
 
   get socketID(): string {
-    return this.studioSocket ? this.studioSocket.id : "<None>";
+    return this.studioSocket?.id ?? "None";
   }
 
   mounted(): void {
-    console.debug("TeacherDashboard::mounted()", this.studioSocket);
+    console.debug("TeacherDashboard::mounted()", this.studioSocket?.id);
+
     if (this.studioSocket !== null) {
       //   console.debug("About to create a new Studio...");
       //   this.studioSocket?.on("connect", () => {
@@ -55,6 +61,8 @@ export default class TeacherDashboard extends Vue {
       //   socket.on("new-student", arg => {
       //     console.debug("A student just joined", arg);
       //   });
+    } else {
+      console.debug("TeacherDashboard::mounted: studioSocket is null???");
     }
   }
 

@@ -31,10 +31,10 @@ server_io.on("connection", (socket: Socket) => {
     //     console.debug(`Socket id ${socket.id} deleted`);
     //   });
   });
-  socket.on("teacher-join", (args: any) => {
+  socket.on("teacher-join", async (args: any) => {
     socket.join(`chat-${socket.id}`);
     console.debug("Server received 'teacher-join' event", args, socket.id);
-    firebaseFirestore.collection("sessions").doc(socket.id).set({
+    await firebaseFirestore.collection("sessions").doc(socket.id).set({
       owner: "Hans"
     });
   });
