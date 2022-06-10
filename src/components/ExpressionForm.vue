@@ -54,18 +54,21 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
+// import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import { namespace } from "vuex-class";
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-@Component({})
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["expressions"])
+  }
+})
 export default class ExpressionForm extends Vue {
-  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
 
   private parser = new ExpressionParser();
@@ -74,7 +77,7 @@ export default class ExpressionForm extends Vue {
 
   private calcResult = 0;
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -116,7 +119,7 @@ export default class ExpressionForm extends Vue {
             ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
             : 0;
         // console.debug("Calculation result is", this.calcResult);
-      } catch (err) {
+      } catch (err: any) {
         // no code
         // console.debug("Got an error", err);
         this.parsingError = err.message;

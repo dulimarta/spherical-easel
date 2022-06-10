@@ -80,7 +80,9 @@ import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
 import ToolGroups from "@/components/ToolGroups.vue";
 import SETTINGS from "@/global-settings";
-import { SEStore } from "@/store";
+import { ActionMode } from "@/types";
+import { mapActions } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 @Component({
   components: {
@@ -88,6 +90,9 @@ import { SEStore } from "@/store";
     // Use dynamic import so subcomponents are loaded on deman
     ObjectTree: () => import("@/components/ObjectTree.vue"),
     ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setActionMode"])
   }
 })
 export default class Toolbox extends Vue {
@@ -96,6 +101,7 @@ export default class Toolbox extends Vue {
 
   // ('layers')')
   // private layers!: Two.Group[];
+  readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
 
   private leftDrawerMinified = false;
   /* Copy global setting to local variable */
@@ -113,7 +119,7 @@ export default class Toolbox extends Vue {
     // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
-      SEStore.setActionMode({
+      this.setActionMode({
         id: "move",
         name: "MoveDisplayedName"
       });

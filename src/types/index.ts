@@ -1,18 +1,13 @@
 // Declaration of all internal data types
 
-import Two from "two.js";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
-import { SEExpression } from "@/models/SEExpression";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { StyleEditPanels } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -23,44 +18,20 @@ export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
 
-export type AppState = {
-  layers: Two.Group[];
-  sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
-  zoomTranslation: number[]; // current zoom translation vector
-  zoomMagnificationFactor: number; // current zoom magnification factor
-  // previousZoomMagnificationFactor: number;
-  canvasWidth: number;
-  actionMode: string;
-  previousActionMode: string;
+export type PiniaAppState = {
+  actionMode: ActionMode;
+  previousActionMode: ActionMode;
   activeToolName: string;
   previousActiveToolName: string;
-  sePoints: SEPoint[];
-  seLines: SELine[];
-  seSegments: SESegment[];
-  seCircles: SECircle[];
-  seEllipses: SEEllipse[];
-  seParametrics: SEParametric[];
-  seAngleMarkers: SEAngleMarker[];
-  seLabels: SELabel[];
-  seNodules: SENodule[];
-  selectedSENodules: SENodule[];
-
-  intersections: SEIntersectionPoint[];
-  expressions: SEExpression[];
-  temporaryNodules: Nodule[];
-  // TODO: replace the following two arrays with the maps below
-  initialStyleStates: StyleOptions[];
-  defaultStyleStates: StyleOptions[];
-  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  oldSelections: SENodule[];
-  styleSavedFromPanel: StyleEditPanels;
-  // initialBackStyleContrast: number;
-  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  svgCanvas: HTMLDivElement | null;
+  zoomMagnificationFactor: number;
+  zoomTranslation: number[];
   hasUnsavedNodules: boolean;
+  svgCanvas: HTMLDivElement | null;
+  canvasWidth: number;
+  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  styleSavedFromPanel: StyleEditPanels;
 };
-export type AccountState = {
+export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;
   includedTools: Array<ActionMode>;
@@ -487,6 +458,8 @@ export interface ConstructionInFirestore {
   description: string;
   rotationMatrix?: string;
   preview?: string;
+  // A list of enabled tool buttons associated with this construction
+  tools: Array<ActionMode> | undefined;
 }
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {

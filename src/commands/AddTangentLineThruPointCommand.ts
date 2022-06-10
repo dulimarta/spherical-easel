@@ -157,17 +157,15 @@ export class AddTangentLineThruPointCommand extends Command {
         tangentLineThruPointIndex
       );
       //style the tangent Line
-      const tangentThruPointLineFrontStyleString = propMap.get(
-        "objectFrontStyle"
-      );
+      const tangentThruPointLineFrontStyleString =
+        propMap.get("objectFrontStyle");
       if (tangentThruPointLineFrontStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Front,
           JSON.parse(tangentThruPointLineFrontStyleString)
         );
-      const tangentThruPointLineBackStyleString = propMap.get(
-        "objectBackStyle"
-      );
+      const tangentThruPointLineBackStyleString =
+        propMap.get("objectBackStyle");
       if (tangentThruPointLineBackStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Back,

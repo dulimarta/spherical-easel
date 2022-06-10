@@ -1,9 +1,9 @@
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 export enum CoordinateSelection {
   X_VALUE,
@@ -14,6 +14,7 @@ const emptySet = new Set<string>();
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   readonly point: SEPoint;
+  private store: SEStoreType;
 
   /**
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
@@ -25,6 +26,7 @@ export class SEPointCoordinate extends SEExpression {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.selector = selector;
     this.point = point;
+    this.store = useSEStore();
   }
 
   public get value(): number {
@@ -111,19 +113,12 @@ export class SEPointCoordinate extends SEExpression {
     }
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this.exists = this.point.exists;
 
     if (this.exists) {
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-      this.invMatrix = SEStore.inverseTotalRotationMatrix;
+      this.invMatrix = this.store.inverseTotalRotationMatrix;
       this.valueVector
         .copy(this.point.locationVector)
         .applyMatrix4(this.invMatrix);
@@ -137,6 +132,15 @@ export class SEPointCoordinate extends SEExpression {
         ];
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These point coordinates are completely determined by their parent and an update on the parent
     // will cause this point update correctly. So we don't store any additional information

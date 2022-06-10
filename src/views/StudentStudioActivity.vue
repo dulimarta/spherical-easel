@@ -11,18 +11,20 @@
 </template>
 
 <script lang="ts">
-import { StudioState } from "@/types";
+import { useSDStore } from "@/stores/sd";
+import { mapActions, mapState } from "pinia";
 import { Socket } from "socket.io-client";
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { namespace } from "vuex-class";
-const SD = namespace("sd");
 
-@Component
+@Component({
+  computed: {
+    ...mapState(useSDStore, ["studioSocket"])
+  }
+})
 export default class StudentActivity extends Vue {
   @Prop() session!: string;
 
-  @SD.State((s: StudioState) => s.studioSocket)
-  readonly studentStudioSocket!: Socket | null;
+  readonly studioSocket!: Socket | null;
 
   receivedMessages: Array<string> = [];
   mounted(): void {
@@ -30,23 +32,23 @@ export default class StudentActivity extends Vue {
       "Which session?",
       this.session,
       " on socket ",
-      this.studentStudioSocket?.id
+      this.studioSocket?.id
     );
-    if (this.studentStudioSocket !== null) {
-      const sockId = this.studentStudioSocket.id;
+    if (this.studioSocket !== null) {
+      const sockId = this.studioSocket.id;
 
-      this.studentStudioSocket.on("connect", () => {
-        this.studentStudioSocket?.emit("student-join", {
+      this.studioSocket.on("connect", () => {
+        this.studioSocket?.emit("student-join", {
           who: "John Doe",
           session: this.session
         });
       });
-      this.studentStudioSocket.on("disconnect", () => {
+      this.studioSocket.on("disconnect", () => {
         console.debug("Student disconnected from socket", sockId);
       });
-      this.studentStudioSocket.on("notify-all", (msg: string) => {
+      this.studioSocket.on("notify-all", (msg: string) => {
         // console.debug("Students received broadcast", msg);
-        this.receivedMessages.push(msg)
+        this.receivedMessages.push(msg);
       });
     }
   }

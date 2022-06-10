@@ -9,17 +9,17 @@
  * the actual action of the command.
  */
 
-import { SEStore } from "@/store";
+import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
-
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { SEStoreType } from "@/stores/se";
 export abstract class Command {
-  protected static store = SEStore;
+  protected static store: SEStoreType;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -42,7 +42,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.updateDisplay();
+    Command.store?.updateDisplay();
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
@@ -62,7 +62,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.updateDisplay();
+    Command.store?.updateDisplay();
   }
   //#endregion redo
 
@@ -152,6 +152,9 @@ export abstract class Command {
     return { point, label };
   }
 
+  static setGlobalStore(store: SEStoreType): void {
+    Command.store = store;
+  }
   // Child classes of Command must implement the following abstract methods
   /**
    * restoreState: Perform necessary action to restore the app state.

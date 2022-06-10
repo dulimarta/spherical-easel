@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames} from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";

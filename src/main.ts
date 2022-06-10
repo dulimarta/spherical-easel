@@ -4,7 +4,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
+// import store from "./store";
 import vuetify from "./plugins/vuetify";
 import VueI18n from "vue-i18n";
 import i18n from "./i18n";
@@ -12,7 +12,13 @@ import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { config } from "vuex-module-decorators";
 import {firebaseAuth, firebaseFirestore, firebaseStorage} from "./firebase-backend"
+import { createPinia, PiniaVuePlugin } from "pinia";
+import { Command } from "@/commands/Command";
+import { useSEStore } from "@/stores/se";
+import MouseHandler from "./eventHandlers/MouseHandler";
 Vue.use(VueI18n);
+Vue.use(PiniaVuePlugin);
+const pinia = createPinia();
 
 
 
@@ -32,7 +38,12 @@ new Vue({
     // renderer
   },
   router,
-  store,
+  // store,
   vuetify,
+  pinia,
   render: (h: any) => h(App)
 }).$mount("#app");
+
+console.log("Setting global store from main.ts");
+Command.setGlobalStore(useSEStore());
+MouseHandler.setGlobalStore(useSEStore());

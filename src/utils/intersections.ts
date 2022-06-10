@@ -7,7 +7,6 @@ import { Vector3, Matrix4 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
-import { SEStore } from "@/store";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 
@@ -225,7 +224,7 @@ export function intersectLineWithEllipse(
       tmpVector.copy(line.normalVector);
 
       // Transform the normal into the standard coordinates of the ellipse.
-      tmpMatrix.copy(ellipse.ref.ellipseFrame).invert();
+      tmpMatrix.getInverse(ellipse.ref.ellipseFrame);
       tmpVector.applyMatrix4(tmpMatrix);
 
       if (tmpVector.dot(ellipse.ref.E(1.2312)) < 0) {
@@ -233,19 +232,19 @@ export function intersectLineWithEllipse(
         tmpVector.multiplyScalar(-1);
       }
       // First form the objective function, this is the function whose minimum we want to find.
-      const d: (t: number) => number = function(t: number): number {
+      const d: (t: number) => number = function (t: number): number {
         return ellipse.ref.E(t).dot(tmpVector);
       };
 
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
 
-      const dp: (t: number) => number = function(t: number): number {
+      const dp: (t: number) => number = function (t: number): number {
         return ellipse.ref.Ep(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
 
-      const dpp = function(t: number): number {
+      const dpp = function (t: number): number {
         return ellipse.ref.Epp(t).dot(tmpVector);
       };
 
@@ -278,15 +277,15 @@ export function intersectLineWithEllipse(
   // Transform the line into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
-  tmpMatrix.copy(ellipse.ref.ellipseFrame).invert();
+  tmpMatrix.getInverse(ellipse.ref.ellipseFrame);
   transformedToStandard.applyMatrix4(tmpMatrix);
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return ellipse.ref.E(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
 
@@ -334,7 +333,8 @@ export function intersectLineWithEllipse(
  */
 export function intersectLineWithParametric(
   line: SELine,
-  parametric: SEParametric
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
   // layer: Two.Group
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
@@ -361,20 +361,20 @@ export function intersectLineWithParametric(
       tmpVector.copy(line.normalVector);
 
       // Transform the normal into the standard coordinates of the parametric.
-      tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
+      tmpMatrix.getInverse(inverseTotalRotationMatrix);
       tmpVector.applyMatrix4(tmpMatrix);
       // First form the objective function, this is the function whose minimum we want to find.
-      const d: (t: number) => number = function(t: number): number {
+      const d: (t: number) => number = function (t: number): number {
         return parametric.ref.P(t).dot(tmpVector);
       };
 
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
-      const dp: (t: number) => number = function(t: number): number {
+      const dp: (t: number) => number = function (t: number): number {
         return parametric.ref.PPrime(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
-      const dpp = function(t: number): number {
+      const dpp = function (t: number): number {
         return parametric.ref.PPPrime(t).dot(tmpVector);
       };
 
@@ -402,7 +402,7 @@ export function intersectLineWithParametric(
         }
       });
 
-      tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
+      tmpMatrix.getInverse(inverseTotalRotationMatrix);
       minTVal.forEach(min => {
         const returnVec = new Vector3();
         returnVec.copy(parametric.ref.P(min).applyMatrix4(tmpMatrix));
@@ -419,14 +419,14 @@ export function intersectLineWithParametric(
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return parametric.ref.P(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return parametric.ref.PPrime(t).dot(transformedToStandard);
   };
 
@@ -440,17 +440,15 @@ export function intersectLineWithParametric(
 
   // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
 
-  tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
-  return zeros.map(
-    (tValue: number): IntersectionReturnType => {
-      const vector = new Vector3();
-      vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
-      return {
-        vector,
-        exists: tracingTMin <= tValue && tValue <= tracingTMax
-      };
-    }
-  );
+  tmpMatrix.getInverse(inverseTotalRotationMatrix);
+  return zeros.map((tValue: number): IntersectionReturnType => {
+    const vector = new Vector3();
+    vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
+    return {
+      vector,
+      exists: tracingTMin <= tValue && tValue <= tracingTMax
+    };
+  });
 }
 
 /**
@@ -544,15 +542,15 @@ export function intersectSegmentWithEllipse(
   // Transform the segment into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(segment.normalVector);
-  tmpMatrix.copy(ellipse.ref.ellipseFrame).invert();
+  tmpMatrix.getInverse(ellipse.ref.ellipseFrame);
   transformedToStandard.applyMatrix4(tmpMatrix);
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return ellipse.ref.E(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
 
@@ -599,21 +597,22 @@ export function intersectSegmentWithEllipse(
  */
 export function intersectSegmentWithParametric(
   segment: SESegment,
-  parametric: SEParametric
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
   // layer: Two.Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(segment.normalVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
 
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return parametric.ref.P(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return parametric.ref.PPrime(t).dot(transformedToStandard);
   };
   // find the tracing tMin and tMax
@@ -640,10 +639,11 @@ export function intersectSegmentWithParametric(
 
   // console.log("Number of Para/seg Intersections:", zeros.length);
   if (returnItems.length >= zeros.length) {
-    tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
     zeros.forEach((z, ind) => {
       returnItems[ind].vector.copy(
-        parametric.ref.P(z).applyMatrix4(tmpMatrix)
+        parametric.ref
+          .P(z)
+          .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
       );
       if (tracingTMin <= z && z <= tracingTMax) {
         // it must be on both the segment and the visible part of the parametric
@@ -812,12 +812,12 @@ export function intersectCircleWithEllipse(
   // Transform the circle into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(circle.centerSEPoint.locationVector);
-  tmpMatrix.copy(ellipse.ref.ellipseFrame).invert();
+  tmpMatrix.getInverse(ellipse.ref.ellipseFrame);
   transformedToStandard.applyMatrix4(tmpMatrix);
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the ellipse minus the radius of the circle
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(-1, Math.min(ellipse.ref.E(t).dot(transformedToStandard), 1))
@@ -825,7 +825,7 @@ export function intersectCircleWithEllipse(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * ellipse.ref.Ep(t).dot(transformedToStandard)) /
       Math.sqrt(
@@ -887,18 +887,19 @@ export function intersectCircleWithEllipse(
  */
 export function intersectCircleWithParametric(
   circle: SECircle,
-  parametric: SEParametric
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
   // layer: Two.Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(circle.centerSEPoint.locationVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
 
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the parametric minus the radius of the circle
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(
@@ -909,7 +910,7 @@ export function intersectCircleWithParametric(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * parametric.ref.PPrime(t).dot(transformedToStandard)) /
       Math.sqrt(
@@ -949,10 +950,11 @@ export function intersectCircleWithParametric(
   }
 
   // console.log("Number of Para/circ Intersections:", zeros.length);
-  tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
     returnItems[ind].vector.copy(
-      parametric.ref.P(z).applyMatrix4(tmpMatrix)
+      parametric.ref
+        .P(z)
+        .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
     );
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the circle (which by being a zero of d, it is!) and the visible part of the parametric
@@ -979,13 +981,13 @@ export function intersectEllipseWithEllipse(
   const transformedToStandardFocus2 = new Vector3();
   transformedToStandardFocus1.copy(ellipse1.focus1SEPoint.locationVector);
   transformedToStandardFocus2.copy(ellipse1.focus2SEPoint.locationVector);
-  tmpMatrix.copy(ellipse2.ref.ellipseFrame).invert();
+  tmpMatrix.getInverse(ellipse2.ref.ellipseFrame);
   transformedToStandardFocus1.applyMatrix4(tmpMatrix);
   transformedToStandardFocus2.applyMatrix4(tmpMatrix);
   const angleSum = ellipse1.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
   // point on ellipse2 to the transformed foci of ellipse1 minus the angleSum of ellipse1
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(
@@ -1003,7 +1005,7 @@ export function intersectEllipseWithEllipse(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
@@ -1077,19 +1079,20 @@ export function intersectEllipseWithEllipse(
  */
 export function intersectEllipseWithParametric(
   ellipse: SEEllipse,
-  parametric: SEParametric
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
   // Transform ellipse into the standard coordinates of the ellipse.
   const transformedToStandardFocus1 = new Vector3();
   const transformedToStandardFocus2 = new Vector3();
   transformedToStandardFocus1.copy(ellipse.focus1SEPoint.locationVector);
   transformedToStandardFocus2.copy(ellipse.focus2SEPoint.locationVector);
-  transformedToStandardFocus1.applyMatrix4(SEStore.inverseTotalRotationMatrix);
-  transformedToStandardFocus2.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandardFocus1.applyMatrix4(inverseTotalRotationMatrix);
+  transformedToStandardFocus2.applyMatrix4(inverseTotalRotationMatrix);
   const angleSum = ellipse.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
   // point on ellipse to the transformed foci of ellipse minus the angleSum of ellipse
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(
@@ -1107,7 +1110,7 @@ export function intersectEllipseWithParametric(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * parametric.ref.PPrime(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
@@ -1165,12 +1168,11 @@ export function intersectEllipseWithParametric(
   }
 
   // console.log("Number of Para/ellsp Intersections:", zeros.length);
-  tmpMatrix.copy(SEStore.inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
     returnItems[ind].vector.copy(
       parametric.ref
         .P(z)
-        .applyMatrix4(tmpMatrix)
+        .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
     );
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the ellipse (which by being a zero of d, it is!) and the visible part of the parametric
@@ -1215,7 +1217,8 @@ export function intersectParametricWithParametric(
 
 export function intersectTwoObjects(
   one: SENodule,
-  two: SENodule
+  two: SENodule,
+  inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
   if (one instanceof SELine) {
     if (two instanceof SELine) return intersectLineWithLine(one, two);
@@ -1225,7 +1228,7 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectLineWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectLineWithParametric(one, two);
+      return intersectLineWithParametric(one, two, inverseTotalRotationMatrix);
   } else if (one instanceof SESegment) {
     if (two instanceof SESegment) return intersectSegmentWithSegment(one, two);
     else if (two instanceof SECircle)
@@ -1233,7 +1236,11 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectSegmentWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectSegmentWithParametric(one, two);
+      return intersectSegmentWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SECircle) {
     if (two instanceof SECircle)
       return intersectCircles(
@@ -1245,17 +1252,27 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectCircleWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectCircleWithParametric(one, two);
+      return intersectCircleWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SEEllipse) {
     if (two instanceof SEEllipse) return intersectEllipseWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectEllipseWithParametric(one, two);
+      return intersectEllipseWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SEParametric) {
     if (two instanceof SEParametric)
       intersectParametricWithParametric(one, two);
   }
-  throw "Attempted to intersect non-one dimensional objects " +
+  throw (
+    "Attempted to intersect non-one dimensional objects " +
     `${one.name}` +
     " and " +
-    `${two.name}`;
+    `${two.name}`
+  );
 }

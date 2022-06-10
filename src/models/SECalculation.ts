@@ -1,9 +1,9 @@
 import { SEExpression } from "./SEExpression";
 import { ObjectState } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import { SEStore } from "@/store";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
+import { useSEStore } from "@/stores/se";
 
 const emptySet = new Set<string>();
 const parser = new ExpressionParser();
@@ -21,18 +21,19 @@ export class SECalculation extends SEExpression {
     this.exprText = text;
     //const vars = [];
     // Search the expression text for occurrences of M###
+    const store = useSEStore();
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
-      const pos = SEStore.expressions.findIndex(z => z.name === `${v[0]}`);
+      const pos = store.expressions.findIndex(z => z.name === `${v[0]}`);
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = this._calculationParents.findIndex(
-          parent => parent.name === SEStore.expressions[pos].name
+          parent => parent.name === store.expressions[pos].name
         );
         if (pos2 < 0) {
-          this._calculationParents.push(SEStore.expressions[pos]);
+          this._calculationParents.push(store.expressions[pos]);
         }
       }
 
@@ -117,6 +118,13 @@ export class SECalculation extends SEExpression {
     );
   }
 
+  public shallowUpdate(): void {
+    this.exists = this._calculationParents.every(parent => parent.exists);
+    if (this.exists) {
+      this.recalculate();
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -124,11 +132,7 @@ export class SECalculation extends SEExpression {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this.exists = this._calculationParents.every(parent => parent.exists);
-    if (this.exists) {
-      this.recalculate();
-    }
+    this.shallowUpdate();
 
     // This object and any of its children have no presence on the sphere canvas So we don't store any additional information
     if (objectState && orderedSENoduleList) {

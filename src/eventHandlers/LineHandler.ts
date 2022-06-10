@@ -20,7 +20,6 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import EventBus from "./EventBus";
 export default class LineHandler extends Highlighter {
   /**
@@ -47,8 +46,10 @@ export default class LineHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+    null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -84,16 +85,16 @@ export default class LineHandler extends Highlighter {
     // Create and style the temporary line
     this.temporaryLine = new Line();
     this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryLine);
+    LineHandler.store.addTemporaryNodule(this.temporaryLine);
     this.isTemporaryLineAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryStartMarker);
+    LineHandler.store.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryEndMarker);
+    LineHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
@@ -267,7 +268,8 @@ export default class LineHandler extends Highlighter {
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
       if (!this.startLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryOneDimensional =
+          this.hitSEParametrics[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
@@ -315,7 +317,8 @@ export default class LineHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryPoint.locationVector;
+            this.temporaryStartMarker.positionVector =
+              this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.isTemporaryStartMarkerAdded = false;
@@ -323,9 +326,10 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector = this.snapStartMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryStartMarker.positionVector =
+            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
@@ -348,9 +352,10 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector = this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-            this.currentSphereVector
-          );
+          this.temporaryEndMarker.positionVector =
+            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
         } else {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
@@ -478,7 +483,7 @@ export default class LineHandler extends Highlighter {
     this.tmpVector.set(0, 0, 0);
 
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    LineHandler.store.unglowAllSENodules();
   }
 
   // Create a new line from the mouse event information
@@ -729,7 +734,7 @@ export default class LineHandler extends Highlighter {
 
     // check to make sure that this line doesn't already exist
     if (
-      SEStore.seLines.some(line =>
+      LineHandler.store.seLines.some(line =>
         this.tmpVector.subVectors(line.normalVector, this.normalVector).isZero()
       )
     ) {
@@ -738,7 +743,7 @@ export default class LineHandler extends Highlighter {
 
     this.tmpVector1.copy(this.normalVector).multiplyScalar(-1); // copy the normal vector and multiply by -1 (avoid changing the normal vector which caused problems for Angle marker)
     if (
-      SEStore.seLines.some(line =>
+      LineHandler.store.seLines.some(line =>
         this.tmpVector.subVectors(line.normalVector, this.tmpVector1).isZero()
       )
     ) {
@@ -780,8 +785,9 @@ export default class LineHandler extends Highlighter {
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
-    SEStore.createAllIntersectionsWithLine(newSELine).forEach(
-      (item: SEIntersectionReturnType) => {
+    LineHandler.store
+      .createAllIntersectionsWithLine(newSELine)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -808,8 +814,7 @@ export default class LineHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      }
-    );
+      });
     lineGroup.execute();
     return true;
   }
@@ -817,9 +822,9 @@ export default class LineHandler extends Highlighter {
   activate(): void {
     // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
     // create a line with the two points
-    if (SEStore.selectedSENodules.length == 2) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
+    if (LineHandler.store.selectedSENodules.length == 2) {
+      const object1 = LineHandler.store.selectedSENodules[0];
+      const object2 = LineHandler.store.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
@@ -871,8 +876,9 @@ export default class LineHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
-        SEStore.createAllIntersectionsWithLine(newSELine).forEach(
-          (item: SEIntersectionReturnType) => {
+        LineHandler.store
+          .createAllIntersectionsWithLine(newSELine)
+          .forEach((item: SEIntersectionReturnType) => {
             // Create the plottable label
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -899,8 +905,7 @@ export default class LineHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          }
-        );
+          });
 
         lineCommandGroup.execute();
       }

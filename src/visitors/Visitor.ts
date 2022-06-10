@@ -14,13 +14,13 @@ import { SEPolygon } from "@/models/SEPolygon";
  * interface is the actual implementer of the operation.
  */
 export interface Visitor {
-  actionOnPoint(p: SEPoint): void;
-  actionOnLine(x: SELine): void;
-  actionOnSegment(s: SESegment): void;
-  actionOnCircle(c: SECircle): void;
-  actionOnLabel(l: SELabel): void;
-  actionOnAngleMarker(a: SEAngleMarker): void;
-  actionOnEllipse(e: SEEllipse): void;
-  actionOnParametric(P: SEParametric): void;
-  actionOnPolygon(P: SEPolygon): void;
+  actionOnPoint(p: SEPoint): boolean;
+  actionOnLine(x: SELine): boolean;
+  actionOnSegment(s: SESegment): boolean;
+  actionOnCircle(c: SECircle): boolean;
+  actionOnLabel(l: SELabel): boolean;
+  actionOnAngleMarker(a: SEAngleMarker): boolean;
+  actionOnEllipse(e: SEEllipse): boolean;
+  actionOnParametric(P: SEParametric): boolean;
+  actionOnPolygon(P: SEPolygon): boolean;
 }

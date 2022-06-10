@@ -125,17 +125,15 @@ export class AddPointOnOneDimensionalCommand extends Command {
       );
       sePointOnOneOrTwoDimensional.locationVector = positionVector;
       //style the point on object
-      const pointOnOneOrTwoDimensionalFrontStyleString = propMap.get(
-        "objectFrontStyle"
-      );
+      const pointOnOneOrTwoDimensionalFrontStyleString =
+        propMap.get("objectFrontStyle");
       if (pointOnOneOrTwoDimensionalFrontStyleString !== undefined)
         point.updateStyle(
           StyleEditPanels.Front,
           JSON.parse(pointOnOneOrTwoDimensionalFrontStyleString)
         );
-      const pointOnOneOrTwoDimensionalBackStyleString = propMap.get(
-        "objectBackStyle"
-      );
+      const pointOnOneOrTwoDimensionalBackStyleString =
+        propMap.get("objectBackStyle");
       if (pointOnOneOrTwoDimensionalBackStyleString !== undefined)
         point.updateStyle(
           StyleEditPanels.Back,

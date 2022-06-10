@@ -5,8 +5,7 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEStore } from "@/store";
-export default class PointDistantHandler extends Highlighter {
+export default class PointDistanceHandler extends Highlighter {
   /**
    * Points to measure distance
    */
@@ -45,7 +44,7 @@ export default class PointDistantHandler extends Highlighter {
         // make sure that this pair of points has not been measured already
         let measurementName = "";
         if (
-          SEStore.expressions.some(exp => {
+          PointDistanceHandler.store.expressions.some(exp => {
             if (
               exp instanceof SEPointDistance &&
               ((exp.parents[0].name === this.targetPoints[0].name &&
@@ -123,9 +122,9 @@ export default class PointDistantHandler extends Highlighter {
   }
 
   activate(): void {
-    if (SEStore.selectedSENodules.length == 2) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
+    if (PointDistanceHandler.store.selectedSENodules.length == 2) {
+      const object1 = PointDistanceHandler.store.selectedSENodules[0];
+      const object2 = PointDistanceHandler.store.selectedSENodules[1];
 
       if (
         object1 instanceof SEPoint &&
@@ -135,7 +134,7 @@ export default class PointDistantHandler extends Highlighter {
         // make sure that this pair of points has not been measured already
         let measurementName = "";
         if (
-          SEStore.expressions.some(exp => {
+          PointDistanceHandler.store.expressions.some(exp => {
             if (
               exp instanceof SEPointDistance &&
               ((exp.parents[0].name === object1.name &&

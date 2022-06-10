@@ -157,17 +157,15 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         perpendicularLineThruPointIndex
       );
       //style the perpendicular Line
-      const perpendicularThruPointLineFrontStyleString = propMap.get(
-        "objectFrontStyle"
-      );
+      const perpendicularThruPointLineFrontStyleString =
+        propMap.get("objectFrontStyle");
       if (perpendicularThruPointLineFrontStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Front,
           JSON.parse(perpendicularThruPointLineFrontStyleString)
         );
-      const perpendicularThruPointLineBackStyleString = propMap.get(
-        "objectBackStyle"
-      );
+      const perpendicularThruPointLineBackStyleString =
+        propMap.get("objectBackStyle");
       if (perpendicularThruPointLineBackStyleString !== undefined)
         line.updateStyle(
           StyleEditPanels.Back,

@@ -26,9 +26,8 @@ import { Prop } from "vue-property-decorator";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
-
-const SE = namespace("se");
+// import i18n from "@/i18n";
+// const SE = namespace("se");
 
 @Component({})
 export default class ParametricTNumber extends Vue {
@@ -54,7 +53,7 @@ export default class ParametricTNumber extends Vue {
   private tValueExpression = "";
   private tValueResult = 0;
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: number | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -81,7 +80,7 @@ export default class ParametricTNumber extends Vue {
     // console.debug("Key press");
     this.parsingError = "";
     if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = setTimeout(() => {
+    this.timerInstance = window.setTimeout(() => {
       try {
         this.tValueResult =
           this.tValueExpression.length > 0
@@ -95,7 +94,7 @@ export default class ParametricTNumber extends Vue {
         EventBus.fire("test-t-value", { val: this.tValueResult });
 
         // console.debug("Calculation result is", this.calcResult);
-      } catch (err) {
+      } catch (err: any) {
         // no code
         console.debug("Got an error", err);
         this.parsingError = err.message;

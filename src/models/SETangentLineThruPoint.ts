@@ -7,6 +7,7 @@ import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 export class SETangentLineThruPoint extends SELine {
   /**
@@ -23,6 +24,7 @@ export class SETangentLineThruPoint extends SELine {
   /** Temporary vectors to help with calculations */
 
   private tempVector1 = new Vector3();
+  private store: SEStoreType;
 
   /**
    * In the case of ellipses or parametrics where there are many possible tangents through a point, this is the index to use
@@ -50,6 +52,7 @@ export class SETangentLineThruPoint extends SELine {
     this._seParentOneDimensional = seParentOneDimensional;
     this._seParentPoint = seParentPoint;
     this._index = index;
+    this.store = useSEStore();
   }
 
   public update(
@@ -70,6 +73,7 @@ export class SETangentLineThruPoint extends SELine {
       // Get the normal(s) vector to the line
       const normals = this._seParentOneDimensional.getNormalsToTangentLinesThru(
         this._seParentPoint.locationVector,
+        this.store.zoomMagnificationFactor,
         true
       );
 
@@ -145,8 +149,8 @@ export class SETangentLineThruPoint extends SELine {
       i18n.t(`objectTree.tangentLineThru`, {
         pt: this._seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
-        oneDimensionalParent: this._seParentOneDimensional.label?.ref
-          .shortUserName,
+        oneDimensionalParent:
+          this._seParentOneDimensional.label?.ref.shortUserName,
         index: this._index
       })
     );

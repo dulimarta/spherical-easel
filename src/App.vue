@@ -213,11 +213,10 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AccountState, AppState, StudioState } from "./types";
+import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
@@ -231,14 +230,15 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore, ACStore, StudioStore } from "./store";
+import { useAccountStore } from "@/stores/account";
+import { useSEStore } from "@/stores/se";
+import { useSDStore } from "@/stores/sd";
 import { detect } from "detect-browser";
+import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
+
 // import { gzip } from "node-gzip";
 import { io, Socket } from "socket.io-client";
 //#region vuex-module-namespace
-const SE = namespace("se");
-const SD = namespace("sd");
-const AC = namespace("acct");
 //#endregion vuex-module-namespace
 
 // const socket = io("http://localhost:4000");
@@ -258,37 +258,45 @@ interface UserDocOnFirebase {
 }
 
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog } })
+@Component({
+  components: { MessageBox, Dialog },
+  methods: {
+    ...mapActions(useAccountStore, ["resetToolset"]),
+    ...mapActions(useSEStore, ["clearUnsavedFlag"]),
+    ...mapActions(useSDStore, ["setStudioSocket"])
+  },
+  computed: {
+    ...mapState(useAccountStore, ["includedTools"]),
+    ...mapState(useSEStore, [
+      "activeToolName",
+      "svgCanvas",
+      "inverseTotalRotationMatrix",
+      "hasObjects"
+    ]),
+    ...mapWritableState(useAccountStore, ["userRole"])
+  }
+})
 export default class App extends Vue {
   //#region activeToolName
-  @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
   //#endregion activeToolName
 
-  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @SD.State((s: StudioState) => s.studioSocket)
-  readonly studioSocket!: Socket | null;
+  readonly includedTools!: Array<string>;
+  readonly resetToolset!: () => void;
+  readonly hasObjects!: () => boolean;
+  readonly clearUnsavedFlag!: () => void;
+  readonly setStudioSocket!: (s: Socket | null) => void;
 
-  @SD.State((s: StudioState) => s.studioSocket)
-  readonly studentStudioSocket!: Socket | null;
-
-  @AC.State((s: AccountState) => s.userRole)
-  myRole!: string;
-  // @SE.State((s: AppState) => s.sePoints)
-  // readonly sePoints!: SEPoint[];
-
-  // @SE.Mutation init!: () => void;
-  // @SE.Mutation clearUnsavedFlag!: () => void;
+  userRole!: string | undefined;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   readonly $appStorage!: FirebaseStorage;
-  socket!: Socket;
+  studioSocket!: Socket;
   availableSessions: Array<string> = [];
 
   clientBrowser: any;
@@ -317,11 +325,6 @@ export default class App extends Vue {
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
-  }
-
-  get hasObjects(): boolean {
-    // Any objects must include at least one point
-    return SEStore.sePoints.length > 0;
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -353,7 +356,7 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
-    ACStore.resetToolset();
+    this.resetToolset();
   }
 
   mounted(): void {
@@ -379,7 +382,7 @@ export default class App extends Vue {
                   this.profilePicUrl = profilePictureURL;
                 }
                 if (role) {
-                  ACStore.setUserRole(role.toLowerCase());
+                  this.userRole = role.toLowerCase();
                 }
               }
             });
@@ -409,7 +412,7 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
-    ACStore.setUserRole(undefined);
+    this.userRole = undefined;
     this.uid = "";
     this.whoami = "";
   }
@@ -472,8 +475,10 @@ export default class App extends Vue {
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements)
-      })
+        rotationMatrix: JSON.stringify(rotationMat.elements),
+        tools: this.includedTools,
+        script: "" // Use an empty string (for type checking only)
+      } as ConstructionInFirestore)
       .then((constructionDoc: DocumentReference) => {
         /* Task #2 */
         const scriptPromise: Promise<string> =
@@ -510,7 +515,7 @@ export default class App extends Vue {
           keyOptions: { docId },
           type: "info"
         });
-        SEStore.clearUnsavedFlag();
+        this.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.error("Can't save document", err.message);
@@ -557,15 +562,15 @@ export default class App extends Vue {
   joinSession(session: string): void {
     console.debug("Attempt rejoin studio", session);
     this.studioName = session;
-    this.socket = io(
+    this.studioSocket = io(
       process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
     );
-    StudioStore.setStudioSocket(this.socket);
+    this.setStudioSocket(this.studioSocket);
     this.$refs.studioListDialog.hide();
-    this.socket.on("connect", () => {
-      this.socket.emit("student-join", { who: "Hans", session });
+    this.studioSocket.on("connect", () => {
+      this.studioSocket.emit("student-join", { who: "Hans", session });
     });
-    this.socket.on("notify-all", (msg: string) => {
+    this.studioSocket.on("notify-all", (msg: string) => {
       console.debug("Got a broadcast message", msg);
       this.broadcastMessage = msg;
       this.showBroadcastMessage = true;

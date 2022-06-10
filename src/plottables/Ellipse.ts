@@ -10,7 +10,6 @@ import {
   DEFAULT_ELLIPSE_FRONT_STYLE,
   DEFAULT_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -147,10 +146,6 @@ export default class Ellipse extends Nodule {
             Math.sin(t))
     );
   }
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.

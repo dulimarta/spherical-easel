@@ -273,9 +273,8 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
-import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
+import { ActionMode, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -283,14 +282,13 @@ import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { SEStore } from "@/store";
+import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
 import { Unsubscribe } from "@firebase/util";
 import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
-
-const SE = namespace("se");
+import { mapActions, mapState } from "pinia";
 
 /**
  * Split panel width distribution (percentages):
@@ -308,17 +306,26 @@ const SE = namespace("se");
     StylePanel,
     IconBase,
     Dialog
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setActionMode"])
+  },
+  computed: {
+    ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
   }
 })
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
 
-  @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];
 
-  @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
+
+  readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
+  readonly removeAllFromLayers!: () => void;
+  readonly init!: () => void;
+  readonly hasObjects!: boolean;
 
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -375,10 +382,6 @@ export default class Easel extends Vue {
       100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
     );
   }
-  get hasObjects(): boolean {
-    // Any objects must include at least one point
-    return SEStore.sePoints.length > 0;
-  }
 
   private setUndoEnabled(e: { value: boolean }): void {
     this.undoEnabled = e.value;
@@ -389,21 +392,21 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -423,8 +426,8 @@ export default class Easel extends Vue {
   }
 
   loadDocument(docId: string): void {
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     this.$appDB
@@ -518,14 +521,14 @@ export default class Easel extends Vue {
   }
 
   setActionModeToSelectTool(): void {
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
 
   switchActionMode(): void {
-    SEStore.setActionMode(this.actionMode);
+    this.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -541,8 +544,8 @@ export default class Easel extends Vue {
 
   resetSphere(): void {
     this.$refs.clearConstructionDialog.hide();
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();

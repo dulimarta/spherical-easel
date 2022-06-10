@@ -10,7 +10,6 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
-import AppStore, { SEStore } from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -68,10 +67,6 @@ export default class AngleMarker extends Nodule {
    */
   // private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
   // private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the *circular* front/back start/tail single/double parts and their glowing counterparts.
@@ -274,12 +269,15 @@ export default class AngleMarker extends Nodule {
     this.backCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
     this.glowingFrontCirclePathStart = this.frontCirclePathStart.clone();
-    this.glowingFrontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone();
     this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone();
-    this.glowingFrontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcTail =
+      this.frontCirclePathStart.clone();
 
     this.glowingBackCirclePathStart = this.frontCirclePathStart.clone();
-    this.glowingBackCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathDoubleArcStart =
+      this.frontCirclePathStart.clone();
     this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
@@ -1096,8 +1094,8 @@ export default class AngleMarker extends Nodule {
     // "extra" paths
     let activeFrontDA = this.frontCirclePathDoubleArcStart.vertices;
     let activeBackDA = this.backCirclePathDoubleArcStart.vertices;
-    let glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcStart
-      .vertices;
+    let glowingActiveFrontDA =
+      this.glowingFrontCirclePathDoubleArcStart.vertices;
     let glowingActiveBackDA = this.glowingBackCirclePathDoubleArcStart.vertices;
     for (let pos = 0; pos < 2 * CIRCLEEDGESUBDIVISIONS; pos++) {
       // Generate a vector point on the equator of the Default Sphere
@@ -1120,8 +1118,8 @@ export default class AngleMarker extends Nodule {
           // The next chunk is a split front part
           if (toPosDA.length > 0) {
             activeFrontDA = this.frontCirclePathDoubleArcTail.vertices;
-            glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcTail
-              .vertices;
+            glowingActiveFrontDA =
+              this.glowingFrontCirclePathDoubleArcTail.vertices;
             posIndexDA = 0;
           }
           toPosDA.push(pos);
@@ -1131,8 +1129,8 @@ export default class AngleMarker extends Nodule {
         if (thisSignDA < 0) {
           if (toNegDA.length > 0) {
             activeBackDA = this.backCirclePathDoubleArcTail.vertices;
-            glowingActiveBackDA = this.glowingBackCirclePathDoubleArcTail
-              .vertices;
+            glowingActiveBackDA =
+              this.glowingBackCirclePathDoubleArcTail.vertices;
             negIndexDA = 0;
           }
           toNegDA.push(pos);
@@ -1232,18 +1230,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolStart.pop();
           if (cell2) this.glowingFrontStraightStart.vertices.push(cell2);
         }
-        this.frontStraightStart.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.frontStraightStart.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingFrontStraightStart.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingFrontStraightStart.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.frontStraightStart.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.frontStraightStart.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingFrontStraightStart.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingFrontStraightStart.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
         posIndexStraight++;
       } else {
         if (negIndexStraight === this.backStraightStart.vertices.length) {
@@ -1253,18 +1247,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolStart.pop();
           if (cell2) this.glowingBackStraightStart.vertices.push(cell2);
         }
-        this.backStraightStart.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.backStraightStart.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingBackStraightStart.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingBackStraightStart.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.backStraightStart.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.backStraightStart.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingBackStraightStart.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingBackStraightStart.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
         negIndexStraight++;
       }
     }
@@ -1325,18 +1315,14 @@ export default class AngleMarker extends Nodule {
           const cell2 = glowingPoolEnd.pop();
           if (cell2) this.glowingFrontStraightEnd.vertices.push(cell2);
         }
-        this.frontStraightEnd.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.frontStraightEnd.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingFrontStraightEnd.vertices[
-          posIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingFrontStraightEnd.vertices[
-          posIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.frontStraightEnd.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.frontStraightEnd.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingFrontStraightEnd.vertices[posIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingFrontStraightEnd.vertices[posIndexStraight].y =
+          this.tmpVectorStraight.y;
         posIndexStraight++;
       } else {
         if (negIndexStraight === this.backStraightEnd.vertices.length) {
@@ -1346,18 +1332,14 @@ export default class AngleMarker extends Nodule {
           const vEndGlow = glowingPoolEnd.pop();
           if (vEndGlow) this.glowingBackStraightEnd.vertices.push(vEndGlow);
         }
-        this.backStraightEnd.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.backStraightEnd.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
-        this.glowingBackStraightEnd.vertices[
-          negIndexStraight
-        ].x = this.tmpVectorStraight.x;
-        this.glowingBackStraightEnd.vertices[
-          negIndexStraight
-        ].y = this.tmpVectorStraight.y;
+        this.backStraightEnd.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.backStraightEnd.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
+        this.glowingBackStraightEnd.vertices[negIndexStraight].x =
+          this.tmpVectorStraight.x;
+        this.glowingBackStraightEnd.vertices[negIndexStraight].y =
+          this.tmpVectorStraight.y;
         negIndexStraight++;
       }
     }
@@ -2512,11 +2494,13 @@ export default class AngleMarker extends Nodule {
     dup.backCirclePathStart.translation.copy(
       this.backCirclePathStart.translation
     );
-    dup.glowingFrontCirclePathStart.rotation = this.glowingFrontCirclePathStart.rotation;
+    dup.glowingFrontCirclePathStart.rotation =
+      this.glowingFrontCirclePathStart.rotation;
     dup.glowingFrontCirclePathStart.translation.copy(
       this.glowingFrontCirclePathStart.translation
     );
-    dup.glowingBackCirclePathStart.rotation = this.glowingBackCirclePathStart.rotation;
+    dup.glowingBackCirclePathStart.rotation =
+      this.glowingBackCirclePathStart.rotation;
     dup.glowingBackCirclePathStart.translation.copy(
       this.glowingBackCirclePathStart.translation
     );
@@ -2527,28 +2511,34 @@ export default class AngleMarker extends Nodule {
     );
     dup.backStraightStart.rotation = this.backStraightStart.rotation;
     dup.backStraightStart.translation.copy(this.backStraightStart.translation);
-    dup.glowingFrontStraightStart.rotation = this.glowingFrontStraightStart.rotation;
+    dup.glowingFrontStraightStart.rotation =
+      this.glowingFrontStraightStart.rotation;
     dup.glowingFrontStraightStart.translation.copy(
       this.glowingFrontStraightStart.translation
     );
-    dup.glowingBackStraightStart.rotation = this.glowingBackStraightStart.rotation;
+    dup.glowingBackStraightStart.rotation =
+      this.glowingBackStraightStart.rotation;
     dup.glowingBackStraightStart.translation.copy(
       this.glowingBackStraightStart.translation
     );
 
-    dup.frontCirclePathDoubleArcStart.rotation = this.frontCirclePathDoubleArcStart.rotation;
+    dup.frontCirclePathDoubleArcStart.rotation =
+      this.frontCirclePathDoubleArcStart.rotation;
     dup.frontCirclePathDoubleArcStart.translation.copy(
       this.frontCirclePathDoubleArcStart.translation
     );
-    dup.backCirclePathDoubleArcStart.rotation = this.backCirclePathDoubleArcStart.rotation;
+    dup.backCirclePathDoubleArcStart.rotation =
+      this.backCirclePathDoubleArcStart.rotation;
     dup.backCirclePathDoubleArcStart.translation.copy(
       this.backCirclePathDoubleArcStart.translation
     );
-    dup.glowingFrontCirclePathDoubleArcStart.rotation = this.glowingFrontCirclePathDoubleArcStart.rotation;
+    dup.glowingFrontCirclePathDoubleArcStart.rotation =
+      this.glowingFrontCirclePathDoubleArcStart.rotation;
     dup.glowingFrontCirclePathDoubleArcStart.translation.copy(
       this.glowingFrontCirclePathDoubleArcStart.translation
     );
-    dup.glowingBackCirclePathDoubleArcStart.rotation = this.glowingBackCirclePathDoubleArcStart.rotation;
+    dup.glowingBackCirclePathDoubleArcStart.rotation =
+      this.glowingBackCirclePathDoubleArcStart.rotation;
     dup.glowingBackCirclePathDoubleArcStart.translation.copy(
       this.glowingBackCirclePathDoubleArcStart.translation
     );
@@ -2561,11 +2551,13 @@ export default class AngleMarker extends Nodule {
     dup.backCirclePathTail.translation.copy(
       this.backCirclePathTail.translation
     );
-    dup.glowingFrontCirclePathTail.rotation = this.glowingFrontCirclePathTail.rotation;
+    dup.glowingFrontCirclePathTail.rotation =
+      this.glowingFrontCirclePathTail.rotation;
     dup.glowingFrontCirclePathTail.translation.copy(
       this.glowingFrontCirclePathTail.translation
     );
-    dup.glowingBackCirclePathTail.rotation = this.glowingBackCirclePathTail.rotation;
+    dup.glowingBackCirclePathTail.rotation =
+      this.glowingBackCirclePathTail.rotation;
     dup.glowingBackCirclePathTail.translation.copy(
       this.glowingBackCirclePathTail.translation
     );
@@ -2574,7 +2566,8 @@ export default class AngleMarker extends Nodule {
     dup.frontStraightEnd.translation.copy(this.frontStraightEnd.translation);
     dup.backStraightEnd.rotation = this.backStraightEnd.rotation;
     dup.backStraightEnd.translation.copy(this.backStraightEnd.translation);
-    dup.glowingFrontStraightEnd.rotation = this.glowingFrontStraightEnd.rotation;
+    dup.glowingFrontStraightEnd.rotation =
+      this.glowingFrontStraightEnd.rotation;
     dup.glowingFrontStraightEnd.translation.copy(
       this.glowingFrontStraightEnd.translation
     );
@@ -2583,19 +2576,23 @@ export default class AngleMarker extends Nodule {
       this.glowingBackStraightEnd.translation
     );
 
-    dup.frontCirclePathDoubleArcTail.rotation = this.frontCirclePathDoubleArcTail.rotation;
+    dup.frontCirclePathDoubleArcTail.rotation =
+      this.frontCirclePathDoubleArcTail.rotation;
     dup.frontCirclePathDoubleArcTail.translation.copy(
       this.frontCirclePathDoubleArcTail.translation
     );
-    dup.backCirclePathDoubleArcTail.rotation = this.backCirclePathDoubleArcTail.rotation;
+    dup.backCirclePathDoubleArcTail.rotation =
+      this.backCirclePathDoubleArcTail.rotation;
     dup.backCirclePathDoubleArcTail.translation.copy(
       this.backCirclePathDoubleArcTail.translation
     );
-    dup.glowingFrontCirclePathDoubleArcTail.rotation = this.glowingFrontCirclePathDoubleArcTail.rotation;
+    dup.glowingFrontCirclePathDoubleArcTail.rotation =
+      this.glowingFrontCirclePathDoubleArcTail.rotation;
     dup.glowingFrontCirclePathDoubleArcTail.translation.copy(
       this.glowingFrontCirclePathDoubleArcTail.translation
     );
-    dup.glowingBackCirclePathDoubleArcTail.rotation = this.glowingBackCirclePathDoubleArcTail.rotation;
+    dup.glowingBackCirclePathDoubleArcTail.rotation =
+      this.glowingBackCirclePathDoubleArcTail.rotation;
     dup.glowingBackCirclePathDoubleArcTail.translation.copy(
       this.glowingBackCirclePathDoubleArcTail.translation
     );
@@ -2606,11 +2603,13 @@ export default class AngleMarker extends Nodule {
     );
     dup.backArrowHeadPath.rotation = this.backArrowHeadPath.rotation;
     dup.backArrowHeadPath.translation.copy(this.backArrowHeadPath.translation);
-    dup.glowingFrontArrowHeadPath.rotation = this.glowingFrontArrowHeadPath.rotation;
+    dup.glowingFrontArrowHeadPath.rotation =
+      this.glowingFrontArrowHeadPath.rotation;
     dup.glowingFrontArrowHeadPath.translation.copy(
       this.glowingFrontArrowHeadPath.translation
     );
-    dup.glowingBackArrowHeadPath.rotation = this.glowingBackArrowHeadPath.rotation;
+    dup.glowingBackArrowHeadPath.rotation =
+      this.glowingBackArrowHeadPath.rotation;
     dup.glowingBackArrowHeadPath.translation.copy(
       this.glowingBackArrowHeadPath.translation
     );
@@ -2650,7 +2649,8 @@ export default class AngleMarker extends Nodule {
       // Transfer from frontPath to backPath
       const vFront = dup.frontCirclePathDoubleArcStart.vertices.pop();
       if (vFront) dup.backCirclePathDoubleArcStart.vertices.push(vFront);
-      const vFrontGlow = dup.glowingFrontCirclePathDoubleArcStart.vertices.pop();
+      const vFrontGlow =
+        dup.glowingFrontCirclePathDoubleArcStart.vertices.pop();
       if (vFrontGlow)
         dup.glowingBackCirclePathDoubleArcStart.vertices.push(vFrontGlow);
     }
@@ -3619,18 +3619,16 @@ export default class AngleMarker extends Nodule {
             this.backStraightStart.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this.backCirclePathDoubleArcStart.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            this.backCirclePathDoubleArcStart.stroke =
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black");
             this.backCirclePathTail.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
             this.backStraightEnd.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this.backCirclePathDoubleArcTail.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            this.backCirclePathDoubleArcTail.stroke =
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black");
 
             this.backArrowHeadPath.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
@@ -3705,10 +3703,12 @@ export default class AngleMarker extends Nodule {
         // no fillColor for glowing circles
         this.glowingFrontCirclePathStart.stroke = this.glowingStrokeColorFront;
         this.glowingFrontStraightStart.stroke = this.glowingStrokeColorFront;
-        this.glowingFrontCirclePathDoubleArcStart.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcStart.stroke =
+          this.glowingStrokeColorFront;
         this.glowingFrontCirclePathTail.stroke = this.glowingStrokeColorFront;
         this.glowingFrontStraightEnd.stroke = this.glowingStrokeColorFront;
-        this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcTail.stroke =
+          this.glowingStrokeColorFront;
         this.glowingFrontArrowHeadPath.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
@@ -3748,10 +3748,12 @@ export default class AngleMarker extends Nodule {
         // no fillColor for glowing circles
         this.glowingBackCirclePathStart.stroke = this.glowingStrokeColorBack;
         this.glowingBackStraightStart.stroke = this.glowingStrokeColorBack;
-        this.glowingBackCirclePathDoubleArcStart.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcStart.stroke =
+          this.glowingStrokeColorBack;
         this.glowingBackCirclePathTail.stroke = this.glowingStrokeColorBack;
         this.glowingBackStraightEnd.stroke = this.glowingStrokeColorBack;
-        this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcTail.stroke =
+          this.glowingStrokeColorBack;
         this.glowingBackArrowHeadPath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object

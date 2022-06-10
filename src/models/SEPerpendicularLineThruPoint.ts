@@ -60,19 +60,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // this._pencilSize = pencilSize;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (this.seParentPencil !== null) {
-      if (!this.canUpdateNow()) {
-        // If any one parent is not up to date, don't do anything
-        return;
-      }
-    }
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
 
@@ -82,10 +70,11 @@ export class SEPerpendicularLineThruPoint extends SELine {
       tVec.copy(this._normalVector);
       // console.log("before x", this.name, this._normalVector.x);
       // Get the normal(s) vector to the line
-      const normals = this.seParentOneDimensional.getNormalsToPerpendicularLinesThru(
-        this.seParentPoint.locationVector,
-        this._normalVector // the soon to be old normal vector
-      );
+      const normals =
+        this.seParentOneDimensional.getNormalsToPerpendicularLinesThru(
+          this.seParentPoint.locationVector,
+          this._normalVector // the soon to be old normal vector
+        );
 
       // console.log(
       //   "angle change with returned normals",
@@ -126,6 +115,21 @@ export class SEPerpendicularLineThruPoint extends SELine {
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (this.seParentPencil !== null) {
+      if (!this.canUpdateNow()) {
+        // If any one parent is not up to date, don't do anything
+        return;
+      }
+    }
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // These perpendicular lines are completely determined by their parametric parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information
@@ -174,8 +178,8 @@ export class SEPerpendicularLineThruPoint extends SELine {
       i18n.t(`objectTree.perpendicularLineThru`, {
         pt: this.seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
-        oneDimensionalParent: this.seParentOneDimensional.label?.ref
-          .shortUserName,
+        oneDimensionalParent:
+          this.seParentOneDimensional.label?.ref.shortUserName,
         index: this._index
       })
     );

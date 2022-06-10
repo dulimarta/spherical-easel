@@ -12,7 +12,6 @@ import {
 } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 
@@ -20,8 +19,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_BACK_STYLE)
 ]);
-export class SECircle extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SECircle
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -112,15 +113,7 @@ export class SECircle extends SENodule
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
 
     if (this._exists) {
@@ -139,6 +132,16 @@ export class SECircle extends SENodule
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
@@ -190,12 +193,15 @@ export class SECircle extends SENodule
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  public closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
     // First find the closest point on the circle to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -223,8 +229,8 @@ export class SECircle extends SENodule
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnCircle(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnCircle(this);
   }
 
   /**
@@ -262,6 +268,7 @@ export class SECircle extends SENodule
    */
   public getNormalsToTangentLinesThru(
     sePointVector: Vector3,
+    zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
     const distanceFromCenterToVector = sePointVector.angleTo(
@@ -275,9 +282,9 @@ export class SECircle extends SENodule
     // If the vector is on the circle or its antipode then there is one tangent
     if (
       Math.abs(distanceFromCenterToVector - this.circleRadius) <
-        0.005 / SEStore.zoomMagnificationFactor ||
+        0.005 / zoomMagnificationFactor ||
       Math.abs(distanceFromCenterToVector + this.circleRadius - Math.PI) <
-        0.005 / SEStore.zoomMagnificationFactor
+        0.005 / zoomMagnificationFactor
     ) {
       // tmpVector is not zero because we know that the center and sePointVector are not the same or antipodal
       const tmpVector = new Vector3();

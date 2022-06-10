@@ -63,15 +63,7 @@ export class SENSectPoint extends SEPoint {
     return this._index;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._seSegmentParent.exists;
 
     if (this._exists) {
@@ -101,6 +93,18 @@ export class SENSectPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
+
     // These n sect points are completely determined by their line/segment/point parents and an update on the parents
     // will cause this point to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {

@@ -73,7 +73,7 @@ import {
   ConstructionScript,
   SphericalConstruction,
   ConstructionInFirestore,
-  AppState
+  ActionMode
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
@@ -81,19 +81,44 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
-import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
+import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
-const SE = namespace("se");
+import { mapActions, mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-@Component({ components: { Dialog, ConstructionList } })
+@Component({
+  components: { Dialog, ConstructionList },
+  computed: {
+    ...mapState(useAccountStore, ["includedTools"]),
+    ...mapState(useSEStore, ["hasUnsavedNodules"])
+  },
+  methods: {
+    ...mapActions(useAccountStore, ["resetToolset", "includeToolName"]),
+    ...mapActions(useSEStore, [
+      "removeAllFromLayers",
+      "init",
+      "rotateSphere",
+      "clearUnsavedFlag",
+      "updateDisplay",
+      "setActionMode"
+    ])
+  }
+})
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
 
-  @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
+  readonly includedTools!: Array<ActionMode>;
+  readonly includeToolName!: (t: string) => void;
+  readonly resetToolset!: (b: boolean) => void;
+  readonly removeAllFromLayers!: () => void;
+  readonly init!: () => void;
+  readonly rotateSphere!: (_: Matrix4) => void;
+  readonly clearUnsavedFlag!: () => void;
+  readonly updateDisplay!: () => void;
+  readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -183,7 +208,8 @@ export default class ConstructionLoader extends Vue {
           dateCreated: doc.dateCreated,
           description: doc.description,
           sphereRotationMatrix,
-          previewData: svgData ?? ""
+          previewData: svgData ?? "",
+          tools: doc.tools ?? undefined
         });
       }
     });
@@ -209,9 +235,12 @@ export default class ConstructionLoader extends Vue {
     let pos = this.publicConstructions.findIndex(
       (c: SphericalConstruction) => c.id === this.selectedDocId
     );
+    let toolSet: ActionMode[] | undefined = undefined;
     if (pos >= 0) {
       script = this.publicConstructions[pos].parsedScript;
       rotationMatrix = this.publicConstructions[pos].sphereRotationMatrix;
+      if (this.publicConstructions[pos].tools)
+        toolSet = this.publicConstructions[pos].tools;
     } else {
       // Search in private list
       pos = this.privateConstructions.findIndex(
@@ -219,10 +248,23 @@ export default class ConstructionLoader extends Vue {
       );
       script = this.privateConstructions[pos].parsedScript;
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
+      if (this.privateConstructions[pos].tools)
+        toolSet = this.privateConstructions[pos].tools;
+    }
+    if (toolSet === undefined) {
+      console.debug("Include all tools");
+      this.resetToolset(true);
+      /* include all tools */
+    } else {
+      console.debug("Exclude all tools");
+      this.resetToolset(false /* exclude all */);
+      toolSet.forEach((toolAction: ActionMode) => {
+        this.includeToolName(toolAction);
+      });
     }
 
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
@@ -232,15 +274,15 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    SEStore.rotateSphere(rotationMatrix);
+    this.rotateSphere(rotationMatrix);
     run(script);
-    SEStore.clearUnsavedFlag();
+    this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all
-    SEStore.updateDisplay();
+    this.updateDisplay();
 
     // set the mode to move because chances are high that the user wants this mode after loading.
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "move",
       name: "MoveDisplayedName"
     });

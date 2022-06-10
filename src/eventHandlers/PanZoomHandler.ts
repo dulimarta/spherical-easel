@@ -1,11 +1,10 @@
 import { ToolStrategy } from "./ToolStrategy";
 import { Vector2 } from "three";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
-// import AppStore from "@/store";
+import MouseHandler from "./MouseHandler";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
 
-import { SEStore } from "@/store";
 import { SENodule } from "@/models/SENodule";
 
 export enum ZoomMode {
@@ -79,8 +78,9 @@ export default class PanZoomHandler implements ToolStrategy {
     this.isMousePressed = true;
 
     // Get the current magnification factor and translation vector so we can untransform the pixel location and issue command that can be undone.
-    this.mousePressMagnificationFactor = SEStore.zoomMagnificationFactor;
-    const temp = SEStore.zoomTranslation;
+    this.mousePressMagnificationFactor =
+      MouseHandler.store.zoomMagnificationFactor;
+    const temp = MouseHandler.store.zoomTranslation;
     for (let i = 0; i < 2; i++) {
       this.mousePressTranslationVector[i] = temp[i];
     }
@@ -157,10 +157,10 @@ export default class PanZoomHandler implements ToolStrategy {
 
   doZoom(event: MouseEvent): void {
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = SEStore.zoomMagnificationFactor;
+    const currentMagFactor = MouseHandler.store.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
     // Get the current translation vector to allow us to untransform the CSS transformation
-    const currentTranslationVector = SEStore.zoomTranslation;
+    const currentTranslationVector = MouseHandler.store.zoomTranslation;
 
     // Set the next magnification factor depending on the mode.
     if (this._mode === ZoomMode.MINIFY) {
@@ -233,8 +233,8 @@ export default class PanZoomHandler implements ToolStrategy {
 
     // #region writeFactorVectorToStore
     // Set the new magnification factor and the new translation vector in the store
-    SEStore.setZoomMagnificationFactor(newMagFactor);
-    SEStore.setZoomTranslation(newTranslationVector);
+    MouseHandler.store.setZoomMagnificationFactor(newMagFactor);
+    MouseHandler.store.setZoomTranslation(newTranslationVector);
     // #endregion writeFactorVectorToStore
 
     // Update the display
@@ -252,7 +252,7 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doPan(event: MouseEvent): void {
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = MouseHandler.store.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;
     this.lastPanTranslationVector = [
@@ -260,7 +260,7 @@ export default class PanZoomHandler implements ToolStrategy {
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
     // Set the new translation vector in the store
-    SEStore.setZoomTranslation(this.lastPanTranslationVector);
+    MouseHandler.store.setZoomTranslation(this.lastPanTranslationVector);
 
     // Update the display
     EventBus.fire("zoom-updated", {});
@@ -274,14 +274,14 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   activate(): void {
-    SEStore.selectedSENodules.forEach((obj: SENodule) => {
+    MouseHandler.store.selectedSENodules.forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    SEStore.setSelectedSENodules([]);
+    MouseHandler.store.setSelectedSENodules([]);
 
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    MouseHandler.store.unglowAllSENodules();
   }
 
   deactivate(): void {
@@ -289,20 +289,20 @@ export default class PanZoomHandler implements ToolStrategy {
   }
   doZoomFit(size: number): void {
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = SEStore.zoomMagnificationFactor;
+    const currentMagFactor = MouseHandler.store.zoomMagnificationFactor;
     // Get the current translation vector to allow us to untransform the CSS transformation
-    const currentTranslationVector = SEStore.zoomTranslation;
+    const currentTranslationVector = MouseHandler.store.zoomTranslation;
 
     const radius = size / 2 - 16; // 16-pixel gap
-    SEStore.setSphereRadius(radius);
+    // MouseHandler.store.setSphereRadius(radius);
 
     // The radius over the default radius is the magnification factor
     const newMagFactor = radius / SETTINGS.boundaryCircle.radius;
 
     // Set the new magnification factor and the new translation vector in the store
     // The origin of the screen is the zoom translation vector
-    SEStore.setZoomMagnificationFactor(newMagFactor);
-    SEStore.setZoomTranslation([0, 0]);
+    MouseHandler.store.setZoomMagnificationFactor(newMagFactor);
+    MouseHandler.store.setZoomTranslation([0, 0]);
 
     // Update the display
     EventBus.fire("zoom-updated", {});

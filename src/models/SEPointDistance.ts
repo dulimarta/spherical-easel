@@ -35,6 +35,9 @@ export class SEPointDistance extends SEExpression {
     );
   }
 
+  public shallowUpdate(): void {
+    this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
+  }
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -42,8 +45,7 @@ export class SEPointDistance extends SEExpression {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
+    this.shallowUpdate();
 
     // There is no display to update, this doesn't have a presence on the sphere frame
 

@@ -7,12 +7,12 @@ import {
 } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
-// import { colors } from "vuetify/lib";
-import Parametric from "@/plottables/Parametric";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
 let NODE_COUNT = 0;
 
-export abstract class SENodule {
+export abstract class SENodule implements Visitable {
   public static POINT_COUNT = 0;
   public static SEGMENT_COUNT = 0;
   public static LINE_COUNT = 0;
@@ -95,6 +95,11 @@ export abstract class SENodule {
   ): void;
 
   /**
+   * The method to update the current SENodule without propagating the update to its kids
+   */
+  public abstract shallowUpdate(): void;
+
+  /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
@@ -110,6 +115,8 @@ export abstract class SENodule {
    * But Typescript does not support it (yet?)
    */
   public abstract customStyles(): Set<string>;
+
+  public abstract accept(v: Visitor): boolean;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {
@@ -345,26 +352,10 @@ export abstract class SENodule {
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      if (!(this.ref instanceof Parametric)) this.ref?.glowingDisplay();
-      else {
-        let ptr: Parametric | null = this.ref;
-        while (ptr !== null) {
-          ptr.glowingDisplay();
-          ptr = ptr.next;
-        }
-      }
-    } else {
-      if (!(this.ref instanceof Parametric)) this.ref?.normalDisplay();
-      else {
-        let ptr: Parametric | null = this.ref;
-        while (ptr !== null) {
-          ptr.normalDisplay();
-          ptr = ptr.next;
-        }
-      }
-      // TODO: not glowing implies not selected?
-      // this.selected = false;
-    }
+      this.ref?.glowingDisplay();
+    } else this.ref?.normalDisplay();
+    // TODO: not glowing implies not selected?
+    // this.selected = false;
   }
 
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
@@ -406,7 +397,7 @@ export abstract class SENodule {
   ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
 
@@ -414,14 +405,14 @@ export abstract class SENodule {
     //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
     // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
 
-    const dp: (t: number) => number = function(t: number): number {
+    const dp: (t: number) => number = function (t: number): number {
       return PPrime(t).dot(unitVec);
     };
 
     // use (P''(t) /dot unitVec) as the second derivative if necessary
     let dpp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dpp = function(t: number): number {
+      dpp = function (t: number): number {
         return PPPrime(t).dot(unitVec);
       };
     } else {
@@ -513,13 +504,13 @@ export abstract class SENodule {
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
     // This means we want the dot product to be zero
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       return PPrime(t).dot(unitVec);
     };
     // use (P''(t) /dot unitVec) as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dp = function(t: number): number {
+      dp = function (t: number): number {
         return PPPrime(t).dot(unitVec);
       };
     } else {
@@ -603,7 +594,7 @@ export abstract class SENodule {
     // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
 
     // This means we want the dot product to be zero
-    const d: (t: number) => number = function(t: number): number {
+    const d: (t: number) => number = function (t: number): number {
       const tmpVec = new Vector3();
       tmpVec.crossVectors(P(t), unitVec);
       return tmpVec.dot(PPrime(t));
@@ -611,7 +602,7 @@ export abstract class SENodule {
     // use (P(t)xP''(t)).unitVect as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
     if (PPPrime !== undefined) {
-      dp = function(t: number): number {
+      dp = function (t: number): number {
         const tmpVec = new Vector3();
         tmpVec.crossVectors(P(t), PPPrime(t));
         return tmpVec.dot(unitVec);

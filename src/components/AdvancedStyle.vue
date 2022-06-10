@@ -7,14 +7,16 @@ import Component from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import FadeInCard from "@/components/FadeInCard.vue";
-import { AppState } from "@/types";
-import { namespace } from "vuex-class";
-
-const SE = namespace("se");
-@Component({ components: { FadeInCard } })
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
+@Component({
+  components: { FadeInCard },
+  computed: {
+    ...mapState(useSEStore, ["selectedSENodules"])
+  }
+})
 export default class AdvancedStyle extends Vue {
   // You are not allow to style labels directly so remove them from the selection and warn the user
-  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   commonStyleProperties: string[] = [];

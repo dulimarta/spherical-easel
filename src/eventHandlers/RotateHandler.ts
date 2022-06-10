@@ -1,4 +1,3 @@
-import MouseHandler from "./MouseHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
@@ -7,10 +6,10 @@ import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
-import { SEStore } from "@/store";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -88,9 +87,11 @@ export default class RotateHandler extends Highlighter {
 
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
+  private store: SEStoreType;
 
   constructor(layers: Two.Group[]) {
     super(layers);
+    this.store = useSEStore();
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {
@@ -307,7 +308,8 @@ export default class RotateHandler extends Highlighter {
 
   mouseMoved(event: MouseEvent): void {
     // Determine the current location on the sphere (on on screen) and highlight objects
-    super.mouseMoved(event);
+    this.trackMouseLocation(event);
+
     if (
       this.rotationObject !== null &&
       !this.userIsRotating &&
@@ -338,6 +340,7 @@ export default class RotateHandler extends Highlighter {
 
     // if the user is not rotating highlight lines, segments and points that the user can rotate about
     if (!this.userIsRotating) {
+      super.mouseMoved(event);
       if (this.hitSEPoints.length > 0) {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
@@ -461,9 +464,10 @@ export default class RotateHandler extends Highlighter {
         .normalize();
       // Apply the rotation to the sphere and update the display
       //#region sphereRotate
-      EventBus.fire("sphere-rotate", {
-        transform: this.changeInPositionRotationMatrix
-      });
+      // EventBus.fire("sphere-rotate", {
+      //   transform: this.changeInPositionRotationMatrix
+      // });
+      this.store.rotateSphere(this.changeInPositionRotationMatrix);
       this.saveRotationNeeded = true;
       //#endregion sphereRotate
     }
@@ -551,7 +555,7 @@ export default class RotateHandler extends Highlighter {
     this.rotationObject = null;
     this.rotateAboutObjectMode = false;
     this.newObjectOfRotation = true;
-    SEStore.unglowAllSENodules();
+    RotateHandler.store.unglowAllSENodules();
   }
 
   // Delay the execution of a set of commands (but allow other threads to continue)
@@ -648,8 +652,8 @@ export default class RotateHandler extends Highlighter {
     let rotationObjectTypeKey: string | undefined = "";
     let rotationObjectName: string | undefined = "";
 
-    if (SEStore.selectedSENodules.length == 1) {
-      const object = SEStore.selectedSENodules[0];
+    if (RotateHandler.store.selectedSENodules.length == 1) {
+      const object = RotateHandler.store.selectedSENodules[0];
       if (object instanceof SEPoint) {
         this.rotationObject = object;
         this.oldAxisOfRotation.copy(this.axisOfRotation);

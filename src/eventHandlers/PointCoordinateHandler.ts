@@ -13,7 +13,6 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { SEStore } from "@/store";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class PointCoordinateHandler extends Highlighter {
   /**
@@ -37,7 +36,7 @@ export default class PointCoordinateHandler extends Highlighter {
       }
 
       if (
-        SEStore.expressions.some(exp => {
+        PointCoordinateHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEPointCoordinate &&
             exp.parents[0].name === this.targetPoint?.name
@@ -154,21 +153,22 @@ export default class PointCoordinateHandler extends Highlighter {
   }
   activate(): void {
     // only add the measurements if the ONLY type of selected objects are SEPoints that are user created
-    const onlySEPointsSelected = SEStore.selectedSENodules.every(
-      object =>
-        object instanceof SEPoint &&
-        !(
-          object instanceof SEIntersectionPoint &&
-          !(object as SEIntersectionPoint).isUserCreated
-        )
-    );
+    const onlySEPointsSelected =
+      PointCoordinateHandler.store.selectedSENodules.every(
+        object =>
+          object instanceof SEPoint &&
+          !(
+            object instanceof SEIntersectionPoint &&
+            !(object as SEIntersectionPoint).isUserCreated
+          )
+      );
 
     if (
       onlySEPointsSelected &&
-      SEStore.selectedSENodules.length > 0 // if selectedSENodules is empty then onlySEPointsSelected is true
+      PointCoordinateHandler.store.selectedSENodules.length > 0 // if selectedSENodules is empty then onlySEPointsSelected is true
     ) {
       const coordinatizeCommandGroup = new CommandGroup();
-      SEStore.selectedSENodules
+      PointCoordinateHandler.store.selectedSENodules
         .filter(
           (object: SENodule) =>
             object instanceof SEPoint &&

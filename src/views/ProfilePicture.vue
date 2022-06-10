@@ -36,14 +36,19 @@ import { Component, Vue } from "vue-property-decorator";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { UserProfile } from "@/types";
-import { ACStore } from "@/store";
+import { useAccountStore } from "@/stores/account";
+import { mapWritableState } from "pinia";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
-@Component
+@Component({
+  computed: {
+    ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
+  }
+})
 export default class extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
-
+  temporaryProfilePicture!: string;
   profileImage: string | null = null;
 
   mounted(): void {
@@ -73,7 +78,7 @@ export default class extends Vue {
       const reader = new FileReader();
       reader.onload = (ev: ProgressEvent) => {
         const imageBase64 = (ev.target as any).result;
-        ACStore.setTemporaryProfilePicture(imageBase64);
+        this.temporaryProfilePicture = imageBase64;
         this.$router.push({
           name: "PhotoCropper"
         });

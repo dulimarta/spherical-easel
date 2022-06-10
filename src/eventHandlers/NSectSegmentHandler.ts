@@ -1,7 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import { SEStore } from "@/store";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
@@ -13,9 +12,6 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
-// import { SESegment } from "@/models/SESegment";
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -35,7 +31,7 @@ export default class NSectSegmentHandler extends Highlighter {
     for (let i = 0; i < 9; i++) {
       this.temporaryPoints.push(new Point());
       this.temporaryPoints[i].stylize(DisplayStyle.ApplyTemporaryVariables);
-      SEStore.addTemporaryNodule(this.temporaryPoints[i]);
+      NSectSegmentHandler.store.addTemporaryNodule(this.temporaryPoints[i]);
       this.temporaryPointsAdded.push(false);
     }
     if (bisectOnly === true) {
@@ -135,7 +131,7 @@ export default class NSectSegmentHandler extends Highlighter {
     if (this.hitSESegments.length > 0) {
       const candidateSegment = this.hitSESegments[0];
       if (
-        SEStore.sePoints
+        NSectSegmentHandler.store.sePoints
           .filter(pt => pt instanceof SENSectPoint)
           .map(pt => pt as SENSectPoint)
           .some(pt => {
@@ -197,7 +193,7 @@ export default class NSectSegmentHandler extends Highlighter {
     // glow a segment that hasn't been n-sected before
     if (this.hitSESegments.length > 0) {
       if (
-        !SEStore.sePoints
+        !NSectSegmentHandler.store.sePoints
           .filter(pt => pt instanceof SENSectPoint)
           .map(pt => pt as SENSectPoint)
           .some(pt => {
@@ -272,7 +268,7 @@ export default class NSectSegmentHandler extends Highlighter {
       nSectingPointVector.addVectors(scaledStartVector, scaledToAxis).normalize;
 
       // Make sure that this point doesn't exist already
-      const index = SEStore.sePoints.findIndex(pt =>
+      const index = NSectSegmentHandler.store.sePoints.findIndex(pt =>
         this.tmpVector
           .subVectors(pt.locationVector, nSectingPointVector)
           .isZero()

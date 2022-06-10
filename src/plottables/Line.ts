@@ -1,5 +1,5 @@
 import { Vector3, Matrix4 } from "three";
-import Two, { Color } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -458,7 +458,8 @@ export default class Line extends Nodule {
         if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = (frontStyle?.strokeColor ?? "black") as Two.Color;
+          this.frontHalf.stroke = (frontStyle?.strokeColor ??
+            "black") as Two.Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
