@@ -1,5 +1,5 @@
 module.exports = {
-  productionSourceMap: process.env.NODE_ENV !== 'production', // disable source map on production build
+  productionSourceMap: process.env.NODE_ENV !== "production", // disable source map on production build
   transpileDependencies: ["vuetify", "vuex-module-decorators"],
   pluginOptions: {
     i18n: {
@@ -11,7 +11,7 @@ module.exports = {
   },
   // Use "/sphericalgeometryvue/" to deploy it on GitLab
   // Use "/" to deploy it on Netlify
-  publicPath: "/"
+  publicPath: "/",
   // Use non-root path during development to detect potential issues
   // the the app is deployed for production into a non-root path
   // process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/dev"
@@ -25,4 +25,7 @@ module.exports = {
   //     }
   //   }
   // }
+  configureWebpack: {
+    devtool: "source-map"
+  }
 };

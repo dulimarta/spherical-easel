@@ -73,13 +73,13 @@ export abstract class Command {
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */
     this.do(); /* perform the actual action of this command */
-    console.debug(`Broadcast? ${Command.sdStore.broadcast}?`, this.toOpcode());
     if (Command.sdStore.broadcast) {
-      const payload = JSON.stringify(this.toOpcode());
-      console.debug("Must broadcast", payload.substring(0, 20));
+      const opcode = this.toOpcode();
       Command.sdStore.studioSocket?.emit("notify-all", {
         room: `cmd-${Command.sdStore.studioSocket?.id}`,
-        message: payload
+        // When sending a command group (an array) encode the array as a JSON string
+        // Otherwise, send the command string itself
+        message: Array.isArray(opcode) ? JSON.stringify(opcode) : opcode
       });
     }
 
@@ -162,7 +162,7 @@ export abstract class Command {
     return { point, label };
   }
 
-  static setGlobalStore(store: SEStoreType, sd: SDStoreType): void {
+  static setGlobalStores(store: SEStoreType, sd: SDStoreType): void {
     Command.store = store;
     Command.sdStore = sd;
   }

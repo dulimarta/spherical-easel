@@ -29,7 +29,8 @@
           </v-tooltip>
         </template>
         <template v-else>
-          <span>Joined {{studioName.substring(0,5)}}</span>
+          <span>{{studioName.substring(0,5)}}</span>
+          <v-icon @click="leaveSession">mdi-sync-off</v-icon>
         </template>
       </template>
     </span>
@@ -91,8 +92,8 @@ import {
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
 import { DateTime } from "luxon";
-import { ConstructionScript } from "@/types";
-import { run } from "@/commands/CommandInterpreter";
+import { interpret } from "@/commands/CommandInterpreter";
+import { useSEStore } from "@/stores/se";
 
 type StudioDetailOnFirestore = {
   id: string;
@@ -102,7 +103,8 @@ type StudioDetailOnFirestore = {
 @Component({
   components: { Dialog },
   methods: {
-    ...mapActions(useSDStore, ["setStudioSocket"])
+    ...mapActions(useSDStore, ["setStudioSocket"]),
+    ...mapActions(useSEStore, ["updateDisplay"])
   },
   computed: {
     ...mapState(useAccountStore, ["userRole"]),
@@ -115,6 +117,8 @@ export default class StudioSession extends Vue {
   readonly setStudioSocket!: (s: Socket | null) => void;
   readonly userRole!: string;
   readonly studioSocket!: Socket | null;
+  readonly updateDisplay!: () => void;
+
   broadcast!: boolean;
 
   $refs!: {
@@ -212,21 +216,36 @@ export default class StudioSession extends Vue {
     socket.on("connect", () => {
       socket?.emit("student-join", { who: "Anonymous", session });
     });
+
+    // Setup listener for text message broadcast
     socket.on("notify-all", (msg: string) => {
       this.broadcastMessage = msg;
       this.showBroadcastMessage = true;
     });
-    socket.on("bcast-cmd", (msg: string) => {
-      const quoted = `[${msg}]`;
-      console.debug("Must replicate command", quoted);
-      const cmd = JSON.parse(quoted) as ConstructionScript;
-      console.debug("Parsed command", cmd);
-      run(cmd);
+    // Setup listener for command broadcast
+    socket.on("bcast-cmd", (cmd: string) => {
+      // TODO: remove the following debugging if-else
+      if (cmd.startsWith("[")) {
+        const arr = JSON.parse(cmd) as Array<string>;
+        arr.forEach((s: string, pos: number) => {
+          console.debug(`Broadcast group cmd ${pos}: ${s.substring(0, 20)}`);
+        });
+      } else console.debug(`Broadcast cmd: ${cmd.substring(0, 20)}`);
+      // Use JSON.parse when the incoming command encodes an array
+      interpret(cmd.startsWith("[") ? JSON.parse(cmd) : cmd);
+      // TODO: Can we do it without calling updateDisplay?
+      this.updateDisplay();
     });
     // this.$router.push({
     //   name: "StudioActivity",
     //   params: { session }
     // });
+  }
+
+  leaveSession() {
+    console.debug("Disconnecting from session");
+    this.studioName = null;
+    this.setStudioSocket(null);
   }
 }
 </script>

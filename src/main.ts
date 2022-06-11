@@ -10,7 +10,6 @@ import VueI18n from "vue-i18n";
 import i18n from "./i18n";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
-import { config } from "vuex-module-decorators";
 import {
   firebaseAuth,
   firebaseFirestore,
@@ -32,8 +31,6 @@ Vue.prototype.$appDB = firebaseFirestore;
 Vue.prototype.$appStorage = firebaseStorage;
 Vue.config.productionTip = false;
 
-config.rawError = true;
-
 new Vue({
   i18n,
   provide: {
@@ -48,5 +45,5 @@ new Vue({
 }).$mount("#app");
 
 console.log("Setting global store from main.ts");
-Command.setGlobalStore(useSEStore(), useSDStore());
+Command.setGlobalStores(useSEStore(), useSDStore());
 MouseHandler.setGlobalStore(useSEStore());
