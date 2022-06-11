@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Socket, Server } from "socket.io";
-import { firebaseFirestore } from "./../firebase-backend";
+import { firebaseFirestore } from "../../src/firebase-backend";
 import { DateTime } from "luxon";
 const app = express();
 const router = express.Router();

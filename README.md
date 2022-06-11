@@ -60,7 +60,7 @@ yarn docs:build    # do this AFTER `yarn build`
 After a successful document build, you will find a new directory `dist/docs`.
 
 
-## Launching With Docker
+## Local Deployment With Docker
 
 1. Build a docker image from `Dockerfile`
 
@@ -84,3 +84,23 @@ After a successful document build, you will find a new directory `dist/docs`.
    ```
 
 3. Connect to `localhost:9000` from a browser (port 8080 in the container is mapped a port 9000 on the host)
+
+## Deployment to Heroku
+
+1. Download [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-the-heroku-cli)
+2. Login to Heroku
+3. Type the following from the CLI
+
+   ```bash
+   heroku login
+   heroku create  # if you don't have one yet
+   # you'll get a URL to Git repo on Heroku
+   git remote add heroku https://--THE-URL-ABOVE-
+
+   # Is this required?
+   docker-compose build
+
+   heroku container:login
+   heroku container:push web
+   heroku container:release web
+   ```
