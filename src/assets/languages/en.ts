@@ -438,9 +438,9 @@ export default {
     duplicateTransformedObject:
       "The {object} {name} has already been transformed by {type} {trans}.",
     newIsometrySegmentAdded: "New isometry line segment {name} added.",
-    newIsometryLineAdded: "New isometry Line {name} added.",
+    newIsometryLineAdded: "New isometry line {name} added.",
     newIsometryCircleAdded: "New isometry circle {name} added.",
-    newIsometryEllipseAdded: "New isometry Ellipse {name} added.",
+    newIsometryEllipseAdded: "New isometry ellipse {name} added.",
     newTransformedPointAdded: "New transformed point {name} added.",
     applyTransformationSelectTransformation:
       "You must select a transformation before you can use this tool.",
@@ -690,7 +690,7 @@ export default {
     intersectionPoint:
       "Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
     transformationObject:
-      "The image of {object} {name} under {tranType} {trans}.",
+      "The image of {object} {name} under {transType} {trans}.",
     lineThrough:
       "Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
     polarLine:

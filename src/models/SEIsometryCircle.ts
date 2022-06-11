@@ -71,6 +71,7 @@ export class SEIsometryCircle extends SECircle {
   }
 
   public get noduleDescription(): string {
+    // "The image of {object} {name} under {transType} {trans}.",
     return String(
       i18n.t(`objectTree.transformationObject`, {
         object: i18n.tc(`objects.circles`, 3),

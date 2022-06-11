@@ -41,10 +41,11 @@ export class SETransformedPoint extends SEPoint {
     return this._seParentTransformation;
   }
   public get noduleDescription(): string {
+    // "The image of {object} {name} under {transType} {trans}.",
     return String(
       i18n.t(`objectTree.transformationObject`, {
         object: i18n.tc(`objects.points`, 3),
-        pt: this._seParentPoint.label?.ref.shortUserName,
+        name: this._seParentPoint.label?.ref.shortUserName,
         trans: this._seParentTransformation.name,
         transType: this.transType
       })

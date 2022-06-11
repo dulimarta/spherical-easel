@@ -66,11 +66,12 @@ export class SEIsometryEllipse extends SEEllipse {
     return this._seParentEllipse;
   }
 
-  get parentTransformation(): SEIsometry {
+  get parentIsometry(): SEIsometry {
     return this._seParentIsometry;
   }
 
   public get noduleDescription(): string {
+    // "The image of {object} {name} under {transType} {trans}.",
     return String(
       i18n.t(`objectTree.transformationObject`, {
         object: i18n.tc(`objects.ellipses`, 3),

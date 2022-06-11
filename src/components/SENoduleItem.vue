@@ -425,7 +425,7 @@ export default class SENoduleItem extends Vue {
       });
     } else if (this.node instanceof SETransformation) {
       EventBus.fire("set-transformation-for-tool", {
-        expression: this.node
+        transformation: this.node
       });
     }
   }
