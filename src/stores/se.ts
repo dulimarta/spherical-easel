@@ -422,7 +422,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat);
-      inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
+      inverseTotalRotationMatrix.multiply(tmpMatrix.copy(tmpMatrix).invert());
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];

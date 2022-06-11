@@ -11,6 +11,6 @@
     "lib": ["DOM.Iterable"],
     "downlevelIteration": true
   },
-  "include": ["server/geo.ts", "firebase-backend.ts"],
+  "input": ["geo.ts"],
   "verbose": true
 }

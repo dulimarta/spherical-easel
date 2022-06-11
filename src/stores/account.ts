@@ -21,6 +21,7 @@ export const useAccountStore = defineStore("acct", {
   state: (): AccountState => ({
     temporaryProfilePicture: "",
     userRole: undefined,
+    userEmail: undefined,
     /** @type { ActionMode[]} */
     includedTools: [] as ActionMode[],
     excludedTools: []

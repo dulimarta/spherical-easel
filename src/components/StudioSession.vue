@@ -29,7 +29,7 @@
           </v-tooltip>
         </template>
         <template v-else>
-          <span>In {{studioName}}</span>
+          <span>Joined {{studioName.substring(0,5)}}</span>
         </template>
       </template>
     </span>
@@ -42,27 +42,31 @@
       You are about to create a new teacher session
     </Dialog>
     <Dialog ref="studioListDialog"
-      max-width="40%"
+      max-width="60%"
       :yes-text="availableSessions.length > 0 ? 'Cancel' : 'OK'">
       <template v-if="availableSessions.length > 0">
         <p class="text-h5">Please select a studio to join</p>
-        <table>
+        <v-simple-table>
           <thead>
             <tr>
-              <th class="text-left">Session ID</th>
-              <th>Action</th>
+              <th class="text-left">ID</th>
+              <th>Owner</th>
+              <th>Created</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(s,pos) in availableSessions"
               :key="pos">
-              <td class="text-body-1">{{s}}</td>
+              <td class="text-body-1">{{s.id.substring(0,6)}}</td>
+              <td class="text-body-1">{{s.owner}}</td>
+              <td class="text-body-1">{{s.createdAt}}</td>
               <td>
-                <v-btn @click="joinSession(s)">Join</v-btn>
+                <v-btn @click="joinSession(s.id)"
+                  small>Join</v-btn>
               </td>
             </tr>
           </tbody>
-        </table>
+        </v-simple-table>
       </template>
       <p class="text-h5"
         v-else>No active studio sessions</p>
@@ -86,7 +90,13 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
+import { DateTime } from "luxon";
 
+type StudioDetailOnFirestore = {
+  id: string;
+  owner: string;
+  createdAt: string;
+};
 @Component({
   components: { Dialog },
   methods: {
@@ -112,7 +122,7 @@ export default class StudioSession extends Vue {
   showBroadcastMessage = false;
   broadcastMessage = "";
 
-  availableSessions: Array<string> = [];
+  availableSessions: Array<StudioDetailOnFirestore> = [];
 
   prepareToLaunchStudio(): void {
     console.debug("Preparing to launch studio?", this.studioSocket);
@@ -149,7 +159,13 @@ export default class StudioSession extends Vue {
       .then((qs: QuerySnapshot) => {
         this.availableSessions.splice(0);
         qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
-          this.availableSessions.push(qdoc.id);
+          const { owner, createdAt } = qdoc.data() as StudioDetailOnFirestore;
+          const t = DateTime.fromISO(createdAt).toRelative({ style: "short" });
+          this.availableSessions.push({
+            id: qdoc.id,
+            owner,
+            createdAt: t!
+          });
         });
         this.$refs.studioListDialog.show();
       })
@@ -164,19 +180,18 @@ export default class StudioSession extends Vue {
   joinSession(session: string): void {
     console.debug("Attempt rejoin studio", session);
     this.studioName = session;
-    // this.studioSocket = io(
-    //   process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
-    // );
-    // this.setStudioSocket(this.studioSocket);
-    // this.$refs.studioListDialog.hide();
-    // this.studioSocket.on("connect", () => {
-    //   this.studioSocket?.emit("student-join", { who: "Hans", session });
-    // });
-    // this.studioSocket.on("notify-all", (msg: string) => {
-    //   console.debug("Got a broadcast message", msg);
-    //   this.broadcastMessage = msg;
-    //   this.showBroadcastMessage = true;
-    // });
+    this.$refs.studioListDialog.hide();
+    const socket = io(
+      process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
+    );
+    this.setStudioSocket(socket);
+    socket.on("connect", () => {
+      socket?.emit("student-join", { who: "Anonymous", session });
+    });
+    socket.on("notify-all", (msg: string) => {
+      this.broadcastMessage = msg;
+      this.showBroadcastMessage = true;
+    });
     // this.$router.push({
     //   name: "StudioActivity",
     //   params: { session }

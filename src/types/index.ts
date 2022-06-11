@@ -34,9 +34,10 @@ export type PiniaAppState = {
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;
+  userEmail: string | undefined;
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
-};
+}
 
 export type StudioState = {
   // Socket.io ID associated with a teacher Studio

@@ -219,7 +219,7 @@ interface UserDocOnFirebase {
       "inverseTotalRotationMatrix",
       "hasObjects"
     ]),
-    ...mapWritableState(useAccountStore, ["userRole"])
+    ...mapWritableState(useAccountStore, ["userRole", "userEmail"])
   }
 })
 export default class App extends Vue {
@@ -237,6 +237,7 @@ export default class App extends Vue {
   readonly clearUnsavedFlag!: () => void;
 
   userRole!: string | undefined;
+  userEmail!: string | undefined;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
@@ -304,7 +305,13 @@ export default class App extends Vue {
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) {
-          this.whoami = u.email ?? "unknown email";
+          if (u.email && u.emailVerified) {
+            this.whoami = u.email;
+            this.userEmail = u.email;
+          } else {
+            this.whoami = "unknown email";
+            this.userEmail = undefined;
+          }
           this.uid = u.uid;
           this.$appDB
             .collection("users")

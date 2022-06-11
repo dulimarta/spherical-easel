@@ -25,6 +25,7 @@
 import { Socket } from "socket.io-client";
 import { Component, Vue } from "vue-property-decorator";
 import { useSDStore } from "@/stores/sd";
+import { useAccountStore } from "@/stores/account";
 import { mapActions, mapState } from "pinia";
 
 @Component({
@@ -32,11 +33,13 @@ import { mapActions, mapState } from "pinia";
     ...mapActions(useSDStore, ["setStudioSocket"])
   },
   computed: {
-    ...mapState(useSDStore, ["studioSocket"])
+    ...mapState(useSDStore, ["studioSocket"]),
+    ...mapState(useAccountStore, ["userEmail"])
   }
 })
 export default class TeacherDashboard extends Vue {
   readonly studioSocket!: Socket | null;
+  readonly userEmail!: string | undefined;
   readonly setStudioSocket!: (s: Socket | null) => void;
   message = "";
   sentMessages: Array<string> = [];
@@ -46,17 +49,26 @@ export default class TeacherDashboard extends Vue {
   }
 
   mounted(): void {
-    console.debug("TeacherDashboard::mounted()", this.studioSocket?.id);
+    console.debug(
+      "TeacherDashboard::mounted() with socket",
+      this.studioSocket?.id,
+      "User email",
+      this.userEmail
+    );
 
     if (this.studioSocket !== null) {
       //   console.debug("About to create a new Studio...");
       //   this.studioSocket?.on("connect", () => {
       //     console.debug("Teacher socket connected to ", socket.id);
       //     this.setStudioSocket(socket);
-      this.studioSocket.emit("teacher-join", {
-        who: "Just me",
-        isTeacher: true
-      });
+      if (this.userEmail)
+        this.studioSocket.emit("teacher-join", {
+          who: this.userEmail,
+          isTeacher: true
+        });
+      else {
+        alert("Email is undefined");
+      }
       //   });
       //   socket.on("new-student", arg => {
       //     console.debug("A student just joined", arg);

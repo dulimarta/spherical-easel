@@ -2,11 +2,7 @@ import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Socket, Server } from "socket.io";
 import { firebaseFirestore } from "./../firebase-backend";
-// import {
-//   QuerySnapshot,
-//   QueryDocumentSnapshot
-// } from "@firebase/firestore-types";
-
+import { DateTime } from "luxon";
 const app = express();
 const router = express.Router();
 const my_server = createServer(app);
@@ -31,11 +27,13 @@ server_io.on("connection", (socket: Socket) => {
     //     console.debug(`Socket id ${socket.id} deleted`);
     //   });
   });
+
   socket.on("teacher-join", async (args: any) => {
     socket.join(`chat-${socket.id}`);
     console.debug("Server received 'teacher-join' event", args, socket.id);
     await firebaseFirestore.collection("sessions").doc(socket.id).set({
-      owner: "Hans"
+      owner: args.who,
+      createdAt: DateTime.now().toUTC().toISO()
     });
   });
 
