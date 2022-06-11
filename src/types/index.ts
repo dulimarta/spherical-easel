@@ -42,6 +42,7 @@ export interface AccountState {
 export type StudioState = {
   // Socket.io ID associated with a teacher Studio
   studioSocket: Socket | null;
+  broadcast: boolean;
 };
 
 /* This interface lists all the properties that each tool/button must have. */

@@ -46,7 +46,10 @@ server_io.on("connection", (socket: Socket) => {
 
   socket.on("notify-all", (arg: { room: string; message: string }) => {
     console.debug("Server received 'notify-all", arg.room);
-    socket.to(arg.room).emit("notify-all", arg.message);
+    if (arg.room.startsWith("chat-"))
+      socket.to(arg.room).emit("notify-all", arg.message);
+    else if (arg.room.startsWith("cmd-"))
+      socket.to(arg.room).emit("bcast-cmd", arg.message);
   });
 
   socket.on("student-join", (arg: { session: string }) => {
@@ -56,9 +59,11 @@ server_io.on("connection", (socket: Socket) => {
       "on socket",
       socket.id
     );
-    const roomId = `chat-${arg.session}`;
-    socket.join(roomId);
-    socket.to(roomId).emit("new-student", arg.session);
+    const msgRoom = `chat-${arg.session}`; // For text messages
+    const cmdRoom = `cmd-${arg.session}`; // For geometric commands
+    socket.join(msgRoom);
+    socket.join(cmdRoom);
+    // socket.to(msgRoom).emit("new-student", arg.session);
   });
 });
 

@@ -11,16 +11,19 @@ import i18n from "./i18n";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { config } from "vuex-module-decorators";
-import {firebaseAuth, firebaseFirestore, firebaseStorage} from "./firebase-backend"
+import {
+  firebaseAuth,
+  firebaseFirestore,
+  firebaseStorage
+} from "./firebase-backend";
 import { createPinia, PiniaVuePlugin } from "pinia";
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
+import { useSDStore } from "./stores/sd";
 Vue.use(VueI18n);
 Vue.use(PiniaVuePlugin);
 const pinia = createPinia();
-
-
 
 // Allow all .vue components to access Firebase Auth, Firestore, and Storage
 // via new instance variables this.$appAuth, this.$appDB, this.$appStorage
@@ -45,5 +48,5 @@ new Vue({
 }).$mount("#app");
 
 console.log("Setting global store from main.ts");
-Command.setGlobalStore(useSEStore());
+Command.setGlobalStore(useSEStore(), useSDStore());
 MouseHandler.setGlobalStore(useSEStore());

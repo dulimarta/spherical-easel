@@ -18,8 +18,10 @@ import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
+import { SDStoreType } from "@/stores/sd";
 export abstract class Command {
   protected static store: SEStoreType;
+  protected static sdStore: SDStoreType;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -71,6 +73,15 @@ export abstract class Command {
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */
     this.do(); /* perform the actual action of this command */
+    console.debug(`Broadcast? ${Command.sdStore.broadcast}?`, this.toOpcode());
+    if (Command.sdStore.broadcast) {
+      const payload = JSON.stringify(this.toOpcode());
+      console.debug("Must broadcast", payload.substring(0, 20));
+      Command.sdStore.studioSocket?.emit("notify-all", {
+        room: `cmd-${Command.sdStore.studioSocket?.id}`,
+        message: payload
+      });
+    }
 
     /**
      * Suppose you create a segment from point A to B, then you move point B to location C, then push
@@ -107,7 +118,6 @@ export abstract class Command {
     if (Command.redoHistory.length > 0) {
       Command.redoHistory.splice(0);
     }
-
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
@@ -152,8 +162,9 @@ export abstract class Command {
     return { point, label };
   }
 
-  static setGlobalStore(store: SEStoreType): void {
+  static setGlobalStore(store: SEStoreType, sd: SDStoreType): void {
     Command.store = store;
+    Command.sdStore = sd;
   }
   // Child classes of Command must implement the following abstract methods
   /**

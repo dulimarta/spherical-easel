@@ -1,12 +1,13 @@
 import { StudioState } from "@/types";
-import { defineStore } from "pinia";
+import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
 import { Socket } from "socket.io-client";
 
 // SD: Studio Data
 export const useSDStore = defineStore({
   id: "sd",
   state: (): StudioState => ({
-    studioSocket: null
+    studioSocket: null,
+    broadcast: false
   }),
   actions: {
     setStudioSocket(sock: Socket | null): void {
@@ -14,3 +15,7 @@ export const useSDStore = defineStore({
     }
   }
 });
+
+export type SDStoreType = StoreActions<ReturnType<typeof useSDStore>> &
+  StoreGetters<ReturnType<typeof useSDStore>> &
+  StoreState<ReturnType<typeof useSDStore>>;

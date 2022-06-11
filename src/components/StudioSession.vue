@@ -81,7 +81,7 @@
 import VueComponent from "vue";
 import { Socket, io } from "socket.io-client";
 import { Component, Vue } from "vue-property-decorator";
-import { mapActions, mapState } from "pinia";
+import { mapActions, mapState, mapWritableState } from "pinia";
 import { useSDStore } from "@/stores/sd";
 import { useAccountStore } from "@/stores/account";
 import Dialog, { DialogAction } from "./Dialog.vue";
@@ -91,6 +91,8 @@ import {
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
 import { DateTime } from "luxon";
+import { ConstructionScript } from "@/types";
+import { run } from "@/commands/CommandInterpreter";
 
 type StudioDetailOnFirestore = {
   id: string;
@@ -104,7 +106,8 @@ type StudioDetailOnFirestore = {
   },
   computed: {
     ...mapState(useAccountStore, ["userRole"]),
-    ...mapState(useSDStore, ["studioSocket"])
+    ...mapState(useSDStore, ["studioSocket"]),
+    ...mapWritableState(useSDStore, ["broadcast"])
   }
 })
 export default class StudioSession extends Vue {
@@ -112,6 +115,7 @@ export default class StudioSession extends Vue {
   readonly setStudioSocket!: (s: Socket | null) => void;
   readonly userRole!: string;
   readonly studioSocket!: Socket | null;
+  broadcast!: boolean;
 
   $refs!: {
     initiateSessionDialog: VueComponent & DialogAction;
@@ -143,6 +147,7 @@ export default class StudioSession extends Vue {
     this.setStudioSocket(socket);
     socket.on("connect", () => {
       console.debug("Socket connected", socket.id);
+      this.broadcast = true;
       // Transition to the next route ONLY after the socket is connected
       this.$refs.initiateSessionDialog.hide();
       this.$router.push({
@@ -158,15 +163,34 @@ export default class StudioSession extends Vue {
       .get()
       .then((qs: QuerySnapshot) => {
         this.availableSessions.splice(0);
+        const tmpData: Array<StudioDetailOnFirestore> = [];
         qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
           const { owner, createdAt } = qdoc.data() as StudioDetailOnFirestore;
-          const t = DateTime.fromISO(createdAt).toRelative({ style: "short" });
-          this.availableSessions.push({
+          tmpData.push({
             id: qdoc.id,
             owner,
-            createdAt: t!
+            createdAt
           });
         });
+        tmpData.sort(
+          (a: StudioDetailOnFirestore, b: StudioDetailOnFirestore) => {
+            if (a.createdAt < b.createdAt) return +1;
+            if (a.createdAt > b.createdAt) return -1;
+            else return 0;
+          }
+        );
+        this.availableSessions.push(
+          ...tmpData.map((z: StudioDetailOnFirestore) => {
+            const t = DateTime.fromISO(z.createdAt).toRelative({
+              style: "short"
+            });
+            return {
+              id: z.id,
+              owner: z.owner,
+              createdAt: t!
+            };
+          })
+        );
         this.$refs.studioListDialog.show();
       })
       .catch((err: any) => {
@@ -191,6 +215,13 @@ export default class StudioSession extends Vue {
     socket.on("notify-all", (msg: string) => {
       this.broadcastMessage = msg;
       this.showBroadcastMessage = true;
+    });
+    socket.on("bcast-cmd", (msg: string) => {
+      const quoted = `[${msg}]`;
+      console.debug("Must replicate command", quoted);
+      const cmd = JSON.parse(quoted) as ConstructionScript;
+      console.debug("Parsed command", cmd);
+      run(cmd);
     });
     // this.$router.push({
     //   name: "StudioActivity",
