@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Socket, Server } from "socket.io";
-import { firebaseFirestore } from "../../src/firebase-backend";
+import { firebaseFirestore } from "../src/firebase-backend";
 import { DateTime } from "luxon";
 const app = express();
 const router = express.Router();
@@ -104,8 +104,9 @@ app.use("/geo", router);
 // app.get("/", (req: Request, res: Response) =>{
 //   res.send("I'm here again");
 // })
-my_server.listen(4000, () => {
-  console.log("Listening on port 4000");
+const port = process.env.PORT || 4000;
+my_server.listen(port, () => {
+  console.log(`ExpressJS server listening on port ${port}`);
 });
 
 // export default app;

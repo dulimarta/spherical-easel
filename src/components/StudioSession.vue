@@ -145,9 +145,10 @@ export default class StudioSession extends Vue {
 
   doLaunchStudio(): void {
     // Create a client socket that connects to our backend server
-    const socket = io(
-      process.env.VUE_APP_Studio_SERVER_URL || "http://localhost:4000"
-    );
+    const serverSocketURL =
+      process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000";
+    const socket = io(serverSocketURL);
+    console.debug(`Creating socket to ${serverSocketURL}`);
     this.setStudioSocket(socket);
     socket.on("connect", () => {
       console.debug("Socket connected", socket.id);

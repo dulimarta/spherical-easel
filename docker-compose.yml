@@ -16,6 +16,6 @@ services:
   session-server:
     build:
       context: .
-      dockerfile: Dockerfile-exp
+      dockerfile: backend/Dockerfile
     ports:
       - "4000:4000"

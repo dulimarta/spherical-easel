@@ -1,0 +1,36 @@
+#
+# To build the image locally, run the following command from the PARENT of this directory
+#
+# docker build -f Dockerfile.web .
+
+# To push to heroku, first create a new Heroku app and then
+# type the following commands
+#
+# heroku login
+# heroku container:login
+# heroku stack:set container
+# heroku container:push web --recursive -a NAME-APP-YOUR-HEROKU-APP
+# heroku container:release web  -a NAME-APP-YOUR-HEROKU-APP
+#
+# Also confirm on your Heroku app dashbard (under the "Overview tab") that
+# A web dyno is running
+FROM node:14
+
+# Create a working directory in the container and make it the current dir
+WORKDIR /usr/web/app
+COPY backend/package.json .
+COPY backend/tsconfig.json .
+
+# For the two .ts files below, it is important to copy them
+# and mimic the actual structure on the local directory
+# /usr/web/app/server/geo.ts
+# /usr/web/app/src/firebase-backend.ts
+COPY backend/geo.ts server/geo.ts
+COPY src/firebase-backend.ts ./src/firebase-backend.ts
+
+RUN npm install && (cd /usr/web/app && npx tsc)
+
+# Ignored on Heroku
+EXPOSE $PORT
+
+CMD ["node", "server/geo.js"]

@@ -94,11 +94,8 @@ After a successful document build, you will find a new directory `dist/docs`.
    ```bash
    heroku login
    heroku create  # if you don't have one yet
-   # you'll get a URL to Git repo on Heroku
+   # you'll get the URL to Git repo on Heroku
    git remote add heroku https://--THE-URL-ABOVE-
-
-   # Is this required?
-   docker-compose build
 
    heroku container:login
    heroku container:push web
