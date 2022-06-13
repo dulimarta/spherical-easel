@@ -18,39 +18,31 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   computed: {
-    ...mapState(useSDStore, ["studioSocket"])
+    // ...mapState(useSDStore, ["studioID"])
   }
 })
 export default class StudentActivity extends Vue {
-  @Prop() session!: string;
+  // @Prop() session!: string;
 
-  readonly studioSocket!: Socket | null;
+  readonly studioID!: string | null;
 
   receivedMessages: Array<string> = [];
   mounted(): void {
-    console.debug(
-      "Which session?",
-      this.session,
-      " on socket ",
-      this.studioSocket?.id
-    );
-    if (this.studioSocket !== null) {
-      const sockId = this.studioSocket.id;
+    console.debug("Which session?", this.studioID);
 
-      this.studioSocket.on("connect", () => {
-        this.studioSocket?.emit("student-join", {
-          who: "John Doe",
-          session: this.session
-        });
+    this.$socket.$subscribe("connect", () => {
+      this.$socket.client.emit("student-join", {
+        who: "John Doe",
+        session: this.studioID
       });
-      this.studioSocket.on("disconnect", () => {
-        console.debug("Student disconnected from socket", sockId);
-      });
-      this.studioSocket.on("notify-all", (msg: string) => {
-        // console.debug("Students received broadcast", msg);
-        this.receivedMessages.push(msg);
-      });
-    }
+    });
+    this.$socket.$subscribe("disconnect", () => {
+      console.debug("Student disconnected from socket", this.studioID);
+    });
+    this.$socket.$subscribe("notify-all", (msg: string) => {
+      // console.debug("Students received broadcast", msg);
+      this.receivedMessages.push(msg);
+    });
   }
 }
 </script>

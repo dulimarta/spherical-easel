@@ -5,7 +5,7 @@
       small>
       <v-icon left>mdi-close</v-icon>Close Studio
     </v-btn>
-    <code>Socket ID: {{socketID}}</code>
+    <code>Socket ID: {{studioID}}</code>
     <p v-for="(m,pos) in sentMessages"
       :key="pos">
       {{m}}
@@ -23,59 +23,51 @@
 
 <script lang="ts">
 import { Socket } from "socket.io-client";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { useSDStore } from "@/stores/sd";
 import { useAccountStore } from "@/stores/account";
-import { mapActions, mapState } from "pinia";
+import { mapState, mapWritableState } from "pinia";
 
 @Component({
-  methods: {
-    ...mapActions(useSDStore, ["setStudioSocket"])
-  },
   computed: {
-    ...mapState(useSDStore, ["studioSocket"]),
+    ...mapWritableState(useSDStore, ["studioID"]),
     ...mapState(useAccountStore, ["userEmail"])
   }
 })
 export default class TeacherDashboard extends Vue {
-  readonly studioSocket!: Socket | null;
+  // @Prop() readonly studioId!: string;
+
+  // readonly studioSocket!: Socket | null;
   readonly userEmail!: string | undefined;
-  readonly setStudioSocket!: (s: Socket | null) => void;
+  studioID!: string | null;
+
   message = "";
   sentMessages: Array<string> = [];
-
-  get socketID(): string {
-    return this.studioSocket?.id ?? "None";
-  }
 
   mounted(): void {
     console.debug(
       "TeacherDashboard::mounted() with socket",
-      this.studioSocket?.id,
+      this.studioID,
       "User email",
       this.userEmail
     );
 
-    if (this.studioSocket !== null) {
-      //   console.debug("About to create a new Studio...");
-      //   this.studioSocket?.on("connect", () => {
-      //     console.debug("Teacher socket connected to ", socket.id);
-      //     this.setStudioSocket(socket);
-      if (this.userEmail)
-        this.studioSocket.emit("teacher-join", {
-          who: this.userEmail,
-          isTeacher: true
-        });
-      else {
-        alert("Email is undefined");
-      }
-      //   });
-      //   socket.on("new-student", arg => {
-      //     console.debug("A student just joined", arg);
-      //   });
-    } else {
-      console.debug("TeacherDashboard::mounted: studioSocket is null???");
+    //   console.debug("About to create a new Studio...");
+    //   this.studioSocket?.on("connect", () => {
+    //     console.debug("Teacher socket connected to ", socket.id);
+    //     this.setStudioSocket(socket);
+    if (this.userEmail)
+      this.$socket.client.emit("teacher-join", {
+        who: this.userEmail,
+        isTeacher: true
+      });
+    else {
+      alert("Email is undefined");
     }
+    //   });
+    //   socket.on("new-student", arg => {
+    //     console.debug("A student just joined", arg);
+    //   });
   }
 
   beforeUnMount(): void {
@@ -84,8 +76,8 @@ export default class TeacherDashboard extends Vue {
 
   broadcastMessage(): void {
     console.debug("About to broadcast", this.message);
-    this.studioSocket?.emit("notify-all", {
-      room: `chat-${this.studioSocket?.id}`,
+    this.$socket.client.emit("notify-all", {
+      room: `chat-${this.studioID}`,
       message: this.message
     });
     this.sentMessages.push(this.message);
@@ -93,8 +85,8 @@ export default class TeacherDashboard extends Vue {
   }
 
   stopStudio(): void {
-    this.studioSocket?.emit("teacher-leave");
-    this.setStudioSocket(null);
+    this.$socket.client.emit("teacher-leave");
+    this.studioID = null;
     this.$router.back();
   }
 }

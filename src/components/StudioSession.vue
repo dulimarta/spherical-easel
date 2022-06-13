@@ -12,13 +12,13 @@
                 @click="prepareToLaunchStudio">mdi-human-male-board
               </v-icon>
             </template>
-            <span v-if="studioSocket === null">Create a new studio</span>
-            <span v-else>Studio {{studioSocket.id}}</span>
+            <span v-if="studioID === null">Create a new studio</span>
+            <span v-else>Studio {{studioID}}</span>
           </v-tooltip>
         </template>
       </template>
       <template v-else>
-        <template v-if="!studioName">
+        <template v-if="!studioID">
           <v-tooltip bottom>
             <template #activator="{on}">
               <v-icon class="mx-2"
@@ -29,7 +29,7 @@
           </v-tooltip>
         </template>
         <template v-else>
-          <span>{{studioName.substring(0,5)}}</span>
+          <span>{{studioID.substring(0,5)}}</span>
           <v-icon @click="leaveSession">mdi-sync-off</v-icon>
         </template>
       </template>
@@ -103,40 +103,41 @@ type StudioDetailOnFirestore = {
 @Component({
   components: { Dialog },
   methods: {
-    ...mapActions(useSDStore, ["setStudioSocket"]),
     ...mapActions(useSEStore, ["updateDisplay"])
   },
   computed: {
     ...mapState(useAccountStore, ["userRole"]),
-    ...mapState(useSDStore, ["studioSocket"]),
-    ...mapWritableState(useSDStore, ["broadcast"])
+    ...mapWritableState(useSDStore, ["broadcast", "studioID"])
   }
 })
 export default class StudioSession extends Vue {
   readonly $appDB!: FirebaseFirestore;
-  readonly setStudioSocket!: (s: Socket | null) => void;
   readonly userRole!: string;
-  readonly studioSocket!: Socket | null;
   readonly updateDisplay!: () => void;
 
+  studioID!: string | null;
   broadcast!: boolean;
 
   $refs!: {
     initiateSessionDialog: VueComponent & DialogAction;
     studioListDialog: VueComponent & DialogAction;
   };
-  studioName: string | null = null;
   myRole = "none";
   showBroadcastMessage = false;
   broadcastMessage = "";
+  // SERVER_SOCKET_URL =
+  //   process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000";
 
   availableSessions: Array<StudioDetailOnFirestore> = [];
 
   prepareToLaunchStudio(): void {
-    console.debug("Preparing to launch studio?", this.studioSocket);
-    if (this.studioSocket) {
+    // console.debug("Preparing to launch studio?", this.SERVER_SOCKET_URL);
+    if (this.studioID) {
       this.$router.push({
-        name: "Teacher Dashboard"
+        name: "Teacher Dashboard",
+        params: {
+          id: this.studioID
+        }
       });
     } else {
       this.$refs.initiateSessionDialog.show();
@@ -145,20 +146,16 @@ export default class StudioSession extends Vue {
 
   doLaunchStudio(): void {
     // Create a client socket that connects to our backend server
-    const serverSocketURL =
-      process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000";
-    const socket = io(serverSocketURL);
-    console.debug(`Creating socket to ${serverSocketURL}`);
-    this.setStudioSocket(socket);
-    socket.on("connect", () => {
-      console.debug("Socket connected", socket.id);
-      this.broadcast = true;
-      // Transition to the next route ONLY after the socket is connected
-      this.$refs.initiateSessionDialog.hide();
-      this.$router.push({
-        name: "Teacher Dashboard"
-      });
+    // socket.on("connect", () => {
+    console.debug("Socket connected", this.$socket.client.id);
+    this.studioID = this.$socket.client.id;
+    this.broadcast = true;
+    // Transition to the next route ONLY after the socket is connected
+    this.$refs.initiateSessionDialog.hide();
+    this.$router.push({
+      name: "Teacher Dashboard"
     });
+    // });
   }
 
   prepareToJoinStudio(): void {
@@ -208,23 +205,22 @@ export default class StudioSession extends Vue {
 
   joinSession(session: string): void {
     console.debug("Attempt rejoin studio", session);
-    this.studioName = session;
+    this.studioID = session;
     this.$refs.studioListDialog.hide();
-    const socket = io(
-      process.env.VUE_APP_SESSION_SERVER_URL || "http://localhost:4000"
-    );
-    this.setStudioSocket(socket);
-    socket.on("connect", () => {
-      socket?.emit("student-join", { who: "Anonymous", session });
-    });
+    // const socket = io(this.SERVER_SOCKET_URL);
+    // this.setStudioSocket(socket);
+    // socket.on("connect", () => {
+    //   socket?.emit("student-join", { who: "Anonymous", session });
+    // });
+    this.$socket.client.emit("student-join", { who: "Anonymous", session });
 
     // Setup listener for text message broadcast
-    socket.on("notify-all", (msg: string) => {
+    this.$socket.$subscribe("notify-all", (msg: string) => {
       this.broadcastMessage = msg;
       this.showBroadcastMessage = true;
     });
     // Setup listener for command broadcast
-    socket.on("bcast-cmd", (cmd: string) => {
+    this.$socket.$subscribe("bcast-cmd", (cmd: string) => {
       // TODO: remove the following debugging if-else
       if (cmd.startsWith("[")) {
         const arr = JSON.parse(cmd) as Array<string>;
@@ -245,8 +241,8 @@ export default class StudioSession extends Vue {
 
   leaveSession() {
     console.debug("Disconnecting from session");
-    this.studioName = null;
-    this.setStudioSocket(null);
+    this.studioID = null;
+    // this.setStudioSocket(null);
   }
 }
 </script>

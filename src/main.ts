@@ -20,6 +20,8 @@ import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { useSDStore } from "./stores/sd";
+import VueSocketIO from "vue-socket.io-extended";
+import { io } from "socket.io-client";
 Vue.use(VueI18n);
 Vue.use(PiniaVuePlugin);
 const pinia = createPinia();
@@ -30,6 +32,11 @@ Vue.prototype.$appAuth = firebaseAuth;
 Vue.prototype.$appDB = firebaseFirestore;
 Vue.prototype.$appStorage = firebaseStorage;
 Vue.config.productionTip = false;
+
+const socket = io(
+  process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000"
+);
+Vue.use(VueSocketIO, socket);
 
 new Vue({
   i18n,

@@ -308,7 +308,7 @@ import { mapActions, mapState } from "pinia";
     Dialog
   },
   methods: {
-    ...mapActions(useSEStore, ["setActionMode"])
+    ...mapActions(useSEStore, ["setActionMode", "removeAllFromLayers", "init"])
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])

@@ -7,12 +7,13 @@ export const useSDStore = defineStore({
   id: "sd",
   state: (): StudioState => ({
     studioSocket: null,
+    studioID: null,
     broadcast: false
   }),
   actions: {
-    setStudioSocket(sock: Socket | null): void {
-      this.studioSocket = sock;
-    }
+    // setStudioSocket(sock: Socket | null): void {
+    //   this.studioSocket = sock;
+    // }
   }
 });
 

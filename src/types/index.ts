@@ -40,8 +40,11 @@ export interface AccountState {
 }
 
 export type StudioState = {
-  // Socket.io ID associated with a teacher Studio
+  // Socket.io associated with a teacher Studio
   studioSocket: Socket | null;
+  // The Socket "room" id to which this user connects to
+  studioID: string | null;
+  // Should drawing commands be broadcasted?
   broadcast: boolean;
 };
 

@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
+import { NullCommand } from "./NullCommand";
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEIntersectionPoint;
   private parent1: SEOneOrTwoDimensional;
@@ -89,11 +90,12 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    // console.log(command);
+    console.debug("Command", command.substring(0, 20), "map", objMap);
     const tokens = command.split("&");
     const propMap = new Map<SavedNames, string>();
     // load the tokens into the map
     tokens.forEach((token, ind) => {
+      console.debug(`Token ${ind}: ${token}`);
       if (ind === 0) return; // don't put the command type in the propMap
       const parts = token.split("=");
       propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));

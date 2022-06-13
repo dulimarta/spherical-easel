@@ -183,6 +183,8 @@ import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
 import { mapState, mapActions, mapWritableState } from "pinia";
+import { useSDStore } from "./stores/sd";
+import { Socket } from "socket.io-client";
 
 // import { gzip } from "node-gzip";
 //#region vuex-module-namespace
@@ -219,7 +221,8 @@ interface UserDocOnFirebase {
       "inverseTotalRotationMatrix",
       "hasObjects"
     ]),
-    ...mapWritableState(useAccountStore, ["userRole", "userEmail"])
+    ...mapWritableState(useAccountStore, ["userRole", "userEmail"]),
+    ...mapWritableState(useSDStore, ["studioSocket"])
   }
 })
 export default class App extends Vue {
@@ -238,6 +241,7 @@ export default class App extends Vue {
 
   userRole!: string | undefined;
   userEmail!: string | undefined;
+  studioSocket!: Socket | null;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
@@ -339,6 +343,7 @@ export default class App extends Vue {
     );
     // Get the top-level SVG element
     this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
+    this.studioSocket = this.$socket.client;
   }
 
   beforeDestroy(): void {
