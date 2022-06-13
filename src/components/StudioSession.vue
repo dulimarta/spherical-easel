@@ -36,11 +36,25 @@
     </span>
     <Dialog ref="initiateSessionDialog"
       title="Session"
-      yes-text="Create"
+      :yes-text="myPreviousSessions.length > 0 ? 'Create & Delete' :
+      'Create'"
       no-text="Cancel"
       :yes-action="doLaunchStudio"
       max-width="40%">
-      You are about to create a new teacher session
+      <template v-if="myPreviousSessions.length > 0">
+        <span class="text-h6">You have the following existing
+          sessions</span>
+        <ol>
+          <li v-for="s in myPreviousSessions"
+            :key="s.id">
+            {{s.id}}
+          </li>
+        </ol>
+        <span class="text-h6">Delete old sessions and create a new
+          one?</span>
+      </template>
+      <template v-else> You are about to create a new teacher session
+      </template>
     </Dialog>
     <Dialog ref="studioListDialog"
       max-width="60%"
@@ -106,13 +120,14 @@ type StudioDetailOnFirestore = {
     ...mapActions(useSEStore, ["updateDisplay"])
   },
   computed: {
-    ...mapState(useAccountStore, ["userRole"]),
+    ...mapState(useAccountStore, ["userRole", "userEmail"]),
     ...mapWritableState(useSDStore, ["broadcast", "studioID"])
   }
 })
 export default class StudioSession extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly userRole!: string;
+  readonly userEmail!: string;
   readonly updateDisplay!: () => void;
 
   studioID!: string | null;
@@ -123,12 +138,37 @@ export default class StudioSession extends Vue {
     studioListDialog: VueComponent & DialogAction;
   };
   myRole = "none";
+
   showBroadcastMessage = false;
   broadcastMessage = "";
   // SERVER_SOCKET_URL =
   //   process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000";
 
   availableSessions: Array<StudioDetailOnFirestore> = [];
+  myPreviousSessions: Array<StudioDetailOnFirestore> = [];
+
+  async collectSessionsByName(
+    owner: string
+  ): Promise<Array<StudioDetailOnFirestore>> {
+    return await this.$appDB
+      .collection("sessions")
+      .where("owner", "==", owner)
+      .get()
+      .then((qs: QuerySnapshot) => {
+        this.availableSessions.splice(0);
+        const tmpData: Array<StudioDetailOnFirestore> = [];
+        qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
+          const { owner, createdAt } = qdoc.data() as StudioDetailOnFirestore;
+          if (qdoc.id !== this.$socket.client.id)
+            tmpData.push({
+              id: qdoc.id,
+              owner,
+              createdAt
+            });
+        });
+        return tmpData;
+      });
+  }
 
   prepareToLaunchStudio(): void {
     // console.debug("Preparing to launch studio?", this.SERVER_SOCKET_URL);
@@ -140,14 +180,23 @@ export default class StudioSession extends Vue {
         }
       });
     } else {
-      this.$refs.initiateSessionDialog.show();
+      this.myPreviousSessions.splice(0);
+      this.collectSessionsByName(this.userEmail).then(
+        (arr: Array<StudioDetailOnFirestore>) => {
+          this.myPreviousSessions.push(...arr);
+          this.$refs.initiateSessionDialog.show();
+        }
+      );
     }
   }
 
-  doLaunchStudio(): void {
-    // Create a client socket that connects to our backend server
-    // socket.on("connect", () => {
-    console.debug("Socket connected", this.$socket.client.id);
+  async doLaunchStudio(): Promise<void> {
+    const allTasks = this.myPreviousSessions.map((s: StudioDetailOnFirestore) =>
+      this.$appDB.collection("sessions").doc(s.id).delete()
+    );
+
+    await Promise.all(allTasks);
+
     this.studioID = this.$socket.client.id;
     this.broadcast = true;
     // Transition to the next route ONLY after the socket is connected
@@ -155,7 +204,6 @@ export default class StudioSession extends Vue {
     this.$router.push({
       name: "Teacher Dashboard"
     });
-    // });
   }
 
   prepareToJoinStudio(): void {
