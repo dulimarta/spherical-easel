@@ -1,5 +1,10 @@
 # Spherical Geometry
 
+The app consists of two major components:
+
+1. VueJS front end (under the subdirectory `src`)
+2. ExpressJS and Socket.io backend (under the subdirectory `backend`)
+
 ## Prerequisite for Building/Compiling the app
 
 1. Download and install [NodeJS](https://nodejs.org/en/download/). Verify that `node` and `npm` are installed correctly by typing
@@ -32,7 +37,14 @@ The following will launch the VueJS front-end on port 8080 and the ExpressJS bac
 yarn app:serve
 ```
 
-Then use your browser to open `localhost:8080`.
+Alternatively you can launch each component separately:
+
+```bash
+npx vue-cli-service serve     # to launch the frontend
+npx nodemon                   # to launch the backend
+```
+
+Then use your browser to open `localhost:8080`. Refer to [backend documentation](backend/README.md) for launching and deploying the backend using Docker.
 
 ### Optional commands
 

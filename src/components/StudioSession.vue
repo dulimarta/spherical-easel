@@ -299,10 +299,11 @@ export default class StudioSession extends Vue {
       // TODO: Can we do it without calling updateDisplay?
       this.updateDisplay();
     });
-    // this.$router.push({
-    //   name: "StudioActivity",
-    //   params: { session }
-    // });
+    this.$socket.$subscribe("studio-end", () => {
+      this.broadcastMessage = `Studio ${this.studioID} has ended`;
+      this.showBroadcastMessage = true;
+      this.studioID = null;
+    });
   }
 
   leaveSession() {

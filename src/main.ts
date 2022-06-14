@@ -34,10 +34,11 @@ Vue.prototype.$appStorage = firebaseStorage;
 Vue.config.productionTip = false;
 
 const socket = io(
-  process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000"
+  process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000",
+  { reconnection: false }
 );
-Vue.use(VueSocketIO, socket);
 
+Vue.use(VueSocketIO, socket);
 new Vue({
   i18n,
   provide: {

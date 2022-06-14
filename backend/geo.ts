@@ -41,7 +41,9 @@ server_io.on("connection", (socket: Socket) => {
 
   socket.on("teacher-leave", async () => {
     console.debug("Server received 'teacher-leave' event", socket.id);
+    socket.to(`chat-${socket.id}`).emit("studio-end");
     socket.leave(`chat-${socket.id}`);
+    socket.leave(`cmd-${socket.id}`);
     socket.disconnect();
     await firebaseFirestore.collection("sessions").doc(socket.id).delete();
   });

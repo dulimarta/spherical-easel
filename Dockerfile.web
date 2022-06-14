@@ -3,17 +3,6 @@
 #
 # docker build -f Dockerfile.web .
 
-# To push to heroku, first create a new Heroku app and then
-# type the following commands
-#
-# heroku login
-# heroku container:login
-# heroku stack:set container
-# heroku container:push web --recursive -a NAME-APP-YOUR-HEROKU-APP
-# heroku container:release web  -a NAME-APP-YOUR-HEROKU-APP
-#
-# Also confirm on your Heroku app dashbard (under the "Overview tab") that
-# A web dyno is running
 FROM node:14
 
 # Create a working directory in the container and make it the current dir

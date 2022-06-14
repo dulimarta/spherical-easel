@@ -344,6 +344,12 @@ export default class App extends Vue {
     // Get the top-level SVG element
     this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
     this.studioSocket = this.$socket.client;
+    this.$socket.client.on("connect_error", err => {
+      EventBus.fire("show-alert", {
+        key: `Socket.io connection error ${err}`,
+        type: "error"
+      });
+    });
   }
 
   beforeDestroy(): void {
