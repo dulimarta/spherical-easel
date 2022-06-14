@@ -488,3 +488,10 @@ export enum SliderPlaybackMode {
   LOOP,
   REFLECT
 }
+
+export type StudioDetailsOnFirestore = {
+  id: string;
+  owner: string;
+  createdAt: string;
+  members: Array<string>;
+};

@@ -10,6 +10,7 @@
       :key="pos">
       {{m}}
     </p>
+    <p>Members: {{activeMembers.join(", ")}}</p>
     <v-textarea v-model="message"
       rows="3"
       outlined
@@ -22,12 +23,12 @@
 </template>
 
 <script lang="ts">
-import { Socket } from "socket.io-client";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { useSDStore } from "@/stores/sd";
 import { useAccountStore } from "@/stores/account";
 import { mapState, mapWritableState } from "pinia";
-
+import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { StudioDetailsOnFirestore } from "@/types";
 @Component({
   computed: {
     ...mapWritableState(useSDStore, ["studioID"]),
@@ -35,14 +36,14 @@ import { mapState, mapWritableState } from "pinia";
   }
 })
 export default class TeacherDashboard extends Vue {
-  // @Prop() readonly studioId!: string;
+  readonly $appDB!: FirebaseFirestore;
 
-  // readonly studioSocket!: Socket | null;
   readonly userEmail!: string | undefined;
   studioID!: string | null;
 
   message = "";
   sentMessages: Array<string> = [];
+  activeMembers: Array<string> = [];
 
   mounted(): void {
     console.debug(
@@ -52,10 +53,16 @@ export default class TeacherDashboard extends Vue {
       this.userEmail
     );
 
-    //   console.debug("About to create a new Studio...");
-    //   this.studioSocket?.on("connect", () => {
-    //     console.debug("Teacher socket connected to ", socket.id);
-    //     this.setStudioSocket(socket);
+    this.$appDB
+      .doc(`sessions/${this.studioID}`)
+      .onSnapshot((ds: DocumentSnapshot) => {
+        if (ds.exists) {
+          const { members } = ds.data() as StudioDetailsOnFirestore;
+          console.debug("Session data updated", members);
+          this.activeMembers.splice(0);
+          this.activeMembers.push(...members);
+        }
+      });
     if (this.userEmail)
       this.$socket.client.emit("teacher-join", {
         who: this.userEmail,
@@ -64,10 +71,6 @@ export default class TeacherDashboard extends Vue {
     else {
       alert("Email is undefined");
     }
-    //   });
-    //   socket.on("new-student", arg => {
-    //     console.debug("A student just joined", arg);
-    //   });
   }
 
   beforeUnMount(): void {

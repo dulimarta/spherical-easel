@@ -57,11 +57,17 @@
       </template>
     </Dialog>
     <Dialog ref="studioListDialog"
+      title="Join a Studio"
       max-width="60%"
       :yes-text="availableSessions.length > 0 ? 'Cancel' : 'OK'">
       <template v-if="availableSessions.length > 0">
-        <p class="text-h5">Please select a studio to join</p>
-        <v-simple-table>
+        <v-text-field type="text"
+          dense
+          outlined
+          placeholder="Your name in studio"
+          v-model="userName"></v-text-field>
+
+        <v-simple-table id="sessionList">
           <thead>
             <tr>
               <th class="text-left">ID</th>
@@ -92,6 +98,12 @@
     </v-snackbar>
   </div>
 </template>
+<style scoped>
+#sessionList {
+  margin-bottom: 2em;
+  border: 1px solid gray;
+}
+</style>>
 <script lang="ts">
 import VueComponent from "vue";
 import { Socket, io } from "socket.io-client";
@@ -108,12 +120,7 @@ import {
 import { DateTime } from "luxon";
 import { interpret } from "@/commands/CommandInterpreter";
 import { useSEStore } from "@/stores/se";
-
-type StudioDetailOnFirestore = {
-  id: string;
-  owner: string;
-  createdAt: string;
-};
+import { StudioDetailsOnFirestore } from "@/types";
 @Component({
   components: { Dialog },
   methods: {
@@ -138,32 +145,36 @@ export default class StudioSession extends Vue {
     studioListDialog: VueComponent & DialogAction;
   };
   myRole = "none";
+  userName = ""; // Student name for joining a studio
 
   showBroadcastMessage = false;
   broadcastMessage = "";
   // SERVER_SOCKET_URL =
   //   process.env.VUE_APP_STUDIO_SERVER_URL || "http://localhost:4000";
 
-  availableSessions: Array<StudioDetailOnFirestore> = [];
-  myPreviousSessions: Array<StudioDetailOnFirestore> = [];
+  availableSessions: Array<StudioDetailsOnFirestore> = [];
+  myPreviousSessions: Array<StudioDetailsOnFirestore> = [];
 
   async collectSessionsByName(
     owner: string
-  ): Promise<Array<StudioDetailOnFirestore>> {
+  ): Promise<Array<StudioDetailsOnFirestore>> {
     return await this.$appDB
       .collection("sessions")
       .where("owner", "==", owner)
       .get()
       .then((qs: QuerySnapshot) => {
         this.availableSessions.splice(0);
-        const tmpData: Array<StudioDetailOnFirestore> = [];
+        const tmpData: Array<StudioDetailsOnFirestore> = [];
         qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
-          const { owner, createdAt } = qdoc.data() as StudioDetailOnFirestore;
+          const { owner, createdAt, members } =
+            qdoc.data() as StudioDetailsOnFirestore;
+          // Exclude the current session from the search
           if (qdoc.id !== this.$socket.client.id)
             tmpData.push({
               id: qdoc.id,
               owner,
-              createdAt
+              createdAt,
+              members
             });
         });
         return tmpData;
@@ -182,7 +193,7 @@ export default class StudioSession extends Vue {
     } else {
       this.myPreviousSessions.splice(0);
       this.collectSessionsByName(this.userEmail).then(
-        (arr: Array<StudioDetailOnFirestore>) => {
+        (arr: Array<StudioDetailsOnFirestore>) => {
           this.myPreviousSessions.push(...arr);
           this.$refs.initiateSessionDialog.show();
         }
@@ -191,8 +202,9 @@ export default class StudioSession extends Vue {
   }
 
   async doLaunchStudio(): Promise<void> {
-    const allTasks = this.myPreviousSessions.map((s: StudioDetailOnFirestore) =>
-      this.$appDB.collection("sessions").doc(s.id).delete()
+    const allTasks = this.myPreviousSessions.map(
+      (s: StudioDetailsOnFirestore) =>
+        this.$appDB.collection("sessions").doc(s.id).delete()
     );
 
     await Promise.all(allTasks);
@@ -213,31 +225,34 @@ export default class StudioSession extends Vue {
       .get()
       .then((qs: QuerySnapshot) => {
         this.availableSessions.splice(0);
-        const tmpData: Array<StudioDetailOnFirestore> = [];
+        const tmpData: Array<StudioDetailsOnFirestore> = [];
         qs.docs.forEach((qdoc: QueryDocumentSnapshot) => {
-          const { owner, createdAt } = qdoc.data() as StudioDetailOnFirestore;
+          const { owner, createdAt, members } =
+            qdoc.data() as StudioDetailsOnFirestore;
           tmpData.push({
             id: qdoc.id,
             owner,
-            createdAt
+            createdAt,
+            members
           });
         });
         tmpData.sort(
-          (a: StudioDetailOnFirestore, b: StudioDetailOnFirestore) => {
+          (a: StudioDetailsOnFirestore, b: StudioDetailsOnFirestore) => {
             if (a.createdAt < b.createdAt) return +1;
             if (a.createdAt > b.createdAt) return -1;
             else return 0;
           }
         );
         this.availableSessions.push(
-          ...tmpData.map((z: StudioDetailOnFirestore) => {
+          ...tmpData.map((z: StudioDetailsOnFirestore) => {
             const t = DateTime.fromISO(z.createdAt).toRelative({
               style: "short"
             });
             return {
               id: z.id,
               owner: z.owner,
-              createdAt: t!
+              createdAt: t!,
+              members: z.members
             };
           })
         );
@@ -252,7 +267,7 @@ export default class StudioSession extends Vue {
   }
 
   joinSession(session: string): void {
-    console.debug("Attempt rejoin studio", session);
+    console.debug("Attempt join studio", session);
     this.studioID = session;
     this.$refs.studioListDialog.hide();
     // const socket = io(this.SERVER_SOCKET_URL);
@@ -260,7 +275,10 @@ export default class StudioSession extends Vue {
     // socket.on("connect", () => {
     //   socket?.emit("student-join", { who: "Anonymous", session });
     // });
-    this.$socket.client.emit("student-join", { who: "Anonymous", session });
+    this.$socket.client.emit("student-join", {
+      who: this.userName || "<N/A>",
+      session
+    });
 
     // Setup listener for text message broadcast
     this.$socket.$subscribe("notify-all", (msg: string) => {
@@ -288,9 +306,12 @@ export default class StudioSession extends Vue {
   }
 
   leaveSession() {
-    console.debug("Disconnecting from session");
+    console.debug("Leaving session", this.studioID);
+    this.$socket.client.emit("student-leave", {
+      who: this.userName || "<N/A>",
+      session: this.studioID
+    });
     this.studioID = null;
-    // this.setStudioSocket(null);
   }
 }
 </script>

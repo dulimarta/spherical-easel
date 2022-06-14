@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Socket, Server } from "socket.io";
+import firebase from "firebase";
 import { firebaseFirestore } from "../src/firebase-backend";
 import { DateTime } from "luxon";
 const app = express();
@@ -33,7 +34,8 @@ server_io.on("connection", (socket: Socket) => {
     console.debug("Server received 'teacher-join' event", args, socket.id);
     await firebaseFirestore.collection("sessions").doc(socket.id).set({
       owner: args.who,
-      createdAt: DateTime.now().toUTC().toISO()
+      createdAt: DateTime.now().toUTC().toISO(),
+      members: []
     });
   });
 
@@ -52,22 +54,46 @@ server_io.on("connection", (socket: Socket) => {
       socket.to(arg.room).emit("bcast-cmd", arg.message);
   });
 
-  socket.on("student-join", (arg: { session: string }) => {
+  socket.on("student-join", async (arg: { session: string; who: string }) => {
     console.debug(
-      "Server received 'student-join' event",
+      "Server received 'student-join' from ",
+      arg.who,
+      "to",
       arg.session,
       "on socket",
       socket.id
     );
+
     const msgRoom = `chat-${arg.session}`; // For text messages
     const cmdRoom = `cmd-${arg.session}`; // For geometric commands
     socket.join(msgRoom);
     socket.join(cmdRoom);
-    // socket.to(msgRoom).emit("new-student", arg.session);
+    await firebaseFirestore
+      .collection("sessions")
+      .doc(arg.session)
+      .update({ members: firebase.firestore.FieldValue.arrayUnion(arg.who) });
+  });
+
+  socket.on("student-leave", async (arg: { session: string; who: string }) => {
+    console.debug(
+      "Server received 'student-leave' from ",
+      arg.who,
+      "to",
+      arg.session,
+      "on socket",
+      socket.id
+    );
+
+    const msgRoom = `chat-${arg.session}`; // For text messages
+    const cmdRoom = `cmd-${arg.session}`; // For geometric commands
+    socket.leave(msgRoom);
+    socket.leave(cmdRoom);
+    await firebaseFirestore
+      .collection("sessions")
+      .doc(arg.session)
+      .update({ members: firebase.firestore.FieldValue.arrayRemove(arg.who) });
   });
 });
-
-const APP_URL = "https://easelgeo.app";
 
 // Full path to this entry is /geo/sessions
 router.get("/sessions", (req: Request, res: Response) => {
@@ -92,7 +118,6 @@ router.get("/sessions", (req: Request, res: Response) => {
 
 // router.get("/student", (req: Request, res: Response) => {
 //   res.writeHead(200, { 'Content-Type': 'text/html' });
-//   res.write(`<h1>You are a student. Proceed to <a href="${APP_URL}">EaselGeo</a></h1>`);
 //   console.debug("Incoming request is", req);
 //   res.end();
 // });
@@ -101,13 +126,7 @@ router.get("/sessions", (req: Request, res: Response) => {
 // File name under src/app-server
 app.use("/.netlify/functions/geo", router);
 app.use("/geo", router);
-// app.get("/", (req: Request, res: Response) =>{
-//   res.send("I'm here again");
-// })
 const port = process.env.PORT || 4000;
 my_server.listen(port, () => {
   console.log(`ExpressJS server listening on port ${port}`);
 });
-
-// export default app;
-// export const handler = serverless(app);
