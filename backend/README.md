@@ -52,10 +52,14 @@ docker stop se-backend-server
 
 1. Download [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-the-heroku-cli)
 2. Login to Heroku
-3. Type the following from the CLI
 
    ```bash
    heroku login
+   ```
+
+3. Create a new Heroku app (if you don't have one yet)
+
+   ```bash
    heroku create  # only if you don't have one yet
    heroku stack:set container
    ```

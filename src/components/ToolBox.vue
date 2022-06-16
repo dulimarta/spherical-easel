@@ -1,16 +1,13 @@
 <template>
-
-  <!-- These the navigation arrows TODO: I would like these to be in the same row as the
-    tabs-->
-  <!-- This the not minimized left drawer containing two tabs -->
   <transition name="slide-out"
     mode="out-in">
     <div v-if="!minified"
       key="full">
+
       <v-tabs v-model="activeLeftDrawerTab"
-        centered
-        grow
+        left
         @change="switchTab">
+        <v-tabs-slider color="primary"></v-tabs-slider>
         <v-tooltip bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
@@ -45,7 +42,13 @@
           </template>
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
         </v-tooltip>
+        <v-btn icon
+          @click="minifyToolbox">
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
 
+      </v-tabs>
+      <v-tabs-items v-model="activeLeftDrawerTab">
         <v-tab-item>
           <ToolGroups id="toolGroups"></ToolGroups>
         </v-tab-item>
@@ -56,14 +59,18 @@
         <v-tab-item>
           <ConstructionLoader id="loader"></ConstructionLoader>
         </v-tab-item>
-      </v-tabs>
+      </v-tabs-items>
+
     </div>
 
     <div v-else
-      v-on:click="$emit('toggle-tool-box-panel')"
       class="mini-icons"
       key="partial">
       <v-spacer />
+      <v-btn icon
+        v-on:click="$emit('toggle-toolbox-panel')">
+        <v-icon>mdi-arrow-right</v-icon>
+      </v-btn>
       <v-icon>$vuetify.icons.value.toolsTab</v-icon>
       <v-spacer />
       <v-icon>$vuetify.icons.value.objectsTab</v-icon>
@@ -108,6 +115,7 @@ export default class Toolbox extends Vue {
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = 0;
+  toolboxMinified = false;
 
   // private scene!: Two.Group;
 
@@ -116,7 +124,7 @@ export default class Toolbox extends Vue {
   }
 
   switchTab(): void {
-    // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
+    console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
       this.setActionMode({
@@ -124,6 +132,10 @@ export default class Toolbox extends Vue {
         name: "MoveDisplayedName"
       });
     }
+  }
+  minifyToolbox(): void {
+    this.toolboxMinified = !this.toolboxMinified;
+    this.$emit("toggle-toolbox-panel");
   }
 }
 </script>
