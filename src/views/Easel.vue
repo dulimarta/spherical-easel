@@ -4,7 +4,8 @@
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane min-size="5"
+      <Pane v-if="showLeftPane"
+        min-size="5"
         max-size="35"
         :size="toolboxMinified ? 5 : 30">
         <v-container fill-height>
@@ -210,7 +211,8 @@
         </v-container>
       </Pane>
 
-      <Pane min-size="5"
+      <Pane v-if="showRightPane"
+        min-size="5"
         max-size="25"
         :size="stylePanelMinified ? 5 : 25">
         <v-card>
@@ -355,6 +357,8 @@ export default class Easel extends Vue {
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
+  private showLeftPane = true;
+  private showRightPane = true;
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -472,6 +476,15 @@ export default class Easel extends Vue {
       }
     );
     window.addEventListener("keydown", this.handleKeyDown);
+    this.$socket.$subscribe(
+      "ui-control",
+      (args: { showLeftPane: boolean; showRightPane: boolean }) => {
+        this.showLeftPane = args.showLeftPane;
+        this.toolboxMinified = true;
+        this.showRightPane = args.showRightPane;
+        this.stylePanelMinified = true;
+      }
+    );
   }
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();

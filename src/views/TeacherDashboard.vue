@@ -1,16 +1,37 @@
 <template>
   <div>
-    <h1>Teacher Studio Dashboard</h1>
+    <p class="text-h5">Teacher Studio Dashboard</p>
+    <code>Socket ID: {{studioID}}</code>
     <v-btn @click="stopStudio"
       small>
       <v-icon left>mdi-close</v-icon>Close Studio
     </v-btn>
-    <code>Socket ID: {{studioID}}</code>
+    <v-sheet outlined
+      class="rounded-lg ma-2">
+      <v-container>
+        <v-row align="baseline">
+          <v-col cols="auto">
+            <v-switch v-model="showLeftPane"
+              dense
+              label="Show left panel"></v-switch>
+          </v-col>
+          <v-col cols="auto">
+            <v-switch v-model="showRightPane"
+              dense
+              label="`Show right panel`"></v-switch>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn small
+              @click="broadcastUIControl">Broadcast</v-btn>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-sheet>
     <p v-for="(m,pos) in sentMessages"
       :key="pos">
       {{m}}
     </p>
-    <p>Members: {{activeMembers.join(", ")}}</p>
+    <p>Participants: {{activeMembers.join(", ")}}</p>
     <v-textarea v-model="message"
       rows="3"
       outlined
@@ -18,7 +39,8 @@
       class="ma-3">
 
     </v-textarea>
-    <v-btn @click="broadcastMessage">Broadcast</v-btn>
+    <v-btn small
+      @click="broadcastMessage">Broadcast</v-btn>
   </div>
 </template>
 
@@ -44,6 +66,8 @@ export default class TeacherDashboard extends Vue {
   message = "";
   sentMessages: Array<string> = [];
   activeMembers: Array<string> = [];
+  showLeftPane = true;
+  showRightPane = true;
 
   mounted(): void {
     console.debug(
@@ -91,6 +115,13 @@ export default class TeacherDashboard extends Vue {
     this.$socket.client.emit("teacher-leave");
     this.studioID = null;
     this.$router.back();
+  }
+  broadcastUIControl(): void {
+    // console.debug("Sending ui-control event");
+    this.$socket.client.emit("ui-control", {
+      showLeftPane: this.showLeftPane,
+      showRightPane: this.showRightPane
+    });
   }
 }
 </script>

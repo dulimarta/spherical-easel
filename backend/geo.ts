@@ -48,6 +48,10 @@ server_io.on("connection", (socket: Socket) => {
     await firebaseFirestore.collection("sessions").doc(socket.id).delete();
   });
 
+  socket.on("ui-control", args => {
+    console.debug("Backend server got ui-control", args);
+    socket.to(`chat-${socket.id}`).emit("ui-control", args);
+  });
   socket.on("notify-all", (arg: { room: string; message: string }) => {
     console.debug("Server received 'notify-all", arg.room);
     if (arg.room.startsWith("chat-"))
