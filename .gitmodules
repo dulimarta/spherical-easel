@@ -1,0 +1,3 @@
+[submodule "easelgeo-server"]
+	path = easelgeo-server
+	url = https://git.heroku.com/easelgeo-server.git

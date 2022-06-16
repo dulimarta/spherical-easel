@@ -3,7 +3,14 @@
 The app consists of two major components:
 
 1. VueJS front end (under the subdirectory `src`)
-2. ExpressJS and Socket.io backend (under the subdirectory `backend`)
+2. ExpressJS and Socket.io backend (included as a Git submodule). If you are cloning this repo for the very first name, initialize the submodule by running the following
+
+   ```bash
+   git submodule init
+   git submodule update
+   ```
+
+   The submodule will be found under the `easelgeo-server` subdirectory
 
 ## Prerequisite for Building/Compiling the app
 
@@ -98,6 +105,8 @@ After a successful document build, you will find a new directory `dist/docs`.
 3. Connect to `localhost:9000` from a browser (port 8080 in the container is mapped a port 9000 on the host)
 
 ## Deployment to Heroku
+
+The front end and the backend should be deployed as **two** separate Heroku apps. The following instructions apply only to one app.
 
 1. Download [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-the-heroku-cli)
 2. Login to Heroku

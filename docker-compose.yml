@@ -16,6 +16,6 @@ services:
   session-server:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: easelgeo-server/Dockerfile
     ports:
       - "4000:4000"
