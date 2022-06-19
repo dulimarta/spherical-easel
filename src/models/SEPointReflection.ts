@@ -16,11 +16,17 @@ export class SEPointReflection extends SETransformation {
     this.ref = pointOfReflection.ref;
     SETransformation.POINT_REFLECTION_COUNT;
     this.name = `Rp${SETransformation.POINT_REFLECTION_COUNT}`;
+    this.update(); // So that the transformation is initialized
   }
 
   get sePointOfReflection(): SEPoint {
     return this._pointOfReflection;
   }
+
+  get geometricChild(): SENodule {
+    return this._pointOfReflection;
+  }
+
   /**
    * f is the central transformation whose inputs are before the transformation
    * is applied and the output is the result of applying the transformation

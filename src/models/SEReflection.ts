@@ -14,10 +14,15 @@ export class SEReflection extends SETransformation {
     this._lineOrSegment = lineOrSegment;
     this.ref = lineOrSegment.ref;
     SETransformation.REFLECTION_COUNT++;
-    this.name = `Rl${SETransformation.REFLECTION_COUNT}`;
+    this.name = `RL${SETransformation.REFLECTION_COUNT}`;
+    this.update(); // So that the transformation is initialized
   }
 
   get seLineOrSegment(): SESegment | SELine {
+    return this._lineOrSegment;
+  }
+
+  get geometricChild(): SENodule {
     return this._lineOrSegment;
   }
   /**

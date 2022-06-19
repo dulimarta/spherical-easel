@@ -18,9 +18,14 @@ export class SEInversion extends SETransformation {
     this.ref = circleOfInversion.ref;
     SETransformation.INVERSION_COUNT++;
     this.name = `In${SETransformation.INVERSION_COUNT}`;
+    this.update(); // So that the transformation is initialized
   }
 
   get seCircleOfInversion(): SECircle {
+    return this._circleOfInversion;
+  }
+
+  get geometricChild(): SENodule {
     return this._circleOfInversion;
   }
   /**
@@ -48,14 +53,18 @@ export class SEInversion extends SETransformation {
             Math.tan((1 / 2) * this._circleOfInversion.circleRadius)) /
             Math.tan((1 / 2) * angle)
         );
-      this.perpVector.crossVectors(
-        preimage,
-        this._circleOfInversion.centerSEPoint.locationVector
-      );
-      this.toVector.crossVectors(
-        this._circleOfInversion.centerSEPoint.locationVector,
-        this.perpVector
-      );
+      this.perpVector
+        .crossVectors(
+          preimage,
+          this._circleOfInversion.centerSEPoint.locationVector
+        )
+        .normalize();
+      this.toVector
+        .crossVectors(
+          this._circleOfInversion.centerSEPoint.locationVector,
+          this.perpVector
+        )
+        .normalize();
       // return vector is cos(newAngle)*circle center + sin(newAngle)*toVector
       temp
         .copy(this._circleOfInversion.centerSEPoint.locationVector)

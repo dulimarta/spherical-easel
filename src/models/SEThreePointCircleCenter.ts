@@ -155,6 +155,13 @@ export class SEThreePointCircleCenter extends SEPoint {
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       );
     if (this._exists) {
+      // WARNING: You might expect that the routines to compute the location of the center of the circle through three points
+      // would be found here, but it is not.  I put the routines to compute the center of the three point circle in the
+      // plottable object because they are lengthy and if I put the routines here, I would have to duplicate them them
+      // in the ThreePointCircleHandler to compute the location of the center of the the temporary object. So to compute the location
+      // simply set the location of the three vectors in the plottable object, execute the updateDisplay method, then read the
+      // location from the plottable object.
+
       // set the location of the plottable object
       const threePointCircleCenter = this.ref as ThreePointCircleCenter;
       threePointCircleCenter.vector1 = this._sePointParent1.locationVector;

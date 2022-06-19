@@ -51,7 +51,7 @@ export class AddIsometryLineCommand extends Command {
 
   restoreState(): void {
     Command.store.removeLabel(this.isometrySELineLabel.id);
-    Command.store.removePoint(this.lastState);
+    Command.store.removeLine(this.lastState);
     this.isometrySELine.unregisterChild(this.isometrySELineLabel);
     this.parentIsometry.unregisterChild(this.isometrySELine);
     this.preimageSELine.unregisterChild(this.isometrySELine);

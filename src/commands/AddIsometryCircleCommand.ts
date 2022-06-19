@@ -49,7 +49,7 @@ export class AddIsometryCircleCommand extends Command {
 
   restoreState(): void {
     Command.store.removeLabel(this.isometrySECircleLabel.id);
-    Command.store.removePoint(this.lastState);
+    Command.store.removeCircle(this.lastState);
     this.isometrySECircle.unregisterChild(this.isometrySECircleLabel);
     this.parentIsometry.unregisterChild(this.isometrySECircle);
     this.preimageSECircle.unregisterChild(this.isometrySECircle);

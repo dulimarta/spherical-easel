@@ -155,7 +155,7 @@ export default class TranslationTransformationHandler extends Highlighter {
             });
           }
           //reset the tool to handle the next circle
-          this.prepareForNextRotation();
+          this.prepareForNextTranslation();
         }
       }
     }
@@ -165,7 +165,7 @@ export default class TranslationTransformationHandler extends Highlighter {
     super.mouseLeave(event);
   }
 
-  prepareForNextRotation(): void {
+  prepareForNextTranslation(): void {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
 
@@ -194,7 +194,7 @@ export default class TranslationTransformationHandler extends Highlighter {
         });
       }
       //reset the tool to handle the next circle
-      this.prepareForNextRotation();
+      this.prepareForNextTranslation();
     }
   }
   /**
@@ -340,7 +340,13 @@ export default class TranslationTransformationHandler extends Highlighter {
           measurementSEExpression
         )
       );
+      EventBus.fire("show-alert", {
+        key: `handlers.newTranslationAdded`,
+        keyOptions: { name: `${newSETranslation.name}` },
+        type: "success"
+      });
     }
+
     translationCommandGroup.execute();
     return true;
   }
@@ -351,6 +357,6 @@ export default class TranslationTransformationHandler extends Highlighter {
   }
   deactivate(): void {
     super.deactivate();
-    this.prepareForNextRotation();
+    this.prepareForNextTranslation();
   }
 }

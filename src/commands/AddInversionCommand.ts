@@ -19,7 +19,7 @@ export class AddInversionCommand extends Command {
   }
 
   saveState(): void {
-    this.lastState = this.seCircle.id;
+    this.lastState = this.seInversion.id;
   }
 
   restoreState(): void {

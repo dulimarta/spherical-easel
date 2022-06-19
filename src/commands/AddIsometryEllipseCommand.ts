@@ -45,7 +45,7 @@ export class AddIsometryEllipseCommand extends Command {
 
   restoreState(): void {
     Command.store.removeLabel(this.isometrySEEllipseLabel.id);
-    Command.store.removePoint(this.lastState);
+    Command.store.removeEllipse(this.lastState);
     this.isometrySEEllipse.unregisterChild(this.isometrySEEllipseLabel);
     this.parentIsometry.unregisterChild(this.isometrySEEllipse);
     this.preimageSEEllipse.unregisterChild(this.isometrySEEllipse);

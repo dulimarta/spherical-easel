@@ -28,7 +28,7 @@ export class AddTranslationCommand extends Command {
   }
 
   saveState(): void {
-    this.lastState = this.seLineOrSegment.id;
+    this.lastState = this.seTranslation.id;
   }
 
   restoreState(): void {

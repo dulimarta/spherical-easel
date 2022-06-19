@@ -520,7 +520,8 @@ export type ObjectNames =
   | "isometrySegment"
   | "isometryLine"
   | "isometryCircle"
-  | "isometryEllipse";
+  | "isometryEllipse"
+  | "invertedCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

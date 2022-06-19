@@ -592,6 +592,11 @@ export default class RotationTransformationHandler extends Highlighter {
           measurementSEExpression
         )
       );
+      EventBus.fire("show-alert", {
+        key: `handlers.newRotationAdded`,
+        keyOptions: { name: `${newMeasuredSERotation.name}` },
+        type: "success"
+      });
     }
     rotationCommandGroup.execute();
     return true;

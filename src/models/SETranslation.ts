@@ -23,8 +23,12 @@ export class SETranslation extends SETransformation {
     this.ref = lineOrSegment.ref;
     SETransformation.TRANSLATION_COUNT++;
     this.name = `Tr${SETransformation.TRANSLATION_COUNT}`;
+    this.update(); // So that the transformation is initialized
   }
 
+  get geometricChild(): SENodule {
+    return this._lineOrSegment;
+  }
   get seLineOrSegment(): SESegment | SELine {
     return this._lineOrSegment;
   }
@@ -55,6 +59,11 @@ export class SETranslation extends SETransformation {
       //determine the direction to rotate?
       this._matrix.makeRotationAxis(
         this._lineOrSegment.normalVector,
+        this._translationDistanceExpression.value
+      );
+      console.debug(
+        "SETranslation angle: ",
+        this._lineOrSegment.normalVector.toFixed(2),
         this._translationDistanceExpression.value
       );
     }

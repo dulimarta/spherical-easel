@@ -19,8 +19,12 @@ export class SERotation extends SETransformation {
     this.ref = rotationPoint.ref;
     SETransformation.ROTATION_COUNT++;
     this.name = `Ro${SETransformation.ROTATION_COUNT}`;
+    this.update(); // So that the transformation is initialized
   }
 
+  get geometricChild(): SENodule {
+    return this._rotationPoint;
+  }
   get seRotationPoint(): SEPoint {
     return this._rotationPoint;
   }

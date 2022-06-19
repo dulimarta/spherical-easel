@@ -22,7 +22,7 @@ export class AddReflectionCommand extends Command {
   }
 
   saveState(): void {
-    this.lastState = this.seLineOrSegment.id;
+    this.lastState = this.seReflection.id;
   }
 
   restoreState(): void {

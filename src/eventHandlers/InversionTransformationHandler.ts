@@ -63,7 +63,7 @@ export default class InversionTransformationHandler extends Highlighter {
       ) {
         const newInversion = new SEInversion(this.targetCircleOfInversion);
         EventBus.fire("show-alert", {
-          key: `handlers.newInverstionAdded`,
+          key: `handlers.newInversionAdded`,
           keyOptions: { name: `${newInversion.name}` },
           type: "success"
         });

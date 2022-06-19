@@ -22,6 +22,13 @@ export default class ThreePointCircleCenter extends NonFreePoint {
     super();
   }
   updateDisplay(): void {
+    // WARNING: You might expect that the routines to compute the location of the center of the circle through three points
+    // would be found in the SEThreePointCircleCenter update method, but they are not.  I put the routines to compute the center of the three point circle
+    // here in the plottable object because they are lengthy and if I put the routines in the SEThreePointCircleCenter, I would have to duplicate them them
+    // in the ThreePointCircleHandler to compute the location of the center of the the temporary object. So to compute the location
+    // simply set the location of the three vectors in the plottable object, execute the updateDisplay method, then read the
+    // location from the plottable object.
+
     // if points 1 and 2 are the same the center is the cross of points 1 and 3 that is nearest the old location vector
     if (
       this.tempVector1

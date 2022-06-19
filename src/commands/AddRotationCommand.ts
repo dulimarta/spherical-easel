@@ -31,7 +31,7 @@ export class AddRotationCommand extends Command {
   }
 
   saveState(): void {
-    this.lastState = this.sePointOfRotation.id;
+    this.lastState = this.seRotation.id;
   }
 
   restoreState(): void {

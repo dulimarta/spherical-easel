@@ -16,6 +16,7 @@ export abstract class SETransformation extends SENodule {
 
   public customStyles = (): Set<string> => emptySet;
 
+  abstract get geometricChild(): SENodule;
   /**
    * Is the object hit a point at a particular sphere location?
    * Never! This object is not on the sphere

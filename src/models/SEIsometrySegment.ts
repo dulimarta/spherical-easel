@@ -9,7 +9,6 @@ import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
-import { SEInversion } from "./SEInversion";
 
 export class SEIsometrySegment extends SESegment {
   /**
@@ -17,7 +16,7 @@ export class SEIsometrySegment extends SESegment {
    */
   private _seParentSegment: SESegment;
   private _seParentIsometry: SEIsometry;
-  private transType = "";
+  private transType: string;
 
   /**
    * Create a model SESegment using:
@@ -36,13 +35,24 @@ export class SEIsometrySegment extends SESegment {
     parentSegment: SESegment,
     parentTransformation: SEIsometry
   ) {
-    super(
-      seg,
-      segmentStartSEPoint,
-      segmentNormalVector,
-      segmentArcLength,
-      segmentEndSEPoint
-    );
+    // switch end and start because of mirroring for reflections
+    if (parentTransformation instanceof SEReflection) {
+      super(
+        seg,
+        segmentEndSEPoint,
+        segmentNormalVector,
+        segmentArcLength,
+        segmentStartSEPoint
+      );
+    } else {
+      super(
+        seg,
+        segmentStartSEPoint,
+        segmentNormalVector,
+        segmentArcLength,
+        segmentEndSEPoint
+      );
+    }
     this._seParentSegment = parentSegment;
     this._seParentIsometry = parentTransformation;
     if (this._seParentIsometry instanceof SETranslation) {
@@ -53,6 +63,8 @@ export class SEIsometrySegment extends SESegment {
       this.transType = i18n.tc("objects.reflections", 3);
     } else if (this._seParentIsometry instanceof SEPointReflection) {
       this.transType = i18n.tc("objects.pointReflections", 3);
+    } else {
+      this.transType = "";
     }
   }
 

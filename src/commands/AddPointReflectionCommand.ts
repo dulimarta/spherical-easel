@@ -22,7 +22,7 @@ export class AddPointReflectionCommand extends Command {
   }
 
   saveState(): void {
-    this.lastState = this.sePointOfReflection.id;
+    this.lastState = this.sePointReflection.id;
   }
 
   restoreState(): void {

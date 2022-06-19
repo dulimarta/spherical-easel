@@ -92,6 +92,11 @@ export default class ReflectionTransformationHandler extends Highlighter {
           newReflection,
           this.targetLineOrSegment
         ).execute();
+        EventBus.fire("show-alert", {
+          key: `handlers.newReflectionAdded`,
+          keyOptions: { name: `${newReflection.name}` },
+          type: "success"
+        });
         // Update the display so the changes become apparent
         this.targetLineOrSegment.markKidsOutOfDate();
         this.targetLineOrSegment.update();

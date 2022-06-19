@@ -248,8 +248,9 @@ export default {
     rotations: "Rotations | Rotation | rotation | rotations",
     reflections: "Reflections | Reflection | reflection | reflections",
     pointReflections:
-      "Point reflections | Point reflection | point reflection | point reflections",
-    inversions: "Inversions | Inversion | inversion | inversions"
+      "Point Reflections | Point Reflection | point reflection | point reflections",
+    inversions: "Inversions | Inversion | inversion | inversions",
+    selectTransformation: "< Select A Transformation >"
   },
   style: {
     dashArrayReverse: "Switch Dash and Gap",
@@ -435,8 +436,12 @@ export default {
     angleMarkerArrowHeads: "Arrow Head"
   },
   handlers: {
+    transformCreatesSecondPoint:
+      "Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
+    pointDoesNotMoveUnderTransformation:
+      "Applying {type} {trans} to point {pt} will never move it to a different location.",
     duplicateTransformedObject:
-      "The {object} {name} has already been transformed by {type} {trans}.",
+      "The {object} {name} has already been transformed by {type} {trans} or transforming {object} {name} using {type} {trans} would create a second {object} on top of {name}.",
     newIsometrySegmentAdded: "New isometry line segment {name} added.",
     newIsometryLineAdded: "New isometry line {name} added.",
     newIsometryCircleAdded: "New isometry circle {name} added.",
@@ -504,6 +509,7 @@ export default {
     newInversionAdded: "New inversion {name} added.",
     newPointReflectionAdded: "New point reflection {name} added.",
     newReflectionAdded: "New reflection {name} added.",
+    newRotationAdded: "New rotation {name} added.",
 
     duplicatePointCoordinateMeasurement:
       "The coordinates of point {ptName} have already been measured.",
@@ -677,6 +683,8 @@ export default {
     distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
+    centerOfTransformedCircleUnderInversion:
+      "The center of the image of circle {circleName} under inversion {inversionName}.",
     centerOfThreePointCircle:
       "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",

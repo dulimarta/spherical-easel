@@ -51,7 +51,7 @@ export class AddIsometrySegmentCommand extends Command {
 
   restoreState(): void {
     Command.store.removeLabel(this.isometrySESegmentLabel.id);
-    Command.store.removePoint(this.lastState);
+    Command.store.removeSegment(this.lastState);
     this.isometrySESegment.unregisterChild(this.isometrySESegmentLabel);
     this.parentIsometry.unregisterChild(this.isometrySESegment);
     this.preimageSESegment.unregisterChild(this.isometrySESegment);
