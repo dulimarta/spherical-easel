@@ -444,6 +444,7 @@ export default {
       "The {object} {name} has already been transformed by {type} {trans} or transforming {object} {name} using {type} {trans} would create a second {object} on top of {name}.",
     newIsometrySegmentAdded: "New isometry line segment {name} added.",
     newIsometryLineAdded: "New isometry line {name} added.",
+    newInvertedLineOrCircleAdded: "New inverted circle {name} added.",
     newIsometryCircleAdded: "New isometry circle {name} added.",
     newIsometryEllipseAdded: "New isometry ellipse {name} added.",
     newTransformedPointAdded: "New transformed point {name} added.",
@@ -684,11 +685,13 @@ export default {
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
     centerOfTransformedCircleUnderInversion:
-      "The center of the image of circle {circleName} under inversion {inversionName}.",
+      "Point that is the center of the image of {circleOrLine} {circleOrLineName} under inversion {inversionName}.",
     centerOfThreePointCircle:
       "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
+    inversionImageOfACircle:
+      "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
     threePointCircleThrough:
       "Circle through the points {pt1}, {pt2}, and {pt3}.",
     measuredCircle:
@@ -806,13 +809,14 @@ export default {
       "You are about to logout, any unsaved constructions will be discarded.",
     saveConstructionDialog:
       "Please provide a short description for your construction.",
-    shareLinkReference: "--placeholder shareeeee--",
+    shareLinkReference: "--placeholder share--",
     shareConstructionDialog: "Share your construction",
     exportConstructionDialog: "Export",
     selectedSVGExport: "SVG was selected.",
     selectedPNGExport: "PNG was selected.",
     selectedGIFExport: "GIF was selected.",
     sliderFileDimensions: "File dimensions in pixels:",
+    displaySlider: "Slider???",
     exportDimensionsInvalidWarning:
       "Export dimensions must be between 200px and 1200px. Please try again.",
     shareLinkDialog: "Share your construction link here",

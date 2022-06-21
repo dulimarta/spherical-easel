@@ -445,7 +445,7 @@ export default class App extends Vue {
   }
 
   additionalFooterText(e: { text: string }): void {
-    console.debug("apply transform", e.text);
+    //console.debug("apply transform", e.text);
     this.applyTransformationText = e.text;
   }
 

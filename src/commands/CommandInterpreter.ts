@@ -39,6 +39,7 @@ import { AddIsometrySegmentCommand } from "./AddIsometrySegmentCommand";
 import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
 import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
 import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
+import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -137,7 +138,8 @@ function executeIndividual(command: string): Command {
       return AddIsometryCircleCommand.parse(command, noduleDictionary);
     case "AddIsometryEllipse":
       return AddIsometryEllipseCommand.parse(command, noduleDictionary);
-
+    case "AddInvertedCircleCenter":
+      return AddInvertedCircleCenterCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

@@ -61,11 +61,6 @@ export class SETranslation extends SETransformation {
         this._lineOrSegment.normalVector,
         this._translationDistanceExpression.value
       );
-      console.debug(
-        "SETranslation angle: ",
-        this._lineOrSegment.normalVector.toFixed(2),
-        this._translationDistanceExpression.value
-      );
     }
 
     // This translation is completely determined by it line segment parent and an update on the parent

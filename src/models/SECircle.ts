@@ -17,6 +17,8 @@ import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+import { SELine } from "./SELine";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
@@ -109,6 +111,21 @@ export class SECircle
           })
         );
       }
+    } else if (this._centerSEPoint instanceof SEInversionCircleCenter) {
+      // this circle is a circle of inversion
+      //   "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
+      const geometricParentType =
+        this._centerSEPoint.seParentCircleOrLine instanceof SELine
+          ? i18n.tc(`objects.lines`, 3)
+          : i18n.tc(`objects.circles`, 3);
+      return String(
+        i18n.t(`objectTree.inversionImageOfACircle`, {
+          circleOrLine: geometricParentType,
+          circleOrLineParentName:
+            this._centerSEPoint.seParentCircleOrLine.label?.ref.shortUserName,
+          inversionParentName: this._centerSEPoint.parentTransformation.name
+        })
+      );
     }
     return String(
       i18n.t(`objectTree.circleThrough`, {

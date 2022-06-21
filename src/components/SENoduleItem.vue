@@ -321,6 +321,7 @@ import { SEReflection } from "@/models/SEReflection";
 import { SERotation } from "@/models/SERotation";
 import { SEInversion } from "@/models/SEInversion";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
+import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
 
 const SE = namespace("se");
 @Component
@@ -722,7 +723,10 @@ export default class SENoduleItem extends Vue {
     return this.node instanceof SEInversion;
   }
   get isTransformedPoint(): boolean {
-    return this.node instanceof SETransformedPoint;
+    return (
+      this.node instanceof SETransformedPoint ||
+      this.node instanceof SEInversionCircleCenter
+    );
   }
   get isTransformedLine(): boolean {
     return false;
@@ -734,11 +738,13 @@ export default class SENoduleItem extends Vue {
   }
   get isTransformedCircle(): boolean {
     return (
-      this.node instanceof SECircle &&
-      this.node.circleSEPoint instanceof SETransformedPoint &&
-      this.node.centerSEPoint instanceof SETransformedPoint &&
-      this.node.circleSEPoint.parentTransformation.name ===
-        this.node.centerSEPoint.parentTransformation.name
+      (this.node instanceof SECircle &&
+        this.node.circleSEPoint instanceof SETransformedPoint &&
+        this.node.centerSEPoint instanceof SETransformedPoint &&
+        this.node.circleSEPoint.parentTransformation.name ===
+          this.node.centerSEPoint.parentTransformation.name) ||
+      (this.node instanceof SECircle &&
+        this.node.centerSEPoint instanceof SEInversionCircleCenter)
     );
   }
   get isTransformedEllipse(): boolean {

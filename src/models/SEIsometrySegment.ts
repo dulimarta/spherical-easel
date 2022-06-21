@@ -35,8 +35,13 @@ export class SEIsometrySegment extends SESegment {
     parentSegment: SESegment,
     parentTransformation: SEIsometry
   ) {
+    console.debug(
+      "Type of the parent isometry segment: ",
+      parentTransformation instanceof SEReflection
+    );
     // switch end and start because of mirroring for reflections
     if (parentTransformation instanceof SEReflection) {
+      console.debug("here");
       super(
         seg,
         segmentEndSEPoint,

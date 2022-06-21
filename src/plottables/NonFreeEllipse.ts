@@ -1,4 +1,3 @@
-/** @format */
 import SETTINGS from "@/global-settings";
 import Nodule from "./Nodule";
 import {

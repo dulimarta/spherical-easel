@@ -53,6 +53,8 @@ import {
 } from "@/types";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
+import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCenterCommand";
+import { AddCircleCommand } from "@/commands/AddCircleCommand";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -130,6 +132,96 @@ export default class ApplyTransformationHandler extends Highlighter {
     if (this.isOnSphere) {
       // determine if the user has selected a transformation
       if (this.transformationSEParent != null) {
+        // For all transformations the way points are handled is the same so deal with them first
+        if (this.hitSEPoints.length > 0) {
+          if (
+            this.hitSEPoints[0].kids.some(kid => {
+              return (
+                kid instanceof SETransformedPoint &&
+                this.transformationSEParent &&
+                kid.parentTransformation.name ===
+                  this.transformationSEParent.name
+              );
+            })
+          ) {
+            // this point has already been transformed with this transformation
+            EventBus.fire("show-alert", {
+              key: `handlers.duplicateTransformedObject`,
+              keyOptions: {
+                object: i18n.tc(`objects.points`, 3),
+                name: this.hitSEPoints[0].name,
+                type: this.transformationType,
+                trans: this.transformationSEParent.name
+              },
+              type: "error"
+            });
+            return;
+          }
+          const transformedLocation = this.transformationSEParent.f(
+            this.hitSEPoints[0].locationVector
+          );
+          if (
+            this.tmpVector
+              .subVectors(
+                transformedLocation,
+                this.hitSEPoints[0].locationVector
+              )
+              .isZero()
+          ) {
+            //  "Applying {type} {trans} to point {pt} will never move it to a different location.",
+            EventBus.fire("show-alert", {
+              key: "handlers.pointDoesNotMoveUnderTransformation",
+              keyOptions: {
+                type: this.transformationType,
+                trans: this.transformationSEParent.name,
+                pt: this.hitSEPoints[0].label?.ref.shortUserName
+              },
+              type: "error"
+            });
+
+            return;
+          }
+          let existingPointName = "";
+          if (
+            SEStore.sePoints.some(pt => {
+              if (
+                this.tmpVector
+                  .subVectors(pt.locationVector, transformedLocation)
+                  .isZero()
+              ) {
+                existingPointName = pt.name;
+                return true;
+              } else {
+                return false;
+              }
+            })
+          ) {
+            //"Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
+            EventBus.fire("show-alert", {
+              key: "handlers.transformCreatesSecondPoint",
+              keyOptions: {
+                preimagePt: this.hitSEPoints[0].label?.ref.shortUserName,
+                type: this.transformationType,
+                trans: this.transformationSEParent.name,
+                existingPt: existingPointName
+              },
+              type: "error"
+            });
+
+            return;
+          }
+          // this point has not been transformed with this transformation, it will land in a different place, and the landing place is not currently occupied by another poing
+          const transformedPointCommandGroup = new CommandGroup();
+          this.addTransformedPointCommands(
+            transformedPointCommandGroup,
+            this.transformationSEParent,
+            this.hitSEPoints[0],
+            true
+          );
+          transformedPointCommandGroup.execute();
+          this.prepareForNextGeometricObject();
+          return;
+        }
         //first deal with the isometries
         if (
           this.transformationSEParent instanceof SETranslation ||
@@ -137,42 +229,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           this.transformationSEParent instanceof SEPointReflection ||
           this.transformationSEParent instanceof SEReflection
         ) {
-          if (this.hitSEPoints.length > 0) {
-            if (
-              !this.hitSEPoints[0].kids.some(kid => {
-                return (
-                  kid instanceof SETransformedPoint &&
-                  this.transformationSEParent &&
-                  kid.parentTransformation.name ===
-                    this.transformationSEParent.name
-                );
-              })
-            ) {
-              // this point has not been transformed with this transformation
-              // there may be a point at the transformed location and the addTransformedPointCommand will detect this.
-              // this detection occurs in the command because the other segment/line/circle/ellipse/parametric transformation commands use the addTransformPointCommand to add the points associated to the object
-              const transformedPointCommandGroup = new CommandGroup();
-              this.addTransformedPointCommands(
-                transformedPointCommandGroup,
-                this.transformationSEParent,
-                this.hitSEPoints[0]
-              );
-              transformedPointCommandGroup.execute();
-              this.prepareForNextGeometricObject();
-            } else {
-              // this point has already been transformed with this transformation
-              EventBus.fire("show-alert", {
-                key: `handlers.duplicateTransformedObject`,
-                keyOptions: {
-                  object: i18n.tc(`objects.points`, 3),
-                  name: this.hitSEPoints[0].name,
-                  type: this.transformationType,
-                  trans: this.transformationSEParent.name
-                },
-                type: "error"
-              });
-            }
-          } else if (this.hitSESegments.length > 0) {
+          if (this.hitSESegments.length > 0) {
             // check if this segment has been transformed before
             if (
               !this.hitSESegments[0].kids.some(kid => {
@@ -403,7 +460,232 @@ export default class ApplyTransformationHandler extends Highlighter {
             // not yet implemented
           }
         } else if (this.transformationSEParent instanceof SEInversion) {
-          //not yet implemented
+          if (this.hitSESegments.length > 0) {
+            // not yet implemented
+            // check if this segment has been transformed before
+            // if (
+            //   !this.hitSESegments[0].kids.some(kid => {
+            //     return (
+            //       kid instanceof SEIsometrySegment &&
+            //       this.transformationSEParent &&
+            //       kid.parentIsometry.name === this.transformationSEParent.name
+            //     );
+            //   }) &&
+            //   // check to see if the transformation of this segment will land on another segment
+            //   !SEStore.seSegments.some(seg => {
+            //     return (
+            //       Math.abs(seg.arcLength - this.hitSESegments[0].arcLength) <
+            //         SETTINGS.tolerance &&
+            //       this.transformationSEParent &&
+            //       this.tmpVector
+            //         .subVectors(
+            //           seg.normalVector,
+            //           this.transformationSEParent.f(
+            //             this.hitSESegments[0].normalVector
+            //           )
+            //         )
+            //         .isZero() &&
+            //       this.tmpVector1
+            //         .subVectors(
+            //           seg.startSEPoint.locationVector,
+            //           this.transformationSEParent.f(
+            //             this.transformationSEParent instanceof SEReflection
+            //               ? this.hitSESegments[0].endSEPoint.locationVector
+            //               : this.hitSESegments[0].startSEPoint.locationVector
+            //           )
+            //         )
+            //         .isZero()
+            //     );
+            //   })
+            // ) {
+            //   // this Segment has not been transformed with this transformation and will create a new segment at this location
+            //   this.applyIsometryToSegment(
+            //     this.transformationSEParent,
+            //     this.hitSESegments[0]
+            //   );
+            //   this.prepareForNextGeometricObject();
+            // } else {
+            //   // this Segment has already been transformed with this transformation
+            //   EventBus.fire("show-alert", {
+            //     key: `handlers.duplicateTransformedObject`,
+            //     keyOptions: {
+            //       object: i18n.tc(`objects.segments`, 3),
+            //       name: this.hitSESegments[0].name,
+            //       type: this.transformationType,
+            //       trans: this.transformationSEParent.name
+            //     },
+            //     type: "error"
+            //   });
+            // }
+          } else if (this.hitSELines.length > 0) {
+            const centerOfInvertedCircle = this.computeCenterOfInvertedCircle(
+              this.hitSELines[0].normalVector,
+              Math.PI / 2,
+              this.transformationSEParent
+            );
+            if (
+              // make sure this line has not been transformed with this isometry before
+              !this.hitSELines[0].kids.some(kid => {
+                return (
+                  kid instanceof SETransformedPoint &&
+                  this.transformationSEParent &&
+                  kid.parentTransformation.name ===
+                    this.transformationSEParent.name
+                );
+              }) &&
+              // check to see if the transformation of this line will land on another circle by examining the center
+              !SEStore.sePoints.some(pt => {
+                return (
+                  this.transformationSEParent &&
+                  this.tmpVector
+                    .subVectors(pt.locationVector, centerOfInvertedCircle)
+                    .isZero()
+                  // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                );
+              })
+            ) {
+              // this line has not been transformed with this transformation and will create a new circle at this location
+              this.applyInversionToLineOrCircle(
+                this.transformationSEParent,
+                this.hitSELines[0]
+              );
+              this.prepareForNextGeometricObject();
+            } else {
+              // this Segment has already been transformed with this transformation
+              EventBus.fire("show-alert", {
+                key: `handlers.duplicateTransformedObject`,
+                keyOptions: {
+                  object: i18n.tc(`objects.lines`, 3),
+                  name: this.hitSELines[0].name,
+                  type: this.transformationType,
+                  trans: this.transformationSEParent.name
+                },
+                type: "error"
+              });
+            }
+          } else if (this.hitSECircles.length > 0) {
+            const centerOfInvertedCircle = this.computeCenterOfInvertedCircle(
+              this.hitSECircles[0].centerSEPoint.locationVector,
+              this.hitSECircles[0].circleRadius,
+              this.transformationSEParent
+            );
+            if (
+              // make sure that the circle being inverted is not the circle of inversion
+              this.hitSECircles[0].name !==
+                this.transformationSEParent.seCircleOfInversion.name &&
+              !this.hitSECircles[0].kids.some(kid => {
+                return (
+                  kid instanceof SEInversionCircleCenter &&
+                  this.transformationSEParent &&
+                  kid.parentTransformation.name ===
+                    this.transformationSEParent.name
+                );
+              }) &&
+              // check to see if the transformation of this circle will land on another circle via the center
+              !SEStore.sePoints.some(pt => {
+                return (
+                  this.transformationSEParent &&
+                  this.tmpVector
+                    .subVectors(pt.locationVector, centerOfInvertedCircle)
+                    .isZero()
+                  // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                );
+              })
+            ) {
+              // this Circle has not been transformed with this transformation and will create a new circle at the transformed location
+              this.applyInversionToLineOrCircle(
+                this.transformationSEParent,
+                this.hitSECircles[0]
+              );
+              this.prepareForNextGeometricObject();
+            } else {
+              // this Circle has already been transformed with this transformation
+              EventBus.fire("show-alert", {
+                key: `handlers.duplicateTransformedObject`,
+                keyOptions: {
+                  object: i18n.tc(`objects.circles`, 3),
+                  name: this.hitSECircles[0].name,
+                  type: this.transformationType,
+                  trans: this.transformationSEParent.name
+                },
+                type: "error"
+              });
+            }
+          } else if (this.hitSEEllipses.length > 0) {
+            // not implemented yet
+            // if (
+            //   !this.hitSEEllipses[0].kids.some(kid => {
+            //     return (
+            //       kid instanceof SEIsometryEllipse &&
+            //       this.transformationSEParent &&
+            //       kid.parentIsometry.name === this.transformationSEParent.name
+            //     );
+            //   }) && // check to see if the transformation of this ellipse will land on another ellipse
+            //   !SEStore.seEllipses.some(ellipse => {
+            //     return (
+            //       this.transformationSEParent &&
+            //       // (focus1 mapped to focus1 and focus2 mapped to focus2) or (focus2 mapped to focus1 and focus1 mapped to focus2)
+            //       ((this.tmpVector
+            //         .subVectors(
+            //           ellipse.focus1SEPoint.locationVector,
+            //           this.transformationSEParent.f(
+            //             this.hitSEEllipses[0].focus1SEPoint.locationVector
+            //           )
+            //         )
+            //         .isZero() &&
+            //         this.tmpVector
+            //           .subVectors(
+            //             ellipse.focus2SEPoint.locationVector,
+            //             this.transformationSEParent.f(
+            //               this.hitSEEllipses[0].focus2SEPoint.locationVector
+            //             )
+            //           )
+            //           .isZero()) ||
+            //         (this.tmpVector
+            //           .subVectors(
+            //             ellipse.focus2SEPoint.locationVector,
+            //             this.transformationSEParent.f(
+            //               this.hitSEEllipses[0].focus1SEPoint.locationVector
+            //             )
+            //           )
+            //           .isZero() &&
+            //           this.tmpVector
+            //             .subVectors(
+            //               ellipse.focus1SEPoint.locationVector,
+            //               this.transformationSEParent.f(
+            //                 this.hitSEEllipses[0].focus2SEPoint.locationVector
+            //               )
+            //             )
+            //             .isZero())) &&
+            //       Math.abs(
+            //         ellipse.ellipseAngleSum -
+            //           this.hitSEEllipses[0].ellipseAngleSum
+            //       ) < SETTINGS.tolerance
+            //     );
+            //   })
+            // ) {
+            //   // this Ellipse has not been transformed with this transformation
+            //   this.applyIsometryToEllipse(
+            //     this.transformationSEParent,
+            //     this.hitSEEllipses[0]
+            //   );
+            //   this.prepareForNextGeometricObject();
+            // } else {
+            //   // this Ellipse has already been transformed with this transformation
+            //   EventBus.fire("show-alert", {
+            //     key: `handlers.duplicateTransformedObject`,
+            //     keyOptions: {
+            //       object: i18n.tc(`objects.ellipses`, 3),
+            //       name: this.hitSEEllipses[0].name,
+            //       type: this.transformationType,
+            //       trans: this.transformationSEParent.name
+            //     },
+            //     type: "error"
+            //   });
+            // }
+          } else if (this.hitSEParametrics.length > 0) {
+            // not yet implemented
+          }
         }
       } else {
         // the user is clicking on the sphere, but hasn't selected a transformation
@@ -411,7 +693,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         EventBus.fire("expand-transformation-sheet", {});
         EventBus.fire("show-alert", {
           key: "handlers.applyTransformationSelectTransformation",
-          type: "warning"
+          type: "info"
         });
       }
     }
@@ -667,7 +949,64 @@ export default class ApplyTransformationHandler extends Highlighter {
                 this.possiblyGlowing.glowing = true;
               }
             } else if (this.transformationSEParent instanceof SEInversion) {
-              // not implemented yet
+              const centerOfInvertedCircle = this.computeCenterOfInvertedCircle(
+                this.possiblyGlowing.normalVector,
+                Math.PI / 2,
+                this.transformationSEParent
+              );
+              // make sure this line has not been transformed with this isometry before
+              if (
+                !this.possiblyGlowing.kids.some(kid => {
+                  return (
+                    kid instanceof SETransformedPoint &&
+                    this.transformationSEParent &&
+                    kid.parentTransformation.name ===
+                      this.transformationSEParent.name
+                  );
+                }) &&
+                // check to see if the transformation of this line will land on another circle by examining the center
+                !SEStore.sePoints.some(pt => {
+                  return (
+                    this.transformationSEParent &&
+                    this.tmpVector
+                      .subVectors(pt.locationVector, centerOfInvertedCircle)
+                      .isZero()
+                    // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                  );
+                })
+              ) {
+                // this line has not been transformed with this transformation and will create a new inversion circle at this location, so create the temporary objects to show the user that
+                // add a temporary marker at the transformed endpoint location
+                if (!this.temporaryPoint1Added) {
+                  this.temporaryPoint1.addToLayers(this.layers);
+                  this.temporaryPoint1Added = true;
+                }
+                this.temporaryPoint1.positionVector =
+                  this.transformationSEParent.f(
+                    this.possiblyGlowing.startSEPoint.locationVector
+                  );
+
+                // add a temporary marker at the transformed endpoint location
+                if (!this.temporaryPoint2Added) {
+                  this.temporaryPoint2.addToLayers(this.layers);
+                  this.temporaryPoint2Added = true;
+                }
+                this.temporaryPoint2.positionVector = centerOfInvertedCircle;
+
+                // add a temporary Circle and set the normal, start and arc length
+                if (!this.temporaryCircleAdded) {
+                  this.temporaryCircle.addToLayers(this.layers);
+                  this.temporaryCircleAdded = true;
+                }
+                this.temporaryCircle.centerVector = centerOfInvertedCircle;
+                this.temporaryCircle.circleRadius =
+                  centerOfInvertedCircle.angleTo(
+                    this.temporaryPoint1.positionVector
+                  );
+
+                this.temporaryCircle.updateDisplay();
+                this.possiblyGlowing.glowing = true;
+              }
             }
           } else if (this.possiblyGlowing instanceof SECircle) {
             // deal with the isometries first
@@ -742,7 +1081,68 @@ export default class ApplyTransformationHandler extends Highlighter {
                 this.possiblyGlowing.glowing = true;
               }
             } else if (this.transformationSEParent instanceof SEInversion) {
-              // not implemented yet
+              const centerOfInvertedCircle = this.computeCenterOfInvertedCircle(
+                this.possiblyGlowing.centerSEPoint.locationVector,
+                this.possiblyGlowing.circleRadius,
+                this.transformationSEParent
+              );
+
+              if (
+                // make sure that the circle being inverted is not the circle of inversion
+                this.possiblyGlowing.name !==
+                  this.transformationSEParent.seCircleOfInversion.name &&
+                // make sure this line has not been transformed with this isometry before
+                !this.possiblyGlowing.kids.some(kid => {
+                  return (
+                    kid instanceof SEInversionCircleCenter &&
+                    this.transformationSEParent &&
+                    kid.parentTransformation.name ===
+                      this.transformationSEParent.name
+                  );
+                }) &&
+                // check to see if the transformation of this line will land on another circle by examining the center
+                !SEStore.sePoints.some(pt => {
+                  return (
+                    this.transformationSEParent &&
+                    this.tmpVector
+                      .subVectors(pt.locationVector, centerOfInvertedCircle)
+                      .isZero()
+                    // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                  );
+                })
+              ) {
+                // this line has not been transformed with this transformation and will create a new inversion circle at this location, so create the temporary objects to show the user that
+                // add a temporary marker at the transformed endpoint location
+                if (!this.temporaryPoint1Added) {
+                  this.temporaryPoint1.addToLayers(this.layers);
+                  this.temporaryPoint1Added = true;
+                }
+                this.temporaryPoint1.positionVector =
+                  this.transformationSEParent.f(
+                    this.possiblyGlowing.circleSEPoint.locationVector
+                  );
+
+                // add a temporary marker at the transformed endpoint location
+                if (!this.temporaryPoint2Added) {
+                  this.temporaryPoint2.addToLayers(this.layers);
+                  this.temporaryPoint2Added = true;
+                }
+                this.temporaryPoint2.positionVector = centerOfInvertedCircle;
+
+                // add a temporary Circle and set the normal, start and arc length
+                if (!this.temporaryCircleAdded) {
+                  this.temporaryCircle.addToLayers(this.layers);
+                  this.temporaryCircleAdded = true;
+                }
+                this.temporaryCircle.centerVector = centerOfInvertedCircle;
+                this.temporaryCircle.circleRadius =
+                  centerOfInvertedCircle.angleTo(
+                    this.temporaryPoint1.positionVector
+                  );
+
+                this.temporaryCircle.updateDisplay();
+                this.possiblyGlowing.glowing = true;
+              }
             }
           } else if (this.possiblyGlowing instanceof SEEllipse) {
             // deal with the isometries first
@@ -1002,7 +1402,8 @@ export default class ApplyTransformationHandler extends Highlighter {
   addTransformedPointCommands(
     commandGroup: CommandGroup,
     transformationSEParent: SETransformation,
-    preimageSEPoint: SEPoint
+    preimageSEPoint: SEPoint,
+    displayNotifications = false
   ): SEPoint {
     // make sure that the transformation will move the point.
     // Don't let users create two points at the same location.
@@ -1026,15 +1427,17 @@ export default class ApplyTransformationHandler extends Highlighter {
         .isZero()
     ) {
       //  "Applying {type} {trans} to point {pt} will never move it to a different location.",
-      EventBus.fire("show-alert", {
-        key: "handlers.pointDoesNotMoveUnderTransformation",
-        keyOptions: {
-          type: this.transformationType,
-          trans: transformationSEParent.name,
-          pt: preimageSEPoint.label?.ref.shortUserName
-        },
-        type: "warning"
-      });
+      if (displayNotifications) {
+        EventBus.fire("show-alert", {
+          key: "handlers.pointDoesNotMoveUnderTransformation",
+          keyOptions: {
+            type: this.transformationType,
+            trans: transformationSEParent.name,
+            pt: preimageSEPoint.label?.ref.shortUserName
+          },
+          type: "error"
+        });
+      }
       return existingPoint;
     }
 
@@ -1053,16 +1456,18 @@ export default class ApplyTransformationHandler extends Highlighter {
       })
     ) {
       //"Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
-      EventBus.fire("show-alert", {
-        key: "handlers.transformCreatesSecondPoint",
-        keyOptions: {
-          preimagePt: preimageSEPoint.label?.ref.shortUserName,
-          type: this.transformationType,
-          trans: transformationSEParent.name,
-          existingPt: existingPoint.name
-        },
-        type: "warning"
-      });
+      if (displayNotifications) {
+        EventBus.fire("show-alert", {
+          key: "handlers.transformCreatesSecondPoint",
+          keyOptions: {
+            preimagePt: preimageSEPoint.label?.ref.shortUserName,
+            type: this.transformationType,
+            trans: transformationSEParent.name,
+            existingPt: existingPoint.name
+          },
+          type: "error"
+        });
+      }
       return existingPoint;
     }
 
@@ -1496,90 +1901,6 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
   }
 
-  // computeCenterOfInvertedCircle(): Vector3 {
-  //   // compute the location of the center but first make sure that the preimage circle and transformation parent are set
-  //   if (
-  //     preimageSECircle &&
-  //     transformationSEParent &&
-  //     transformationSEParent instanceof SEInversion
-  //   ) {
-  //     // if the circle being inverted has its center at the center of inversion then the transformed center is the antipode of the center of inversion
-  //     if (
-  //       this.tmpVector1
-  //         .subVectors(
-  //           this.preimageSECircle.centerSEPoint.locationVector,
-  //           transformationSEParent.seCircleOfInversion.centerSEPoint
-  //             .locationVector
-  //         )
-  //         .isZero()
-  //     ) {
-  //       return this.tmpVector
-  //         .copy(this.preimageSECircle.centerSEPoint.locationVector)
-  //         .multiplyScalar(-1);
-  //     }
-  //     // If the circle being inverted is antipodal to the center of inversion, then the transformed center is the center of inversion
-  //     else if (
-  //       this.tmpVector1
-  //         .subVectors(
-  //           this.tmpVector
-  //             .copy(this.preimageSECircle.centerSEPoint.locationVector)
-  //             .multiplyScalar(-1),
-  //           transformationSEParent.seCircleOfInversion.centerSEPoint
-  //             .locationVector
-  //         )
-  //         .isZero()
-  //     ) {
-  //       return transformationSEParent.seCircleOfInversion.centerSEPoint
-  //         .locationVector;
-  //     }
-  //     // the center of the circle being transformed is not the center of inversion and is not antipodal to the center either.
-  //     else {
-  //       // See M'Clelland & Preston. A treatise on
-  //       // spherical trigonometry with applications to spherical geometry and numerous
-  //       // examples - Part 2. 1907 page 144 after Article/Theorem 169
-  //       const delta =
-  //         transformationSEParent.seCircleOfInversion.centerSEPoint.locationVector.angleTo(
-  //           this.preimageSECircle.centerSEPoint.locationVector
-  //         ); // the angular distance from the center of inversion to the center of the circle being transformed
-  //       const r = this.preimageSECircle.circleRadius; // the radius of the circle being transformed
-  //       const a = transformationSEParent.seCircleOfInversion.circleRadius; // the radius of the circle of inversion
-  //       let newAngle = Math.atan(
-  //         (-Math.sin(a) * Math.sin(a) * Math.sin(delta)) /
-  //           ((1 + Math.cos(a) * Math.cos(a)) * Math.cos(delta) -
-  //             2 * Math.cos(a) * Math.cos(r))
-  //       );
-  //       if (newAngle < 0) {
-  //         newAngle += Math.PI;
-  //       }
-  //       this.tmpVector1 // perpendicular to both the center of inversion and the center of the circle being transformed
-  //         .crossVectors(
-  //           this.preimageSECircle.centerSEPoint.locationVector,
-  //           transformationSEParent.seCircleOfInversion.centerSEPoint
-  //             .locationVector
-  //         )
-  //         .normalize();
-  //       this.tmpVector // the to vector
-  //         .crossVectors(
-  //           transformationSEParent.seCircleOfInversion.centerSEPoint
-  //             .locationVector,
-  //           this.tmpVector1
-  //         )
-  //         .normalize();
-  //       // return vector is cos(newAngle)*circle inversion center + sin(newAngle)*tmpVector
-  //       this.tmpVector2
-  //         .copy(
-  //           transformationSEParent.seCircleOfInversion.centerSEPoint
-  //             .locationVector
-  //         )
-  //         .multiplyScalar(Math.cos(newAngle));
-  //       this.tmpVector2.addScaledVector(this.tmpVector, Math.sin(newAngle));
-  //       return this.tmpVector2;
-  //     }
-  //   } else {
-  //     return new Vector3();
-  //   }
-  // }
-
   applyIsometryToEllipse(
     transformationSEParent: SEIsometry,
     preimageSEEllipse: SEEllipse
@@ -1607,7 +1928,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     let transformedFocus2SEPoint: SEPoint | null = null;
-    preimageSEEllipse.focus1SEPoint.kids.forEach(kid => {
+    preimageSEEllipse.focus2SEPoint.kids.forEach(kid => {
       if (
         kid instanceof SETransformedPoint &&
         transformationSEParent &&
@@ -1721,6 +2042,241 @@ export default class ApplyTransformationHandler extends Highlighter {
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryEllipseAdded`,
       keyOptions: { name: `${newIsometrySEEllipse.name}` },
+      type: "success"
+    });
+  }
+  /**
+   * Compute the center of the circle that is the image under transformationSEParent inversion of the circle with center centerOfPreimageCircle and radius radiusOfPreimageCircle
+   * @param centerOfPreimageCircle
+   * @param radiusOfPreimageCircle
+   * @param transformationSEParent
+   * @returns
+   */
+  computeCenterOfInvertedCircle(
+    centerOfPreimageCircle: Vector3,
+    radiusOfPreimageCircle: number,
+    transformationSEParent: SEInversion
+  ): Vector3 {
+    // if the circle being inverted has its center at the center of inversion then the transformed center is the antipode of the center of inversion
+    if (
+      this.tmpVector1
+        .subVectors(
+          centerOfPreimageCircle,
+          transformationSEParent.seCircleOfInversion.centerSEPoint
+            .locationVector
+        )
+        .isZero()
+    ) {
+      const vec = new Vector3();
+      return vec.copy(centerOfPreimageCircle).multiplyScalar(-1);
+    }
+    // If the center of the circle being inverted is antipodal to the center of inversion, then the transformed center is the center of inversion
+    else if (
+      this.tmpVector1
+        .addVectors(
+          centerOfPreimageCircle,
+          transformationSEParent.seCircleOfInversion.centerSEPoint
+            .locationVector
+        )
+        .isZero()
+    ) {
+      const vec = new Vector3();
+      return vec.copy(
+        transformationSEParent.seCircleOfInversion.centerSEPoint.locationVector
+      );
+    }
+    // the center of the circle being transformed is not the center of inversion and is not antipodal to the center either.
+    else {
+      // See M'Clelland & Preston. A treatise on
+      // spherical trigonometry with applications to spherical geometry and numerous
+      // examples - Part 2. 1907 page 144 after Article/Theorem 169
+      const delta =
+        transformationSEParent.seCircleOfInversion.centerSEPoint.locationVector.angleTo(
+          centerOfPreimageCircle
+        ); // the angular distance from the center of inversion to the center of the circle being transformed
+      const r = radiusOfPreimageCircle; // the radius of the circle being transformed
+      const a = transformationSEParent.seCircleOfInversion.circleRadius; // the radius of the circle of inversion
+      const newAngle = Math.atan(
+        (-Math.sin(a) * Math.sin(a) * Math.sin(delta)) /
+          ((1 + Math.cos(a) * Math.cos(a)) * Math.cos(delta) -
+            2 * Math.cos(a) * Math.cos(r))
+      );
+      // console.debug(
+      //   `delta ${delta} preimageRadius ${r} radius of circle of inversion${a} newAngle ${newAngle}`
+      // );
+
+      this.tmpVector1 // perpendicular to both the center of inversion and the center of the circle being transformed
+        .crossVectors(
+          centerOfPreimageCircle,
+          transformationSEParent.seCircleOfInversion.centerSEPoint
+            .locationVector
+        )
+        .normalize();
+      this.tmpVector // the to vector
+        .crossVectors(
+          transformationSEParent.seCircleOfInversion.centerSEPoint
+            .locationVector,
+          this.tmpVector1
+        )
+        .normalize();
+      // return vector is cos(newAngle)*circle inversion center + sin(newAngle)*tmpVector
+      this.tmpVector2
+        .copy(
+          transformationSEParent.seCircleOfInversion.centerSEPoint
+            .locationVector
+        )
+        .multiplyScalar(Math.cos(newAngle));
+      this.tmpVector2.addScaledVector(this.tmpVector, Math.sin(newAngle));
+      // console.debug(`center of inverted circle`, this.tmpVector2.toFixed(2));
+      const vec = new Vector3();
+      return vec.copy(this.tmpVector2);
+    }
+  }
+
+  applyInversionToLineOrCircle(
+    transformationSEParent: SEInversion,
+    lineOrCircle: SELine | SECircle
+  ): void {
+    ///
+    const invertedCircleOrLineCommandGroup = new CommandGroup();
+    // make the images of the endpoints of the Line
+    //  make sure they don't exist first
+    let transformedSEPointOnLineOrCircle: SEPoint | null = null;
+    const preimageSEPointOnLineOrCircle =
+      lineOrCircle instanceof SELine
+        ? lineOrCircle.startSEPoint
+        : lineOrCircle.circleSEPoint;
+    preimageSEPointOnLineOrCircle.kids.forEach(kid => {
+      if (
+        kid instanceof SETransformedPoint &&
+        transformationSEParent &&
+        kid.parentTransformation.name === transformationSEParent.name
+      ) {
+        transformedSEPointOnLineOrCircle = kid;
+      }
+    });
+    if (transformedSEPointOnLineOrCircle === null) {
+      // the start of the Line hasn't been transformed by this transformation
+      transformedSEPointOnLineOrCircle = this.addTransformedPointCommands(
+        invertedCircleOrLineCommandGroup,
+        transformationSEParent,
+        preimageSEPointOnLineOrCircle
+      );
+    }
+    // we have to create a new transformed circle center
+    const newTransformedCircleCenter = new NonFreePoint();
+    // Set the display to the default values
+    newTransformedCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
+    // Adjust the size of the point to the current zoom magnification factor
+    newTransformedCircleCenter.adjustSize();
+
+    const newInvertedCircleCenter = new SEInversionCircleCenter(
+      newTransformedCircleCenter,
+      lineOrCircle,
+      transformationSEParent
+    );
+    newInvertedCircleCenter.update();
+
+    // Create the label
+    const newSELabel = new SELabel(new Label(), newInvertedCircleCenter);
+    // Set the initial label location
+    this.tmpVector
+      .copy(newInvertedCircleCenter.locationVector)
+      .add(
+        new Vector3(
+          2 * SETTINGS.line.initialLabelOffset,
+          SETTINGS.line.initialLabelOffset,
+          0
+        )
+      )
+      .normalize();
+    newSELabel.locationVector = this.tmpVector;
+
+    invertedCircleOrLineCommandGroup.addCommand(
+      new AddInvertedCircleCenterCommand(
+        newInvertedCircleCenter,
+        newSELabel,
+        lineOrCircle,
+        transformationSEParent
+      )
+    );
+    /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
+
+    // we have to create a new transformed Circle
+    const newInvertedCircle = new NonFreeCircle();
+    // Set the display to the default values
+    newInvertedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+    // Adjust the size of the point to the current zoom magnification factor
+    newInvertedCircle.adjustSize();
+
+    const newInvertedSECircle = new SECircle(
+      newInvertedCircle,
+      newInvertedCircleCenter,
+      transformedSEPointOnLineOrCircle
+    );
+    newInvertedSECircle.update();
+
+    // Create the label
+    const newSECircleLabel = new SELabel(new Label(), newInvertedSECircle);
+    // Set the initial label location
+    this.tmpVector
+      .copy(newInvertedSECircle.circleSEPoint.locationVector)
+      .add(
+        new Vector3(
+          2 * SETTINGS.circle.initialLabelOffset,
+          SETTINGS.circle.initialLabelOffset,
+          0
+        )
+      )
+      .normalize();
+    newSECircleLabel.locationVector = this.tmpVector;
+
+    invertedCircleOrLineCommandGroup.addCommand(
+      new AddCircleCommand(
+        newInvertedSECircle,
+        newInvertedCircleCenter,
+        transformedSEPointOnLineOrCircle,
+        newSELabel
+      )
+    );
+    // Generate new intersection points. These points must be computed and created
+    // in the store. Add the new created points to the circle command so they can be undone.
+    SEStore.createAllIntersectionsWithCircle(newInvertedSECircle).forEach(
+      (item: SEIntersectionReturnType) => {
+        // Create the plottable and model label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+        // Set the initial label location
+        this.tmpVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
+        invertedCircleOrLineCommandGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        newSELabel.showing = false;
+      }
+    );
+
+    invertedCircleOrLineCommandGroup.execute();
+    EventBus.fire("show-alert", {
+      key: `handlers.newInvertedLineOrCircleAdded`,
+      keyOptions: { name: `${newInvertedCircleCenter.name}` },
       type: "success"
     });
   }

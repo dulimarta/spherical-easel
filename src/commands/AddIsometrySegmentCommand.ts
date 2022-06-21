@@ -17,6 +17,7 @@ import { compile } from "vue/types/umd";
 import { SESegment } from "@/models/SESegment";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import NonFreeSegment from "@/plottables/NonFreeSegment";
+import { SEReflection } from "@/models/SEReflection";
 
 export class AddIsometrySegmentCommand extends Command {
   private preimageSESegment: SESegment;
@@ -139,10 +140,14 @@ export class AddIsometrySegmentCommand extends Command {
       const seg = new NonFreeSegment();
       const isometrySESegment = new SEIsometrySegment(
         seg,
-        isometrySegmentStartPoint,
+        isometrySegmentParentIsometry instanceof SEReflection
+          ? isometrySegmentEndPoint
+          : isometrySegmentStartPoint,
         isometrySegmentParentIsometry.f(parentSESegment.normalVector),
         parentSESegment.arcLength,
-        isometrySegmentEndPoint,
+        isometrySegmentParentIsometry instanceof SEReflection
+          ? isometrySegmentStartPoint
+          : isometrySegmentEndPoint,
         parentSESegment,
         isometrySegmentParentIsometry
       );

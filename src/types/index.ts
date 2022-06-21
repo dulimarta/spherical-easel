@@ -236,7 +236,9 @@ export type SavedNames =
   | "isometryEllipseParentName"
   | "isometryEllipseFocus1SEPointName"
   | "isometryEllipseFocus2SEPointName"
-  | "isometryEllipseEllipseSEPointName";
+  | "isometryEllipseEllipseSEPointName"
+  | "invertedCircleCenterLineOrCircleParentName"
+  | "invertedCircleCenterParentInversionName";
 
 export type ActionMode =
   | "angle"
