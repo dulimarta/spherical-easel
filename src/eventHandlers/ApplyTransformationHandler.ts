@@ -32,7 +32,7 @@ import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
 import { SEStore } from "@/store";
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, StaticCopyUsage } from "three";
 import Two from "two.js";
 import EventBus from "./EventBus";
 import Highlighter from "./Highlighter";
@@ -55,6 +55,7 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
 import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -245,15 +246,26 @@ export default class ApplyTransformationHandler extends Highlighter {
                   Math.abs(seg.arcLength - this.hitSESegments[0].arcLength) <
                     SETTINGS.tolerance &&
                   this.transformationSEParent &&
-                  this.tmpVector
+                  // see notes in the mouse moved section
+                  (this.tmpVector
                     .subVectors(
                       seg.normalVector,
                       this.transformationSEParent.f(
                         this.hitSESegments[0].normalVector
                       )
                     )
-                    .isZero() &&
-                  this.tmpVector1
+                    .isZero() ||
+                    this.tmpVector
+                      .subVectors(
+                        this.tmpVector2
+                          .copy(seg.normalVector)
+                          .multiplyScalar(-1),
+                        this.transformationSEParent.f(
+                          this.hitSESegments[0].normalVector
+                        )
+                      )
+                      .isZero()) &&
+                  (this.tmpVector1
                     .subVectors(
                       seg.startSEPoint.locationVector,
                       this.transformationSEParent.f(
@@ -262,7 +274,17 @@ export default class ApplyTransformationHandler extends Highlighter {
                           : this.hitSESegments[0].startSEPoint.locationVector
                       )
                     )
-                    .isZero()
+                    .isZero() ||
+                    this.tmpVector1
+                      .subVectors(
+                        seg.startSEPoint.locationVector,
+                        this.transformationSEParent.f(
+                          this.transformationSEParent instanceof SEReflection
+                            ? this.hitSESegments[0].startSEPoint.locationVector
+                            : this.hitSESegments[0].endSEPoint.locationVector
+                        )
+                      )
+                      .isZero())
                 );
               })
             ) {
@@ -573,6 +595,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               // make sure that the circle being inverted is not the circle of inversion
               this.hitSECircles[0].name !==
                 this.transformationSEParent.seCircleOfInversion.name &&
+              // make sure the circle hasn't already been inverted
               !this.hitSECircles[0].kids.some(kid => {
                 return (
                   kid instanceof SEInversionCircleCenter &&
@@ -581,15 +604,32 @@ export default class ApplyTransformationHandler extends Highlighter {
                     this.transformationSEParent.name
                 );
               }) &&
+              // you can't transform the image back to the preimage of a previously transformed circle
+              // this is a order two transformation so just check to see if the center of this circle is itself a SEInversionCircleCenter and if
+              !(
+                this.hitSECircles[0].centerSEPoint instanceof
+                  SEInversionCircleCenter &&
+                this.hitSECircles[0].centerSEPoint.parentTransformation.name ===
+                  this.transformationSEParent.name
+              ) &&
               // check to see if the transformation of this circle will land on another circle via the center
+              // think carefully about the case where the center of the circle being inverted is the center
+              // of inversion or antipodal to the center of inversion (these cases should be allowed)
               !SEStore.sePoints.some(pt => {
                 return (
-                  this.transformationSEParent &&
                   this.tmpVector
                     .subVectors(pt.locationVector, centerOfInvertedCircle)
-                    .isZero()
-                  // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                    .isZero() && // and pt is not the center of inversion or antipodal to the center of inversion
+                  this.transformationSEParent instanceof SEInversion &&
+                  pt.name !==
+                    this.transformationSEParent.seCircleOfInversion
+                      .centerSEPoint.name &&
+                  pt instanceof SEAntipodalPoint &&
+                  pt.antipodalParent.name !==
+                    this.transformationSEParent.seCircleOfInversion
+                      .centerSEPoint.name
                 );
+                // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
               })
             ) {
               // this Circle has not been transformed with this transformation and will create a new circle at the transformed location
@@ -795,20 +835,33 @@ export default class ApplyTransformationHandler extends Highlighter {
                 // check to see if the transformation of this segment will land on another segment
                 !SEStore.seSegments.some(seg => {
                   return (
-                    this.possiblyGlowing &&
                     this.possiblyGlowing instanceof SESegment &&
+                    // make sure that the arc lengths are the same
                     Math.abs(seg.arcLength - this.possiblyGlowing.arcLength) <
                       SETTINGS.tolerance &&
                     this.transformationSEParent &&
-                    this.tmpVector
+                    // watch out for a line segment on the line/segment of reflection
+                    // make sure that the normal or -1*normal are different from the ones for the seg
+                    (this.tmpVector
                       .subVectors(
                         seg.normalVector,
                         this.transformationSEParent.f(
                           this.possiblyGlowing.normalVector
                         )
                       )
-                      .isZero() &&
-                    this.tmpVector1
+                      .isZero() ||
+                      this.tmpVector
+                        .subVectors(
+                          this.tmpVector2
+                            .copy(seg.normalVector)
+                            .multiplyScalar(-1),
+                          this.transformationSEParent.f(
+                            this.possiblyGlowing.normalVector
+                          )
+                        )
+                        .isZero()) &&
+                    // make check to see if the start point is flipped or not with reflections
+                    (this.tmpVector1
                       .subVectors(
                         seg.startSEPoint.locationVector,
                         this.transformationSEParent.f(
@@ -817,7 +870,17 @@ export default class ApplyTransformationHandler extends Highlighter {
                             : this.possiblyGlowing.startSEPoint.locationVector
                         )
                       )
-                      .isZero()
+                      .isZero() ||
+                      this.tmpVector1
+                        .subVectors(
+                          seg.startSEPoint.locationVector,
+                          this.transformationSEParent.f(
+                            this.transformationSEParent instanceof SEReflection
+                              ? this.possiblyGlowing.startSEPoint.locationVector
+                              : this.possiblyGlowing.endSEPoint.locationVector
+                          )
+                        )
+                        .isZero())
                   );
                 })
               ) {
@@ -1100,15 +1163,32 @@ export default class ApplyTransformationHandler extends Highlighter {
                       this.transformationSEParent.name
                   );
                 }) &&
-                // check to see if the transformation of this line will land on another circle by examining the center
+                // you can't transform the image back to the preimage of a previously transformed circle
+                // this is a order two transformation so just check to see if the center of this circle is itself a SEInversionCircleCenter and if
+                !(
+                  this.hitSECircles[0].centerSEPoint instanceof
+                    SEInversionCircleCenter &&
+                  this.hitSECircles[0].centerSEPoint.parentTransformation
+                    .name === this.transformationSEParent.name
+                ) &&
+                // check to see if the transformation of this circle will land on another circle via the center
+                // think carefully about the case where the center of the circle being inverted is the center
+                // of inversion or antipodal to the center of inversion (these cases should be allowed)
                 !SEStore.sePoints.some(pt => {
                   return (
-                    this.transformationSEParent &&
                     this.tmpVector
                       .subVectors(pt.locationVector, centerOfInvertedCircle)
-                      .isZero()
-                    // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
+                      .isZero() && // and pt is not the center of inversion or antipodal to the center of inversion
+                    this.transformationSEParent instanceof SEInversion &&
+                    pt.name !==
+                      this.transformationSEParent.seCircleOfInversion
+                        .centerSEPoint.name &&
+                    pt instanceof SEAntipodalPoint &&
+                    pt.antipodalParent.name !==
+                      this.transformationSEParent.seCircleOfInversion
+                        .centerSEPoint.name
                   );
+                  // should I check the radius of the inverted circle? It is possible that the center lands in the same location as another point, but the radius is different?
                 })
               ) {
                 // this line has not been transformed with this transformation and will create a new inversion circle at this location, so create the temporary objects to show the user that
@@ -2139,7 +2219,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   ): void {
     ///
     const invertedCircleOrLineCommandGroup = new CommandGroup();
-    // make the images of the endpoints of the Line
+    // make the image of a point on the Line or circle
     //  make sure they don't exist first
     let transformedSEPointOnLineOrCircle: SEPoint | null = null;
     const preimageSEPointOnLineOrCircle =
@@ -2163,43 +2243,66 @@ export default class ApplyTransformationHandler extends Highlighter {
         preimageSEPointOnLineOrCircle
       );
     }
-    // we have to create a new transformed circle center
-    const newTransformedCircleCenter = new NonFreePoint();
-    // Set the display to the default values
-    newTransformedCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedCircleCenter.adjustSize();
-
-    const newInvertedCircleCenter = new SEInversionCircleCenter(
-      newTransformedCircleCenter,
-      lineOrCircle,
+    // we have to create a new transformed circle center, unless there is a point at the location already
+    // which happens when the circle being inverted and the circle of inversion are concentric or the centers are anitpodal for example
+    let newInvertedSECircleCenter: SEPoint | null = null;
+    const centerOfInvertedCircle = this.computeCenterOfInvertedCircle(
+      lineOrCircle instanceof SELine
+        ? lineOrCircle.normalVector
+        : lineOrCircle.circleSEPoint.locationVector,
+      lineOrCircle instanceof SELine ? Math.PI / 2 : lineOrCircle.circleRadius,
       transformationSEParent
     );
-    newInvertedCircleCenter.update();
+    //search to see if there are any points at the inverted location (for example the center of inversion or antipodal to the center of inversion)
+    SEStore.sePoints.forEach(pt => {
+      if (
+        this.tmpVector
+          .subVectors(pt.locationVector, centerOfInvertedCircle)
+          .isZero()
+      ) {
+        newInvertedSECircleCenter = pt;
+      }
+    });
 
-    // Create the label
-    const newSELabel = new SELabel(new Label(), newInvertedCircleCenter);
-    // Set the initial label location
-    this.tmpVector
-      .copy(newInvertedCircleCenter.locationVector)
-      .add(
-        new Vector3(
-          2 * SETTINGS.line.initialLabelOffset,
-          SETTINGS.line.initialLabelOffset,
-          0
-        )
-      )
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
+    if (newInvertedSECircleCenter === null) {
+      const newTransformedCircleCenter = new NonFreePoint();
+      // Set the display to the default values
+      newTransformedCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newTransformedCircleCenter.adjustSize();
 
-    invertedCircleOrLineCommandGroup.addCommand(
-      new AddInvertedCircleCenterCommand(
-        newInvertedCircleCenter,
-        newSELabel,
+      newInvertedSECircleCenter = new SEInversionCircleCenter(
+        newTransformedCircleCenter,
         lineOrCircle,
         transformationSEParent
-      )
-    );
+      );
+      newInvertedSECircleCenter.update();
+
+      // Create the label
+      const newSELabel = new SELabel(new Label(), newInvertedSECircleCenter);
+      // Set the initial label location
+      this.tmpVector
+        .copy(newInvertedSECircleCenter.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.line.initialLabelOffset,
+            SETTINGS.line.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
+
+      invertedCircleOrLineCommandGroup.addCommand(
+        new AddInvertedCircleCenterCommand(
+          newInvertedSECircleCenter as SEInversionCircleCenter,
+          newSELabel,
+          lineOrCircle,
+          transformationSEParent
+        )
+      );
+    }
+
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
 
     // we have to create a new transformed Circle
@@ -2211,11 +2314,16 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     const newInvertedSECircle = new SECircle(
       newInvertedCircle,
-      newInvertedCircleCenter,
+      newInvertedSECircleCenter !== null
+        ? newInvertedSECircleCenter
+        : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
       transformedSEPointOnLineOrCircle
     );
     newInvertedSECircle.update();
-
+    console.debug(
+      "new inversion circle radius",
+      newInvertedSECircle.circleRadius
+    );
     // Create the label
     const newSECircleLabel = new SELabel(new Label(), newInvertedSECircle);
     // Set the initial label location
@@ -2234,9 +2342,11 @@ export default class ApplyTransformationHandler extends Highlighter {
     invertedCircleOrLineCommandGroup.addCommand(
       new AddCircleCommand(
         newInvertedSECircle,
-        newInvertedCircleCenter,
+        newInvertedSECircleCenter !== null
+          ? newInvertedSECircleCenter
+          : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
         transformedSEPointOnLineOrCircle,
-        newSELabel
+        newSECircleLabel
       )
     );
     // Generate new intersection points. These points must be computed and created
@@ -2274,9 +2384,12 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
 
     invertedCircleOrLineCommandGroup.execute();
+    const centerName =
+      newInvertedSECircleCenter !== null ? newInvertedSECircleCenter.name : ""; // this should never happen newInvertedCircleCenter is defined above
+
     EventBus.fire("show-alert", {
       key: `handlers.newInvertedLineOrCircleAdded`,
-      keyOptions: { name: `${newInvertedCircleCenter.name}` },
+      keyOptions: { name: `${centerName}` },
       type: "success"
     });
   }
