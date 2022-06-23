@@ -27,7 +27,8 @@ export default class MessageBox extends Vue {
   private messages: MessageType[] = [];
   private messageText: string | null = null;
   private messageType: string | null = null;
-  private messageTimer: NodeJS.Timeout | null = null;
+  //eslint-disable-next-line
+  private messageTimer: NodeJS.Timer | null = null;
 
   mounted(): void {
     EventBus.listen("show-alert", this.addMessage);
