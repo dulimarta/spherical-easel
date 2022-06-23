@@ -74,6 +74,9 @@ export class SEInversion extends SETransformation {
 
     return temp;
   }
+  public shallowUpdate(): void {
+    this._exists = this._circleOfInversion.exists;
+  }
 
   public update(
     objectState?: Map<number, ObjectState>,

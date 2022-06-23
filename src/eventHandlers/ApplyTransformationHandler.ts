@@ -31,8 +31,7 @@ import NonFreeSegment from "@/plottables/NonFreeSegment";
 import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
-import { SEStore } from "@/store";
-import { Vector3, Matrix4, StaticCopyUsage } from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import EventBus from "./EventBus";
 import Highlighter from "./Highlighter";
@@ -97,35 +96,37 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Set the style using the temporary defaults
     this.temporaryPoint1 = new Point();
     this.temporaryPoint1.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint1);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryPoint1);
 
     this.temporaryPoint2 = new Point();
     this.temporaryPoint2.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint2);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryPoint2);
 
     this.temporaryPoint3 = new Point();
     this.temporaryPoint3.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint3);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryPoint3);
 
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporarySegment);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporarySegment);
 
     this.temporaryLine = new Line();
     this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryLine);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryLine);
 
     this.temporaryCircle = new Circle();
     this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryCircle);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryCircle);
 
     this.temporaryEllipse = new Ellipse();
     this.temporaryEllipse.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryEllipse);
+    ApplyTransformationHandler.store.addTemporaryNodule(this.temporaryEllipse);
 
     this.temporaryParametric = new Parametric();
     this.temporaryParametric.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryParametric);
+    ApplyTransformationHandler.store.addTemporaryNodule(
+      this.temporaryParametric
+    );
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -184,7 +185,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           }
           let existingPointName = "";
           if (
-            SEStore.sePoints.some(pt => {
+            ApplyTransformationHandler.store.sePoints.some(pt => {
               if (
                 this.tmpVector
                   .subVectors(pt.locationVector, transformedLocation)
@@ -241,7 +242,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 );
               }) &&
               // check to see if the transformation of this segment will land on another segment
-              !SEStore.seSegments.some(seg => {
+              !ApplyTransformationHandler.store.seSegments.some(seg => {
                 return (
                   Math.abs(seg.arcLength - this.hitSESegments[0].arcLength) <
                     SETTINGS.tolerance &&
@@ -318,7 +319,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 );
               }) &&
               // check to see if the transformation of this line will land on another line
-              !SEStore.seLines.some(line => {
+              !ApplyTransformationHandler.store.seLines.some(line => {
                 return (
                   this.transformationSEParent &&
                   (this.tmpVector
@@ -371,7 +372,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 );
               }) &&
               // check to see if the transformation of this circle will land on another circle
-              !SEStore.seCircles.some(circ => {
+              !ApplyTransformationHandler.store.seCircles.some(circ => {
                 return (
                   this.transformationSEParent &&
                   this.tmpVector
@@ -416,7 +417,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   kid.parentIsometry.name === this.transformationSEParent.name
                 );
               }) && // check to see if the transformation of this ellipse will land on another ellipse
-              !SEStore.seEllipses.some(ellipse => {
+              !ApplyTransformationHandler.store.seEllipses.some(ellipse => {
                 return (
                   this.transformationSEParent &&
                   // (focus1 mapped to focus1 and focus2 mapped to focus2) or (focus2 mapped to focus1 and focus1 mapped to focus2)
@@ -494,7 +495,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //     );
             //   }) &&
             //   // check to see if the transformation of this segment will land on another segment
-            //   !SEStore.seSegments.some(seg => {
+            //   !ApplyTransformationHandler.store.seSegments.some(seg => {
             //     return (
             //       Math.abs(seg.arcLength - this.hitSESegments[0].arcLength) <
             //         SETTINGS.tolerance &&
@@ -556,7 +557,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 );
               }) &&
               // check to see if the transformation of this line will land on another circle by examining the center
-              !SEStore.sePoints.some(pt => {
+              !ApplyTransformationHandler.store.sePoints.some(pt => {
                 return (
                   this.transformationSEParent &&
                   this.tmpVector
@@ -615,7 +616,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               // check to see if the transformation of this circle will land on another circle via the center
               // think carefully about the case where the center of the circle being inverted is the center
               // of inversion or antipodal to the center of inversion (these cases should be allowed)
-              !SEStore.sePoints.some(pt => {
+              !ApplyTransformationHandler.store.sePoints.some(pt => {
                 return (
                   this.tmpVector
                     .subVectors(pt.locationVector, centerOfInvertedCircle)
@@ -661,7 +662,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //       kid.parentIsometry.name === this.transformationSEParent.name
             //     );
             //   }) && // check to see if the transformation of this ellipse will land on another ellipse
-            //   !SEStore.seEllipses.some(ellipse => {
+            //   !ApplyTransformationHandler.store.seEllipses.some(ellipse => {
             //     return (
             //       this.transformationSEParent &&
             //       // (focus1 mapped to focus1 and focus2 mapped to focus2) or (focus2 mapped to focus1 and focus1 mapped to focus2)
@@ -789,7 +790,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                     this.transformationSEParent.name;
               }) &&
               // check to see if there is a point already at the transformed location
-              !SEStore.sePoints.some(pt => {
+              !ApplyTransformationHandler.store.sePoints.some(pt => {
                 return (
                   this.transformationSEParent &&
                   this.tmpVector
@@ -833,7 +834,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   );
                 }) &&
                 // check to see if the transformation of this segment will land on another segment
-                !SEStore.seSegments.some(seg => {
+                !ApplyTransformationHandler.store.seSegments.some(seg => {
                   return (
                     this.possiblyGlowing instanceof SESegment &&
                     // make sure that the arc lengths are the same
@@ -953,7 +954,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   );
                 }) &&
                 // check to see if the transformation of this segment will land on another segment
-                !SEStore.seLines.some(line => {
+                !ApplyTransformationHandler.store.seLines.some(line => {
                   return (
                     this.transformationSEParent &&
                     this.possiblyGlowing instanceof SELine &&
@@ -1028,7 +1029,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   );
                 }) &&
                 // check to see if the transformation of this line will land on another circle by examining the center
-                !SEStore.sePoints.some(pt => {
+                !ApplyTransformationHandler.store.sePoints.some(pt => {
                   return (
                     this.transformationSEParent &&
                     this.tmpVector
@@ -1088,7 +1089,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   );
                 }) &&
                 // check to see if the transformation of this circle will land on another circle
-                !SEStore.seCircles.some(circ => {
+                !ApplyTransformationHandler.store.seCircles.some(circ => {
                   return (
                     this.transformationSEParent &&
                     this.possiblyGlowing instanceof SECircle &&
@@ -1174,7 +1175,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 // check to see if the transformation of this circle will land on another circle via the center
                 // think carefully about the case where the center of the circle being inverted is the center
                 // of inversion or antipodal to the center of inversion (these cases should be allowed)
-                !SEStore.sePoints.some(pt => {
+                !ApplyTransformationHandler.store.sePoints.some(pt => {
                   return (
                     this.tmpVector
                       .subVectors(pt.locationVector, centerOfInvertedCircle)
@@ -1240,7 +1241,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                     kid.parentIsometry.name === this.transformationSEParent.name
                   );
                 }) && // check to see if the transformation of this ellipse will land on another ellipse
-                !SEStore.seEllipses.some(ellipse => {
+                !ApplyTransformationHandler.store.seEllipses.some(ellipse => {
                   return (
                     this.transformationSEParent &&
                     this.possiblyGlowing instanceof SEEllipse &&
@@ -1405,7 +1406,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     this.temporaryParametricAdded = false;
 
     // call an unglow all command
-    //SEStore.unglowAllSENodules();
+    //ApplyTransformationHandler.store.unglowAllSENodules();
   }
 
   prepareForNextTransformation(): void {
@@ -1499,7 +1500,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     const transformedLocation = transformationSEParent.f(
       preimageSEPoint.locationVector
     );
-    let existingPoint = preimageSEPoint; // set initially to the preimage and it is possibly changed in the some method on SEStore.sePoints
+    let existingPoint = preimageSEPoint; // set initially to the preimage and it is possibly changed in the some method on ApplyTransformationHandler.store.sePoints
 
     if (
       this.tmpVector
@@ -1522,7 +1523,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     if (
-      SEStore.sePoints.some(pt => {
+      ApplyTransformationHandler.store.sePoints.some(pt => {
         if (
           this.tmpVector
             .subVectors(pt.locationVector, transformedLocation)
@@ -1694,8 +1695,9 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
 
     // Add all the intersections with this segment
-    SEStore.createAllIntersectionsWithSegment(newIsometrySESegment).forEach(
-      (item: SEIntersectionReturnType) => {
+    ApplyTransformationHandler.store
+      .createAllIntersectionsWithSegment(newIsometrySESegment)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1722,8 +1724,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      }
-    );
+      });
     transformedSegmentCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometrySegmentAdded`,
@@ -1817,8 +1818,9 @@ export default class ApplyTransformationHandler extends Highlighter {
       )
     );
     // Add all the intersections with this line
-    SEStore.createAllIntersectionsWithLine(newIsometrySELine).forEach(
-      (item: SEIntersectionReturnType) => {
+    ApplyTransformationHandler.store
+      .createAllIntersectionsWithLine(newIsometrySELine)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1845,8 +1847,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      }
-    );
+      });
 
     transformedLineCommandGroup.execute();
     EventBus.fire("show-alert", {
@@ -1942,8 +1943,9 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
-    SEStore.createAllIntersectionsWithCircle(newIsometrySECircle).forEach(
-      (item: SEIntersectionReturnType) => {
+    ApplyTransformationHandler.store
+      .createAllIntersectionsWithCircle(newIsometrySECircle)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1971,8 +1973,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      }
-    );
+      });
     transformedCircleCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryCircleAdded`,
@@ -2087,8 +2088,9 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
-    SEStore.createAllIntersectionsWithEllipse(newIsometrySEEllipse).forEach(
-      (item: SEIntersectionReturnType) => {
+    ApplyTransformationHandler.store
+      .createAllIntersectionsWithEllipse(newIsometrySEEllipse)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -2116,8 +2118,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      }
-    );
+      });
     transformedEllipseCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryEllipseAdded`,
@@ -2254,7 +2255,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       transformationSEParent
     );
     //search to see if there are any points at the inverted location (for example the center of inversion or antipodal to the center of inversion)
-    SEStore.sePoints.forEach(pt => {
+    ApplyTransformationHandler.store.sePoints.forEach(pt => {
       if (
         this.tmpVector
           .subVectors(pt.locationVector, centerOfInvertedCircle)
@@ -2351,8 +2352,9 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
-    SEStore.createAllIntersectionsWithCircle(newInvertedSECircle).forEach(
-      (item: SEIntersectionReturnType) => {
+    ApplyTransformationHandler.store
+      .createAllIntersectionsWithCircle(newInvertedSECircle)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -2380,8 +2382,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      }
-    );
+      });
 
     invertedCircleOrLineCommandGroup.execute();
     const centerName =

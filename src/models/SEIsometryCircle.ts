@@ -1,27 +1,7 @@
-import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
-import { Vector3, Matrix4 } from "three";
-import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
-import {
-  NormalVectorAndTValue,
-  ObjectState,
-  OneDimensional,
-  SEIsometry
-} from "@/types";
-import SETTINGS from "@/global-settings";
-import {
-  DEFAULT_CIRCLE_BACK_STYLE,
-  DEFAULT_CIRCLE_FRONT_STYLE
-} from "@/types/Styles";
-import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
-import { intersectCircles } from "@/utils/intersections";
+import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
-import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 import { SECircle } from "./SECircle";
 import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
@@ -84,6 +64,27 @@ export class SEIsometryCircle extends SECircle {
 
   public get noduleItemText(): string {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SECircle";
+  }
+
+  public shallowUpdate(): void {
+    this._exists = this._seParentCircle.exists && this._seParentIsometry.exists;
+
+    if (this._exists) {
+      //update the centerVector and the radius
+      const newRadius = this._centerSEPoint.locationVector.angleTo(
+        this._circleSEPoint.locationVector
+      );
+      this.ref.circleRadius = newRadius;
+      this.ref.centerVector = this._centerSEPoint.locationVector;
+      // display the new circle with the updated values
+      this.ref.updateDisplay();
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
   }
 
   public update(

@@ -53,10 +53,10 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     );
   }
 
-  // public customStyles = (): Set<string> => emptySet;
-
   shallowUpdate(): void {
-    console.error(`*** INCOMPLETE ${this.name} ***`);
+    console.error(
+      `*** INCOMPLETE ${this.name} *** or no update is necessary for sliders?`
+    );
   }
   public update(
     objectState?: Map<number, ObjectState>,

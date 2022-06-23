@@ -491,6 +491,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.ref.setVisible(false);
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

@@ -1,21 +1,7 @@
-import { SENodule } from "./SENodule";
 import Line from "@/plottables/Line";
 import { Vector3 } from "three";
-import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
-import SETTINGS from "@/global-settings";
-import {
-  OneDimensional,
-  Labelable,
-  NormalVectorAndTValue,
-  ObjectState,
-  SEIsometry
-} from "@/types";
-import { SELabel } from "@/models/SELabel";
-// import  SENoduleItem  from "*.vue";
-// import magnificationLevel from "*.vue";
-import { SEStore } from "@/store";
+import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
@@ -91,6 +77,26 @@ export class SEIsometryLine extends SELine {
     return (
       this.label?.ref.shortUserName ?? "No Label Short Name In SEIsometryLine"
     );
+  }
+
+  public shallowUpdate(): void {
+    this._exists = this._seParentIsometry.exists && this._seParentLine.exists;
+
+    if (this._exists) {
+      // Set the normal vector
+      this.normalVector.copy(
+        this.parentIsometry.f(this._seParentLine.normalVector)
+      );
+
+      ////////////////////////////////////////////////////////////////////////////////////////
+      this.ref.normalVector = this.normalVector;
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
   }
 
   public update(

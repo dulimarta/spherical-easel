@@ -9,14 +9,10 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { LabelDisplayMode, SEMeasurable, SEOneOrTwoDimensional } from "@/types";
-import { SEStore } from "@/store";
 import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SETransformation } from "@/models/SETransformation";
-import { SETranslation } from "@/models/SETranslation";
-import { AddTranslationCommand } from "@/commands/AddTranslationCommand";
 import { SEPoint } from "@/models/SEPoint";
-import { Matrix4, Vector3 } from "three";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
@@ -31,6 +27,7 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
 import { SERotation } from "@/models/SERotation";
 import { AddRotationCommand } from "@/commands/AddRotationCommand";
+import { Vector3 } from "three";
 export default class RotationTransformationHandler extends Highlighter {
   /**
    * Center vector of the created rotation
@@ -77,7 +74,9 @@ export default class RotationTransformationHandler extends Highlighter {
     this.temporaryRotationPointMarker.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryRotationPointMarker);
+    RotationTransformationHandler.store.addTemporaryNodule(
+      this.temporaryRotationPointMarker
+    );
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -86,9 +85,9 @@ export default class RotationTransformationHandler extends Highlighter {
     if (this.isOnSphere && !this.rotationCenterLocationSelected) {
       // next decide if this tool can be used
       if (
-        SEStore.seCircles.length === 0 &&
-        SEStore.seSegments.length === 0 &&
-        SEStore.expressions.length === 0
+        RotationTransformationHandler.store.seCircles.length === 0 &&
+        RotationTransformationHandler.store.seSegments.length === 0 &&
+        RotationTransformationHandler.store.expressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -98,7 +97,7 @@ export default class RotationTransformationHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
-        SEStore.setActionMode({
+        RotationTransformationHandler.store.setActionMode({
           id: "segment",
           name: "CreateLineSegmentDisplayedName"
         });
@@ -367,7 +366,7 @@ export default class RotationTransformationHandler extends Highlighter {
 
     this.measurementSEParent = null;
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    RotationTransformationHandler.store.unglowAllSENodules();
   }
 
   setExpression(expression: SEExpression): void {
@@ -460,7 +459,7 @@ export default class RotationTransformationHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !SEStore.expressions.some(exp => {
+        !RotationTransformationHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -516,7 +515,7 @@ export default class RotationTransformationHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !SEStore.expressions.some(exp => {
+        !RotationTransformationHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&
@@ -561,7 +560,7 @@ export default class RotationTransformationHandler extends Highlighter {
 
     // check to make sure that this rotation doesn't already exist
     if (
-      SEStore.seTransformations.some(
+      RotationTransformationHandler.store.seTransformations.some(
         trans =>
           trans instanceof SERotation &&
           this.tmpVector

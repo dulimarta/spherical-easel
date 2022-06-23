@@ -132,6 +132,7 @@ export class SEPointCoordinate extends SEExpression {
       }
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

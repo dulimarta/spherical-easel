@@ -38,6 +38,25 @@ export class SEPolarPoint extends SEPoint {
     );
   }
 
+  public shallowUpdate(): void {
+    this._exists = this._polarLineOrSegmentParent.exists;
+
+    if (this._exists) {
+      // Update the current location normal vector of the line, multiply by -1 if index is 1
+      this._locationVector
+        .copy(this._polarLineOrSegmentParent.normalVector)
+        .multiplyScalar(this.index === 1 ? -1 : 1);
+      this.ref.positionVector = this._locationVector;
+    }
+
+    // Update visibility
+    if (this._showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

@@ -1,5 +1,6 @@
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
+import { Visitor } from "@/visitors/Visitor";
 const emptySet = new Set<string>();
 
 export abstract class SETransformation extends SENodule {
@@ -17,6 +18,11 @@ export abstract class SETransformation extends SENodule {
   public customStyles = (): Set<string> => emptySet;
 
   abstract get geometricChild(): SENodule;
+
+  // This always returns false for all transformations because the visitors do geometric updates, and the transformations have no geometric representation on the sphere
+  public accept(v: Visitor): boolean {
+    return false;
+  }
   /**
    * Is the object hit a point at a particular sphere location?
    * Never! This object is not on the sphere

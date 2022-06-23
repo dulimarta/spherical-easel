@@ -6,13 +6,8 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { compile } from "vue/types/umd";
 import { SECircle } from "@/models/SECircle";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
 

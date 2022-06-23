@@ -8,11 +8,9 @@ import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode, SEMeasurable, SEOneOrTwoDimensional } from "@/types";
-import { SEStore } from "@/store";
+import { SEMeasurable } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SETransformation } from "@/models/SETransformation";
 import { SETranslation } from "@/models/SETranslation";
 import { AddTranslationCommand } from "@/commands/AddTranslationCommand";
 import { SELine } from "@/models/SELine";
@@ -48,9 +46,9 @@ export default class TranslationTransformationHandler extends Highlighter {
     if (this.isOnSphere && !this.translationLineOrSegmentSelected) {
       // next decide if this tool can be used
       if (
-        SEStore.seCircles.length === 0 &&
-        SEStore.seSegments.length === 0 &&
-        SEStore.expressions.length === 0
+        TranslationTransformationHandler.store.seCircles.length === 0 &&
+        TranslationTransformationHandler.store.seSegments.length === 0 &&
+        TranslationTransformationHandler.store.expressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -60,7 +58,7 @@ export default class TranslationTransformationHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
-        SEStore.setActionMode({
+        TranslationTransformationHandler.store.setActionMode({
           id: "segment",
           name: "CreateLineSegmentDisplayedName"
         });
@@ -179,7 +177,7 @@ export default class TranslationTransformationHandler extends Highlighter {
 
     this.measurementSEParent = null;
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    TranslationTransformationHandler.store.unglowAllSENodules();
   }
 
   setExpression(expression: SEExpression): void {
@@ -211,7 +209,7 @@ export default class TranslationTransformationHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !SEStore.expressions.some(exp => {
+        !TranslationTransformationHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -267,7 +265,7 @@ export default class TranslationTransformationHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !SEStore.expressions.some(exp => {
+        !TranslationTransformationHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&
@@ -312,7 +310,7 @@ export default class TranslationTransformationHandler extends Highlighter {
 
     // check to make sure that this rotation doesn't already exist
     if (
-      SEStore.seTransformations.some(
+      TranslationTransformationHandler.store.seTransformations.some(
         trans =>
           trans instanceof SETranslation &&
           trans.seLineOrSegment.name === this.translationLineOrSegment?.name &&

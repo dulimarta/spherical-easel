@@ -5,7 +5,6 @@ import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
@@ -25,8 +24,6 @@ import {
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-
-import { SEStore } from "@/store";
 import { SESegment } from "@/models/SESegment";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
@@ -42,7 +39,6 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
-import { SENodule } from "@/models/SENodule";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -93,11 +89,11 @@ export default class MeasuredCircleHandler extends Highlighter {
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryCircle);
+    MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryCenterMarker = new Point();
     this.temporaryCenterMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryCenterMarker);
+    MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCenterMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -105,9 +101,9 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.isOnSphere && !this.centerLocationSelected) {
       // next decide if this tool can be used
       if (
-        SEStore.seCircles.length === 0 &&
-        SEStore.seSegments.length === 0 &&
-        SEStore.expressions.length === 0
+        MeasuredCircleHandler.store.seCircles.length === 0 &&
+        MeasuredCircleHandler.store.seSegments.length === 0 &&
+        MeasuredCircleHandler.store.expressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -117,7 +113,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
-        SEStore.setActionMode({
+        MeasuredCircleHandler.store.setActionMode({
           id: "segment",
           name: "CreateLineSegmentDisplayedName"
         });
@@ -225,7 +221,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         this.centerSEPoint = null;
       }
 
-      if (SEStore.expressions.length > 0) {
+      if (MeasuredCircleHandler.store.expressions.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -434,7 +430,7 @@ export default class MeasuredCircleHandler extends Highlighter {
 
     this.measurementSEParent = null;
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    MeasuredCircleHandler.store.unglowAllSENodules();
   }
 
   displayTemporaryCircle(flag: boolean, radius: number): void {
@@ -547,7 +543,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !SEStore.expressions.some(exp => {
+        !MeasuredCircleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -603,7 +599,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !SEStore.expressions.some(exp => {
+        !MeasuredCircleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&
@@ -648,7 +644,7 @@ export default class MeasuredCircleHandler extends Highlighter {
 
     // check to make sure that this measured circle doesn't already exist
     if (
-      SEStore.seCircles.some(
+      MeasuredCircleHandler.store.seCircles.some(
         circ =>
           circ instanceof SEMeasuredCircle &&
           this.tmpVector
@@ -737,8 +733,9 @@ export default class MeasuredCircleHandler extends Highlighter {
       );
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
-      SEStore.createAllIntersectionsWithCircle(newMeasuredSECircle).forEach(
-        (item: SEIntersectionReturnType) => {
+      MeasuredCircleHandler.store
+        .createAllIntersectionsWithCircle(newMeasuredSECircle)
+        .forEach((item: SEIntersectionReturnType) => {
           // Create the plottable and model label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -766,8 +763,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
-        }
-      );
+        });
     }
     circleCommandGroup.execute();
     return true;

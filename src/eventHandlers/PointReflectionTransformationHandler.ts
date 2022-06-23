@@ -1,7 +1,6 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import EventBus from "@/eventHandlers/EventBus";
-import { SEStore } from "@/store";
 import { SEPoint } from "@/models/SEPoint";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { AddPointReflectionCommand } from "@/commands/AddPointReflectionCommand";
@@ -55,7 +54,9 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     this.temporaryRotationPointMarker.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryRotationPointMarker);
+    PointReflectionTransformationHandler.store.addTemporaryNodule(
+      this.temporaryRotationPointMarker
+    );
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -67,18 +68,20 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         const selected = this.hitSEPoints[0];
         let transformationName = "";
         if (
-          SEStore.seTransformations.some(trans => {
-            if (
-              trans instanceof SEPointReflection &&
-              selected !== null &&
-              trans.sePointOfReflection.name === selected.name
-            ) {
-              transformationName = trans.name;
-              return true;
-            } else {
-              return false;
+          PointReflectionTransformationHandler.store.seTransformations.some(
+            trans => {
+              if (
+                trans instanceof SEPointReflection &&
+                selected !== null &&
+                trans.sePointOfReflection.name === selected.name
+              ) {
+                transformationName = trans.name;
+                return true;
+              } else {
+                return false;
+              }
             }
-          })
+          )
         ) {
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointReflection`,
@@ -196,7 +199,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
 
   //   const pointList = this.hitSEPoints.filter(pt => {
   //     if (
-  //       SEStore.seTransformations.some(trans => {
+  //       PointReflectionTransformationHandler.store.seTransformations.some(trans => {
   //         if (
   //           trans instanceof SEPointReflection &&
   //           trans.sePointOfReflection.name === pt.name
@@ -232,16 +235,18 @@ export default class PointReflectionTransformationHandler extends Highlighter {
       // Also set the snap objects
       const pointList = this.hitSEPoints.filter(pt => {
         if (
-          SEStore.seTransformations.some(trans => {
-            if (
-              trans instanceof SEPointReflection &&
-              trans.sePointOfReflection.name === pt.name
-            ) {
-              return true;
-            } else {
-              return false;
+          PointReflectionTransformationHandler.store.seTransformations.some(
+            trans => {
+              if (
+                trans instanceof SEPointReflection &&
+                trans.sePointOfReflection.name === pt.name
+              ) {
+                return true;
+              } else {
+                return false;
+              }
             }
-          })
+          )
         ) {
           return false;
         } else {
@@ -351,7 +356,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     this.rotationSEPointOneDimensionalParent = null;
 
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    PointReflectionTransformationHandler.store.unglowAllSENodules();
   }
 
   /**
@@ -427,7 +432,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
 
     // check to make sure that this rotation doesn't already exist
     if (
-      SEStore.seTransformations.some(
+      PointReflectionTransformationHandler.store.seTransformations.some(
         trans =>
           trans instanceof SEPointReflection &&
           this.tmpVector
@@ -467,23 +472,28 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   }
 
   activate(): void {
-    if (SEStore.selectedSENodules.length == 1) {
-      const object1 = SEStore.selectedSENodules[0];
+    if (
+      PointReflectionTransformationHandler.store.selectedSENodules.length == 1
+    ) {
+      const object1 =
+        PointReflectionTransformationHandler.store.selectedSENodules[0];
 
       if (object1 instanceof SEPoint) {
         let pointReflectionName = "";
         if (
-          SEStore.seTransformations.some(trans => {
-            if (
-              trans instanceof SEPointReflection &&
-              trans.sePointOfReflection.name === object1.name
-            ) {
-              pointReflectionName = trans.name;
-              return true;
-            } else {
-              return false;
+          PointReflectionTransformationHandler.store.seTransformations.some(
+            trans => {
+              if (
+                trans instanceof SEPointReflection &&
+                trans.sePointOfReflection.name === object1.name
+              ) {
+                pointReflectionName = trans.name;
+                return true;
+              } else {
+                return false;
+              }
             }
-          })
+          )
         ) {
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointReflection`,

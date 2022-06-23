@@ -35,6 +35,10 @@ export class SEReflection extends SETransformation {
     return temp;
   }
 
+  public shallowUpdate(): void {
+    this._exists = this._lineOrSegment.exists;
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

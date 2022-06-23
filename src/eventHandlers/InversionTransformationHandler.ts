@@ -1,20 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
-import { SESegment } from "@/models/SESegment";
-import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
-import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode } from "@/types";
-import { SEStore } from "@/store";
-import { SEExpression } from "@/models/SEExpression";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SETransformation } from "@/models/SETransformation";
-import { SETranslation } from "@/models/SETranslation";
-import { AddTranslationCommand } from "@/commands/AddTranslationCommand";
 import { SECircle } from "@/models/SECircle";
 import { SEInversion } from "@/models/SEInversion";
 import { AddInversionCommand } from "@/commands/AddInversionCommand";
@@ -34,7 +21,7 @@ export default class InversionTransformationHandler extends Highlighter {
       this.targetCircleOfInversion = this.hitSECircles[0];
       let transformationName = "";
       if (
-        SEStore.seTransformations.some(trans => {
+        InversionTransformationHandler.store.seTransformations.some(trans => {
           if (
             trans instanceof SEInversion &&
             this.targetCircleOfInversion !== null &&
@@ -87,7 +74,7 @@ export default class InversionTransformationHandler extends Highlighter {
 
     const circleList = this.hitSECircles.filter(circ => {
       if (
-        SEStore.seTransformations.some(trans => {
+        InversionTransformationHandler.store.seTransformations.some(trans => {
           if (
             trans instanceof SEInversion &&
             trans.seCircleOfInversion.name === circ.name
@@ -119,13 +106,13 @@ export default class InversionTransformationHandler extends Highlighter {
     this.targetCircleOfInversion = null;
   }
   activate(): void {
-    if (SEStore.selectedSENodules.length == 1) {
-      const object1 = SEStore.selectedSENodules[0];
+    if (InversionTransformationHandler.store.selectedSENodules.length == 1) {
+      const object1 = InversionTransformationHandler.store.selectedSENodules[0];
 
       if (object1 instanceof SECircle) {
         let inversionName = "";
         if (
-          SEStore.seTransformations.some(trans => {
+          InversionTransformationHandler.store.seTransformations.some(trans => {
             if (
               trans instanceof SEInversion &&
               trans.seCircleOfInversion.name === object1.name

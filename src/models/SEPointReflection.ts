@@ -37,6 +37,17 @@ export class SEPointReflection extends SETransformation {
     return temp;
   }
 
+  public shallowUpdate(): void {
+    this._exists = this._pointOfReflection.exists;
+    if (this._exists) {
+      //determine the direction to rotate?
+      this._matrix.makeRotationAxis(
+        this._pointOfReflection.locationVector,
+        Math.PI
+      );
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

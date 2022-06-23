@@ -1,20 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
-import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
-import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode } from "@/types";
-import { SEStore } from "@/store";
-import { SEExpression } from "@/models/SEExpression";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SETransformation } from "@/models/SETransformation";
-import { SETranslation } from "@/models/SETranslation";
-import { AddTranslationCommand } from "@/commands/AddTranslationCommand";
 import { SELine } from "@/models/SELine";
 import { SEReflection } from "@/models/SEReflection";
 import { AddReflectionCommand } from "@/commands/AddReflectionCommand";
@@ -41,7 +28,7 @@ export default class ReflectionTransformationHandler extends Highlighter {
       }
       let transformationName = "";
       if (
-        SEStore.seTransformations.some(trans => {
+        ReflectionTransformationHandler.store.seTransformations.some(trans => {
           if (
             trans instanceof SEReflection &&
             this.targetLineOrSegment !== null &&
@@ -111,7 +98,7 @@ export default class ReflectionTransformationHandler extends Highlighter {
 
     const segmentList = this.hitSESegments.filter(seg => {
       if (
-        SEStore.seTransformations.some(trans => {
+        ReflectionTransformationHandler.store.seTransformations.some(trans => {
           if (
             trans instanceof SEReflection &&
             trans.seLineOrSegment.name === seg.name
@@ -129,7 +116,7 @@ export default class ReflectionTransformationHandler extends Highlighter {
     });
     const lineList = this.hitSELines.filter(seg => {
       if (
-        SEStore.seTransformations.some(trans => {
+        ReflectionTransformationHandler.store.seTransformations.some(trans => {
           if (
             trans instanceof SEReflection &&
             trans.seLineOrSegment.name === seg.name
@@ -165,23 +152,26 @@ export default class ReflectionTransformationHandler extends Highlighter {
     this.targetLineOrSegment = null;
   }
   activate(): void {
-    if (SEStore.selectedSENodules.length == 1) {
-      const object1 = SEStore.selectedSENodules[0];
+    if (ReflectionTransformationHandler.store.selectedSENodules.length == 1) {
+      const object1 =
+        ReflectionTransformationHandler.store.selectedSENodules[0];
 
       if (object1 instanceof SELine || object1 instanceof SESegment) {
         let reflectionName = "";
         if (
-          SEStore.seTransformations.some(trans => {
-            if (
-              trans instanceof SEReflection &&
-              trans.seLineOrSegment.name === object1.name
-            ) {
-              reflectionName = trans.name;
-              return true;
-            } else {
-              return false;
+          ReflectionTransformationHandler.store.seTransformations.some(
+            trans => {
+              if (
+                trans instanceof SEReflection &&
+                trans.seLineOrSegment.name === object1.name
+              ) {
+                reflectionName = trans.name;
+                return true;
+              } else {
+                return false;
+              }
             }
-          })
+          )
         ) {
           if (object1 instanceof SELine) {
             EventBus.fire("show-alert", {

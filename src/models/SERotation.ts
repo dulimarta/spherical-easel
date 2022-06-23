@@ -42,6 +42,17 @@ export class SERotation extends SETransformation {
     return temp;
   }
 
+  public shallowUpdate(): void {
+    this._exists = this._rotationPoint.exists;
+    if (this._exists) {
+      //determine the direction to rotate?
+      this._matrix.makeRotationAxis(
+        this._rotationPoint.locationVector,
+        this._rotationAngleExpression.value
+      );
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

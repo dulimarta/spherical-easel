@@ -1,23 +1,15 @@
 import { Command } from "./Command";
-import { SECircle } from "@/models/SECircle";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { compile } from "vue/types/umd";
-import { SESegment } from "@/models/SESegment";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import NonFreeSegment from "@/plottables/NonFreeSegment";
 import { SEReflection } from "@/models/SEReflection";
+import { SESegment } from "@/models/SESegment";
 
 export class AddIsometrySegmentCommand extends Command {
   private preimageSESegment: SESegment;

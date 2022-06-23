@@ -1,28 +1,12 @@
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
-import { Vector3, Matrix4 } from "three";
-import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
-import {
-  NormalVectorAndTValue,
-  ObjectState,
-  OneDimensional,
-  SEMeasurable
-} from "@/types";
-import SETTINGS from "@/global-settings";
-import {
-  DEFAULT_CIRCLE_BACK_STYLE,
-  DEFAULT_CIRCLE_FRONT_STYLE
-} from "@/types/Styles";
-import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
-import { intersectCircles } from "@/utils/intersections";
+import { Vector3 } from "three";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SEExpression } from "./SEExpression";
+import NonFreeCircle from "@/plottables/NonFreeCircle";
 
 export class SEMeasuredCircle extends SECircle {
   /**
@@ -41,7 +25,7 @@ export class SEMeasuredCircle extends SECircle {
    * @param radiusMeasurementSEExpression The model SEExpression that determines the radius
    */
   constructor(
-    circ: Circle,
+    circ: NonFreeCircle,
     centerPoint: SEPoint,
     hiddenCirclePoint: SEPoint,
     radiusMeasurementSEExpression: SEExpression
@@ -67,6 +51,48 @@ export class SEMeasuredCircle extends SECircle {
 
   public get radiusMeasurementSEExpression(): SEExpression {
     return this._radiusMeasurementSEExpression;
+  }
+
+  public shallowUpdate(): void {
+    this._exists =
+      this._centerSEPoint.exists && this._radiusMeasurementSEExpression.exists;
+
+    if (this._exists) {
+      const newRadius = this._radiusMeasurementSEExpression.value.modPi();
+      // update the location of the circleSEPoint (This is the *only* place that this is updated)
+      // compute a normal to the centerVector, named tmpVector
+      this.tmpPerpVector.set(
+        -this._centerSEPoint.locationVector.y,
+        this._centerSEPoint.locationVector.x,
+        0
+      );
+      // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
+      if (this.tmpPerpVector.isZero()) {
+        this.tmpPerpVector.set(
+          0,
+          -this._centerSEPoint.locationVector.z,
+          this._centerSEPoint.locationVector.y
+        );
+      }
+      this.tmpPerpVector.normalize();
+      this.tempVector
+        .copy(this._centerSEPoint.locationVector)
+        .multiplyScalar(Math.cos(newRadius));
+      this.tempVector.addScaledVector(this.tmpPerpVector, Math.sin(newRadius));
+      this.circleSEPoint.locationVector = this.tempVector.normalize();
+
+      //update the centerVector and the radius
+      this.ref.circleRadius = newRadius;
+      this.ref.centerVector = this._centerSEPoint.locationVector;
+      // display the new circle with the updated values
+      this.ref.updateDisplay();
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
   }
 
   public update(
@@ -133,6 +159,7 @@ export class SEMeasuredCircle extends SECircle {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
+
   public isNonFreeCirle(): boolean {
     return true;
   }

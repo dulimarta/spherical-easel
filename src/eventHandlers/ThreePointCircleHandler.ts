@@ -2,7 +2,6 @@
 
 import { Vector3, Matrix4 } from "three";
 import Point from "@/plottables/Point";
-import Ellipse from "@/plottables/Ellipse";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
@@ -19,17 +18,12 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { SEEllipse } from "@/models/SEEllipse";
-import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
-import { SEStore } from "@/store";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
 import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
-import SE from "@/store/se-module";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -95,27 +89,37 @@ export default class ThreePointCircleHandler extends Highlighter {
     this.temporaryThreePointCircle.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryThreePointCircle);
+    ThreePointCircleHandler.store.addTemporaryNodule(
+      this.temporaryThreePointCircle
+    );
 
     // Set the style using the temporary defaults
     this.temporaryThreePointCircleCenter = new ThreePointCircleCenter();
     this.temporaryThreePointCircleCenter.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    SEStore.addTemporaryNodule(this.temporaryThreePointCircleCenter);
+    ThreePointCircleHandler.store.addTemporaryNodule(
+      this.temporaryThreePointCircleCenter
+    );
 
     // Create and style the temporary points marking object being created
     this.temporaryPoint1Marker = new Point();
     this.temporaryPoint1Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint1Marker);
+    ThreePointCircleHandler.store.addTemporaryNodule(
+      this.temporaryPoint1Marker
+    );
 
     this.temporaryPoint2Marker = new Point();
     this.temporaryPoint2Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint2Marker);
+    ThreePointCircleHandler.store.addTemporaryNodule(
+      this.temporaryPoint2Marker
+    );
 
     this.temporaryPoint3Marker = new Point();
     this.temporaryPoint3Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryPoint3Marker);
+    ThreePointCircleHandler.store.addTemporaryNodule(
+      this.temporaryPoint3Marker
+    );
   }
 
   mousePressed(event: MouseEvent): void {
@@ -762,7 +766,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     this.point3SEPoint = null;
 
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    ThreePointCircleHandler.store.unglowAllSENodules();
   }
   /**
    * Add a new three point circle if it hasn't already been added
@@ -1058,7 +1062,7 @@ export default class ThreePointCircleHandler extends Highlighter {
 
     // check to make sure that this three point circle center doesn't already exist
     if (
-      SEStore.sePoints.some(pt =>
+      ThreePointCircleHandler.store.sePoints.some(pt =>
         this.tmpVector
           .subVectors(
             pt.locationVector,
@@ -1150,8 +1154,9 @@ export default class ThreePointCircleHandler extends Highlighter {
 
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
-    SEStore.createAllIntersectionsWithCircle(newSECircle).forEach(
-      (item: SEIntersectionReturnType) => {
+    ThreePointCircleHandler.store
+      .createAllIntersectionsWithCircle(newSECircle)
+      .forEach((item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1179,8 +1184,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      }
-    );
+      });
 
     threePointCircleCommandGroup.execute();
     return true;
@@ -1188,10 +1192,10 @@ export default class ThreePointCircleHandler extends Highlighter {
 
   activate(): void {
     // If there are exactly three SEPoints selected, create a three point circle from them
-    if (SEStore.selectedSENodules.length == 3) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
-      const object3 = SEStore.selectedSENodules[2];
+    if (ThreePointCircleHandler.store.selectedSENodules.length == 3) {
+      const object1 = ThreePointCircleHandler.store.selectedSENodules[0];
+      const object2 = ThreePointCircleHandler.store.selectedSENodules[1];
+      const object3 = ThreePointCircleHandler.store.selectedSENodules[2];
       if (
         object1 instanceof SEPoint &&
         object2 instanceof SEPoint &&
@@ -1220,7 +1224,7 @@ export default class ThreePointCircleHandler extends Highlighter {
 
         // check to make sure that this three point circle center doesn't already exist
         if (
-          SEStore.sePoints.some(pt =>
+          ThreePointCircleHandler.store.sePoints.some(pt =>
             this.tmpVector
               .subVectors(
                 pt.locationVector,
@@ -1310,8 +1314,9 @@ export default class ThreePointCircleHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the ellipse command so they can be undone.
-        SEStore.createAllIntersectionsWithCircle(newSECircle).forEach(
-          (item: SEIntersectionReturnType) => {
+        ThreePointCircleHandler.store
+          .createAllIntersectionsWithCircle(newSECircle)
+          .forEach((item: SEIntersectionReturnType) => {
             // Create the plottable and model label
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1339,8 +1344,7 @@ export default class ThreePointCircleHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
             newSELabel.showing = false;
-          }
-        );
+          });
 
         threePointCircleCommandGroup.execute();
       }

@@ -68,6 +68,103 @@ export class SEInversionCircleCenter extends SEPoint {
     return this._seInversion;
   }
 
+  public shallowUpdate(): void {
+    // The parent points must exist
+    this._exists =
+      this._seCircleOrLineParent.exists && this._seInversion.exists;
+
+    if (this._exists) {
+      // compute the location of the center
+      // if the circle being inverted has its center at the center of inversion then the transformed center is the antipode of the center of inversion
+      const centerOfPreimageCircleVector =
+        this._seCircleOrLineParent instanceof SECircle
+          ? this._seCircleOrLineParent.centerSEPoint.locationVector
+          : this._seCircleOrLineParent.normalVector;
+      if (
+        this.tempVector1
+          .subVectors(
+            centerOfPreimageCircleVector,
+            this._seInversion.seCircleOfInversion.centerSEPoint.locationVector
+          )
+          .isZero()
+      ) {
+        this.locationVector = this.tempVector3
+          .copy(centerOfPreimageCircleVector)
+          .multiplyScalar(-1);
+      }
+      // If the center of the circle being inverted is antipodal to the center of inversion, then the transformed center is the center of inversion
+      else if (
+        this.tempVector1
+          .addVectors(
+            centerOfPreimageCircleVector,
+            this._seInversion.seCircleOfInversion.centerSEPoint.locationVector
+          )
+          .isZero()
+      ) {
+        this.locationVector =
+          this._seInversion.seCircleOfInversion.centerSEPoint.locationVector;
+      }
+      // the center of the circle being transformed is not the center of inversion and is not antipodal to the center either.
+      else {
+        // See M'Clelland & Preston. A treatise on
+        // spherical trigonometry with applications to spherical geometry and numerous
+        // examples - Part 2. 1907 page 144 after Article/Theorem 169
+        const delta =
+          this._seInversion.seCircleOfInversion.centerSEPoint.locationVector.angleTo(
+            centerOfPreimageCircleVector
+          ); // the angular distance from the center of inversion to the center of the circle being transformed
+        const r =
+          this._seCircleOrLineParent instanceof SECircle
+            ? this._seCircleOrLineParent.circleRadius
+            : Math.PI / 2; // the radius of the circle being transformed
+        const a = this._seInversion.seCircleOfInversion.circleRadius; // the radius of the circle of inversion
+        const newAngle = Math.atan(
+          (-Math.sin(a) * Math.sin(a) * Math.sin(delta)) /
+            ((1 + Math.cos(a) * Math.cos(a)) * Math.cos(delta) -
+              2 * Math.cos(a) * Math.cos(r))
+        );
+
+        this.tempVector1 // perpendicular to both the center of inversion and the center of the circle being transformed
+          .crossVectors(
+            centerOfPreimageCircleVector,
+            this._seInversion.seCircleOfInversion.centerSEPoint.locationVector
+          )
+          .normalize();
+        this.tempVector2 // the to vector
+          .crossVectors(
+            this._seInversion.seCircleOfInversion.centerSEPoint.locationVector,
+            this.tempVector1
+          )
+          .normalize();
+        // return vector is cos(newAngle)*circle inversion center + sin(newAngle)*tempVector2
+        this._locationVector
+          .copy(
+            this._seInversion.seCircleOfInversion.centerSEPoint.locationVector
+          )
+          .multiplyScalar(Math.cos(newAngle));
+        this._locationVector.addScaledVector(
+          this.tempVector2,
+          Math.sin(newAngle)
+        );
+        // console.debug(
+        //   `center of inverted circle`,
+        //   this._locationVector.toFixed(2)
+        // );
+      }
+
+      this.ref.positionVector = this._locationVector;
+      // update the display
+      this.ref.updateDisplay();
+    }
+
+    // Update visibility
+    if (this._showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

@@ -59,6 +59,28 @@ export class SETransformedPoint extends SEPoint {
     );
   }
 
+  public shallowUpdate(): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
+    this._exists =
+      this._seParentPoint.exists && this._seParentTransformation.exists;
+    if (this._exists) {
+      this.locationVector = this._seParentTransformation.f(
+        this._seParentPoint.locationVector
+      );
+    }
+
+    // Update visibility
+    if (this._exists && this._showing) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

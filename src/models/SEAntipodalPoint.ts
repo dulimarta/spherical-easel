@@ -32,37 +32,28 @@ export class SEAntipodalPoint extends SEPoint {
       this.label?.ref.shortUserName ?? "No Label Short Name In SEAntipodePoint"
     );
   }
-
-  // public shallowUpdate(): void {
   get antipodalParent(): SEPoint {
     return this._antipodalPointParent;
   }
-  // public update(
-  //   objectState?: Map<number, ObjectState>,
-  //   orderedSENoduleList?: number[]
-  // ): void {
-  //   // If any one parent is not up to date, don't do anything
-  //   if (!this.canUpdateNow()) return;
 
-  //   this.setOutOfDate(false);
+  public shallowUpdate(): void {
+    this._exists = this._antipodalPointParent.exists;
 
-  //   this._exists = this._antipodalPointParent.exists;
+    if (this._exists) {
+      // Update the current location with the opposite of the antipodal parent vector location
+      this._locationVector
+        .copy(this._antipodalPointParent.locationVector)
+        .multiplyScalar(-1);
+      this.ref.positionVector = this._locationVector;
+    }
 
-  //   if (this._exists) {
-  //     // Update the current location with the opposite of the antipodal parent vector location
-  //     this._locationVector
-  //       .copy(this._antipodalPointParent.locationVector)
-  //       .multiplyScalar(-1);
-  //     this.ref.positionVector = this._locationVector;
-  //   }
-
-  //   // Update visibility
-  //   if (this._showing && this._exists) {
-  //     this.ref.setVisible(true);
-  //   } else {
-  //     this.ref.setVisible(false);
-  //   }
-  // }
+    // Update visibility
+    if (this._showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

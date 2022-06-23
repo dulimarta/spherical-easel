@@ -6,8 +6,6 @@ import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import NonFreeEllipse from "@/plottables/NonFreeEllipse";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";

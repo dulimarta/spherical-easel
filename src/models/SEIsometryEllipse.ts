@@ -1,25 +1,7 @@
-import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Ellipse from "@/plottables/Ellipse";
-import { Vector3, Matrix4 } from "three";
-import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
-import {
-  NormalVectorAndTValue,
-  ObjectState,
-  OneDimensional,
-  SEIsometry
-} from "@/types";
-import SETTINGS from "@/global-settings";
-import {
-  DEFAULT_ELLIPSE_BACK_STYLE,
-  DEFAULT_ELLIPSE_FRONT_STYLE
-} from "@/types/Styles";
-import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
+import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
@@ -87,6 +69,29 @@ export class SEIsometryEllipse extends SEEllipse {
       this.label?.ref.shortUserName ??
       "No Label Short Name In SEIsometryEllipse"
     );
+  }
+
+  public shallowUpdate(): void {
+    this._exists =
+      this._seParentEllipse.exists && this._seParentIsometry.exists;
+
+    if (this._exists) {
+      //update the a and b values, the focus vectors are already updated because the focusSEPoint are already updated if we have reach this point in the code
+      this.a = this._seParentEllipse.a;
+      this.b = this._seParentEllipse.b;
+      this.ref.a = this._seParentEllipse.a;
+      this.ref.b = this._seParentEllipse.b;
+      this.ref.focus1Vector = this.focus1SEPoint.locationVector;
+      this.ref.focus2Vector = this.focus2SEPoint.locationVector;
+      // display the new ellipse with the updated values
+      this.ref.updateDisplay();
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
   }
 
   public update(

@@ -45,6 +45,18 @@ export class SETranslation extends SETransformation {
     return temp;
   }
 
+  public shallowUpdate(): void {
+    this._exists =
+      this._lineOrSegment.exists && this._translationDistanceExpression.exists;
+    if (this._exists) {
+      //determine the direction to rotate?
+      this._matrix.makeRotationAxis(
+        this._lineOrSegment.normalVector,
+        this._translationDistanceExpression.value
+      );
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

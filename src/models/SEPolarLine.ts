@@ -46,6 +46,45 @@ export class SEPolarLine
     );
   }
 
+  public shallowUpdate(): void {
+    this._exists = this.polarPointParent.exists;
+
+    if (this._exists) {
+      // now update the locations of endSEPoiont and startSEPoint
+      // form a vector perpendicular to the polar point parent
+      this.tempVector.set(
+        -this.polarPointParent.locationVector.y,
+        this.polarPointParent.locationVector.x,
+        0
+      );
+      // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
+      if (this.tempVector.isZero()) {
+        this.tempVector.set(
+          0,
+          -this.polarPointParent.locationVector.z,
+          this.polarPointParent.locationVector.y
+        );
+      }
+      this.endSEPoint.locationVector = this.tempVector.normalize();
+      this.tempVector.crossVectors(
+        this.polarPointParent.locationVector,
+        this.endSEPoint.locationVector
+      );
+      this.startSEPoint.locationVector = this.tempVector.normalize();
+
+      //update the normal vector
+      this._normalVector.copy(this.polarPointParent.locationVector).normalize();
+      // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
+      this.ref.normalVector = this._normalVector;
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
