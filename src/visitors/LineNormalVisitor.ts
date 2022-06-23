@@ -61,11 +61,13 @@ export class LineNormalVisitor implements Visitor {
     return false;
   }
   // eslint-disable-next-line
-  actionOnParametric(p: SEParametric): void {
-    // e.update();
+  actionOnParametric(p: SEParametric): boolean {
+    //p.update()
+    return false;
   }
   // eslint-disable-next-line
-  actionOnPolygon(p: SEPolygon): void {
-    // e.update();
+  actionOnPolygon(p: SEPolygon): boolean {
+    //p.update()
+    return false;
   }
 }
