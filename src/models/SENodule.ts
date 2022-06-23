@@ -23,6 +23,12 @@ export abstract class SENodule implements Visitable {
   public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
   public static POLYGON_COUNT = 0;
+  public static TRANSFORMATION_COUNT = 0;
+  public static TRANSLATION_COUNT = 0;
+  public static ROTATION_COUNT = 0;
+  public static REFLECTION_COUNT = 0;
+  public static INVERSION_COUNT = 0;
+  public static POINT_REFLECTION_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -36,6 +42,12 @@ export abstract class SENodule implements Visitable {
     SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
     SENodule.POLYGON_COUNT = 0;
+    SENodule.TRANSFORMATION_COUNT = 0;
+    SENodule.TRANSLATION_COUNT = 0;
+    SENodule.ROTATION_COUNT = 0;
+    SENodule.REFLECTION_COUNT = 0;
+    SENodule.INVERSION_COUNT = 0;
+    SENodule.POINT_REFLECTION_COUNT = 0;
   }
 
   /**
@@ -296,7 +308,7 @@ export abstract class SENodule implements Visitable {
   public isLineWithAntipodalPoints(): boolean {
     return false;
   }
-
+  //only returns true if this an SENodule that is free to move (free points, points on objects, labels, segments of length pi, line between antipodal points)
   public isFreeToMove(): boolean {
     if (
       this.isFreePoint() ||
@@ -306,13 +318,44 @@ export abstract class SENodule implements Visitable {
       this.isLineWithAntipodalPoints()
     )
       return true;
-    if (this.isNonFreeLine() || this.isNonFreePoint()) {
+    if (
+      this.isNonFreeLine() ||
+      this.isNonFreePoint() ||
+      this.isNonFreeCirle() ||
+      this.isNonFreeSegment() ||
+      this.isNonFreeEllipse()
+    ) {
       // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
     }
     return this._parents.every(n => n.isFreePoint());
   }
+  // only returns true for SENodules that can be measured (
+  //   segments => length,
+  //   circles => radius,
+  //   ellipses => sum of distance to foci,
+  //   angleMarkers => angle measure
+  //   polygon => area
+  //   calculation => value
+  public isMeasurable(): boolean {
+    return false;
+  }
 
+  public isNonFreeCirle(): boolean {
+    return false;
+  }
+
+  public isNonFreeSegment(): boolean {
+    return false;
+  }
+
+  public isNonFreeEllipse(): boolean {
+    return false;
+  }
+
+  public isTransformation(): boolean {
+    return false;
+  }
   //Getters and Setters
 
   public abstract get noduleItemText(): string;

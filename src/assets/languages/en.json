@@ -340,7 +340,9 @@
     "freePoint": "Free point",
     "perpendicularLineThru": "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     "parametricDescription": "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
-    "duplicateParametricCurve": "Duplicate parametric curves are not allowed."
+    "duplicateParametricCurve": "Duplicate parametric curves are not allowed.",
+    "createMeasurement":"blah balh",
+    "createMeasurementForMeasuredCircle": "Create a measurement to use as the radius of a measured circle."
   },
   "constructions": {
     "privateConstructions": "Private Constructions",

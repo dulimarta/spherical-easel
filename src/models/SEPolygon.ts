@@ -103,7 +103,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this.store = useSEStore();
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 

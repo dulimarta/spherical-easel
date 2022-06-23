@@ -12,6 +12,7 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETransformation } from "@/models/SETransformation";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -87,6 +88,8 @@ export class DeleteNoduleCommand extends Command {
           this.seNodule.point.label.ref.value = [];
         }
       }
+    } else if (this.seNodule instanceof SETransformation) {
+      Command.store.removeTransformation(this.seNodule.id);
     }
   }
 
@@ -96,7 +99,9 @@ export class DeleteNoduleCommand extends Command {
 
   restoreState(): void {
     // Add the object to the store and turn on display
-    if (this.seNodule instanceof SEExpression) {
+    if (this.seNodule instanceof SETransformation) {
+      Command.store.addTransformation(this.seNodule);
+    } else if (this.seNodule instanceof SEExpression) {
       Command.store.addExpression(this.seNodule);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.addPolygonAndExpression(this.seNodule);

@@ -3,7 +3,6 @@ import { SEPoint } from "./SEPoint";
 import { ObjectState } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
 
 export class SEPointDistance extends SEExpression {
@@ -15,7 +14,7 @@ export class SEPointDistance extends SEExpression {
     this.firstSEPoint = first;
     this.secondSEPoint = second;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.distanceBetweenPts`, {
@@ -70,6 +69,4 @@ export class SEPointDistance extends SEExpression {
       this.secondSEPoint.locationVector
     );
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

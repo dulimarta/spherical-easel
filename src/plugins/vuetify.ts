@@ -140,6 +140,48 @@ const vuetify = new Vuetify({
           iconName: "nSectLine" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
+      threePointCircle: {
+        component: IconBase,
+        props: {
+          iconName: "threePointCircle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      translation: {
+        component: IconBase,
+        props: {
+          iconName: "translation" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      rotation: {
+        component: IconBase,
+        props: {
+          iconName: "rotation" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      reflection: {
+        component: IconBase,
+        props: {
+          iconName: "reflection" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      pointReflection: {
+        component: IconBase,
+        props: {
+          iconName: "pointReflection" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      inversion: {
+        component: IconBase,
+        props: {
+          iconName: "inversion" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      measuredCircle: {
+        component: IconBase,
+        props: {
+          iconName: "measuredCircle" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
       coordinate: {
         component: IconBase,
         props: {
@@ -324,6 +366,48 @@ const vuetify = new Vuetify({
         component: IconBase,
         props: {
           iconName: "redo"
+        }
+      },
+      copyToClipboard: {
+        component: IconBase,
+        props: {
+          iconName: "copyToClipboard"
+        }
+      },
+      applyTransformation: {
+        component: IconBase,
+        props: {
+          iconName: "applyTransformation"
+        }
+      },
+      transformedPoint: {
+        component: IconBase,
+        props: {
+          iconName: "transformedPoint"
+        }
+      },
+      transformedCircle: {
+        component: IconBase,
+        props: {
+          iconName: "transformedCircle"
+        }
+      },
+      transformedSegment: {
+        component: IconBase,
+        props: {
+          iconName: "transformedSegment"
+        }
+      },
+      transformedLine: {
+        component: IconBase,
+        props: {
+          iconName: "transformedLine"
+        }
+      },
+      transformedEllipse: {
+        component: IconBase,
+        props: {
+          iconName: "transformedEllipse"
         }
       }
     }

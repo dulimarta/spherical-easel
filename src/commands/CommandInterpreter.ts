@@ -27,6 +27,19 @@ import { AddNSectLineCommand } from "./AddNSectLineCommand";
 import { AddNSectPointCommand } from "./AddNSectPointCommand";
 import { AddPolarLineCommand } from "./AddPolarLineCommand";
 import { AddSliderMeasurementCommand } from "./AddSliderMeasurementCommand";
+import { AddThreePointCircleCenterCommand } from "./AddThreePointCircleCenterCommand";
+import { AddMeasuredCircleCommand } from "./AddMeasuredCircleCommand";
+import { AddTranslationCommand } from "./AddTranslationCommand";
+import { AddRotationCommand } from "./AddRotationCommand";
+import { AddReflectionCommand } from "./AddReflectionCommand";
+import { AddInversionCommand } from "./AddInversionCommand";
+import { AddPointReflectionCommand } from "./AddPointReflectionCommand";
+import { AddTransformedPointCommand } from "./AddTransformedPointCommand";
+import { AddIsometrySegmentCommand } from "./AddIsometrySegmentCommand";
+import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
+import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
+import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
+import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -56,8 +69,12 @@ function executeIndividual(command: string): Command {
       return AddLineCommand.parse(command, noduleDictionary);
     case "AddCircle":
       return AddCircleCommand.parse(command, noduleDictionary);
+    case "AddMeasuredCircle":
+      return AddMeasuredCircleCommand.parse(command, noduleDictionary);
     case "AddEllipse":
       return AddEllipseCommand.parse(command, noduleDictionary);
+    case "AddThreePointCircleCenter":
+      return AddThreePointCircleCenterCommand.parse(command, noduleDictionary);
     case "AddAntipodalPoint":
       return AddAntipodalPointCommand.parse(command, noduleDictionary);
     case "AddPolarPoint":
@@ -101,6 +118,28 @@ function executeIndividual(command: string): Command {
       return AddNSectLineCommand.parse(command, noduleDictionary);
     case "AddSliderMeasurement":
       return AddSliderMeasurementCommand.parse(command, noduleDictionary);
+    case "AddTranslation":
+      return AddTranslationCommand.parse(command, noduleDictionary);
+    case "AddRotation":
+      return AddRotationCommand.parse(command, noduleDictionary);
+    case "AddReflection":
+      return AddReflectionCommand.parse(command, noduleDictionary);
+    case "AddPointReflection":
+      return AddPointReflectionCommand.parse(command, noduleDictionary);
+    case "AddInversion":
+      return AddInversionCommand.parse(command, noduleDictionary);
+    case "AddTransformedPoint":
+      return AddTransformedPointCommand.parse(command, noduleDictionary);
+    case "AddIsometrySegment":
+      return AddIsometrySegmentCommand.parse(command, noduleDictionary);
+    case "AddIsometryLine":
+      return AddIsometryLineCommand.parse(command, noduleDictionary);
+    case "AddIsometryCircle":
+      return AddIsometryCircleCommand.parse(command, noduleDictionary);
+    case "AddIsometryEllipse":
+      return AddIsometryEllipseCommand.parse(command, noduleDictionary);
+    case "AddInvertedCircleCenter":
+      return AddInvertedCircleCenterCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

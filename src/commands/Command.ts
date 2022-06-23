@@ -20,6 +20,9 @@ import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 export abstract class Command {
   protected static store: SEStoreType;
+  // protected static store = SEStore;
+  protected static tmpVector = new Vector3();
+  protected static tmpVector1 = new Vector3();
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands

@@ -498,7 +498,7 @@ export class SEParametric
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
     return closestStandardVector.applyMatrix4(
-      this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
+      this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
     );
   }
   /**
@@ -609,13 +609,13 @@ export class SEParametric
     normalList.forEach((pair: NormalVectorAndTValue) => {
       pair.normal
         .applyMatrix4(
-          this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
+          this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
         )
         .normalize();
       this.tmpVector1.copy(this.ref.P(pair.tVal));
       this.tmpVector1
         .applyMatrix4(
-          this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix)
+          this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
         )
         .normalize();
     });
@@ -713,7 +713,7 @@ export class SEParametric
     //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
     //   );
     // }
-    this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix);
+    this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
     return taggedList.map((z: NormalVectorAndTValue) => {
       z.normal.applyMatrix4(this.tmpMatrix).normalize();
       return z.normal;

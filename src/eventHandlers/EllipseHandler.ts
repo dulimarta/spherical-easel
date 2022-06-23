@@ -617,74 +617,49 @@ export default class EllipseHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    if (this.isOnSphere) {
-      // if (this.focus1LocationSelected) {
-      if (this.focus2LocationSelected) {
-        if (
-          this.currentSphereVector.angleTo(this.focus1Vector) >
-            SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
-          this.currentSphereVector.angleTo(this.focus2Vector) >
-            SETTINGS.ellipse.minimumCreationDistance
-        ) {
-          const angleSumToEllipsePoint =
-            this.temporaryEllipse.focus1Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            ) +
-            this.temporaryEllipse.focus2Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            );
+    if (this.isOnSphere && this.focus2LocationSelected) {
+      if (
+        this.currentSphereVector.angleTo(this.focus1Vector) >
+          SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
+        this.currentSphereVector.angleTo(this.focus2Vector) >
+          SETTINGS.ellipse.minimumCreationDistance
+      ) {
+        const angleSumToEllipsePoint =
+          this.temporaryEllipse.focus1Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          ) +
+          this.temporaryEllipse.focus2Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          );
 
-          //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
-          if (
-            angleSumToEllipsePoint -
-              this.focus1Vector.angleTo(this.focus2Vector) >
-              SETTINGS.ellipse.minimumAngleSumDifference &&
-            angleSumToEllipsePoint <
-              2 * Math.PI -
-                this.focus1Vector.angleTo(this.focus2Vector) -
-                SETTINGS.ellipse.minimumAngleSumDifference
-          ) {
-            if (!this.makeEllipse()) {
-              EventBus.fire("show-alert", {
-                key: `handlers.ellipseCreationAttemptDuplicate`,
-                keyOptions: {},
-                type: "error"
-              });
-            }
-            // reset to get ready to make a new ellipse
-            this.mouseLeave(event);
+        //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
+        if (
+          angleSumToEllipsePoint -
+            this.focus1Vector.angleTo(this.focus2Vector) >
+            SETTINGS.ellipse.minimumAngleSumDifference &&
+          angleSumToEllipsePoint <
+            2 * Math.PI -
+              this.focus1Vector.angleTo(this.focus2Vector) -
+              SETTINGS.ellipse.minimumAngleSumDifference
+        ) {
+          if (!this.makeEllipse()) {
+            EventBus.fire("show-alert", {
+              key: `handlers.ellipseCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
           }
-        } else {
-          EventBus.fire("show-alert", {
-            key: `handlers.ellipseInitiallyToSmall`,
-            keyOptions: {},
-            type: "info"
-          });
+          // reset to get ready to make a new ellipse
+          this.mouseLeave(event);
         }
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.ellipseInitiallyToSmall`,
+          keyOptions: {},
+          type: "info"
+        });
       }
     }
-    // else {
-    //   // Remove the temporary objects from the scene and mark the temporary object
-    //   //  not added to the scene clear snap objects
-    //   this.temporaryEllipse.removeFromLayers();
-    //   this.temporaryEllipseAdded = false;
-
-    //   this.temporaryFocus1Marker.removeFromLayers();
-    //   this.temporaryFocus1MarkerAdded = false;
-    //   this.snapFocus1MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus1MarkerToTemporaryPoint = null;
-
-    //   this.temporaryFocus2Marker.removeFromLayers();
-    //   this.temporaryFocus2MarkerAdded = false;
-    //   this.snapFocus2MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus2MarkerToTemporaryPoint = null;
-
-    //   this.temporaryEllipsePointMarker.removeFromLayers();
-    //   this.temporaryEllipsePointMarkerAdded = false;
-    //   this.snapEllipsePointMarkerToTemporaryOneDimensional = null;
-    //   this.snapEllipsePointMarkerToTemporaryPoint = null;
-    // }
-    // }
   }
 
   mouseLeave(event: MouseEvent): void {

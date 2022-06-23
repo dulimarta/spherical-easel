@@ -14,6 +14,10 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+import { SELine } from "./SELine";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
@@ -34,11 +38,11 @@ export class SECircle
   /**
    * The model SE object that is the center of the circle
    */
-  private _centerSEPoint: SEPoint;
+  protected _centerSEPoint: SEPoint;
   /**
    * The model SE object that is on the circle
    */
-  private _circleSEPoint: SEPoint;
+  protected _circleSEPoint: SEPoint;
 
   /**
    * Used during this.move(): A matrix that is used to indicate the *change* in position of the
@@ -88,6 +92,40 @@ export class SECircle
   }
 
   public get noduleDescription(): string {
+    //change the description for three point circle
+    if (this._centerSEPoint instanceof SEThreePointCircleCenter) {
+      if (
+        Math.abs(
+          this._centerSEPoint.locationVector.angleTo(
+            this._centerSEPoint.seParentPoint1.locationVector
+          ) - this.circleRadius
+        ) < SETTINGS.tolerance
+      ) {
+        // this circle is a three point circle
+        return String(
+          i18n.t(`objectTree.threePointCircleThrough`, {
+            pt1: this._centerSEPoint.seParentPoint1.label?.ref.shortUserName,
+            pt2: this._centerSEPoint.seParentPoint2.label?.ref.shortUserName,
+            pt3: this._centerSEPoint.seParentPoint3.label?.ref.shortUserName
+          })
+        );
+      }
+    } else if (this._centerSEPoint instanceof SEInversionCircleCenter) {
+      // this circle is a circle of inversion
+      //   "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
+      const geometricParentType =
+        this._centerSEPoint.seParentCircleOrLine instanceof SELine
+          ? i18n.tc(`objects.lines`, 3)
+          : i18n.tc(`objects.circles`, 3);
+      return String(
+        i18n.t(`objectTree.inversionImageOfACircle`, {
+          circleOrLine: geometricParentType,
+          circleOrLineParentName:
+            this._centerSEPoint.seParentCircleOrLine.label?.ref.shortUserName,
+          inversionParentName: this._centerSEPoint.parentTransformation.name
+        })
+      );
+    }
     return String(
       i18n.t(`objectTree.circleThrough`, {
         center: this._centerSEPoint.label?.ref.shortUserName,
@@ -386,6 +424,9 @@ export class SECircle
   }
 
   public isLabelable(): boolean {
+    return true;
+  }
+  public isMeasurable(): boolean {
     return true;
   }
 }

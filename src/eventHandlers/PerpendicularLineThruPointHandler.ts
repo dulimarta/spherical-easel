@@ -734,7 +734,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
         newPerpLine.exists = false;
-        // console.log("normal doesn't exist 1", vec.x, vec.y, vec.z);
       }
       // Update the display of the perpendicular line
       newPerpLine.markKidsOutOfDate();
@@ -772,10 +771,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       PerpendicularLineThruPointHandler.store
         .createAllIntersectionsWithLine(newPerpLine)
         .forEach((item: SEIntersectionReturnType) => {
-          console.debug(
-            "Got intersection point at",
-            item.SEIntersectionPoint.locationVector.toFixed(4)
-          );
+          // console.debug(
+          //   "Got intersection point at",
+          //   item.SEIntersectionPoint.locationVector.toFixed(4)
+          // );
           // Create the plottable label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);

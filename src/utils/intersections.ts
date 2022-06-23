@@ -224,7 +224,7 @@ export function intersectLineWithEllipse(
       tmpVector.copy(line.normalVector);
 
       // Transform the normal into the standard coordinates of the ellipse.
-      tmpVector.applyMatrix4(tmpMatrix.getInverse(ellipse.ref.ellipseFrame));
+      tmpVector.applyMatrix4(tmpMatrix.copy(ellipse.ref.ellipseFrame).invert());
 
       if (tmpVector.dot(ellipse.ref.E(1.2312)) < 0) {
         // 1.2312 is a totally random number, it should not matter!
@@ -277,7 +277,7 @@ export function intersectLineWithEllipse(
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
@@ -307,13 +307,29 @@ export function intersectLineWithEllipse(
   };
   returnItems.push(intersection1);
   returnItems.push(intersection2);
-  // console.log("Line Ellipse Inter", zeros);
+  // remove duplicate zeros and those that correspond to the same point on the ellipse
+  const uniqueZeros: number[] = [zeros[0]];
   zeros.forEach((z, ind) => {
+    if (ind > 0) {
+      if (
+        uniqueZeros.every(
+          uniZ =>
+            Math.abs(z - uniZ) > SETTINGS.tolerance &&
+            !tempVec.subVectors(ellipse.ref.E(uniZ), ellipse.ref.E(z)).isZero()
+        )
+      ) {
+        uniqueZeros.push(z);
+      }
+    }
+  });
+
+  uniqueZeros.forEach((z, ind) => {
     // console.log("ind", ind);
     if (ind > 1) {
       console.debug(
-        "Ellipse and Line Intersection resulted in more than 2 points.",
-        zeros
+        "Ellipse and Line Intersection still resulted in more than 2 points!",
+        zeros,
+        uniqueZeros
       );
     } else {
       returnItems[ind].vector.copy(
@@ -361,7 +377,9 @@ export function intersectLineWithParametric(
       tmpVector.copy(line.normalVector);
 
       // Transform the normal into the standard coordinates of the parametric.
-      tmpVector.applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix));
+      tmpVector.applyMatrix4(
+        tmpMatrix.copy(inverseTotalRotationMatrix).invert()
+      );
       // First form the objective function, this is the function whose minimum we want to find.
       const d: (t: number) => number = function (t: number): number {
         return parametric.ref.P(t).dot(tmpVector);
@@ -406,7 +424,7 @@ export function intersectLineWithParametric(
         returnVec.copy(
           parametric.ref
             .P(min)
-            .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
+            .applyMatrix4(tmpMatrix.copy(inverseTotalRotationMatrix).invert())
         );
         avoidTValues.push(min);
         returnItems.push({
@@ -442,7 +460,7 @@ export function intersectLineWithParametric(
 
   // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
 
-  tmpMatrix.getInverse(inverseTotalRotationMatrix);
+  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   return zeros.map((tValue: number): IntersectionReturnType => {
     const vector = new Vector3();
     vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
@@ -545,7 +563,7 @@ export function intersectSegmentWithEllipse(
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(segment.normalVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
@@ -564,6 +582,7 @@ export function intersectSegmentWithEllipse(
     [],
     dp
   );
+
   const returnItems: IntersectionReturnType[] = [];
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -576,11 +595,50 @@ export function intersectSegmentWithEllipse(
   returnItems.push(intersection1);
   returnItems.push(intersection2);
 
+  // remove duplicate zeros and those that correspond to the same point on the ellipse
+  const uniqueZeros: number[] = [zeros[0]];
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
-    );
+    if (ind > 0) {
+      if (
+        uniqueZeros.every(
+          uniZ =>
+            Math.abs(z - uniZ) > SETTINGS.tolerance &&
+            !tempVec.subVectors(ellipse.ref.E(uniZ), ellipse.ref.E(z)).isZero()
+        )
+      ) {
+        uniqueZeros.push(z);
+      }
+    }
   });
+
+  uniqueZeros.forEach((z, ind) => {
+    // console.log("ind", ind);
+    if (ind > 1) {
+      console.debug(
+        "Ellipse and Segment Intersection still resulted in more than 2 points!",
+        zeros,
+        uniqueZeros
+      );
+    } else {
+      returnItems[ind].vector.copy(
+        ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+      );
+    }
+  });
+
+  // zeros.forEach((z, ind) => {
+  //   // console.debug("return items", returnItems[ind].vector.toFixed(2));
+  //   // console.debug(
+  //   //   "ellipse.ref.E(z)",
+  //   //   z,
+  //   //   ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame).toFixed(2)
+  //   // );
+  //   returnItems[ind].vector.copy(
+  //     ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+  //   );
+  // });
+  // console.debug(returnItems[0].vector.toFixed(2));
+  // console.debug(returnItems[1].vector.toFixed(2));
   // If the segment and the ellipse don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
   returnItems.forEach(item => {
     if (item.vector.isZero()) {
@@ -646,7 +704,7 @@ export function intersectSegmentWithParametric(
       returnItems[ind].vector.copy(
         parametric.ref
           .P(z)
-          .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
+          .applyMatrix4(tmpMatrix.copy(inverseTotalRotationMatrix).invert())
       );
       if (tracingTMin <= z && z <= tracingTMax) {
         // it must be on both the segment and the visible part of the parametric
@@ -815,7 +873,7 @@ export function intersectCircleWithEllipse(
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(circle.centerSEPoint.locationVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
@@ -957,7 +1015,7 @@ export function intersectCircleWithParametric(
     returnItems[ind].vector.copy(
       parametric.ref
         .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
+        .applyMatrix4(tmpMatrix.copy(inverseTotalRotationMatrix).invert())
     );
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the circle (which by being a zero of d, it is!) and the visible part of the parametric
@@ -985,10 +1043,10 @@ export function intersectEllipseWithEllipse(
   transformedToStandardFocus1.copy(ellipse1.focus1SEPoint.locationVector);
   transformedToStandardFocus2.copy(ellipse1.focus2SEPoint.locationVector);
   transformedToStandardFocus1.applyMatrix4(
-    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse2.ref.ellipseFrame).invert()
   );
   transformedToStandardFocus2.applyMatrix4(
-    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse2.ref.ellipseFrame).invert()
   );
   const angleSum = ellipse1.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
@@ -1173,12 +1231,12 @@ export function intersectEllipseWithParametric(
     returnItems.push(intersection);
   }
 
-  // console.log("Number of Para/ellsp Intersections:", zeros.length);
+  // console.log("Number of Para/ellipse Intersections:", zeros.length);
   zeros.forEach((z, ind) => {
     returnItems[ind].vector.copy(
       parametric.ref
         .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(inverseTotalRotationMatrix))
+        .applyMatrix4(tmpMatrix.copy(inverseTotalRotationMatrix).invert())
     );
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the ellipse (which by being a zero of d, it is!) and the visible part of the parametric

@@ -7,11 +7,21 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETransformation } from "@/models/SETransformation";
+import { SETranslation } from "@/models/SETranslation";
+import { SERotation } from "@/models/SERotation";
+import { SEReflection } from "@/models/SEReflection";
+import { SEPointReflection } from "@/models/SEPointReflection";
+import { SEPoint } from "@/models/SEPoint";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEExpression } from "@/models/SEExpression";
+import Nodule from "@/plottables/Nodule";
+
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
@@ -23,6 +33,30 @@ export type PiniaAppState = {
   previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
+  sePoints: SEPoint[];
+  seLines: SELine[];
+  seSegments: SESegment[];
+  seCircles: SECircle[];
+  seEllipses: SEEllipse[];
+  seParametrics: SEParametric[];
+  seAngleMarkers: SEAngleMarker[];
+  seLabels: SELabel[];
+  seTransformations: SETransformation[];
+  seNodules: SENodule[];
+  selectedSENodules: SENodule[];
+  intersections: SEIntersectionPoint[];
+  expressions: SEExpression[];
+  temporaryNodules: Nodule[];
+  // TODO: replace the following two arrays with the maps below
+  initialStyleStates: StyleOptions[];
+  defaultStyleStates: StyleOptions[];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
+  oldSelections: SENodule[];
+  // styleSavedFromPanel: StyleEditPanels;
+  // initialBackStyleContrast: number;
+  // inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  // svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
@@ -73,6 +107,7 @@ export type SavedNames =
   | "circleRadius"
   | "circleCenterPointName"
   | "circlePointOnCircleName"
+  | "measuredCircleRadiusExpression"
   | "ellipseFocus1Name"
   | "ellipseFocus2Name"
   | "ellipsePointOnEllipseName"
@@ -171,7 +206,38 @@ export type SavedNames =
   | "sliderMeasurementMin"
   | "sliderMeasurementMax"
   | "sliderMeasurementStep"
-  | "sliderMeasurementValue";
+  | "sliderMeasurementValue"
+  | "threePointCircleParentPoint1Name"
+  | "threePointCircleParentPoint2Name"
+  | "threePointCircleParentPoint3Name"
+  | "translationSegmentParentName"
+  | "translationDistanceExpressionName"
+  | "rotationPointName"
+  | "rotationAngleExpressionName"
+  | "reflectionLineOrSegmentName"
+  | "pointReflectionPointName"
+  | "inversionCircleName"
+  | "transformedPointParentTransformationName"
+  | "transformedPointParentName"
+  | "isometrySegmentParentIsometryName"
+  | "isometrySegmentParentName"
+  | "isometrySegmentStartSEPointName"
+  | "isometrySegmentEndSEPointName"
+  | "isometryLineParentIsometryName"
+  | "isometryLineParentName"
+  | "isometryLineStartSEPointName"
+  | "isometryLineEndSEPointName"
+  | "isometryCircleParentIsometryName"
+  | "isometryCircleParentName"
+  | "isometryCircleCenterSEPointName"
+  | "isometryCircleCircleSEPointName"
+  | "isometryEllipseParentIsometryName"
+  | "isometryEllipseParentName"
+  | "isometryEllipseFocus1SEPointName"
+  | "isometryEllipseFocus2SEPointName"
+  | "isometryEllipseEllipseSEPointName"
+  | "invertedCircleCenterLineOrCircleParentName"
+  | "invertedCircleCenterParentInversionName";
 
 export type ActionMode =
   | "angle"
@@ -204,7 +270,15 @@ export type ActionMode =
   | "midpoint"
   | "nSectPoint"
   | "angleBisector"
-  | "nSectLine";
+  | "nSectLine"
+  | "threePointCircle"
+  | "measuredCircle"
+  | "translation"
+  | "rotation"
+  | "reflection"
+  | "pointReflection"
+  | "inversion"
+  | "applyTransformation";
 
 export type IconNames =
   | ActionMode
@@ -227,7 +301,8 @@ export type IconNames =
   | "appSettings"
   | "clearConstruction"
   | "undo"
-  | "redo";
+  | "redo"
+  | "copyToClipboard";
 
 /**
  * Intersection Vector3 and if that intersection exists
@@ -370,6 +445,13 @@ export type SEOneDimensional =
   | SEEllipse
   | SEParametric;
 
+export type SEMeasurable =
+  | SESegment
+  | SECircle
+  | SEPolygon
+  | SEAngleMarker
+  | SEExpression;
+
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
@@ -397,6 +479,11 @@ export enum LabelDisplayMode {
 }
 
 /*******************************************UPDATE TYPES **********************/
+export type SEIsometry =
+  | SETranslation
+  | SERotation
+  | SEReflection
+  | SEPointReflection;
 
 export type ObjectNames =
   | "angleMarker"
@@ -423,7 +510,19 @@ export type ObjectNames =
   | "segment"
   | "segmentLength"
   | "slider"
-  | "tangentLineThruPoint";
+  | "tangentLineThruPoint"
+  | "threePointCircleCenter"
+  | "translation"
+  | "rotation"
+  | "reflection"
+  | "inversion"
+  | "pointReflection"
+  | "transformedPoint"
+  | "isometrySegment"
+  | "isometryLine"
+  | "isometryCircle"
+  | "isometryEllipse"
+  | "invertedCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

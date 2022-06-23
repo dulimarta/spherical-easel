@@ -151,7 +151,7 @@ export class SEAngleMarker
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -481,7 +481,7 @@ export class SEAngleMarker
               this._firstSEParent.closestVector(this._lineClickLocation1)
             ) < 0
           ) {
-            console.log("first point reverse! -1");
+            // console.log("first point reverse! -1");
             this._firstPointDirectionScalar = -1;
           } else {
             this._firstPointDirectionScalar = 1;
@@ -1331,6 +1331,9 @@ export class SEAngleMarker
 
   // Override the isLabelable method in SEExpression
   public isLabelable(): boolean {
+    return true;
+  }
+  public isMeasurable(): boolean {
     return true;
   }
 }

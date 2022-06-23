@@ -42,6 +42,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
+import { SETransformation } from "@/models/SETransformation";
 
 const sePoints: Array<SEPoint> = [];
 const seNodules: Array<SENodule> = [];
@@ -56,6 +57,7 @@ const seEllipses: Array<SEEllipse> = [];
 const seParametrics: Array<SEParametric> = [];
 const sePencils: Array<SEPencil> = [];
 const sePolygons: Array<SEPolygon> = [];
+const seTransformations: Array<SETransformation> = [];
 const layers: Array<Two.Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
@@ -100,6 +102,7 @@ export const useSEStore = defineStore({
       seParametrics.splice(0);
       sePencils.splice(0);
       seLabels.splice(0);
+      seTransformations.splice(0);
       selectedSENodules.splice(0);
       // intersections.splice(0);
       expressions.splice(0);
@@ -414,6 +417,30 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
+
+    addTransformation(transformation: SETransformation): void {
+      seTransformations.push(transformation);
+      seNodules.push(transformation);
+      // transformation.ref.addToLayers(layers);
+      this.hasUnsavedNodules = true;
+    },
+
+    removeTransformation(transformationId: number): void {
+      const pos = seTransformations.findIndex(
+        (x: SETransformation) => x.id === transformationId
+      );
+      const pos2 = seNodules.findIndex(
+        (x: SENodule) => x.id === transformationId
+      );
+      if (pos >= 0) {
+        // const victimTransformation = seTransformations[pos];
+        seTransformations.splice(pos, 1);
+        seNodules.splice(pos2, 1);
+        // Remove the associated plottable (Nodule) object from being rendered
+        //victimTransformation.ref.removeFromLayers(layers);
+        this.hasUnsavedNodules = true;
+      }
+    },
     //#region rotateSphere
 
     rotateSphere(rotationMat: Matrix4): void {
@@ -422,7 +449,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat);
-      inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
+      inverseTotalRotationMatrix.multiply(tmpMatrix.invert());
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
@@ -594,6 +621,7 @@ export const useSEStore = defineStore({
     seParametrics: (): Array<SEParametric> => seParametrics,
     sePolygons: (): Array<SEPolygon> => sePolygons,
     expressions: (): Array<SEExpression> => expressions,
+    seTransformations: (): Array<SETransformation> => seTransformations,
     selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,

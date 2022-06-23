@@ -8,7 +8,8 @@ export class RotateSphereCommand extends Command {
     super();
     this.rotationMat = rotationMatrix.clone();
     this.inverseRotation = new Matrix4();
-    this.inverseRotation.getInverse(this.rotationMat);
+    this.inverseRotation.copy(this.rotationMat);
+    this.inverseRotation.invert();
   }
 
   do(): void {

@@ -659,4 +659,8 @@ export class SESegment
   public isLabelable(): boolean {
     return true;
   }
+
+  public isMeasurable(): boolean {
+    return true;
+  }
 }
