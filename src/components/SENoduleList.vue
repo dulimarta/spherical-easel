@@ -45,15 +45,25 @@ import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
-import { SEStore } from "@/store";
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
+import { ActionMode } from "@/types";
+//@Component({ components: { SENoduleItem, SESliderItem } })
 
-@Component({ components: { SENoduleItem, SESliderItem } })
+@Component({
+  components: { SENoduleItem, SESliderItem },
+  computed: {
+    ...mapState(useSEStore, ["actionMode"])
+  }
+})
 export default class SENoduleTree extends Vue {
   @Prop()
   readonly children!: SENodule[];
 
   @Prop()
   readonly i18LabelKey!: string; /** When defined, label takes over the node name */
+
+  readonly actionMode!: ActionMode;
 
   private expanded = false;
   created(): void {
@@ -85,7 +95,7 @@ export default class SENoduleTree extends Vue {
     if (this.i18LabelKey === "objects.measurements") {
       if (this.hasExistingChildren) {
         this.expanded = true;
-        switch (SEStore.actionMode) {
+        switch (this.actionMode) {
           case "measuredCircle":
             EventBus.fire("show-alert", {
               key: "objectTree.selectAMeasurementForMeasuredCircle",
@@ -118,7 +128,7 @@ export default class SENoduleTree extends Vue {
     if (this.i18LabelKey === "objects.transformations") {
       if (this.hasExistingChildren) {
         this.expanded = true;
-        switch (SEStore.actionMode) {
+        switch (this.actionMode) {
           case "applyTransformation":
             EventBus.fire("show-alert", {
               key: "objectTree.selectATransformation",
