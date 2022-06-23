@@ -33,36 +33,13 @@ export type PiniaAppState = {
   previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
-  sePoints: SEPoint[];
-  seLines: SELine[];
-  seSegments: SESegment[];
-  seCircles: SECircle[];
-  seEllipses: SEEllipse[];
-  seParametrics: SEParametric[];
-  seAngleMarkers: SEAngleMarker[];
-  seLabels: SELabel[];
-  seTransformations: SETransformation[];
-  seNodules: SENodule[];
-  selectedSENodules: SENodule[];
-  intersections: SEIntersectionPoint[];
-  expressions: SEExpression[];
-  temporaryNodules: Nodule[];
-  // TODO: replace the following two arrays with the maps below
-  initialStyleStates: StyleOptions[];
-  defaultStyleStates: StyleOptions[];
-  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  oldSelections: SENodule[];
-  // styleSavedFromPanel: StyleEditPanels;
-  // initialBackStyleContrast: number;
-  // inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  // svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   styleSavedFromPanel: StyleEditPanels;
 };
+
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;
