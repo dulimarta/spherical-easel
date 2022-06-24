@@ -25,7 +25,6 @@ import {
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-
 import { SEStore } from "@/store";
 import { SESegment } from "@/models/SESegment";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
@@ -623,10 +622,11 @@ export default class MeasuredCircleHandler extends Highlighter {
               circ.centerSEPoint.locationVector,
               this.centerSEPoint
                 ? this.centerSEPoint.locationVector
-                : this.tmpVector
+                : this.tmpVector // should never be used this.centerSEPoint should always be defined
             )
             .isZero() &&
-          measurementSEExpression?.name ===
+          measurementSEExpression &&
+          measurementSEExpression.name ===
             circ.radiusMeasurementSEExpression.name
       )
     ) {

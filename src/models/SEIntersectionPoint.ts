@@ -126,13 +126,17 @@ export class SEIntersectionPoint extends SEPoint {
     this.setOutOfDate(false);
 
     this._exists = this.seParent1.exists && this.seParent2.exists;
+    // Consider the following steps:
+    // 1) Create a segment, S, between two points p1 and p2 (distance less than Pi/2 apart, with segment of the same length)
+    // 2) create a circle, C, that contains the segment on the interior. This creates two intersection points, that don't exist, are not user created, and are not showing
+    // 3) Create a line, L, between p1 and p2. This creates *no* new intersection points because they duplicate the two intersection points created in step 2 - but now the intersection points should exist, but don't.
+    // 4) Turn on the point tool and mouse over the visible intersections between L and C, There needs to be an intersection point between L and C, but the points there are between S and C and
+    // 5) If I delete S, the two intersection points also are deleted and then there is no intersection between L and C!
     if (this._exists) {
       // console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
-        this.seParent1,
-        this.seParent2
-      );
+      const updatedIntersectionInfo: IntersectionReturnType[] =
+        intersectTwoObjects(this.seParent1, this.seParent2);
       if (updatedIntersectionInfo[this.order] !== undefined) {
         this._exists = updatedIntersectionInfo[this.order].exists;
         this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
