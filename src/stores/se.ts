@@ -76,7 +76,7 @@ export const useSEStore = defineStore({
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
-    zoomMagnificationFactor: 1, // the initial zoom factor
+    zoomMagnificationFactor: 0.9, // the initial zoom factor
     zoomTranslation: [0, 0],
     canvasWidth: 0,
     // sePoints: [],
@@ -558,6 +558,7 @@ export const useSEStore = defineStore({
       // if (pos >= 0) seLines[pos].accept(lineNormalVisitor);
     }, // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
     addTemporaryNodule(nodule: Nodule): void {
+      nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
       temporaryNodules.push(nodule);
     },
     setSelectedSENodules(payload: SENodule[]): void {
@@ -608,7 +609,7 @@ export const useSEStore = defineStore({
     }
   },
   getters: {
-    // zoomMagnificationFactor: (): number => zoomMagnificationFactor,
+    //getZoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
     seNodules: (): Array<SENodule> => seNodules,
     sePoints: (): Array<SEPoint> => sePoints,
@@ -677,6 +678,9 @@ export const useSEStore = defineStore({
         }
       };
     },
+    // getZoomMagnificationFactor(): number {
+    //   return this.zoomMagnificationFactor;
+    // },
     getSENoduleById(): (_: number) => SENodule | undefined {
       return (id: number): SENodule | undefined => {
         return seNodules.find((z: SENodule) => z.id === id);

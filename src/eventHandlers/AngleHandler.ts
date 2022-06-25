@@ -127,7 +127,7 @@ export default class AngleHandler extends Highlighter {
 
   constructor(layers: Two.Group[]) {
     super(layers);
-    console.log("AngleHandler ctor");
+    // console.log("AngleHandler ctor");
 
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();

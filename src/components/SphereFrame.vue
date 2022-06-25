@@ -71,8 +71,8 @@ import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandl
       "zoomMagnificationFactor",
       "zoomTranslation",
       "seLabels"
-    ]),
-    ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
+    ])
+    //...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
   methods: {
     ...mapActions(useSEStore, [
@@ -92,7 +92,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   readonly actionMode!: ActionMode;
-  zoomMagnificationFactor!: number;
+  readonly zoomMagnificationFactor!: number;
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
 
@@ -104,6 +104,7 @@ export default class SphereFrame extends VueComponent {
   readonly setZoomMagnificationFactor!: (_: number) => void;
   readonly rotateSphere!: (_: Matrix4) => void;
   readonly revertActionMode!: () => void;
+  readonly getZoomMagnificationFactor!: () => number;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -349,7 +350,7 @@ export default class SphereFrame extends VueComponent {
     // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    this.zoomMagnificationFactor = ratio;
+    //this.zoomMagnificationFactor = ratio;
     //set the zoom magnification in the store so that all geometric/plottable objects are updated.
     this.setZoomMagnificationFactor(ratio);
     // Each window size gets its own zoom matrix
@@ -476,7 +477,8 @@ export default class SphereFrame extends VueComponent {
     }
 
     // Set the new magnification factor and the next translation vector in the store
-    this.zoomMagnificationFactor = newMagFactor;
+    // this.zoomMagnificationFactor = newMagFactor;
+    this.setZoomMagnificationFactor(newMagFactor); //must be set this way so that plottables resize correctly
     this.zoomTranslation.splice(0);
     this.zoomTranslation.push(...newTranslationVector);
     // Update the display
