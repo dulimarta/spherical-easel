@@ -85,9 +85,9 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="transformations.length">
+          v-show="seTransformations.length">
           <SENoduleList i18LabelKey="objects.transformations"
-            :children="transformations"></SENoduleList>
+            :children="seTransformations"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -126,11 +126,14 @@ import SliderForm from "@/components/SliderForm.vue";
 import { SEExpression } from "@/models/SEExpression";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-//import { namespace } from "vuex-class";
 import EventBus from "@/eventHandlers/EventBus";
-//import { SEStore } from "@/store";
 import { SETransformation } from "@/models/SETransformation";
-//const SE = namespace("se");
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
 
 @Component({
   components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm },
@@ -150,16 +153,16 @@ import { SETransformation } from "@/models/SETransformation";
   }
 })
 export default class ObjectTree extends Vue {
-  readonly sePoints!: SENodule[];
-  readonly seLines!: SENodule[];
-  readonly seSegments!: SENodule[];
-  readonly seCircles!: SENodule[];
-  readonly seEllipses!: SENodule[];
-  readonly seParametrics!: SENodule[];
+  readonly sePoints!: SEPoint[];
+  readonly seLines!: SELine[];
+  readonly seSegments!: SESegment[];
+  readonly seCircles!: SECircle[];
+  readonly seEllipses!: SEEllipse[];
+  readonly seParametrics!: SEParametric[];
   readonly seNodules!: SENodule[];
   readonly expressions!: SEExpression[];
   readonly actionMode!: ActionMode;
-  readonly transformations!: SETransformation[];
+  readonly seTransformations!: SETransformation[];
 
   private displayExpressionSheetAgain = true;
 

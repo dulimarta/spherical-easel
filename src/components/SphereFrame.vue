@@ -55,7 +55,7 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEExpression } from "@/models/SEExpression";
-import RotationTransformationHandler from "@/eventHandlers/RotationTranformationHandler";
+import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
 import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
@@ -851,27 +851,51 @@ export default class SphereFrame extends VueComponent {
         this.currentTool = this.nSectAngleTool;
         break;
       case "threePointCircle":
+        if (!this.threePointCircleTool)
+          this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
         this.currentTool = this.threePointCircleTool;
         break;
       case "measuredCircle":
+        if (!this.measuredCircleTool)
+          this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
         this.currentTool = this.measuredCircleTool;
         break;
       case "translation":
+        if (!this.translationTool)
+          this.translationTool = new TranslationTransformationHandler(
+            this.layers
+          );
         this.currentTool = this.translationTool;
         break;
       case "rotation":
+        if (!this.rotationTool)
+          this.rotationTool = new RotationTransformationHandler(this.layers);
         this.currentTool = this.rotationTool;
         break;
       case "reflection":
+        if (!this.reflectionTool)
+          this.reflectionTool = new ReflectionTransformationHandler(
+            this.layers
+          );
         this.currentTool = this.reflectionTool;
         break;
       case "pointReflection":
+        if (!this.pointReflectionTool)
+          this.pointReflectionTool = new PointReflectionTransformationHandler(
+            this.layers
+          );
         this.currentTool = this.pointReflectionTool;
         break;
       case "inversion":
+        if (!this.inversionTool)
+          this.inversionTool = new InversionTransformationHandler(this.layers);
         this.currentTool = this.inversionTool;
         break;
       case "applyTransformation":
+        if (!this.applyTransformationTool)
+          this.applyTransformationTool = new ApplyTransformationHandler(
+            this.layers
+          );
         this.currentTool = this.applyTransformationTool;
         break;
       default:
