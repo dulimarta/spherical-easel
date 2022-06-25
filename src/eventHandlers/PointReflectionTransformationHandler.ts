@@ -51,9 +51,6 @@ export default class PointReflectionTransformationHandler extends Highlighter {
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryRotationPointMarker = new Point();
-    this.temporaryRotationPointMarker.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PointReflectionTransformationHandler.store.addTemporaryNodule(
       this.temporaryRotationPointMarker
     );

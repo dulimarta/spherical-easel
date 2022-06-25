@@ -91,25 +91,19 @@ export default class PolarObjectHandler extends Highlighter {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();
-    this.temporaryPolarLineMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPolarLineMarker);
+
     this.temporaryPolarPointMarker1 = new NonFreePoint();
-    this.temporaryPolarPointMarker1.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker1
     );
+
     this.temporaryPolarPointMarker2 = new NonFreePoint();
-    this.temporaryPolarPointMarker2.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker2
     );
 
     this.temporaryPoint = new Point();
-    this.temporaryPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPoint);
   }
 

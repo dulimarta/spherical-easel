@@ -30,7 +30,6 @@ export default class NSectSegmentHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     for (let i = 0; i < 9; i++) {
       this.temporaryPoints.push(new Point());
-      this.temporaryPoints[i].stylize(DisplayStyle.ApplyTemporaryVariables);
       NSectSegmentHandler.store.addTemporaryNodule(this.temporaryPoints[i]);
       this.temporaryPointsAdded.push(false);
     }

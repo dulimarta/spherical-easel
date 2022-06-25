@@ -86,37 +86,28 @@ export default class ThreePointCircleHandler extends Highlighter {
 
     // Set the style using the temporary defaults
     this.temporaryThreePointCircle = new NonFreeCircle();
-    this.temporaryThreePointCircle.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     ThreePointCircleHandler.store.addTemporaryNodule(
       this.temporaryThreePointCircle
     );
 
     // Set the style using the temporary defaults
     this.temporaryThreePointCircleCenter = new ThreePointCircleCenter();
-    this.temporaryThreePointCircleCenter.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     ThreePointCircleHandler.store.addTemporaryNodule(
       this.temporaryThreePointCircleCenter
     );
 
     // Create and style the temporary points marking object being created
     this.temporaryPoint1Marker = new Point();
-    this.temporaryPoint1Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     ThreePointCircleHandler.store.addTemporaryNodule(
       this.temporaryPoint1Marker
     );
 
     this.temporaryPoint2Marker = new Point();
-    this.temporaryPoint2Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     ThreePointCircleHandler.store.addTemporaryNodule(
       this.temporaryPoint2Marker
     );
 
     this.temporaryPoint3Marker = new Point();
-    this.temporaryPoint3Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     ThreePointCircleHandler.store.addTemporaryNodule(
       this.temporaryPoint3Marker
     );

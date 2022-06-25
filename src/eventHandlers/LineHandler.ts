@@ -84,16 +84,13 @@ export default class LineHandler extends Highlighter {
     super(layers);
     // Create and style the temporary line
     this.temporaryLine = new Line();
-    this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryLine);
     this.isTemporaryLineAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
-    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
   //eslint-disable-next-line

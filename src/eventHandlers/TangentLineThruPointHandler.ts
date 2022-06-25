@@ -94,7 +94,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
       exist: false,
       tmpNormal: new Vector3()
     });
-    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
     TangentLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
     );

@@ -101,16 +101,14 @@ export default class SegmentHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
-    this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporarySegment);
     this.isTemporarySegmentAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
-    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporaryStartMarker);
+
     this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
 

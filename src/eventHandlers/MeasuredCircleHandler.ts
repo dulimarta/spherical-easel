@@ -88,11 +88,9 @@ export default class MeasuredCircleHandler extends Highlighter {
     super(layers);
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
     MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryCenterMarker = new Point();
-    this.temporaryCenterMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCenterMarker);
   }
 

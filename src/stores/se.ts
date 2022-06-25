@@ -558,6 +558,7 @@ export const useSEStore = defineStore({
       // if (pos >= 0) seLines[pos].accept(lineNormalVisitor);
     }, // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
     addTemporaryNodule(nodule: Nodule): void {
+      nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
       nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
       temporaryNodules.push(nodule);
     },

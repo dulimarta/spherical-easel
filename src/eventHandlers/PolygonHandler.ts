@@ -74,7 +74,6 @@ export default class PolygonHandler extends Highlighter {
     // Create and style the temporary angle markers
     for (let i = 0; i < SETTINGS.polygon.numberOfTemporaryAngleMarkers; i++) {
       const tmpAm = new AngleMarker();
-      tmpAm.stylize(DisplayStyle.ApplyTemporaryVariables);
       PolygonHandler.store.addTemporaryNodule(tmpAm);
       this.temporaryAngleMarkers.push(tmpAm);
       this.temporaryAngleMarkersAdded.push(false);

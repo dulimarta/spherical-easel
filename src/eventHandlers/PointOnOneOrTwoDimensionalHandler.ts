@@ -35,7 +35,6 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     super(layers);
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PointOnOneDimensionalHandler.store.addTemporaryNodule(this.startMarker);
   }
 

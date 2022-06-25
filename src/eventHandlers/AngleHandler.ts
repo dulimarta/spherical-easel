@@ -131,20 +131,16 @@ export default class AngleHandler extends Highlighter {
 
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();
-    this.temporaryAngleMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     MouseHandler.store.addTemporaryNodule(this.temporaryAngleMarker);
 
     // Create and style the temporary points marking the points in the angle (if appropriate)
     this.temporaryFirstPoint = new Point();
-    this.temporaryFirstPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     MouseHandler.store.addTemporaryNodule(this.temporaryFirstPoint);
 
     this.temporarySecondPoint = new Point();
-    this.temporarySecondPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     MouseHandler.store.addTemporaryNodule(this.temporarySecondPoint);
 
     this.temporaryThirdPoint = new Point();
-    this.temporaryThirdPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     MouseHandler.store.addTemporaryNodule(this.temporaryThirdPoint);
   }
 

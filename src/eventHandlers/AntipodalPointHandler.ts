@@ -58,12 +58,10 @@ export default class AntipodalPointHandler extends Highlighter {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
-    this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     AntipodalPointHandler.store.addTemporaryNodule(
       this.temporaryAntipodeMarker
     );
     this.temporaryPointMarker = new Point();
-    this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     AntipodalPointHandler.store.addTemporaryNodule(this.temporaryPointMarker);
   }
 

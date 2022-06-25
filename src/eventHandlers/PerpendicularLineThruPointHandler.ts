@@ -99,7 +99,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       exist: false,
       tmpNormal: new Vector3()
     });
-    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
     );
@@ -108,7 +107,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
-    this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.temporaryPointMarker
     );
@@ -513,7 +511,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             exist: false,
             tmpNormal: new Vector3()
           });
-          newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
           PerpendicularLineThruPointHandler.store.addTemporaryNodule(newLine);
           // this.temporaryLinesAdded.push(false);
           // this.temporaryNormals.push(new Vector3());

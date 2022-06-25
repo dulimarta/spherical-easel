@@ -37,7 +37,6 @@ export default class NSectAngleHandler extends Highlighter {
     // Create and style the temporary lines
     for (let i = 0; i < 9; i++) {
       this.temporaryLines.push(new Line());
-      this.temporaryLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
       NSectAngleHandler.store.addTemporaryNodule(this.temporaryLines[i]);
       this.temporaryLinesAdded.push(false);
     }

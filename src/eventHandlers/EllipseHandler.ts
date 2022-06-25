@@ -82,21 +82,15 @@ export default class EllipseHandler extends Highlighter {
     this.focus2Vector = new Vector3();
     this.temporaryEllipse = new Ellipse();
     // Set the style using the temporary defaults
-    this.temporaryEllipse.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryEllipse);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryFocus1Marker = new Point();
-    this.temporaryFocus1Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryFocus1Marker);
 
     this.temporaryFocus2Marker = new Point();
-    this.temporaryFocus2Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryFocus2Marker);
 
     this.temporaryEllipsePointMarker = new Point();
-    this.temporaryEllipsePointMarker.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     EllipseHandler.store.addTemporaryNodule(this.temporaryEllipsePointMarker);
   }
 
