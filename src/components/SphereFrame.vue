@@ -82,7 +82,8 @@ import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandl
       "rotateSphere",
       // "setSphereRadius",
       "setCanvasWidth",
-      "revertActionMode"
+      "revertActionMode",
+      "setZoomMagnificationFactor"
     ])
   }
 })
@@ -100,6 +101,7 @@ export default class SphereFrame extends VueComponent {
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
+  readonly setZoomMagnificationFactor!: (_: number) => void;
   readonly rotateSphere!: (_: Matrix4) => void;
   readonly revertActionMode!: () => void;
 
@@ -348,6 +350,8 @@ export default class SphereFrame extends VueComponent {
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
     this.zoomMagnificationFactor = ratio;
+    //set the zoom magnification in the store so that all geometric/plottable objects are updated.
+    this.setZoomMagnificationFactor(ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
     this.zoomTranslation.splice(0);

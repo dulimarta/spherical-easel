@@ -76,7 +76,7 @@ export const useSEStore = defineStore({
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
-    zoomMagnificationFactor: 1,
+    zoomMagnificationFactor: 1, // the initial zoom factor
     zoomTranslation: [0, 0],
     canvasWidth: 0,
     // sePoints: [],
@@ -179,7 +179,7 @@ export const useSEStore = defineStore({
         });
     },
     setZoomMagnificationFactor(mag: number): void {
-      // console.log("setZoomMagFactor");
+      console.debug(`setZoomMagFactor ${mag}`);
       EventBus.fire("magnification-updated", {
         factor: this.zoomMagnificationFactor / mag
       });
