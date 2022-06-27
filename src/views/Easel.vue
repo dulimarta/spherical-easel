@@ -370,11 +370,19 @@ export default class Easel extends Vue {
   };
 
   //#region magnificationUpdate
-  constructor() {
-    super();
+  created() {
     EventBus.listen("magnification-updated", this.resizePlottables);
     EventBus.listen("undo-enabled", this.setUndoEnabled);
     EventBus.listen("redo-enabled", this.setRedoEnabled);
+    this.$socket.$subscribe(
+      "ui-control",
+      (args: { showLeftPane: boolean; showRightPane: boolean }) => {
+        this.showLeftPane = args.showLeftPane;
+        this.toolboxMinified = true;
+        this.showRightPane = args.showRightPane;
+        this.stylePanelMinified = true;
+      }
+    );
   }
   //#endregion magnificationUpdate
 
@@ -476,15 +484,6 @@ export default class Easel extends Vue {
       }
     );
     window.addEventListener("keydown", this.handleKeyDown);
-    this.$socket.$subscribe(
-      "ui-control",
-      (args: { showLeftPane: boolean; showRightPane: boolean }) => {
-        this.showLeftPane = args.showLeftPane;
-        this.toolboxMinified = true;
-        this.showRightPane = args.showRightPane;
-        this.stylePanelMinified = true;
-      }
-    );
   }
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();

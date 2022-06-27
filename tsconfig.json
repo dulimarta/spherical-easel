@@ -5,12 +5,13 @@
     "strict": true,
     "declaration": true,
     "jsx": "preserve",
-    "importHelpers": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "useDefineForClassFields": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
@@ -37,7 +38,6 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/types/two.js/index.d.ts",
-    // "tests/*.d.ts",
     "src/stores/unused-se-module.ts"
   ],
   "verbose": true
