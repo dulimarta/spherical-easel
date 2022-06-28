@@ -108,23 +108,7 @@ export class SEIsometryLine extends SELine {
 
     this.setOutOfDate(false);
 
-    this._exists = this._seParentIsometry.exists && this._seParentLine.exists;
-
-    if (this._exists) {
-      // Set the normal vector
-      this.normalVector.copy(
-        this.parentIsometry.f(this._seParentLine.normalVector)
-      );
-
-      ////////////////////////////////////////////////////////////////////////////////////////
-      this.ref.normalVector = this.normalVector;
-    }
-
-    if (this.showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // Lines are NOT completely determined by their parents so we store additional information
     // If the parent points of the line are antipodal, the normal vector determines the

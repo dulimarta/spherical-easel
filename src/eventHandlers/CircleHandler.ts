@@ -21,6 +21,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 const tmpVector = new Vector3();
 
@@ -708,33 +709,50 @@ export default class CircleHandler extends Highlighter {
     CircleHandler.store
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          if (
+            !item.SEIntersectionPoint.parents.some(
+              parent => parent.name === newSECircle.name
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          ) {
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newSECircle
+              )
+            );
+          }
+        } else {
+          // the intersection point is newly created and must be added as a child of the two parents returned
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        circleCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+
+          circleCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
       });
 
     circleCommandGroup.execute();
@@ -786,31 +804,50 @@ export default class CircleHandler extends Highlighter {
         CircleHandler.store
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
+            if (item.existingIntersectionPoint) {
+              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              if (
+                !item.SEIntersectionPoint.parents.some(
+                  parent => parent.name === newSECircle.name
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
-            circleCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
+              ) {
+                circleCommandGroup.addCommand(
+                  new AddIntersectionPointParent(
+                    item.SEIntersectionPoint,
+                    newSECircle
+                  )
+                );
+              }
+            } else {
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
+
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  item.parent1,
+                  item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+              newSELabel.showing = false;
+            }
           });
 
         circleCommandGroup.execute();

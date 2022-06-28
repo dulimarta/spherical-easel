@@ -96,24 +96,7 @@ export class SEIsometryCircle extends SECircle {
 
     this.setOutOfDate(false);
 
-    this._exists = this._seParentCircle.exists && this._seParentIsometry.exists;
-
-    if (this._exists) {
-      //update the centerVector and the radius
-      const newRadius = this._centerSEPoint.locationVector.angleTo(
-        this._circleSEPoint.locationVector
-      );
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
-      // display the new circle with the updated values
-      this.ref.updateDisplay();
-    }
-
-    if (this.showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information

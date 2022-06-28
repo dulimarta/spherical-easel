@@ -105,45 +105,7 @@ export class SETangentLineThruPoint extends SELine {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists =
-      this._seParentOneDimensional.exists && this._seParentPoint.exists;
-
-    if (this._exists) {
-      const tVec = new Vector3();
-      tVec.copy(this._normalVector);
-      // console.log("before x", this.name, this._normalVector.x);
-      // Get the normal(s) vector to the line
-      const normals = this._seParentOneDimensional.getNormalsToTangentLinesThru(
-        this._seParentPoint.locationVector,
-        this.store.zoomMagnificationFactor,
-        true
-      );
-
-      if (normals[this._index] !== undefined) {
-        this._normalVector.copy(normals[this._index]);
-
-        // Given this.startPoint (in SELine)=this._seParentPoint and this.normalVector compute the endSEPoint
-        // This is *never* undefined because the getNormalsToTangentLinesThru *never* returns a point with
-        //  location parallel to this._seParentPoint.locationVector
-        this.tempVector1.crossVectors(
-          this._seParentPoint.locationVector,
-          this._normalVector
-        );
-
-        this.endSEPoint.locationVector = this.tempVector1.normalize();
-
-        // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
-        this.ref.normalVector = this._normalVector;
-      } else {
-        this._exists = false;
-      }
-    }
-    // Update visibility
-    if (this._exists && this._showing) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
     // These tangent lines are completely determined by their parametric parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {

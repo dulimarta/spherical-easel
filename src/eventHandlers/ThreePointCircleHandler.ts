@@ -24,6 +24,7 @@ import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
 import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -1148,33 +1149,49 @@ export default class ThreePointCircleHandler extends Highlighter {
     ThreePointCircleHandler.store
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          if (
+            !item.SEIntersectionPoint.parents.some(
+              parent => parent.name === newSECircle.name
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          ) {
+            threePointCircleCommandGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newSECircle
+              )
+            );
+          }
+        } else {
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        threePointCircleCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+
+          threePointCircleCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
       });
 
     threePointCircleCommandGroup.execute();
@@ -1308,33 +1325,52 @@ export default class ThreePointCircleHandler extends Highlighter {
         ThreePointCircleHandler.store
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
-            // Create the plottable and model label
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
+            if (item.existingIntersectionPoint) {
+              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              if (
+                !item.SEIntersectionPoint.parents.some(
+                  parent => parent.name === newSECircle.name
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
+              ) {
+                threePointCircleCommandGroup.addCommand(
+                  new AddIntersectionPointParent(
+                    item.SEIntersectionPoint,
+                    newSECircle
+                  )
+                );
+              }
+            } else {
+              // Create the plottable and model label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
 
-            threePointCircleCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-            newSELabel.showing = false;
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
+
+              threePointCircleCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  item.parent1,
+                  item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+              newSELabel.showing = false;
+            }
           });
 
         threePointCircleCommandGroup.execute();

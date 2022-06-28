@@ -39,6 +39,7 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -734,33 +735,49 @@ export default class MeasuredCircleHandler extends Highlighter {
       MeasuredCircleHandler.store
         .createAllIntersectionsWithCircle(newMeasuredSECircle)
         .forEach((item: SEIntersectionReturnType) => {
-          // Create the plottable and model label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+          if (item.existingIntersectionPoint) {
+            // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+            if (
+              !item.SEIntersectionPoint.parents.some(
+                parent => parent.name === newMeasuredSECircle.name
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+            ) {
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointParent(
+                  item.SEIntersectionPoint,
+                  newMeasuredSECircle
+                )
+              );
+            }
+          } else {
+            // Create the plottable and model label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-          circleCommandGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-          newSELabel.showing = false;
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+            newSELabel.showing = false;
+          }
         });
     }
     circleCommandGroup.execute();

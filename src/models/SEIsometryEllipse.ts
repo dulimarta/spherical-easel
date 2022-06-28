@@ -103,26 +103,7 @@ export class SEIsometryEllipse extends SEEllipse {
 
     this.setOutOfDate(false);
 
-    this._exists =
-      this._seParentEllipse.exists && this._seParentIsometry.exists;
-
-    if (this._exists) {
-      //update the a and b values, the focus vectors are already updated because the focusSEPoint are already updated if we have reach this point in the code
-      this.a = this._seParentEllipse.a;
-      this.b = this._seParentEllipse.b;
-      this.ref.a = this._seParentEllipse.a;
-      this.ref.b = this._seParentEllipse.b;
-      this.ref.focus1Vector = this.focus1SEPoint.locationVector;
-      this.ref.focus2Vector = this.focus2SEPoint.locationVector;
-      // display the new ellipse with the updated values
-      this.ref.updateDisplay();
-    }
-
-    if (this.showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // These ellipse are completely determined by their point parents and an update on the parents
     // will cause this ellipse to be put into the correct location.So we don't store any additional information

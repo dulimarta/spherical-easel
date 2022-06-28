@@ -60,8 +60,7 @@ export class SERotation extends SETransformation {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
-
-    this._exists = this._rotationPoint.exists;
+    this.shallowUpdate();
     if (this._exists) {
       //determine the direction to rotate?
       this._matrix.makeRotationAxis(

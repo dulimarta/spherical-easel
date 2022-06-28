@@ -21,6 +21,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -1102,33 +1103,49 @@ export default class EllipseHandler extends Highlighter {
     EllipseHandler.store
       .createAllIntersectionsWithEllipse(newSEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          if (
+            !item.SEIntersectionPoint.parents.some(
+              parent => parent.name === newSEEllipse.name
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          ) {
+            ellipseCommandGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newSEEllipse
+              )
+            );
+          }
+        } else {
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        ellipseCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+
+          ellipseCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
       });
 
     ellipseCommandGroup.execute();
@@ -1193,6 +1210,21 @@ export default class EllipseHandler extends Highlighter {
         // this.store.getters
         //   .createAllIntersectionsWithCircle(newSECircle)
         //   .forEach((item: SEIntersectionReturnType) => {
+        // if (item.existingIntersectionPoint) {
+        //   // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+        //   if (
+        //     !item.SEIntersectionPoint.parents.some(
+        //       parent => parent.name === newSECircle.name
+        //     )
+        //   ) {
+        //     circleCommandGroup.addCommand(
+        //       new AddIntersectionPointParent(
+        //         item.SEIntersectionPoint,
+        //         newSECircle
+        //       )
+        //     );
+        //   }
+        // } else {
         //     const newLabel = new Label();
         //     const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
@@ -1218,7 +1250,7 @@ export default class EllipseHandler extends Highlighter {
         //     );
         //     item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         //     newSELabel.showing = false;
-        //   });
+        //   }});
 
         ellipseCommandGroup.execute();
       }

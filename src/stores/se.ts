@@ -698,6 +698,7 @@ export const useSEStore = defineStore({
         });
       };
     },
+    //#endregion findNearbyGetter
     /**
      * If one parent name is given, this returns a list of all intersection points that have a parent with that name.
      * If two parent names are given, this returns a list of all intersection points that a parent with the first name and a parent with the second name
@@ -727,7 +728,6 @@ export const useSEStore = defineStore({
         }
       };
     },
-    //#endregion findNearbyGetter
 
     /**
      * Create the intersection of two one-dimensional objects
@@ -744,11 +744,11 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newLine: SELine): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidVectors: Vector3[] = [];
+        const avoidSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
         if (!(newLine instanceof SEPolarLine)) {
-          avoidVectors.push(newLine.startSEPoint.locationVector);
+          avoidSEPoints.push(newLine.startSEPoint);
         }
         // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
         // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
@@ -760,13 +760,17 @@ export const useSEStore = defineStore({
             newLine instanceof SENSectLine
           )
         ) {
-          avoidVectors.push(newLine.endSEPoint.locationVector);
+          avoidSEPoints.push(newLine.endSEPoint);
         }
         sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+          if (
+            !pt.locationVector.isZero() &&
+            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+          ) {
+            avoidSEPoints.push(pt);
           }
         });
+
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new line with all old lines
@@ -774,11 +778,21 @@ export const useSEStore = defineStore({
           .filter((line: SELine) => line.id !== newLine.id) // ignore self
           .forEach((oldLine: SELine) => {
             const intersectionInfo = intersectLineWithLine(oldLine, newLine);
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidVectors.some(v =>
-                  tmpVector.subVectors(info.vector, v).isZero()
-                )
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
               ) {
                 // info.vector is not on the avoidVectors array, so create an intersection
                 const newPt = new NonFreePoint();
@@ -796,8 +810,23 @@ export const useSEStore = defineStore({
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
-                  parent2: newLine
+                  parent2: newLine,
+                  existingIntersectionPoint: false
                 });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: oldLine,
+                    parent2: newLine,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
               }
             });
           });
@@ -805,30 +834,57 @@ export const useSEStore = defineStore({
         seCircles.forEach((oldCircle: SECircle) => {
           const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
           intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newLine,
-                oldCircle,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newLine,
-                parent2: oldCircle
-              });
-            }
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newLine,
+                  oldCircle,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newLine,
+                  parent2: oldCircle,
+                  existingIntersectionPoint: false
+                });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: newLine,
+                    parent2: oldCircle,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
+              }
+            });
           });
         });
         //Intersect this new line with all old ellipses
@@ -837,11 +893,21 @@ export const useSEStore = defineStore({
             newLine,
             oldEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -859,8 +925,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newLine,
-                parent2: oldEllipse
+                parent2: oldEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newLine,
+                  parent2: oldEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -872,11 +953,21 @@ export const useSEStore = defineStore({
             oldParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -894,8 +985,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newLine,
-                parent2: oldParametric
+                parent2: oldParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newLine,
+                  parent2: oldParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -905,14 +1011,17 @@ export const useSEStore = defineStore({
     createAllIntersectionsWithSegment() {
       return (newSegment: SESegment): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidVectors: Vector3[] = [];
+        const avoidSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidVectors.push(newSegment.startSEPoint.locationVector);
-        avoidVectors.push(newSegment.endSEPoint.locationVector);
+        avoidSEPoints.push(newSegment.startSEPoint);
+        avoidSEPoints.push(newSegment.endSEPoint);
         sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+          if (
+            !pt.locationVector.isZero() &&
+            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+          ) {
+            avoidSEPoints.push(pt);
           }
         });
 
@@ -924,11 +1033,21 @@ export const useSEStore = defineStore({
             oldLine,
             newSegment
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -947,8 +1066,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldLine,
-                parent2: newSegment
+                parent2: newSegment,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldLine,
+                  parent2: newSegment,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -960,11 +1094,21 @@ export const useSEStore = defineStore({
               oldSegment,
               newSegment
             );
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidVectors.some(v =>
-                  tmpVector.subVectors(info.vector, v).isZero()
-                )
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
               ) {
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -981,8 +1125,23 @@ export const useSEStore = defineStore({
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldSegment,
-                  parent2: newSegment
+                  parent2: newSegment,
+                  existingIntersectionPoint: false
                 });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: oldSegment,
+                    parent2: newSegment,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
               }
             });
           });
@@ -992,11 +1151,21 @@ export const useSEStore = defineStore({
             newSegment,
             oldCircle
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1014,8 +1183,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newSegment,
-                parent2: oldCircle
+                parent2: oldCircle,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newSegment,
+                  parent2: oldCircle,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1025,11 +1209,21 @@ export const useSEStore = defineStore({
             newSegment,
             oldEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1047,8 +1241,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newSegment,
-                parent2: oldEllipse
+                parent2: oldEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newSegment,
+                  parent2: oldEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1059,11 +1268,21 @@ export const useSEStore = defineStore({
             oldParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1081,8 +1300,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newSegment,
-                parent2: oldParametric
+                parent2: oldParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newSegment,
+                  parent2: oldParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1094,14 +1328,17 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newCircle: SECircle): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidVectors: Vector3[] = [];
+        const avoidSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidVectors.push(newCircle.centerSEPoint.locationVector);
-        avoidVectors.push(newCircle.circleSEPoint.locationVector);
+        avoidSEPoints.push(newCircle.centerSEPoint);
+        avoidSEPoints.push(newCircle.circleSEPoint);
         sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+          if (
+            !pt.locationVector.isZero() &&
+            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+          ) {
+            avoidSEPoints.push(pt);
           }
         });
         // The intersectionPointList to return
@@ -1109,11 +1346,21 @@ export const useSEStore = defineStore({
         // Intersect this new circle with all old lines
         seLines.forEach((oldLine: SELine) => {
           const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1131,8 +1378,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldLine,
-                parent2: newCircle
+                parent2: newCircle,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldLine,
+                  parent2: newCircle,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1142,11 +1404,21 @@ export const useSEStore = defineStore({
             oldSegment,
             newCircle
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1164,8 +1436,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldSegment,
-                parent2: newCircle
+                parent2: newCircle,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldSegment,
+                  parent2: newCircle,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1179,11 +1466,21 @@ export const useSEStore = defineStore({
               newCircle.centerSEPoint.locationVector,
               newCircle.circleRadius
             );
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidVectors.some(v =>
-                  tmpVector.subVectors(info.vector, v).isZero()
-                )
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
               ) {
                 // info.vector is not on the avoidVectors array, so create an intersection
                 const newPt = new NonFreePoint();
@@ -1201,8 +1498,23 @@ export const useSEStore = defineStore({
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldCircle,
-                  parent2: newCircle
+                  parent2: newCircle,
+                  existingIntersectionPoint: false
                 });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: oldCircle,
+                    parent2: newCircle,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
               }
             });
           });
@@ -1213,11 +1525,21 @@ export const useSEStore = defineStore({
             newCircle,
             oldEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1235,8 +1557,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newCircle,
-                parent2: oldEllipse
+                parent2: oldEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newCircle,
+                  parent2: oldEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1248,11 +1585,21 @@ export const useSEStore = defineStore({
             oldParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1270,8 +1617,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newCircle,
-                parent2: oldParametric
+                parent2: oldParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newCircle,
+                  parent2: oldParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1284,15 +1646,18 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newEllipse: SEEllipse): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidVectors: Vector3[] = [];
+        const avoidSEPoints: SEPoint[] = [];
         // First add the three parent points of the newEllipse, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
-        avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
-        avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
+        avoidSEPoints.push(newEllipse.focus1SEPoint);
+        avoidSEPoints.push(newEllipse.focus2SEPoint);
+        avoidSEPoints.push(newEllipse.ellipseSEPoint);
         sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+          if (
+            !pt.locationVector.isZero() &&
+            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+          ) {
+            avoidSEPoints.push(pt);
           }
         });
         // The intersectionPointList to return
@@ -1304,11 +1669,21 @@ export const useSEStore = defineStore({
             oldLine,
             newEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1326,8 +1701,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldLine,
-                parent2: newEllipse
+                parent2: newEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldLine,
+                  parent2: newEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1338,11 +1728,21 @@ export const useSEStore = defineStore({
             oldSegment,
             newEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1360,8 +1760,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldSegment,
-                parent2: newEllipse
+                parent2: newEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldSegment,
+                  parent2: newEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1372,11 +1787,21 @@ export const useSEStore = defineStore({
             oldCircle,
             newEllipse
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1394,8 +1819,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldCircle,
-                parent2: newEllipse
+                parent2: newEllipse,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldCircle,
+                  parent2: newEllipse,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1408,11 +1848,21 @@ export const useSEStore = defineStore({
               oldEllipse,
               newEllipse
             );
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidVectors.some(v =>
-                  tmpVector.subVectors(info.vector, v).isZero()
-                )
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
               ) {
                 // info.vector is not on the avoidVectors array, so create an intersection
                 const newPt = new NonFreePoint();
@@ -1430,8 +1880,23 @@ export const useSEStore = defineStore({
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldEllipse,
-                  parent2: newEllipse
+                  parent2: newEllipse,
+                  existingIntersectionPoint: false
                 });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: oldEllipse,
+                    parent2: newEllipse,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
               }
             });
           });
@@ -1443,11 +1908,21 @@ export const useSEStore = defineStore({
             oldParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1465,8 +1940,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: newEllipse,
-                parent2: oldParametric
+                parent2: oldParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: newEllipse,
+                  parent2: oldParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1478,18 +1968,21 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newParametric: SEParametric): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidVectors: Vector3[] = [];
+        const avoidSEPoints: SEPoint[] = [];
         // First add the end points of the newParametric, if they are exist, then
         //  they won't have been added to the state.points array yet so add them first
         // Always screen for the zero vector
         newParametric.endPoints.forEach(pt => {
           if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+            avoidSEPoints.push(pt);
           }
         });
         sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
+          if (
+            !pt.locationVector.isZero() &&
+            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+          ) {
+            avoidSEPoints.push(pt);
           }
         });
 
@@ -1503,11 +1996,21 @@ export const useSEStore = defineStore({
             newParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1525,8 +2028,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldLine,
-                parent2: newParametric
+                parent2: newParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldLine,
+                  parent2: newParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1538,11 +2056,21 @@ export const useSEStore = defineStore({
             newParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1560,8 +2088,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldSegment,
-                parent2: newParametric
+                parent2: newParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldSegment,
+                  parent2: newParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1573,11 +2116,21 @@ export const useSEStore = defineStore({
             newParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1595,8 +2148,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldCircle,
-                parent2: newParametric
+                parent2: newParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldCircle,
+                  parent2: newParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1608,11 +2176,21 @@ export const useSEStore = defineStore({
             newParametric,
             inverseTotalRotationMatrix
           );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
             ) {
               // info.vector is not on the avoidVectors array, so create an intersection
               const newPt = new NonFreePoint();
@@ -1630,8 +2208,23 @@ export const useSEStore = defineStore({
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
                 parent1: oldEllipse,
-                parent2: newParametric
+                parent2: newParametric,
+                existingIntersectionPoint: false
               });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldEllipse,
+                  parent2: newParametric,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
             }
           });
         });
@@ -1646,11 +2239,21 @@ export const useSEStore = defineStore({
               oldParametric,
               newParametric
             );
+            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidVectors.some(v =>
-                  tmpVector.subVectors(info.vector, v).isZero()
-                )
+                !avoidSEPoints.some(v => {
+                  if (
+                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                  ) {
+                    if (v instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = v;
+                    }
+                    return true;
+                  } else {
+                    return false;
+                  }
+                })
               ) {
                 // info.vector is not on the avoidVectors array, so create an intersection
                 const newPt = new NonFreePoint();
@@ -1668,8 +2271,23 @@ export const useSEStore = defineStore({
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldParametric,
-                  parent2: newParametric
+                  parent2: newParametric,
+                  existingIntersectionPoint: false
                 });
+              } else {
+                if (existingSEIntersectionPoint) {
+                  // the intersection vector (info.vector) is at an existing SEIntersection point
+                  intersectionPointList.push({
+                    SEIntersectionPoint: existingSEIntersectionPoint,
+                    parent1: oldParametric,
+                    parent2: newParametric,
+                    existingIntersectionPoint: true
+                  });
+                  // update the existence with the new parent if it exists (otherwise leave it alone)
+                  if (info.exists === true) {
+                    existingSEIntersectionPoint.exists = info.exists;
+                  }
+                }
               }
             });
           });

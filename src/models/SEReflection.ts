@@ -47,7 +47,7 @@ export class SEReflection extends SETransformation {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists = this._lineOrSegment.exists;
+    this.shallowUpdate();
 
     // This translation is completely determined by it line or segment parent and an update on the parent
     // will cause this reflection to be correct. So we don't store any additional information

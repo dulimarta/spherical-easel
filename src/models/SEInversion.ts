@@ -86,7 +86,7 @@ export class SEInversion extends SETransformation {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists = this._circleOfInversion.exists;
+    this.shallowUpdate();
 
     // This inversion is completely determined by it circle parent and an update on the parent
     // will cause this inversion to be correct. So we don't store any additional information

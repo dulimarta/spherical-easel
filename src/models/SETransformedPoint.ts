@@ -60,11 +60,6 @@ export class SETransformedPoint extends SEPoint {
   }
 
   public shallowUpdate(): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
     this._exists =
       this._seParentPoint.exists && this._seParentTransformation.exists;
     if (this._exists) {
@@ -89,21 +84,7 @@ export class SETransformedPoint extends SEPoint {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this._exists =
-      this._seParentPoint.exists && this._seParentTransformation.exists;
-    if (this._exists) {
-      this.locationVector = this._seParentTransformation.f(
-        this._seParentPoint.locationVector
-      );
-    }
-
-    // Update visibility
-    if (this._exists && this._showing) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // Intersection Points are completely determined by their parents and an update on the parents
     // will cause this point to be put into the correct location.So we don't store any additional information

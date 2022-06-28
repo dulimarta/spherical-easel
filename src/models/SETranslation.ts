@@ -65,8 +65,7 @@ export class SETranslation extends SETransformation {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists =
-      this._lineOrSegment.exists && this._translationDistanceExpression.exists;
+    this.shallowUpdate();
     if (this._exists) {
       //determine the direction to rotate?
       this._matrix.makeRotationAxis(

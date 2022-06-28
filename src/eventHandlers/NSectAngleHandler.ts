@@ -16,6 +16,7 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -366,35 +367,51 @@ export default class NSectAngleHandler extends Highlighter {
           NSectAngleHandler.store
             .createAllIntersectionsWithLine(nSectingLine)
             .forEach((item: SEIntersectionReturnType) => {
-              // Create the plottable label
-              const newLabel = new Label();
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.point.initialLabelOffset,
-                    SETTINGS.point.initialLabelOffset,
-                    0
+              if (item.existingIntersectionPoint) {
+                // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+                if (
+                  !item.SEIntersectionPoint.parents.some(
+                    parent => parent.name === nSectingLine.name
                   )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
+                ) {
+                  nSectingLinesCommandGroup.addCommand(
+                    new AddIntersectionPointParent(
+                      item.SEIntersectionPoint,
+                      nSectingLine
+                    )
+                  );
+                }
+              } else {
+                // Create the plottable label
+                const newLabel = new Label();
+                const newSELabel = new SELabel(
+                  newLabel,
+                  item.SEIntersectionPoint
+                );
+                // Set the initial label location
+                this.tmpVector
+                  .copy(item.SEIntersectionPoint.locationVector)
+                  .add(
+                    new Vector3(
+                      2 * SETTINGS.point.initialLabelOffset,
+                      SETTINGS.point.initialLabelOffset,
+                      0
+                    )
+                  )
+                  .normalize();
+                newSELabel.locationVector = this.tmpVector;
 
-              nSectingLinesCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-              newSELabel.showing = false;
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointCommand(
+                    item.SEIntersectionPoint,
+                    item.parent1,
+                    item.parent2,
+                    newSELabel
+                  )
+                );
+                item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+                newSELabel.showing = false;
+              }
             });
         } else {
           console.log("An n-secting line already exists", i);

@@ -35,6 +35,7 @@ import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 type TemporaryLine = {
   line: Line;
@@ -768,38 +769,54 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       PerpendicularLineThruPointHandler.store
         .createAllIntersectionsWithLine(newPerpLine)
         .forEach((item: SEIntersectionReturnType) => {
-          // console.debug(
-          //   "Got intersection point at",
-          //   item.SEIntersectionPoint.locationVector.toFixed(4)
-          // );
-          // Create the plottable label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+          if (item.existingIntersectionPoint) {
+            // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+            if (
+              !item.SEIntersectionPoint.parents.some(
+                parent => parent.name === newPerpLine.name
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+            ) {
+              const addIntersectionCmd = new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newPerpLine
+              );
+              if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+              else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+            }
+          } else {
+            // console.debug(
+            //   "Got intersection point at",
+            //   item.SEIntersectionPoint.locationVector.toFixed(4)
+            // );
+            // Create the plottable label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
 
-          const addIntersectionCmd = new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          );
+            const addIntersectionCmd = new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            );
 
-          if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
-          else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
 
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-          newSELabel.showing = false;
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
+          }
         });
       // console.log("after create intersections");
       // console.log(vec.x, vec.y, vec.z);

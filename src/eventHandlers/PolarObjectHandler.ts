@@ -31,6 +31,7 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 enum Create {
   NONE,
@@ -674,32 +675,48 @@ export default class PolarObjectHandler extends Highlighter {
     PolarObjectHandler.store
       .createAllIntersectionsWithLine(newPolarLine)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          if (
+            !item.SEIntersectionPoint.parents.some(
+              parent => parent.name === newPolarLine.name
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          ) {
+            polarLineCommandGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newPolarLine
+              )
+            );
+          }
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        polarLineCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+        }
       });
     polarLineCommandGroup.execute();
   }

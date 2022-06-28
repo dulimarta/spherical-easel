@@ -103,46 +103,7 @@ export class SEMeasuredCircle extends SECircle {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this._exists =
-      this._centerSEPoint.exists && this._radiusMeasurementSEExpression.exists;
-
-    if (this._exists) {
-      const newRadius = this._radiusMeasurementSEExpression.value.modPi();
-      // update the location of the circleSEPoint (This is the *only* place that this is updated)
-      // compute a normal to the centerVector, named tmpVector
-      this.tmpPerpVector.set(
-        -this._centerSEPoint.locationVector.y,
-        this._centerSEPoint.locationVector.x,
-        0
-      );
-      // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
-      if (this.tmpPerpVector.isZero()) {
-        this.tmpPerpVector.set(
-          0,
-          -this._centerSEPoint.locationVector.z,
-          this._centerSEPoint.locationVector.y
-        );
-      }
-      this.tmpPerpVector.normalize();
-      this.tempVector
-        .copy(this._centerSEPoint.locationVector)
-        .multiplyScalar(Math.cos(newRadius));
-      this.tempVector.addScaledVector(this.tmpPerpVector, Math.sin(newRadius));
-      this.circleSEPoint.locationVector = this.tempVector.normalize();
-
-      //update the centerVector and the radius
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
-      // display the new circle with the updated values
-      this.ref.updateDisplay();
-    }
-
-    if (this.showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information

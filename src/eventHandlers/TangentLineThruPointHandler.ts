@@ -30,6 +30,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 // const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 type TemporaryLine = {
   line: Line;
@@ -669,32 +670,48 @@ export default class TangentLineThruPointHandler extends Highlighter {
       TangentLineThruPointHandler.store
         .createAllIntersectionsWithLine(newPerpLine)
         .forEach((item: SEIntersectionReturnType) => {
-          // Create the plottable label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+          if (item.existingIntersectionPoint) {
+            // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+            if (
+              !item.SEIntersectionPoint.parents.some(
+                parent => parent.name === newPerpLine.name
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+            ) {
+              addTangentLineGroup.addCommand(
+                new AddIntersectionPointParent(
+                  item.SEIntersectionPoint,
+                  newPerpLine
+                )
+              );
+            }
+          } else {
+            // Create the plottable label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
 
-          addTangentLineGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-          newSELabel.showing = false;
+            addTangentLineGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
+          }
         });
     }
     addTangentLineGroup.execute();

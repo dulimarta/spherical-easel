@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { IntersectionReturnType, ObjectState } from "@/types";
+import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { SEOneOrTwoDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
@@ -8,8 +8,10 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
-import { Matrix4 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { useSEStore } from "@/stores/se";
+import { SENodule } from "./SENodule";
+import { SEParametric } from "./SEParametric";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -21,15 +23,18 @@ export class SEIntersectionPoint extends SEPoint {
   /**
    * The One-Dimensional parents of this SEInstructionPoint
    */
-  private seParent1: SEOneOrTwoDimensional;
-  private seParent2: SEOneOrTwoDimensional;
+  private sePrincipleParent1: SEOneDimensional;
+  private sePrincipleParent2: SEOneDimensional;
+  private otherSEParents: SEOneDimensional[] = [];
 
   /**
-   * The numbering of the intersection in the case of multiple intersection
+   * The numbering of the intersection in the case of multiple intersection between seParent1 and seParent 2
    */
   private order: number;
 
   private inverseTotalRotationMatrix: Matrix4;
+
+  private tempVector = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
    * @param pt the TwoJS point associated with this intersection
@@ -44,15 +49,15 @@ export class SEIntersectionPoint extends SEPoint {
    */
   constructor(
     pt: Point,
-    seParent1: SEOneOrTwoDimensional,
-    seParent2: SEOneOrTwoDimensional,
+    seParent1: SEOneDimensional,
+    seParent2: SEOneDimensional,
     order: number,
     isUserCreated: boolean
   ) {
     super(pt);
     this.ref = pt;
-    this.seParent1 = seParent1;
-    this.seParent2 = seParent2;
+    this.sePrincipleParent1 = seParent1;
+    this.sePrincipleParent2 = seParent2;
     this.order = order;
     if (isUserCreated) {
       this._isUserCreated = true;
@@ -68,30 +73,30 @@ export class SEIntersectionPoint extends SEPoint {
 
   public get noduleDescription(): string {
     let typeParent1;
-    if (this.seParent1 instanceof SESegment) {
+    if (this.sePrincipleParent1 instanceof SESegment) {
       typeParent1 = i18n.tc("objects.segments", 3);
-    } else if (this.seParent1 instanceof SELine) {
+    } else if (this.sePrincipleParent1 instanceof SELine) {
       typeParent1 = i18n.tc("objects.lines", 3);
-    } else if (this.seParent1 instanceof SECircle) {
+    } else if (this.sePrincipleParent1 instanceof SECircle) {
       typeParent1 = i18n.tc("objects.circles", 3);
-    } else if (this.seParent1 instanceof SEEllipse) {
+    } else if (this.sePrincipleParent1 instanceof SEEllipse) {
       typeParent1 = i18n.tc("objects.ellipses", 3);
     }
     let typeParent2;
-    if (this.seParent2 instanceof SESegment) {
+    if (this.sePrincipleParent2 instanceof SESegment) {
       typeParent2 = i18n.tc("objects.segments", 3);
-    } else if (this.seParent2 instanceof SELine) {
+    } else if (this.sePrincipleParent2 instanceof SELine) {
       typeParent2 = i18n.tc("objects.lines", 3);
-    } else if (this.seParent2 instanceof SECircle) {
+    } else if (this.sePrincipleParent2 instanceof SECircle) {
       typeParent2 = i18n.tc("objects.circles", 3);
-    } else if (this.seParent2 instanceof SEEllipse) {
+    } else if (this.sePrincipleParent2 instanceof SEEllipse) {
       typeParent2 = i18n.tc("objects.ellipses", 3);
     }
     return String(
       i18n.t(`objectTree.intersectionPoint`, {
-        parent1: this.seParent1.label?.ref.shortUserName,
+        parent1: this.sePrincipleParent1.label?.ref.shortUserName,
         typeParent1: typeParent1,
-        parent2: this.seParent2.label?.ref.shortUserName,
+        parent2: this.sePrincipleParent2.label?.ref.shortUserName,
         typeParent2: typeParent2,
         index: this.order
       })
@@ -105,6 +110,13 @@ export class SEIntersectionPoint extends SEPoint {
     );
   }
 
+  get principleParent1(): SEOneDimensional {
+    return this.sePrincipleParent1;
+  }
+  get principleParent2(): SEOneDimensional {
+    return this.sePrincipleParent2;
+  }
+  // order is always the order from the intersection of the two principle parents
   public get intersectionOrder(): number {
     return this.order;
   }
@@ -117,27 +129,145 @@ export class SEIntersectionPoint extends SEPoint {
   set isUserCreated(flag: boolean) {
     this._isUserCreated = flag;
   }
+
   get isUserCreated(): boolean {
     return this._isUserCreated;
   }
 
-  public shallowUpdate(): void {
-    this._exists = this.seParent1.exists && this.seParent2.exists;
-    if (this._exists) {
-      // console.debug("Updating SEIntersectionPoint", this.name);
-      // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      const updatedIntersectionInfo: IntersectionReturnType[] =
-        intersectTwoObjects(
-          this.seParent1,
-          this.seParent2,
-          this.inverseTotalRotationMatrix
-        );
-      if (updatedIntersectionInfo[this.order] !== undefined) {
-        this._exists = updatedIntersectionInfo[this.order].exists;
-        this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+  get otherParentArray(): SEOneDimensional[] {
+    return this.otherSEParents;
+  }
+
+  public addIntersectionParent(n: SEOneDimensional): void {
+    // only add a new parent that is not already on the list of other parents
+    if (!this.otherSEParents.some(parent => n.name === parent.name)) {
+      this.otherSEParents.push(n);
+    }
+    //adding a parent can make the intersection point exist
+    console.debug(this.name + " intersction point other parents");
+    this.otherSEParents.forEach(par => console.debug(par.name + " "));
+  }
+
+  public removeIntersectionParent(n: SEOneDimensional): boolean {
+    // if the parent to be removed is on the otherSEParents array just remove it
+    const index = this.otherSEParents.findIndex(
+      parent => parent.name === n.name
+    );
+    if (index > -1) {
+      this.otherSEParents.splice(index, 1);
+      return true;
+    } else {
+      // if the parent being removed is one of the two principle parents (seParent1|2), we must make sure there is
+      // an element in the  otherSEParent to be put in its place and we must update the order as necessary.
+      // if not return false and this means that this intersection point should be deleted or some error had occurred
+      if (
+        (this.sePrincipleParent1.name === n.name ||
+          this.sePrincipleParent2.name === n.name) &&
+        this.otherSEParents.length > 0
+      ) {
+        const newPrincipleParent = this.otherSEParents.splice(0, 1);
+        // newPrincipleParent can be assigned to either principle spot, because the order variable of the intersection is
+        // updated based on the location, but the type Lines, Segments, Circles, Ellipses, Parametric must be maintained
+        // the principle parent 2 type is at the same spot or later than the principle parent 2 type on this list
+        if (this.sePrincipleParent1.name === n.name) {
+          this.sePrincipleParent1 = newPrincipleParent[0];
+        } else {
+          this.sePrincipleParent2 = newPrincipleParent[0];
+        }
+        if (
+          (this.sePrincipleParent1 instanceof SESegment &&
+            this.sePrincipleParent2 instanceof SELine) ||
+          (this.sePrincipleParent1 instanceof SECircle &&
+            this.sePrincipleParent2 instanceof SESegment) ||
+          (this.sePrincipleParent1 instanceof SECircle &&
+            this.sePrincipleParent2 instanceof SELine) ||
+          (this.sePrincipleParent1 instanceof SEEllipse &&
+            this.sePrincipleParent2 instanceof SECircle) ||
+          (this.sePrincipleParent1 instanceof SEEllipse &&
+            this.sePrincipleParent2 instanceof SESegment) ||
+          (this.sePrincipleParent1 instanceof SEEllipse &&
+            this.sePrincipleParent2 instanceof SELine) ||
+          (this.sePrincipleParent1 instanceof SEParametric &&
+            this.sePrincipleParent2 instanceof SEEllipse) ||
+          (this.sePrincipleParent1 instanceof SEParametric &&
+            this.sePrincipleParent2 instanceof SECircle) ||
+          (this.sePrincipleParent1 instanceof SEParametric &&
+            this.sePrincipleParent2 instanceof SESegment) ||
+          (this.sePrincipleParent1 instanceof SEParametric &&
+            this.sePrincipleParent2 instanceof SELine)
+        ) {
+          // switch the order of the principle parents
+          const temp = this.sePrincipleParent1;
+          this.sePrincipleParent1 = this.sePrincipleParent2;
+          this.sePrincipleParent2 = temp;
+        }
+        // update the order of the intersection
+        // order is always the order from the intersection of the two principle parents
+        const updatedIntersectionInfo: IntersectionReturnType[] =
+          intersectTwoObjects(
+            this.sePrincipleParent1,
+            this.sePrincipleParent2,
+            this.inverseTotalRotationMatrix
+          );
+        let updateOrderSuccessful = false;
+        updatedIntersectionInfo.forEach((element, index) => {
+          if (
+            this.tempVector
+              .subVectors(element.vector, this.locationVector)
+              .isZero()
+          ) {
+            updateOrderSuccessful = true;
+            this.order = index;
+          }
+        });
+        if (!updateOrderSuccessful) {
+          throw new Error(
+            "Update Intersection Point:  Order update error. Current location not found in intersection between the two new parents."
+          );
+        }
+        // update the addIntersectionPointCommand? No because this command (now) doesn't record the names of the principle parents so if the principle parents change this addIntersectionPointCommand is also automatically updated
+
+        return true;
       } else {
-        this._exists = false;
+        // The parent to remove is not on the otherSEParent array or The parent to remove is not one of the two principle parents with a backup to place into the principle parent slot
+        return false; // this should not happen
       }
+    }
+  }
+
+  public shallowUpdate(): void {
+    // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
+    const updatedIntersectionInfo: IntersectionReturnType[] =
+      intersectTwoObjects(
+        this.sePrincipleParent1,
+        this.sePrincipleParent2,
+        this.inverseTotalRotationMatrix
+      );
+    // order is always the order from the intersection of the two principle parents
+    if (updatedIntersectionInfo[this.order] !== undefined) {
+      this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      //check to see if the new location is on two existing parents (principle or other)
+      const possiblyOnList = [
+        this.sePrincipleParent1,
+        this.sePrincipleParent2,
+        ...this.otherSEParents
+      ];
+      let sum = 0;
+      possiblyOnList.forEach(parent => {
+        if (
+          parent.exists &&
+          parent.isHitAt(
+            this.locationVector, // this is the updated location
+            useSEStore().zoomMagnificationFactor
+          )
+        ) {
+          sum += 1;
+        }
+      });
+      console.debug("intersection point sum", sum);
+      this._exists = sum > 1; // you must be on at least two existing parents
+    } else {
+      this._exists = false;
     }
 
     // Update visibility

@@ -64,6 +64,13 @@ export type ToolButtonType = {
   toolTipMessage: string;
 };
 
+//type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
+
+//type ToString<T extends string | number | boolean | bigint> = `${T}`;
+
+// type IntersectionPointOtherParentNameType<N extends number> =
+//   `intersectionPointOtherParent${N}`;
+
 export type SavedNames =
   | "objectName"
   | "objectExists"
@@ -95,8 +102,12 @@ export type SavedNames =
   | "segmentArcLength"
   | "segmentStartPointName"
   | "segmentEndPointName"
-  | "intersectionPointParent1Name"
-  | "intersectionPointParent2Name"
+  | "intersectionPointPrincipleParent1Name"
+  | "intersectionPointPrincipleParent2Name"
+  | "intersectionPointOtherParentArrayLength"
+  | "intersectionPointOtherParentArrayNameList"
+  //| IntersectionPointOtherParentNameType<number>
+  // | "intersectionPointOtherParentName"+${number},
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
@@ -290,12 +301,13 @@ export interface IntersectionReturnType {
 }
 
 /**
- * Intersection Vector3 and if that intersection exists
+ * Intersection and if that intersection exists
  */
 export interface SEIntersectionReturnType {
   SEIntersectionPoint: SEIntersectionPoint;
   parent1: SEOneDimensional;
   parent2: SEOneDimensional;
+  existingIntersectionPoint: boolean; // if this is true then the object that is receiving this SEIntersectionReturnType is a (possibly new) parent of this intersection point
 }
 
 /**

@@ -56,14 +56,7 @@ export class SEPointReflection extends SETransformation {
     if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
 
-    this._exists = this._pointOfReflection.exists;
-    if (this._exists) {
-      //determine the direction to rotate?
-      this._matrix.makeRotationAxis(
-        this._pointOfReflection.locationVector,
-        Math.PI
-      );
-    }
+    this.shallowUpdate();
 
     // This point reflection is completely determined by it point parent and an update on the parent
     // will cause this point reflection to be correct. So we don't store any additional information

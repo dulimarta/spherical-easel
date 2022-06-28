@@ -141,38 +141,7 @@ export class SEIsometrySegment extends SESegment {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    this._exists =
-      this._seParentSegment.exists && this._seParentIsometry.exists;
-
-    if (this._exists) {
-      // Set the normal vector
-      this.normalVector.copy(
-        this.parentIsometry.f(this._seParentSegment.normalVector)
-      );
-
-      // Set the arc length of the segment
-      this.arcLength = this._seParentSegment.arcLength;
-
-      // set the start vector location
-      // this.startSEPoint.locationVector.copy(
-      //   this.parentIsometry.f(
-      //     this._seParentSegment.startSEPoint.locationVector
-      //   )
-      // );
-
-      ////////////////////////////////////////////////////////////////////////////////////////
-      this.ref.startVector = this.startSEPoint.locationVector;
-      this.ref.arcLength = this.arcLength;
-      this.ref.normalVector = this.normalVector;
-      // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing
-      this.ref.updateDisplay();
-    }
-    if (this.showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // Segments are determined by more than their point parents so we store additional information
     // If the parent points of the segment are antipodal, the normal vector determines the

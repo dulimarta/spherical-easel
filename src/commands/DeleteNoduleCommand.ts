@@ -13,6 +13,7 @@ import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETransformation } from "@/models/SETransformation";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -28,7 +29,7 @@ export class DeleteNoduleCommand extends Command {
 
   do(): void {
     // Remove from the Data Structure (DAG)
-    // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
+    // Notice that this makes the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
     // this.seNodule.parents.forEach (obj => obj.unregister(this.seNodule))
     // because unregister modifies the parent array and you never want to modify the parent array while in a forEach

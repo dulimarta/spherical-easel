@@ -21,6 +21,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -729,7 +730,7 @@ export default class LineHandler extends Highlighter {
     // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
     this.temporaryLine.normalVector = this.normalVector;
 
-    // check to make sure that this line doesn't already exist
+    // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
     if (
       LineHandler.store.seLines.some(line =>
         this.tmpVector.subVectors(line.normalVector, this.normalVector).isZero()
@@ -785,32 +786,48 @@ export default class LineHandler extends Highlighter {
     LineHandler.store
       .createAllIntersectionsWithLine(newSELine)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if this line is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          if (
+            !item.SEIntersectionPoint.parents.some(
+              parent => parent.name === newSELine.name
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          ) {
+            lineGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newSELine
+              )
+            );
+          }
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        lineGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
+          lineGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+        }
       });
     lineGroup.execute();
     return true;
@@ -876,32 +893,51 @@ export default class LineHandler extends Highlighter {
         LineHandler.store
           .createAllIntersectionsWithLine(newSELine)
           .forEach((item: SEIntersectionReturnType) => {
-            // Create the plottable label
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
+            if (item.existingIntersectionPoint) {
+              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              if (
+                !item.SEIntersectionPoint.parents.some(
+                  parent => parent.name === newSELine.name
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
+              ) {
+                lineCommandGroup.addCommand(
+                  new AddIntersectionPointParent(
+                    item.SEIntersectionPoint,
+                    newSELine
+                  )
+                );
+              }
+            } else {
+              // Create the plottable label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
 
-            lineCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
+              lineCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  item.parent1,
+                  item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+              newSELabel.showing = false;
+            }
           });
 
         lineCommandGroup.execute();
