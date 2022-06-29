@@ -179,7 +179,7 @@ export const useSEStore = defineStore({
         });
     },
     setZoomMagnificationFactor(mag: number): void {
-      console.debug(`setZoomMagFactor ${mag}`);
+      //console.debug(`setZoomMagFactor ${mag}`);
       EventBus.fire("magnification-updated", {
         factor: this.zoomMagnificationFactor / mag
       });
@@ -830,61 +830,117 @@ export const useSEStore = defineStore({
               }
             });
           });
+        // Intersect this new line with all old segments
+        seSegments.forEach((oldSegment: SESegment) => {
+          const intersectionInfo = intersectLineWithSegment(
+            newLine,
+            oldSegment
+          );
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+          intersectionInfo.forEach((info, index) => {
+            if (
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
+                  }
+                  return true;
+                } else {
+                  return false;
+                }
+              })
+            ) {
+              // info.vector is not on the avoidVectors array, so create an intersection
+              const newPt = new NonFreePoint();
+              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+              newPt.adjustSize();
+              const newSEIntersectionPt = new SEIntersectionPoint(
+                newPt,
+                newLine,
+                oldSegment,
+                index,
+                false
+              );
+              newSEIntersectionPt.locationVector = info.vector;
+              newSEIntersectionPt.exists = info.exists;
+              intersectionPointList.push({
+                SEIntersectionPoint: newSEIntersectionPt,
+                parent1: newLine,
+                parent2: oldSegment,
+                existingIntersectionPoint: false
+              });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
+                intersectionPointList.push({
+                  SEIntersectionPoint: existingSEIntersectionPoint,
+                  parent1: oldSegment,
+                  parent2: newLine,
+                  existingIntersectionPoint: true
+                });
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
+                }
+              }
+            }
+          });
+        });
         //Intersect this new line with all old circles
         seCircles.forEach((oldCircle: SECircle) => {
           const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
+          let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
-            let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
-            intersectionInfo.forEach((info, index) => {
-              if (
-                !avoidSEPoints.some(v => {
-                  if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
-                  ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
-                    }
-                    return true;
-                  } else {
-                    return false;
+            if (
+              !avoidSEPoints.some(v => {
+                if (
+                  tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                ) {
+                  if (v instanceof SEIntersectionPoint) {
+                    existingSEIntersectionPoint = v;
                   }
-                })
-              ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
-                const newPt = new NonFreePoint();
-                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-                newPt.adjustSize();
-                const newSEIntersectionPt = new SEIntersectionPoint(
-                  newPt,
-                  newLine,
-                  oldCircle,
-                  index,
-                  false
-                );
-                newSEIntersectionPt.locationVector = info.vector;
-                newSEIntersectionPt.exists = info.exists;
+                  return true;
+                } else {
+                  return false;
+                }
+              })
+            ) {
+              // info.vector is not on the avoidVectors array, so create an intersection
+              const newPt = new NonFreePoint();
+              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+              newPt.adjustSize();
+              const newSEIntersectionPt = new SEIntersectionPoint(
+                newPt,
+                newLine,
+                oldCircle,
+                index,
+                false
+              );
+              newSEIntersectionPt.locationVector = info.vector;
+              newSEIntersectionPt.exists = info.exists;
+              intersectionPointList.push({
+                SEIntersectionPoint: newSEIntersectionPt,
+                parent1: newLine,
+                parent2: oldCircle,
+                existingIntersectionPoint: false
+              });
+            } else {
+              if (existingSEIntersectionPoint) {
+                // the intersection vector (info.vector) is at an existing SEIntersection point
                 intersectionPointList.push({
-                  SEIntersectionPoint: newSEIntersectionPt,
+                  SEIntersectionPoint: existingSEIntersectionPoint,
                   parent1: newLine,
                   parent2: oldCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: true
                 });
-              } else {
-                if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newLine,
-                    parent2: oldCircle,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
-                  }
+                // update the existence with the new parent if it exists (otherwise leave it alone)
+                if (info.exists === true) {
+                  existingSEIntersectionPoint.exists = info.exists;
                 }
               }
-            });
+            }
           });
         });
         //Intersect this new line with all old ellipses

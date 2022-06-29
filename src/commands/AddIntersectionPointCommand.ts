@@ -37,8 +37,8 @@ export class AddIntersectionPointCommand extends Command {
     this.seIntersectionPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seIntersectionPoint);
     Command.store.addLabel(this.seLabel);
-    this.seIntersectionPoint.markKidsOutOfDate();
-    this.seIntersectionPoint.update();
+    // this.seIntersectionPoint.markKidsOutOfDate(); //causes an infinite loop!
+    // this.seIntersectionPoint.update();
   }
 
   saveState(): void {

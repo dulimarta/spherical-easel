@@ -770,8 +770,8 @@ export default class MeasuredCircleHandler extends Highlighter {
             circleCommandGroup.addCommand(
               new AddIntersectionPointCommand(
                 item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
+                // item.parent1,
+                // item.parent2,
                 newSELabel
               )
             );

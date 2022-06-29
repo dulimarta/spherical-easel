@@ -61,6 +61,8 @@ import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectio
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
+import { SENodule } from "@/models/SENodule";
+import i18n from "@/i18n";
 
 //const SE = namespace("se");
 
@@ -288,6 +290,7 @@ export default class SphereFrame extends VueComponent {
       "set-transformation-for-tool",
       this.setTransformationForTool
     );
+    EventBus.listen("delete-node", this.deleteNode);
   }
 
   mounted(): void {
@@ -336,6 +339,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("measured-circle-set-temporary-radius");
     EventBus.unlisten("set-expression-for-tool");
     EventBus.unlisten("set-transformation-for-tool");
+    EventBus.unlisten("delete-node");
   }
 
   @Watch("canvasSize")
@@ -659,6 +663,31 @@ export default class SphereFrame extends VueComponent {
     if (this.currentTool instanceof ApplyTransformationHandler) {
       this.currentTool.setTransformation(e.transformation);
     }
+  }
+
+  deleteNode(e: {
+    victim: SENodule;
+    victimName: string;
+    victimType: string;
+  }): void {
+    if (!this.deleteTool) {
+      this.deleteTool = new DeleteHandler(this.layers);
+    }
+    const deletedNodeIds = this.deleteTool.delete(e.victim);
+    //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+    EventBus.fire("show-alert", {
+      key: `handlers.deletedNodes`,
+      keyOptions: {
+        type: e.victimType,
+        name: e.victimName,
+        number: deletedNodeIds.length - 1,
+        objects:
+          deletedNodeIds.length === 2
+            ? i18n.tc(`objects.objects`, 4)
+            : i18n.tc(`objects.objects`, 3)
+      },
+      type: "success"
+    });
   }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this

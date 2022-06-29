@@ -322,10 +322,15 @@ import { SERotation } from "@/models/SERotation";
 import { SEInversion } from "@/models/SEInversion";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
+import i18n from "@/i18n";
+import { SEIsometryLine } from "@/models/SEIsometryLine";
+import { SEIsometryCircle } from "@/models/SEIsometryCircle";
+import { SEIsometrySegment } from "@/models/SEIsometrySegment";
+import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 
 @Component({
   computed: {
-    ...mapState(useSEStore, ["inverseTotalRotationMatrix","actionMode"])
+    ...mapState(useSEStore, ["inverseTotalRotationMatrix", "actionMode"])
   },
   methods: {
     ...mapActions(useSEStore, ["unglowAllSENodules"])
@@ -342,6 +347,8 @@ export default class SENoduleItem extends Vue {
   readonly unglowAllSENodules!: () => void;
   private rotationMatrix = new Matrix4();
   private traceLocation = new Vector3();
+  private nodeName = "";
+  private nodeType = "";
 
   curve: SEParametric | null = null;
   curvePoint: SEParametricTracePoint | null = null;
@@ -475,49 +482,55 @@ export default class SENoduleItem extends Vue {
   }
 
   deleteNode(): void {
-    /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLICATION BE ELIMINATED?
-    // Clear the delete array and map
-    this.beforeDeleteStateMap.clear();
-    this.beforeDeleteSENoduleIDList.splice(0);
-    // First mark all children of the victim out of date so that the update method does a topological sort
-    this.node.markKidsOutOfDate();
-    //Record the state of the this.node and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    this.node.update(
-      this.beforeDeleteStateMap,
-      this.beforeDeleteSENoduleIDList
-    );
-
-    const deleteCommandGroup = new CommandGroup();
-    // The update method orders the objects from the this.node to the leaf (i.e objects with only in arrows)
-    // To delete remove from the leaves to the this.node (and to undo build from the this.node to leaves -- accomplished
-    // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
-    this.beforeDeleteSENoduleIDList.reverse();
-    this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
-      // Get the SENodule via the beforeState
-      const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
-
-      if (seNoduleBeforeState !== undefined) {
-        if (
-          seNoduleBeforeState.object instanceof SEIntersectionPoint &&
-          (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
-        ) {
-          // don't delete a user created intersection point, covert it back to not user created.
-          deleteCommandGroup.addCommand(
-            new ConvertUserCreatedInterToNotUserCreatedCommand(
-              seNoduleBeforeState.object
-            )
-          );
-        } else {
-          deleteCommandGroup.addCommand(
-            new DeleteNoduleCommand(seNoduleBeforeState.object)
-          );
-        }
-      }
+    //Trigger event in sphereFrame to use the delete tool to delete the object and all its descendants
+    EventBus.fire("delete-node", {
+      victim: this.node,
+      victimName: this.nodeName,
+      victimType: this.nodeType
     });
-    deleteCommandGroup.execute();
-
     // when deleting mesurements, the measure object(if any) must be unglowed
     this.unglowAllSENodules();
+
+    // /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLICATION BE ELIMINATED?
+    // // Clear the delete array and map
+    // this.beforeDeleteStateMap.clear();
+    // this.beforeDeleteSENoduleIDList.splice(0);
+    // // First mark all children of the victim out of date so that the update method does a topological sort
+    // this.node.markKidsOutOfDate();
+    // //Record the state of the this.node and all the SENodules that depend on it (i.e kids, grandKids, etc..).
+    // this.node.update(
+    //   this.beforeDeleteStateMap,
+    //   this.beforeDeleteSENoduleIDList
+    // );
+
+    // const deleteCommandGroup = new CommandGroup();
+    // // The update method orders the objects from the this.node to the leaf (i.e objects with only in arrows)
+    // // To delete remove from the leaves to the this.node (and to undo build from the this.node to leaves -- accomplished
+    // // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
+    // this.beforeDeleteSENoduleIDList.reverse();
+    // this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
+    //   // Get the SENodule via the beforeState
+    //   const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
+
+    //   if (seNoduleBeforeState !== undefined) {
+    //     if (
+    //       seNoduleBeforeState.object instanceof SEIntersectionPoint &&
+    //       (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
+    //     ) {
+    //       // don't delete a user created intersection point, covert it back to not user created.
+    //       deleteCommandGroup.addCommand(
+    //         new ConvertUserCreatedInterToNotUserCreatedCommand(
+    //           seNoduleBeforeState.object
+    //         )
+    //       );
+    //     } else {
+    //       deleteCommandGroup.addCommand(
+    //         new DeleteNoduleCommand(seNoduleBeforeState.object)
+    //       );
+    //     }
+    //   }
+    // });
+    // deleteCommandGroup.execute();
   }
 
   cycleValueDisplayMode(): void {
@@ -625,145 +638,347 @@ export default class SENoduleItem extends Vue {
     );
   }
   get isLine(): boolean {
-    return this.node instanceof SELine;
+    if (this.node instanceof SELine) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
+    return false;
   }
   get isLineSegment(): boolean {
-    return this.node instanceof SESegment;
+    //return this.node instanceof SESegment;
+    if (this.node instanceof SESegment) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.segments`, 3);
+      return true;
+    }
+    return false;
   }
   get isCircle(): boolean {
-    return this.node instanceof SECircle;
+    //return this.node instanceof SECircle;
+    if (this.node instanceof SESegment) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.segments`, 3);
+      return true;
+    }
+    return false;
   }
   get isEllipse(): boolean {
-    return this.node instanceof SEEllipse;
+    //return this.node instanceof SEEllipse;
+    if (this.node instanceof SEEllipse) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.ellipses`, 3);
+      return true;
+    }
+    return false;
   }
   get isIntersectionPoint(): boolean {
-    return this.node instanceof SEIntersectionPoint;
+    //return this.node instanceof SEIntersectionPoint;
+    if (this.node instanceof SEIntersectionPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
   get isAngle(): boolean {
-    return this.node instanceof SEAngleMarker;
+    //return this.node instanceof SEAngleMarker;
+    if (this.node instanceof SEAngleMarker) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.angleMarkers`, 3);
+      return true;
+    }
+    return false;
   }
   get isMeasurement(): boolean {
-    return this.node instanceof SEExpression;
+    //   return this.node instanceof SEExpression;
+    if (this.node instanceof SEExpression) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.measurements`, 3);
+      return true;
+    }
+    return false;
   }
   get isCalculation(): boolean {
-    return this.node instanceof SECalculation;
+    // return this.node instanceof SECalculation;
+    if (this.node instanceof SECalculation) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.calculations`, 3);
+      return true;
+    }
+    return false;
   }
   // get isSlider(): boolean { // Not needed as SESlider items are sorted in SENoduleList
   //   return this.node instanceof SESlider;
   // }
   get isMeasureTriangle(): boolean {
-    return (
-      this.node instanceof SEPolygon && this.node.seEdgeSegments.length === 3
-    );
+    //return (
+    //  this.node instanceof SEPolygon && this.node.seEdgeSegments.length === 3
+    //);
+    if (
+      this.node instanceof SEPolygon &&
+      this.node.seEdgeSegments.length === 3
+    ) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.triangles`, 3);
+      return true;
+    }
+    return false;
   }
   get isMeasurePolygon(): boolean {
-    return this.node instanceof SEPolygon;
+    //return this.node instanceof SEPolygon;
+    if (this.node instanceof SEPolygon) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.polygons`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isParametric(): boolean {
-    return this.node instanceof SEParametric;
+    // return this.node instanceof SEParametric;
+    if (this.node instanceof SEParametric) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.parametrics`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isAntipode(): boolean {
-    return this.node instanceof SEAntipodalPoint;
+    //return this.node instanceof SEAntipodalPoint;
+    if (this.node instanceof SEAntipodalPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isPolar(): boolean {
+    //return (
+    //  this.node instanceof SEPolarLine || this.node instanceof SEPolarPoint
+    //);
+    if (this.node instanceof SEPolarLine) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+    } else if (this.node instanceof SEPolarPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+    }
     return (
       this.node instanceof SEPolarLine || this.node instanceof SEPolarPoint
     );
   }
 
   get isPerpendicular(): boolean {
-    return this.node instanceof SEPerpendicularLineThruPoint;
+    //return this.node instanceof SEPerpendicularLineThruPoint;
+    if (this.node instanceof SEPerpendicularLineThruPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
+    return false;
   }
   get isPointOnObject(): boolean {
-    return this.node instanceof SEPointOnOneOrTwoDimensional;
+    // return this.node instanceof SEPointOnOneOrTwoDimensional;
+    if (this.node instanceof SEPointOnOneOrTwoDimensional) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isSegmentLength(): boolean {
-    return this.node instanceof SESegmentLength;
+    // return this.node instanceof SESegmentLength;
+    if (this.node instanceof SESegmentLength) {
+      this.nodeName = this.node.seSegment.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.measurements`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isPointDistance(): boolean {
-    return this.node instanceof SEPointDistance;
+    //return this.node instanceof SEPointDistance;
+    if (this.node instanceof SEPointDistance) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.measurements`, 3);
+      return true;
+    }
+    return false;
   }
   get isMidpoint(): boolean {
-    return (
-      this.node instanceof SENSectPoint && (this.node as SENSectPoint).N === 2
-    );
+    //return (
+    // this.node instanceof SENSectPoint && (this.node as SENSectPoint).N === 2
+    //)
+    if (
+      this.node instanceof SENSectPoint &&
+      (this.node as SENSectPoint).N === 2
+    ) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
   get isNSectPoint(): boolean {
-    return this.node instanceof SENSectPoint;
+    //return this.node instanceof SENSectPoint;
+    if (this.node instanceof SENSectPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isTangent(): boolean {
-    return this.node instanceof SETangentLineThruPoint;
+    //return this.node instanceof SETangentLineThruPoint;
+    if (this.node instanceof SETangentLineThruPoint) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
+    return false;
   }
   get isAngleBisector(): boolean {
-    return (
-      this.node instanceof SENSectLine && (this.node as SENSectLine).N === 2
-    );
+    // return (
+    //   this.node instanceof SENSectLine && (this.node as SENSectLine).N === 2
+    // );
+    if (
+      this.node instanceof SENSectLine &&
+      (this.node as SENSectLine).N === 2
+    ) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
+    return false;
   }
   get isNSectLine(): boolean {
-    return this.node instanceof SENSectLine;
+    // return this.node instanceof SENSectLine;
+    if (this.node instanceof SENSectLine) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isTranslation(): boolean {
-    return this.node instanceof SETranslation;
+    //return this.node instanceof SETranslation;
+    if (this.node instanceof SETranslation) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.transformations`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isRotation(): boolean {
-    return this.node instanceof SERotation;
+    //return this.node instanceof SERotation;
+    if (this.node instanceof SERotation) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.transformations`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isReflection(): boolean {
-    return this.node instanceof SEReflection;
+    //return this.node instanceof SEReflection;
+    if (this.node instanceof SEReflection) {
+      this.nodeName = this.node.name; // this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.transformations`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isPointReflection(): boolean {
-    return this.node instanceof SEPointReflection;
+    // return this.node instanceof SEPointReflection;
+    if (this.node instanceof SEPointReflection) {
+      this.nodeName = this.node.name; // this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.transformations`, 3);
+      return true;
+    }
+    return false;
   }
 
   get isInversion(): boolean {
-    return this.node instanceof SEInversion;
+    //return this.node instanceof SEInversion;
+    if (this.node instanceof SEInversion) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.transformations`, 3);
+      return true;
+    }
+    return false;
   }
   get isTransformedPoint(): boolean {
-    return (
+    // return (
+    //   this.node instanceof SETransformedPoint ||
+    //   this.node instanceof SEInversionCircleCenter
+    // );
+    if (
       this.node instanceof SETransformedPoint ||
       this.node instanceof SEInversionCircleCenter
-    );
+    ) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.points`, 3);
+      return true;
+    }
+    return false;
   }
   get isTransformedLine(): boolean {
+    //return this.node instanceof SEIsometryLine;
+    if (this.node instanceof SEIsometryLine) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.lines`, 3);
+      return true;
+    }
     return false;
-    //return this.node instanceof SETransformedLine;
   }
   get isTransformedSegment(): boolean {
+    //return this.node instanceof SEIsometrySegment;
+    if (this.node instanceof SEIsometrySegment) {
+      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.segments`, 3);
+      return true;
+    }
     return false;
-    //return this.node instanceof SETransformedSegment;
   }
   get isTransformedCircle(): boolean {
-    return (
+    // return (
+    //   (this.node instanceof SECircle &&
+    //     this.node.circleSEPoint instanceof SETransformedPoint &&
+    //     this.node.centerSEPoint instanceof SETransformedPoint &&
+    //     this.node.circleSEPoint.parentTransformation.name ===
+    //       this.node.centerSEPoint.parentTransformation.name) ||
+    //   (this.node instanceof SECircle &&
+    //     this.node.centerSEPoint instanceof SEInversionCircleCenter)
+    // );
+    if (
+      this.node instanceof SEIsometryCircle ||
       (this.node instanceof SECircle &&
         this.node.circleSEPoint instanceof SETransformedPoint &&
-        this.node.centerSEPoint instanceof SETransformedPoint &&
-        this.node.circleSEPoint.parentTransformation.name ===
-          this.node.centerSEPoint.parentTransformation.name) ||
-      (this.node instanceof SECircle &&
-        this.node.centerSEPoint instanceof SEInversionCircleCenter)
-    );
+        this.node.centerSEPoint instanceof SEInversionCircleCenter &&
+        this.node.centerSEPoint.parentTransformation.name ===
+          this.node.circleSEPoint.parentTransformation.name)
+    ) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.circles`, 3);
+      return true;
+    }
+    return false;
   }
   get isTransformedEllipse(): boolean {
-    return (
-      this.node instanceof SEEllipse &&
-      this.node.focus1SEPoint instanceof SETransformedPoint &&
-      this.node.focus2SEPoint instanceof SETransformedPoint &&
-      this.node.ellipseSEPoint instanceof SETransformedPoint &&
-      this.node.focus1SEPoint.parentTransformation.name ===
-        this.node.focus2SEPoint.parentTransformation.name &&
-      this.node.focus1SEPoint.parentTransformation.name ===
-        this.node.ellipseSEPoint.parentTransformation.name
-    );
+    if (this.node instanceof SEIsometryEllipse) {
+      this.nodeName = this.node.label?.ref.shortUserName ?? "";
+      this.nodeType = i18n.tc(`objects.ellipses`, 3);
+      return true;
+    }
+    return false;
   }
   get isPlottable(): boolean {
     return (

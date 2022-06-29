@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEOneDimensional } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
-export class AddIntersectionPointParent extends Command {
+export class RemoveIntersectionPointParent extends Command {
   private seParent: SEOneDimensional;
   private seIntersectionPoint: SEIntersectionPoint;
 
@@ -16,11 +16,8 @@ export class AddIntersectionPointParent extends Command {
   }
 
   do(): void {
-    // Add the parent to the intersection point in the DAG
-    this.seParent.registerChild(this.seIntersectionPoint);
-    // Add the parent to the list of parents in the SEIntersectionPoint
-    console.debug("Add Intersection Partent command");
-    this.seIntersectionPoint.addIntersectionParent(this.seParent);
+    this.seIntersectionPoint.removeIntersectionParent(this.seParent);
+    this.seParent.unregisterChild(this.seIntersectionPoint);
   }
 
   saveState(): void {
@@ -28,8 +25,10 @@ export class AddIntersectionPointParent extends Command {
   }
 
   restoreState(): void {
-    this.seIntersectionPoint.removeIntersectionParent(this.seParent);
-    this.seParent.unregisterChild(this.seIntersectionPoint);
+    // Add the parent to the intersection point in the DAG
+    this.seParent.registerChild(this.seIntersectionPoint);
+    // Add the parent to the list of parents in the SEIntersectionPoint
+    this.seIntersectionPoint.addIntersectionParent(this.seParent);
   }
 
   toOpcode(): null | string | Array<string> {

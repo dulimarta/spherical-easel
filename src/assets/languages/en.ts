@@ -235,15 +235,21 @@ export default {
     title: "Preferences"
   },
   objects: {
+    objects: "Objects | Object | object | objects",
     points: "Points | Point | point | points",
     lines: "Lines | Line | line | lines",
     circles: "Circles | Circle| circle | circles",
     segments: "Line Segments | Line Segment | line segment | line segments",
     measurements: "Measurements | Measurement | measurement | measurements",
+    calculations: "Calculations | Calculation | calculation | calculations",
     transformations:
       "Transformations | Transformation | transformation | transformations",
     ellipses: "Ellipses | Ellipse | ellipse | ellipses",
     parametrics: "Parametrics | Parametric | parametric | parametrics",
+    triangles: "Triangles | Triangle | triangle | triangles",
+
+    polygons: "Polygons | Polygon | polygon | polygons",
+    angleMarkers: "Angle Markers | Angle Marker | angle marker |angle markers",
     translations: "Translations | Translation | translation | translations",
     rotations: "Rotations | Rotation | rotation | rotations",
     reflections: "Reflections | Reflection | reflection | reflections",
@@ -611,7 +617,9 @@ export default {
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
     newPolygonAdded: "A new polygon was created.",
-    deletedNodes: "Successfully deleted {number} objects.",
+    deletedNodes:
+      "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+    deletedNumberNodes: "Successfully deleted {number} {objects}.",
 
     rotationObjectUpdate: "Rotating about {type} {name}.",
     rotationNoObjectUpdate:

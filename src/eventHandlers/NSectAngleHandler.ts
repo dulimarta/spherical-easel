@@ -404,8 +404,8 @@ export default class NSectAngleHandler extends Highlighter {
                 nSectingLinesCommandGroup.addCommand(
                   new AddIntersectionPointCommand(
                     item.SEIntersectionPoint,
-                    item.parent1,
-                    item.parent2,
+                    // item.parent1,
+                    // item.parent2,
                     newSELabel
                   )
                 );

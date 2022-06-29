@@ -1733,8 +1733,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
+              // item.parent1,
+              // item.parent2,
               newSELabel
             )
           );
@@ -1872,8 +1872,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
+              // item.parent1,
+              // item.parent2,
               newSELabel
             )
           );
@@ -2014,8 +2014,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
+              // item.parent1,
+              // item.parent2,
               newSELabel
             )
           );
@@ -2175,8 +2175,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
+              // item.parent1,
+              // item.parent2,
               newSELabel
             )
           );
@@ -2427,7 +2427,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               parent => parent.name === newInvertedSECircle.name
             )
           ) {
-          invertedCircleOrLineCommandGroup.addCommand(
+            invertedCircleOrLineCommandGroup.addCommand(
               new AddIntersectionPointParent(
                 item.SEIntersectionPoint,
                 newInvertedSECircle
@@ -2435,34 +2435,35 @@ export default class ApplyTransformationHandler extends Highlighter {
             );
           }
         } else {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        invertedCircleOrLineCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
-      }});
+          invertedCircleOrLineCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
+      });
 
     invertedCircleOrLineCommandGroup.execute();
     const centerName =

@@ -149,6 +149,9 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   public removeIntersectionParent(n: SEOneDimensional): boolean {
+    console.debug(
+      `Remove parent ${n.name} from intersection point ${this.name}`
+    );
     // if the parent to be removed is on the otherSEParents array just remove it
     const index = this.otherSEParents.findIndex(
       parent => parent.name === n.name
@@ -200,6 +203,9 @@ export class SEIntersectionPoint extends SEPoint {
           const temp = this.sePrincipleParent1;
           this.sePrincipleParent1 = this.sePrincipleParent2;
           this.sePrincipleParent2 = temp;
+          console.debug(
+            `Intersection point principle parent switched: PP1 ${this.sePrincipleParent1.name}, PP2 ${this.sePrincipleParent2.name}`
+          );
         }
         // update the order of the intersection
         // order is always the order from the intersection of the two principle parents
@@ -225,7 +231,7 @@ export class SEIntersectionPoint extends SEPoint {
             "Update Intersection Point:  Order update error. Current location not found in intersection between the two new parents."
           );
         }
-        // update the addIntersectionPointCommand? No because this command (now) doesn't record the names of the principle parents so if the principle parents change this addIntersectionPointCommand is also automatically updated
+        // update the addIntersectionPointCommand? No because this command (now) doesn't record the names of the principle parents so if the principle parents change the addIntersectionPointCommand is also automatically updated
 
         return true;
       } else {
@@ -264,7 +270,7 @@ export class SEIntersectionPoint extends SEPoint {
           sum += 1;
         }
       });
-      console.debug("intersection point sum", sum);
+      // console.debug("intersection point sum", sum);
       this._exists = sum > 1; // you must be on at least two existing parents
     } else {
       this._exists = false;

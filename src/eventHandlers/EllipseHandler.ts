@@ -1138,8 +1138,8 @@ export default class EllipseHandler extends Highlighter {
           ellipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
+              // item.parent1,
+              // item.parent2,
               newSELabel
             )
           );
@@ -1243,8 +1243,8 @@ export default class EllipseHandler extends Highlighter {
         //     circleCommandGroup.addCommand(
         //       new AddIntersectionPointCommand(
         //         item.SEIntersectionPoint,
-        //         item.parent1,
-        //         item.parent2,
+                // item.parent1,
+                // item.parent2,
         //         newSELabel
         //       )
         //     );
