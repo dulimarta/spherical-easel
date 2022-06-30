@@ -35,6 +35,10 @@ export class SEPolarLine
     this.polarPointParent = polarPointParent;
   }
 
+  get pointParent(): SEPoint {
+    return this.polarPointParent;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.polarLine`, {

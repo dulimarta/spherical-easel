@@ -56,6 +56,7 @@ import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCent
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1700,10 +1701,28 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithSegment(newIsometrySESegment)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this segment is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySESegment,
+          // if not add it as a parent of the intersection point
+          const newIsometrySESegmentAncestors: SENodule[] = [
+            newIsometrySESegment.startSEPoint,
+            newIsometrySESegment.endSEPoint
+          ];
+          newIsometrySESegmentAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newIsometrySESegmentAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newIsometrySESegmentAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newIsometrySESegment, make the newIsometrySESegment a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newIsometrySESegment.name
+            !newIsometrySESegmentAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             transformedSegmentCommandGroup.addCommand(
@@ -1839,10 +1858,28 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithLine(newIsometrySELine)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySELine,
+          // if not add it as a parent of the intersection point
+          const newIsometrySELineAncestors: SENodule[] = [
+            newIsometrySELine.endSEPoint,
+            newIsometrySELine.startSEPoint
+          ];
+          newIsometrySELineAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newIsometrySELineAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newIsometrySELineAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newIsometrySELine, make the newIsometrySELine a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newIsometrySELine.name
+            !newIsometrySELineAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             transformedLineCommandGroup.addCommand(
@@ -1980,10 +2017,28 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newIsometrySECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySECircle,
+          // if not add it as a parent of the intersection point
+          const newIsometrySECircleAncestors: SENodule[] = [
+            newIsometrySECircle.centerSEPoint,
+            newIsometrySECircle.circleSEPoint
+          ];
+          newIsometrySECircleAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newIsometrySECircleAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newIsometrySECircleAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newIsometrySECircle, make the newIsometrySECircle a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newIsometrySECircle.name
+            !newIsometrySECircleAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             transformedCircleCommandGroup.addCommand(
@@ -2141,10 +2196,29 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithEllipse(newIsometrySEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySEEllipse,
+          // if not add it as a parent of the intersection point
+          const newIsometrySEEllipseAncestors: SENodule[] = [
+            newIsometrySEEllipse.focus1SEPoint,
+            newIsometrySEEllipse.focus2SEPoint,
+            newIsometrySEEllipse.ellipseSEPoint
+          ];
+          newIsometrySEEllipseAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newIsometrySEEllipseAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newIsometrySEEllipseAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newIsometrySEEllipse, make the newIsometrySEEllipse a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newIsometrySEEllipse.name
+            !newIsometrySEEllipseAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             transformedEllipseCommandGroup.addCommand(
@@ -2421,10 +2495,28 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newInvertedSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newInvertedSECircle,
+          // if not add it as a parent of the intersection point
+          const newInvertedSECircleAncestors: SENodule[] = [
+            newInvertedSECircle.centerSEPoint,
+            newInvertedSECircle.circleSEPoint
+          ];
+          newInvertedSECircleAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newInvertedSECircleAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newInvertedSECircleAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newInvertedSECircle, make the newInvertedSECircle a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newInvertedSECircle.name
+            !newInvertedSECircleAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             invertedCircleOrLineCommandGroup.addCommand(

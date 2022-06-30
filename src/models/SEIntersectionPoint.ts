@@ -144,7 +144,7 @@ export class SEIntersectionPoint extends SEPoint {
       this.otherSEParents.push(n);
     }
     //adding a parent can make the intersection point exist
-    console.debug(this.name + " intersction point other parents");
+    console.debug(this.name + " intersection point other parents");
     this.otherSEParents.forEach(par => console.debug(par.name + " "));
   }
 
@@ -275,7 +275,9 @@ export class SEIntersectionPoint extends SEPoint {
     } else {
       this._exists = false;
     }
-
+    console.debug(
+      `Intersction Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
+    );
     // Update visibility
     if (this._exists && this._isUserCreated && this._showing) {
       this.ref.setVisible(true);

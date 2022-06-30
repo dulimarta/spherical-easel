@@ -40,6 +40,7 @@ import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -736,10 +737,28 @@ export default class MeasuredCircleHandler extends Highlighter {
         .createAllIntersectionsWithCircle(newMeasuredSECircle)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+            // check to see if the intersection point will be or is a (grand, etc) parent of the newMeasuredSECircle,
+            // if not add it as a parent of the intersection point
+            const newMeasuredSECircleAncestors: SENodule[] = [
+              newMeasuredSECircle.centerSEPoint,
+              newMeasuredSECircle.circleSEPoint
+            ];
+            newMeasuredSECircleAncestors.forEach(nodule => {
+              // add all the unique parents of the nodule to the array
+              nodule.parents.forEach(parent => {
+                if (
+                  !newMeasuredSECircleAncestors.some(
+                    ancestor => ancestor.id === parent.id
+                  ) // add only unique ancestors to the array
+                ) {
+                  newMeasuredSECircleAncestors.push(parent); //add the unique parent to the end of the array
+                }
+              });
+            });
+            // if the intersection point is not an ancestor of the newMeasuredSECircle, make the newMeasuredSECircle a parent of the intersection point
             if (
-              !item.SEIntersectionPoint.parents.some(
-                parent => parent.name === newMeasuredSECircle.name
+              !newMeasuredSECircleAncestors.some(
+                ancestor => ancestor.id === item.SEIntersectionPoint.id
               )
             ) {
               circleCommandGroup.addCommand(

@@ -25,6 +25,7 @@ import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -1150,10 +1151,28 @@ export default class ThreePointCircleHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newSECircle,
+          // if not add it as a parent of the intersection point
+          const newSECircleAncestors: SENodule[] = [
+            newSECircle.centerSEPoint,
+            newSECircle.circleSEPoint
+          ];
+          newSECircleAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newSECircleAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newSECircleAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newSECircle, make the newSECircle a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newSECircle.name
+            !newSECircleAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             threePointCircleCommandGroup.addCommand(
@@ -1326,10 +1345,28 @@ export default class ThreePointCircleHandler extends Highlighter {
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              // check to see if the intersection point will be or is a (grand, etc) parent of the newSECircle,
+              // if not add it as a parent of the intersection point
+              const newSECircleAncestors: SENodule[] = [
+                newSECircle.centerSEPoint,
+                newSECircle.circleSEPoint
+              ];
+              newSECircleAncestors.forEach(nodule => {
+                // add all the unique parents of the nodule to the array
+                nodule.parents.forEach(parent => {
+                  if (
+                    !newSECircleAncestors.some(
+                      ancestor => ancestor.id === parent.id
+                    ) // add only unique ancestors to the array
+                  ) {
+                    newSECircleAncestors.push(parent); //add the unique parent to the end of the array
+                  }
+                });
+              });
+              // if the intersection point is not an ancestor of the newSECircle, make the newSECircle a parent of the intersection point
               if (
-                !item.SEIntersectionPoint.parents.some(
-                  parent => parent.name === newSECircle.name
+                !newSECircleAncestors.some(
+                  ancestor => ancestor.id === item.SEIntersectionPoint.id
                 )
               ) {
                 threePointCircleCommandGroup.addCommand(

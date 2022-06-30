@@ -353,7 +353,7 @@ export default class MoveHandler extends Highlighter {
       const rotationAngle = this.beforeMoveVector.angleTo(this.afterMoveVector);
       desiredZAxis.crossVectors(this.beforeMoveVector, this.afterMoveVector);
       if (desiredZAxis.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-        if (rotationAngle == 0) {
+        if (Math.abs(rotationAngle) < SETTINGS.tolerance) {
           // The vectors are identical
           this.changeInPositionRotationMatrix.identity();
         } else {

@@ -31,6 +31,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 
 type TemporaryLine = {
   line: Line;
@@ -624,7 +625,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       plottableLine.adjustSize();
 
       // Create the model(SE) tangent line for the new point and link them
-      const newPerpLine = new SETangentLineThruPoint(
+      const newSETangentLine = new SETangentLineThruPoint(
         plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
@@ -634,15 +635,15 @@ export default class TangentLineThruPointHandler extends Highlighter {
       );
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
-        newPerpLine.exists = false;
+        newSETangentLine.exists = false;
       }
       // Update the display of the tangent line
-      newPerpLine.markKidsOutOfDate();
-      newPerpLine.update();
+      newSETangentLine.markKidsOutOfDate();
+      newSETangentLine.update();
 
       // Create the plottable label
       const newLabel = new Label();
-      const newSELabel = new SELabel(newLabel, newPerpLine);
+      const newSELabel = new SELabel(newLabel, newSETangentLine);
 
       // Set the initial label location
       this.tmpVector1
@@ -659,7 +660,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       addTangentLineGroup.addCommand(
         new AddTangentLineThruPointCommand(
-          newPerpLine,
+          newSETangentLine,
           this.sePoint!,
           oneDimensional,
           newSELabel
@@ -668,19 +669,36 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       TangentLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine)
+        .createAllIntersectionsWithLine(newSETangentLine)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+            // check to see if the intersection point will be or is a (grand, etc) parent of the newSETangentLine,
+            // if not add it as a parent of the intersection point
+            const newSETangentLineAncestors: SENodule[] = [
+              newSETangentLine.startSEPoint
+            ];
+            newSETangentLineAncestors.forEach(nodule => {
+              // add all the unique parents of the nodule to the array
+              nodule.parents.forEach(parent => {
+                if (
+                  !newSETangentLineAncestors.some(
+                    ancestor => ancestor.id === parent.id
+                  ) // add only unique ancestors to the array
+                ) {
+                  newSETangentLineAncestors.push(parent); //add the unique parent to the end of the array
+                }
+              });
+            });
+            // if the intersection point is not an ancestor of the newSETangentLine, make the newSETangentLine a parent of the intersection point
             if (
-              !item.SEIntersectionPoint.parents.some(
-                parent => parent.name === newPerpLine.name
+              !newSETangentLineAncestors.some(
+                ancestor => ancestor.id === item.SEIntersectionPoint.id
               )
             ) {
               addTangentLineGroup.addCommand(
                 new AddIntersectionPointParent(
                   item.SEIntersectionPoint,
-                  newPerpLine
+                  newSETangentLine
                 )
               );
             }

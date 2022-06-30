@@ -75,8 +75,8 @@ export default class SENoduleTree extends Vue {
   }
 
   get hasExistingChildren(): boolean {
-    console.debug(" length", this.existingChildren.length);
-    this.existingChildren.forEach(node => console.debug(node.name));
+    // console.debug(" length", this.existingChildren.length);
+    //this.existingChildren.forEach(node => console.debug(node.name));
     return this.existingChildren.length > 0;
   }
 

@@ -125,21 +125,6 @@ export default class IntersectionPointHandler extends Highlighter {
         (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
       );
       if (filtered.length > 0) filtered[0].glowing = true;
-    } else if (this.hitSESegments.length > 0) {
-      if (this.oneDimensional1 !== null) {
-        if (
-          IntersectionPointHandler.store
-            .findIntersectionPointsByParent(
-              this.oneDimensional1.name,
-              this.hitSESegments[0].name
-            )
-            .some(pt => pt.exists && !pt.isUserCreated)
-        ) {
-          this.hitSESegments[0].glowing = true;
-        }
-      } else {
-        this.hitSESegments[0].glowing = true;
-      }
     } else if (this.hitSELines.length > 0) {
       if (this.oneDimensional1 !== null) {
         if (
@@ -154,6 +139,21 @@ export default class IntersectionPointHandler extends Highlighter {
         }
       } else {
         this.hitSELines[0].glowing = true;
+      }
+    } else if (this.hitSESegments.length > 0) {
+      if (this.oneDimensional1 !== null) {
+        if (
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSESegments[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSESegments[0].glowing = true;
+        }
+      } else {
+        this.hitSESegments[0].glowing = true;
       }
     } else if (this.hitSECircles.length > 0) {
       if (this.oneDimensional1 !== null) {
@@ -247,10 +247,12 @@ export default class IntersectionPointHandler extends Highlighter {
       IntersectionPointHandler.store.inverseTotalRotationMatrix;
     const rank1 = rank_of_type(oneDimensional1);
     const rank2 = rank_of_type(oneDimensional2);
+    console.debug(`ranks ${rank1} and ${rank2}`);
     if (
       (rank1 == rank2 && oneDimensional2.name > oneDimensional1.name) ||
-      rank2 > rank1
+      rank2 < rank1
     ) {
+      console.debug("switch");
       const tmp = oneDimensional1;
       oneDimensional1 = oneDimensional2;
       oneDimensional2 = tmp;

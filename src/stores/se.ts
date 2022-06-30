@@ -441,8 +441,8 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-    //#region rotateSphere
 
+    //#region rotateSphere
     rotateSphere(rotationMat: Matrix4): void {
       // Update the inverseTotalRotationMatrix. We have a new rotationMat which is transforming by
       //   rotationMat*oldTotalRotationMatrix * VEC
@@ -456,6 +456,11 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
+          if (m instanceof SEIntersectionPoint && !m.isUserCreated) {
+            // if you leave out this if statement then if you draw two lines, when you rotate the sphere, the intersection points appear
+            //(until a mouse leave event is triggered) even when they haven't been user created
+            return; // so don't move an non user created intersection points - they don't have any descendents that need to be rotated.
+          }
           if (m.exists) {
             // console.debug(parent.name, "invalidates", m.name);
             if (m.canUpdateNow()) {
@@ -468,7 +473,7 @@ export const useSEStore = defineStore({
         });
       }
 
-      // Begin updating those objects with no parents
+      // Begin updating those points with no parents
       sePoints
         .filter((p: SENodule) => p.parents.length === 0)
         .forEach((target: SENodule) => {
@@ -777,7 +782,11 @@ export const useSEStore = defineStore({
         seLines
           .filter((line: SELine) => line.id !== newLine.id) // ignore self
           .forEach((oldLine: SELine) => {
-            const intersectionInfo = intersectLineWithLine(oldLine, newLine);
+            const intersectionInfo = intersectLineWithLine(
+              oldLine,
+              newLine,
+              true // this is the first time these two objects have been intersected
+            );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
@@ -834,7 +843,8 @@ export const useSEStore = defineStore({
         seSegments.forEach((oldSegment: SESegment) => {
           const intersectionInfo = intersectLineWithSegment(
             newLine,
-            oldSegment
+            oldSegment,
+            true // this is the first time these two objects have been intersected
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
@@ -1087,7 +1097,8 @@ export const useSEStore = defineStore({
         seLines.forEach((oldLine: SELine) => {
           const intersectionInfo = intersectLineWithSegment(
             oldLine,
-            newSegment
+            newSegment,
+            true // this is the first time these two objects have been intersected
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
@@ -1148,7 +1159,8 @@ export const useSEStore = defineStore({
           .forEach((oldSegment: SESegment) => {
             const intersectionInfo = intersectSegmentWithSegment(
               oldSegment,
-              newSegment
+              newSegment,
+              true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
@@ -1520,7 +1532,8 @@ export const useSEStore = defineStore({
               oldCircle.centerSEPoint.locationVector,
               oldCircle.circleRadius,
               newCircle.centerSEPoint.locationVector,
-              newCircle.circleRadius
+              newCircle.circleRadius,
+              true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
@@ -1902,7 +1915,8 @@ export const useSEStore = defineStore({
           .forEach((oldEllipse: SEEllipse) => {
             const intersectionInfo = intersectEllipseWithEllipse(
               oldEllipse,
-              newEllipse
+              newEllipse,
+              true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {

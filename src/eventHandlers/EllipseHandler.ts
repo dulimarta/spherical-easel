@@ -22,6 +22,7 @@ import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -1104,10 +1105,27 @@ export default class EllipseHandler extends Highlighter {
       .createAllIntersectionsWithEllipse(newSEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newEllipse,
+          // if not add it as a parent of the intersection point
+          const newEllipseAncestors: SENodule[] = [
+            newSEEllipse.focus1SEPoint,
+            newSEEllipse.focus2SEPoint,
+            newSEEllipse.ellipseSEPoint
+          ];
+          newEllipseAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newEllipseAncestors.some(ancestor => ancestor.id === parent.id) // add only unique ancestors to the array
+              ) {
+                newEllipseAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newEllipse, make the newEllipse a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newSEEllipse.name
+            !newEllipseAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             ellipseCommandGroup.addCommand(
@@ -1155,7 +1173,7 @@ export default class EllipseHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (EllipseHandler.store.selectedSENodules.length == 3) {
+    if (EllipseHandler.store.selectedSENodules.length === 3) {
       const object1 = EllipseHandler.store.selectedSENodules[0];
       const object2 = EllipseHandler.store.selectedSENodules[1];
       const object3 = EllipseHandler.store.selectedSENodules[2];
@@ -1206,51 +1224,76 @@ export default class EllipseHandler extends Highlighter {
         );
 
         // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the circle command so they can be undone.
-        // this.store.getters
-        //   .createAllIntersectionsWithCircle(newSECircle)
-        //   .forEach((item: SEIntersectionReturnType) => {
-        // if (item.existingIntersectionPoint) {
-        //   // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
-        //   if (
-        //     !item.SEIntersectionPoint.parents.some(
-        //       parent => parent.name === newSECircle.name
-        //     )
-        //   ) {
-        //     circleCommandGroup.addCommand(
-        //       new AddIntersectionPointParent(
-        //         item.SEIntersectionPoint,
-        //         newSECircle
-        //       )
-        //     );
-        //   }
-        // } else {
-        //     const newLabel = new Label();
-        //     const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+        // in the store. Add the new created points to the ellipse command so they can be undone.
+        EllipseHandler.store
+          .createAllIntersectionsWithEllipse(newSEEllipse)
+          .forEach((item: SEIntersectionReturnType) => {
+            if (item.existingIntersectionPoint) {
+              // check to see if the intersection point will be or is a (grand, etc) parent of the newEllipse,
+              // if not add it as a parent of the intersection point
+              const newEllipseAncestors: SENodule[] = [
+                newSEEllipse.focus1SEPoint,
+                newSEEllipse.focus2SEPoint,
+                newSEEllipse.ellipseSEPoint
+              ];
+              newEllipseAncestors.forEach(nodule => {
+                // add all the unique parents of the nodule to the array
+                nodule.parents.forEach(parent => {
+                  if (
+                    !newEllipseAncestors.some(
+                      ancestor => ancestor.id === parent.id
+                    ) // add only unique ancestors to the array
+                  ) {
+                    newEllipseAncestors.push(parent); //add the unique parent to the end of the array
+                  }
+                });
+              });
+              // if the intersection point is not an ancestor of the newEllipse, make the newEllipse a parent of the intersection point
+              if (
+                !newEllipseAncestors.some(
+                  ancestor => ancestor.id === item.SEIntersectionPoint.id
+                )
+              ) {
+                ellipseCommandGroup.addCommand(
+                  new AddIntersectionPointParent(
+                    item.SEIntersectionPoint,
+                    newSEEllipse
+                  )
+                );
+              }
+            } else {
+              // Create the plottable and model label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
 
-        //     // Set the initial label location
-        //     this.tmpVector
-        //       .copy(item.SEIntersectionPoint.locationVector)
-        //       .add(
-        //         new Vector3(
-        //           2 * SETTINGS.point.initialLabelOffset,
-        //           SETTINGS.point.initialLabelOffset,
-        //           0
-        //         )
-        //       )
-        //       .normalize();
-        //     newSELabel.locationVector = this.tmpVector;
-        //     circleCommandGroup.addCommand(
-        //       new AddIntersectionPointCommand(
-        //         item.SEIntersectionPoint,
-                // item.parent1,
-                // item.parent2,
-        //         newSELabel
-        //       )
-        //     );
-        //     item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        //     newSELabel.showing = false;
-        //   }});
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
+
+              ellipseCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  // item.parent1,
+                  // item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+              newSELabel.showing = false;
+            }
+          });
 
         ellipseCommandGroup.execute();
       }

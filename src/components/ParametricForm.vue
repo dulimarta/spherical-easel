@@ -109,6 +109,8 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -782,33 +784,90 @@ export default class ParametricForm extends Vue {
     // in the store. Add the new created points to the parametric command so they can be undone.
     this.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tempVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newSEParametric,
+          // if not add it as a parent of the intersection point
+          const newSEParametricAncestors: SENodule[] = [...calculationParents];
+          newSEParametricAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newSEParametricAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newSEParametricAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newSEParametric, make the newSEParametric a parent of the intersection point
+          if (
+            !newSEParametricAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tempVector;
+          ) {
+            parametricCommandGroup.addCommand(
+              new AddIntersectionPointParent(
+                item.SEIntersectionPoint,
+                newSEParametric
+              )
+            );
+          }
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tempVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tempVector;
 
-        parametricCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            // item.parent1,
-            // item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          parametricCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+        }
+        // // Create the plottable and model label
+        // const newLabel = new Label();
+        // const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+        // // Set the initial label location
+        // this.tempVector
+        //   .copy(item.SEIntersectionPoint.locationVector)
+        //   .add(
+        //     new Vector3(
+        //       2 * SETTINGS.point.initialLabelOffset,
+        //       SETTINGS.point.initialLabelOffset,
+        //       0
+        //     )
+        //   )
+        //   .normalize();
+        // newSELabel.locationVector = this.tempVector;
+
+        // parametricCommandGroup.addCommand(
+        //   new AddIntersectionPointCommand(
+        //     item.SEIntersectionPoint,
+        //     // item.parent1,
+        //     // item.parent2,
+        //     newSELabel
+        //   )
+        // );
+        // item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        // newSELabel.showing = false;
       }
     );
 

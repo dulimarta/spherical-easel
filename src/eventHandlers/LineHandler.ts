@@ -22,6 +22,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -787,10 +788,26 @@ export default class LineHandler extends Highlighter {
       .createAllIntersectionsWithLine(newSELine)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this line is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newSELine,
+          // if not add it as a parent of the intersection point
+          const newSELineAncestors: SENodule[] = [
+            newSELine.startSEPoint,
+            newSELine.endSEPoint
+          ];
+          newSELineAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newSELineAncestors.some(ancestor => ancestor.id === parent.id) // add only unique ancestors to the array
+              ) {
+                newSELineAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newSELine, make the newSELine a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newSELine.name
+            !newSELineAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             lineGroup.addCommand(
@@ -894,10 +911,28 @@ export default class LineHandler extends Highlighter {
           .createAllIntersectionsWithLine(newSELine)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              // check to see if the intersection point will be or is a (grand, etc) parent of the newSELine,
+              // if not add it as a parent of the intersection point
+              const newSELineAncestors: SENodule[] = [
+                newSELine.startSEPoint,
+                newSELine.endSEPoint
+              ];
+              newSELineAncestors.forEach(nodule => {
+                // add all the unique parents of the nodule to the array
+                nodule.parents.forEach(parent => {
+                  if (
+                    !newSELineAncestors.some(
+                      ancestor => ancestor.id === parent.id
+                    ) // add only unique ancestors to the array
+                  ) {
+                    newSELineAncestors.push(parent); //add the unique parent to the end of the array
+                  }
+                });
+              });
+              // if the intersection point is not an ancestor of the newSELine, make the newSELine a parent of the intersection point
               if (
-                !item.SEIntersectionPoint.parents.some(
-                  parent => parent.name === newSELine.name
+                !newSELineAncestors.some(
+                  ancestor => ancestor.id === item.SEIntersectionPoint.id
                 )
               ) {
                 lineCommandGroup.addCommand(

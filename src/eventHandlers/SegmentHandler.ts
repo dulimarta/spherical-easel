@@ -22,6 +22,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -842,10 +843,28 @@ export default class SegmentHandler extends Highlighter {
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newSESegment,
+          // if not add it as a parent of the intersection point
+          const newSESegmentAncestors: SENodule[] = [
+            newSESegment.startSEPoint,
+            newSESegment.endSEPoint
+          ];
+          newSESegmentAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newSESegmentAncestors.some(
+                  ancestor => ancestor.id === parent.id
+                ) // add only unique ancestors to the array
+              ) {
+                newSESegmentAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newSESegment, make the newSESegment a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newSESegment.name
+            !newSESegmentAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             segmentGroup.addCommand(
@@ -1019,10 +1038,28 @@ export default class SegmentHandler extends Highlighter {
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              // check to see if the intersection point will be or is a (grand, etc) parent of the newSESegment,
+              // if not add it as a parent of the intersection point
+              const newSESegmentAncestors: SENodule[] = [
+                newSESegment.startSEPoint,
+                newSESegment.endSEPoint
+              ];
+              newSESegmentAncestors.forEach(nodule => {
+                // add all the unique parents of the nodule to the array
+                nodule.parents.forEach(parent => {
+                  if (
+                    !newSESegmentAncestors.some(
+                      ancestor => ancestor.id === parent.id
+                    ) // add only unique ancestors to the array
+                  ) {
+                    newSESegmentAncestors.push(parent); //add the unique parent to the end of the array
+                  }
+                });
+              });
+              // if the intersection point is not an ancestor of the newSESegment, make the newSESegment a parent of the intersection point
               if (
-                !item.SEIntersectionPoint.parents.some(
-                  parent => parent.name === newSESegment.name
+                !newSESegmentAncestors.some(
+                  ancestor => ancestor.id === item.SEIntersectionPoint.id
                 )
               ) {
                 segmentCommandGroup.addCommand(

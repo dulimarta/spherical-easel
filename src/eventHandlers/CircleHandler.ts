@@ -22,6 +22,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { SENodule } from "@/models/SENodule";
 
 const tmpVector = new Vector3();
 
@@ -710,10 +711,26 @@ export default class CircleHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+          // check to see if the intersection point will be or is a (grand, etc) parent of the newCircle,
+          // if not add it as a parent of the intersection point
+          const newCircleAncestors: SENodule[] = [
+            newSECircle.centerSEPoint,
+            newSECircle.circleSEPoint
+          ];
+          newCircleAncestors.forEach(nodule => {
+            // add all the unique parents of the nodule to the array
+            nodule.parents.forEach(parent => {
+              if (
+                !newCircleAncestors.some(ancestor => ancestor.id === parent.id) // add only unique ancestors to the array
+              ) {
+                newCircleAncestors.push(parent); //add the unique parent to the end of the array
+              }
+            });
+          });
+          // if the intersection point is not an ancestor of the newCircle, make the newCircle a parent of the intersection point
           if (
-            !item.SEIntersectionPoint.parents.some(
-              parent => parent.name === newSECircle.name
+            !newCircleAncestors.some(
+              ancestor => ancestor.id === item.SEIntersectionPoint.id
             )
           ) {
             circleCommandGroup.addCommand(
@@ -805,10 +822,28 @@ export default class CircleHandler extends Highlighter {
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if this circle is already a parent of the existing intersection point, if not add it as a parent of the intersection point
+              // check to see if the intersection point will be or is a (grand, etc) parent of the newCircle,
+              // if not add it as a parent of the intersection point
+              const newCircleAncestors: SENodule[] = [
+                newSECircle.centerSEPoint,
+                newSECircle.circleSEPoint
+              ];
+              newCircleAncestors.forEach(nodule => {
+                // add all the unique parents of the nodule to the array
+                nodule.parents.forEach(parent => {
+                  if (
+                    !newCircleAncestors.some(
+                      ancestor => ancestor.id === parent.id
+                    ) // add only unique ancestors to the array
+                  ) {
+                    newCircleAncestors.push(parent); //add the unique parent to the end of the array
+                  }
+                });
+              });
+              // if the intersection point is not an ancestor of the newCircle, make the newCircle a parent of the intersection point
               if (
-                !item.SEIntersectionPoint.parents.some(
-                  parent => parent.name === newSECircle.name
+                !newCircleAncestors.some(
+                  ancestor => ancestor.id === item.SEIntersectionPoint.id
                 )
               ) {
                 circleCommandGroup.addCommand(

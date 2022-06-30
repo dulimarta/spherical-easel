@@ -40,6 +40,7 @@ const toVector = new Vector3();
 const tempVec = new Vector3();
 const tempVec1 = new Vector3();
 const tempVec2 = new Vector3();
+const tempVec3 = new Vector3();
 const tmpMatrix = new Matrix4();
 
 /**
@@ -62,9 +63,10 @@ function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
  */
 export function intersectLineWithLine(
   lineOne: SELine,
-  lineTwo: SELine
+  lineTwo: SELine,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -80,12 +82,18 @@ export function intersectLineWithLine(
   intersection1.vector.copy(tempVec);
   intersection2.vector.copy(tempVec.multiplyScalar(-1));
 
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the lines are being intersected,
+  // we conclude the lines will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the second line are points on the first line
+  // But notice that the two points on the first line are moved to (nearly) antipodal positions, the second line can have a different normal vector than the first, but the intersection
+  // points are the two antipodal points that define the first line so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT TWO LINES CAN START IDENTICAL AND THEN BE MOVED APART?)
   if (
     tempVec
       .crossVectors(lineOne.normalVector, lineTwo.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -101,9 +109,10 @@ export function intersectLineWithLine(
  */
 export function intersectLineWithSegment(
   line: SELine,
-  segment: SESegment
+  segment: SESegment,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -128,12 +137,19 @@ export function intersectLineWithSegment(
   if (!segment.onSegment(tempVec2)) {
     intersection2.exists = false;
   }
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the line/segment are being intersected,
+  // we conclude the line/segment will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the segment are points on the first line
+  // But notice that the two points on the segment are moved to (nearly) antipodal positions, the segment can have a different normal vector than the line, but the intersection
+  // points are the two antipodal points that are the endpoints of the segment so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT LINES/SEGMENT CAN START IDENTICAL AND THEN BE MOVED APART?)
+
   if (
     tempVec
       .crossVectors(line.normalVector, segment.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -479,9 +495,10 @@ export function intersectLineWithParametric(
  */
 export function intersectSegmentWithSegment(
   segment1: SESegment,
-  segment2: SESegment
+  segment2: SESegment,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -507,12 +524,19 @@ export function intersectSegmentWithSegment(
   if (!segment1.onSegment(tempVec2) || !segment2.onSegment(tempVec2)) {
     intersection2.exists = false;
   }
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the lines are being intersected,
+  // we conclude the segments will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the second segment are points on the first segment
+  // But notice that the two enddpoints on the two segments are moved to (nearly) antipodal positions, the second segment can have a different normal vector than the first, but the intersection
+  // points are the two antipodal points that define endpoints of the segment so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT TWO segmentS CAN START IDENTICAL AND THEN BE MOVED APART?)
+
   if (
     tempVec
       .crossVectors(segment1.normalVector, segment2.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -730,10 +754,11 @@ export function intersectCircles(
   n1: Vector3, // center
   arc1: number, // arc radius
   n2: Vector3,
-  arc2: number
+  arc2: number,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
   //Initialize the items and the return items
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -760,7 +785,14 @@ export function intersectCircles(
 
   // distance between the two centers
   const centerDistance = center1.angleTo(center2); // distance between the two centers
-
+  if (
+    firstTimeIntersection &&
+    (Math.abs(centerDistance) < SETTINGS.tolerance ||
+      Math.PI - SETTINGS.tolerance < Math.abs(centerDistance))
+  ) {
+    // the centers are either the same or antipodal so the circles will never intersect.
+    return returnItems;
+  }
   // The circles intersect if and only if the three lengths have the property that each is less than the sum of the other two (by the converse to the spherical triangle inequality)
   if (
     centerDistance < radius1 + radius2 &&
@@ -1035,8 +1067,81 @@ export function intersectCircleWithParametric(
  */
 export function intersectEllipseWithEllipse(
   ellipse1: SEEllipse,
-  ellipse2: SEEllipse
+  ellipse2: SEEllipse,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
+  const returnItems: IntersectionReturnType[] = [];
+  // Is this the first time these ellipses have been intersected and are they confocal? (Or antipodal-lly confocal). If so, they will never intersect
+  if (
+    firstTimeIntersection &&
+    //E1 focus 1 is the same as E2 focus 1
+    //E1 focus 2 is the same as E2 focus 2
+    ((tempVec1
+      .subVectors(
+        ellipse1.focus1SEPoint.locationVector,
+        ellipse2.focus1SEPoint.locationVector
+      )
+      .isZero() &&
+      tempVec2
+        .subVectors(
+          ellipse1.focus2SEPoint.locationVector,
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero()) ||
+      //-(E1 focus 1) is the same as E2 focus 2
+      //-(E1 focus 2) is the same as E2 focus 1
+      (tempVec1
+        .subVectors(
+          tempVec
+            .copy(ellipse1.focus1SEPoint.locationVector)
+            .multiplyScalar(-1),
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            tempVec3
+              .copy(ellipse1.focus2SEPoint.locationVector)
+              .multiplyScalar(-1),
+            ellipse2.focus1SEPoint.locationVector
+          )
+          .isZero()) ||
+      //E1 focus 1 is the same as E2 focus 2
+      //E1 focus 2 is the same as E2 focus 1
+      (tempVec1
+        .subVectors(
+          ellipse1.focus1SEPoint.locationVector,
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            ellipse1.focus2SEPoint.locationVector,
+            ellipse2.focus1SEPoint.locationVector
+          )
+          .isZero()) ||
+      //-(E1 focus 1) is the same as E2 focus 1
+      //-(E1 focus 2) is the same as E2 focus 2
+      (tempVec1
+        .subVectors(
+          tempVec
+            .copy(ellipse1.focus1SEPoint.locationVector)
+            .multiplyScalar(-1),
+          ellipse2.focus1SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            tempVec3
+              .copy(ellipse1.focus2SEPoint.locationVector)
+              .multiplyScalar(-1),
+            ellipse2.focus2SEPoint.locationVector
+          )
+          .isZero()))
+  ) {
+    return returnItems;
+  }
+
   // Transform ellipse1 into the standard coordinates of the ellipse2.
   const transformedToStandardFocus1 = new Vector3();
   const transformedToStandardFocus2 = new Vector3();
@@ -1105,7 +1210,7 @@ export function intersectEllipseWithEllipse(
     [],
     dp
   );
-  const returnItems: IntersectionReturnType[] = [];
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: false

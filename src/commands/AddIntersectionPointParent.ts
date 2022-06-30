@@ -19,7 +19,7 @@ export class AddIntersectionPointParent extends Command {
     // Add the parent to the intersection point in the DAG
     this.seParent.registerChild(this.seIntersectionPoint);
     // Add the parent to the list of parents in the SEIntersectionPoint
-    console.debug("Add Intersection Partent command");
+    // console.debug("Add Intersection Partent command");
     this.seIntersectionPoint.addIntersectionParent(this.seParent);
   }
 
