@@ -144,8 +144,9 @@ export class SEIntersectionPoint extends SEPoint {
       this.otherSEParents.push(n);
     }
     //adding a parent can make the intersection point exist
-    console.debug(this.name + " intersection point other parents");
-    this.otherSEParents.forEach(par => console.debug(par.name + " "));
+    //console.debug(this.name + " intersection point other parents");
+    //this.otherSEParents.forEach(par => console.debug(par.name + " "));
+    console.debug(`Add parent ${n.name} to intersection point ${this.name}`);
   }
 
   public removeIntersectionParent(n: SEOneDimensional): boolean {
@@ -203,9 +204,9 @@ export class SEIntersectionPoint extends SEPoint {
           const temp = this.sePrincipleParent1;
           this.sePrincipleParent1 = this.sePrincipleParent2;
           this.sePrincipleParent2 = temp;
-          console.debug(
-            `Intersection point principle parent switched: PP1 ${this.sePrincipleParent1.name}, PP2 ${this.sePrincipleParent2.name}`
-          );
+          // console.debug(
+          //   `Intersection point principle parent switched: PP1 ${this.sePrincipleParent1.name}, PP2 ${this.sePrincipleParent2.name}`
+          // );
         }
         // update the order of the intersection
         // order is always the order from the intersection of the two principle parents
@@ -226,6 +227,9 @@ export class SEIntersectionPoint extends SEPoint {
             this.order = index;
           }
         });
+        //update the existence as the parents have changed
+        this.setExistence();
+
         if (!updateOrderSuccessful) {
           throw new Error(
             "Update Intersection Point:  Order update error. Current location not found in intersection between the two new parents."
@@ -241,6 +245,29 @@ export class SEIntersectionPoint extends SEPoint {
     }
   }
 
+  //check to see if the new location is on two existing parents (principle or other)
+  private setExistence(): void {
+    const possiblyOnList = [
+      this.sePrincipleParent1,
+      this.sePrincipleParent2,
+      ...this.otherSEParents
+    ];
+    let sum = 0;
+    possiblyOnList.forEach(parent => {
+      if (
+        parent.exists &&
+        parent.isHitAt(
+          this.locationVector, // this is the updated location
+          useSEStore().zoomMagnificationFactor
+        )
+      ) {
+        sum += 1;
+      }
+    });
+    // console.debug("intersection point sum", sum);
+    this._exists = sum > 1; // you must be on at least two existing parents
+  }
+
   public shallowUpdate(): void {
     // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
     const updatedIntersectionInfo: IntersectionReturnType[] =
@@ -253,31 +280,13 @@ export class SEIntersectionPoint extends SEPoint {
     if (updatedIntersectionInfo[this.order] !== undefined) {
       this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
       //check to see if the new location is on two existing parents (principle or other)
-      const possiblyOnList = [
-        this.sePrincipleParent1,
-        this.sePrincipleParent2,
-        ...this.otherSEParents
-      ];
-      let sum = 0;
-      possiblyOnList.forEach(parent => {
-        if (
-          parent.exists &&
-          parent.isHitAt(
-            this.locationVector, // this is the updated location
-            useSEStore().zoomMagnificationFactor
-          )
-        ) {
-          sum += 1;
-        }
-      });
-      // console.debug("intersection point sum", sum);
-      this._exists = sum > 1; // you must be on at least two existing parents
+      this.setExistence();
     } else {
       this._exists = false;
     }
-    console.debug(
-      `Intersction Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
-    );
+    // console.debug(
+    //   `Intersction Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
+    // );
     // Update visibility
     if (this._exists && this._isUserCreated && this._showing) {
       this.ref.setVisible(true);
