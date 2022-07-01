@@ -117,7 +117,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { ActionMode, plottableType } from "@/types";
+import { ActionMode } from "@/types";
 import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";

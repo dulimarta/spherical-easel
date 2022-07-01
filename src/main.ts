@@ -14,13 +14,16 @@ import "firebase/firestore";
 import "firebase/storage";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
-import { config } from "vuex-module-decorators";
 import { createPinia, PiniaVuePlugin } from "pinia";
+import VueCompositionAPI from "@vue/composition-api";
+
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 Vue.use(VueI18n);
 Vue.use(PiniaVuePlugin);
+Vue.use(VueCompositionAPI);
+
 const pinia = createPinia();
 
 const firebaseConfig = {
@@ -41,8 +44,6 @@ Vue.prototype.$appDB = firebase.firestore();
 Vue.prototype.$appStorage = firebase.storage();
 Vue.config.productionTip = false;
 
-config.rawError = true;
-
 new Vue({
   i18n,
   provide: {
@@ -50,7 +51,6 @@ new Vue({
     // renderer
   },
   router,
-  // store,
   vuetify,
   pinia,
   render: (h: any) => h(App)

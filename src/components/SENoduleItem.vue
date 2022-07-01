@@ -325,7 +325,7 @@ import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
 
 @Component({
   computed: {
-    ...mapState(useSEStore, ["inverseTotalRotationMatrix","actionMode"])
+    ...mapState(useSEStore, ["inverseTotalRotationMatrix", "actionMode"])
   },
   methods: {
     ...mapActions(useSEStore, ["unglowAllSENodules"])

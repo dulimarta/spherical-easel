@@ -1523,18 +1523,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     if (
-      ApplyTransformationHandler.store.sePoints.some(pt => {
-        if (
-          this.tmpVector
-            .subVectors(pt.locationVector, transformedLocation)
-            .isZero()
-        ) {
-          existingPoint = pt;
-          return true;
-        } else {
-          return false;
-        }
-      })
+      ApplyTransformationHandler.store.sePoints
+        .map((n: any) => n as SEPoint)
+        .some(pt => {
+          if (
+            this.tmpVector
+              .subVectors(pt.locationVector, transformedLocation)
+              .isZero()
+          ) {
+            existingPoint = pt;
+            return true;
+          } else {
+            return false;
+          }
+        })
     ) {
       //"Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
       if (displayNotifications) {
@@ -2255,15 +2257,17 @@ export default class ApplyTransformationHandler extends Highlighter {
       transformationSEParent
     );
     //search to see if there are any points at the inverted location (for example the center of inversion or antipodal to the center of inversion)
-    ApplyTransformationHandler.store.sePoints.forEach(pt => {
-      if (
-        this.tmpVector
-          .subVectors(pt.locationVector, centerOfInvertedCircle)
-          .isZero()
-      ) {
-        newInvertedSECircleCenter = pt;
-      }
-    });
+    ApplyTransformationHandler.store.sePoints
+      .map((n: any) => n as SEPoint)
+      .forEach((pt: SEPoint) => {
+        if (
+          this.tmpVector
+            .subVectors(pt.locationVector, centerOfInvertedCircle)
+            .isZero()
+        ) {
+          newInvertedSECircleCenter = pt;
+        }
+      });
 
     if (newInvertedSECircleCenter === null) {
       const newTransformedCircleCenter = new NonFreePoint();

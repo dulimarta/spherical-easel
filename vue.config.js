@@ -1,6 +1,8 @@
-module.exports = {
+const { defineConfig } = require("@vue/cli-service");
+
+module.exports = defineConfig({
   productionSourceMap: false, // disable source map on production build
-  transpileDependencies: ["vuetify", "vuex-module-decorators"],
+  transpileDependencies: true,
   pluginOptions: {
     i18n: {
       locale: "en",
@@ -25,4 +27,4 @@ module.exports = {
   //     }
   //   }
   // }
-};
+});
