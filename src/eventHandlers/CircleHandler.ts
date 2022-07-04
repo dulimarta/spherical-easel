@@ -21,8 +21,9 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 const tmpVector = new Vector3();
 
@@ -711,35 +712,12 @@ export default class CircleHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newCircle,
-          // if not add it as a parent of the intersection point
-          const newCircleAncestors: SENodule[] = [
-            newSECircle.centerSEPoint,
-            newSECircle.circleSEPoint
-          ];
-          newCircleAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newCircleAncestors.some(ancestor => ancestor.id === parent.id) // add only unique ancestors to the array
-              ) {
-                newCircleAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newCircle, make the newCircle a parent of the intersection point
-          if (
-            !newCircleAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          circleCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSECircle
             )
-          ) {
-            circleCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newSECircle
-              )
-            );
-          }
+          );
         } else {
           // the intersection point is newly created and must be added as a child of the two parents returned
           // Create the plottable and model label
@@ -822,37 +800,12 @@ export default class CircleHandler extends Highlighter {
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if the intersection point will be or is a (grand, etc) parent of the newCircle,
-              // if not add it as a parent of the intersection point
-              const newCircleAncestors: SENodule[] = [
-                newSECircle.centerSEPoint,
-                newSECircle.circleSEPoint
-              ];
-              newCircleAncestors.forEach(nodule => {
-                // add all the unique parents of the nodule to the array
-                nodule.parents.forEach(parent => {
-                  if (
-                    !newCircleAncestors.some(
-                      ancestor => ancestor.id === parent.id
-                    ) // add only unique ancestors to the array
-                  ) {
-                    newCircleAncestors.push(parent); //add the unique parent to the end of the array
-                  }
-                });
-              });
-              // if the intersection point is not an ancestor of the newCircle, make the newCircle a parent of the intersection point
-              if (
-                !newCircleAncestors.some(
-                  ancestor => ancestor.id === item.SEIntersectionPoint.id
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSECircle
                 )
-              ) {
-                circleCommandGroup.addCommand(
-                  new AddIntersectionPointParent(
-                    item.SEIntersectionPoint,
-                    newSECircle
-                  )
-                );
-              }
+              );
             } else {
               const newLabel = new Label();
               const newSELabel = new SELabel(

@@ -456,11 +456,6 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          if (m instanceof SEIntersectionPoint && !m.isUserCreated) {
-            // if you leave out this if statement then if you draw two lines, when you rotate the sphere, the intersection points appear
-            //(until a mouse leave event is triggered) even when they haven't been user created
-            return; // so don't move an non user created intersection points - they don't have any descendents that need to be rotated.
-          }
           if (m.exists) {
             // console.debug(parent.name, "invalidates", m.name);
             if (m.canUpdateNow()) {

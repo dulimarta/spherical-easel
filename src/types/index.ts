@@ -106,8 +106,8 @@ export type SavedNames =
   | "intersectionPointPrincipleParent2Name"
   | "intersectionPointOtherParentArrayLength"
   | "intersectionPointOtherParentArrayNameList"
-  //| IntersectionPointOtherParentNameType<number>
-  // | "intersectionPointOtherParentName"+${number},
+  | "intersectionPointName"
+  | "intersectionPointOtherParentName"
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"

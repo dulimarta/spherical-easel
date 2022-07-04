@@ -21,8 +21,9 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -843,37 +844,12 @@ export default class SegmentHandler extends Highlighter {
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newSESegment,
-          // if not add it as a parent of the intersection point
-          const newSESegmentAncestors: SENodule[] = [
-            newSESegment.startSEPoint,
-            newSESegment.endSEPoint
-          ];
-          newSESegmentAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newSESegmentAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newSESegmentAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newSESegment, make the newSESegment a parent of the intersection point
-          if (
-            !newSESegmentAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          segmentGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSESegment
             )
-          ) {
-            segmentGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newSESegment
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -1038,37 +1014,12 @@ export default class SegmentHandler extends Highlighter {
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // check to see if the intersection point will be or is a (grand, etc) parent of the newSESegment,
-              // if not add it as a parent of the intersection point
-              const newSESegmentAncestors: SENodule[] = [
-                newSESegment.startSEPoint,
-                newSESegment.endSEPoint
-              ];
-              newSESegmentAncestors.forEach(nodule => {
-                // add all the unique parents of the nodule to the array
-                nodule.parents.forEach(parent => {
-                  if (
-                    !newSESegmentAncestors.some(
-                      ancestor => ancestor.id === parent.id
-                    ) // add only unique ancestors to the array
-                  ) {
-                    newSESegmentAncestors.push(parent); //add the unique parent to the end of the array
-                  }
-                });
-              });
-              // if the intersection point is not an ancestor of the newSESegment, make the newSESegment a parent of the intersection point
-              if (
-                !newSESegmentAncestors.some(
-                  ancestor => ancestor.id === item.SEIntersectionPoint.id
+              segmentCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSESegment
                 )
-              ) {
-                segmentCommandGroup.addCommand(
-                  new AddIntersectionPointParent(
-                    item.SEIntersectionPoint,
-                    newSESegment
-                  )
-                );
-              }
+              );
             } else {
               // Create the plottable label
               const newLabel = new Label();

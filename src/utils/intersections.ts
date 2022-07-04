@@ -2,7 +2,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType } from "@/types";
+import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import { Vector3, Matrix4 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
@@ -53,6 +53,7 @@ const tmpMatrix = new Matrix4();
 function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
   return vectorList.some(v => tempVec.subVectors(vec, v).isZero());
 }
+
 
 /**
  * Return an ordered list of IntersectionReturnType (i.e. a vector location and exists flag) for the

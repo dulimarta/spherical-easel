@@ -236,7 +236,7 @@ export class AddIntersectionPointCommand extends Command {
       // add the other parents
       otherParents.forEach(parent => {
         if (parent) {
-          seIntersectionPoint.addIntersectionParent(parent);
+          seIntersectionPoint.addIntersectionOtherParent(parent);
         }
       });
       return new AddIntersectionPointCommand(

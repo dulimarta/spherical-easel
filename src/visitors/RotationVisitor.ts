@@ -36,6 +36,15 @@ export class RotationVisitor implements Visitor {
     } else {
       p.locationVector = this.tmpVector; // Set the new position vector
     }
+    p.shallowUpdate();
+    // if you leave out this shallow update if statement then if you draw two lines, when you rotate the sphere, the intersection points appear
+    //(until a mouse leave event is triggered) even when they haven't been user created
+    // also the SEIntersectionPoints wouldn't exist at the correct locations
+    // for example, draw a circle, draw a line segment with both endpoints and entire segment in the circle
+    //  create a line using the endpoints of the segment, when you have the point tool on and mouse over
+    //  the visual intersection points, the intersection points are there, if you then move the construction by
+    //  rotating the sphere, without this shallowUpdate, the intersection points are not accessible (in addition they would appear
+    //  even though they were not user created.)
     return true;
   }
   //#endregion actionOnPoint

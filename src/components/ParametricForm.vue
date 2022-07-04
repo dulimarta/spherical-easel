@@ -110,7 +110,8 @@ import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SENodule } from "@/models/SENodule";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -785,34 +786,12 @@ export default class ParametricForm extends Vue {
     this.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newSEParametric,
-          // if not add it as a parent of the intersection point
-          const newSEParametricAncestors: SENodule[] = [...calculationParents];
-          newSEParametricAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newSEParametricAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newSEParametricAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newSEParametric, make the newSEParametric a parent of the intersection point
-          if (
-            !newSEParametricAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          parametricCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSEParametric
             )
-          ) {
-            parametricCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newSEParametric
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();

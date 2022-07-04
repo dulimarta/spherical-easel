@@ -5,7 +5,11 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import { IntersectionReturnType, SEOneOrTwoDimensional } from "@/types";
+import {
+  IntersectionReturnType,
+  SEOneDimensional,
+  SEOneOrTwoDimensional
+} from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
@@ -13,13 +17,14 @@ import { SEEllipse } from "@/models/SEEllipse";
 
 // import { IntersectionPointHandler.store } from "@/store";
 import { intersectTwoObjects } from "@/utils/intersections";
-import { SEParametric } from "@/models/SEParametric";
+import { rank_of_type } from "@/utils/helpingfunctions";
+
 export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
    */
-  private oneDimensional1: SEOneOrTwoDimensional | null = null;
-  private oneDimensional2: SEOneOrTwoDimensional | null = null;
+  private oneDimensional1: SEOneDimensional | null = null;
+  private oneDimensional2: SEOneDimensional | null = null;
   /**
    * An array to hold updated information about the intersection points so we can properly
    * convert the existing intersection points to isUserCreated = true
@@ -220,8 +225,8 @@ export default class IntersectionPointHandler extends Highlighter {
     }
   }
   doIntersection(
-    oneDimensional1: SEOneOrTwoDimensional,
-    oneDimensional2: SEOneOrTwoDimensional
+    oneDimensional1: SEOneDimensional,
+    oneDimensional2: SEOneDimensional
   ): void {
     // Make sure the objects intersect on the screen and only convert those that are actual
     // intersection point showing on the default screen plane.
@@ -234,25 +239,16 @@ export default class IntersectionPointHandler extends Highlighter {
     //  (SELine,SELine), (SELine,SESegment),  (SELine,SECircle),(SELine,SEEllipse), (SESegment, SESegment),
     //      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle),(SECircle, SEEllipse)
     //  If they have the same type put them in alphabetical order.
-    function rank_of_type(z: SEOneOrTwoDimensional): number {
-      if (z instanceof SELine) return 1;
-      if (z instanceof SESegment) return 2;
-      if (z instanceof SECircle) return 3;
-      if (z instanceof SEEllipse) return 4;
-      if (z instanceof SEParametric) return 5;
-      return Number.MAX_VALUE;
-    }
-
     const inverseTotalRotationMatrix =
       IntersectionPointHandler.store.inverseTotalRotationMatrix;
     const rank1 = rank_of_type(oneDimensional1);
     const rank2 = rank_of_type(oneDimensional2);
-    console.debug(`ranks ${rank1} and ${rank2}`);
+    // console.debug(`ranks ${rank1} and ${rank2}`);
     if (
       (rank1 == rank2 && oneDimensional2.name > oneDimensional1.name) ||
       rank2 < rank1
     ) {
-      console.debug("switch");
+      // console.debug("switch");
       const tmp = oneDimensional1;
       oneDimensional1 = oneDimensional2;
       oneDimensional2 = tmp;
@@ -323,8 +319,8 @@ export default class IntersectionPointHandler extends Highlighter {
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
         this.doIntersection(
-          object1 as SEOneOrTwoDimensional,
-          object2 as SEOneOrTwoDimensional
+          object1 as SEOneDimensional,
+          object2 as SEOneDimensional
         );
       }
     }

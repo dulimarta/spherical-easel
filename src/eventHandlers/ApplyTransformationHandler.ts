@@ -55,8 +55,9 @@ import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
 import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1701,37 +1702,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithSegment(newIsometrySESegment)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySESegment,
-          // if not add it as a parent of the intersection point
-          const newIsometrySESegmentAncestors: SENodule[] = [
-            newIsometrySESegment.startSEPoint,
-            newIsometrySESegment.endSEPoint
-          ];
-          newIsometrySESegmentAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newIsometrySESegmentAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newIsometrySESegmentAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newIsometrySESegment, make the newIsometrySESegment a parent of the intersection point
-          if (
-            !newIsometrySESegmentAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          transformedSegmentCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newIsometrySESegment
             )
-          ) {
-            transformedSegmentCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newIsometrySESegment
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -1858,37 +1834,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithLine(newIsometrySELine)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySELine,
-          // if not add it as a parent of the intersection point
-          const newIsometrySELineAncestors: SENodule[] = [
-            newIsometrySELine.endSEPoint,
-            newIsometrySELine.startSEPoint
-          ];
-          newIsometrySELineAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newIsometrySELineAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newIsometrySELineAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newIsometrySELine, make the newIsometrySELine a parent of the intersection point
-          if (
-            !newIsometrySELineAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          transformedLineCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newIsometrySELine
             )
-          ) {
-            transformedLineCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newIsometrySELine
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -2017,37 +1968,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newIsometrySECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySECircle,
-          // if not add it as a parent of the intersection point
-          const newIsometrySECircleAncestors: SENodule[] = [
-            newIsometrySECircle.centerSEPoint,
-            newIsometrySECircle.circleSEPoint
-          ];
-          newIsometrySECircleAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newIsometrySECircleAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newIsometrySECircleAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newIsometrySECircle, make the newIsometrySECircle a parent of the intersection point
-          if (
-            !newIsometrySECircleAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          transformedCircleCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newIsometrySECircle
             )
-          ) {
-            transformedCircleCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newIsometrySECircle
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable and model label
           const newLabel = new Label();
@@ -2198,23 +2124,12 @@ export default class ApplyTransformationHandler extends Highlighter {
         if (item.existingIntersectionPoint) {
           // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySEEllipse,
           // if not add it as a parent of the intersection point
-          const newIsometrySEEllipseAncestors: SENodule[] = [
+          const newIsometrySEEllipseAncestors = getAncestors([
             newIsometrySEEllipse.focus1SEPoint,
             newIsometrySEEllipse.focus2SEPoint,
             newIsometrySEEllipse.ellipseSEPoint
-          ];
-          newIsometrySEEllipseAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newIsometrySEEllipseAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newIsometrySEEllipseAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
+          ]);
+
           // if the intersection point is not an ancestor of the newIsometrySEEllipse, make the newIsometrySEEllipse a parent of the intersection point
           if (
             !newIsometrySEEllipseAncestors.some(
@@ -2222,7 +2137,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             )
           ) {
             transformedEllipseCommandGroup.addCommand(
-              new AddIntersectionPointParent(
+              new AddIntersectionPointOtherParent(
                 item.SEIntersectionPoint,
                 newIsometrySEEllipse
               )
@@ -2495,37 +2410,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newInvertedSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newInvertedSECircle,
-          // if not add it as a parent of the intersection point
-          const newInvertedSECircleAncestors: SENodule[] = [
-            newInvertedSECircle.centerSEPoint,
-            newInvertedSECircle.circleSEPoint
-          ];
-          newInvertedSECircleAncestors.forEach(nodule => {
-            // add all the unique parents of the nodule to the array
-            nodule.parents.forEach(parent => {
-              if (
-                !newInvertedSECircleAncestors.some(
-                  ancestor => ancestor.id === parent.id
-                ) // add only unique ancestors to the array
-              ) {
-                newInvertedSECircleAncestors.push(parent); //add the unique parent to the end of the array
-              }
-            });
-          });
-          // if the intersection point is not an ancestor of the newInvertedSECircle, make the newInvertedSECircle a parent of the intersection point
-          if (
-            !newInvertedSECircleAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+          invertedCircleOrLineCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newInvertedSECircle
             )
-          ) {
-            invertedCircleOrLineCommandGroup.addCommand(
-              new AddIntersectionPointParent(
-                item.SEIntersectionPoint,
-                newInvertedSECircle
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable and model label
           const newLabel = new Label();

@@ -16,8 +16,9 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -369,37 +370,12 @@ export default class NSectAngleHandler extends Highlighter {
             .createAllIntersectionsWithLine(nSectingLine)
             .forEach((item: SEIntersectionReturnType) => {
               if (item.existingIntersectionPoint) {
-                // check to see if the intersection point will be or is a (grand, etc) parent of the nSectingLine,
-                // if not add it as a parent of the intersection point
-                const nSectingLineAncestors: SENodule[] = [
-                  nSectingLine.startSEPoint,
-                  nSectingLine.endSEPoint
-                ];
-                nSectingLineAncestors.forEach(nodule => {
-                  // add all the unique parents of the nodule to the array
-                  nodule.parents.forEach(parent => {
-                    if (
-                      !nSectingLineAncestors.some(
-                        ancestor => ancestor.id === parent.id
-                      ) // add only unique ancestors to the array
-                    ) {
-                      nSectingLineAncestors.push(parent); //add the unique parent to the end of the array
-                    }
-                  });
-                });
-                // if the intersection point is not an ancestor of the nSectingLine, make the nSectingLine a parent of the intersection point
-                if (
-                  !nSectingLineAncestors.some(
-                    ancestor => ancestor.id === item.SEIntersectionPoint.id
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    nSectingLine
                   )
-                ) {
-                  nSectingLinesCommandGroup.addCommand(
-                    new AddIntersectionPointParent(
-                      item.SEIntersectionPoint,
-                      nSectingLine
-                    )
-                  );
-                }
+                );
               } else {
                 // Create the plottable label
                 const newLabel = new Label();

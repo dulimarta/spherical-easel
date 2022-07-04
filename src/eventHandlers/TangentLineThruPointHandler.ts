@@ -30,8 +30,9 @@ import { SEEllipse } from "@/models/SEEllipse";
 // const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
-import { AddIntersectionPointParent } from "@/commands/AddIntersectionPointParent";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 type TemporaryLine = {
   line: Line;
@@ -672,36 +673,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWithLine(newSETangentLine)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            // check to see if the intersection point will be or is a (grand, etc) parent of the newSETangentLine,
-            // if not add it as a parent of the intersection point
-            const newSETangentLineAncestors: SENodule[] = [
-              newSETangentLine.startSEPoint
-            ];
-            newSETangentLineAncestors.forEach(nodule => {
-              // add all the unique parents of the nodule to the array
-              nodule.parents.forEach(parent => {
-                if (
-                  !newSETangentLineAncestors.some(
-                    ancestor => ancestor.id === parent.id
-                  ) // add only unique ancestors to the array
-                ) {
-                  newSETangentLineAncestors.push(parent); //add the unique parent to the end of the array
-                }
-              });
-            });
-            // if the intersection point is not an ancestor of the newSETangentLine, make the newSETangentLine a parent of the intersection point
-            if (
-              !newSETangentLineAncestors.some(
-                ancestor => ancestor.id === item.SEIntersectionPoint.id
+            addTangentLineGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSETangentLine
               )
-            ) {
-              addTangentLineGroup.addCommand(
-                new AddIntersectionPointParent(
-                  item.SEIntersectionPoint,
-                  newSETangentLine
-                )
-              );
-            }
+            );
           } else {
             // Create the plottable label
             const newLabel = new Label();

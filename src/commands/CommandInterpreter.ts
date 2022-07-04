@@ -40,6 +40,8 @@ import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
 import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
 import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
 import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
+import { AddIntersectionPointOtherParent } from "./AddIntersectionPointOtherParent";
+import { RemoveIntersectionPointOtherParent } from "./RemoveIntersectionPointOtherParent";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -63,6 +65,13 @@ function executeIndividual(command: string): Command {
       return AddPointOnOneDimensionalCommand.parse(command, noduleDictionary);
     case "AddIntersectionPoint":
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
+    case "AddIntersectionPointOtherParent":
+      return AddIntersectionPointOtherParent.parse(command, noduleDictionary);
+    case "RemoveIntersectionPointOtherParent":
+      return RemoveIntersectionPointOtherParent.parse(
+        command,
+        noduleDictionary
+      );
     case "AddSegment":
       return AddSegmentCommand.parse(command, noduleDictionary);
     case "AddLine":
