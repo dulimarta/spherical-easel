@@ -370,19 +370,12 @@ export default class NSectAngleHandler extends Highlighter {
             .createAllIntersectionsWithLine(nSectingLine)
             .forEach((item: SEIntersectionReturnType) => {
               if (item.existingIntersectionPoint) {
-                // unless this intersection point already has this object as a parent
-                if (
-                  !item.SEIntersectionPoint.otherParentArray.some(
-                    parent => parent.id === nSectingLine.id
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    nSectingLine
                   )
-                ) {
-                  nSectingLinesCommandGroup.addCommand(
-                    new AddIntersectionPointOtherParent(
-                      item.SEIntersectionPoint,
-                      nSectingLine
-                    )
-                  );
-                }
+                );
               } else {
                 // Create the plottable label
                 const newLabel = new Label();

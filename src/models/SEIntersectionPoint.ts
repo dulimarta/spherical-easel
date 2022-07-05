@@ -17,6 +17,7 @@ import {
   getDescendants,
   rank_of_type
 } from "@/utils/helpingfunctions";
+import SETTINGS from "@/global-settings";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -151,7 +152,12 @@ export class SEIntersectionPoint extends SEPoint {
       console.debug(
         `Added other parent ${n.name} to intersection point ${this.name}`
       );
+    } else {
+      console.warn(
+        `SEIntersection Point ${this.name}: Attempted to add nodule ${n.name} that was already on the other parent array or is a principle parent.`
+      );
     }
+
     //adding a parent can make the intersection point exist
     //update the existence as the parents have changed
     this.setExistence();
@@ -169,12 +175,11 @@ export class SEIntersectionPoint extends SEPoint {
       console.debug(
         `Removed other parent ${n.name} to intersection point ${this.name}`
       );
+    } else {
+      console.warn(
+        `SEIntersection Point ${this.name}: Attempted to remove nodule ${n.name} that was not on the other parent array.`
+      );
     }
-    // else {
-    //   throw new Error(
-    //     `SEIntersection Point ${this.name}: Attempted to remove nodule ${n.name} that was not on the other parent array.`
-    //   );
-    // }
     //removing a parent can make the intersection point exist or not
     //update the existence as the parents have changed
     this.setExistence();
@@ -407,7 +412,7 @@ export class SEIntersectionPoint extends SEPoint {
         sum += 1;
       }
     });
-    console.debug("intersection point sum", sum);
+    //console.debug("intersection point sum", sum);
     this._exists = sum > 1; // you must be on at least two existing parents
   }
 
@@ -421,7 +426,28 @@ export class SEIntersectionPoint extends SEPoint {
       );
     // order is always the order from the intersection of the two principle parents
     if (updatedIntersectionInfo[this.order] !== undefined) {
-      this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      if (
+        this.locationVector.angleTo(
+          updatedIntersectionInfo[this.order].vector
+        ) <
+        Math.PI / 2 + SETTINGS.tolerance
+      ) {
+        // if the new angle is less than Pi/2 from the old, accept the new angle
+        this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      } else {
+        // if the new angle is more than Pi/2 from the old, search the intersection info for a closer one
+        let minIndex = -1;
+        let minAngle = Math.PI;
+        updatedIntersectionInfo.forEach((item, index) => {
+          const angle = item.vector.angleTo(this.locationVector);
+          if (angle < minAngle) {
+            minIndex = index;
+            minAngle = angle;
+          }
+        });
+        this.order = minIndex;
+        this.locationVector = updatedIntersectionInfo[this.order].vector;
+      }
       //check to see if the new location is on two existing parents (principle or other)
       this.setExistence();
     } else {
@@ -445,11 +471,11 @@ export class SEIntersectionPoint extends SEPoint {
     if (!this.canUpdateNow()) return;
 
     //Add a warning if some other parent is out of date
-    if (this.otherParentArray.some(item => item.isOutOfDate())) {
-      console.warn(
-        `SEIntersectionPoint: The intersection point ${this.name} has an other parent that is out of date and the existence might not update correctly.`
-      );
-    }
+    // if (this.otherParentArray.some(item => item.isOutOfDate())) {
+    //   console.warn(
+    //     `SEIntersectionPoint: The intersection point ${this.name} has an other parent that is out of date and the existence might not update correctly.`
+    //   );
+    // }
 
     this.setOutOfDate(false);
     this.shallowUpdate();

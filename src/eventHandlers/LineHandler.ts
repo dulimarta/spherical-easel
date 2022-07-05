@@ -794,19 +794,12 @@ export default class LineHandler extends Highlighter {
         );
         i += 1;
         if (item.existingIntersectionPoint) {
-          // unless this intersection point already has this object as a parent
-          if (
-            !item.SEIntersectionPoint.otherParentArray.some(
-              parent => parent.id === newSELine.id
+          lineGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSELine
             )
-          ) {
-            lineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newSELine
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -901,19 +894,12 @@ export default class LineHandler extends Highlighter {
           .createAllIntersectionsWithLine(newSELine)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // unless this intersection point already has this object as a parent
-              if (
-                !item.SEIntersectionPoint.otherParentArray.some(
-                  parent => parent.id === newSELine.id
+              lineCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSELine
                 )
-              ) {
-                lineCommandGroup.addCommand(
-                  new AddIntersectionPointOtherParent(
-                    item.SEIntersectionPoint,
-                    newSELine
-                  )
-                );
-              }
+              );
             } else {
               // Create the plottable label
               const newLabel = new Label();

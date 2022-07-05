@@ -678,19 +678,12 @@ export default class PolarObjectHandler extends Highlighter {
       .createAllIntersectionsWithLine(newPolarLine)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // unless this intersection point already has this object as a parent
-          if (
-            !item.SEIntersectionPoint.otherParentArray.some(
-              parent => parent.id === newPolarLine.id
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newPolarLine
             )
-          ) {
-            polarLineCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newPolarLine
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();

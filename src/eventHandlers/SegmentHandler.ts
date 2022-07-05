@@ -847,19 +847,12 @@ export default class SegmentHandler extends Highlighter {
         console.debug(`Segment intersections ${i}`);
         i += 1;
         if (item.existingIntersectionPoint) {
-          // unless this intersection point already has this object as a parent
-          if (
-            !item.SEIntersectionPoint.otherParentArray.some(
-              parent => parent.id === newSESegment.id
+          segmentGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSESegment
             )
-          ) {
-            segmentGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newSESegment
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -1030,19 +1023,12 @@ export default class SegmentHandler extends Highlighter {
             console.debug(`Segment intersections ${i}`);
             i += 1;
             if (item.existingIntersectionPoint) {
-              // unless this intersection point already has this object as a parent
-              if (
-                !item.SEIntersectionPoint.otherParentArray.some(
-                  parent => parent.id === newSESegment.id
+              segmentCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSESegment
                 )
-              ) {
-                segmentCommandGroup.addCommand(
-                  new AddIntersectionPointOtherParent(
-                    item.SEIntersectionPoint,
-                    newSESegment
-                  )
-                );
-              }
+              );
             } else {
               // Create the plottable label
               const newLabel = new Label();

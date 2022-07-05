@@ -1106,19 +1106,12 @@ export default class EllipseHandler extends Highlighter {
       .createAllIntersectionsWithEllipse(newSEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // unless this intersection point already has this object as a parent
-          if (
-            !item.SEIntersectionPoint.otherParentArray.some(
-              parent => parent.id === newSEEllipse.id
+          ellipseCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newSEEllipse
             )
-          ) {
-            ellipseCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newSEEllipse
-              )
-            );
-          }
+          );
         } else {
           // Create the plottable and model label
           const newLabel = new Label();
@@ -1213,19 +1206,12 @@ export default class EllipseHandler extends Highlighter {
           .createAllIntersectionsWithEllipse(newSEEllipse)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              // unless this intersection point already has this object as a parent
-              if (
-                !item.SEIntersectionPoint.otherParentArray.some(
-                  parent => parent.id === newSEEllipse.id
+              ellipseCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSEEllipse
                 )
-              ) {
-                ellipseCommandGroup.addCommand(
-                  new AddIntersectionPointOtherParent(
-                    item.SEIntersectionPoint,
-                    newSEEllipse
-                  )
-                );
-              }
+              );
             } else {
               // Create the plottable and model label
               const newLabel = new Label();

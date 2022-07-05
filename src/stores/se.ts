@@ -1106,7 +1106,29 @@ export const useSEStore = defineStore({
             existingSEIntersectionPoint = null;
           });
         });
-        return intersectionPointList;
+        // Before returning remove duplicate existingSEIntersection points
+        // also remove any existing SEIntersection points that are immediate parents of the new object being created
+        const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
+        intersectionPointList.forEach(listItem => {
+          if (listItem.existingIntersectionPoint) {
+            if (
+              !filteredIntersectionPointList.some(
+                filteredListItem =>
+                  listItem.SEIntersectionPoint.id ===
+                  filteredListItem.SEIntersectionPoint.id
+              ) &&
+              listItem.SEIntersectionPoint.id !== newLine.startSEPoint.id &&
+              listItem.SEIntersectionPoint.id !== newLine.endSEPoint.id
+            ) {
+              filteredIntersectionPointList.push(listItem);
+            }
+          } else {
+            // automatically add the newly created intersection points
+            filteredIntersectionPointList.push(listItem);
+          }
+        });
+
+        return filteredIntersectionPointList;
       };
     },
     createAllIntersectionsWithSegment() {
@@ -1442,10 +1464,29 @@ export const useSEStore = defineStore({
             existingSEIntersectionPoint = null;
           });
         });
-        // console.debug(
-        //   `return intersection lenght ${intersectionPointList.length}`
-        // );
-        return intersectionPointList;
+        // Before returning remove duplicate existingSEIntersection points
+        // also remove any existing SEIntersection points that are immediate parents of the new object being created
+        const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
+        intersectionPointList.forEach(listItem => {
+          if (listItem.existingIntersectionPoint) {
+            if (
+              !filteredIntersectionPointList.some(
+                filteredListItem =>
+                  listItem.SEIntersectionPoint.id ===
+                  filteredListItem.SEIntersectionPoint.id
+              ) &&
+              listItem.SEIntersectionPoint.id !== newSegment.startSEPoint.id &&
+              listItem.SEIntersectionPoint.id !== newSegment.endSEPoint.id
+            ) {
+              filteredIntersectionPointList.push(listItem);
+            }
+          } else {
+            // automatically add the newly created intersection points
+            filteredIntersectionPointList.push(listItem);
+          }
+        });
+
+        return filteredIntersectionPointList;
       };
     },
     createAllIntersectionsWithCircle(): (
@@ -1774,7 +1815,29 @@ export const useSEStore = defineStore({
           });
         });
 
-        return intersectionPointList;
+        // Before returning remove duplicate existingSEIntersection points
+        // also remove any existing SEIntersection points that are immediate parents of the new object being created
+        const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
+        intersectionPointList.forEach(listItem => {
+          if (listItem.existingIntersectionPoint) {
+            if (
+              !filteredIntersectionPointList.some(
+                filteredListItem =>
+                  listItem.SEIntersectionPoint.id ===
+                  filteredListItem.SEIntersectionPoint.id
+              ) &&
+              listItem.SEIntersectionPoint.id !== newCircle.circleSEPoint.id &&
+              listItem.SEIntersectionPoint.id !== newCircle.centerSEPoint.id
+            ) {
+              filteredIntersectionPointList.push(listItem);
+            }
+          } else {
+            // automatically add the newly created intersection points
+            filteredIntersectionPointList.push(listItem);
+          }
+        });
+
+        return filteredIntersectionPointList;
       };
     },
     createAllIntersectionsWithEllipse(): (
@@ -2448,7 +2511,27 @@ export const useSEStore = defineStore({
               existingSEIntersectionPoint = null;
             });
           });
-        return intersectionPointList;
+        // Before returning remove duplicate existingSEIntersection points
+        // also remove any existing SEIntersection points that are immediate parents of the new object being created
+        const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
+        intersectionPointList.forEach(listItem => {
+          if (listItem.existingIntersectionPoint) {
+            if (
+              !filteredIntersectionPointList.some(
+                filteredListItem =>
+                  listItem.SEIntersectionPoint.id ===
+                  filteredListItem.SEIntersectionPoint.id
+              )
+            ) {
+              filteredIntersectionPointList.push(listItem);
+            }
+          } else {
+            // automatically add the newly created intersection points
+            filteredIntersectionPointList.push(listItem);
+          }
+        });
+
+        return filteredIntersectionPointList;
       };
     }
   }
