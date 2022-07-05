@@ -738,12 +738,19 @@ export default class MeasuredCircleHandler extends Highlighter {
         .createAllIntersectionsWithCircle(newMeasuredSECircle)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            circleCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newMeasuredSECircle
+            // unless this intersection point already has this object as a parent
+            if (
+              !item.SEIntersectionPoint.otherParentArray.some(
+                parent => parent.id === newMeasuredSECircle.id
               )
-            );
+            ) {
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newMeasuredSECircle
+                )
+              );
+            }
           } else {
             // Create the plottable and model label
             const newLabel = new Label();

@@ -772,12 +772,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWithLine(newPerpLine)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            const addIntersectionCmd = new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newPerpLine
-            );
-            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
-            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+            // unless this intersection point already has this object as a parent
+            if (
+              !item.SEIntersectionPoint.otherParentArray.some(
+                parent => parent.id === newPerpLine.id
+              )
+            ) {
+              const addIntersectionCmd = new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newPerpLine
+              );
+              if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+              else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+            }
           } else {
             // console.debug(
             //   "Got intersection point at",

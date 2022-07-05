@@ -712,12 +712,19 @@ export default class CircleHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          circleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newSECircle
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newSECircle.id
             )
-          );
+          ) {
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSECircle
+              )
+            );
+          }
         } else {
           // the intersection point is newly created and must be added as a child of the two parents returned
           // Create the plottable and model label
@@ -800,12 +807,19 @@ export default class CircleHandler extends Highlighter {
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              circleCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  newSECircle
+              // unless this intersection point already has this object as a parent
+              if (
+                !item.SEIntersectionPoint.otherParentArray.some(
+                  parent => parent.id === newSECircle.id
                 )
-              );
+              ) {
+                circleCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    newSECircle
+                  )
+                );
+              }
             } else {
               const newLabel = new Label();
               const newSELabel = new SELabel(

@@ -37,8 +37,6 @@ export class SEIntersectionPoint extends SEPoint {
    */
   private order: number;
 
-  private inverseTotalRotationMatrix: Matrix4;
-
   private tempVector = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
@@ -73,7 +71,6 @@ export class SEIntersectionPoint extends SEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
-    this.inverseTotalRotationMatrix = useSEStore().inverseTotalRotationMatrix;
   }
 
   public get noduleDescription(): string {
@@ -172,11 +169,12 @@ export class SEIntersectionPoint extends SEPoint {
       console.debug(
         `Removed other parent ${n.name} to intersection point ${this.name}`
       );
-    } else {
-      throw new Error(
-        "SEIntersection Point: Attempted to remove nodule that was not on the other parent array."
-      );
     }
+    // else {
+    //   throw new Error(
+    //     `SEIntersection Point ${this.name}: Attempted to remove nodule ${n.name} that was not on the other parent array.`
+    //   );
+    // }
     //removing a parent can make the intersection point exist or not
     //update the existence as the parents have changed
     this.setExistence();
@@ -255,7 +253,7 @@ export class SEIntersectionPoint extends SEPoint {
       const rank1 = rank_of_type(this.sePrincipleParent1);
       const rank2 = rank_of_type(this.sePrincipleParent2);
       if (
-        (rank1 == rank2 &&
+        (rank1 === rank2 &&
           this.sePrincipleParent2.name > this.sePrincipleParent2.name) ||
         rank2 < rank1
       ) {
@@ -273,7 +271,7 @@ export class SEIntersectionPoint extends SEPoint {
         intersectTwoObjects(
           this.sePrincipleParent1,
           this.sePrincipleParent2,
-          this.inverseTotalRotationMatrix
+          useSEStore().inverseTotalRotationMatrix
         );
       let updateOrderSuccessful = false;
       updatedIntersectionInfo.forEach((element, index) => {
@@ -294,9 +292,7 @@ export class SEIntersectionPoint extends SEPoint {
       console.debug(
         `Current principle parents of ${this.name} are ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
       );
-      this.parents.forEach(parent => {
-        console.debug(`DAG Parent ${parent.name}`);
-      });
+
       if (!updateOrderSuccessful) {
         throw new Error(
           "Update Intersection Point:  Order update error. Current location not found in intersection between the two new parents."
@@ -310,22 +306,22 @@ export class SEIntersectionPoint extends SEPoint {
     }
   }
   public replacePrincipleParent(
-    newPrincipleParent: SEOneDimensional,
-    oldPrincipleParent: SEOneDimensional
+    existingPrincipleParent: SEOneDimensional,
+    newPrincipleParent: SEOneDimensional
   ): void {
-    if (oldPrincipleParent.id === this.principleParent1.id) {
+    if (existingPrincipleParent.id === this.principleParent1.id) {
       //replace the first principle parent
       this.sePrincipleParent1 = newPrincipleParent;
       // add the old principle parent to the other parent array
-      this.otherParentArray.push(oldPrincipleParent);
-    } else if (oldPrincipleParent.id === this.principleParent2.id) {
+      this.otherParentArray.push(existingPrincipleParent);
+    } else if (existingPrincipleParent.id === this.principleParent2.id) {
       //replace the second principle parent
       this.sePrincipleParent2 = newPrincipleParent;
       // add the old principle parent to the other parent array
-      this.otherParentArray.push(oldPrincipleParent);
+      this.otherParentArray.push(existingPrincipleParent);
     } else {
       throw new Error(
-        `SEIntersectionPoint: Using addPrincipleParent and the oldPrincipleParent is not one of the existing principle parents.`
+        `SEIntersectionPoint: Using replacePrincipleParent and the existingPrincipleParent is not one of the existing principle parents.`
       );
     }
     // update the order of the intersection
@@ -334,7 +330,7 @@ export class SEIntersectionPoint extends SEPoint {
       intersectTwoObjects(
         this.sePrincipleParent1,
         this.sePrincipleParent2,
-        this.inverseTotalRotationMatrix
+        useSEStore().inverseTotalRotationMatrix
       );
     let updateOrderSuccessful = false;
     updatedIntersectionInfo.forEach((element, index) => {
@@ -358,24 +354,60 @@ export class SEIntersectionPoint extends SEPoint {
   }
   //check to see if the new location is on two existing parents (principle or other)
   private setExistence(): void {
-    const possiblyOnList = [
+    const parentList = [
       this.sePrincipleParent1,
       this.sePrincipleParent2,
       ...this.otherSEParents
     ];
+    // check all pairs of parents for existence
+    // for (let i = 0; i < parentList.length; i++) {
+    //   for (let j = i + 1; j < parentList.length; j++) {
+    //     let object1 = parentList[i];
+    //     let object2 = parentList[j];
+    //     const rank1 = rank_of_type(object1);
+    //     const rank2 = rank_of_type(object2);
+    //     if ((rank1 === rank2 && object2.name > object1.name) || rank2 < rank1) {
+    //       const temp = object1;
+    //       object1 = object2;
+    //       object2 = temp;
+    //     }
+    //     const updatedIntersectionInfo: IntersectionReturnType[] =
+    //       intersectTwoObjects(
+    //         object1,
+    //         object2,
+    //         useSEStore().inverseTotalRotationMatrix
+    //       );
+    //     if (updatedIntersectionInfo[this.order] !== undefined) {
+    //       console.debug(
+    //         `Check existence ${
+    //           updatedIntersectionInfo[this.order].exists
+    //         }, z component of intersection ${
+    //           updatedIntersectionInfo[this.order].vector.z
+    //         }`
+    //       );
+    //       this._exists = updatedIntersectionInfo[this.order].exists;
+    //       if (this._exists) {
+    //         //As soon as this exists, exit all the loops checking the existence
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
+
     let sum = 0;
-    possiblyOnList.forEach(parent => {
+    parentList.forEach(parent => {
       if (
         parent.exists &&
         parent.isHitAt(
-          this.locationVector, // this is the updated location
-          useSEStore().zoomMagnificationFactor
+          this.locationVector, // this is the current location
+          useSEStore().zoomMagnificationFactor,
+          100000
         )
       ) {
         sum += 1;
       }
     });
-    // console.debug("intersection point sum", sum);
+    console.debug("intersection point sum", sum);
     this._exists = sum > 1; // you must be on at least two existing parents
   }
 
@@ -385,7 +417,7 @@ export class SEIntersectionPoint extends SEPoint {
       intersectTwoObjects(
         this.sePrincipleParent1,
         this.sePrincipleParent2,
-        this.inverseTotalRotationMatrix
+        useSEStore().inverseTotalRotationMatrix
       );
     // order is always the order from the intersection of the two principle parents
     if (updatedIntersectionInfo[this.order] !== undefined) {

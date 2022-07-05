@@ -786,12 +786,19 @@ export default class ParametricForm extends Vue {
     this.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          parametricCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newSEParametric
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newSEParametric.id
             )
-          );
+          ) {
+            parametricCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSEParametric
+              )
+            );
+          }
         } else {
           // Create the plottable label
           const newLabel = new Label();

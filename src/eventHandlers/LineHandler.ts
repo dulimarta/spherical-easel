@@ -785,16 +785,28 @@ export default class LineHandler extends Highlighter {
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
+    let i = 1;
     LineHandler.store
       .createAllIntersectionsWithLine(newSELine)
       .forEach((item: SEIntersectionReturnType) => {
+        console.debug(
+          `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
+        );
+        i += 1;
         if (item.existingIntersectionPoint) {
-          lineGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newSELine
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newSELine.id
             )
-          );
+          ) {
+            lineGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSELine
+              )
+            );
+          }
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -889,12 +901,19 @@ export default class LineHandler extends Highlighter {
           .createAllIntersectionsWithLine(newSELine)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              lineCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  newSELine
+              // unless this intersection point already has this object as a parent
+              if (
+                !item.SEIntersectionPoint.otherParentArray.some(
+                  parent => parent.id === newSELine.id
                 )
-              );
+              ) {
+                lineCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    newSELine
+                  )
+                );
+              }
             } else {
               // Create the plottable label
               const newLabel = new Label();

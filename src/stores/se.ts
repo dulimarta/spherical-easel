@@ -43,6 +43,10 @@ import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { SETransformation } from "@/models/SETransformation";
+import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
+import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
+import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
+import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 
 const sePoints: Array<SEPoint> = [];
 const seNodules: Array<SENodule> = [];
@@ -213,9 +217,13 @@ export const useSEStore = defineStore({
       }
     },
     movePoint(move: { pointId: number; location: Vector3 }): void {
-      // pointMoverVisitor.setNewLocation(move.location);
-      // const pos = sePoints.findIndex(x => x.id === move.pointId);
-      // sePoints[pos].accept(pointMoverVisitor);
+      const pointMoverVisitor = new PointMoverVisitor();
+      pointMoverVisitor.setNewLocation(move.location);
+      const pos = sePoints.findIndex(x => x.id === move.pointId);
+      if (pos > -1) {
+        sePoints[pos].accept(pointMoverVisitor);
+        //sePoints[pos].update();
+      }
     },
 
     addLine(line: SELine): void {
@@ -314,9 +322,10 @@ export const useSEStore = defineStore({
       }
     },
     moveLabel(move: { labelId: number; location: Vector3 }): void {
-      // labelMoverVisitor.setNewLocation(move.location);
-      // const pos = seLabels.findIndex(x => x.id === move.labelId);
-      // seLabels[pos].accept(labelMoverVisitor);
+      const labelMoverVisitor = new LabelMoverVisitor();
+      labelMoverVisitor.setNewLocation(move.location);
+      const pos = seLabels.findIndex(x => x.id === move.labelId);
+      if (pos > -1) seLabels[pos].accept(labelMoverVisitor);
     },
 
     addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
@@ -547,16 +556,26 @@ export const useSEStore = defineStore({
       normal: Vector3;
       arcLength: number;
     }): void {
-      // segmentNormalArcLengthVisitor.setNewNormal(change.normal);
-      // segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
-      // const pos = seSegments.findIndex(x => x.id === change.segmentId);
-      // if (pos >= 0) this.seSegments[pos].accept(segmentNormalArcLengthVisitor);
+      const segmentNormalArcLengthVisitor = new SegmentNormalArcLengthVisitor();
+      segmentNormalArcLengthVisitor.setNewNormal(change.normal);
+      segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
+      const pos = seSegments.findIndex(x => x.id === change.segmentId);
+      if (pos >= 0) {
+        this.seSegments[pos].accept(segmentNormalArcLengthVisitor);
+        // this.seSegments[pos].update();
+      }
     },
     changeLineNormalVector(change: { lineId: number; normal: Vector3 }): void {
-      // lineNormalVisitor.setNewNormal(change.normal);
-      // const pos = seLines.findIndex(x => x.id === change.lineId);
-      // if (pos >= 0) seLines[pos].accept(lineNormalVisitor);
-    }, // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
+      const lineNormalVisitor = new LineNormalVisitor();
+      lineNormalVisitor.setNewNormal(change.normal);
+      const pos = seLines.findIndex(x => x.id === change.lineId);
+      if (pos >= 0) {
+        seLines[pos].accept(lineNormalVisitor);
+        // seLines[pos].update();
+      }
+    },
+
+    // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
     addTemporaryNodule(nodule: Nodule): void {
       nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
       nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
@@ -744,11 +763,11 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newLine: SELine): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidSEPoints: SEPoint[] = [];
+        const existingSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
         if (!(newLine instanceof SEPolarLine)) {
-          avoidSEPoints.push(newLine.startSEPoint);
+          existingSEPoints.push(newLine.startSEPoint);
         }
         // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
         // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
@@ -760,14 +779,14 @@ export const useSEStore = defineStore({
             newLine instanceof SENSectLine
           )
         ) {
-          avoidSEPoints.push(newLine.endSEPoint);
+          existingSEPoints.push(newLine.endSEPoint);
         }
         sePoints.forEach(pt => {
           if (
             !pt.locationVector.isZero() &&
-            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+            !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
           ) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
 
@@ -785,7 +804,7 @@ export const useSEStore = defineStore({
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidSEPoints.some(v => {
+                !existingSEPoints.some(v => {
                   if (
                     tmpVector.subVectors(info.vector, v.locationVector).isZero()
                   ) {
@@ -832,6 +851,8 @@ export const useSEStore = defineStore({
                   }
                 }
               }
+              //clear the existingSEIntersectionPoint
+              existingSEIntersectionPoint = null;
             });
           });
         // Intersect this new line with all old segments
@@ -841,15 +862,22 @@ export const useSEStore = defineStore({
             oldSegment,
             true // this is the first time these two objects have been intersected
           );
+          console.debug(
+            `Intersecting ${newLine.name}, and seg ${oldSegment.name}`
+          );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
+                  console.debug(
+                    `Intersection Line at existing SEPoint ${v.name}`
+                  );
                   if (v instanceof SEIntersectionPoint) {
                     existingSEIntersectionPoint = v;
+                    console.debug(`Recorded in exisitingSEIntersectionPoint`);
                   }
                   return true;
                 } else {
@@ -877,7 +905,11 @@ export const useSEStore = defineStore({
                 existingIntersectionPoint: false
               });
             } else {
+              console.debug(`here`);
               if (existingSEIntersectionPoint) {
+                console.debug(
+                  `Adding ${existingSEIntersectionPoint.name} to intersection list`
+                );
                 // the intersection vector (info.vector) is at an existing SEIntersection point
                 intersectionPointList.push({
                   SEIntersectionPoint: existingSEIntersectionPoint,
@@ -891,6 +923,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new line with all old circles
@@ -899,7 +933,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -946,6 +980,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new line with all old ellipses
@@ -957,7 +993,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1004,6 +1040,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1017,7 +1055,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1064,6 +1102,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         return intersectionPointList;
@@ -1072,17 +1112,17 @@ export const useSEStore = defineStore({
     createAllIntersectionsWithSegment() {
       return (newSegment: SESegment): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidSEPoints: SEPoint[] = [];
+        const existingSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidSEPoints.push(newSegment.startSEPoint);
-        avoidSEPoints.push(newSegment.endSEPoint);
+        existingSEPoints.push(newSegment.startSEPoint);
+        existingSEPoints.push(newSegment.endSEPoint);
         sePoints.forEach(pt => {
           if (
             !pt.locationVector.isZero() &&
-            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+            !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
           ) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
 
@@ -1098,7 +1138,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1146,24 +1186,33 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new segment with all old segments
         seSegments
           .filter((segment: SESegment) => segment.id !== newSegment.id) // ignore self
           .forEach((oldSegment: SESegment) => {
+            console.debug(
+              `Intersect seg ${newSegment.name} and ${oldSegment.name}`
+            );
             const intersectionInfo = intersectSegmentWithSegment(
               oldSegment,
               newSegment,
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let i = 1;
             intersectionInfo.forEach((info, index) => {
+              console.debug(`Count seg seg intersection ${i}`);
+              i += 1;
               if (
-                !avoidSEPoints.some(v => {
+                !existingSEPoints.some(v => {
                   if (
                     tmpVector.subVectors(info.vector, v.locationVector).isZero()
                   ) {
+                    console.debug(`Intersect at existin point ${v.name}`);
                     if (v instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = v;
                     }
@@ -1173,6 +1222,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
+                console.debug(`create new intersection`);
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1193,6 +1243,7 @@ export const useSEStore = defineStore({
                 });
               } else {
                 if (existingSEIntersectionPoint) {
+                  console.debug(`return existing SEIntersectionPoint`);
                   // the intersection vector (info.vector) is at an existing SEIntersection point
                   intersectionPointList.push({
                     SEIntersectionPoint: existingSEIntersectionPoint,
@@ -1206,6 +1257,8 @@ export const useSEStore = defineStore({
                   }
                 }
               }
+              //clear the existingSEIntersectionPoint
+              existingSEIntersectionPoint = null;
             });
           });
         //Intersect this new segment with all old circles
@@ -1217,7 +1270,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1264,6 +1317,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new segment with all old ellipses
@@ -1275,7 +1330,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1322,6 +1377,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new segment with all old parametrics
@@ -1334,7 +1391,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1381,8 +1438,13 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
+        // console.debug(
+        //   `return intersection lenght ${intersectionPointList.length}`
+        // );
         return intersectionPointList;
       };
     },
@@ -1391,17 +1453,17 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newCircle: SECircle): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidSEPoints: SEPoint[] = [];
+        const existingSEPoints: SEPoint[] = [];
         // First add the two parent points of the newLine, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidSEPoints.push(newCircle.centerSEPoint);
-        avoidSEPoints.push(newCircle.circleSEPoint);
+        existingSEPoints.push(newCircle.centerSEPoint);
+        existingSEPoints.push(newCircle.circleSEPoint);
         sePoints.forEach(pt => {
           if (
             !pt.locationVector.isZero() &&
-            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+            !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
           ) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
         // The intersectionPointList to return
@@ -1412,7 +1474,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1459,6 +1521,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new circle with all old segments
@@ -1470,7 +1534,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1517,6 +1581,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         //Intersect this new circle with all old circles
@@ -1533,7 +1599,7 @@ export const useSEStore = defineStore({
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidSEPoints.some(v => {
+                !existingSEPoints.some(v => {
                   if (
                     tmpVector.subVectors(info.vector, v.locationVector).isZero()
                   ) {
@@ -1580,6 +1646,8 @@ export const useSEStore = defineStore({
                   }
                 }
               }
+              //clear the existingSEIntersectionPoint
+              existingSEIntersectionPoint = null;
             });
           });
 
@@ -1592,7 +1660,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1639,6 +1707,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1652,7 +1722,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1699,6 +1769,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1710,18 +1782,18 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newEllipse: SEEllipse): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidSEPoints: SEPoint[] = [];
+        const existingSEPoints: SEPoint[] = [];
         // First add the three parent points of the newEllipse, if they are new, then
         //  they won't have been added to the state.points array yet so add them first
-        avoidSEPoints.push(newEllipse.focus1SEPoint);
-        avoidSEPoints.push(newEllipse.focus2SEPoint);
-        avoidSEPoints.push(newEllipse.ellipseSEPoint);
+        existingSEPoints.push(newEllipse.focus1SEPoint);
+        existingSEPoints.push(newEllipse.focus2SEPoint);
+        existingSEPoints.push(newEllipse.ellipseSEPoint);
         sePoints.forEach(pt => {
           if (
             !pt.locationVector.isZero() &&
-            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+            !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
           ) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
         // The intersectionPointList to return
@@ -1736,7 +1808,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1783,6 +1855,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1795,7 +1869,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1842,6 +1916,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1854,7 +1930,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -1901,6 +1977,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -1916,7 +1994,7 @@ export const useSEStore = defineStore({
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidSEPoints.some(v => {
+                !existingSEPoints.some(v => {
                   if (
                     tmpVector.subVectors(info.vector, v.locationVector).isZero()
                   ) {
@@ -1963,6 +2041,8 @@ export const useSEStore = defineStore({
                   }
                 }
               }
+              //clear the existingSEIntersectionPoint
+              existingSEIntersectionPoint = null;
             });
           });
 
@@ -1976,7 +2056,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -2023,6 +2103,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
         return [];
@@ -2033,21 +2115,21 @@ export const useSEStore = defineStore({
     ) => SEIntersectionReturnType[] {
       return (newParametric: SEParametric): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
-        const avoidSEPoints: SEPoint[] = [];
+        const existingSEPoints: SEPoint[] = [];
         // First add the end points of the newParametric, if they are exist, then
         //  they won't have been added to the state.points array yet so add them first
         // Always screen for the zero vector
         newParametric.endPoints.forEach(pt => {
           if (!pt.locationVector.isZero()) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
         sePoints.forEach(pt => {
           if (
             !pt.locationVector.isZero() &&
-            !avoidSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the avoidSEPoints array
+            !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
           ) {
-            avoidSEPoints.push(pt);
+            existingSEPoints.push(pt);
           }
         });
 
@@ -2064,7 +2146,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -2111,6 +2193,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -2124,7 +2208,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -2171,6 +2255,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -2184,7 +2270,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -2231,6 +2317,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -2244,7 +2332,7 @@ export const useSEStore = defineStore({
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           intersectionInfo.forEach((info, index) => {
             if (
-              !avoidSEPoints.some(v => {
+              !existingSEPoints.some(v => {
                 if (
                   tmpVector.subVectors(info.vector, v.locationVector).isZero()
                 ) {
@@ -2291,6 +2379,8 @@ export const useSEStore = defineStore({
                 }
               }
             }
+            //clear the existingSEIntersectionPoint
+            existingSEIntersectionPoint = null;
           });
         });
 
@@ -2307,7 +2397,7 @@ export const useSEStore = defineStore({
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
             intersectionInfo.forEach((info, index) => {
               if (
-                !avoidSEPoints.some(v => {
+                !existingSEPoints.some(v => {
                   if (
                     tmpVector.subVectors(info.vector, v.locationVector).isZero()
                   ) {
@@ -2354,6 +2444,8 @@ export const useSEStore = defineStore({
                   }
                 }
               }
+              //clear the existingSEIntersectionPoint
+              existingSEIntersectionPoint = null;
             });
           });
         return intersectionPointList;

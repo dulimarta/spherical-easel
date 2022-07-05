@@ -673,12 +673,19 @@ export default class TangentLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWithLine(newSETangentLine)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            addTangentLineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                newSETangentLine
+            // unless this intersection point already has this object as a parent
+            if (
+              !item.SEIntersectionPoint.otherParentArray.some(
+                parent => parent.id === newSETangentLine.id
               )
-            );
+            ) {
+              addTangentLineGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  newSETangentLine
+                )
+              );
+            }
           } else {
             // Create the plottable label
             const newLabel = new Label();

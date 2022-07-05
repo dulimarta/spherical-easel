@@ -245,7 +245,7 @@ export default class IntersectionPointHandler extends Highlighter {
     const rank2 = rank_of_type(oneDimensional2);
     // console.debug(`ranks ${rank1} and ${rank2}`);
     if (
-      (rank1 == rank2 && oneDimensional2.name > oneDimensional1.name) ||
+      (rank1 === rank2 && oneDimensional2.name > oneDimensional1.name) ||
       rank2 < rank1
     ) {
       // console.debug("switch");

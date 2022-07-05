@@ -1702,12 +1702,19 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithSegment(newIsometrySESegment)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          transformedSegmentCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newIsometrySESegment
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newIsometrySESegment.id
             )
-          );
+          ) {
+            transformedSegmentCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newIsometrySESegment
+              )
+            );
+          }
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -1834,12 +1841,19 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithLine(newIsometrySELine)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          transformedLineCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newIsometrySELine
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newIsometrySELine.id
             )
-          );
+          ) {
+            transformedLineCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newIsometrySELine
+              )
+            );
+          }
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -1968,12 +1982,19 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newIsometrySECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          transformedCircleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newIsometrySECircle
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newIsometrySECircle.id
             )
-          );
+          ) {
+            transformedCircleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newIsometrySECircle
+              )
+            );
+          }
         } else {
           // Create the plottable and model label
           const newLabel = new Label();
@@ -2122,18 +2143,10 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithEllipse(newIsometrySEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          // check to see if the intersection point will be or is a (grand, etc) parent of the newIsometrySEEllipse,
-          // if not add it as a parent of the intersection point
-          const newIsometrySEEllipseAncestors = getAncestors([
-            newIsometrySEEllipse.focus1SEPoint,
-            newIsometrySEEllipse.focus2SEPoint,
-            newIsometrySEEllipse.ellipseSEPoint
-          ]);
-
-          // if the intersection point is not an ancestor of the newIsometrySEEllipse, make the newIsometrySEEllipse a parent of the intersection point
+          // unless this intersection point already has this object as a parent
           if (
-            !newIsometrySEEllipseAncestors.some(
-              ancestor => ancestor.id === item.SEIntersectionPoint.id
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newIsometrySEEllipse.id
             )
           ) {
             transformedEllipseCommandGroup.addCommand(
@@ -2410,12 +2423,19 @@ export default class ApplyTransformationHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newInvertedSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          invertedCircleOrLineCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newInvertedSECircle
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newInvertedSECircle.id
             )
-          );
+          ) {
+            invertedCircleOrLineCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newInvertedSECircle
+              )
+            );
+          }
         } else {
           // Create the plottable and model label
           const newLabel = new Label();

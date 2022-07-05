@@ -17,6 +17,9 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
   }
 
   do(): void {
+    console.debug(
+      `ChangeIntersectionPointPrinciplePointCommand: do ${this.seIntersectionPoint.name}, old principle: ${this.oldPrincipleParent.name}`
+    );
     this.newPrincipleParent = this.seIntersectionPoint.removePrincipleParent(
       this.oldPrincipleParent
     );
@@ -25,7 +28,7 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
       this.oldPrincipleParent.unregisterChild(this.seIntersectionPoint);
     } else {
       throw new Error(
-        `ChangeIntersectionPointPrincipleParent:  can't remove principle parnet ${this.oldPrincipleParent.name} from intersection point ${this.seIntersectionPoint.name} `
+        `ChangeIntersectionPointPrincipleParent: Can't remove principle parent ${this.oldPrincipleParent.name} from intersection point ${this.seIntersectionPoint.name} `
       );
     }
   }
@@ -35,14 +38,22 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
   }
 
   restoreState(): void {
+    console.debug(
+      `ChangeIntersectionPointPrinciplePointCommand: restoreState ${
+        this.seIntersectionPoint.name
+      }, old principle: ${this.oldPrincipleParent.name}, new principle ${
+        this.newPrincipleParent ? this.newPrincipleParent.name : "NULL!"
+      }`
+    );
+
     if (this.newPrincipleParent) {
       // Add the parent to the list of parents in the SEIntersectionPoint
       this.oldPrincipleParent.registerChild(this.seIntersectionPoint);
       this.newPrincipleParent.unregisterChild(this.seIntersectionPoint);
 
       this.seIntersectionPoint.replacePrincipleParent(
-        this.oldPrincipleParent,
-        this.newPrincipleParent
+        this.newPrincipleParent,
+        this.oldPrincipleParent
       );
     }
   }

@@ -1152,12 +1152,19 @@ export default class ThreePointCircleHandler extends Highlighter {
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
-          threePointCircleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newSECircle
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newSECircle.id
             )
-          );
+          ) {
+            threePointCircleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSECircle
+              )
+            );
+          }
         } else {
           // Create the plottable and model label
           const newLabel = new Label();
@@ -1321,12 +1328,19 @@ export default class ThreePointCircleHandler extends Highlighter {
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
-              threePointCircleCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  newSECircle
+              // unless this intersection point already has this object as a parent
+              if (
+                !item.SEIntersectionPoint.otherParentArray.some(
+                  parent => parent.id === newSECircle.id
                 )
-              );
+              ) {
+                threePointCircleCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    newSECircle
+                  )
+                );
+              }
             } else {
               // Create the plottable and model label
               const newLabel = new Label();

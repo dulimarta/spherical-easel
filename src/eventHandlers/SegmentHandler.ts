@@ -840,16 +840,26 @@ export default class SegmentHandler extends Highlighter {
         newSELabel
       )
     );
+    let i = 1;
     SegmentHandler.store
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
+        console.debug(`Segment intersections ${i}`);
+        i += 1;
         if (item.existingIntersectionPoint) {
-          segmentGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newSESegment
+          // unless this intersection point already has this object as a parent
+          if (
+            !item.SEIntersectionPoint.otherParentArray.some(
+              parent => parent.id === newSESegment.id
             )
-          );
+          ) {
+            segmentGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                newSESegment
+              )
+            );
+          }
         } else {
           // Create the plottable label
           const newLabel = new Label();
@@ -877,6 +887,9 @@ export default class SegmentHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
+          console.debug(
+            `Added intersection point ${item.SEIntersectionPoint.name}`
+          );
         }
       });
     segmentGroup.execute();
@@ -1010,16 +1023,26 @@ export default class SegmentHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
+        let i = 1;
         SegmentHandler.store
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
+            console.debug(`Segment intersections ${i}`);
+            i += 1;
             if (item.existingIntersectionPoint) {
-              segmentCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  newSESegment
+              // unless this intersection point already has this object as a parent
+              if (
+                !item.SEIntersectionPoint.otherParentArray.some(
+                  parent => parent.id === newSESegment.id
                 )
-              );
+              ) {
+                segmentCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    newSESegment
+                  )
+                );
+              }
             } else {
               // Create the plottable label
               const newLabel = new Label();

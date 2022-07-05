@@ -479,7 +479,7 @@ export default class MoveHandler extends Highlighter {
           // The after object was created during the move.
           // so we push a command on to the stack to undo this objects existence
           // so do to this command means the the object exists and is showing
-          // to undo this command meqns the the object doesn't exist and is not showing
+          // to undo this command means the the object doesn't exist and is not showing
           moveCommandGroup.addCommand(
             new SetNoduleExistCommand(seNoduleAfterState.object, true, true)
           );
