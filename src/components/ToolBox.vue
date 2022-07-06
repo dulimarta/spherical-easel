@@ -84,7 +84,6 @@ import SETTINGS from "@/global-settings";
 import { ActionMode } from "@/types";
 import { mapState, mapActions } from "pinia";
 import { useSEStore } from "@/stores/se";
-//import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 
 @Component({

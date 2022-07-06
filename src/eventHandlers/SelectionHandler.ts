@@ -65,6 +65,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPoints lower case p
     if (keyEvent.code === "KeyP" && !keyEvent.shiftKey) {
       SelectionHandler.store.sePoints
+        .map((n: any) => n as SEPoint)
         .filter(
           (n: SEPoint) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
@@ -77,6 +78,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SECircles lower case c
     else if (keyEvent.code === "KeyC" && !keyEvent.shiftKey) {
       SelectionHandler.store.seCircles
+        .map(x => x as SECircle)
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
@@ -86,6 +88,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEEllipses lower case e
     else if (keyEvent.code === "KeyE" && !keyEvent.shiftKey) {
       SelectionHandler.store.seEllipses
+        .map(x => x as SEEllipse)
         .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
         .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);
@@ -95,6 +98,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SELines lower case l
     else if (keyEvent.code === "KeyL" && !keyEvent.shiftKey) {
       SelectionHandler.store.seLines
+        .map(n => n as SELine)
         .filter((n: SELine) => n.showing) //no hidden lines allowed
         .forEach((n: SELine) => {
           this.keyPressSelection.push(n);
@@ -104,6 +108,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SESegments lower case s
     else if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       SelectionHandler.store.seSegments
+        .map(n => n as SESegment)
         .filter((n: SESegment) => n.showing) //no hidden segments allowed
         .forEach((n: SESegment) => {
           this.keyPressSelection.push(n);
@@ -113,6 +118,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEAngleMarkers upper case A
     else if (keyEvent.code === "KeyA" && keyEvent.shiftKey) {
       SelectionHandler.store.seAngleMarkers
+        .map(n => n as SEAngleMarker)
         .filter((n: SEAngleMarker) => n.showing) //no hidden angle markers allowed
         .forEach((n: SEAngleMarker) => {
           this.keyPressSelection.push(n);
@@ -122,6 +128,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEParametrics upper case P
     else if (keyEvent.code === "KeyP" && keyEvent.shiftKey) {
       SelectionHandler.store.seParametrics
+        .map(n => n as SEParametric)
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
@@ -135,6 +142,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPolygons upper case O
     else if (keyEvent.code === "KeyO" && keyEvent.shiftKey) {
       SelectionHandler.store.sePolygons
+        .map(n => n as SEPolygon)
         .filter((n: SEPolygon) => n.showing) //no hidden Polygons allowed
         .forEach((n: SEPolygon) => {
           this.keyPressSelection.push(n);
@@ -155,6 +163,7 @@ export default class SelectionHandler extends Highlighter {
       //Mac shortcuts for select all
       if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
@@ -166,6 +175,7 @@ export default class SelectionHandler extends Highlighter {
       //PC shortcuts for select all
       if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);

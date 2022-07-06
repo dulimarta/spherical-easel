@@ -33,7 +33,7 @@ export class SECalculation extends SEExpression {
           parent => parent.name === store.expressions[pos].name
         );
         if (pos2 < 0) {
-          this._calculationParents.push(store.expressions[pos]);
+          this._calculationParents.push(store.expressions[pos] as SEExpression);
         }
       }
 

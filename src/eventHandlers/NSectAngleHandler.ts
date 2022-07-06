@@ -269,11 +269,13 @@ export default class NSectAngleHandler extends Highlighter {
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
 
     // get the SEPoint at the vertex of the angle marker
-    const startSEPoint = NSectAngleHandler.store.sePoints.find(pt =>
-      this.tmpVector
-        .subVectors(pt.locationVector, candidateAngle.vertexVector)
-        .isZero()
-    );
+    const startSEPoint = NSectAngleHandler.store.sePoints
+      .map((n: any) => n as SEPoint)
+      .find((pt: SEPoint) =>
+        this.tmpVector
+          .subVectors(pt.locationVector, candidateAngle.vertexVector)
+          .isZero()
+      );
 
     // create the orthonormal frame with the z -axis as startSEPoint.locationVector
     const fromVector = new Vector3();
@@ -334,7 +336,7 @@ export default class NSectAngleHandler extends Highlighter {
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
             newLine,
-            startSEPoint,
+            startSEPoint as SEPoint,
             normalVector,
             endSEPoint,
             candidateAngle,

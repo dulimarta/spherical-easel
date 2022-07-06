@@ -3,7 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "declaration": true,
+    "declaration": false,
     "jsx": "preserve",
     "importHelpers": true,
     "noImplicitAny": true,
@@ -24,7 +24,8 @@
       "@/*": ["src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "exclude": [
     "node_modules",
@@ -36,9 +37,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/types/two.js/index.d.ts",
+    "src/types/two.js/index.d.ts"
     // "tests/*.d.ts",
-    "src/stores/unused-se-module.ts"
   ],
   "verbose": true
   // "globals": {

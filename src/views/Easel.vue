@@ -308,7 +308,7 @@ import { mapActions, mapState } from "pinia";
     Dialog
   },
   methods: {
-    ...mapActions(useSEStore, ["setActionMode"])
+    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers"])
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
@@ -319,13 +319,12 @@ export default class Easel extends Vue {
   documentId: string | undefined;
 
   readonly seNodules!: SENodule[];
-
   readonly temporaryNodules!: Nodule[];
+  readonly hasObjects!: boolean;
 
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
   readonly removeAllFromLayers!: () => void;
   readonly init!: () => void;
-  readonly hasObjects!: boolean;
 
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
