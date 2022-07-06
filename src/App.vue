@@ -175,16 +175,13 @@ import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
 
 // import { gzip } from "node-gzip";
 
-//#region vuex-module-namespace
-//#endregion vuex-module-namespace
-
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
   "beforeRouteLeave",
   "beforeRouteUpdate"
 ]);
-/* This allows for the State of the app to be initialized with in vuex store */
+
 @Component({
   components: { MessageBox, Dialog },
   methods: {
