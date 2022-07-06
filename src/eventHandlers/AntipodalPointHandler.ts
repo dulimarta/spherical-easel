@@ -72,14 +72,41 @@ export default class AntipodalPointHandler extends Highlighter {
       if (this.hitSEPoints.length > 0) {
         // The user selected an existing point
         this.parentPoint = this.hitSEPoints[0];
+        // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
         // check to see if there is already an antipode
-        if (AntipodalPointHandler.store.hasNoAntipode(this.parentPoint)) {
+        const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
+          this.parentPoint
+        );
+        if (possibleAntipode === null) {
+          //there is no antipode to the selected point
           this.parentPointVector.copy(this.parentPoint.locationVector);
           this.oneDimensionalContainingParentPoint = null;
-        } else {
+        }
+        // else if (possibleAntipode instanceof SEIntersectionPoint) {
+        //   // if the possible intersection is not userCreated make it so
+        //   const antipodalCommandGroup = new CommandGroup();
+        //   if (
+        //     this.parentPoint instanceof SEIntersectionPoint &&
+        //     !(this.parentPoint as SEIntersectionPoint).isUserCreated
+        //   ) {
+        //     //Make it user created and turn on the display
+        //     antipodalCommandGroup.addCommand(
+        //       new ConvertInterPtToUserCreatedCommand(
+        //         this.parentPoint as SEIntersectionPoint
+        //       )
+        //     );
+        //   }
+        //   // reset in prep for next antipodal point
+        //   this.mouseLeave(event);
+        //   antipodalCommandGroup.execute();
+        //   return;
+        // }
+        else {
           EventBus.fire("show-alert", {
             key: `handlers.antipodeDuplicate`,
-            keyOptions: {},
+            keyOptions: {
+              pointName: possibleAntipode.label!.ref.shortUserName
+            },
             type: "error"
           });
         }
@@ -249,8 +276,8 @@ export default class AntipodalPointHandler extends Highlighter {
           .execute();
         // Update the display of the antipodal point
         // TODO: move this update() call into AddAntipodalPointCommand
-        vtx.markKidsOutOfDate();
-        vtx.update();
+        // vtx.markKidsOutOfDate();
+        // vtx.update();
 
         // reset in prep for next antipodal point
         this.mouseLeave(event);
@@ -265,9 +292,15 @@ export default class AntipodalPointHandler extends Highlighter {
     // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are the only nearby objects
     if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
-      this.snapToTemporaryPoint = this.hitSEPoints[0];
-      this.snapToTemporaryOneDimensional = null;
+      // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
+      const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
+        this.hitSEPoints[0]
+      );
+      if (possibleAntipode === null) {
+        this.hitSEPoints[0].glowing = true;
+        this.snapToTemporaryPoint = this.hitSEPoints[0];
+        this.snapToTemporaryOneDimensional = null;
+      }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSESegments[0];
@@ -316,7 +349,7 @@ export default class AntipodalPointHandler extends Highlighter {
           .copy(this.currentSphereVector)
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
-          //no nearby points, so display the pointMarker
+          //no nearby points that can be antipode_ed, so display the pointMarker
           this.temporaryPointMarker.positionVector = this.tmpVector.copy(
             this.currentSphereVector
           );
@@ -325,11 +358,22 @@ export default class AntipodalPointHandler extends Highlighter {
           // Remove the temporary objects from the display.
           this.temporaryPointMarker.removeFromLayers();
           this.isTemporaryPointAdded = false;
+          // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
+          // if the nearby point is not antipode-able remove the temporary antipode
+          const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
+            this.hitSEPoints[0]
+          );
+          if (possibleAntipode !== null) {
+            this.temporaryAntipodeMarker.removeFromLayers();
+            this.isTemporaryAntipodeAdded = false;
+          }
+          //console.debug(`Here antipode`);
         }
       } else if (
         this.snapToTemporaryOneDimensional !== null &&
         this.snapToTemporaryPoint === null
       ) {
+        console.debug(`Here antipode`);
         this.temporaryAntipodeMarker.positionVector = this.tmpVector
           .copy(
             this.snapToTemporaryOneDimensional.closestVector(
@@ -349,6 +393,15 @@ export default class AntipodalPointHandler extends Highlighter {
           // Remove the temporary objects from the display.
           this.temporaryPointMarker.removeFromLayers();
           this.isTemporaryPointAdded = false;
+          // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
+          // if the nearby point is not antipode-able remove the temporary antipode
+          const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
+            this.hitSEPoints[0]
+          );
+          if (possibleAntipode !== null) {
+            this.temporaryAntipodeMarker.removeFromLayers();
+            this.isTemporaryAntipodeAdded = false;
+          }
         }
       } else if (
         this.snapToTemporaryOneDimensional === null &&

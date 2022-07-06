@@ -66,6 +66,7 @@ const layers: Array<Two.Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
+const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
 const selectedSENodules: Array<SENodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
@@ -190,7 +191,6 @@ export const useSEStore = defineStore({
       // this.previousZoomMagnificationFactor = ;
       this.zoomMagnificationFactor = mag;
     },
-
     setZoomTranslation(vec: number[]): void {
       for (let i = 0; i < 2; i++) {
         this.zoomTranslation[i] = vec[i];
@@ -225,7 +225,6 @@ export const useSEStore = defineStore({
         //sePoints[pos].update();
       }
     },
-
     addLine(line: SELine): void {
       seLines.push(line);
       seNodules.push(line as SENodule);
@@ -238,7 +237,6 @@ export const useSEStore = defineStore({
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
-
     removeCircle(circleId: number): void {
       const circlePos = seCircles.findIndex(x => x.id === circleId);
       const pos2 = seNodules.findIndex(x => x.id === circleId);
@@ -252,7 +250,6 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-
     removeLine(lineId: number): void {
       const pos = seLines.findIndex((x: any) => x.id === lineId);
       const pos2 = seNodules.findIndex(x => x.id === lineId);
@@ -282,14 +279,12 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-
     addEllipse(ellipse: SEEllipse): void {
       seEllipses.push(ellipse);
       seNodules.push(ellipse);
       ellipse.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
-
     removeEllipse(ellipseId: number): void {
       const ellipsePos = seEllipses.findIndex(x => x.id === ellipseId);
       const pos2 = seNodules.findIndex(x => x.id === ellipseId);
@@ -327,7 +322,6 @@ export const useSEStore = defineStore({
       const pos = seLabels.findIndex(x => x.id === move.labelId);
       if (pos > -1) seLabels[pos].accept(labelMoverVisitor);
     },
-
     addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
       expressions.push(angleMarker);
       seAngleMarkers.push(angleMarker);
@@ -335,7 +329,6 @@ export const useSEStore = defineStore({
       angleMarker.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
-
     removeAngleMarkerAndExpression(angleMarkerId: number): void {
       const angleMarkerPos = seAngleMarkers.findIndex(
         x => x.id === angleMarkerId
@@ -367,7 +360,6 @@ export const useSEStore = defineStore({
       }
       this.hasUnsavedNodules = true;
     },
-
     removeParametric(parametricId: number): void {
       const parametricPos = seParametrics.findIndex(x => x.id === parametricId);
       const pos2 = seNodules.findIndex(x => x.id === parametricId);
@@ -392,7 +384,6 @@ export const useSEStore = defineStore({
       polygon.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
-
     removePolygonAndExpression(polygonId: number): void {
       const polygonPos = sePolygons.findIndex(x => x.id === polygonId);
       const pos2 = seNodules.findIndex(x => x.id === polygonId);
@@ -426,14 +417,12 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-
     addTransformation(transformation: SETransformation): void {
       seTransformations.push(transformation);
       seNodules.push(transformation);
       // transformation.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
-
     removeTransformation(transformationId: number): void {
       const pos = seTransformations.findIndex(
         (x: SETransformation) => x.id === transformationId
@@ -450,7 +439,6 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-
     //#region rotateSphere
     rotateSphere(rotationMat: Matrix4): void {
       // Update the inverseTotalRotationMatrix. We have a new rotationMat which is transforming by
@@ -509,7 +497,6 @@ export const useSEStore = defineStore({
       // console.debug("<<<<< End rotate sphere update");
     },
     //#endregion rotateSphere
-
     clearUnsavedFlag(): void {
       this.hasUnsavedNodules = false;
     },
@@ -574,7 +561,6 @@ export const useSEStore = defineStore({
         // seLines[pos].update();
       }
     },
-
     // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
     addTemporaryNodule(nodule: Nodule): void {
       nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -650,51 +636,55 @@ export const useSEStore = defineStore({
       initialStyleStatesMap,
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
-    hasObjects(): boolean {
-      return sePoints.length > 0;
+    // hasObjects(): boolean {
+    //   return sePoints.length > 0;
+    // },
+    hasObjects: (): (() => boolean) => {
+      return (): boolean => {
+        return sePoints.length > 0;
+      };
     },
-    hasNoAntipode: (): ((_: SEPoint) => boolean) => {
-      return (testPoint: SEPoint): boolean => {
+    hasNoAntipode: (): ((_: SEPoint) => null | SEPoint) => {
+      return (testPoint: SEPoint): null | SEPoint => {
         // create the antipode location vector
         tmpVector.copy(testPoint.locationVector).multiplyScalar(-1);
-        // search for the antipode location vector
+        // search for the antipode location vector among the existing points
         const ind = sePoints.findIndex(p => {
-          return tmpVector.equals(p.locationVector);
+          return tmpVector1.subVectors(tmpVector, p.locationVector).isZero();
         });
         if (ind < 0) {
-          // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return true)
-          return true;
+          // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return null)
+          return null;
         } else {
+          return sePoints[ind]; // return the point at the antipode
           //now realize that the intersection of two lines/segments creates two SEPoints (which are an antipodal pair A and B) and
           // puts them on the sePoints array, but some of them may or may not be user created.
           // if the user try to create the antipode of one of the intersections A, then -1*A appears on the list as B
-          // (1) if B is user created, then we should *not* create the antipode at -1*A so return false (not no antipode = antipode exists)
+          // (1) if B is user created, then we should *not* create the antipode at -1*A so return  (not no antipode = antipode exists)
           // (2) if B is not user created, then we we should still create the antipode at -1*A, so return true (these is no antipode)
 
-          // In the case that (2) happens it is possible that there are two points in the array sePoint with *exactly* the
-          // same location vector at -1*A, if that happens then the antipode is already created and we should return false (not no antipode = antipode exists)
-          const ind2 = sePoints.findIndex((p, index) => {
-            if (index <= ind) {
-              // ignore the entries in sePoint upto index ind, because they have already been searched
-              return false;
-            } else {
-              return tmpVector.equals(p.locationVector);
-            }
-          });
-          // the -1*testPoint.location appears twice!
-          if (ind2 >= 0) {
-            return false;
-          }
+          //  const ind2 = sePoints.findIndex((p, index) => {
+          //   if (index <= ind) {
+          //     // ignore the entries in sePoint upto index ind, because they have already been searched
+          //     return false;
+          //   } else {
+          //     return tmpVector.equals(p.locationVector);
+          //   }
+          // });
+          // // the -1*testPoint.location appears twice!
+          // if (ind2 >= 0) {
+          //   return false;
+          // }
 
-          if (sePoints[ind] instanceof SEIntersectionPoint) {
-            if (!(sePoints[ind] as SEIntersectionPoint).isUserCreated) {
-              return true; // Case (2)
-            } else {
-              return false; // Case (1)
-            }
-          } else {
-            return false;
-          }
+          // if (sePoints[ind] instanceof SEIntersectionPoint) {
+          //   if (!(sePoints[ind] as SEIntersectionPoint).isUserCreated) {
+          //     return true; // Case (2)
+          //   } else {
+          //     return false; // Case (1)
+          //   }
+          // } else {
+          //   return false;
+          // }
         }
       };
     },

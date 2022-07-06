@@ -602,8 +602,8 @@ export default {
       "Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
     lineThruPointParametricSelected:
       "Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
-
-    antipodeDuplicate: "The antipode of this point has already been created.",
+    antipodeDuplicate:
+      "The antipode of the selected point is the point {pointName} and has already been created.",
     polarLineDuplicate:
       "The polar line of this point has already been created.",
     polarPointDuplicate:

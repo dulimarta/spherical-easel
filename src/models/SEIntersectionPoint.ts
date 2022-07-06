@@ -1,17 +1,14 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 import { useSEStore } from "@/stores/se";
-import { SENodule } from "./SENodule";
-import { SEParametric } from "./SEParametric";
 import {
   getAncestors,
   getDescendants,
@@ -149,9 +146,9 @@ export class SEIntersectionPoint extends SEPoint {
       n.name !== this.principleParent2.name
     ) {
       this.otherSEParents.push(n);
-      console.debug(
-        `Added other parent ${n.name} to intersection point ${this.name}`
-      );
+      // console.debug(
+      //   `Added other parent ${n.name} to intersection point ${this.name}`
+      // );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to add nodule ${n.name} that was already on the other parent array or is a principle parent.`
@@ -172,9 +169,9 @@ export class SEIntersectionPoint extends SEPoint {
     );
     if (index > -1) {
       this.otherSEParents.splice(index, 1);
-      console.debug(
-        `Removed other parent ${n.name} to intersection point ${this.name}`
-      );
+      // console.debug(
+      //   `Removed other parent ${n.name} to intersection point ${this.name}`
+      // );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to remove nodule ${n.name} that was not on the other parent array.`
@@ -291,12 +288,12 @@ export class SEIntersectionPoint extends SEPoint {
       });
       //update the existence as the parents have changed
       this.setExistence();
-      console.debug(
-        `Removed principle parent ${n.name} from intersection point ${this.name}`
-      );
-      console.debug(
-        `Current principle parents of ${this.name} are ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
-      );
+      // console.debug(
+      //   `Removed principle parent ${n.name} from intersection point ${this.name}`
+      // );
+      // console.debug(
+      //   `Current principle parents of ${this.name} are ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
+      // );
 
       if (!updateOrderSuccessful) {
         throw new Error(
@@ -348,9 +345,9 @@ export class SEIntersectionPoint extends SEPoint {
     });
     //update the existence as the parents have changed
     this.setExistence();
-    console.debug(
-      `Added principle parent ${newPrincipleParent.name} to intersection point ${this.name}`
-    );
+    // console.debug(
+    //   `Added principle parent ${newPrincipleParent.name} to intersection point ${this.name}`
+    // );
     if (!updateOrderSuccessful) {
       throw new Error(
         "Update Intersection Point:  Order update error. Current location not found in intersection between the two new principle parents."

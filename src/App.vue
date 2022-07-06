@@ -290,10 +290,11 @@ Component.registerHooks([
     ...mapState(useSEStore, [
       "activeToolName",
       "svgCanvas",
-      "inverseTotalRotationMatrix"
+      "inverseTotalRotationMatrix",
+      "hasObjects"
     ]),
-    ...mapWritableState(useAccountStore, ["userRole"]),
-    ...mapGetters(useSEStore, ["hasObjects"])
+    ...mapWritableState(useAccountStore, ["userRole"])
+    // ...mapGetters(useSEStore, ["hasObjects"])
   }
 })
 export default class App extends Vue {
@@ -307,6 +308,7 @@ export default class App extends Vue {
 
   readonly includedTools!: Array<string>;
   readonly resetToolset!: () => void;
+  //readonly hasObjects!: boolean;
   readonly hasObjects!: () => boolean;
   readonly clearUnsavedFlag!: () => void;
 
