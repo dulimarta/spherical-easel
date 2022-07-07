@@ -156,6 +156,7 @@ export default class SelectionHandler extends Highlighter {
       //Mac shortcuts for select all
       if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
@@ -167,6 +168,7 @@ export default class SelectionHandler extends Highlighter {
       //PC shortcuts for select all
       if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);

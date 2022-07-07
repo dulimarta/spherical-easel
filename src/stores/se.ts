@@ -211,7 +211,7 @@ export const useSEStore = defineStore({
     },
     // Update the display of all free SEPoints to update the entire display
     updateDisplay(): void {
-      seNodules
+      this.seNodules
         .filter(obj => obj.isFreeToMove())
         .forEach(obj => {
           // First mark the kids out of date so that the update method does a topological sort
@@ -578,7 +578,7 @@ export const useSEStore = defineStore({
     changeBackContrast(newContrast: number): void {
       Nodule.setBackStyleContrast(newContrast);
       // update all objects display
-      seNodules.forEach(seNodule => {
+      this.seNodules.forEach(seNodule => {
         // update the style of the objects
         // console.log("name", seNodule.name);
         seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -643,7 +643,7 @@ export const useSEStore = defineStore({
 
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
-      seNodules.forEach((p: SENodule) => {
+      this.seNodules.forEach(p => {
         if (!p.selected && p.exists) {
           p.glowing = false;
         }
@@ -718,7 +718,9 @@ export const useSEStore = defineStore({
     },
     getSENoduleById(): (_: number) => SENodule | undefined {
       return (id: number): SENodule | undefined => {
-        return seNodules.find((z: SENodule) => z.id === id);
+        return seNodules
+          .map(z => z as SENodule)
+          .find((z: SENodule) => z.id === id);
       };
     },
     //#region findNearbyGetter

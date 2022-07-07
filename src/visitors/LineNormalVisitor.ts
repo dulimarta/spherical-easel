@@ -62,12 +62,12 @@ export class LineNormalVisitor implements Visitor {
   }
   // eslint-disable-next-line
   actionOnParametric(p: SEParametric): boolean {
-    //p.update()
+    // e.update();
     return false;
   }
   // eslint-disable-next-line
   actionOnPolygon(p: SEPolygon): boolean {
-    //p.update()
+    // e.update();
     return false;
   }
 }

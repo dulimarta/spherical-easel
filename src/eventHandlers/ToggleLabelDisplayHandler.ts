@@ -25,6 +25,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
       ToggleLabelDisplayHandler.store.seNodules
+        .map(z => z as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>
@@ -63,6 +64,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (keyEvent.code === "KeyH" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
       ToggleLabelDisplayHandler.store.seNodules
+        .map(z => z as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>
