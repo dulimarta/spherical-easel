@@ -200,11 +200,13 @@ export class SEIntersectionPoint extends SEPoint {
     ) {
       // In order to maintain the DAG, we must make sure that the descendants of this intersection point
       // and the ancestors of the both the (one old and one new) principle parents are distinct
+      // and that the intersection between the two new principle parents includes this intersection point
       const descendants = getDescendants([this]);
-      const ancestors1 =
+      const principleParentNotBeingRemoved =
         this.sePrincipleParent1.name === n.name // principle parent 1 is being replaced
-          ? getAncestors([this.sePrincipleParent2])
-          : getAncestors([this.sePrincipleParent1]);
+          ? this.sePrincipleParent2
+          : this.sePrincipleParent1;
+      const ancestors1 = getAncestors([principleParentNotBeingRemoved]);
       let newParentIndex = 0;
       let allAncestors = [
         ...getAncestors([this.otherParentArray[newParentIndex]]),
@@ -217,7 +219,14 @@ export class SEIntersectionPoint extends SEPoint {
           return false;
         }
       });
-      while (commonSENodules.length > 0) {
+      // check to make sure that the two new *potential* principle parents intersection includes this intersection point (and return the order of the intersection)
+      // order is always the order from the intersection of the two principle parents
+      let potentialNewOrder = this.checkIntersectionBetweenTwoPotentialParents(
+        principleParentNotBeingRemoved,
+        this.otherParentArray[newParentIndex]
+      );
+
+      while (commonSENodules.length > 0 || potentialNewOrder === -1) {
         //we want there to be no common seNodules
         newParentIndex += 1;
         if (newParentIndex > this.otherParentArray.length) {
@@ -232,6 +241,11 @@ export class SEIntersectionPoint extends SEPoint {
               return false;
             }
           });
+          // check to make sure that the two new *potential* principle parents intersection includes this intersection point (and return the order of the intersection)
+          potentialNewOrder = this.checkIntersectionBetweenTwoPotentialParents(
+            principleParentNotBeingRemoved,
+            this.otherParentArray[newParentIndex]
+          );
         } else {
           // there are no other parents where the descendants of the this intersection point
           // and all ancestors for the removed principle parent and one of the other parents, that
@@ -239,8 +253,9 @@ export class SEIntersectionPoint extends SEPoint {
           return null;
         }
       }
-
+      // if we reach here in the code there is a pair of SEOneDimensional parents that work
       const newPrincipleParent = this.otherParentArray[newParentIndex];
+      this.order = potentialNewOrder;
       // newPrincipleParent can be assigned to either principle spot, because the order variable of the intersection is
       // updated based on the location, but the type Lines, Segments, Circles, Ellipses, Parametric must be maintained
       // the principle parent 2 type is at the same spot or later than the principle parent 2 type on this list
@@ -252,11 +267,11 @@ export class SEIntersectionPoint extends SEPoint {
       // remove the new principle parent from the other parent array at newParentIndex
       this.otherParentArray.splice(newParentIndex, 1);
 
-      const rank1 = rank_of_type(this.sePrincipleParent1);
-      const rank2 = rank_of_type(this.sePrincipleParent2);
+      const rank1 = rank_of_type(this.principleParent1);
+      const rank2 = rank_of_type(this.principleParent2);
       if (
         (rank1 === rank2 &&
-          this.sePrincipleParent2.name > this.sePrincipleParent2.name) ||
+          this.sePrincipleParent1.name > this.sePrincipleParent2.name) ||
         rank2 < rank1
       ) {
         // switch the order of the principle parents
@@ -267,25 +282,7 @@ export class SEIntersectionPoint extends SEPoint {
         //   `Intersection point principle parent switched: PP1 ${this.sePrincipleParent1.name}, PP2 ${this.sePrincipleParent2.name}`
         // );
       }
-      // update the order of the intersection
-      // order is always the order from the intersection of the two principle parents
-      const updatedIntersectionInfo: IntersectionReturnType[] =
-        intersectTwoObjects(
-          this.sePrincipleParent1,
-          this.sePrincipleParent2,
-          useSEStore().inverseTotalRotationMatrix
-        );
-      let updateOrderSuccessful = false;
-      updatedIntersectionInfo.forEach((element, index) => {
-        if (
-          this.tempVector
-            .subVectors(element.vector, this.locationVector)
-            .isZero()
-        ) {
-          updateOrderSuccessful = true;
-          this.order = index;
-        }
-      });
+
       //update the existence as the parents have changed
       this.setExistence();
       // console.debug(
@@ -295,18 +292,62 @@ export class SEIntersectionPoint extends SEPoint {
       //   `Current principle parents of ${this.name} are ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
       // );
 
-      if (!updateOrderSuccessful) {
-        throw new Error(
-          "Update Intersection Point:  Order update error. Current location not found in intersection between the two new parents."
-        );
-      }
-
       return newPrincipleParent;
     } else {
       // The parent to remove is not one of the two principle parents with a backup to place into the principle parent slot
       return null; // this should not happen
     }
   }
+  /**
+   *
+   * @param potentialParent1
+   * @param potentialParent2
+   * @returns -1 if the intersection between potentialParent1 and potentialParent2 does *not* include the current SEIntersectionPoint
+   * otherwise return the order/index of the current SEIntersectionPoint for the two new potential principle parents.
+   */
+  public checkIntersectionBetweenTwoPotentialParents(
+    potentialParent1: SEOneDimensional,
+    potentialParent2: SEOneDimensional
+  ): number {
+    // check to make sure that the two new *potential* principle parents intersection includes this intersection point
+    //(and return the order of the intersection)
+    // order is always the order from the intersection of the two principle parents
+    const rank1 = rank_of_type(potentialParent1);
+    const rank2 = rank_of_type(potentialParent2);
+
+    const updatedIntersectionInfo: IntersectionReturnType[] = [];
+    if (
+      (rank1 === rank2 && potentialParent1.name < potentialParent2.name) ||
+      rank1 < rank2
+    ) {
+      // use the correct order of intersection
+      updatedIntersectionInfo.push(
+        ...intersectTwoObjects(
+          potentialParent1,
+          potentialParent2,
+          useSEStore().inverseTotalRotationMatrix
+        )
+      );
+    } else {
+      updatedIntersectionInfo.push(
+        ...intersectTwoObjects(
+          potentialParent2,
+          potentialParent1,
+          useSEStore().inverseTotalRotationMatrix
+        )
+      );
+    }
+    let returnIndex = -1;
+    updatedIntersectionInfo.forEach((element, index) => {
+      if (
+        this.tempVector.subVectors(element.vector, this.locationVector).isZero()
+      ) {
+        returnIndex = index;
+      }
+    });
+    return returnIndex;
+  }
+
   public replacePrincipleParent(
     existingPrincipleParent: SEOneDimensional,
     newPrincipleParent: SEOneDimensional

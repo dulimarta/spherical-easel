@@ -1707,7 +1707,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newIsometrySESegment
+              item.parent1
             )
           );
         } else {
@@ -1839,7 +1839,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newIsometrySELine
+              item.parent1
             )
           );
         } else {
@@ -1973,7 +1973,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newIsometrySECircle
+              item.parent1
             )
           );
         } else {
@@ -2127,7 +2127,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newIsometrySEEllipse
+              item.parent1
             )
           );
         } else {
@@ -2402,7 +2402,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newInvertedSECircle
+              item.parent1
             )
           );
         } else {

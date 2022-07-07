@@ -774,7 +774,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           if (item.existingIntersectionPoint) {
             const addIntersectionCmd = new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newPerpLine
+              item.parent1
             );
             if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
             else addPerpendicularLineGroup.addCommand(addIntersectionCmd);

@@ -785,19 +785,19 @@ export default class LineHandler extends Highlighter {
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
-    let i = 1;
+    // let i = 1;
     LineHandler.store
       .createAllIntersectionsWithLine(newSELine)
       .forEach((item: SEIntersectionReturnType) => {
-        console.debug(
-          `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
-        );
-        i += 1;
+        // console.debug(
+        //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
+        // );
+        // i += 1;
         if (item.existingIntersectionPoint) {
           lineGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSELine
+              item.parent1
             )
           );
         } else {
@@ -897,7 +897,7 @@ export default class LineHandler extends Highlighter {
               lineCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
                   item.SEIntersectionPoint,
-                  newSELine
+                  item.parent1
                 )
               );
             } else {

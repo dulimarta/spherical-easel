@@ -784,9 +784,7 @@ export const useSEStore = defineStore({
      * If they have the same type put them in alphabetical order.
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
-    createAllIntersectionsWithLine(
-      state
-    ): (_: SELine) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithLine(state) {
       return (newLine: SELine): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
@@ -817,7 +815,8 @@ export const useSEStore = defineStore({
               existingSEPoints.push(pt);
             }
           });
-
+        // The number of existing sePoint before we start adding to it with newly created intersection points
+        const numberOfExistingSEPointsBefore = existingSEPoints.length;
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new line with all old lines
@@ -831,14 +830,24 @@ export const useSEStore = defineStore({
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -846,7 +855,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -857,6 +866,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -866,17 +878,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldLine,
-                    parent2: newLine,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newLine, // this is the new parent of the intersection point
+                      parent2: newLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldLine, // this is the new parent of the intersection point
+                      parent2: oldLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -897,18 +929,24 @@ export const useSEStore = defineStore({
               `Intersecting ${newLine.name}, and seg ${oldSegment.name}`
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    console.debug(
-                      `Intersection Line at existing SEPoint ${v.name}`
-                    );
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
-                      console.debug(`Recorded in exisitingSEIntersectionPoint`);
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -916,7 +954,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -927,6 +965,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -936,21 +977,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
-                console.debug(`here`);
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  console.debug(
-                    `Adding ${existingSEIntersectionPoint.name} to intersection list`
-                  );
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldSegment,
-                    parent2: newLine,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newLine, // this is the new parent of the intersection point
+                      parent2: newLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldSegment, // this is the new parent of the intersection point
+                      parent2: oldSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -967,14 +1024,24 @@ export const useSEStore = defineStore({
               oldCircle
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -982,7 +1049,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -993,6 +1060,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1002,17 +1072,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldCircle,
-                    parent2: newLine,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newLine, // this is the new parent of the intersection point
+                      parent2: newLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldCircle, // this is the new parent of the intersection point
+                      parent2: oldCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1029,14 +1119,24 @@ export const useSEStore = defineStore({
               oldEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1044,7 +1144,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1055,6 +1155,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1064,17 +1167,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldEllipse,
-                    parent2: newLine,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newLine, // this is the new parent of the intersection point
+                      parent2: newLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldEllipse, // this is the new parent of the intersection point
+                      parent2: oldEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1093,14 +1216,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1108,7 +1241,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1119,6 +1252,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1128,17 +1264,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldParametric,
-                    parent2: newLine,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newLine, // this is the new parent of the intersection point
+                      parent2: newLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldParametric, // this is the new parent of the intersection point
+                      parent2: oldParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1146,7 +1302,30 @@ export const useSEStore = defineStore({
               existingSEIntersectionPoint = null;
             });
           });
-        return intersectionPointList;
+        // Before returning remove duplicate existingSEIntersection points (duplicate means same intersection point AND same parent)
+        // also remove any existing SEIntersection points that are immediate parents of the new object being created
+        const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
+        intersectionPointList.forEach(listItem => {
+          if (listItem.existingIntersectionPoint) {
+            if (
+              !filteredIntersectionPointList.some(
+                filteredListItem =>
+                  listItem.SEIntersectionPoint.id ===
+                    filteredListItem.SEIntersectionPoint.id &&
+                  listItem.parent1.id === filteredListItem.parent1.id
+              ) &&
+              listItem.SEIntersectionPoint.id !== newLine.startSEPoint.id &&
+              listItem.SEIntersectionPoint.id !== newLine.endSEPoint.id
+            ) {
+              filteredIntersectionPointList.push(listItem);
+            }
+          } else {
+            // automatically add the newly created intersection points
+            filteredIntersectionPointList.push(listItem);
+          }
+        });
+
+        return filteredIntersectionPointList;
       };
     },
     createAllIntersectionsWithSegment(state) {
@@ -1170,6 +1349,9 @@ export const useSEStore = defineStore({
 
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
+
+        // The number of existing sePoint before we start adding to it with newly created intersection points
+        const numberOfExistingSEPointsBefore = existingSEPoints.length;
         // Intersect this new segment with all old lines
         state.seLines
           .map(x => x as SELine)
@@ -1180,14 +1362,24 @@ export const useSEStore = defineStore({
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1195,7 +1387,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1206,9 +1398,11 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
-
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
@@ -1216,17 +1410,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldLine,
-                    parent2: newSegment,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newSegment, // this is the new parent of the intersection point
+                      parent2: newSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldLine, // this is the new parent of the intersection point
+                      parent2: oldLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1245,14 +1459,24 @@ export const useSEStore = defineStore({
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1260,36 +1484,60 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
                 const newSEIntersectionPt = new SEIntersectionPoint(
                   newPt,
-                  oldSegment,
                   newSegment,
+                  oldSegment,
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
-                  parent1: oldSegment,
-                  parent2: newSegment,
+                  parent1: newSegment,
+                  parent2: oldSegment,
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldSegment,
-                    parent2: newSegment,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newSegment, // this is the new parent of the intersection point
+                      parent2: newSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldSegment, // this is the new parent of the intersection point
+                      parent2: oldSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1306,14 +1554,24 @@ export const useSEStore = defineStore({
               oldCircle
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1321,7 +1579,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1332,6 +1590,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1341,17 +1602,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newSegment,
-                    parent2: oldCircle,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newSegment, // this is the new parent of the intersection point
+                      parent2: newSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldCircle, // this is the new parent of the intersection point
+                      parent2: oldCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1368,14 +1649,24 @@ export const useSEStore = defineStore({
               oldEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1383,7 +1674,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1394,6 +1685,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1403,17 +1697,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newSegment,
-                    parent2: oldEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newSegment, // this is the new parent of the intersection point
+                      parent2: newSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldEllipse, // this is the new parent of the intersection point
+                      parent2: oldEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1431,14 +1745,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1446,7 +1770,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1457,6 +1781,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1466,17 +1793,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newSegment,
-                    parent2: oldParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newSegment, // this is the new parent of the intersection point
+                      parent2: newSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldParametric, // this is the new parent of the intersection point
+                      parent2: oldParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1484,7 +1831,7 @@ export const useSEStore = defineStore({
               existingSEIntersectionPoint = null;
             });
           });
-        // Before returning remove duplicate existingSEIntersection points
+        // Before returning remove duplicate existingSEIntersection points (duplicate means same SEIntersection point AND same parent)
         // also remove any existing SEIntersection points that are immediate parents of the new object being created
         const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
         intersectionPointList.forEach(listItem => {
@@ -1493,7 +1840,8 @@ export const useSEStore = defineStore({
               !filteredIntersectionPointList.some(
                 filteredListItem =>
                   listItem.SEIntersectionPoint.id ===
-                  filteredListItem.SEIntersectionPoint.id
+                    filteredListItem.SEIntersectionPoint.id &&
+                  listItem.parent1.id === filteredListItem.parent1.id
               ) &&
               listItem.SEIntersectionPoint.id !== newSegment.startSEPoint.id &&
               listItem.SEIntersectionPoint.id !== newSegment.endSEPoint.id
@@ -1529,6 +1877,8 @@ export const useSEStore = defineStore({
           });
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
+        // The number of existing sePoint before we start adding to it with newly created intersection points
+        const numberOfExistingSEPointsBefore = existingSEPoints.length;
         // Intersect this new circle with all old lines
         state.seLines
           .map(x => x as SELine)
@@ -1538,14 +1888,24 @@ export const useSEStore = defineStore({
               newCircle
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1553,7 +1913,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1564,6 +1924,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1573,17 +1936,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldLine,
-                    parent2: newCircle,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newCircle, // this is the new parent of the intersection point
+                      parent2: newCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldLine, // this is the new parent of the intersection point
+                      parent2: oldLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1600,14 +1983,24 @@ export const useSEStore = defineStore({
               newCircle
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1615,7 +2008,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1626,6 +2019,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1635,17 +2031,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldSegment,
-                    parent2: newCircle,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newCircle, // this is the new parent of the intersection point
+                      parent2: newCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldSegment, // this is the new parent of the intersection point
+                      parent2: oldSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1666,14 +2082,24 @@ export const useSEStore = defineStore({
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1681,7 +2107,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1692,6 +2118,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1701,17 +2130,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldCircle,
-                    parent2: newCircle,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newCircle, // this is the new parent of the intersection point
+                      parent2: newCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldCircle, // this is the new parent of the intersection point
+                      parent2: oldCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1729,14 +2178,24 @@ export const useSEStore = defineStore({
               oldEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1744,7 +2203,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1755,6 +2214,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1764,17 +2226,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newCircle,
-                    parent2: oldEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newCircle, // this is the new parent of the intersection point
+                      parent2: newCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldEllipse, // this is the new parent of the intersection point
+                      parent2: oldEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1793,14 +2275,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1808,7 +2300,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1819,6 +2311,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1828,17 +2323,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newCircle,
-                    parent2: oldParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newCircle, // this is the new parent of the intersection point
+                      parent2: newCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldParametric, // this is the new parent of the intersection point
+                      parent2: oldParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1847,7 +2362,7 @@ export const useSEStore = defineStore({
             });
           });
 
-        // Before returning remove duplicate existingSEIntersection points
+        // Before returning remove duplicate existingSEIntersection points (duplicate means same SEIntersection point AND same parent)
         // also remove any existing SEIntersection points that are immediate parents of the new object being created
         const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
         intersectionPointList.forEach(listItem => {
@@ -1856,7 +2371,8 @@ export const useSEStore = defineStore({
               !filteredIntersectionPointList.some(
                 filteredListItem =>
                   listItem.SEIntersectionPoint.id ===
-                  filteredListItem.SEIntersectionPoint.id
+                  filteredListItem.SEIntersectionPoint.id &&
+                  listItem.parent1.id === filteredListItem.parent1.id
               ) &&
               listItem.SEIntersectionPoint.id !== newCircle.circleSEPoint.id &&
               listItem.SEIntersectionPoint.id !== newCircle.centerSEPoint.id
@@ -1893,6 +2409,8 @@ export const useSEStore = defineStore({
           });
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
+        // The number of existing sePoint before we start adding to it with newly created intersection points
+        const numberOfExistingSEPointsBefore = existingSEPoints.length;
 
         // Intersect this new ellipse with all old lines
         state.seLines
@@ -1903,14 +2421,24 @@ export const useSEStore = defineStore({
               newEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1918,7 +2446,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1929,6 +2457,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -1938,17 +2469,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldLine,
-                    parent2: newEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newEllipse, // this is the new parent of the intersection point
+                      parent2: newEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldLine, // this is the new parent of the intersection point
+                      parent2: oldLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -1966,14 +2517,24 @@ export const useSEStore = defineStore({
               newEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -1981,7 +2542,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -1992,6 +2553,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2001,17 +2565,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldSegment,
-                    parent2: newEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newEllipse, // this is the new parent of the intersection point
+                      parent2: newEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldSegment, // this is the new parent of the intersection point
+                      parent2: oldSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2029,14 +2613,24 @@ export const useSEStore = defineStore({
               newEllipse
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2044,7 +2638,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2055,6 +2649,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2064,17 +2661,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldCircle,
-                    parent2: newEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newEllipse, // this is the new parent of the intersection point
+                      parent2: newEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldCircle, // this is the new parent of the intersection point
+                      parent2: oldCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2094,14 +2711,24 @@ export const useSEStore = defineStore({
               true // this is the first time these two objects have been intersected
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2109,7 +2736,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2120,6 +2747,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2129,17 +2759,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldEllipse,
-                    parent2: newEllipse,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newEllipse, // this is the new parent of the intersection point
+                      parent2: newEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldEllipse, // this is the new parent of the intersection point
+                      parent2: oldEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2158,14 +2808,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2173,7 +2833,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2184,6 +2844,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2193,17 +2856,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: newEllipse,
-                    parent2: oldParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newEllipse, // this is the new parent of the intersection point
+                      parent2: newEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldParametric, // this is the new parent of the intersection point
+                      parent2: oldParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2211,7 +2894,7 @@ export const useSEStore = defineStore({
               existingSEIntersectionPoint = null;
             });
           });
-        // Before returning remove duplicate existingSEIntersection points
+        // Before returning remove duplicate existingSEIntersection points (duplicate means same SEIntersection point AND same parent)
         // also remove any existing SEIntersection points that are immediate parents of the new object being created
         const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
         intersectionPointList.forEach(listItem => {
@@ -2220,7 +2903,8 @@ export const useSEStore = defineStore({
               !filteredIntersectionPointList.some(
                 filteredListItem =>
                   listItem.SEIntersectionPoint.id ===
-                  filteredListItem.SEIntersectionPoint.id
+                  filteredListItem.SEIntersectionPoint.id  &&
+                  listItem.parent1.id === filteredListItem.parent1.id
               ) &&
               listItem.SEIntersectionPoint.id !== newEllipse.focus1SEPoint.id &&
               listItem.SEIntersectionPoint.id !== newEllipse.focus2SEPoint.id &&
@@ -2262,7 +2946,8 @@ export const useSEStore = defineStore({
 
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
-
+        // The number of existing sePoint before we start adding to it with newly created intersection points
+        const numberOfExistingSEPointsBefore = existingSEPoints.length;
         // Intersect this new parametric with all old lines
         state.seLines
           .map(x => x as SELine)
@@ -2273,14 +2958,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2288,7 +2983,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2299,6 +2994,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2308,17 +3006,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldLine,
-                    parent2: newParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newParametric, // this is the new parent of the intersection point
+                      parent2: newParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldLine, // this is the new parent of the intersection point
+                      parent2: oldLine,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2336,14 +3054,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2351,7 +3079,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2362,6 +3090,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2371,17 +3102,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldSegment,
-                    parent2: newParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newParametric, // this is the new parent of the intersection point
+                      parent2: newParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldSegment, // this is the new parent of the intersection point
+                      parent2: oldSegment,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2399,14 +3150,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2414,7 +3175,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2425,6 +3186,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2434,17 +3198,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldCircle,
-                    parent2: newParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newParametric, // this is the new parent of the intersection point
+                      parent2: newParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldCircle, // this is the new parent of the intersection point
+                      parent2: oldCircle,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2462,14 +3246,24 @@ export const useSEStore = defineStore({
               inverseTotalRotationMatrix
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2477,7 +3271,7 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
@@ -2488,6 +3282,9 @@ export const useSEStore = defineStore({
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
@@ -2497,17 +3294,37 @@ export const useSEStore = defineStore({
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldEllipse,
-                    parent2: newParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newParametric, // this is the new parent of the intersection point
+                      parent2: newParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldEllipse, // this is the new parent of the intersection point
+                      parent2: oldEllipse,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2527,14 +3344,24 @@ export const useSEStore = defineStore({
               newParametric
             );
             let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
+            let indexOfExistingSEIntersectionPoint = -1;
             intersectionInfo.forEach((info, index) => {
+              // Options
+              //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
+              //  1) The intersection point is new so create a new intersection point
+              //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
+              //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+
               if (
-                !existingSEPoints.some(v => {
+                !existingSEPoints.some((pt, ind) => {
                   if (
-                    tmpVector.subVectors(info.vector, v.locationVector).isZero()
+                    tmpVector
+                      .subVectors(info.vector, pt.locationVector)
+                      .isZero()
                   ) {
-                    if (v instanceof SEIntersectionPoint) {
-                      existingSEIntersectionPoint = v;
+                    if (pt instanceof SEIntersectionPoint) {
+                      existingSEIntersectionPoint = pt;
+                      indexOfExistingSEIntersectionPoint = ind;
                     }
                     return true;
                   } else {
@@ -2542,37 +3369,60 @@ export const useSEStore = defineStore({
                   }
                 })
               ) {
-                // info.vector is not on the avoidVectors array, so create an intersection
+                // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
                 const newPt = new NonFreePoint();
                 newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
                 newPt.adjustSize();
                 const newSEIntersectionPt = new SEIntersectionPoint(
                   newPt,
-                  oldParametric,
                   newParametric,
+                  oldParametric,
                   index,
                   false
                 );
+                //put the new intersection point on the existing list
+                existingSEPoints.push(newSEIntersectionPt);
+                //copy the location and existence information into the new intersection point and put it on the list to be returned
                 newSEIntersectionPt.locationVector = info.vector;
                 newSEIntersectionPt.exists = info.exists;
                 intersectionPointList.push({
                   SEIntersectionPoint: newSEIntersectionPt,
-                  parent1: oldParametric,
-                  parent2: newParametric,
+                  parent1: newParametric,
+                  parent2: oldParametric,
                   existingIntersectionPoint: false
                 });
               } else {
+                // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
                 if (existingSEIntersectionPoint) {
-                  // the intersection vector (info.vector) is at an existing SEIntersection point
-                  intersectionPointList.push({
-                    SEIntersectionPoint: existingSEIntersectionPoint,
-                    parent1: oldParametric,
-                    parent2: newParametric,
-                    existingIntersectionPoint: true
-                  });
-                  // update the existence with the new parent if it exists (otherwise leave it alone)
-                  if (info.exists === true) {
-                    existingSEIntersectionPoint.exists = info.exists;
+                  if (
+                    indexOfExistingSEIntersectionPoint <
+                    numberOfExistingSEPointsBefore
+                  ) {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that was not created with this command (Option #2 above)
+                    // this mean that the newly created one dimensional object should be the parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: newParametric, // this is the new parent of the intersection point
+                      parent2: newParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
+                  } else {
+                    // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
+                    // this mean that the old one dimensional object should be a new parent of this intersection point
+                    intersectionPointList.push({
+                      SEIntersectionPoint: existingSEIntersectionPoint,
+                      parent1: oldParametric, // this is the new parent of the intersection point
+                      parent2: oldParametric,
+                      existingIntersectionPoint: true
+                    });
+                    // update the existence with the new parent if it exists (otherwise leave it alone)
+                    if (info.exists === true) {
+                      existingSEIntersectionPoint.exists = info.exists;
+                    }
                   }
                 }
               }
@@ -2580,7 +3430,7 @@ export const useSEStore = defineStore({
               existingSEIntersectionPoint = null;
             });
           });
-        // Before returning remove duplicate existingSEIntersection points
+        // Before returning remove duplicate existingSEIntersection points (duplicate means same SEIntersection point AND same parent)
         // also remove any existing SEIntersection points that are immediate parents of the new object being created
         const filteredIntersectionPointList: SEIntersectionReturnType[] = [];
         intersectionPointList.forEach(listItem => {
@@ -2589,7 +3439,8 @@ export const useSEStore = defineStore({
               !filteredIntersectionPointList.some(
                 filteredListItem =>
                   listItem.SEIntersectionPoint.id ===
-                  filteredListItem.SEIntersectionPoint.id
+                  filteredListItem.SEIntersectionPoint.id  &&
+                  listItem.parent1.id === filteredListItem.parent1.id
               )
             ) {
               filteredIntersectionPointList.push(listItem);

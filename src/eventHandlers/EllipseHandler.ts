@@ -1109,7 +1109,7 @@ export default class EllipseHandler extends Highlighter {
           ellipseCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSEEllipse
+              item.parent1
             )
           );
         } else {
@@ -1209,7 +1209,7 @@ export default class EllipseHandler extends Highlighter {
               ellipseCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
                   item.SEIntersectionPoint,
-                  newSEEllipse
+                  item.parent1
                 )
               );
             } else {

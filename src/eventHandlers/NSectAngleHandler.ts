@@ -375,7 +375,7 @@ export default class NSectAngleHandler extends Highlighter {
                 nSectingLinesCommandGroup.addCommand(
                   new AddIntersectionPointOtherParent(
                     item.SEIntersectionPoint,
-                    nSectingLine
+                    item.parent1
                   )
                 );
               } else {

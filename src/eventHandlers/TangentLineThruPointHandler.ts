@@ -676,7 +676,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
             addTangentLineGroup.addCommand(
               new AddIntersectionPointOtherParent(
                 item.SEIntersectionPoint,
-                newSETangentLine
+                item.parent1
               )
             );
           } else {

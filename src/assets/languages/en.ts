@@ -522,6 +522,8 @@ export default {
       "The coordinates of point {ptName} have already been measured.",
     duplicateInversion:
       "The selected circle already defines the inversion {trans}.",
+    greatCircleInversion:
+      "Inversion over the line {name} is the same transformation as reflection. Use the reflection tool instead.",
     duplicatePointReflection:
       "The selected point already defines the point reflection {trans}.",
     duplicateReflectionLine:

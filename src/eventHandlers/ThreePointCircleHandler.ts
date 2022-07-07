@@ -1155,7 +1155,7 @@ export default class ThreePointCircleHandler extends Highlighter {
           threePointCircleCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSECircle
+              item.parent1
             )
           );
         } else {
@@ -1324,7 +1324,7 @@ export default class ThreePointCircleHandler extends Highlighter {
               threePointCircleCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
                   item.SEIntersectionPoint,
-                  newSECircle
+                  item.parent1
                 )
               );
             } else {

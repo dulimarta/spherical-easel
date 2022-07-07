@@ -66,6 +66,18 @@ export default class InversionTransformationHandler extends Highlighter {
         this.targetCircleOfInversion = null;
       }
     }
+    if (this.isOnSphere && this.hitSELines.length > 0) {
+      //:
+      // "Inversion over the line {name} is the same transformation as reflection. Use the reflection tool instead.",
+      EventBus.fire("show-alert", {
+        key: `handlers. greatCircleInversion`,
+        keyOptions: {
+          name: `${this.hitSELines[0].label?.ref.shortUserName}`
+        },
+        type: "error"
+      });
+      return;
+    }
   }
 
   mouseMoved(event: MouseEvent): void {

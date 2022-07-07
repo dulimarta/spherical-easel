@@ -844,13 +844,13 @@ export default class SegmentHandler extends Highlighter {
     SegmentHandler.store
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
-        console.debug(`Segment intersections ${i}`);
+        //console.debug(`Segment intersections ${i}`);
         i += 1;
         if (item.existingIntersectionPoint) {
           segmentGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSESegment
+              item.parent1
             )
           );
         } else {
@@ -880,9 +880,9 @@ export default class SegmentHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
-          console.debug(
-            `Added intersection point ${item.SEIntersectionPoint.name}`
-          );
+          // console.debug(
+          //   `Added intersection point ${item.SEIntersectionPoint.name}`
+          // );
         }
       });
     segmentGroup.execute();
@@ -1020,13 +1020,13 @@ export default class SegmentHandler extends Highlighter {
         SegmentHandler.store
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
-            console.debug(`Segment intersections ${i}`);
+            //console.debug(`Segment intersections ${i}`);
             i += 1;
             if (item.existingIntersectionPoint) {
               segmentCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
                   item.SEIntersectionPoint,
-                  newSESegment
+                  item.parent1
                 )
               );
             } else {

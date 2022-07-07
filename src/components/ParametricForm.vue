@@ -789,7 +789,7 @@ export default class ParametricForm extends Vue {
           parametricCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSEParametric
+              item.parent1
             )
           );
         } else {

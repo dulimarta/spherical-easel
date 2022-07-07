@@ -715,7 +715,7 @@ export default class CircleHandler extends Highlighter {
           circleCommandGroup.addCommand(
             new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
-              newSECircle
+              item.parent1
             )
           );
         } else {
@@ -803,7 +803,7 @@ export default class CircleHandler extends Highlighter {
               circleCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
                   item.SEIntersectionPoint,
-                  newSECircle
+                  item.parent1
                 )
               );
             } else {

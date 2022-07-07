@@ -67,11 +67,11 @@ function executeIndividual(command: string): Command {
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
     case "AddIntersectionPointOtherParent":
       return AddIntersectionPointOtherParent.parse(command, noduleDictionary);
-    case "RemoveIntersectionPointOtherParent":
-      return RemoveIntersectionPointOtherParent.parse(
-        command,
-        noduleDictionary
-      );
+    // case "RemoveIntersectionPointOtherParent":
+    //   return RemoveIntersectionPointOtherParent.parse(
+    //     command,
+    //     noduleDictionary
+    //   );
     case "AddSegment":
       return AddSegmentCommand.parse(command, noduleDictionary);
     case "AddLine":
