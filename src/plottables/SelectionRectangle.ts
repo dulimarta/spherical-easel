@@ -1,18 +1,21 @@
-import Two from "two.js";
+import { Anchor } from "two.js/src/anchor";
+import { Group } from "two.js/src/group";
+import { Path } from "two.js/src/path";
+import { Vector } from "two.js/src/vector";
 
-export class SelectionRectangle extends Two.Group {
-  private path: Two.Path;
-  private layer: Two.Group;
-  private vertex1 = new Two.Vector(0, 0);
-  private vertex2 = new Two.Vector(1, 0);
-  private vertex3 = new Two.Vector(1, 1);
-  private vertex4 = new Two.Vector(1, 0);
+export class SelectionRectangle extends Group {
+  private path: Path;
+  private layer: Group;
+  private vertex1 = new Anchor(0, 0);
+  private vertex2 = new Anchor(1, 0);
+  private vertex3 = new Anchor(1, 1);
+  private vertex4 = new Anchor(1, 0);
 
-  constructor(layer: Two.Group) {
+  constructor(layer: Group) {
     super();
     this.layer = layer;
 
-    this.path = new Two.Path(
+    this.path = new Path(
       [this.vertex1, this.vertex2, this.vertex3, this.vertex4],
       true,
       false
@@ -22,7 +25,7 @@ export class SelectionRectangle extends Two.Group {
     this.path.opacity = 1;
     this.path.linewidth = 1;
     this.path.dashes.push(...[1, 5]);
-    this.add(this.path);
+    this.path.addTo(this);
     this.addTo(this.layer);
   }
 

@@ -14,13 +14,14 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { Group } from "two.js/src/group";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
    */
   private targetPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

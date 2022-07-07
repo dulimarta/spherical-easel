@@ -7,7 +7,6 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -16,19 +15,6 @@ export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
 
-export type PiniaAppState = {
-  actionMode: ActionMode;
-  previousActionMode: ActionMode;
-  activeToolName: string;
-  previousActiveToolName: string;
-  zoomMagnificationFactor: number;
-  zoomTranslation: number[];
-  hasUnsavedNodules: boolean;
-  svgCanvas: HTMLDivElement | null;
-  canvasWidth: number;
-  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  styleSavedFromPanel: StyleEditPanels;
-};
 export interface AccountState {
   temporaryProfilePicture: string;
   userRole: string | undefined;

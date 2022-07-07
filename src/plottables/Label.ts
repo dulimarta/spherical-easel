@@ -1,7 +1,5 @@
 /** @format */
 
-// import SETTINGS from "@/global-settings";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
@@ -24,6 +22,10 @@ import { ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
+import { Vector } from "two.js/src/vector";
+import { Text } from "two.js/src/text";
+import { Group } from "two.js/src/group";
+import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -43,22 +45,22 @@ export default class Label extends Nodule {
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
   public _locationVector = new Vector3(1, 0, 0);
-  public defaultScreenVectorLocation = new Two.Vector(1, 0);
+  public defaultScreenVectorLocation = new Vector(1, 0);
 
   /**
    * The TwoJS objects that are used to display the label.
    * One is for the front, the other for the back. Only one is displayed at a time
    */
-  protected frontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected frontText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected backText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected backText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingFrontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingFrontText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingBackText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingBackText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
@@ -170,7 +172,7 @@ export default class Label extends Nodule {
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
-    //  Two.Group that they are all members of. To translate the group is to translate all points
+    //  Group that they are all members of. To translate the group is to translate all points
 
     this.glowingFrontText.translation = this.defaultScreenVectorLocation;
     this.frontText.translation = this.defaultScreenVectorLocation;
@@ -281,7 +283,7 @@ export default class Label extends Nodule {
     top: number;
     width: number;
   } {
-    const rect = this.frontText.getBoundingClientRect() as Two.BoundingClientRect;
+    const rect = this.frontText.getBoundingClientRect();
     return {
       bottom: rect.bottom,
       height: rect.height,
@@ -335,18 +337,26 @@ export default class Label extends Nodule {
     }
   }
 
-  addToLayers(layers: Two.Group[]): void {
-    layers[LAYER.foregroundText].add(this.frontText);
-    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
-    layers[LAYER.backgroundText].add(this.backText);
-    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+  addToLayers(layers: Group[]): void {
+    // layers[LAYER.foregroundText].add(this.frontText);
+    // layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
+    // layers[LAYER.backgroundText].add(this.backText);
+    // layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+    this.frontText.addTo(layers[LAYER.foregroundText]);
+    this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
+    this.backText.addTo(layers[LAYER.backgroundText]);
+    this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
   }
 
-  removeFromLayers(layers: Two.Group[]): void {
-    layers[LAYER.foregroundText].remove(this.frontText);
-    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
-    layers[LAYER.backgroundText].remove(this.backText);
-    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+  removeFromLayers(layers: Group[]): void {
+    // layers[LAYER.foregroundText].remove(this.frontText);
+    // layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    // layers[LAYER.backgroundText].remove(this.backText);
+    // layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+    this.frontText.remove();
+    this.glowingFrontText.remove();
+    this.backText.remove();
+    this.glowingBackText.remove();
   }
 
   updateDisplay(): void {
@@ -379,7 +389,7 @@ export default class Label extends Nodule {
 
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
@@ -473,10 +483,10 @@ export default class Label extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -486,7 +496,7 @@ export default class Label extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
         // Properties that have no sides
         let labelText = "";
@@ -579,15 +589,15 @@ export default class Label extends Nodule {
             labelStyle?.labelTextStyle ?? SETTINGS.label.style;
           this.glowingBackText.style =
             labelStyle?.labelTextStyle ?? SETTINGS.label.style;
-          this.frontText.weight = "normal";
-          this.backText.weight = "normal";
-          this.glowingFrontText.weight = "normal";
-          this.glowingBackText.weight = "normal";
+          this.frontText.weight = 500;
+          this.backText.weight = 500;
+          this.glowingFrontText.weight = 500;
+          this.glowingBackText.weight = 500;
         } else if (labelStyle?.labelTextStyle === "bold") {
-          this.frontText.weight = "bold";
-          this.backText.weight = "bold";
-          this.glowingFrontText.weight = "bold";
-          this.glowingBackText.weight = "bold";
+          this.frontText.weight = 1000;
+          this.backText.weight = 1000;
+          this.glowingFrontText.weight = 1000;
+          this.glowingBackText.weight = 1000;
         }
 
         this.frontText.family =
@@ -620,7 +630,7 @@ export default class Label extends Nodule {
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
         // console.log("front fill label", frontFillColor);
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontFillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {
           this.frontText.fill = frontFillColor;
@@ -633,7 +643,7 @@ export default class Label extends Nodule {
           labelStyle?.labelDynamicBackStyle === true
         ) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontFillColor)
             )
           ) {
@@ -642,7 +652,7 @@ export default class Label extends Nodule {
             this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backFillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backFillColor)) {
             this.backText.noFill();
           } else {
             this.backText.fill = backFillColor;

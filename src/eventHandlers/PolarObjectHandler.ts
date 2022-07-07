@@ -31,6 +31,7 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { Group } from "two.js/src/group";
 
 enum Create {
   NONE,
@@ -87,7 +88,7 @@ export default class PolarObjectHandler extends Highlighter {
   private temporaryPolarPointMarkersAdded = false;
   private temporaryPointAdded = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();

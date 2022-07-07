@@ -1,4 +1,3 @@
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
@@ -18,6 +17,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
+import { Group } from "two.js/src/group";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -54,7 +54,7 @@ export default class AntipodalPointHandler extends Highlighter {
   private isTemporaryAntipodeAdded = false;
   private isTemporaryPointAdded = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();

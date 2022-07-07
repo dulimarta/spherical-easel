@@ -6,6 +6,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
+import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -13,7 +14,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    */
   private label: SELabel | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 
@@ -24,6 +25,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
       ToggleLabelDisplayHandler.store.seNodules
+        .map(z => z as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>
@@ -62,6 +64,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (keyEvent.code === "KeyH" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
       ToggleLabelDisplayHandler.store.seNodules
+        .map(z => z as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>

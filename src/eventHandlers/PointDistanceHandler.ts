@@ -5,13 +5,14 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { Group } from "two.js/src/group";
 export default class PointDistanceHandler extends Highlighter {
   /**
    * Points to measure distance
    */
   private targetPoints: SEPoint[] = [];
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

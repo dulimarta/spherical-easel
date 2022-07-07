@@ -16,6 +16,7 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
+import { Group } from "two.js/src/group";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -31,7 +32,7 @@ export default class NSectAngleHandler extends Highlighter {
 
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[], bisectOnly?: boolean) {
+  constructor(layers: Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary lines
@@ -267,11 +268,13 @@ export default class NSectAngleHandler extends Highlighter {
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
 
     // get the SEPoint at the vertex of the angle marker
-    const startSEPoint = NSectAngleHandler.store.sePoints.find(pt =>
-      this.tmpVector
-        .subVectors(pt.locationVector, candidateAngle.vertexVector)
-        .isZero()
-    );
+    const startSEPoint = NSectAngleHandler.store.sePoints
+      .map(n => n as SEPoint)
+      .find(pt =>
+        this.tmpVector
+          .subVectors(pt.locationVector, candidateAngle.vertexVector)
+          .isZero()
+      );
 
     // create the orthonormal frame with the z -axis as startSEPoint.locationVector
     const fromVector = new Vector3();

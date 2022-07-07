@@ -1,4 +1,3 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
@@ -23,6 +22,7 @@ import { AngleMode } from "@/types";
 import { SEParametric } from "@/models/SEParametric";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
 import MouseHandler from "./MouseHandler";
+import { Group } from "two.js/src/group";
 enum HighlightMode {
   NONE,
   ONLYPOINTS,
@@ -125,7 +125,7 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     console.log("AngleHandler ctor");
 

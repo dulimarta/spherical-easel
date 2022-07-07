@@ -101,7 +101,6 @@ export default class Toolbox extends Vue {
   readonly minified!: boolean;
 
   // ('layers')')
-  // private layers!: Two.Group[];
   readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
 
   private leftDrawerMinified = false;
@@ -109,8 +108,6 @@ export default class Toolbox extends Vue {
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = 0;
-
-  // private scene!: Two.Group;
 
   mounted(): void {
     // this.scene = this.layers[LAYER.midground];

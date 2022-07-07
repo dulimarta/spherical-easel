@@ -42,7 +42,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, plottableType } from "@/types";
+import { ActionMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -50,6 +50,8 @@ import Nodule from "@/plottables/Nodule";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
+import { Circle } from "two.js/src/shapes/circle";
+import { Group } from "two.js/src/group";
 
 @Component({
   computed: {
@@ -57,7 +59,8 @@ import { Matrix4 } from "three";
       "actionMode",
       "zoomMagnificationFactor",
       "zoomTranslation",
-      "seLabels"
+      "seLabels",
+      "layers"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
@@ -83,7 +86,7 @@ export default class SphereFrame extends VueComponent {
   readonly seLabels!: SELabel[];
 
   readonly init!: () => void;
-  readonly setLayers!: (_: Array<Two.Group>) => void;
+  readonly setLayers!: (_: Array<Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
@@ -94,18 +97,18 @@ export default class SphereFrame extends VueComponent {
     canvas: HTMLDivElement;
   };
   /**
-   * The main (the only one) TwoJS object that contains the layers (each a Two.Group) making up the screen graph
-   * First layers  (Two.Groups) are added to the twoInstance (index by the enum LAYER from
-   * global-settings.ts), then TwoJs objects (Two.Path, Two.Ellipse, etc..) are added to the
+   * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
+   * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
+   * global-settings.ts), then TwoJs objects (Path, Ellipse, etc..) are added to the
    * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
    */
   private twoInstance!: Two;
 
-  // private sphereCanvas!: Two.Group;
+  // private sphereCanvas!: Group;
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
-  private boundaryCircle!: Two.Circle;
+  private boundaryCircle!: Circle;
   /**
    * The Global Vuex Store
    */
@@ -147,17 +150,19 @@ export default class SphereFrame extends VueComponent {
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  private layers: Two.Group[] = [];
+  readonly layers!: Group[];
 
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
       height: this.canvasSize,
-      autostart: true,
-      ratio: window.devicePixelRatio
+      autostart: true
+      // ratio: window.devicePixelRatio
     });
+    console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
+    this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
-    this.layers.splice(0, this.layers.length);
+    // this.layers.splice(0);
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
@@ -167,18 +172,25 @@ export default class SphereFrame extends VueComponent {
       LAYER.foregroundTextGlowing,
       LAYER.backgroundTextGlowing
     ].map(Number); // shortcut for .map(x => Number(x))
+
+    // Create a detached group to prevent duplicate group ID
+    // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
+    const dummy_group = new Group();
+    let groups: Array<Group> = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
-        const newLayer = this.twoInstance.makeGroup();
-        this.layers.push(newLayer);
-
-        // Don't flip the y-coord of text layers
-        if (textLayers.indexOf(layerIdx) < 0) {
+        const newLayer = new Group();
+        newLayer.matrix.manual = true;
+        // Undo the y-flip on text layers
+        if (textLayers.indexOf(layerIdx) >= 0) {
           // Not in textLayers
-          newLayer.scale = new Two.Vector(1, -1);
+          newLayer.matrix.scale(1, -1);
         }
+
+        newLayer.addTo(this.twoInstance.scene);
+        groups.push(newLayer);
       }
     }
     //#endregion addlayers
@@ -188,14 +200,14 @@ export default class SphereFrame extends VueComponent {
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
     this.init();
-    this.setLayers(this.layers);
+    this.setLayers(groups);
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
-    this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
+    this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    this.layers[LAYER.midground].add(this.boundaryCircle);
+    this.boundaryCircle.addTo(this.layers[Number(LAYER.midground)]);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
@@ -205,41 +217,17 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
-    // const box1 = new Two.Rectangle(-100, 150, 100, 150);
-    // box1.fill = "hsl(200,80%,50%)";
-    // const box2 = new Two.Rectangle(100, 150, 100, 150);
-    // box2.fill = "red";
-    // box1.addTo(this.layers[LAYER.background]);
-    // box2.addTo(this.layers[LAYER.foregroundText]);
-
-    // const t1 = new Two.Text(
-    //   "Text must &#13;&#10; be upright 2\u{1D7B9}",
-    //   50,
-    //   80,
-    //   {}
-    // );
-    // t1.size = 12;
-    // t1.noStroke();
-    // t1.fill = "#000";
-    // (t1 as any).leading = 50;
-    // // (t1 as any).linewidth = 30;
-    // (t1 as any).id = "mytext";
-    // (t1 as any).className = "myclass";
-    // t1.decoration = "strikethrough";
-
-    // this.layers[LAYER.foregroundText].add(t1);
-    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
-    // const hLine = new Two.Line(-R, 0, R, 0);
-    // const vLine = new Two.Line(0, -R, 0, R);
+    // const hLine = new Line(-R, 0, R, 0);
+    // const vLine = new Line(0, -R, 0, R);
     // hLine.stroke = "red";
     // vLine.stroke = "green";
     // this.sphereCanvas.add(
     //   hLine,
     //   vLine,
-    //   new Two.Line(100, -R, 100, R),
-    //   new Two.Line(-R, 100, R, 100)
+    //   new Line(100, -R, 100, R),
+    //   new Line(-R, 100, R, 100)
     // );
     //this.visitor = new RotationVisitor();
 
@@ -257,17 +245,29 @@ export default class SphereFrame extends VueComponent {
   }
 
   mounted(): void {
-    // Put the main Two.js instance into the canvas
+    // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
-    // Set the main Two.js instance to refresh at 60 fps
-    this.twoInstance.play();
-
     // Set up the listeners
-    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
-    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
-    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mousemove",
+      this.handleMouseMoved
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mousedown",
+      this.handleMousePressed
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mouseup",
+      this.handleMouseReleased
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "mouseleave",
+      this.handleMouseLeave
+    );
+    this.twoInstance.renderer.domElement.addEventListener(
+      "wheel",
+      this.handleMouseWheel
+    );
 
     // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
     // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -282,14 +282,30 @@ export default class SphereFrame extends VueComponent {
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
     this.setCanvas(this.$refs.canvas);
+    this.updateView();
   }
 
   beforeDestroy(): void {
-    this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
-    this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
-    this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
-    this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mousemove",
+      this.handleMouseMoved
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mousedown",
+      this.handleMousePressed
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mouseup",
+      this.handleMouseReleased
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "mouseleave",
+      this.handleMouseLeave
+    );
+    this.twoInstance.renderer.domElement.removeEventListener(
+      "wheel",
+      this.handleMouseWheel
+    );
     // Does this remove the context menu listener? I'm not sure.
     this.$refs.canvas.removeEventListener("contextmenu", event =>
       event.preventDefault()
@@ -303,11 +319,11 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    (this.twoInstance.renderer as any).setSize(size, size);
-    // Move the origin of all layers to the center of the viewport
-    this.layers.forEach(z => {
-      z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    });
+    this.twoInstance.width = size;
+    this.twoInstance.height = size;
+    // this.layers.forEach(z => {
+    //   z.translation.set(size / 2, size / 2);
+    // });
 
     const radius = size / 2 - 16; // 16-pixel gap
     // this.setSphereRadius(radius);
@@ -317,6 +333,7 @@ export default class SphereFrame extends VueComponent {
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
     this.zoomTranslation.splice(0);
+    // this.zoomTranslation.push(size / 2, size / 2);
     this.zoomTranslation.push(0, 0);
 
     this.updateView();
@@ -331,22 +348,16 @@ export default class SphereFrame extends VueComponent {
 
   //#region updateView
   private updateView() {
-    // Get the current maginiication factor and translation vector
+    // Get the current maginification factor and translation vector
     const mag = this.zoomMagnificationFactor;
     const transVector = this.zoomTranslation;
-
-    // Get the DOM element to apply the transform to
-    const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
-    // Set the transform
-    const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`;
-    // console.debug("CSS transform matrix: ", mat);
-    el.style.transform = mat;
-    // Set the origin of the transform
     const origin = this.canvasSize / 2;
-    el.style.transformOrigin = `${origin}px ${origin}px`;
-    // What does this do?
-    el.style.overflow = "visible";
-    //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
+
+    this.twoInstance.scene.matrix
+      .identity()
+      .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
+      .scale(mag, -mag); // (translate & scale) is important
+    //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
       l.update();
     });
@@ -354,7 +365,6 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    // console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -602,6 +612,7 @@ export default class SphereFrame extends VueComponent {
    */
   @Watch("actionMode")
   switchActionMode(mode: ActionMode): void {
+    console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary

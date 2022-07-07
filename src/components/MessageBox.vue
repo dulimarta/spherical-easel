@@ -14,6 +14,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import EventBus from "@/eventHandlers/EventBus";
 import i18n from "../i18n";
+
 // import { TranslateResult } from "vue-i18n";
 
 interface MessageType {
@@ -27,7 +28,7 @@ export default class MessageBox extends Vue {
   private messages: MessageType[] = [];
   private messageText: string | null = null;
   private messageType: string | null = null;
-  private messageTimer: NodeJS.Timeout | null = null;
+  private messageTimer: any | null = null;
 
   mounted(): void {
     EventBus.listen("show-alert", this.addMessage);

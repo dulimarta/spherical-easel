@@ -1,10 +1,10 @@
-import Two from "two.js";
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
+import { Group } from "two.js/src/group";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
@@ -43,14 +43,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
-   * @param {Two.Group[]} layers
+   * @param {Group[]} layers
    */
-  abstract addToLayers(layers: Two.Group[]): void;
+  abstract addToLayers(layers: Group[]): void;
 
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(layers?: Two.Group[]): void;
+  abstract removeFromLayers(layers?: Group[]): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;
@@ -92,7 +92,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    */
   static contrastFillColor(frontColor: string | undefined): string {
     if (
-      Nodule.hlsaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.hslaIsNoFillOrNoStroke(frontColor) ||
       Nodule.globalBackStyleContrast === 0
     ) {
       return "hsla(0,0%,0%,0)";
@@ -105,7 +105,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   static contrastStrokeColor(frontColor: string | undefined): string {
     if (
-      Nodule.hlsaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.hslaIsNoFillOrNoStroke(frontColor) ||
       Nodule.globalBackStyleContrast === 0
     ) {
       return "hsla(0,0%,0%,0)";
@@ -150,7 +150,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
       throw new Error(`Color string is undefined`);
     }
   }
-  static hlsaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
+  static hslaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
     if (colorStringOld) {
       const hsla = Nodule.convertStringToHSLAObject(colorStringOld);
       return Math.max(hsla.h, hsla.s, hsla.l, hsla.a) < SETTINGS.tolerance;
@@ -183,7 +183,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {

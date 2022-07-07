@@ -100,7 +100,7 @@ export class SEParametricTracePoint extends SEPoint {
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
-      this.tmpMatrix.getInverse(this.store.inverseTotalRotationMatrix);
+      this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
       this._locationVector.applyMatrix4(this.tmpMatrix);
 
       // Set the position of the associated displayed plottable Point

@@ -15,6 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
+import { Group } from "two.js/src/group";
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
 const screenVector = new Two.Vector(0, 0);
@@ -46,7 +47,7 @@ export default class SelectionHandler extends Highlighter {
    */
   private keyPressSelection: SENodule[] = [];
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]
@@ -64,6 +65,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPoints lower case p
     if (keyEvent.code === "KeyP" && !keyEvent.shiftKey) {
       SelectionHandler.store.sePoints
+        .map(n => n as SEPoint)
         .filter(
           (n: SEPoint) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
@@ -154,6 +156,7 @@ export default class SelectionHandler extends Highlighter {
       //Mac shortcuts for select all
       if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
@@ -165,6 +168,7 @@ export default class SelectionHandler extends Highlighter {
       //PC shortcuts for select all
       if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
         SelectionHandler.store.seNodules
+          .map(n => n as SENodule)
           .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
