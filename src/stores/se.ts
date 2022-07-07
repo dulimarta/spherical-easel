@@ -45,16 +45,7 @@ import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
 
 const oldSelections: Array<SENodule> = [];
-const seLines: Array<SELine> = [];
-const seSegments: Array<SESegment> = [];
-const seCircles: Array<SECircle> = [];
-const seLabels: Array<SELabel> = [];
-const expressions: Array<SEExpression> = [];
-const seAngleMarkers: Array<SEAngleMarker> = [];
-const seEllipses: Array<SEEllipse> = [];
-const seParametrics: Array<SEParametric> = [];
 const sePencils: Array<SEPencil> = [];
-const sePolygons: Array<SEPolygon> = [];
 const layers: Array<Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
@@ -78,6 +69,15 @@ type PiniaAppState = {
   styleSavedFromPanel: StyleEditPanels;
   seNodules: SENodule[];
   sePoints: SEPoint[];
+  seLines: SELine[];
+  seSegments: SESegment[];
+  seCircles: SECircle[];
+  seEllipses: SEEllipse[];
+  seLabels: SELabel[];
+  seAngleMarkers: SEAngleMarker[];
+  seParametrics: SEParametric[];
+  expressions: SEExpression[];
+  sePolygons: SEPolygon[];
 };
 export const useSEStore = defineStore({
   id: "se",
@@ -88,11 +88,20 @@ export const useSEStore = defineStore({
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
-    zoomMagnificationFactor: 1,
+    zoomMagnificationFactor: 0.9, // the initial zoom factor
     zoomTranslation: [0, 0],
     canvasWidth: 0,
     seNodules: [],
     sePoints: [],
+    seLines: [],
+    seSegments: [],
+    seCircles: [],
+    seLabels: [],
+    seAngleMarkers: [],
+    seEllipses: [],
+    seParametrics: [],
+    sePolygons: [],
+    expressions: [],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   }),
@@ -105,18 +114,18 @@ export const useSEStore = defineStore({
       // Update to these arrays are not automatically picked up by VueJS
       this.seNodules.splice(0);
       this.sePoints.splice(0);
-      seLines.splice(0);
-      seSegments.splice(0);
-      seCircles.splice(0);
-      seAngleMarkers.splice(0);
-      sePolygons.splice(0);
-      seEllipses.splice(0);
-      seParametrics.splice(0);
+      this.seLines.splice(0);
+      this.seSegments.splice(0);
+      this.seCircles.splice(0);
+      this.seAngleMarkers.splice(0);
+      this.sePolygons.splice(0);
+      this.seEllipses.splice(0);
+      this.seParametrics.splice(0);
       sePencils.splice(0);
-      seLabels.splice(0);
+      this.seLabels.splice(0);
       selectedSENodules.splice(0);
       // intersections.splice(0);
-      expressions.splice(0);
+      this.expressions.splice(0);
       // initialStyleStates.splice(0);
       // defaultStyleStates.splice(0);
       this.hasUnsavedNodules = false;
@@ -157,21 +166,23 @@ export const useSEStore = defineStore({
       this.activeToolName = this.previousActiveToolName;
     },
     removeAllFromLayers(): void {
-      seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
-      seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
-      seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
-      seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
-      seLines.forEach((x: SELine) => x.ref.removeFromLayers());
+      this.seAngleMarkers.forEach(x => x.ref.removeFromLayers());
+      this.seCircles.forEach(x => x.ref.removeFromLayers());
+      this.seEllipses.forEach(x => x.ref.removeFromLayers());
+      this.seLabels.forEach(x => x.ref.removeFromLayers(layers));
+      this.seLines.forEach(x => x.ref.removeFromLayers());
       this.sePoints.forEach(x => x.ref.removeFromLayers());
-      seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
-      sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
-      seParametrics.forEach((x: SEParametric) => {
-        let ptr: Parametric | null = x.ref;
-        while (ptr !== null) {
-          ptr.removeFromLayers();
-          ptr = ptr.next;
-        }
-      });
+      this.seSegments.forEach(x => x.ref.removeFromLayers());
+      this.sePolygons.forEach(x => x.ref.removeFromLayers());
+      this.seParametrics
+        .map(p => p as SEParametric)
+        .forEach((x: SEParametric) => {
+          let ptr: Parametric | null = x.ref;
+          while (ptr !== null) {
+            ptr.removeFromLayers();
+            ptr = ptr.next;
+          }
+        });
       sePencils.forEach((p: SEPencil) => {
         p.lines.forEach((l: SEPerpendicularLineThruPoint) => {
           l.ref.removeFromLayers();
@@ -230,94 +241,94 @@ export const useSEStore = defineStore({
     },
 
     addLine(line: SELine): void {
-      seLines.push(line);
+      this.seLines.push(line);
       this.seNodules.push(line as SENodule);
       line.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     addCircle(circle: SECircle): void {
-      seCircles.push(circle);
+      this.seCircles.push(circle);
       this.seNodules.push(circle);
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeCircle(circleId: number): void {
-      const circlePos = seCircles.findIndex(x => x.id === circleId);
+      const circlePos = this.seCircles.findIndex(x => x.id === circleId);
       const pos2 = this.seNodules.findIndex(x => x.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
-        const victimCircle: SECircle = seCircles[circlePos];
+        const victimCircle = this.seCircles[circlePos];
         victimCircle.ref.removeFromLayers();
         // victimCircle.removeSelfSafely();
-        seCircles.splice(circlePos, 1); // Remove the circle from the list
+        this.seCircles.splice(circlePos, 1); // Remove the circle from the list
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
 
     removeLine(lineId: number): void {
-      const pos = seLines.findIndex((x: any) => x.id === lineId);
+      const pos = this.seLines.findIndex((x: any) => x.id === lineId);
       const pos2 = this.seNodules.findIndex(x => x.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
-        const victimLine = seLines[pos];
+        const victimLine = this.seLines[pos];
         victimLine.ref.removeFromLayers();
-        seLines.splice(pos, 1); // Remove the line from the list
+        this.seLines.splice(pos, 1); // Remove the line from the list
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addSegment(segment: SESegment): void {
-      seSegments.push(segment);
+      this.seSegments.push(segment);
       this.seNodules.push(segment);
       segment.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     removeSegment(segId: number): void {
-      const pos = seSegments.findIndex(x => x.id === segId);
+      const pos = this.seSegments.findIndex(x => x.id === segId);
       const pos2 = this.seNodules.findIndex(x => x.id === segId);
       if (pos >= 0) {
-        const victimSegment = seSegments[pos];
+        const victimSegment = this.seSegments[pos];
         victimSegment.ref.removeFromLayers();
-        seSegments.splice(pos, 1);
+        this.seSegments.splice(pos, 1);
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
 
     addEllipse(ellipse: SEEllipse): void {
-      seEllipses.push(ellipse);
+      this.seEllipses.push(ellipse);
       this.seNodules.push(ellipse);
       ellipse.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeEllipse(ellipseId: number): void {
-      const ellipsePos = seEllipses.findIndex(x => x.id === ellipseId);
+      const ellipsePos = this.seEllipses.findIndex(x => x.id === ellipseId);
       const pos2 = this.seNodules.findIndex(x => x.id === ellipseId);
       if (ellipsePos >= 0) {
         /* victim line is found */
-        const victimEllipse: SEEllipse = seEllipses[ellipsePos];
+        const victimEllipse = this.seEllipses[ellipsePos];
         victimEllipse.ref.removeFromLayers();
         // victimEllipse.removeSelfSafely();
-        seEllipses.splice(ellipsePos, 1); // Remove the ellipse from the list
+        this.seEllipses.splice(ellipsePos, 1); // Remove the ellipse from the list
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addLabel(label: SELabel): void {
-      seLabels.push(label);
+      this.seLabels.push(label);
       this.seNodules.push(label);
       label.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     removeLabel(labelId: number): void {
-      const pos = seLabels.findIndex((x: SELabel) => x.id === labelId);
+      const pos = this.seLabels.findIndex(x => x.id === labelId);
       const pos2 = this.seNodules.findIndex(x => x.id === labelId);
       if (pos >= 0) {
-        const victimLabel = seLabels[pos];
-        seLabels.splice(pos, 1);
+        const victimLabel = this.seLabels[pos];
+        this.seLabels.splice(pos, 1);
         this.seNodules.splice(pos2, 1);
         // Remove the associated plottable (Nodule) object from being rendered
         victimLabel.ref.removeFromLayers(layers);
@@ -331,36 +342,36 @@ export const useSEStore = defineStore({
     },
 
     addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
-      expressions.push(angleMarker);
-      seAngleMarkers.push(angleMarker);
+      this.expressions.push(angleMarker);
+      this.seAngleMarkers.push(angleMarker);
       this.seNodules.push(angleMarker);
       angleMarker.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeAngleMarkerAndExpression(angleMarkerId: number): void {
-      const angleMarkerPos = seAngleMarkers.findIndex(
+      const angleMarkerPos = this.seAngleMarkers.findIndex(
         x => x.id === angleMarkerId
       );
       const pos2 = this.seNodules.findIndex(x => x.id === angleMarkerId);
-      const pos3 = expressions.findIndex(x => x.id === angleMarkerId);
+      const pos3 = this.expressions.findIndex(x => x.id === angleMarkerId);
       if (angleMarkerPos >= 0) {
         /* victim angleMarker is found */
-        const victimAngleMarker: SEAngleMarker = seAngleMarkers[angleMarkerPos];
+        const victimAngleMarker = this.seAngleMarkers[angleMarkerPos];
         // when removing expressions that have effects on the labels, we must set those label display arrays to empty
         if (victimAngleMarker.label) {
           victimAngleMarker.label.ref.value = [];
         }
         victimAngleMarker.ref.removeFromLayers();
         // victimCircle.removeSelfSafely();
-        seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
+        this.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
         this.seNodules.splice(pos2, 1);
-        expressions.splice(pos3, 1);
+        this.expressions.splice(pos3, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addParametric(parametric: SEParametric): void {
-      seParametrics.push(parametric);
+      this.seParametrics.push(parametric);
       this.seNodules.push(parametric);
       let ptr: Parametric | null = parametric.ref;
       while (ptr) {
@@ -371,59 +382,61 @@ export const useSEStore = defineStore({
     },
 
     removeParametric(parametricId: number): void {
-      const parametricPos = seParametrics.findIndex(x => x.id === parametricId);
+      const parametricPos = this.seParametrics.findIndex(
+        x => x.id === parametricId
+      );
       const pos2 = this.seNodules.findIndex(x => x.id === parametricId);
       if (parametricPos >= 0) {
         /* victim line is found */
-        const victimParametric: SEParametric = seParametrics[parametricPos];
-        let ptr: Parametric | null = victimParametric.ref;
+        const victimParametric = this.seParametrics[parametricPos];
+        let ptr = victimParametric.ref;
         while (ptr !== null) {
           ptr.removeFromLayers();
-          ptr = ptr.next;
+          ptr = ptr.next as Parametric;
         }
         // victimParametric.removeSelfSafely();
-        seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
+        this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addPolygonAndExpression(polygon: SEPolygon): void {
-      expressions.push(polygon);
-      sePolygons.push(polygon);
+      this.expressions.push(polygon);
+      this.sePolygons.push(polygon);
       this.seNodules.push(polygon);
       polygon.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removePolygonAndExpression(polygonId: number): void {
-      const polygonPos = sePolygons.findIndex(x => x.id === polygonId);
+      const polygonPos = this.sePolygons.findIndex(x => x.id === polygonId);
       const pos2 = this.seNodules.findIndex(x => x.id === polygonId);
-      const pos3 = expressions.findIndex(x => x.id === polygonId);
+      const pos3 = this.expressions.findIndex(x => x.id === polygonId);
       if (polygonPos >= 0) {
         /* victim polygon is found */
-        const victimPolygon: SEPolygon = sePolygons[polygonPos];
+        const victimPolygon = this.sePolygons[polygonPos];
         // when removing expressions that have effects on the labels, we must set those label display arrays to empty
         if (victimPolygon.label) {
           victimPolygon.label.ref.value = [];
         }
         victimPolygon.ref.removeFromLayers();
-        sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
+        this.sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
         this.seNodules.splice(pos2, 1);
-        expressions.splice(pos3, 1);
+        this.expressions.splice(pos3, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addExpression(measurement: SEExpression): void {
-      expressions.push(measurement);
+      this.expressions.push(measurement);
       this.seNodules.push(measurement);
       this.hasUnsavedNodules = true;
     },
     removeExpression(measId: number): void {
-      const pos = expressions.findIndex(x => x.id === measId);
+      const pos = this.expressions.findIndex(x => x.id === measId);
       const pos2 = this.seNodules.findIndex(x => x.id === measId);
       if (pos >= 0) {
         // const victimSegment = this.measurements[pos];
-        expressions.splice(pos, 1);
+        this.expressions.splice(pos, 1);
         this.seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -598,15 +611,6 @@ export const useSEStore = defineStore({
   getters: {
     // zoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
-    seLines: (): Array<SELine> => seLines,
-    seCircles: (): Array<SECircle> => seCircles,
-    seSegments: (): Array<SESegment> => seSegments,
-    seEllipses: (): Array<SEEllipse> => seEllipses,
-    seLabels: (): Array<SELabel> => seLabels,
-    seAngleMarkers: (): Array<SEAngleMarker> => seAngleMarkers,
-    seParametrics: (): Array<SEParametric> => seParametrics,
-    sePolygons: (): Array<SEPolygon> => sePolygons,
-    expressions: (): Array<SEExpression> => expressions,
     selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
@@ -751,7 +755,8 @@ export const useSEStore = defineStore({
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new line with all old lines
-        seLines
+        state.seLines
+          .map(x => x as SELine)
           .filter((line: SELine) => line.id !== newLine.id) // ignore self
           .forEach((oldLine: SELine) => {
             const intersectionInfo = intersectLineWithLine(oldLine, newLine);
@@ -783,103 +788,112 @@ export const useSEStore = defineStore({
             });
           });
         //Intersect this new line with all old circles
-        seCircles.forEach((oldCircle: SECircle) => {
-          const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newLine,
-                oldCircle,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newLine,
-                parent2: oldCircle
-              });
-            }
+        state.seCircles
+          .map(s => s as SECircle)
+          .forEach((oldCircle: SECircle) => {
+            const intersectionInfo = intersectLineWithCircle(
+              newLine,
+              oldCircle
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newLine,
+                  oldCircle,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newLine,
+                  parent2: oldCircle
+                });
+              }
+            });
           });
-        });
         //Intersect this new line with all old ellipses
-        seEllipses.forEach((oldEllipse: SEEllipse) => {
-          const intersectionInfo = intersectLineWithEllipse(
-            newLine,
-            oldEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newLine,
-                oldEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newLine,
-                parent2: oldEllipse
-              });
-            }
+        state.seEllipses
+          .map(e => e as SEEllipse)
+          .forEach((oldEllipse: SEEllipse) => {
+            const intersectionInfo = intersectLineWithEllipse(
+              newLine,
+              oldEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newLine,
+                  oldEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newLine,
+                  parent2: oldEllipse
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new line with all old parametrics
-        seParametrics.forEach((oldParametric: SEParametric) => {
-          const intersectionInfo = intersectLineWithParametric(
-            newLine,
-            oldParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newLine,
-                oldParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newLine,
-                parent2: oldParametric
-              });
-            }
+        state.seParametrics
+          .map(p => p as SEParametric)
+          .forEach((oldParametric: SEParametric) => {
+            const intersectionInfo = intersectLineWithParametric(
+              newLine,
+              oldParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newLine,
+                  oldParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newLine,
+                  parent2: oldParametric
+                });
+              }
+            });
           });
-        });
         return intersectionPointList;
       };
     },
@@ -900,41 +914,44 @@ export const useSEStore = defineStore({
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new segment with all old lines
-        seLines.forEach((oldLine: SELine) => {
-          const intersectionInfo = intersectLineWithSegment(
-            oldLine,
-            newSegment
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldLine,
-                newSegment,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
+        state.seLines
+          .map(x => x as SELine)
+          .forEach((oldLine: SELine) => {
+            const intersectionInfo = intersectLineWithSegment(
+              oldLine,
+              newSegment
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldLine,
+                  newSegment,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
 
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldLine,
-                parent2: newSegment
-              });
-            }
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldLine,
+                  parent2: newSegment
+                });
+              }
+            });
           });
-        });
         //Intersect this new segment with all old segments
-        seSegments
+        state.seSegments
+          .map(s => s as SESegment)
           .filter((segment: SESegment) => segment.id !== newSegment.id) // ignore self
           .forEach((oldSegment: SESegment) => {
             const intersectionInfo = intersectSegmentWithSegment(
@@ -968,105 +985,111 @@ export const useSEStore = defineStore({
             });
           });
         //Intersect this new segment with all old circles
-        seCircles.forEach((oldCircle: SECircle) => {
-          const intersectionInfo = intersectSegmentWithCircle(
-            newSegment,
-            oldCircle
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newSegment,
-                oldCircle,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newSegment,
-                parent2: oldCircle
-              });
-            }
+        state.seCircles
+          .map(s => s as SECircle)
+          .forEach((oldCircle: SECircle) => {
+            const intersectionInfo = intersectSegmentWithCircle(
+              newSegment,
+              oldCircle
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newSegment,
+                  oldCircle,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newSegment,
+                  parent2: oldCircle
+                });
+              }
+            });
           });
-        });
         //Intersect this new segment with all old ellipses
-        seEllipses.forEach((oldEllipse: SEEllipse) => {
-          const intersectionInfo = intersectSegmentWithEllipse(
-            newSegment,
-            oldEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newSegment,
-                oldEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newSegment,
-                parent2: oldEllipse
-              });
-            }
+        state.seEllipses
+          .map(e => e as SEEllipse)
+          .forEach((oldEllipse: SEEllipse) => {
+            const intersectionInfo = intersectSegmentWithEllipse(
+              newSegment,
+              oldEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newSegment,
+                  oldEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newSegment,
+                  parent2: oldEllipse
+                });
+              }
+            });
           });
-        });
         //Intersect this new segment with all old parametrics
-        seParametrics.forEach((oldParametric: SEParametric) => {
-          const intersectionInfo = intersectSegmentWithParametric(
-            newSegment,
-            oldParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newSegment,
-                oldParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newSegment,
-                parent2: oldParametric
-              });
-            }
+        state.seParametrics
+          .map(p => p as SEParametric)
+          .forEach((oldParametric: SEParametric) => {
+            const intersectionInfo = intersectSegmentWithParametric(
+              newSegment,
+              oldParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newSegment,
+                  oldParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newSegment,
+                  parent2: oldParametric
+                });
+              }
+            });
           });
-        });
         return intersectionPointList;
       };
     },
@@ -1088,70 +1111,78 @@ export const useSEStore = defineStore({
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new circle with all old lines
-        seLines.forEach((oldLine: SELine) => {
-          const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldLine,
-                newCircle,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldLine,
-                parent2: newCircle
-              });
-            }
+        state.seLines
+          .map(x => x as SELine)
+          .forEach((oldLine: SELine) => {
+            const intersectionInfo = intersectLineWithCircle(
+              oldLine,
+              newCircle
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldLine,
+                  newCircle,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldLine,
+                  parent2: newCircle
+                });
+              }
+            });
           });
-        });
         //Intersect this new circle with all old segments
-        seSegments.forEach((oldSegment: SESegment) => {
-          const intersectionInfo = intersectSegmentWithCircle(
-            oldSegment,
-            newCircle
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldSegment,
-                newCircle,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldSegment,
-                parent2: newCircle
-              });
-            }
+        state.seSegments
+          .map(s => s as SESegment)
+          .forEach((oldSegment: SESegment) => {
+            const intersectionInfo = intersectSegmentWithCircle(
+              oldSegment,
+              newCircle
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldSegment,
+                  newCircle,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldSegment,
+                  parent2: newCircle
+                });
+              }
+            });
           });
-        });
         //Intersect this new circle with all old circles
-        seCircles
+        state.seCircles
+          .map(c => c as SECircle)
           .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
           .forEach((oldCircle: SECircle) => {
             const intersectionInfo = intersectCircles(
@@ -1189,73 +1220,77 @@ export const useSEStore = defineStore({
           });
 
         //Intersect this new circle with all old ellipses
-        seEllipses.forEach((oldEllipse: SEEllipse) => {
-          const intersectionInfo = intersectCircleWithEllipse(
-            newCircle,
-            oldEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newCircle,
-                oldEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newCircle,
-                parent2: oldEllipse
-              });
-            }
+        state.seEllipses
+          .map(e => e as SEEllipse)
+          .forEach((oldEllipse: SEEllipse) => {
+            const intersectionInfo = intersectCircleWithEllipse(
+              newCircle,
+              oldEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newCircle,
+                  oldEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newCircle,
+                  parent2: oldEllipse
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new circle with all old parametrics
-        seParametrics.forEach((oldParametric: SEParametric) => {
-          const intersectionInfo = intersectCircleWithParametric(
-            newCircle,
-            oldParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newCircle,
-                oldParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newCircle,
-                parent2: oldParametric
-              });
-            }
+        state.seParametrics
+          .map(p => p as SEParametric)
+          .forEach((oldParametric: SEParametric) => {
+            const intersectionInfo = intersectCircleWithParametric(
+              newCircle,
+              oldParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newCircle,
+                  oldParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newCircle,
+                  parent2: oldParametric
+                });
+              }
+            });
           });
-        });
 
         return intersectionPointList;
       };
@@ -1280,109 +1315,116 @@ export const useSEStore = defineStore({
         const intersectionPointList: SEIntersectionReturnType[] = [];
 
         // Intersect this new ellipse with all old lines
-        seLines.forEach((oldLine: SELine) => {
-          const intersectionInfo = intersectLineWithEllipse(
-            oldLine,
-            newEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldLine,
-                newEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldLine,
-                parent2: newEllipse
-              });
-            }
+        state.seLines
+          .map(x => x as SELine)
+          .forEach((oldLine: SELine) => {
+            const intersectionInfo = intersectLineWithEllipse(
+              oldLine,
+              newEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldLine,
+                  newEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldLine,
+                  parent2: newEllipse
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new ellipse with all old segments
-        seSegments.forEach((oldSegment: SESegment) => {
-          const intersectionInfo = intersectSegmentWithEllipse(
-            oldSegment,
-            newEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldSegment,
-                newEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldSegment,
-                parent2: newEllipse
-              });
-            }
+        state.seSegments
+          .map(s => s as SESegment)
+          .forEach((oldSegment: SESegment) => {
+            const intersectionInfo = intersectSegmentWithEllipse(
+              oldSegment,
+              newEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldSegment,
+                  newEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldSegment,
+                  parent2: newEllipse
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new ellipse with all old circles
-        seCircles.forEach((oldCircle: SECircle) => {
-          const intersectionInfo = intersectCircleWithEllipse(
-            oldCircle,
-            newEllipse
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldCircle,
-                newEllipse,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldCircle,
-                parent2: newEllipse
-              });
-            }
+        state.seCircles
+          .map(s => s as SECircle)
+          .forEach((oldCircle: SECircle) => {
+            const intersectionInfo = intersectCircleWithEllipse(
+              oldCircle,
+              newEllipse
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldCircle,
+                  newEllipse,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldCircle,
+                  parent2: newEllipse
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new ellipse with all old ellipses
-        seEllipses
+        state.seEllipses
+          .map(e => e as SEEllipse)
           .filter((ellipe: SEEllipse) => ellipe.id !== newEllipse.id) // ignore self
           .forEach((oldEllipse: SEEllipse) => {
             const intersectionInfo = intersectEllipseWithEllipse(
@@ -1418,39 +1460,41 @@ export const useSEStore = defineStore({
           });
 
         //Intersect this new ellipse with all old parametrics
-        seParametrics.forEach((oldParametric: SEParametric) => {
-          const intersectionInfo = intersectEllipseWithParametric(
-            newEllipse,
-            oldParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                newEllipse,
-                oldParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newEllipse,
-                parent2: oldParametric
-              });
-            }
+        state.seParametrics
+          .map(p => p as SEParametric)
+          .forEach((oldParametric: SEParametric) => {
+            const intersectionInfo = intersectEllipseWithParametric(
+              newEllipse,
+              oldParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  newEllipse,
+                  oldParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: newEllipse,
+                  parent2: oldParametric
+                });
+              }
+            });
           });
-        });
         return [];
       };
     },
@@ -1478,147 +1522,156 @@ export const useSEStore = defineStore({
         const intersectionPointList: SEIntersectionReturnType[] = [];
 
         // Intersect this new parametric with all old lines
-        seLines.forEach((oldLine: SELine) => {
-          const intersectionInfo = intersectLineWithParametric(
-            oldLine,
-            newParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldLine,
-                newParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldLine,
-                parent2: newParametric
-              });
-            }
+        state.seLines
+          .map(x => x as SELine)
+          .forEach((oldLine: SELine) => {
+            const intersectionInfo = intersectLineWithParametric(
+              oldLine,
+              newParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldLine,
+                  newParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldLine,
+                  parent2: newParametric
+                });
+              }
+            });
           });
-        });
 
         // Intersect this new parametric with all old segments
-        seSegments.forEach((oldSegment: SESegment) => {
-          const intersectionInfo = intersectSegmentWithParametric(
-            oldSegment,
-            newParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldSegment,
-                newParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldSegment,
-                parent2: newParametric
-              });
-            }
+        state.seSegments
+          .map(s => s as SESegment)
+          .forEach((oldSegment: SESegment) => {
+            const intersectionInfo = intersectSegmentWithParametric(
+              oldSegment,
+              newParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldSegment,
+                  newParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldSegment,
+                  parent2: newParametric
+                });
+              }
+            });
           });
-        });
 
         // Intersect this new parametric with all old circles
-        seCircles.forEach((oldCircle: SECircle) => {
-          const intersectionInfo = intersectCircleWithParametric(
-            oldCircle,
-            newParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldCircle,
-                newParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldCircle,
-                parent2: newParametric
-              });
-            }
+        state.seCircles
+          .map(s => s as SECircle)
+          .forEach((oldCircle: SECircle) => {
+            const intersectionInfo = intersectCircleWithParametric(
+              oldCircle,
+              newParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldCircle,
+                  newParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldCircle,
+                  parent2: newParametric
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new parametric with all old ellipses
-        seEllipses.forEach((oldEllipse: SEEllipse) => {
-          const intersectionInfo = intersectEllipseWithParametric(
-            oldEllipse,
-            newParametric,
-            inverseTotalRotationMatrix
-          );
-          intersectionInfo.forEach((info, index) => {
-            if (
-              !avoidVectors.some(v =>
-                tmpVector.subVectors(info.vector, v).isZero()
-              )
-            ) {
-              // info.vector is not on the avoidVectors array, so create an intersection
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
-              const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
-                oldEllipse,
-                newParametric,
-                index,
-                false
-              );
-              newSEIntersectionPt.locationVector = info.vector;
-              newSEIntersectionPt.exists = info.exists;
-              intersectionPointList.push({
-                SEIntersectionPoint: newSEIntersectionPt,
-                parent1: oldEllipse,
-                parent2: newParametric
-              });
-            }
+        state.seEllipses
+          .map(e => e as SEEllipse)
+          .forEach((oldEllipse: SEEllipse) => {
+            const intersectionInfo = intersectEllipseWithParametric(
+              oldEllipse,
+              newParametric,
+              inverseTotalRotationMatrix
+            );
+            intersectionInfo.forEach((info, index) => {
+              if (
+                !avoidVectors.some(v =>
+                  tmpVector.subVectors(info.vector, v).isZero()
+                )
+              ) {
+                // info.vector is not on the avoidVectors array, so create an intersection
+                const newPt = new NonFreePoint();
+                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+                newPt.adjustSize();
+                const newSEIntersectionPt = new SEIntersectionPoint(
+                  newPt,
+                  oldEllipse,
+                  newParametric,
+                  index,
+                  false
+                );
+                newSEIntersectionPt.locationVector = info.vector;
+                newSEIntersectionPt.exists = info.exists;
+                intersectionPointList.push({
+                  SEIntersectionPoint: newSEIntersectionPt,
+                  parent1: oldEllipse,
+                  parent2: newParametric
+                });
+              }
+            });
           });
-        });
 
         //Intersect this new parametric with all old parametrics
-        seParametrics
+        state.seParametrics
+          .map(p => p as SEParametric)
           .filter(
             (parametric: SEParametric) => parametric.id !== newParametric.id
           ) // ignore self

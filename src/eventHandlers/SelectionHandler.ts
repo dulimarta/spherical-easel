@@ -78,6 +78,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SECircles lower case c
     else if (keyEvent.code === "KeyC" && !keyEvent.shiftKey) {
       SelectionHandler.store.seCircles
+        .map(s => s as SECircle)
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
@@ -87,6 +88,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEEllipses lower case e
     else if (keyEvent.code === "KeyE" && !keyEvent.shiftKey) {
       SelectionHandler.store.seEllipses
+        .map(n => n as SEEllipse)
         .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
         .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);
@@ -96,6 +98,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SELines lower case l
     else if (keyEvent.code === "KeyL" && !keyEvent.shiftKey) {
       SelectionHandler.store.seLines
+        .map(x => x as SELine)
         .filter((n: SELine) => n.showing) //no hidden lines allowed
         .forEach((n: SELine) => {
           this.keyPressSelection.push(n);
@@ -105,6 +108,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SESegments lower case s
     else if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       SelectionHandler.store.seSegments
+        .map(s => s as SESegment)
         .filter((n: SESegment) => n.showing) //no hidden segments allowed
         .forEach((n: SESegment) => {
           this.keyPressSelection.push(n);
@@ -114,6 +118,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEAngleMarkers upper case A
     else if (keyEvent.code === "KeyA" && keyEvent.shiftKey) {
       SelectionHandler.store.seAngleMarkers
+        .map(s => s as SEAngleMarker)
         .filter((n: SEAngleMarker) => n.showing) //no hidden angle markers allowed
         .forEach((n: SEAngleMarker) => {
           this.keyPressSelection.push(n);
@@ -123,6 +128,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEParametrics upper case P
     else if (keyEvent.code === "KeyP" && keyEvent.shiftKey) {
       SelectionHandler.store.seParametrics
+        .map(s => s as SEParametric)
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
@@ -136,6 +142,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPolygons upper case O
     else if (keyEvent.code === "KeyO" && keyEvent.shiftKey) {
       SelectionHandler.store.sePolygons
+        .map(s => s as SEPolygon)
         .filter((n: SEPolygon) => n.showing) //no hidden Polygons allowed
         .forEach((n: SEPolygon) => {
           this.keyPressSelection.push(n);
