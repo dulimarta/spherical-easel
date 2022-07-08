@@ -63,6 +63,8 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
+    // don't need the other parent array because that is handled in the commands AddIntersectionPointOtherParent and RemoveIntersectionPointOtherParent
+
     // let intersectionPointParentArrayNameList = "";
     // this.seIntersectionPoint.otherParentArray.forEach(parent => {
     //   intersectionPointParentArrayNameList +=

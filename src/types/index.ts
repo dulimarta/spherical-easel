@@ -173,6 +173,8 @@ export type SavedNames =
   | "polygonSegmentParentsNames"
   | "polygonSegmentFlippedList"
   | "lengthMeasurementSegmentParentName"
+  | "distanceMeasurementParentPoint1Name"
+  | "distanceMeasurementParentPoint2Name"
   | "calculationExpressionString"
   | "calculationParentsNames"
   | "locationMeasurementParentPointName"
@@ -211,7 +213,10 @@ export type SavedNames =
   | "isometryEllipseFocus2SEPointName"
   | "isometryEllipseEllipseSEPointName"
   | "invertedCircleCenterLineOrCircleParentName"
-  | "invertedCircleCenterParentInversionName";
+  | "invertedCircleCenterParentInversionName"
+  | "changePrincipleParentSEIntersectionPointName"
+  | "changePrincipleParentOldPrincipleName"
+  | "convertToUserCreatedIntersectionPointName;";
 
 export type ActionMode =
   | "angle"

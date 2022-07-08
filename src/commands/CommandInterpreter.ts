@@ -42,6 +42,10 @@ import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
 import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
 import { AddIntersectionPointOtherParent } from "./AddIntersectionPointOtherParent";
 import { RemoveIntersectionPointOtherParent } from "./RemoveIntersectionPointOtherParent";
+import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
+import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
+import { ConvertInterPtToUserCreatedCommand } from "./ConvertInterPtToUserCreatedCommand";
+import { ConvertUserCreatedInterToNotUserCreatedCommand } from "./ConvertUserCreatedInterToNotUserCreatedCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -67,11 +71,11 @@ function executeIndividual(command: string): Command {
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
     case "AddIntersectionPointOtherParent":
       return AddIntersectionPointOtherParent.parse(command, noduleDictionary);
-    // case "RemoveIntersectionPointOtherParent":
-    //   return RemoveIntersectionPointOtherParent.parse(
-    //     command,
-    //     noduleDictionary
-    //   );
+    case "RemoveIntersectionPointOtherParent":
+      return RemoveIntersectionPointOtherParent.parse(
+        command,
+        noduleDictionary
+      );
     case "AddSegment":
       return AddSegmentCommand.parse(command, noduleDictionary);
     case "AddLine":
@@ -149,6 +153,23 @@ function executeIndividual(command: string): Command {
       return AddIsometryEllipseCommand.parse(command, noduleDictionary);
     case "AddInvertedCircleCenter":
       return AddInvertedCircleCenterCommand.parse(command, noduleDictionary);
+    case "DeleteNodule":
+      return DeleteNoduleCommand.parse(command, noduleDictionary);
+    case "ChangeIntersectionPointPrinciplePoint":
+      return ChangeIntersectionPointPrincipleParent.parse(
+        command,
+        noduleDictionary
+      );
+    // case "ConvertIntersectionToUserCreated":
+    //   return ConvertInterPtToUserCreatedCommand.parse(
+    //     command,
+    //     noduleDictionary
+    //   );
+    // case "ConvertIntersectionToNotUserCreated":
+    //   return ConvertUserCreatedInterToNotUserCreatedCommand.parse(
+    //     command,
+    //     noduleDictionary
+    //   );
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {
