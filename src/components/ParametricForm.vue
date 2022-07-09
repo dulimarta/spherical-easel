@@ -1,9 +1,24 @@
 <template>
   <div>
+
     <v-card raised
       outlined>
       <v-card-text>
         <v-container>
+          <v-row v-if="!inProductionMode">
+            Keyboard shortcuts:
+            <ul>
+              <li>Ctrl-Alt-C: Circle</li>
+              <li>Ctrl-Alt-E: Ellipse (Requires M1)</li>
+              <li>Ctrl-Alt-L: Loxodrome</li>
+              <li>Ctrl-Alt-R: Cardioid</li>
+              <li>Ctrl-Alt-S: Spiral</li>
+              <li>Ctrl-Alt-T: Trochoid</li>
+              <li>Ctrl-Alt-Y: Cycloid</li>
+
+            </ul>
+
+          </v-row>
           <v-row>
             <v-col cols="12">
               <v-sheet rounded
@@ -138,9 +153,6 @@ interface ParametricDataType {
   methods: {}
 })
 export default class ParametricForm extends Vue {
-  mounted(): void {
-    EventBus.listen("parametric-data-update", this.processParameticData);
-  }
   readonly expressions!: SEExpression[];
   readonly seParametrics!: SEParametric[];
   readonly createAllIntersectionsWithParametric!: (
@@ -218,6 +230,13 @@ export default class ParametricForm extends Vue {
 
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
+  }
+  mounted(): void {
+    EventBus.listen("parametric-data-update", this.processParameticData);
+  }
+
+  get inProductionMode(): boolean {
+    return process.env.NODE_ENV === "production";
   }
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key

@@ -365,7 +365,10 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    // console.debug(`Parametric::updateDisplay part-${this.partId}`);
+    console.debug(
+      `Parametric::updateDisplay part-${this.partId} applying rotation`,
+      this.inverseTotalRotationMatrix.elements
+    );
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 

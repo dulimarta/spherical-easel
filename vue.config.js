@@ -1,4 +1,6 @@
-module.exports = {
+const { defineConfig } = require("@vue/cli-service");
+
+module.exports = defineConfig({
   productionSourceMap: false, // disable source map on production build
   transpileDependencies: ["vuetify"],
   pluginOptions: {
@@ -11,7 +13,7 @@ module.exports = {
   },
   // Use "/sphericalgeometryvue/" to deploy it on GitLab
   // Use "/" to deploy it on Netlify
-  publicPath: "/",
+  publicPath: "/"
   // Use non-root path during development to detect potential issues
   // the the app is deployed for production into a non-root path
   // process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/dev"
@@ -25,13 +27,20 @@ module.exports = {
   //     }
   //   }
   // }
-  chainWebpack: config => {
-    // Use babel-loader for files under node_modules/two.js
-    config.module
-      .rule("ES6 loader")
-      .test(/.+two\.js.+\.js/)
-      .use("babel-loader")
-      .loader("babel-loader")
-      .end();
-  }
-};
+  // chainWebpack: config => {
+  // config.module
+  //   // Use babel-loader for files under node_modules/two.js
+  //   .rule("ES6 loader")
+  //   .test(/.+two\.js.+\.js/)
+  //   .use("babel-loader")
+  //   .loader("babel-loader")
+  //   .end();
+  // To fix errors from Pinia .mjs files
+  // config.module
+  //   .rule("JS Module")
+  //   .test(/\.mjs$/)
+  //   .include.add(/node_modules/)
+  //   .end()
+  //   .type("javascript/auto");
+  // }
+});
