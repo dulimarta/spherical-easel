@@ -66,8 +66,6 @@ import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandl
 import { SENodule } from "@/models/SENodule";
 import i18n from "@/i18n";
 
-//const SE = namespace("se");
-
 @Component({
   computed: {
     ...mapState(useSEStore, [
@@ -75,7 +73,7 @@ import i18n from "@/i18n";
       "zoomMagnificationFactor",
       "zoomTranslation",
       "seLabels"
-      // "layers"
+      "layers"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
@@ -100,12 +98,6 @@ export default class SphereFrame extends VueComponent {
   readonly zoomMagnificationFactor!: number;
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
-
-  /**
-   * The layers for displaying the various objects in the right way. So a point in the
-   * background is not displayed over a line in the foreground
-   */
-  readonly layers!: Group[];
 
   readonly init!: () => void;
   readonly setLayers!: (_: Array<Group>) => void;
@@ -133,9 +125,6 @@ export default class SphereFrame extends VueComponent {
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
   private boundaryCircle!: Circle;
-  /**
-   * The Global Vuex Store
-   */
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -179,6 +168,12 @@ export default class SphereFrame extends VueComponent {
   private inversionTool: InversionTransformationHandler | null = null;
   private applyTransformationTool: ApplyTransformationHandler | null = null;
 
+  /**
+   * The layers for displaying the various objects in the right way. So a point in the
+   * background is not displayed over a line in the foreground
+   */
+  readonly layers!: Group[];
+
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
@@ -188,8 +183,6 @@ export default class SphereFrame extends VueComponent {
     });
     console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
     this.twoInstance.scene.matrix.manual = true;
-    // Clear layer array
-    // this.layers.splice(0);
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
