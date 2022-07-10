@@ -27,6 +27,7 @@ import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { Group } from "two.js/src/group";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -82,7 +83,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.point1Vector = new Vector3();
     this.point2Vector = new Vector3();

@@ -58,6 +58,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { Group } from "two.js/src/group";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -94,7 +95,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   private tmpVector2 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Set the style using the temporary defaults
     this.temporaryPoint1 = new Point();

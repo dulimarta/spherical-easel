@@ -736,10 +736,7 @@ export const useSEStore = defineStore({
     },
     //#region findNearbyGetter
     findNearbySENodules(state): (_p: Vector3, _s: Vector) => SENodule[] {
-      return (
-        unitIdealVector: Vector3,
-        screenPosition: Vector
-      ): SENodule[] => {
+      return (unitIdealVector: Vector3, screenPosition: Vector): SENodule[] => {
         return state.seNodules
           .map(obj => obj as SENodule)
           .filter(obj => {

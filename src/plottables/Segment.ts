@@ -50,14 +50,14 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Path;
-  private _frontExtra: Path;
-  private _backPart: Path;
-  private _backExtra: Path;
-  private glowingFrontPart: Path;
-  private glowingFrontExtra: Path;
-  private glowingBackPart: Path;
-  private glowingBackExtra: Path;
+  protected _frontPart: Path;
+  protected _frontExtra: Path;
+  protected _backPart: Path;
+  protected _backExtra: Path;
+  protected glowingFrontPart: Path;
+  protected glowingFrontExtra: Path;
+  protected glowingBackPart: Path;
+  protected glowingBackExtra: Path;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.

@@ -16,9 +16,10 @@ import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
 import { Group } from "two.js/src/group";
+import { Vector } from "two.js/src/vector";
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
-const screenVector = new Two.Vector(0, 0);
+const screenVector = new Vector(0, 0);
 
 export default class SelectionHandler extends Highlighter {
   /**

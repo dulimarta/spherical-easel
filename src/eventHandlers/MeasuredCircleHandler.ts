@@ -42,6 +42,7 @@ import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { Group } from "two.js/src/group";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -87,7 +88,7 @@ export default class MeasuredCircleHandler extends Highlighter {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults

@@ -101,6 +101,12 @@ export default class SphereFrame extends VueComponent {
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
 
+  /**
+   * The layers for displaying the various objects in the right way. So a point in the
+   * background is not displayed over a line in the foreground
+   */
+  readonly layers!: Group[];
+
   readonly init!: () => void;
   readonly setLayers!: (_: Array<Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
@@ -118,7 +124,7 @@ export default class SphereFrame extends VueComponent {
    * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
    * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
    * global-settings.ts), then TwoJs objects (Path, Ellipse, etc..) are added to the
-   * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
+   * appropriate layer. This object is refreshed at 60 fps (in constructor -- autostart: true).
    */
   private twoInstance!: Two;
 
@@ -172,12 +178,6 @@ export default class SphereFrame extends VueComponent {
     null;
   private inversionTool: InversionTransformationHandler | null = null;
   private applyTransformationTool: ApplyTransformationHandler | null = null;
-
-  /**
-   * The layers for displaying the various objects in the right way. So a point in the
-   * background is not displayed over a line in the foreground
-   */
-  readonly layers!: Group[];
 
   created(): void {
     this.twoInstance = new Two({

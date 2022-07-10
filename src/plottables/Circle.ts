@@ -56,18 +56,18 @@ export default class Circle extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontPart: Path;
-  private backPart: Path;
-  private glowingFrontPart: Path;
-  private glowingBackPart: Path;
+  protected frontPart: Path;
+  protected backPart: Path;
+  protected glowingFrontPart: Path;
+  protected glowingBackPart: Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  private frontFill: Path;
-  private backFill: Path;
+  protected frontFill: Path;
+  protected backFill: Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
   private fillStorageAnchors: Anchor[] = [];

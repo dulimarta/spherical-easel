@@ -5,13 +5,14 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SECircle } from "@/models/SECircle";
 import { SEInversion } from "@/models/SEInversion";
 import { AddInversionCommand } from "@/commands/AddInversionCommand";
+import { Group } from "two.js/src/group";
 export default class InversionTransformationHandler extends Highlighter {
   /**
    * Circle of inversion
    */
   private targetCircleOfInversion: SECircle | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 
