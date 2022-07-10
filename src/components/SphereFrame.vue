@@ -74,8 +74,8 @@ import i18n from "@/i18n";
       "actionMode",
       "zoomMagnificationFactor",
       "zoomTranslation",
-      "seLabels",
-      "layers"
+      "seLabels"
+      // "layers"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
