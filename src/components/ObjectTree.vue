@@ -85,7 +85,15 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="expressions.length > 0">
+          v-show="seTransformations.length">
+          <SENoduleList i18LabelKey="objects.transformations"
+            :children="seTransformations"></SENoduleList>
+        </v-sheet>
+        <v-sheet rounded
+          color="accent"
+          :elevation="4"
+          class="my-3"
+          v-show="showExpressionSheet">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
@@ -109,7 +117,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-
+import { ActionMode } from "@/types";
 import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";
@@ -118,11 +126,20 @@ import SliderForm from "@/components/SliderForm.vue";
 import { SEExpression } from "@/models/SEExpression";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import EventBus from "@/eventHandlers/EventBus";
+import { SETransformation } from "@/models/SETransformation";
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
 
 @Component({
   components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm },
   computed: {
     ...mapState(useSEStore, [
+      "actionMode",
       "sePoints",
       "seLines",
       "seSegments",
@@ -130,19 +147,24 @@ import { useSEStore } from "@/stores/se";
       "seEllipses",
       "seParametrics",
       "seNodules",
-      "expressions"
+      "expressions",
+      "seTransformations"
     ])
   }
 })
 export default class ObjectTree extends Vue {
-  readonly sePoints!: SENodule[];
-  readonly seLines!: SENodule[];
-  readonly seSegments!: SENodule[];
-  readonly seCircles!: SENodule[];
-  readonly seEllipses!: SENodule[];
-  readonly seParametrics!: SENodule[];
+  readonly sePoints!: SEPoint[];
+  readonly seLines!: SELine[];
+  readonly seSegments!: SESegment[];
+  readonly seCircles!: SECircle[];
+  readonly seEllipses!: SEEllipse[];
+  readonly seParametrics!: SEParametric[];
   readonly seNodules!: SENodule[];
   readonly expressions!: SEExpression[];
+  readonly actionMode!: ActionMode;
+  readonly seTransformations!: SETransformation[];
+
+  private displayExpressionSheetAgain = true;
 
   get zeroObjects(): boolean {
     return (
@@ -151,32 +173,49 @@ export default class ObjectTree extends Vue {
     );
   }
 
-  // calculateExpression(): void {
-  // this.varMap.clear();
-  // try {
-  //   // no code
-  //   this.calcResult =
-  //     this.calcExpression.length > 0
-  //       ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-  //       : 0;
-  // } catch (err) {
-  //   this.parsingError = err.message;
-  // }
-  // }
-  // when the user clicks on an expression, this event is triggered
-  // It enables the user to add measurement references to the calculation/expression builder
-  // onExpressionSelect(x: any): void {
-  //   console.debug("bob");
-  //   const pos = this.nodules.findIndex(n => n.id === x.id);
-  //   console.debug("****Selection", x, "at", pos);
-  //   if (pos >= 0) {
-  //     const pos1 = this.nodules[pos].name.indexOf("-");
-  //     const varName = this.nodules[pos].name.substring(0, pos1);
-  //     EventBus.fire("measurement-selected", varName);
-  //     // this.calcExpression += varName;
-  //     // this.onKeyPressed(); // emulate a key prress
-  //   }
-  // }
+  get showExpressionSheet(): boolean {
+    //This message will appear once each time the number of expressions is zero and the measure circle tool is active
+    // console.log("here show expression sheet");
+    if (
+      (this.actionMode === "measuredCircle" ||
+        this.actionMode === "translation" ||
+        this.actionMode === "rotation") &&
+      this.expressions.length === 0 &&
+      this.displayExpressionSheetAgain
+    ) {
+      this.displayExpressionSheetAgain = false;
+      switch (this.actionMode) {
+        case "measuredCircle":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForMeasuredCircle",
+            type: "info"
+          });
+          break;
+        case "translation":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForTranslation",
+            type: "info"
+          });
+          break;
+        case "rotation":
+          EventBus.fire("show-alert", {
+            key: "objectTree.createMeasurementForRotation",
+            type: "info"
+          });
+          break;
+      }
+    }
+
+    if (
+      (this.actionMode === "measuredCircle" ||
+        this.actionMode === "translation" ||
+        this.actionMode === "rotation") &&
+      this.expressions.length > 0
+    ) {
+      this.displayExpressionSheetAgain = true;
+    }
+    return this.expressions.length > 0;
+  }
 }
 </script>
 

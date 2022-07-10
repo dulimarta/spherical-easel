@@ -185,6 +185,12 @@ export default class ToolGroups extends Vue {
 
   /* A list of all the buttons that are possible to display/use. Only those that the User has
   permission to use will be available. */
+  includeTool(name: ActionMode): void {
+    this.includeToolName(name);
+  }
+  excludeTool(name: ActionMode): void {
+    this.excludeToolName(name);
+  }
 
   private developerButtonList: ToolButtonType[] = [
     {

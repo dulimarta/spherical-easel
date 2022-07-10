@@ -53,7 +53,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
-    this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;

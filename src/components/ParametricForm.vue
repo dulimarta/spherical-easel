@@ -109,6 +109,9 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -782,33 +785,68 @@ export default class ParametricForm extends Vue {
     // in the store. Add the new created points to the parametric command so they can be undone.
     this.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tempVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          parametricCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              item.parent1
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tempVector;
+          );
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tempVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tempVector;
 
-        parametricCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          parametricCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+        }
+        // // Create the plottable and model label
+        // const newLabel = new Label();
+        // const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+        // // Set the initial label location
+        // this.tempVector
+        //   .copy(item.SEIntersectionPoint.locationVector)
+        //   .add(
+        //     new Vector3(
+        //       2 * SETTINGS.point.initialLabelOffset,
+        //       SETTINGS.point.initialLabelOffset,
+        //       0
+        //     )
+        //   )
+        //   .normalize();
+        // newSELabel.locationVector = this.tempVector;
+
+        // parametricCommandGroup.addCommand(
+        //   new AddIntersectionPointCommand(
+        //     item.SEIntersectionPoint,
+        //     // item.parent1,
+        //     // item.parent2,
+        //     newSELabel
+        //   )
+        // );
+        // item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        // newSELabel.showing = false;
       }
     );
 

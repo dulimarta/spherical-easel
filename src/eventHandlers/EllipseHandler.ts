@@ -22,6 +22,9 @@ import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -83,21 +86,15 @@ export default class EllipseHandler extends Highlighter {
     this.focus2Vector = new Vector3();
     this.temporaryEllipse = new Ellipse();
     // Set the style using the temporary defaults
-    this.temporaryEllipse.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryEllipse);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryFocus1Marker = new Point();
-    this.temporaryFocus1Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryFocus1Marker);
 
     this.temporaryFocus2Marker = new Point();
-    this.temporaryFocus2Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
     EllipseHandler.store.addTemporaryNodule(this.temporaryFocus2Marker);
 
     this.temporaryEllipsePointMarker = new Point();
-    this.temporaryEllipsePointMarker.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     EllipseHandler.store.addTemporaryNodule(this.temporaryEllipsePointMarker);
   }
 
@@ -618,74 +615,49 @@ export default class EllipseHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    if (this.isOnSphere) {
-      // if (this.focus1LocationSelected) {
-      if (this.focus2LocationSelected) {
-        if (
-          this.currentSphereVector.angleTo(this.focus1Vector) >
-            SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
-          this.currentSphereVector.angleTo(this.focus2Vector) >
-            SETTINGS.ellipse.minimumCreationDistance
-        ) {
-          const angleSumToEllipsePoint =
-            this.temporaryEllipse.focus1Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            ) +
-            this.temporaryEllipse.focus2Vector.angleTo(
-              this.temporaryEllipsePointMarker.positionVector
-            );
+    if (this.isOnSphere && this.focus2LocationSelected) {
+      if (
+        this.currentSphereVector.angleTo(this.focus1Vector) >
+          SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
+        this.currentSphereVector.angleTo(this.focus2Vector) >
+          SETTINGS.ellipse.minimumCreationDistance
+      ) {
+        const angleSumToEllipsePoint =
+          this.temporaryEllipse.focus1Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          ) +
+          this.temporaryEllipse.focus2Vector.angleTo(
+            this.temporaryEllipsePointMarker.positionVector
+          );
 
-          //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
-          if (
-            angleSumToEllipsePoint -
-              this.focus1Vector.angleTo(this.focus2Vector) >
-              SETTINGS.ellipse.minimumAngleSumDifference &&
-            angleSumToEllipsePoint <
-              2 * Math.PI -
-                this.focus1Vector.angleTo(this.focus2Vector) -
-                SETTINGS.ellipse.minimumAngleSumDifference
-          ) {
-            if (!this.makeEllipse()) {
-              EventBus.fire("show-alert", {
-                key: `handlers.ellipseCreationAttemptDuplicate`,
-                keyOptions: {},
-                type: "error"
-              });
-            }
-            // reset to get ready to make a new ellipse
-            this.mouseLeave(event);
+        //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
+        if (
+          angleSumToEllipsePoint -
+            this.focus1Vector.angleTo(this.focus2Vector) >
+            SETTINGS.ellipse.minimumAngleSumDifference &&
+          angleSumToEllipsePoint <
+            2 * Math.PI -
+              this.focus1Vector.angleTo(this.focus2Vector) -
+              SETTINGS.ellipse.minimumAngleSumDifference
+        ) {
+          if (!this.makeEllipse()) {
+            EventBus.fire("show-alert", {
+              key: `handlers.ellipseCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
           }
-        } else {
-          EventBus.fire("show-alert", {
-            key: `handlers.ellipseInitiallyToSmall`,
-            keyOptions: {},
-            type: "info"
-          });
+          // reset to get ready to make a new ellipse
+          this.mouseLeave(event);
         }
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.ellipseInitiallyToSmall`,
+          keyOptions: {},
+          type: "info"
+        });
       }
     }
-    // else {
-    //   // Remove the temporary objects from the scene and mark the temporary object
-    //   //  not added to the scene clear snap objects
-    //   this.temporaryEllipse.removeFromLayers();
-    //   this.temporaryEllipseAdded = false;
-
-    //   this.temporaryFocus1Marker.removeFromLayers();
-    //   this.temporaryFocus1MarkerAdded = false;
-    //   this.snapFocus1MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus1MarkerToTemporaryPoint = null;
-
-    //   this.temporaryFocus2Marker.removeFromLayers();
-    //   this.temporaryFocus2MarkerAdded = false;
-    //   this.snapFocus2MarkerToTemporaryOneDimensional = null;
-    //   this.snapFocus2MarkerToTemporaryPoint = null;
-
-    //   this.temporaryEllipsePointMarker.removeFromLayers();
-    //   this.temporaryEllipsePointMarkerAdded = false;
-    //   this.snapEllipsePointMarkerToTemporaryOneDimensional = null;
-    //   this.snapEllipsePointMarkerToTemporaryPoint = null;
-    // }
-    // }
   }
 
   mouseLeave(event: MouseEvent): void {
@@ -1134,33 +1106,42 @@ export default class EllipseHandler extends Highlighter {
     EllipseHandler.store
       .createAllIntersectionsWithEllipse(newSEEllipse)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          ellipseCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              item.parent1
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          );
+        } else {
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        ellipseCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+
+          ellipseCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
       });
 
     ellipseCommandGroup.execute();
@@ -1170,7 +1151,7 @@ export default class EllipseHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (EllipseHandler.store.selectedSENodules.length == 3) {
+    if (EllipseHandler.store.selectedSENodules.length === 3) {
       const object1 = EllipseHandler.store.selectedSENodules[0];
       const object2 = EllipseHandler.store.selectedSENodules[1];
       const object3 = EllipseHandler.store.selectedSENodules[2];
@@ -1221,36 +1202,50 @@ export default class EllipseHandler extends Highlighter {
         );
 
         // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the circle command so they can be undone.
-        // this.store.getters
-        //   .createAllIntersectionsWithCircle(newSECircle)
-        //   .forEach((item: SEIntersectionReturnType) => {
-        //     const newLabel = new Label();
-        //     const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+        // in the store. Add the new created points to the ellipse command so they can be undone.
+        EllipseHandler.store
+          .createAllIntersectionsWithEllipse(newSEEllipse)
+          .forEach((item: SEIntersectionReturnType) => {
+            if (item.existingIntersectionPoint) {
+              ellipseCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  item.parent1
+                )
+              );
+            } else {
+              // Create the plottable and model label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
 
-        //     // Set the initial label location
-        //     this.tmpVector
-        //       .copy(item.SEIntersectionPoint.locationVector)
-        //       .add(
-        //         new Vector3(
-        //           2 * SETTINGS.point.initialLabelOffset,
-        //           SETTINGS.point.initialLabelOffset,
-        //           0
-        //         )
-        //       )
-        //       .normalize();
-        //     newSELabel.locationVector = this.tmpVector;
-        //     circleCommandGroup.addCommand(
-        //       new AddIntersectionPointCommand(
-        //         item.SEIntersectionPoint,
-        //         item.parent1,
-        //         item.parent2,
-        //         newSELabel
-        //       )
-        //     );
-        //     item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        //     newSELabel.showing = false;
-        //   });
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
+
+              ellipseCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  // item.parent1,
+                  // item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+              newSELabel.showing = false;
+            }
+          });
 
         ellipseCommandGroup.execute();
       }

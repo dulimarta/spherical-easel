@@ -32,6 +32,9 @@ export class SEAntipodalPoint extends SEPoint {
       this.label?.ref.shortUserName ?? "No Label Short Name In SEAntipodePoint"
     );
   }
+  get antipodalParent(): SEPoint {
+    return this._antipodalPointParent;
+  }
 
   public shallowUpdate(): void {
     this._exists = this._antipodalPointParent.exists;

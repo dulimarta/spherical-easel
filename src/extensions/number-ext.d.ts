@@ -10,6 +10,7 @@ interface Number {
    *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder
    */
   modTwoPi(): number; // Compute the number modulo 2*Pi
+  modPi(): number; // Compute the number modulo Pi
 }
 
 interface Array<T> {

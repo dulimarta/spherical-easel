@@ -1,7 +1,9 @@
 <template>
   <div class="white mx-1">
     <div class="node"
-      @click="selectMe">
+      @click="selectMe"
+      @mouseenter="glowMe(true)"
+      @mouseleave="glowMe(false)">
       <v-icon>$vuetify.icons.value.slider</v-icon>
       <span>{{ node.name }}: {{node.value}}</span>
     </div>
@@ -44,6 +46,7 @@ import { Prop, Component } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
 import { SESlider } from "@/models/SESlider";
 import { SliderPlaybackMode } from "@/types";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component
 export default class SESliderItem extends Vue {
@@ -71,7 +74,17 @@ export default class SESliderItem extends Vue {
     if (this.node instanceof SEExpression) {
       // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
+      EventBus.fire("set-expression-for-tool", {
+        expression: this.node
+      });
     }
+  }
+  glowMe(flag: boolean): void {
+    // console.log("here", this.node instanceof SEExpression);
+    EventBus.fire("measured-circle-set-temporary-radius", {
+      display: flag,
+      radius: this.node.value
+    });
   }
 
   animate_once(): void {

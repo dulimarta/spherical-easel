@@ -52,6 +52,7 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]
     );
+    this.selectionRectangle.hide();
   }
   /**
    * This handles the keyboard events and when multiple objects are under
@@ -78,7 +79,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SECircles lower case c
     else if (keyEvent.code === "KeyC" && !keyEvent.shiftKey) {
       SelectionHandler.store.seCircles
-        .map(s => s as SECircle)
+        .map(x => x as SECircle)
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
@@ -88,7 +89,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEEllipses lower case e
     else if (keyEvent.code === "KeyE" && !keyEvent.shiftKey) {
       SelectionHandler.store.seEllipses
-        .map(n => n as SEEllipse)
+        .map(x => x as SEEllipse)
         .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
         .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);

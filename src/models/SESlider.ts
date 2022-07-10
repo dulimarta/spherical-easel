@@ -1,8 +1,8 @@
 import { SEExpression } from "./SEExpression";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
+
 export class SESlider extends SEExpression /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
@@ -39,7 +39,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     this.markKidsOutOfDate();
     this.update();
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
     return String(i18n.t(`objectTree.slider`));
   }
@@ -53,10 +53,10 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     );
   }
 
-  public customStyles = (): Set<string> => emptySet;
-
   shallowUpdate(): void {
-    console.error(`*** INCOMPLETE ${this.name} ***`);
+    console.error(
+      `*** INCOMPLETE ${this.name} *** or no update is necessary for sliders?`
+    );
   }
   public update(
     objectState?: Map<number, ObjectState>,

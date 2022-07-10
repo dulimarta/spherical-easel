@@ -360,12 +360,14 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    //console.debug("FREEE line: adjustsize");
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =
       (Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100;
+    //console.debug("  linewidth", this.frontHalf.linewidth);
     this.backHalf.linewidth =
       (Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle

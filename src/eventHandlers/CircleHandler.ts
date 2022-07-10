@@ -21,6 +21,9 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 const tmpVector = new Vector3();
 
@@ -33,6 +36,13 @@ export default class CircleHandler extends Highlighter {
   private temporaryCircle: Circle;
   /**  The model object point that is the center of the circle (if any) */
   private centerSEPoint: SEPoint | null = null;
+  /**
+   * If the user starts to make a circle and mouse press at a location on the sphere (or not on the sphere), then moves
+   * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
+   * variable is to help with that.
+   */
+  private centerLocationSelected = false;
+
   /** The model object point that is a point on the circle (if any) */
   private circleSEPoint: SEPoint | null = null;
   /** The possible parent of the centerSEPoint*/
@@ -62,40 +72,24 @@ export default class CircleHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
+  protected snapTemporaryPointMarkerToOneDimensional: SEOneOrTwoDimensional | null =
     null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null =
-    null;
-  protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
-  protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
-  /**
-   * If the user starts to make a circle and mouse press at a location on the sphere (or not on the sphere), then moves
-   * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
-   * variable is to help with that.
-   */
-  private centerLocationSelected = false;
+  protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
   constructor(layers: Group[]) {
     super(layers);
     this.centerVector = new Vector3();
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
     CircleHandler.store.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
-    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     CircleHandler.store.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     CircleHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
-    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
-    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
-    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
-    //super.mouseMoved(event);
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {
       // The user is making a circle
@@ -211,112 +205,47 @@ export default class CircleHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    // Only one object can be interacted with at a given time, so set the first point nearby to glowing
+
+    // Only object can be interacted with at a given time, so set the first point nearby to glowing
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
     if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
-      }
+      possiblyGlowing = this.hitSEPoints[0];
     } else if (this.hitSESegments.length > 0) {
-      this.hitSESegments[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
-      this.hitSELines[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSELines[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSELines[0];
     } else if (this.hitSECircles.length > 0) {
-      this.hitSECircles[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSECircles[0];
     } else if (this.hitSEEllipses.length > 0) {
-      this.hitSEEllipses[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSEEllipses[0];
     } else if (this.hitSEParametrics.length > 0) {
-      this.hitSEParametrics[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional =
-          this.hitSEParametrics[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSEParametrics[0];
     } else if (this.hitSEPolygons.length > 0) {
-      this.hitSEPolygons[0].glowing = true;
-      if (!this.centerLocationSelected) {
-        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-        this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      } else {
-        this.snapStartMarkerToTemporaryOneDimensional = null;
-        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-        this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = null;
-      }
+      possiblyGlowing = this.hitSEPolygons[0];
     } else {
-      this.snapStartMarkerToTemporaryOneDimensional = null;
-      this.snapEndMarkerToTemporaryOneDimensional = null;
-      this.snapStartMarkerToTemporaryPoint = null;
-      this.snapEndMarkerToTemporaryPoint = null;
+      this.snapTemporaryPointMarkerToOneDimensional = null;
+      this.snapTemporaryPointMarkerToPoint = null;
     }
 
+    if (possiblyGlowing !== null) {
+      if (possiblyGlowing instanceof SEPoint) {
+        possiblyGlowing.glowing = true;
+        this.snapTemporaryPointMarkerToOneDimensional = null;
+        this.snapTemporaryPointMarkerToPoint = possiblyGlowing;
+      }
+      // possiblyGlowing is a oneDimensional Object
+      else {
+        possiblyGlowing.glowing = true;
+        this.snapTemporaryPointMarkerToOneDimensional = possiblyGlowing;
+        this.snapTemporaryPointMarkerToPoint = null;
+      }
+    }
     // Make sure that the event is on the sphere
     if (this.isOnSphere) {
-      // The user has selected a center point
+      // The user has not selected a center point
       if (!this.centerLocationSelected) {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.temporaryStartMarkerAdded) {
@@ -324,29 +253,29 @@ export default class CircleHandler extends Highlighter {
           this.temporaryStartMarker.addToLayers(this.layers);
         }
         // Remove the temporary startMarker if there is a nearby point which can glowing
-        if (this.snapStartMarkerToTemporaryPoint !== null) {
+        if (this.snapTemporaryPointMarkerToPoint !== null) {
           // if the user is over a non user created intersection point (which can't be selected so will not remain
           // glowing when the user select that location and then moves the mouse away - see line 115) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapStartMarkerToTemporaryPoint instanceof
+            this.snapTemporaryPointMarkerToPoint instanceof
               SEIntersectionPoint &&
-            !this.snapStartMarkerToTemporaryPoint.isUserCreated
+            !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryStartMarker.positionVector =
-              this.snapStartMarkerToTemporaryPoint.locationVector;
+              this.snapTemporaryPointMarkerToPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
             this.temporaryStartMarkerAdded = false;
           }
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
-        if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
+        if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
           this.temporaryStartMarker.positionVector =
-            this.snapStartMarkerToTemporaryOneDimensional.closestVector(
+            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
               this.currentSphereVector
             );
-        } else if (this.snapStartMarkerToTemporaryPoint == null) {
+        } else if (this.snapTemporaryPointMarkerToPoint == null) {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
       } else {
@@ -356,14 +285,26 @@ export default class CircleHandler extends Highlighter {
           this.temporaryEndMarker.addToLayers(this.layers);
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
-        if (this.snapEndMarkerToTemporaryPoint !== null) {
-          this.temporaryEndMarker.removeFromLayers();
-          this.temporaryEndMarkerAdded = false;
+        if (this.snapTemporaryPointMarkerToPoint !== null) {
+          // if the user is over a non user created intersection point (which can't be selected so will not remain
+          // glowing when the user select that location and then moves the mouse away - see line 115) we don't
+          // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
+          if (
+            this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint &&
+            !this.snapTemporaryPointMarkerToPoint.isUserCreated
+          ) {
+            this.temporaryEndMarker.positionVector =
+              this.snapTemporaryPointMarkerToPoint.locationVector;
+          } else {
+            this.temporaryEndMarker.removeFromLayers();
+            this.temporaryEndMarkerAdded = false;
+          }
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-        if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
+        if (this.snapTemporaryPointMarkerToOneDimensional !== null) {
           this.temporaryEndMarker.positionVector =
-            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+            this.snapTemporaryPointMarkerToOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else {
@@ -377,13 +318,13 @@ export default class CircleHandler extends Highlighter {
         }
 
         //compute the radius of the temporary circle
-        if (this.snapEndMarkerToTemporaryPoint === null) {
+        if (this.snapTemporaryPointMarkerToPoint === null) {
           this.arcRadius = this.temporaryCircle.centerVector.angleTo(
             this.temporaryEndMarker.positionVector
           );
         } else {
           this.arcRadius = this.temporaryCircle.centerVector.angleTo(
-            this.snapEndMarkerToTemporaryPoint.locationVector
+            this.snapTemporaryPointMarkerToPoint.locationVector
           );
         }
 
@@ -392,31 +333,22 @@ export default class CircleHandler extends Highlighter {
         //update the display
         this.temporaryCircle.updateDisplay();
       }
+    } else {
+      // Remove the temporary objects from the display but don't reset for a new circle
+      // add the appropriate objects back if the user returns to the sphere with out
+      // triggering the mouse leave event.
+      if (!this.centerLocationSelected) {
+        this.temporaryStartMarker.removeFromLayers();
+        this.temporaryStartMarkerAdded = false;
+      } else {
+        this.temporaryEndMarker.removeFromLayers();
+        this.temporaryEndMarkerAdded = false;
+        this.temporaryCircle.removeFromLayers();
+        this.temporaryCircleAdded = false;
+      }
+      this.snapTemporaryPointMarkerToOneDimensional = null;
+      this.snapTemporaryPointMarkerToPoint = null;
     }
-    // else {
-    //   // Remove the temporary objects from the display but don't reset for a new circle
-    //   // add the appropriate objects back if the user returns to the sphere with out
-    //   // triggering the mouse leave event.
-    //   if (this.temporaryEndMarkerAdded) {
-    //     this.temporaryEndMarker.removeFromLayers();
-    //     this.temporaryEndMarkerAdded = false;
-    //   }
-
-    //   if (this.temporaryStartMarkerAdded) {
-    //     this.temporaryStartMarker.removeFromLayers();
-    //     this.temporaryStartMarkerAdded = false;
-    //   }
-
-    //   if (this.temporaryCircleAdded) {
-    //     this.temporaryCircle.removeFromLayers();
-    //     this.temporaryCircleAdded = false;
-    //   }
-
-    //   this.snapStartMarkerToTemporaryOneDimensional = null;
-    //   this.snapEndMarkerToTemporaryOneDimensional = null;
-    //   this.snapStartMarkerToTemporaryPoint = null;
-    //   this.snapEndMarkerToTemporaryPoint = null;
-    // }
   }
 
   mouseReleased(_event: MouseEvent): void {
@@ -450,23 +382,18 @@ export default class CircleHandler extends Highlighter {
 
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
-    if (this.temporaryCircleAdded) {
-      this.temporaryCircle.removeFromLayers();
-      this.temporaryCircleAdded = false;
-    }
-    if (this.temporaryEndMarkerAdded) {
-      this.temporaryEndMarker.removeFromLayers();
-      this.temporaryEndMarkerAdded = false;
-    }
-    if (this.temporaryStartMarkerAdded) {
-      this.temporaryStartMarker.removeFromLayers();
-      this.temporaryStartMarkerAdded = false;
-    }
 
-    this.snapStartMarkerToTemporaryOneDimensional = null;
-    this.snapEndMarkerToTemporaryOneDimensional = null;
-    this.snapStartMarkerToTemporaryPoint = null;
-    this.snapEndMarkerToTemporaryPoint = null;
+    this.temporaryCircle.removeFromLayers();
+    this.temporaryCircleAdded = false;
+
+    this.temporaryEndMarker.removeFromLayers();
+    this.temporaryEndMarkerAdded = false;
+
+    this.temporaryStartMarker.removeFromLayers();
+    this.temporaryStartMarkerAdded = false;
+
+    this.snapTemporaryPointMarkerToOneDimensional = null;
+    this.snapTemporaryPointMarkerToPoint = null;
 
     // Clear old points and values to get ready for creating the next circle.
     if (this.centerSEPoint !== null) {
@@ -784,33 +711,43 @@ export default class CircleHandler extends Highlighter {
     CircleHandler.store
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          circleCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              item.parent1
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          );
+        } else {
+          // the intersection point is newly created and must be added as a child of the two parents returned
+          // Create the plottable and model label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-        circleCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-        newSELabel.showing = false;
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+
+          circleCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+          newSELabel.showing = false;
+        }
       });
 
     circleCommandGroup.execute();
@@ -862,31 +799,43 @@ export default class CircleHandler extends Highlighter {
         CircleHandler.store
           .createAllIntersectionsWithCircle(newSECircle)
           .forEach((item: SEIntersectionReturnType) => {
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
+            if (item.existingIntersectionPoint) {
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  item.parent1
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
-            circleCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
+              );
+            } else {
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
+
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
+              circleCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  // item.parent1,
+                  // item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+              newSELabel.showing = false;
+            }
           });
 
         circleCommandGroup.execute();

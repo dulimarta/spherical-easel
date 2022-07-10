@@ -31,6 +31,9 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 type TemporaryLine = {
   line: Line;
@@ -95,7 +98,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
       exist: false,
       tmpNormal: new Vector3()
     });
-    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
     TangentLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
     );
@@ -625,7 +627,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       plottableLine.adjustSize();
 
       // Create the model(SE) tangent line for the new point and link them
-      const newPerpLine = new SETangentLineThruPoint(
+      const newSETangentLine = new SETangentLineThruPoint(
         plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
@@ -635,15 +637,15 @@ export default class TangentLineThruPointHandler extends Highlighter {
       );
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
-        newPerpLine.exists = false;
+        newSETangentLine.exists = false;
       }
       // Update the display of the tangent line
-      newPerpLine.markKidsOutOfDate();
-      newPerpLine.update();
+      newSETangentLine.markKidsOutOfDate();
+      newSETangentLine.update();
 
       // Create the plottable label
       const newLabel = new Label();
-      const newSELabel = new SELabel(newLabel, newPerpLine);
+      const newSELabel = new SELabel(newLabel, newSETangentLine);
 
       // Set the initial label location
       this.tmpVector1
@@ -660,7 +662,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       addTangentLineGroup.addCommand(
         new AddTangentLineThruPointCommand(
-          newPerpLine,
+          newSETangentLine,
           this.sePoint!,
           oneDimensional,
           newSELabel
@@ -669,34 +671,43 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       TangentLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine)
+        .createAllIntersectionsWithLine(newSETangentLine)
         .forEach((item: SEIntersectionReturnType) => {
-          // Create the plottable label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+          if (item.existingIntersectionPoint) {
+            addTangentLineGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+            );
+          } else {
+            // Create the plottable label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
 
-          addTangentLineGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-          newSELabel.showing = false;
+            addTangentLineGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                // item.parent1,
+                // item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
+          }
         });
     }
     addTangentLineGroup.execute();

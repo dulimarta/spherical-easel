@@ -39,6 +39,9 @@ import EllipseHandler from "@/eventHandlers/EllipseHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
+import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
+import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
+import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -52,6 +55,18 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEExpression } from "@/models/SEExpression";
+import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
+import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
+import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
+import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
+import { SETransformation } from "@/models/SETransformation";
+import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
+import { SENodule } from "@/models/SENodule";
+import i18n from "@/i18n";
+
+//const SE = namespace("se");
 
 @Component({
   computed: {
@@ -72,7 +87,8 @@ import { Group } from "two.js/src/group";
       "rotateSphere",
       // "setSphereRadius",
       "setCanvasWidth",
-      "revertActionMode"
+      "revertActionMode",
+      "setZoomMagnificationFactor"
     ])
   }
 })
@@ -81,7 +97,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   readonly actionMode!: ActionMode;
-  zoomMagnificationFactor!: number;
+  readonly zoomMagnificationFactor!: number;
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
 
@@ -90,8 +106,10 @@ export default class SphereFrame extends VueComponent {
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
+  readonly setZoomMagnificationFactor!: (_: number) => void;
   readonly rotateSphere!: (_: Matrix4) => void;
   readonly revertActionMode!: () => void;
+  readonly getZoomMagnificationFactor!: () => number;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -145,6 +163,15 @@ export default class SphereFrame extends VueComponent {
   private nSectSegmentTool: NSectSegmentHandler | null = null;
   private angleBisectorTool: NSectAngleHandler | null = null;
   private nSectAngleTool: NSectAngleHandler | null = null;
+  private threePointCircleTool: ThreePointCircleHandler | null = null;
+  private measuredCircleTool: MeasuredCircleHandler | null = null;
+  private translationTool: TranslationTransformationHandler | null = null;
+  private rotationTool: RotationTransformationHandler | null = null;
+  private reflectionTool: ReflectionTransformationHandler | null = null;
+  private pointReflectionTool: PointReflectionTransformationHandler | null =
+    null;
+  private inversionTool: InversionTransformationHandler | null = null;
+  private applyTransformationTool: ApplyTransformationHandler | null = null;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -242,6 +269,16 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
     EventBus.listen("construction-loaded", this.animateCanvas);
+    EventBus.listen(
+      "measured-circle-set-temporary-radius",
+      this.measuredCircleSetTemporaryRadius
+    );
+    EventBus.listen("set-expression-for-tool", this.setExpressionForTool);
+    EventBus.listen(
+      "set-transformation-for-tool",
+      this.setTransformationForTool
+    );
+    EventBus.listen("delete-node", this.deleteNode);
   }
 
   mounted(): void {
@@ -315,6 +352,10 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("zoom-updated");
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
+    EventBus.unlisten("measured-circle-set-temporary-radius");
+    EventBus.unlisten("set-expression-for-tool");
+    EventBus.unlisten("set-transformation-for-tool");
+    EventBus.unlisten("delete-node");
   }
 
   @Watch("canvasSize")
@@ -329,7 +370,9 @@ export default class SphereFrame extends VueComponent {
     // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    this.zoomMagnificationFactor = ratio;
+    //this.zoomMagnificationFactor = ratio;
+    //set the zoom magnification in the store so that all geometric/plottable objects are updated.
+    this.setZoomMagnificationFactor(ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
     this.zoomTranslation.splice(0);
@@ -448,7 +491,8 @@ export default class SphereFrame extends VueComponent {
     }
 
     // Set the new magnification factor and the next translation vector in the store
-    this.zoomMagnificationFactor = newMagFactor;
+    // this.zoomMagnificationFactor = newMagFactor;
+    this.setZoomMagnificationFactor(newMagFactor); //must be set this way so that plottables resize correctly
     this.zoomTranslation.splice(0);
     this.zoomTranslation.push(...newTranslationVector);
     // Update the display
@@ -604,6 +648,56 @@ export default class SphereFrame extends VueComponent {
     setTimeout(() => {
       this.$refs.canvas.classList.remove("spin");
     }, 1200);
+  }
+
+  measuredCircleSetTemporaryRadius(e: {
+    display: boolean;
+    radius: number;
+  }): void {
+    if (this.currentTool instanceof MeasuredCircleHandler) {
+      this.currentTool.displayTemporaryCircle(e.display, e.radius);
+    }
+  }
+
+  setExpressionForTool(e: { expression: SEExpression }): void {
+    if (
+      this.currentTool instanceof MeasuredCircleHandler ||
+      this.currentTool instanceof RotationTransformationHandler ||
+      this.currentTool instanceof TranslationTransformationHandler
+    ) {
+      this.currentTool.setExpression(e.expression);
+    }
+  }
+
+  setTransformationForTool(e: { transformation: SETransformation }): void {
+    if (this.currentTool instanceof ApplyTransformationHandler) {
+      this.currentTool.setTransformation(e.transformation);
+    }
+  }
+
+  deleteNode(e: {
+    victim: SENodule;
+    victimName: string;
+    victimType: string;
+  }): void {
+    if (!this.deleteTool) {
+      this.deleteTool = new DeleteHandler(this.layers);
+    }
+    const deletedNodeIds = this.deleteTool.delete(e.victim);
+    //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+    EventBus.fire("show-alert", {
+      key: `handlers.deletedNodes`,
+      keyOptions: {
+        type: e.victimType,
+        name: e.victimName,
+        number: deletedNodeIds.length - 1,
+        objects:
+          deletedNodeIds.length === 2
+            ? i18n.tc(`objects.objects`, 4)
+            : i18n.tc(`objects.objects`, 3)
+      },
+      type: "success"
+    });
   }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
@@ -801,6 +895,54 @@ export default class SphereFrame extends VueComponent {
         if (!this.nSectAngleTool)
           this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
         this.currentTool = this.nSectAngleTool;
+        break;
+      case "threePointCircle":
+        if (!this.threePointCircleTool)
+          this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
+        this.currentTool = this.threePointCircleTool;
+        break;
+      case "measuredCircle":
+        if (!this.measuredCircleTool)
+          this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+        this.currentTool = this.measuredCircleTool;
+        break;
+      case "translation":
+        if (!this.translationTool)
+          this.translationTool = new TranslationTransformationHandler(
+            this.layers
+          );
+        this.currentTool = this.translationTool;
+        break;
+      case "rotation":
+        if (!this.rotationTool)
+          this.rotationTool = new RotationTransformationHandler(this.layers);
+        this.currentTool = this.rotationTool;
+        break;
+      case "reflection":
+        if (!this.reflectionTool)
+          this.reflectionTool = new ReflectionTransformationHandler(
+            this.layers
+          );
+        this.currentTool = this.reflectionTool;
+        break;
+      case "pointReflection":
+        if (!this.pointReflectionTool)
+          this.pointReflectionTool = new PointReflectionTransformationHandler(
+            this.layers
+          );
+        this.currentTool = this.pointReflectionTool;
+        break;
+      case "inversion":
+        if (!this.inversionTool)
+          this.inversionTool = new InversionTransformationHandler(this.layers);
+        this.currentTool = this.inversionTool;
+        break;
+      case "applyTransformation":
+        if (!this.applyTransformationTool)
+          this.applyTransformationTool = new ApplyTransformationHandler(
+            this.layers
+          );
+        this.currentTool = this.applyTransformationTool;
         break;
       default:
         this.currentTool = null;

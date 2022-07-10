@@ -125,7 +125,7 @@ export default class Point extends Nodule {
   }
 
   /**
-   * Get and Set the location of the point in the Default Sphere, this also updates the display
+   * Get(return *non*unit vector) and Set(using unit vector) the location of the point in the Default Sphere, this also updates the display
    */
   set positionVector(idealUnitSphereVectorLocation: Vector3) {
     this._locationVector

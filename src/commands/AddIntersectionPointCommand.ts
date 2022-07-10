@@ -1,71 +1,97 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Vector3 } from "three";
+import { sRGBEncoding, Vector3 } from "three";
 import Label from "@/plottables/Label";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
-  private sePoint: SEIntersectionPoint;
-  private parent1: SEOneOrTwoDimensional;
-  private parent2: SEOneOrTwoDimensional;
+  private seIntersectionPoint: SEIntersectionPoint;
+  // Don't record the principle parents in this ways because they may change when new intersection parents are created
+  // private principleParent1: SEOneDimensional;
+  // private principleParent2: SEOneDimensional;
   private seLabel: SELabel;
 
   constructor(
-    sePoint: SEIntersectionPoint,
-    parent1: SEOneOrTwoDimensional,
-    parent2: SEOneOrTwoDimensional,
+    seIntersectionPoint: SEIntersectionPoint,
+    // parent1: SEOneDimensional,
+    // parent2: SEOneDimensional,
     seLabel: SELabel
   ) {
     super();
-    this.sePoint = sePoint;
-    this.parent1 = parent1;
-    this.parent2 = parent2;
+    this.seIntersectionPoint = seIntersectionPoint;
+    // this.principleParent1 = parent1;
+    // this.principleParent2 = parent2;
     this.seLabel = seLabel;
   }
 
   do(): void {
-    this.parent1.registerChild(this.sePoint);
-    this.parent2.registerChild(this.sePoint);
-    this.sePoint.registerChild(this.seLabel);
-    Command.store.addPoint(this.sePoint);
+    console.debug(
+      `Add intersection point ${this.seIntersectionPoint.name} with parents ${
+        this.seIntersectionPoint.principleParent1.name
+      } and ${
+        this.seIntersectionPoint.principleParent2.name
+      } at ${this.seIntersectionPoint.locationVector.toFixed(2)}`
+    );
+    this.seIntersectionPoint.principleParent1.registerChild(
+      this.seIntersectionPoint
+    );
+    this.seIntersectionPoint.principleParent2.registerChild(
+      this.seIntersectionPoint
+    );
+    this.seIntersectionPoint.registerChild(this.seLabel);
+    Command.store.addPoint(this.seIntersectionPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePoint.markKidsOutOfDate();
-    this.sePoint.update();
   }
 
   saveState(): void {
-    this.lastState = this.sePoint.id;
+    this.lastState = this.seIntersectionPoint.id;
   }
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
-    this.sePoint.unregisterChild(this.seLabel);
-    this.parent1.unregisterChild(this.sePoint);
-    this.parent2.unregisterChild(this.sePoint);
+    this.seIntersectionPoint.unregisterChild(this.seLabel);
+    this.seIntersectionPoint.principleParent1.unregisterChild(
+      this.seIntersectionPoint
+    );
+    this.seIntersectionPoint.principleParent2.unregisterChild(
+      this.seIntersectionPoint
+    );
   }
 
   toOpcode(): null | string | Array<string> {
+    // don't need the other parent array because that is handled in the commands AddIntersectionPointOtherParent and RemoveIntersectionPointOtherParent
+
+    // let intersectionPointParentArrayNameList = "";
+    // this.seIntersectionPoint.otherParentArray.forEach(parent => {
+    //   intersectionPointParentArrayNameList +=
+    //     Command.symbolToASCIIDec(parent.name) + "@";
+    // });
+    // intersectionPointParentArrayNameList =
+    //   intersectionPointParentArrayNameList.slice(0, -1);
+
     return [
       "AddIntersectionPoint",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
       // All plottable objects have these attributes
-      "objectName=" + Command.symbolToASCIIDec(this.sePoint.name),
-      "objectExists=" + this.sePoint.exists,
-      "objectShowing=" + this.sePoint.showing,
+      "objectName=" + Command.symbolToASCIIDec(this.seIntersectionPoint.name),
+      "objectExists=" + this.seIntersectionPoint.exists,
+      "objectShowing=" + this.seIntersectionPoint.showing,
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seIntersectionPoint.ref.currentStyleState(
+              StyleEditPanels.Front
+            )
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seIntersectionPoint.ref.currentStyleState(StyleEditPanels.Back)
           )
         ),
       // All labels have these attributes
@@ -80,11 +106,18 @@ export class AddIntersectionPointCommand extends Command {
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "intersectionPointParent1Name=" + this.parent1.name,
-      "intersectionPointParent2Name=" + this.parent2.name,
-      "intersectionPointUserCreated=" + this.sePoint.isUserCreated,
-      "intersectionPointOrder=" + this.sePoint.intersectionOrder,
-      "intersectionPointVector=" + this.sePoint.locationVector.toFixed(7)
+      "intersectionPointPrincipleParent1Name=" +
+        this.seIntersectionPoint.principleParent1.name,
+      "intersectionPointPrincipleParent2Name=" +
+        this.seIntersectionPoint.principleParent2.name,
+      "intersectionPointUserCreated=" + this.seIntersectionPoint.isUserCreated,
+      "intersectionPointOrder=" + this.seIntersectionPoint.intersectionOrder,
+      "intersectionPointVector=" +
+        this.seIntersectionPoint.locationVector.toFixed(7)
+      // "intersectionPointOtherParentArrayLength=" +
+      //   this.seIntersectionPoint.otherParentArray.length,
+      // "intersectionPointOtherParentArrayNameList=" +
+      //   intersectionPointParentArrayNameList
     ].join("&");
   }
 
@@ -96,17 +129,21 @@ export class AddIntersectionPointCommand extends Command {
     tokens.forEach((token, ind) => {
       if (ind === 0) return; // don't put the command type in the propMap
       const parts = token.split("=");
-      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+      if (parts[0] !== "intersectionPointOtherParentArrayNameList") {
+        propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+      } else {
+        propMap.set(parts[0] as SavedNames, parts[1]); // Don't run parts[1] thru Command.asciiDecToSymbol yet
+      }
     });
 
     // get the object specific attributes
-    const parent1 = objMap.get(
-      propMap.get("intersectionPointParent1Name") ?? ""
-    ) as SEOneOrTwoDimensional | undefined;
+    const principleParent1 = objMap.get(
+      propMap.get("intersectionPointPrincipleParent1Name") ?? ""
+    ) as SEOneDimensional | undefined;
 
-    const parent2 = objMap.get(
-      propMap.get("intersectionPointParent2Name") ?? ""
-    ) as SEOneOrTwoDimensional | undefined;
+    const principleParent2 = objMap.get(
+      propMap.get("intersectionPointPrincipleParent2Name") ?? ""
+    ) as SEOneDimensional | undefined;
 
     const positionVector = new Vector3();
     positionVector.from(propMap.get("intersectionPointVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
@@ -116,18 +153,47 @@ export class AddIntersectionPointCommand extends Command {
     const intersectionPointUserCreated =
       propMap.get("intersectionPointUserCreated") === "true";
 
+    // don't need the other parent array because that is handled in the commands AddIntersectionPointOtherParent and RemoveIntersectionPointOtherParent
+    // const otherParentArrayLength = Number(
+    //   propMap.get("intersectionPointOtherParentArrayLength")
+    // );
+
+    // const otherParents: (SEOneDimensional | undefined)[] = [];
+    // if (otherParentArrayLength > 0) {
+    //   const arrayNameList = propMap.get(
+    //     "intersectionPointOtherParentArrayNameList"
+    //   );
+    //   if (arrayNameList) {
+    //     const list = arrayNameList
+    //       .split("@")
+    //       .map(str => Command.asciiDecToSymbol(str));
+    //     list.forEach(name => {
+    //       const parent = objMap.get(name) as SEOneDimensional | undefined;
+    //       otherParents.push(parent);
+    //     });
+    //   }
+    // }
+
     if (
-      parent2 &&
-      parent1 &&
+      principleParent2 &&
+      principleParent1 &&
       positionVector.z !== 1 &&
-      !isNaN(intersectionOrder)
+      !isNaN(intersectionOrder) // &&
+      // !isNaN(otherParentArrayLength) &&
+      // !otherParents.some(parent => {
+      //   if (parent === undefined) {
+      //     return true;
+      //   } else {
+      //     return false;
+      //   }
+      // })
     ) {
       //make the intersection point
       const nonFreePoint = new NonFreePoint();
       const seIntersectionPoint = new SEIntersectionPoint(
         nonFreePoint,
-        parent1,
-        parent2,
+        principleParent1,
+        principleParent2,
         intersectionOrder,
         intersectionPointUserCreated
       );
@@ -157,7 +223,7 @@ export class AddIntersectionPointCommand extends Command {
       if (labelStyleString !== undefined)
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
 
-      //put the segment in the object map
+      //put the intersection point in the object map
       if (propMap.get("objectName") !== undefined) {
         seIntersectionPoint.name = propMap.get("objectName") ?? "";
         seIntersectionPoint.showing = propMap.get("objectShowing") === "true";
@@ -178,15 +244,21 @@ export class AddIntersectionPointCommand extends Command {
       } else {
         throw new Error("AddIntersectionPoint: Label Name doesn't exist");
       }
+      // // add the other parents
+      // otherParents.forEach(parent => {
+      //   if (parent) {
+      //     seIntersectionPoint.addIntersectionOtherParent(parent);
+      //   }
+      // });
       return new AddIntersectionPointCommand(
         seIntersectionPoint,
-        parent1,
-        parent2,
+        // principleParent1,
+        // principleParent2,
         seLabel
       );
     }
     throw new Error(
-      `AddIntersectionPointCommand: ${parent2}, ${parent1}, ${positionVector}, or ${intersectionOrder}  is undefined`
+      `AddIntersectionPointCommand: ${principleParent2?.name}, ${principleParent1?.name}, ${positionVector.toFixed}, ${intersectionOrder}, or some element of the other parent array is undefined`
     );
   }
 }

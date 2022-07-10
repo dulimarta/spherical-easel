@@ -66,7 +66,7 @@ export class SECalculation extends SEExpression {
   get calculationParents(): SENodule[] {
     return this._calculationParents;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   // public get prettyValue(): string {
   //   if (this._valueDisplayMode) {
   //     return (
@@ -148,6 +148,4 @@ export class SECalculation extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

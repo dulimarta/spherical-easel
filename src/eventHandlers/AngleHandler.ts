@@ -127,25 +127,21 @@ export default class AngleHandler extends Highlighter {
 
   constructor(layers: Group[]) {
     super(layers);
-    console.log("AngleHandler ctor");
+    // console.log("AngleHandler ctor");
 
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();
-    this.temporaryAngleMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryAngleMarker);
+    AngleHandler.store.addTemporaryNodule(this.temporaryAngleMarker);
 
     // Create and style the temporary points marking the points in the angle (if appropriate)
     this.temporaryFirstPoint = new Point();
-    this.temporaryFirstPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryFirstPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporaryFirstPoint);
 
     this.temporarySecondPoint = new Point();
-    this.temporarySecondPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporarySecondPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporarySecondPoint);
 
     this.temporaryThirdPoint = new Point();
-    this.temporaryThirdPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryThirdPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporaryThirdPoint);
   }
 
   private allowPointLocation(candidate: Vector3): boolean {
@@ -928,7 +924,7 @@ export default class AngleHandler extends Highlighter {
   deactivate(): void {
     super.deactivate();
     // call an unglow all command
-    MouseHandler.store.unglowAllSENodules();
+    AngleHandler.store.unglowAllSENodules();
     this.infoText.hide();
     // unselect all points, lines, segments
     this.targetLines.forEach(l => (l.selected = false));
@@ -967,7 +963,7 @@ export default class AngleHandler extends Highlighter {
     if (this.targetPoints.every(entry => entry !== null)) {
       let measurementName = "";
       if (
-        MouseHandler.store.expressions.some(exp => {
+        AngleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEAngleMarker &&
             exp.parents[0].name === this.targetPoints[0]?.name && // order matters in angles angle 0 1 2 is different than 2 1 0
@@ -1156,7 +1152,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetLines[0]?.name && // order matters in angles angle from L1 to L2 is different than from L2 to L1
@@ -1279,7 +1275,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of segments has not been measured already
     let measurementName = "";
     if (
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetSegments[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
@@ -1406,7 +1402,7 @@ export default class AngleHandler extends Highlighter {
         }
       });
     } else {
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.firstSEParent.name === this.targetSegments[0]?.name &&

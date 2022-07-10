@@ -22,6 +22,9 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -102,16 +105,14 @@ export default class SegmentHandler extends Highlighter {
   constructor(layers: Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
-    this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporarySegment);
     this.isTemporarySegmentAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
-    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporaryStartMarker);
+
     this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     SegmentHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
 
@@ -840,35 +841,50 @@ export default class SegmentHandler extends Highlighter {
         newSELabel
       )
     );
+    let i = 1;
     SegmentHandler.store
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.segment.initialLabelOffset,
-              SETTINGS.segment.initialLabelOffset,
-              0
+        //console.debug(`Segment intersections ${i}`);
+        i += 1;
+        if (item.existingIntersectionPoint) {
+          segmentGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              item.parent1
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          );
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.segment.initialLabelOffset,
+                SETTINGS.segment.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        segmentGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
+          segmentGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+          // console.debug(
+          //   `Added intersection point ${item.SEIntersectionPoint.name}`
+          // );
+        }
       });
     segmentGroup.execute();
     return true;
@@ -1001,35 +1017,50 @@ export default class SegmentHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
+        let i = 1;
         SegmentHandler.store
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
-            // Create the plottable label
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.segment.initialLabelOffset,
-                  SETTINGS.segment.initialLabelOffset,
-                  0
+            //console.debug(`Segment intersections ${i}`);
+            i += 1;
+            if (item.existingIntersectionPoint) {
+              segmentCommandGroup.addCommand(
+                new AddIntersectionPointOtherParent(
+                  item.SEIntersectionPoint,
+                  item.parent1
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
+              );
+            } else {
+              // Create the plottable label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.segment.initialLabelOffset,
+                    SETTINGS.segment.initialLabelOffset,
+                    0
+                  )
+                )
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
 
-            segmentCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
+              segmentCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  // item.parent1,
+                  // item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+              newSELabel.showing = false;
+            }
           });
 
         segmentCommandGroup.execute();

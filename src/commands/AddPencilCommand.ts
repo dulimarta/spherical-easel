@@ -39,7 +39,7 @@ export class AddPencilCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return null;
+    return null; // Exclude this command from interpretation
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {

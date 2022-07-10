@@ -25,7 +25,7 @@ export default class HideObjectHandler extends Highlighter {
     if (keyEvent.key.match("S")) {
       const setNoduleDisplayCommandGroup = new CommandGroup();
       HideObjectHandler.store.seNodules
-        .map(n => n as SENodule)
+        .map(x => x as SENodule)
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (
@@ -53,7 +53,7 @@ export default class HideObjectHandler extends Highlighter {
       // if the lower case s key was pushed restore/show only those objects that the user has hidden since activating the tool
       const setNoduleDisplayCommandGroup = new CommandGroup();
       HideObjectHandler.store.seNodules
-        .map(n => n as SENodule)
+        .map(x => x as SENodule)
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (

@@ -3,8 +3,8 @@ import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
+
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
@@ -13,7 +13,7 @@ export class SESegmentLength extends SEExpression {
     this.seSegment = parent;
     this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get value(): number {
     return this.seSegment.arcLength;
   }
@@ -71,6 +71,4 @@ export class SESegmentLength extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

@@ -103,7 +103,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this.store = useSEStore();
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -491,6 +491,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.ref.setVisible(false);
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

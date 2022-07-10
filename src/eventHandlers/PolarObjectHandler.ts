@@ -32,6 +32,9 @@ import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 
 enum Create {
   NONE,
@@ -92,25 +95,19 @@ export default class PolarObjectHandler extends Highlighter {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();
-    this.temporaryPolarLineMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPolarLineMarker);
+
     this.temporaryPolarPointMarker1 = new NonFreePoint();
-    this.temporaryPolarPointMarker1.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker1
     );
+
     this.temporaryPolarPointMarker2 = new NonFreePoint();
-    this.temporaryPolarPointMarker2.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker2
     );
 
     this.temporaryPoint = new Point();
-    this.temporaryPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPoint);
   }
 
@@ -681,32 +678,41 @@ export default class PolarObjectHandler extends Highlighter {
     PolarObjectHandler.store
       .createAllIntersectionsWithLine(newPolarLine)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newPolarLine
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          );
+        } else {
+          // Create the plottable label
+          const newLabel = new Label();
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        polarLineCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              // item.parent1,
+              // item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+        }
       });
     polarLineCommandGroup.execute();
   }

@@ -17,6 +17,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
 import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SENodule } from "@/models/SENodule";
+import { getAncestors } from "@/utils/helpingfunctions";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -38,7 +41,6 @@ export default class NSectAngleHandler extends Highlighter {
     // Create and style the temporary lines
     for (let i = 0; i < 9; i++) {
       this.temporaryLines.push(new Line());
-      this.temporaryLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
       NSectAngleHandler.store.addTemporaryNodule(this.temporaryLines[i]);
       this.temporaryLinesAdded.push(false);
     }
@@ -335,7 +337,7 @@ export default class NSectAngleHandler extends Highlighter {
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
             newLine,
-            startSEPoint,
+            startSEPoint as SEPoint,
             normalVector,
             endSEPoint,
             candidateAngle,
@@ -370,35 +372,44 @@ export default class NSectAngleHandler extends Highlighter {
           NSectAngleHandler.store
             .createAllIntersectionsWithLine(nSectingLine)
             .forEach((item: SEIntersectionReturnType) => {
-              // Create the plottable label
-              const newLabel = new Label();
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.point.initialLabelOffset,
-                    SETTINGS.point.initialLabelOffset,
-                    0
+              if (item.existingIntersectionPoint) {
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    item.parent1
                   )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
+                );
+              } else {
+                // Create the plottable label
+                const newLabel = new Label();
+                const newSELabel = new SELabel(
+                  newLabel,
+                  item.SEIntersectionPoint
+                );
+                // Set the initial label location
+                this.tmpVector
+                  .copy(item.SEIntersectionPoint.locationVector)
+                  .add(
+                    new Vector3(
+                      2 * SETTINGS.point.initialLabelOffset,
+                      SETTINGS.point.initialLabelOffset,
+                      0
+                    )
+                  )
+                  .normalize();
+                newSELabel.locationVector = this.tmpVector;
 
-              nSectingLinesCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-              newSELabel.showing = false;
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointCommand(
+                    item.SEIntersectionPoint,
+                    // item.parent1,
+                    // item.parent2,
+                    newSELabel
+                  )
+                );
+                item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+                newSELabel.showing = false;
+              }
             });
         } else {
           console.log("An n-secting line already exists", i);

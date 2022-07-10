@@ -7,10 +7,21 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETransformation } from "@/models/SETransformation";
+import { SETranslation } from "@/models/SETranslation";
+import { SERotation } from "@/models/SERotation";
+import { SEReflection } from "@/models/SEReflection";
+import { SEPointReflection } from "@/models/SEPointReflection";
+import { SEPoint } from "@/models/SEPoint";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEExpression } from "@/models/SEExpression";
+import Nodule from "@/plottables/Nodule";
+
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
@@ -39,6 +50,13 @@ export type ToolButtonType = {
   toolTipMessage: string;
 };
 
+//type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
+
+//type ToString<T extends string | number | boolean | bigint> = `${T}`;
+
+// type IntersectionPointOtherParentNameType<N extends number> =
+//   `intersectionPointOtherParent${N}`;
+
 export type SavedNames =
   | "objectName"
   | "objectExists"
@@ -59,6 +77,7 @@ export type SavedNames =
   | "circleRadius"
   | "circleCenterPointName"
   | "circlePointOnCircleName"
+  | "measuredCircleRadiusExpression"
   | "ellipseFocus1Name"
   | "ellipseFocus2Name"
   | "ellipsePointOnEllipseName"
@@ -69,8 +88,12 @@ export type SavedNames =
   | "segmentArcLength"
   | "segmentStartPointName"
   | "segmentEndPointName"
-  | "intersectionPointParent1Name"
-  | "intersectionPointParent2Name"
+  | "intersectionPointPrincipleParent1Name"
+  | "intersectionPointPrincipleParent2Name"
+  | "intersectionPointOtherParentArrayLength"
+  | "intersectionPointOtherParentArrayNameList"
+  | "intersectionPointName"
+  | "intersectionPointOtherParentName"
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
@@ -150,6 +173,8 @@ export type SavedNames =
   | "polygonSegmentParentsNames"
   | "polygonSegmentFlippedList"
   | "lengthMeasurementSegmentParentName"
+  | "distanceMeasurementParentPoint1Name"
+  | "distanceMeasurementParentPoint2Name"
   | "calculationExpressionString"
   | "calculationParentsNames"
   | "locationMeasurementParentPointName"
@@ -157,7 +182,41 @@ export type SavedNames =
   | "sliderMeasurementMin"
   | "sliderMeasurementMax"
   | "sliderMeasurementStep"
-  | "sliderMeasurementValue";
+  | "sliderMeasurementValue"
+  | "threePointCircleParentPoint1Name"
+  | "threePointCircleParentPoint2Name"
+  | "threePointCircleParentPoint3Name"
+  | "translationSegmentParentName"
+  | "translationDistanceExpressionName"
+  | "rotationPointName"
+  | "rotationAngleExpressionName"
+  | "reflectionLineOrSegmentName"
+  | "pointReflectionPointName"
+  | "inversionCircleName"
+  | "transformedPointParentTransformationName"
+  | "transformedPointParentName"
+  | "isometrySegmentParentIsometryName"
+  | "isometrySegmentParentName"
+  | "isometrySegmentStartSEPointName"
+  | "isometrySegmentEndSEPointName"
+  | "isometryLineParentIsometryName"
+  | "isometryLineParentName"
+  | "isometryLineStartSEPointName"
+  | "isometryLineEndSEPointName"
+  | "isometryCircleParentIsometryName"
+  | "isometryCircleParentName"
+  | "isometryCircleCenterSEPointName"
+  | "isometryCircleCircleSEPointName"
+  | "isometryEllipseParentIsometryName"
+  | "isometryEllipseParentName"
+  | "isometryEllipseFocus1SEPointName"
+  | "isometryEllipseFocus2SEPointName"
+  | "isometryEllipseEllipseSEPointName"
+  | "invertedCircleCenterLineOrCircleParentName"
+  | "invertedCircleCenterParentInversionName"
+  | "changePrincipleParentSEIntersectionPointName"
+  | "changePrincipleParentOldPrincipleName"
+  | "convertToUserCreatedIntersectionPointName;";
 
 export type ActionMode =
   | "angle"
@@ -190,7 +249,15 @@ export type ActionMode =
   | "midpoint"
   | "nSectPoint"
   | "angleBisector"
-  | "nSectLine";
+  | "nSectLine"
+  | "threePointCircle"
+  | "measuredCircle"
+  | "translation"
+  | "rotation"
+  | "reflection"
+  | "pointReflection"
+  | "inversion"
+  | "applyTransformation";
 
 export type IconNames =
   | ActionMode
@@ -213,7 +280,8 @@ export type IconNames =
   | "appSettings"
   | "clearConstruction"
   | "undo"
-  | "redo";
+  | "redo"
+  | "copyToClipboard";
 
 /**
  * Intersection Vector3 and if that intersection exists
@@ -224,12 +292,13 @@ export interface IntersectionReturnType {
 }
 
 /**
- * Intersection Vector3 and if that intersection exists
+ * Intersection and if that intersection exists
  */
 export interface SEIntersectionReturnType {
   SEIntersectionPoint: SEIntersectionPoint;
   parent1: SEOneDimensional;
   parent2: SEOneDimensional;
+  existingIntersectionPoint: boolean; // if this is true then the object that is receiving this SEIntersectionReturnType is a (possibly new) parent of this intersection point
 }
 
 /**
@@ -356,6 +425,13 @@ export type SEOneDimensional =
   | SEEllipse
   | SEParametric;
 
+export type SEMeasurable =
+  | SESegment
+  | SECircle
+  | SEPolygon
+  | SEAngleMarker
+  | SEExpression;
+
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
@@ -383,6 +459,11 @@ export enum LabelDisplayMode {
 }
 
 /*******************************************UPDATE TYPES **********************/
+export type SEIsometry =
+  | SETranslation
+  | SERotation
+  | SEReflection
+  | SEPointReflection;
 
 export type ObjectNames =
   | "angleMarker"
@@ -409,7 +490,19 @@ export type ObjectNames =
   | "segment"
   | "segmentLength"
   | "slider"
-  | "tangentLineThruPoint";
+  | "tangentLineThruPoint"
+  | "threePointCircleCenter"
+  | "translation"
+  | "rotation"
+  | "reflection"
+  | "inversion"
+  | "pointReflection"
+  | "transformedPoint"
+  | "isometrySegment"
+  | "isometryLine"
+  | "isometryCircle"
+  | "isometryEllipse"
+  | "invertedCircleCenter";
 
 export interface ObjectState {
   kind: ObjectNames;

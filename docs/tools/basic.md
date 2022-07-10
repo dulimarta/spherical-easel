@@ -17,7 +17,7 @@ Create a point.
 ::: tool-details
 
 - Mouse press at a location to create a point.
-- When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab) <IconBase  icon-name="objectsTab" />.
+- When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base> <IconBase  icon-name="objectsTab" />.
 - Creating a point in a [Polygon](tools/measurement.html#polygon) <IconBase  icon-name="measurePolygon" /> or [Triangle](/tools/measurement.html#triangle) <IconBase  icon-name="measureTriangle" /> ,means that the point is constrained to be inside the polygon or triangle.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
 
@@ -48,13 +48,13 @@ Create a line.
 - Mouse press to declare one point on the line (this might create a new free point or one that snaps to an existing point, object or intersection),
 - Mouse release to declare a second point on the line (this might create a new free point or one that snaps to an existing point, object or intersection).
 - The two points and a vector normal to the location of both of them (not displayed, but dynamically created as the user drags, for use in the case that the two points are antipodal or almost antipodal) determine a unique line.
-- When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> .
+- When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base> <icon-base  iconName="objectsTab"> </icon-base>.
 - If this tool is activated with two points selected a line is automatically created and, in the case that the points are antipodal, a normal vector equal to the north pole of the displayed sphere.
   :::
 
 ::: tool-title
 
-## Line Segment
+## Line Segment <icon-base notInline iconName="segment"> </icon-base>
 
 :::
 ::: tool-description
@@ -65,7 +65,7 @@ Create a line segment.
 - Mouse press to declare a start point on the line segment (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare an endpoint of the line segment (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags) determine a unique line segment.
 - Pressing the <KeyShortcuts macCtrl pcCtrl  /> key while dragging will force the line segment created to be longer than $\pi$.
-- When a line segment is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
+- When a line segment is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - If this tool is activated with two points selected the above action is performed automatically creating a line segment with length less than $\pi$ and an arbitrary normal vector in the case that the points are antipodal.
 
 ::: tip
@@ -93,7 +93,7 @@ Toggle a line segment.
 
 ::: tool-title
 
-## Circle
+## Circle <icon-base notInline iconName="circle"> </icon-base>
 
 :::
 
@@ -102,7 +102,7 @@ Create a circle.
 ::: tool-details
 
 - Mouse press to declare the center point of the circle (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a point on the circle (this might be new free point or one that snaps to an existing point, object or intersection).
-- When a circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab).
+- When a circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - The first point is the center of the circle and the second point is a point on the circle. These two points determine a unique circle.
 - If this tool is activated with two points selected the above action is performed automatically where the first point is the center and the second is the point on the circle.
 
@@ -123,6 +123,6 @@ Create text.
 - Text can include Measurement Token (which will be replaced with actual value when rendered) and [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX).
 - To edit a text object [select](/tools/edit.html#selection) it and use the Style Panel.
 - Text objects can be moved with the [Move Tool](/tools/display.html#move)/
-- When a text object is created, a row describing some of its properties will appear in the Text Section of the [Objects Tab](/userguide/#objects-tab).
+- When a text object is created, a row describing some of its properties will appear in the Text Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::

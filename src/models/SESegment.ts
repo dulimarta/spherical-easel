@@ -175,18 +175,18 @@ export class SESegment
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
     // gives the direction in which the segment is drawn
-    this.toVector
-      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
-    this.tmpVector
-      .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this._arcLength / 2));
-    this.tmpVector.addScaledVector(
-      this.toVector,
-      Math.sin(this._arcLength / 2)
-    );
-
+    // this.toVector
+    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
+    // // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
+    // this.tmpVector
+    //   .copy(this._startSEPoint.locationVector)
+    //   .multiplyScalar(Math.cos(this._arcLength / 2));
+    // this.tmpVector.addScaledVector(
+    //   this.toVector,
+    //   Math.sin(this._arcLength / 2)
+    // );
+    this.tmpVector.copy(this.getMidPointVector());
     return (
       this.tmpVector.angleTo(unitIdealVector) < this._arcLength / 2
       // +
@@ -216,45 +216,45 @@ export class SESegment
       return true;
     }
 
-    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // this.tmpVector is the midPoint vector
+    // // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    // // this.tmpVector is the midPoint vector
 
-    // I think that this is the David Austin way, but I don't know why it is this way
-    // this.toVector
-    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
-    //   .normalize();
+    // // I think that this is the David Austin way, but I don't know why it is this way
+    // // this.toVector
+    // //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    // //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+    // //   .normalize();
 
-    this.toVector.crossVectors(
-      this._normalVector,
-      this._startSEPoint.locationVector
-    );
+    // this.toVector.crossVectors(
+    //   this._normalVector,
+    //   this._startSEPoint.locationVector
+    // );
 
-    // There are two cases depending on the arcLength
-    // Case 1 ArcLength < PI
-    //  In this case we want dot(toVector, end) > 0
-    // Case 2 ArcLength > PI
-    //  In this case we want dot(toVector, end) < 0
-    // Case 3 Arclength = Pi
+    // // There are two cases depending on the arcLength
+    // // Case 1 ArcLength < PI
+    // //  In this case we want dot(toVector, end) > 0
+    // // Case 2 ArcLength > PI
+    // //  In this case we want dot(toVector, end) < 0
+    // // Case 3 Arclength = Pi
 
-    if (this._arcLength > Math.PI) {
-      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
-        this.toVector.multiplyScalar(-1);
-      }
-    } else if (this._arcLength < Math.PI) {
-      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
-        this.toVector.multiplyScalar(-1);
-      }
-    }
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
-    this.tmpVector
-      .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this._arcLength / 2));
-    this.tmpVector.addScaledVector(
-      this.toVector,
-      Math.sin(this._arcLength / 2)
-    );
-
+    // if (this._arcLength > Math.PI) {
+    //   if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+    //     this.toVector.multiplyScalar(-1);
+    //   }
+    // } else if (this._arcLength < Math.PI) {
+    //   if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+    //     this.toVector.multiplyScalar(-1);
+    //   }
+    // }
+    // // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
+    // this.tmpVector
+    //   .copy(this._startSEPoint.locationVector)
+    //   .multiplyScalar(Math.cos(this._arcLength / 2));
+    // this.tmpVector.addScaledVector(
+    //   this.toVector,
+    //   Math.sin(this._arcLength / 2)
+    // );
+    this.tmpVector.copy(this.getMidPointVector());
     return this.tmpVector.angleTo(unitIdealVector) <= this._arcLength / 2;
   }
 
@@ -657,6 +657,10 @@ export class SESegment
     );
   }
   public isLabelable(): boolean {
+    return true;
+  }
+
+  public isMeasurable(): boolean {
     return true;
   }
 }

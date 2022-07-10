@@ -82,15 +82,19 @@ import ToolGroups from "@/components/ToolGroups.vue";
 
 import SETTINGS from "@/global-settings";
 import { ActionMode } from "@/types";
-import { mapActions } from "pinia";
+import { mapState, mapActions } from "pinia";
 import { useSEStore } from "@/stores/se";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component({
   components: {
     ToolGroups,
-    // Use dynamic import so subcomponents are loaded on deman
+    // Use dynamic import so subcomponents are loaded on demand
     ObjectTree: () => import("@/components/ObjectTree.vue"),
     ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
+  },
+  computed: {
+    ...mapState(useSEStore, ["actionMode"])
   },
   methods: {
     ...mapActions(useSEStore, ["setActionMode"])
@@ -102,6 +106,7 @@ export default class Toolbox extends Vue {
 
   // ('layers')')
   readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
+  readonly actionMode!: ActionMode;
 
   private leftDrawerMinified = false;
   /* Copy global setting to local variable */
@@ -117,11 +122,24 @@ export default class Toolbox extends Vue {
     // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
-      this.setActionMode({
-        id: "move",
-        name: "MoveDisplayedName"
-      });
+      // change to the move mode, but only if we are not using the measured circle tool
+      if (
+        this.actionMode !== "measuredCircle" &&
+        this.actionMode !== "translation" &&
+        this.actionMode !== "rotation"
+      ) {
+        this.setActionMode({
+          id: "move",
+          name: "MoveDisplayedName"
+        });
+      }
     }
+  }
+  setActiveTab(e: { tabNumber: number }): void {
+    this.activeLeftDrawerTab = e.tabNumber;
+  }
+  beforeDestroy(): void {
+    EventBus.unlisten("left-panel-set-active-tab");
   }
 }
 </script>

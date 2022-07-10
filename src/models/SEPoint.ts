@@ -8,7 +8,7 @@ import {
   DEFAULT_POINT_BACK_STYLE,
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
-import { SEOneOrTwoDimensional, Labelable, ObjectState } from "@/types";
+import { Labelable, ObjectState } from "@/types";
 import { SELabel } from "./SELabel";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:

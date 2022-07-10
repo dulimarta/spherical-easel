@@ -5,7 +5,7 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 
-//const emptySet = new Set<string>();
+// const emptySet = new Set<string>();
 export abstract class SEExpression extends SENodule {
   //Controls if the expression should be measured in multiples of pi, decimal degrees or just a number
   protected _valueDisplayMode = ValueDisplayMode.Number;
@@ -27,6 +27,8 @@ export abstract class SEExpression extends SENodule {
 
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
+
+  // this always returns false because visitors do geometric things and most SEExpressions (except SEAngleMarkers and ??) do not have geometric parts
   accept(v: Visitor): boolean {
     return false;
   }
@@ -47,7 +49,7 @@ export abstract class SEExpression extends SENodule {
     }
   }
 
-  //public customStyles = (): Set<string> => emptySet;
+  // public customStyles = (): Set<string> => emptySet;
 
   /**
    * Is the object hit a point at a particular sphere location?
@@ -59,5 +61,8 @@ export abstract class SEExpression extends SENodule {
     currentMagnificationFactor: number
   ): boolean {
     return false;
+  }
+  public isMeasurable(): boolean {
+    return true;
   }
 }
