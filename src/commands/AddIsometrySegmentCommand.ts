@@ -81,7 +81,7 @@ export class AddIsometrySegmentCommand extends Command {
           )
         ),
       "labelVector=" +
-        this.isometrySESegmentLabel.ref._locationVector.toFixed(7),
+        this.isometrySESegmentLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.isometrySESegmentLabel.showing,
       "labelExists=" + this.isometrySESegmentLabel.exists,
       // Object specific attributes

@@ -225,7 +225,9 @@ export class SEIntersectionPoint extends SEPoint {
         principleParentNotBeingRemoved,
         this.otherParentArray[newParentIndex]
       );
-
+      // console.debug(
+      //   `${principleParentNotBeingRemoved.name} and ${this.otherParentArray[newParentIndex].name} number of common nodules ${commonSENodules.length}, do the potential new principle intersect correctly? ${potentialNewOrder} should not be -1`
+      // );
       while (commonSENodules.length > 0 || potentialNewOrder === -1) {
         //we want there to be no common seNodules
         newParentIndex += 1;
@@ -339,8 +341,25 @@ export class SEIntersectionPoint extends SEPoint {
     }
     let returnIndex = -1;
     updatedIntersectionInfo.forEach((element, index) => {
+      // console.debug(
+      //   `Index ${index}, intersection points ${element.vector.toFixed(
+      //     9
+      //   )} and goal ${this.locationVector.toFixed(
+      //     9
+      //   )} They are the same? ${this.tempVector
+      //     .subVectors(element.vector, this.locationVector)
+      //     .isZero(0.00000001)} x diff: ${
+      //     Math.abs(element.vector.x - this.locationVector.x) < 0.00000001
+      //   }, y diff: ${
+      //     Math.abs(element.vector.y - this.locationVector.y) < 0.00000001
+      //   }, z diff: ${
+      //     Math.abs(element.vector.z - this.locationVector.z) < 0.00000001
+      //   }`
+      // );
       if (
-        this.tempVector.subVectors(element.vector, this.locationVector).isZero()
+        this.tempVector
+          .subVectors(element.vector, this.locationVector)
+          .isZero(SETTINGS.intersectionTolerance) // If this is SETTING.tolerance then when loading an intersection point sometimes it says the intersection is not on the list
       ) {
         returnIndex = index;
       }
@@ -378,7 +397,9 @@ export class SEIntersectionPoint extends SEPoint {
     let updateOrderSuccessful = false;
     updatedIntersectionInfo.forEach((element, index) => {
       if (
-        this.tempVector.subVectors(element.vector, this.locationVector).isZero()
+        this.tempVector
+          .subVectors(element.vector, this.locationVector)
+          .isZero(SETTINGS.intersectionTolerance)
       ) {
         updateOrderSuccessful = true;
         this.order = index;

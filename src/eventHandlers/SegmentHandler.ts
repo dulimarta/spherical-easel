@@ -874,8 +874,8 @@ export default class SegmentHandler extends Highlighter {
           segmentGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -1053,8 +1053,8 @@ export default class SegmentHandler extends Highlighter {
               segmentCommandGroup.addCommand(
                 new AddIntersectionPointCommand(
                   item.SEIntersectionPoint,
-                  // item.parent1,
-                  // item.parent2,
+                  item.parent1,
+                  item.parent2,
                   newSELabel
                 )
               );

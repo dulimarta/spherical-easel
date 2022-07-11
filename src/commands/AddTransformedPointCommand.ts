@@ -86,7 +86,7 @@ export class AddTransformedPointCommand extends Command {
           )
         ),
       "labelVector=" +
-        this.transformedSEPointLabel.ref._locationVector.toFixed(7),
+        this.transformedSEPointLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.transformedSEPointLabel.showing,
       "labelExists=" + this.transformedSEPointLabel.exists,
       // Object specific attributes

@@ -199,6 +199,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (ToggleLabelDisplayHandler.store.selectedSENodules.length !== 0) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
       ToggleLabelDisplayHandler.store.selectedSENodules
+        .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
             !(object instanceof SEIntersectionPoint) ||

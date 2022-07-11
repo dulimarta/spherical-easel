@@ -26,7 +26,8 @@ export class SelectionRectangle extends Group {
     this.path.linewidth = 1;
     this.path.dashes.push(...[1, 5]);
     this.path.addTo(this);
-    this.addTo(this.layer);
+    // this.addTo(this.layer);
+    // this.hide();
   }
 
   /**

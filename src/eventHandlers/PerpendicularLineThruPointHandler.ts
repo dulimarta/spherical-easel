@@ -801,8 +801,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
             const addIntersectionCmd = new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             );
 

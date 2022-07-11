@@ -821,8 +821,8 @@ export default class LineHandler extends Highlighter {
           lineGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -924,8 +924,8 @@ export default class LineHandler extends Highlighter {
               lineCommandGroup.addCommand(
                 new AddIntersectionPointCommand(
                   item.SEIntersectionPoint,
-                  // item.parent1,
-                  // item.parent2,
+                  item.parent1,
+                  item.parent2,
                   newSELabel
                 )
               );

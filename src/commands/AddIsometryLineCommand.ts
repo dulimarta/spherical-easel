@@ -79,7 +79,7 @@ export class AddIsometryLineCommand extends Command {
             )
           )
         ),
-      "labelVector=" + this.isometrySELineLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.isometrySELineLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.isometrySELineLabel.showing,
       "labelExists=" + this.isometrySELineLabel.exists,
       // Object specific attributes

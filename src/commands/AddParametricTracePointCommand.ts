@@ -55,7 +55,7 @@ export class AddParametricTracePointCommand extends Command {
   //     "AddParametricTracePoint",
 
   //     /* arg-2 */ this.seTracePoint.name,
-  //     /* arg-3 */ this.seTracePoint.locationVector.toFixed(7),
+  //     /* arg-3 */ this.seTracePoint.locationVector.toFixed(9),
   //     /* arg-4 */ this.seTracePoint.showing,
   //     /* arg-5 */ this.seTracePoint.exists,
 
@@ -77,7 +77,7 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTracePointName=" +
         Command.symbolToASCIIDec(this.seTracePoint.name),
       "parametricEndPointseTracePointLocationVector=" +
-        this.seTracePoint.locationVector.toFixed(7),
+        this.seTracePoint.locationVector.toFixed(9),
       "parametricEndPointseTracePointShowing=" + this.seTracePoint.showing,
       "parametricEndPointseTracePointExists=" + this.seTracePoint.exists,
       "parametricEndPointseTracePointFrontStyle=" +
@@ -97,7 +97,7 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTraceLabelName=" +
         Command.symbolToASCIIDec(this.seTraceLabel.name),
       "parametricEndPointseTraceLabelLocationVector=" +
-        this.seTraceLabel.locationVector.toFixed(7),
+        this.seTraceLabel.locationVector.toFixed(9),
       "parametricEndPointseTraceLabelShowing=" + this.seTraceLabel.showing,
       "parametricEndPointseTraceLabelExists=" + this.seTraceLabel.exists,
       "parametricEndPointseTraceLabelLabelStyle=" +

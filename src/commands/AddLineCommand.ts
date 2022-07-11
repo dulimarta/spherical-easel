@@ -75,11 +75,11 @@ export class AddLineCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "lineNormalVector=" + this.seLine.normalVector.toFixed(7),
+      "lineNormalVector=" + this.seLine.normalVector.toFixed(9),
       "lineStartPointName=" + this.startSEPoint.name,
       "lineEndPointName=" + this.endSEPoint.name
     ].join("&");

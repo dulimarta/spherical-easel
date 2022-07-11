@@ -80,7 +80,7 @@ export class AddIsometryEllipseCommand extends Command {
           )
         ),
       "labelVector=" +
-        this.isometrySEEllipseLabel.ref._locationVector.toFixed(7),
+        this.isometrySEEllipseLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.isometrySEEllipseLabel.showing,
       "labelExists=" + this.isometrySEEllipseLabel.exists,
       // Object specific attributes

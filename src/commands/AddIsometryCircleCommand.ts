@@ -81,7 +81,7 @@ export class AddIsometryCircleCommand extends Command {
           )
         ),
       "labelVector=" +
-        this.isometrySECircleLabel.ref._locationVector.toFixed(7),
+        this.isometrySECircleLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.isometrySECircleLabel.showing,
       "labelExists=" + this.isometrySECircleLabel.exists,
       // Object specific attributes

@@ -93,17 +93,17 @@ export class AddParametricEndPointsCommand extends Command {
   //     /* arg-1 */ this.parametricParent.name,
 
   //     /* arg-2 */ this.seStartEndPoint.name,
-  //     /* arg-3 */ this.seStartEndPoint.locationVector.toFixed(7),
+  //     /* arg-3 */ this.seStartEndPoint.locationVector.toFixed(9),
   //     /* arg-4 */ this.seStartEndPoint.showing,
   //     /* arg-5 */ this.seStartEndPoint.exists,
 
   //     /* arg-6 */ this.seEndEndPoint.name,
-  //     /* arg-7 */ this.seEndEndPoint.locationVector.toFixed(7),
+  //     /* arg-7 */ this.seEndEndPoint.locationVector.toFixed(9),
   //     /* arg-8 */ this.seEndEndPoint.showing,
   //     /* arg-9 */ this.seEndEndPoint.exists,
 
   //     /* arg-10 */ this.seTracePoint.name,
-  //     /* arg-11 */ this.seTracePoint.locationVector.toFixed(7),
+  //     /* arg-11 */ this.seTracePoint.locationVector.toFixed(9),
   //     /* arg-12 */ this.seTracePoint.showing,
   //     /* arg-13 */ this.seTracePoint.exists,
 
@@ -136,7 +136,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartEndPointName=" +
         Command.symbolToASCIIDec(this.seStartEndPoint.name),
       "parametricEndPointseStartEndPointLocationVector=" +
-        this.seStartEndPoint.locationVector.toFixed(7),
+        this.seStartEndPoint.locationVector.toFixed(9),
       "parametricEndPointseStartEndPointShowing=" +
         this.seStartEndPoint.showing,
       "parametricEndPointseStartEndPointExists=" + this.seStartEndPoint.exists,
@@ -157,7 +157,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndEndPointName=" +
         Command.symbolToASCIIDec(this.seEndEndPoint.name),
       "parametricEndPointseEndEndPointLocationVector=" +
-        this.seEndEndPoint.locationVector.toFixed(7),
+        this.seEndEndPoint.locationVector.toFixed(9),
       "parametricEndPointseEndEndPointShowing=" + this.seEndEndPoint.showing,
       "parametricEndPointseEndEndPointExists=" + this.seEndEndPoint.exists,
       "parametricEndPointseEndEndPointFrontStyle=" +
@@ -177,7 +177,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTracePointName=" +
         Command.symbolToASCIIDec(this.seTracePoint.name),
       "parametricEndPointseTracePointLocationVector=" +
-        this.seTracePoint.locationVector.toFixed(7),
+        this.seTracePoint.locationVector.toFixed(9),
       "parametricEndPointseTracePointShowing=" + this.seTracePoint.showing,
       "parametricEndPointseTracePointExists=" + this.seTracePoint.exists,
       "parametricEndPointseTracePointFrontStyle=" +
@@ -197,7 +197,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartLabelName=" +
         Command.symbolToASCIIDec(this.seStartLabel.name),
       "parametricEndPointseStartLabelLocationVector=" +
-        this.seStartLabel.locationVector.toFixed(7),
+        this.seStartLabel.locationVector.toFixed(9),
       "parametricEndPointseStartLabelShowing=" + this.seStartLabel.showing,
       "parametricEndPointseStartLabelExists=" + this.seStartLabel.exists,
       "parametricEndPointseStartLabelLabelStyle=" +
@@ -211,7 +211,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndLabelName=" +
         Command.symbolToASCIIDec(this.seEndLabel.name),
       "parametricEndPointseEndLabelLocationVector=" +
-        this.seEndLabel.locationVector.toFixed(7),
+        this.seEndLabel.locationVector.toFixed(9),
       "parametricEndPointseEndLabelShowing=" + this.seEndLabel.showing,
       "parametricEndPointseEndLabelExists=" + this.seEndLabel.exists,
       "parametricEndPointseEndLabelLabelStyle=" +
@@ -225,7 +225,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTraceLabelName=" +
         Command.symbolToASCIIDec(this.seTraceLabel.name),
       "parametricEndPointseTraceLabelLocationVector=" +
-        this.seTraceLabel.locationVector.toFixed(7),
+        this.seTraceLabel.locationVector.toFixed(9),
       "parametricEndPointseTraceLabelShowing=" + this.seTraceLabel.showing,
       "parametricEndPointseTraceLabelExists=" + this.seTraceLabel.exists,
       "parametricEndPointseTraceLabelLabelStyle=" +

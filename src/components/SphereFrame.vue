@@ -72,11 +72,12 @@ import i18n from "@/i18n";
       "actionMode",
       "zoomMagnificationFactor",
       "zoomTranslation",
-      "seLabels"
+      "seLabels",
       "layers"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
+
   methods: {
     ...mapActions(useSEStore, [
       "init",
@@ -85,6 +86,7 @@ import i18n from "@/i18n";
       "rotateSphere",
       // "setSphereRadius",
       "setCanvasWidth",
+      "setActionMode",
       "revertActionMode",
       "setZoomMagnificationFactor"
     ])
@@ -108,6 +110,7 @@ export default class SphereFrame extends VueComponent {
   readonly rotateSphere!: (_: Matrix4) => void;
   readonly revertActionMode!: () => void;
   readonly getZoomMagnificationFactor!: () => number;
+  readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -665,6 +668,20 @@ export default class SphereFrame extends VueComponent {
   setTransformationForTool(e: { transformation: SETransformation }): void {
     if (this.currentTool instanceof ApplyTransformationHandler) {
       this.currentTool.setTransformation(e.transformation);
+    } else {
+      // console.debug(`The current action mode ${this.actionMode}`);
+      this.setActionMode({
+        id: "applyTransformation",
+        name: "ApplyTransformationDisplayedName"
+      });
+      // console.debug(`The current action mode ${this.actionMode}`);
+      // this.currentTool?.deactivate();
+      if (!this.applyTransformationTool) {
+        this.applyTransformationTool = new ApplyTransformationHandler(
+          this.layers
+        );
+      }
+      this.applyTransformationTool.setTransformation(e.transformation);
     }
   }
 

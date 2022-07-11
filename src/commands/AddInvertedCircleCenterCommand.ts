@@ -89,7 +89,7 @@ export class AddInvertedCircleCenterCommand extends Command {
           )
         ),
       "labelVector=" +
-        this.invertedSECircleCenterLabel.ref._locationVector.toFixed(7),
+        this.invertedSECircleCenterLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.invertedSECircleCenterLabel.showing,
       "labelExists=" + this.invertedSECircleCenterLabel.exists,
       // Object specific attributes

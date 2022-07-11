@@ -53,7 +53,7 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]
     );
-    this.selectionRectangle.hide();
+    // this.selectionRectangle.hide();
   }
   /**
    * This handles the keyboard events and when multiple objects are under

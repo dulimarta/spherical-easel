@@ -9,38 +9,33 @@ import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
-  // Don't record the principle parents in this ways because they may change when new intersection parents are created
-  // private principleParent1: SEOneDimensional;
-  // private principleParent2: SEOneDimensional;
+  private principleParent1: SEOneDimensional;
+  private principleParent2: SEOneDimensional;
   private seLabel: SELabel;
 
   constructor(
     seIntersectionPoint: SEIntersectionPoint,
-    // parent1: SEOneDimensional,
-    // parent2: SEOneDimensional,
+    parent1: SEOneDimensional,
+    parent2: SEOneDimensional,
     seLabel: SELabel
   ) {
     super();
     this.seIntersectionPoint = seIntersectionPoint;
-    // this.principleParent1 = parent1;
-    // this.principleParent2 = parent2;
+    this.principleParent1 = parent1;
+    this.principleParent2 = parent2;
     this.seLabel = seLabel;
   }
 
   do(): void {
     console.debug(
       `Add intersection point ${this.seIntersectionPoint.name} with parents ${
-        this.seIntersectionPoint.principleParent1.name
+        this.principleParent1.name
       } and ${
-        this.seIntersectionPoint.principleParent2.name
+        this.principleParent2.name
       } at ${this.seIntersectionPoint.locationVector.toFixed(2)}`
     );
-    this.seIntersectionPoint.principleParent1.registerChild(
-      this.seIntersectionPoint
-    );
-    this.seIntersectionPoint.principleParent2.registerChild(
-      this.seIntersectionPoint
-    );
+    this.principleParent1.registerChild(this.seIntersectionPoint);
+    this.principleParent2.registerChild(this.seIntersectionPoint);
     this.seIntersectionPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seIntersectionPoint);
     Command.store.addLabel(this.seLabel);
@@ -54,12 +49,8 @@ export class AddIntersectionPointCommand extends Command {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.seIntersectionPoint.unregisterChild(this.seLabel);
-    this.seIntersectionPoint.principleParent1.unregisterChild(
-      this.seIntersectionPoint
-    );
-    this.seIntersectionPoint.principleParent2.unregisterChild(
-      this.seIntersectionPoint
-    );
+    this.principleParent1.unregisterChild(this.seIntersectionPoint);
+    this.principleParent2.unregisterChild(this.seIntersectionPoint);
   }
 
   toOpcode(): null | string | Array<string> {
@@ -72,7 +63,9 @@ export class AddIntersectionPointCommand extends Command {
     // });
     // intersectionPointParentArrayNameList =
     //   intersectionPointParentArrayNameList.slice(0, -1);
-
+    console.debug(
+      `Intersection point ${this.seIntersectionPoint.name}, principle parent1 ${this.principleParent1.name}, principle parent 2 ${this.principleParent2.name}`
+    );
     return [
       "AddIntersectionPoint",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
@@ -102,18 +95,16 @@ export class AddIntersectionPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "intersectionPointPrincipleParent1Name=" +
-        this.seIntersectionPoint.principleParent1.name,
-      "intersectionPointPrincipleParent2Name=" +
-        this.seIntersectionPoint.principleParent2.name,
+      "intersectionPointPrincipleParent1Name=" + this.principleParent1.name,
+      "intersectionPointPrincipleParent2Name=" + this.principleParent2.name,
       "intersectionPointUserCreated=" + this.seIntersectionPoint.isUserCreated,
       "intersectionPointOrder=" + this.seIntersectionPoint.intersectionOrder,
       "intersectionPointVector=" +
-        this.seIntersectionPoint.locationVector.toFixed(7)
+        this.seIntersectionPoint.locationVector.toFixed(9)
       // "intersectionPointOtherParentArrayLength=" +
       //   this.seIntersectionPoint.otherParentArray.length,
       // "intersectionPointOtherParentArrayNameList=" +
@@ -178,15 +169,7 @@ export class AddIntersectionPointCommand extends Command {
       principleParent2 &&
       principleParent1 &&
       positionVector.z !== 1 &&
-      !isNaN(intersectionOrder) // &&
-      // !isNaN(otherParentArrayLength) &&
-      // !otherParents.some(parent => {
-      //   if (parent === undefined) {
-      //     return true;
-      //   } else {
-      //     return false;
-      //   }
-      // })
+      !isNaN(intersectionOrder)
     ) {
       //make the intersection point
       const nonFreePoint = new NonFreePoint();
@@ -252,13 +235,13 @@ export class AddIntersectionPointCommand extends Command {
       // });
       return new AddIntersectionPointCommand(
         seIntersectionPoint,
-        // principleParent1,
-        // principleParent2,
+        principleParent1,
+        principleParent2,
         seLabel
       );
     }
     throw new Error(
-      `AddIntersectionPointCommand: ${principleParent2?.name}, ${principleParent1?.name}, ${positionVector.toFixed}, ${intersectionOrder}, or some element of the other parent array is undefined`
+      `AddIntersectionPointCommand: HERE ${principleParent1?.name}, ${principleParent2?.name},  ${positionVector}, ${intersectionOrder}, or some element of the other parent array is undefined`
     );
   }
 }

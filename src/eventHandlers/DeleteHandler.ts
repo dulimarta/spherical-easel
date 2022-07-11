@@ -1,7 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import { IntersectionReturnType, ObjectState } from "@/types";
+import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -157,6 +157,7 @@ export default class DeleteHandler extends Highlighter {
       // also delete object2, so that you should not also try to delete object again.
       const deletedObjectIDs: number[] = [];
       DeleteHandler.store.selectedSENodules
+        .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
             !(object instanceof SEIntersectionPoint) ||

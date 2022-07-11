@@ -37,7 +37,7 @@ export class AddInversionCommand extends Command {
       // "objectShowing=" + this.seTranslation.showing, // this object is always showing so showing has no effect
 
       // Object specific attributes
-      "inverstionCircleName=" + Command.symbolToASCIIDec(this.seCircle.name)
+      "inversionCircleName=" + Command.symbolToASCIIDec(this.seCircle.name)
     ].join("&");
   }
 

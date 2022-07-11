@@ -170,6 +170,7 @@ export default class HideObjectHandler extends Highlighter {
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
     HideObjectHandler.store.selectedSENodules
+      .map(x => x as SENodule)
       .filter(
         // remove the intersection points that are not user created
         (object: SENodule) =>

@@ -170,6 +170,7 @@ export default class PointCoordinateHandler extends Highlighter {
     ) {
       const coordinatizeCommandGroup = new CommandGroup();
       PointCoordinateHandler.store.selectedSENodules
+        .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
             object instanceof SEPoint &&

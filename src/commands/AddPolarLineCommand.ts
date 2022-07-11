@@ -47,9 +47,9 @@ export class AddPolarLineCommand extends Command {
   // toOpcode(): null | string | Array<string> {
   //   return [
   //     /* arg-2 */ this.sePolarLine.startSEPoint.name,
-  //     /* arg-3 */ this.sePolarLine.startSEPoint.locationVector.toFixed(7),
+  //     /* arg-3 */ this.sePolarLine.startSEPoint.locationVector.toFixed(9),
   //     /* arg-4 */ this.sePolarLine.endSEPoint.name,
-  //     /* arg-5 */ this.sePolarLine.endSEPoint.locationVector.toFixed(7),
+  //     /* arg-5 */ this.sePolarLine.endSEPoint.locationVector.toFixed(9),
 
   //     /* arg-9 */ this.parentSEPoint.name
   //   ].join("/");
@@ -82,15 +82,15 @@ export class AddPolarLineCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "polarLineParentPointName=" + this.parentSEPoint.name,
       "polarLineStartSEPointLocationVector=" +
-        this.sePolarLine.startSEPoint.locationVector.toFixed(7),
+        this.sePolarLine.startSEPoint.locationVector.toFixed(9),
       "polarLineEndSEPointLocationVector=" +
-        this.sePolarLine.endSEPoint.locationVector.toFixed(7)
+        this.sePolarLine.endSEPoint.locationVector.toFixed(9)
     ].join("&");
   }
 

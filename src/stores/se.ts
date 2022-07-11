@@ -57,7 +57,6 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
-const selectedSENodules: Array<SENodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 
@@ -85,6 +84,7 @@ type PiniaAppState = {
   seParametrics: SEParametric[];
   expressions: SEExpression[];
   seTransformations: SETransformation[];
+  selectedSENodules: SENodule[];
 };
 
 export const useSEStore = defineStore({
@@ -96,7 +96,7 @@ export const useSEStore = defineStore({
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
-    zoomMagnificationFactor: 0.9, // the initial zoom factor
+    zoomMagnificationFactor: 1, // the initial zoom factor
     zoomTranslation: [0, 0],
     canvasWidth: 0,
     seNodules: [],
@@ -113,7 +113,8 @@ export const useSEStore = defineStore({
     seTransformations: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
-    inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    selectedSENodules: []
   }),
   actions: {
     init(): void {
@@ -136,7 +137,7 @@ export const useSEStore = defineStore({
       this.expressions.splice(0);
       temporaryNodules.splice(0);
       sePencils.splice(0);
-      selectedSENodules.splice(0);
+      this.selectedSENodules.splice(0);
       // intersections.splice(0);
       // initialStyleStates.splice(0);
       // defaultStyleStates.splice(0);
@@ -614,16 +615,21 @@ export const useSEStore = defineStore({
         }
         return false;
       }
-      if (diffArray(selectedSENodules, payload)) {
+      if (
+        diffArray(
+          this.selectedSENodules.map(x => x as SENodule),
+          payload
+        )
+      ) {
         console.debug("Selected nodules differ");
         //reset the glowing color to usual
-        selectedSENodules.forEach(n => {
+        this.selectedSENodules.forEach(n => {
           n.ref?.setSelectedColoring(false);
         });
-        selectedSENodules.splice(0);
-        selectedSENodules.push(...payload);
+        this.selectedSENodules.splice(0);
+        this.selectedSENodules.push(...payload);
         //set the glowing color to selected
-        selectedSENodules.forEach(n => {
+        this.selectedSENodules.forEach(n => {
           n.ref?.setSelectedColoring(true);
         });
       }
@@ -666,9 +672,10 @@ export const useSEStore = defineStore({
   getters: {
     //getZoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
-    selectedSENodules: (): Array<SENodule> => selectedSENodules,
+    // selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
+    layers: (): Group[] => layers,
     initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       initialStyleStatesMap,
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>

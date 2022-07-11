@@ -812,8 +812,8 @@ export default class ParametricForm extends Vue {
           parametricCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -840,8 +840,8 @@ export default class ParametricForm extends Vue {
         // parametricCommandGroup.addCommand(
         //   new AddIntersectionPointCommand(
         //     item.SEIntersectionPoint,
-        //     // item.parent1,
-        //     // item.parent2,
+        //     item.parent1,
+        //     item.parent2,
         //     newSELabel
         //   )
         // );

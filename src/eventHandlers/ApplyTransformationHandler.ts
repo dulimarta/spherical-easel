@@ -1731,8 +1731,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -1863,8 +1863,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -1998,8 +1998,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -2152,8 +2152,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );
@@ -2427,8 +2427,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
               item.SEIntersectionPoint,
-              // item.parent1,
-              // item.parent2,
+              item.parent1,
+              item.parent2,
               newSELabel
             )
           );

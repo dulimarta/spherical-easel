@@ -114,6 +114,10 @@ export default class Toolbox extends Vue {
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = 0;
 
+  created(): void {
+    EventBus.listen("left-panel-set-active-tab", this.setActiveTab);
+  }
+
   mounted(): void {
     // this.scene = this.layers[LAYER.midground];
   }

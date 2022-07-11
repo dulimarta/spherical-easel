@@ -80,14 +80,14 @@ export class AddNSectLineCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "seNSectLineStartSEPointName=" + this.seNSectLine.startSEPoint.name,
       "seNSectLineEndSEPointLocationVector=" +
-        this.seNSectLine.endSEPoint.locationVector.toFixed(7),
-      "seNSectLineNormalVector=" + this.seNSectLine.normalVector.toFixed(7),
+        this.seNSectLine.endSEPoint.locationVector.toFixed(9),
+      "seNSectLineNormalVector=" + this.seNSectLine.normalVector.toFixed(9),
       "seNSectLineParentAngleName=" + this.parentAngle.name,
       "seNSectLineIndex=" + this.seNSectLine.index,
       "seNSectLineN=" + this.seNSectLine.N

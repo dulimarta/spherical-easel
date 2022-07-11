@@ -208,7 +208,7 @@ export default class Style extends Vue {
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selectedSENodules")
   private updateSelectedItemArray(): void {
-    // console.log("Style update selected item array: onSelectionChanged");
+    console.log("Style update selected item array: onSelectionChanged");
 
     const tempArray: string[] = [];
     const alreadyCounted: boolean[] = []; // records if the tempArray item has already been counted (helps avoid one tempArray item being counted multiple times -- make sure the order of the search dicated by firstPartialList is correct)

@@ -700,8 +700,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
             addTangentLineGroup.addCommand(
               new AddIntersectionPointCommand(
                 item.SEIntersectionPoint,
-                // item.parent1,
-                // item.parent2,
+                item.parent1,
+                item.parent2,
                 newSELabel
               )
             );
