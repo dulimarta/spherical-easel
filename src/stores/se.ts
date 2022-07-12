@@ -1,5 +1,5 @@
 import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
-import { ActionMode, PiniaAppState, SEIntersectionReturnType } from "@/types";
+import { ActionMode, SEIntersectionReturnType } from "@/types";
 import { Matrix4, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
@@ -44,7 +44,21 @@ import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
 
-const sePoints: Array<SEPoint> = [];
+export type PiniaAppState = {
+  actionMode: ActionMode;
+  previousActionMode: ActionMode;
+  activeToolName: string;
+  previousActiveToolName: string;
+  zoomMagnificationFactor: number;
+  zoomTranslation: number[];
+  hasUnsavedNodules: boolean;
+  svgCanvas: HTMLDivElement | null;
+  canvasWidth: number;
+  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  styleSavedFromPanel: StyleEditPanels;
+  sePoints: Array<SEPoint>;
+};
+
 const seNodules: Array<SENodule> = [];
 const oldSelections: Array<SENodule> = [];
 const seLines: Array<SELine> = [];
@@ -78,7 +92,7 @@ export const useSEStore = defineStore({
     zoomMagnificationFactor: 1,
     zoomTranslation: [0, 0],
     canvasWidth: 0,
-    // sePoints: [],
+    sePoints: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -91,7 +105,7 @@ export const useSEStore = defineStore({
       // Replace clear() with splice(0). Since clear() is an extension function
       // Update to these arrays are not automatically picked up by VueJS
       seNodules.splice(0);
-      sePoints.splice(0);
+      this.sePoints.splice(0);
       seLines.splice(0);
       seSegments.splice(0);
       seCircles.splice(0);
@@ -149,7 +163,7 @@ export const useSEStore = defineStore({
       seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
       seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
       seLines.forEach((x: SELine) => x.ref.removeFromLayers());
-      sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
+      this.sePoints.forEach(x => x.ref.removeFromLayers());
       seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
       sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
       seParametrics.forEach((x: SEParametric) => {
@@ -192,18 +206,20 @@ export const useSEStore = defineStore({
     },
     //#region addPoint
     addPoint(point: SEPoint): void {
-      sePoints.push(point);
+      this.sePoints.push(point);
       seNodules.push(point);
       point.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     //#endregion addPoint
     removePoint(pointId: number): void {
-      const pos = sePoints.findIndex((x: SEPoint) => x.id === pointId);
+      const pos = this.sePoints
+        .map(x => x as SEPoint)
+        .findIndex((x: SEPoint) => x.id === pointId);
       const pos2 = seNodules.findIndex((x: SENodule) => x.id === pointId);
       if (pos >= 0) {
-        const victimPoint = sePoints[pos];
-        sePoints.splice(pos, 1);
+        const victimPoint = this.sePoints[pos];
+        this.sePoints.splice(pos, 1);
         seNodules.splice(pos2, 1);
         // Remove the associated plottable (Nodule) object from being rendered
         victimPoint.ref.removeFromLayers();
@@ -423,7 +439,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat);
-      inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
+      inverseTotalRotationMatrix.multiply(tmpMatrix.copy(tmpMatrix).invert());
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
@@ -585,7 +601,7 @@ export const useSEStore = defineStore({
     // zoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
     seNodules: (): Array<SENodule> => seNodules,
-    sePoints: (): Array<SEPoint> => sePoints,
+    // sePoints: (): Array<SEPoint> => sePoints,
     seLines: (): Array<SELine> => seLines,
     seCircles: (): Array<SECircle> => seCircles,
     seSegments: (): Array<SESegment> => seSegments,
@@ -603,17 +619,19 @@ export const useSEStore = defineStore({
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
     layers: (): Array<Group> => layers,
-    hasObjects(): boolean {
-      return sePoints.length > 0;
+    hasObjects(state): boolean {
+      return state.sePoints.length > 0;
     },
-    hasNoAntipode: (): ((_: SEPoint) => boolean) => {
+    hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
       return (testPoint: SEPoint): boolean => {
         // create the antipode location vector
         tmpVector.copy(testPoint.locationVector).multiplyScalar(-1);
         // search for the antipode location vector
-        const ind = sePoints.findIndex(p => {
-          return tmpVector.equals(p.locationVector);
-        });
+        const ind = state.sePoints
+          .map(p => p as SEPoint)
+          .findIndex((p: SEPoint) => {
+            return tmpVector.equals(p.locationVector);
+          });
         if (ind < 0) {
           // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return true)
           return true;
@@ -626,21 +644,23 @@ export const useSEStore = defineStore({
 
           // In the case that (2) happens it is possible that there are two points in the array sePoint with *exactly* the
           // same location vector at -1*A, if that happens then the antipode is already created and we should return false (not no antipode = antipode exists)
-          const ind2 = sePoints.findIndex((p, index) => {
-            if (index <= ind) {
-              // ignore the entries in sePoint upto index ind, because they have already been searched
-              return false;
-            } else {
-              return tmpVector.equals(p.locationVector);
-            }
-          });
+          const ind2 = state.sePoints
+            .map(p => p as SEPoint)
+            .findIndex((p: SEPoint, index: number) => {
+              if (index <= ind) {
+                // ignore the entries in sePoint upto index ind, because they have already been searched
+                return false;
+              } else {
+                return tmpVector.equals(p.locationVector);
+              }
+            });
           // the -1*testPoint.location appears twice!
           if (ind2 >= 0) {
             return false;
           }
 
-          if (sePoints[ind] instanceof SEIntersectionPoint) {
-            if (!(sePoints[ind] as SEIntersectionPoint).isUserCreated) {
+          if (state.sePoints[ind] instanceof SEIntersectionPoint) {
+            if (!(state.sePoints[ind] as SEIntersectionPoint).isUserCreated) {
               return true; // Case (2)
             } else {
               return false; // Case (1)
@@ -668,24 +688,24 @@ export const useSEStore = defineStore({
      * If one parent name is given, this returns a list of all intersection points that have a parent with that name.
      * If two parent names are given, this returns a list of all intersection points that a parent with the first name and a parent with the second name
      */
-    findIntersectionPointsByParent(): (
-      parent1Name: string,
-      parent2Name?: string
-    ) => SEIntersectionPoint[] {
+    findIntersectionPointsByParent(
+      state
+    ): (parent1Name: string, parent2Name?: string) => SEIntersectionPoint[] {
       return (
         parent1Name: string,
         parent2Name?: string
       ): SEIntersectionPoint[] => {
-        const intersectionPoints = sePoints
+        const intersectionPoints = state.sePoints
+          .map(p => p as SEPoint)
           .filter(
-            p =>
+            (p: SEPoint) =>
               p instanceof SEIntersectionPoint &&
               p.parents.some(seNodule => seNodule.name === parent1Name)
           )
-          .map(obj => obj as SEIntersectionPoint);
+          .map((obj: SEPoint) => obj as SEIntersectionPoint);
 
         if (parent2Name) {
-          return intersectionPoints.filter(p =>
+          return intersectionPoints.filter((p: SEPoint) =>
             p.parents.some(seNodule => seNodule.name === parent2Name)
           );
         } else {
@@ -705,9 +725,9 @@ export const useSEStore = defineStore({
      * If they have the same type put them in alphabetical order.
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
-    createAllIntersectionsWithLine(): (
-      _: SELine
-    ) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithLine(
+      state
+    ): (_: SELine) => SEIntersectionReturnType[] {
       return (newLine: SELine): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -728,11 +748,13 @@ export const useSEStore = defineStore({
         ) {
           avoidVectors.push(newLine.endSEPoint.locationVector);
         }
-        sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
-          }
-        });
+        state.sePoints
+          .map(p => p as SEPoint)
+          .forEach((pt: SEPoint) => {
+            if (!pt.locationVector.isZero()) {
+              avoidVectors.push(pt.locationVector);
+            }
+          });
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new line with all old lines
@@ -868,7 +890,7 @@ export const useSEStore = defineStore({
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithSegment() {
+    createAllIntersectionsWithSegment(state) {
       return (newSegment: SESegment): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -876,11 +898,13 @@ export const useSEStore = defineStore({
         //  they won't have been added to the state.points array yet so add them first
         avoidVectors.push(newSegment.startSEPoint.locationVector);
         avoidVectors.push(newSegment.endSEPoint.locationVector);
-        sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
-          }
-        });
+        state.sePoints
+          .map(p => p as SEPoint)
+          .forEach((pt: SEPoint) => {
+            if (!pt.locationVector.isZero()) {
+              avoidVectors.push(pt.locationVector);
+            }
+          });
 
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -1055,9 +1079,9 @@ export const useSEStore = defineStore({
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithCircle(): (
-      _: SECircle
-    ) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithCircle(
+      state
+    ): (_: SECircle) => SEIntersectionReturnType[] {
       return (newCircle: SECircle): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1065,11 +1089,13 @@ export const useSEStore = defineStore({
         //  they won't have been added to the state.points array yet so add them first
         avoidVectors.push(newCircle.centerSEPoint.locationVector);
         avoidVectors.push(newCircle.circleSEPoint.locationVector);
-        sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
-          }
-        });
+        state.sePoints
+          .map(p => p as SEPoint)
+          .forEach((pt: SEPoint) => {
+            if (!pt.locationVector.isZero()) {
+              avoidVectors.push(pt.locationVector);
+            }
+          });
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new circle with all old lines
@@ -1245,9 +1271,9 @@ export const useSEStore = defineStore({
         return intersectionPointList;
       };
     },
-    createAllIntersectionsWithEllipse(): (
-      _: SEEllipse
-    ) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithEllipse(
+      state
+    ): (_: SEEllipse) => SEIntersectionReturnType[] {
       return (newEllipse: SEEllipse): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1256,11 +1282,13 @@ export const useSEStore = defineStore({
         avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
         avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
         avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
-        sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
-          }
-        });
+        state.sePoints
+          .map(pt => pt as SEPoint)
+          .forEach((pt: SEPoint) => {
+            if (!pt.locationVector.isZero()) {
+              avoidVectors.push(pt.locationVector);
+            }
+          });
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
 
@@ -1439,9 +1467,9 @@ export const useSEStore = defineStore({
         return [];
       };
     },
-    createAllIntersectionsWithParametric(): (
-      _: SEParametric
-    ) => SEIntersectionReturnType[] {
+    createAllIntersectionsWithParametric(
+      state
+    ): (_: SEParametric) => SEIntersectionReturnType[] {
       return (newParametric: SEParametric): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const avoidVectors: Vector3[] = [];
@@ -1453,11 +1481,13 @@ export const useSEStore = defineStore({
             avoidVectors.push(pt.locationVector);
           }
         });
-        sePoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            avoidVectors.push(pt.locationVector);
-          }
-        });
+        state.sePoints
+          .map(pt => pt as SEPoint)
+          .forEach((pt: SEPoint) => {
+            if (!pt.locationVector.isZero()) {
+              avoidVectors.push(pt.locationVector);
+            }
+          });
 
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
