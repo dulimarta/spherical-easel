@@ -592,7 +592,7 @@ export default class Easel extends Vue {
     Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
     Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
-    console.debug("Resize all nodules and the temporary ones");
+    //console.debug("Resize all nodules and the temporary ones");
     // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();

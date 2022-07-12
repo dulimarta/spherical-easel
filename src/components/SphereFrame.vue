@@ -716,7 +716,7 @@ export default class SphereFrame extends VueComponent {
    */
   @Watch("actionMode")
   switchActionMode(mode: ActionMode): void {
-    console.debug("Switch tool /action mode");
+    //console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary

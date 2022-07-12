@@ -19,7 +19,6 @@ import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
-
 import { SEPolygon } from "@/models/SEPolygon";
 import { ObjectNames, ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
@@ -111,6 +110,7 @@ export default class MoveHandler extends Highlighter {
         this.movingSomething = true;
         return;
       }
+
       const labels = this.hitSELabels.filter(
         n => n.isFreeToMove() && n.showing
       );

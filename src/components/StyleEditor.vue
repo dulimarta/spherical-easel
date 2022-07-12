@@ -62,8 +62,8 @@ export default class extends Vue {
     selected: Nodule[];
   }) => void;
   readonly oldStyleSelections!: Array<SENodule>;
-  readonly initialStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-  readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
+  readonly initialStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
+  readonly defaultStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
@@ -188,7 +188,7 @@ export default class extends Vue {
     }
   }
   undo(ev: { selector: string; panel: StyleEditPanels }): void {
-    const styleData = this.initialStatesMap.get(this.panel);
+    const styleData = this.initialStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (ev.selector === "labelBackFillColor") {
@@ -207,7 +207,7 @@ export default class extends Vue {
   }
   restoreDefault(ev: { selector: string; panel: StyleEditPanels }): void {
     // console.log("ev selector", ev.selector);
-    const styleData = this.defaultStatesMap.get(this.panel);
+    const styleData = this.defaultStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (listOfProps.some(prop => prop === "labelBackFillColor")) {
@@ -240,7 +240,7 @@ export default class extends Vue {
 
   @Watch("selectedSENodules", { immediate: true })
   onSelectionChanged(newSelection: SENodule[]): void {
-    //console.debug("StyleEditor: object selection changed", newSelection.length);
+    console.debug("StyleEditor: object selection changed", newSelection.length);
 
     this.saveStyleState();
     this.commonStyleProperties.splice(0);
@@ -641,7 +641,7 @@ export default class extends Vue {
         "Number of currently selected object? ",
         this.selectedNodules.length
       );
-      const prev = this.initialStatesMap.get(this.panel) ?? [];
+      const prev = this.initialStyleStatesMap.get(this.panel) ?? [];
       const curr = this.selectedNodules.map((n: Nodule) =>
         n.currentStyleState(this.panel)
       );
