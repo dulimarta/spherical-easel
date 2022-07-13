@@ -3,7 +3,7 @@ import { ValueDisplayMode, LabelDisplayMode } from "./types";
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
-  intersectionTolerance: 0.000000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
+  intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value

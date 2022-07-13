@@ -484,7 +484,9 @@ export default class MoveHandler extends Highlighter {
           moveCommandGroup.addCommand(
             new SetNoduleExistCommand(seNoduleAfterState.object, true, true)
           );
-          console.log("new object was created from before to after");
+          console.debug(
+            `A new object ${seNoduleAfterState.object.name} was revealed from before to after during a move event`
+          );
         } else {
           switch (seNoduleAfterState.kind) {
             // For these three types of free objects the location vector was recorded

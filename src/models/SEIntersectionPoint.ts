@@ -311,6 +311,9 @@ export class SEIntersectionPoint extends SEPoint {
     potentialParent1: SEOneDimensional,
     potentialParent2: SEOneDimensional
   ): number {
+    // update the principle parents
+    potentialParent1.shallowUpdate();
+    potentialParent2.shallowUpdate();
     // check to make sure that the two new *potential* principle parents intersection includes this intersection point
     //(and return the order of the intersection)
     // order is always the order from the intersection of the two principle parents
@@ -374,20 +377,34 @@ export class SEIntersectionPoint extends SEPoint {
     if (existingPrincipleParent.id === this.principleParent1.id) {
       //replace the first principle parent
       this.sePrincipleParent1 = newPrincipleParent;
-      // add the old principle parent to the other parent array
-      this.otherParentArray.push(existingPrincipleParent);
     } else if (existingPrincipleParent.id === this.principleParent2.id) {
       //replace the second principle parent
       this.sePrincipleParent2 = newPrincipleParent;
-      // add the old principle parent to the other parent array
-      this.otherParentArray.push(existingPrincipleParent);
     } else {
       throw new Error(
-        `SEIntersectionPoint: Using replacePrincipleParent and the existingPrincipleParent is not one of the existing principle parents.`
+        `SEIntersectionPoint: Using replacePrincipleParent and the existingPrincipleParent ${existingPrincipleParent.name}is not one of the existing principle parents.`
       );
     }
+    // add the old principle parent to the other parent array
+    this.otherParentArray.push(existingPrincipleParent);
     // update the order of the intersection
     // order is always the order from the intersection of the two principle parents
+    const rank1 = rank_of_type(this.principleParent1);
+    const rank2 = rank_of_type(this.principleParent2);
+    if (
+      (rank1 === rank2 &&
+        this.principleParent2.name > this.principleParent1.name) ||
+      rank2 < rank1
+    ) {
+      // switch the order of the principle parents
+      const temp = this.principleParent1;
+      this.sePrincipleParent1 = this.principleParent2;
+      this.sePrincipleParent2 = temp;
+    }
+
+    this.sePrincipleParent1.shallowUpdate();
+    this.sePrincipleParent2.shallowUpdate();
+
     const updatedIntersectionInfo: IntersectionReturnType[] =
       intersectTwoObjects(
         this.sePrincipleParent1,
@@ -396,6 +413,13 @@ export class SEIntersectionPoint extends SEPoint {
       );
     let updateOrderSuccessful = false;
     updatedIntersectionInfo.forEach((element, index) => {
+      console.debug(
+        `Point ${this.name} x diff ${
+          element.vector.x - this.locationVector.x
+        }, y diff ${element.vector.y - this.locationVector.y}, z diff ${
+          element.vector.z - this.locationVector.z
+        }`
+      );
       if (
         this.tempVector
           .subVectors(element.vector, this.locationVector)
