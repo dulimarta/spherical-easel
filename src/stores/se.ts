@@ -64,6 +64,7 @@ export type PiniaAppState = {
   seLabelIds: Array<number>;
   seExpressionIds: Array<number>;
   seAngleMarkerIds: Array<number>;
+  seParametricIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -76,7 +77,7 @@ const seLabels: Map<number, SELabel> = new Map();
 const seExpressions: Map<number, SEExpression> = new Map();
 const seAngleMarkers: Map<number, SEAngleMarker> = new Map();
 const seEllipses: Map<number, SEEllipse> = new Map();
-const seParametrics: Array<SEParametric> = [];
+const seParametrics: Map<number, SEParametric> = new Map();
 const sePencils: Array<SEPencil> = [];
 const sePolygons: Array<SEPolygon> = [];
 const layers: Array<Group> = [];
@@ -108,6 +109,7 @@ export const useSEStore = defineStore({
     seLabelIds: [],
     seExpressionIds: [],
     seAngleMarkerIds: [],
+    seParametricIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -121,13 +123,20 @@ export const useSEStore = defineStore({
       // Update to these arrays are not automatically picked up by VueJS
       seNodules.splice(0);
       this.sePointIds.splice(0);
+      sePoints.clear();
       this.seLineIds.splice(0);
+      seLines.clear();
       this.seSegmentIds.splice(0);
+      seSegments.clear();
       this.seCircleIds.splice(0);
+      seCircles.clear();
       this.seAngleMarkerIds.splice(0);
+      seAngleMarkers.clear();
       sePolygons.splice(0);
       this.seEllipseIds.splice(0);
-      seParametrics.splice(0);
+      seEllipses.clear();
+      this.seParametricIds.splice(0);
+      seParametrics.clear();
       sePencils.splice(0);
       this.seLabelIds.splice(0);
       selectedSENodules.splice(0);
@@ -391,7 +400,8 @@ export const useSEStore = defineStore({
       }
     },
     addParametric(parametric: SEParametric): void {
-      seParametrics.push(parametric);
+      this.seParametricIds.push(parametric.id);
+      seParametrics.set(parametric.id, parametric);
       seNodules.push(parametric);
       let ptr: Parametric | null = parametric.ref;
       while (ptr) {
@@ -402,18 +412,21 @@ export const useSEStore = defineStore({
     },
 
     removeParametric(parametricId: number): void {
-      const parametricPos = seParametrics.findIndex(x => x.id === parametricId);
-      const pos2 = seNodules.findIndex(x => x.id === parametricId);
-      if (parametricPos >= 0) {
+      const victimParametric = seParametrics.get(parametricId);
+      if (victimParametric) {
         /* victim line is found */
-        const victimParametric: SEParametric = seParametrics[parametricPos];
+        const parametricPos = this.seParametricIds.findIndex(
+          id => id === parametricId
+        );
+        const pos2 = seNodules.findIndex(x => x.id === parametricId);
         let ptr: Parametric | null = victimParametric.ref;
         while (ptr !== null) {
           ptr.removeFromLayers();
           ptr = ptr.next;
         }
         // victimParametric.removeSelfSafely();
-        seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
+        this.seParametricIds.splice(parametricPos, 1); // Remove the parametric from the list
+        seParametrics.delete(parametricId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -645,7 +658,8 @@ export const useSEStore = defineStore({
       state.seLabelIds.map(id => seLabels.get(id)!),
     seAngleMarkers: (state): Array<SEAngleMarker> =>
       state.seAngleMarkerIds.map(id => seAngleMarkers.get(id)!),
-    seParametrics: (): Array<SEParametric> => seParametrics,
+    seParametrics: (state): Array<SEParametric> =>
+      state.seParametricIds.map(id => seParametrics.get(id)!),
     sePolygons: (): Array<SEPolygon> => sePolygons,
     expressions: (state): Array<SEExpression> =>
       state.seExpressionIds.map(id => seExpressions.get(id)!),
@@ -1657,7 +1671,8 @@ export const useSEStore = defineStore({
         });
 
         //Intersect this new parametric with all old parametrics
-        seParametrics
+        state.seParametricIds
+          .map(id => seParametrics.get(id)!)
           .filter(
             (parametric: SEParametric) => parametric.id !== newParametric.id
           ) // ignore self
