@@ -275,7 +275,7 @@ export default class SphereFrame extends VueComponent {
       this.setTransformationForTool
     );
     EventBus.listen("delete-node", this.deleteNode);
-    EventBus.listen("dialog-box-is-active", this.dialogBoxIsActive);
+    // EventBus.listen("dialog-box-is-active", this.dialogBoxIsActive);
   }
 
   mounted(): void {
@@ -353,7 +353,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("set-expression-for-tool");
     EventBus.unlisten("set-transformation-for-tool");
     EventBus.unlisten("delete-node");
-    EventBus.unlisten("dialog-box-is-active");
+    // EventBus.unlisten("dialog-box-is-active");
   }
 
   @Watch("canvasSize")
@@ -712,27 +712,27 @@ export default class SphereFrame extends VueComponent {
     });
   }
 
-  dialogBoxIsActive(e: { active: boolean }): void {
-    // console.debug(`dialog box is active is ${e.active}`);
-    if (this.hideTool) {
-      this.hideTool.disableKeyHandler = e.active;
-    }
-    if (this.nSectAngleTool) {
-      this.nSectAngleTool.disableKeyHandler = e.active;
-    }
-    if (this.nSectSegmentTool) {
-      this.nSectSegmentTool.disableKeyHandler = e.active;
-    }
-    if (this.rotateTool) {
-      this.rotateTool.disableKeyHandler = e.active;
-    }
-    if (this.selectTool) {
-      this.selectTool.disableKeyHandler = e.active;
-    }
-    if (this.toggleLabelDisplayTool) {
-      this.toggleLabelDisplayTool.disableKeyHandler = e.active;
-    }
-  }
+  // dialogBoxIsActive(e: { active: boolean }): void {
+  //   // console.debug(`dialog box is active is ${e.active}`);
+  //   if (this.hideTool) {
+  //     this.hideTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.nSectAngleTool) {
+  //     this.nSectAngleTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.nSectSegmentTool) {
+  //     this.nSectSegmentTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.rotateTool) {
+  //     this.rotateTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.selectTool) {
+  //     this.selectTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.toggleLabelDisplayTool) {
+  //     this.toggleLabelDisplayTool.disableKeyHandler = e.active;
+  //   }
+  // }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component

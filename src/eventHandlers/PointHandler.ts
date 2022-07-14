@@ -5,7 +5,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import Label from "@/plottables/Label";
@@ -15,6 +15,10 @@ import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
 import { Group } from "two.js/src/group";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { CommandGroup } from "@/commands/CommandGroup";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -48,11 +52,13 @@ export default class PointHandler extends Highlighter {
       // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection point
       if (this.hitSEPoints.length > 0) {
         if (
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertInterPtToUserCreatedCommand(
+          new ConvertPtToUserCreatedCommand(
             this.hitSEPoints[0] as SEIntersectionPoint
           ).execute();
           return;
@@ -65,6 +71,7 @@ export default class PointHandler extends Highlighter {
         return;
       } else {
         //#region linkNoduleSENodule
+        const pointCommandGroup = new CommandGroup();
         // create a new Point
         const newPoint = new Point();
         // Set the display to the default values
@@ -101,11 +108,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSELines[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSELines[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSECircles.length > 0) {
           // The new point will be a point on a circle
           // Create the model object for the new point and link them
@@ -117,11 +126,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSECircles[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSECircles[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEEllipses.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -133,11 +144,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEEllipses[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEEllipses[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEParametrics.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -149,11 +162,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEParametrics[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEParametrics[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEPolygons.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -165,11 +180,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEPolygons[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEPolygons[0],
+              newSELabel
+            )
+          );
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
@@ -178,8 +195,43 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(newLabel, vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointCommand(vtx, newSELabel).execute();
+          pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
         }
+
+        /////////////
+        // Create the antipode of the new point, vtx
+        const newAntipodePoint = new NonFreePoint();
+        // Set the display to the default values
+        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // Adjust the size of the point to the current zoom magnification factor
+        newAntipodePoint.adjustSize();
+
+        // Create the model object for the new point and link them
+        const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+        // Create a plottable label
+        // Create an SELabel and link it to the plottable object
+        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+        antipodalVtx.locationVector = vtx.locationVector;
+        antipodalVtx.locationVector.multiplyScalar(-1);
+        // Set the initial label location
+        this.tmpVector
+          .copy(antipodalVtx.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSEAntipodalLabel.locationVector = this.tmpVector;
+        pointCommandGroup.addCommand(
+          new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+        );
+        ///////////
+
         // Set the initial label location
         this.tmpVector
           .copy(vtx.locationVector)
@@ -192,6 +244,7 @@ export default class PointHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
+        pointCommandGroup.execute();
       }
     } else if (this.isTemporaryPointAdded) {
       // Remove the temporary object

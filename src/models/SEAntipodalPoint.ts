@@ -8,15 +8,33 @@ export class SEAntipodalPoint extends SEPoint {
    * The point parent of this SEAntipodalPoint
    */
   private _antipodalPointParent: SEPoint;
+  /**
+   * This flag is true if the user created this point
+   * This flag is false if this point was automatically created
+   */
+  private _isUserCreated = false;
 
   /**
    * Create an intersection point between two one-dimensional objects
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor(point: Point, antipodalPointParent: SEPoint) {
+  constructor(
+    point: Point,
+    antipodalPointParent: SEPoint,
+    isUserCreated: boolean
+  ) {
     super(point);
     this._antipodalPointParent = antipodalPointParent;
+    if (isUserCreated) {
+      this._isUserCreated = true;
+      // Display userCreated antipodes
+      this.showing = true;
+    } else {
+      this._isUserCreated = false;
+      // Hide automatically created antipodes
+      this.showing = false;
+    }
   }
 
   public get noduleDescription(): string {
@@ -32,8 +50,21 @@ export class SEAntipodalPoint extends SEPoint {
       this.label?.ref.shortUserName ?? "No Label Short Name In SEAntipodePoint"
     );
   }
-  get antipodalParent(): SEPoint {
+  public get antipodalParent(): SEPoint {
     return this._antipodalPointParent;
+  }
+
+  /**
+   * If the antipodal point is changed to isUserCreated(true) then the user intentionally created this point
+   * That is, the point was not automatically created. The showing or not of a user created
+   * point is possible. A not user created point is not showing unless moused over.
+   */
+  set isUserCreated(flag: boolean) {
+    this._isUserCreated = flag;
+  }
+
+  get isUserCreated(): boolean {
+    return this._isUserCreated;
   }
 
   public shallowUpdate(): void {
@@ -48,7 +79,7 @@ export class SEAntipodalPoint extends SEPoint {
     }
 
     // Update visibility
-    if (this._showing && this._exists) {
+    if (this._showing && this._isUserCreated && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
@@ -79,6 +110,16 @@ export class SEAntipodalPoint extends SEPoint {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
+
+  // For !isUserCreated points glowing is the same as showing or not showing the point,
+  set glowing(b: boolean) {
+    if (!this._isUserCreated) {
+      this.ref.setVisible(b);
+    } else {
+      super.glowing = b;
+    }
+  }
+
   public isNonFreePoint(): boolean {
     return true;
   }

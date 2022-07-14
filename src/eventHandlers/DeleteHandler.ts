@@ -8,7 +8,7 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { ConvertUserCreatedInterToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedInterToNotUserCreatedCommand";
+import { ConvertUserCreatedToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedToNotUserCreatedCommand";
 import { Group } from "two.js/src/group";
 import { ChangeIntersectionPointPrincipleParent } from "@/commands/ChangeIntersectionPointPrincipleParent";
 import i18n from "@/i18n";
@@ -401,7 +401,7 @@ export default class DeleteHandler extends Highlighter {
             if (seNoduleBeforeState.object.isUserCreated) {
               // convert it back to not user created (if it was)
               deleteCommandGroup.addCommand(
-                new ConvertUserCreatedInterToNotUserCreatedCommand(
+                new ConvertUserCreatedToNotUserCreatedCommand(
                   seNoduleBeforeState.object
                 )
               );
@@ -523,7 +523,7 @@ export default class DeleteHandler extends Highlighter {
             ) {
               // convert it back to not user created because it doesn't exist
               deleteCommandGroup.addCommand(
-                new ConvertUserCreatedInterToNotUserCreatedCommand(
+                new ConvertUserCreatedToNotUserCreatedCommand(
                   seNoduleBeforeState.object
                 )
               );

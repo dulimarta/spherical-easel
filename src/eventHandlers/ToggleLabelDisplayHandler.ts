@@ -14,18 +14,18 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    */
   private label: SELabel | null = null;
 
-  private _disableKeyHandler = false;
+  // private _disableKeyHandler = false;
 
-  set disableKeyHandler(b: boolean) {
-    this._disableKeyHandler = b;
-  }
+  // set disableKeyHandler(b: boolean) {
+  //   this._disableKeyHandler = b;
+  // }
 
   constructor(layers: Group[]) {
     super(layers);
   }
 
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
-    if (this._disableKeyHandler) return;
+    // if (this._disableKeyHandler) return;
     //if (keyEvent.repeat) return; // Ignore repeated events on the same key
 
     // Show all labels of all visible objects (whose labels are not already showing) lower case s

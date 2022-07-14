@@ -25,7 +25,7 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
@@ -38,6 +38,8 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 
 type TemporaryLine = {
   line: Line;
@@ -577,6 +579,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   ): void {
     // Create a command group to create a new perpendicular line, possibly new point, and to record all the new intersections for undo/redo
     const addPerpendicularLineGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
@@ -639,16 +642,59 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           new AddPointCommand(this.sePoint, newSELabel)
         );
       }
+
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(
+        newAntipodePoint,
+        this.sePoint,
+        false
+      );
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = this.sePoint.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      addPerpendicularLineGroup.addCommand(
+        new AddAntipodalPointCommand(
+          antipodalVtx,
+          this.sePoint,
+          newSEAntipodalLabel
+        )
+      );
+      newlyCreatedSEPoints.push(antipodalVtx, this.sePoint);
+      ///////////
     } else {
       // sePoint is not null so either sePoint is an existing point (in which case nothing needs to be created)
       // or an intersection point that need to be converted to isUserCreated
       if (
-        sePoint instanceof SEIntersectionPoint &&
-        !(sePoint as SEIntersectionPoint).isUserCreated
+        (sePoint instanceof SEIntersectionPoint && !sePoint.isUserCreated) ||
+        (sePoint instanceof SEAntipodalPoint && !sePoint.isUserCreated)
       ) {
         //Make it user created and turn on the display
         addPerpendicularLineGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(sePoint as SEIntersectionPoint)
+          new ConvertPtToUserCreatedCommand(sePoint as SEIntersectionPoint)
         );
       }
       this.sePoint = sePoint;
@@ -769,7 +815,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       PerpendicularLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine)
+        .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             const addIntersectionCmd = new AddIntersectionPointOtherParent(

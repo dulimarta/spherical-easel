@@ -12,7 +12,7 @@ import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -43,6 +43,8 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -477,6 +479,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const circleCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
@@ -516,6 +519,41 @@ export default class MeasuredCircleHandler extends Highlighter {
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      circleCommandGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -530,12 +568,14 @@ export default class MeasuredCircleHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.centerSEPoint = vtx;
     } else if (
-      this.centerSEPoint instanceof SEIntersectionPoint &&
-      !this.centerSEPoint.isUserCreated
+      (this.centerSEPoint instanceof SEIntersectionPoint &&
+        !this.centerSEPoint.isUserCreated) ||
+      (this.centerSEPoint instanceof SEAntipodalPoint &&
+        !this.centerSEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.centerSEPoint)
+        new ConvertPtToUserCreatedCommand(this.centerSEPoint)
       );
     }
 
@@ -736,7 +776,10 @@ export default class MeasuredCircleHandler extends Highlighter {
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
       MeasuredCircleHandler.store
-        .createAllIntersectionsWithCircle(newMeasuredSECircle)
+        .createAllIntersectionsWithCircle(
+          newMeasuredSECircle,
+          newlyCreatedSEPoints
+        )
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             circleCommandGroup.addCommand(

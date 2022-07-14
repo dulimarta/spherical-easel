@@ -1,38 +1,49 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
+//import { DisplayStyle } from "@/plottables/Nodule";
 // import { Labelable } from "@/types";
 // import { SEPoint } from "@/models/SEPoint";
-import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
-import { SavedNames } from "@/types";
+//import SETTINGS from "@/global-settings";
+// import { SENodule } from "@/models/SENodule";
+// import { SavedNames } from "@/types";
+//import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 /**
  * This is used when an intersection point was automatically created and the user
  * wants to actually use it in a construction. Meaning they want to change the value of
  * isUserCreated, display the point and set up the glowing style
  */
-export class ConvertInterPtToUserCreatedCommand extends Command {
+export class ConvertIntersectionPointToAntipodalMode extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
-  constructor(seIntersectionPoint: SEIntersectionPoint) {
+  private seIntersectionParent: SEIntersectionPoint;
+  constructor(
+    seIntersectionPoint: SEIntersectionPoint,
+    seIntersectionParent: SEIntersectionPoint
+  ) {
     super();
     this.seIntersectionPoint = seIntersectionPoint;
+    this.seIntersectionParent = seIntersectionParent;
   }
 
   do(): void {
-    this.seIntersectionPoint.isUserCreated = true;
+    console.debug(
+      `DO: Convert intersection point ${this.seIntersectionPoint.name} to antipodal mode with parent ${this.seIntersectionParent.name}`
+    );
+    this.seIntersectionPoint.antipodalPointId = this.seIntersectionParent.id;
     // Set the display to the default values
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Set the size for the current zoom magnification factor
-    this.seIntersectionPoint.ref.adjustSize();
-    this.seIntersectionPoint.showing = true;
-    // show the label
-    if (
-      this.seIntersectionPoint.label != undefined &&
-      SETTINGS.point.showLabelsOfNonFreePointsInitially
-    ) {
-      this.seIntersectionPoint.label.showing = true;
-    }
+    // this.seIntersectionPoint.ref.stylize(
+    //   DisplayStyle.ApplyCurrentVariables
+    // );
+    // // Set the size for the current zoom magnification factor
+    // this.seIntersectionPoint.ref.adjustSize();
+    // this.seIntersectionPoint.showing = true;
+    // // show the label
+    // if (
+    //   this.seIntersectionPoint.label != undefined &&
+    //   SETTINGS.point.showLabelsOfNonFreePointsInitially
+    // ) {
+    //   this.seIntersectionPoint.label.showing = true;
+    // }
   }
 
   saveState(): void {
@@ -40,16 +51,20 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
   }
 
   restoreState(): void {
+    console.debug(
+      `RestoreSate: Convert intersection point ${this.seIntersectionPoint.name} to not antipodal mode`
+    );
+    this.seIntersectionPoint.antipodalPointId = -1;
     // hide the label
-    if (this.seIntersectionPoint.label != undefined) {
-      this.seIntersectionPoint.label.showing = false;
-    }
-    // hide the point
-    this.seIntersectionPoint.showing = false;
-    // revert to temporary status
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
-    // set back to automatically created
-    this.seIntersectionPoint.isUserCreated = false;
+    // if (this.seIntersectionPoint.label != undefined) {
+    //   this.seIntersectionPoint.label.showing = false;
+    // }
+    // // hide the point
+    // this.seIntersectionPoint.showing = false;
+    // // revert to temporary status
+    // this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
+    // // set back to automatically created
+    // this.seIntersectionPoint.isUserCreated = false;
   }
 
   toOpcode(): null | string | Array<string> {

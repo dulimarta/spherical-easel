@@ -115,7 +115,8 @@
                       hide-details
                       single-line
                       style="width: 120px"
-                      :rules="[exportDimensionsCheck]"></v-text-field>
+                      :rules="[exportDimensionsCheck]"
+                      @keypress.stop></v-text-field>
                   </template>
                 </v-slider>
               </v-col>
@@ -227,7 +228,8 @@
         persistent-hint
         :label="$t('constructions.description')"
         required
-        v-model="description"></v-text-field>
+        v-model="description"
+        @keypress.stop></v-text-field>
       <v-switch v-model="publicConstruction"
         :disabled="uid.length === 0"
         :label="$t('constructions.makePublic')"></v-switch>

@@ -1,7 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
@@ -20,6 +20,7 @@ import { intersectTwoObjects } from "@/utils/intersections";
 import { SEParametric } from "@/models/SEParametric";
 import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -46,16 +47,16 @@ export default class IntersectionPointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select the objects to intersect
     if (this.isOnSphere) {
-      // If the user clicks on an intersection create that intersection point (i.e. convert to user created)
+      // If the user clicks on an intersection create that intersection or antipodal point (i.e. convert to user created)
       if (this.hitSEPoints.length > 0) {
         if (
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertInterPtToUserCreatedCommand(
-            this.hitSEPoints[0] as SEIntersectionPoint
-          ).execute();
+          new ConvertPtToUserCreatedCommand(this.hitSEPoints[0]).execute();
           return;
         }
         return;
@@ -286,7 +287,7 @@ export default class IntersectionPointHandler extends Highlighter {
         if (!element.isUserCreated) {
           if (this.updatedIntersectionInfo[index].exists) {
             intersectionConversionCommandGroup.addCommand(
-              new ConvertInterPtToUserCreatedCommand(element)
+              new ConvertPtToUserCreatedCommand(element)
             );
             EventBus.fire("show-alert", {
               key: `handlers.intersectionOneDimensionalPointCreated`,

@@ -13,6 +13,8 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 import { Group } from "two.js/src/group";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -24,11 +26,11 @@ export default class NSectSegmentHandler extends Highlighter {
   private temporarilySelectedSegment: SESegment | null = null;
 
   private tmpVector = new Vector3();
-  private _disableKeyHandler = false;
+  // private _disableKeyHandler = false;
 
-  set disableKeyHandler(b: boolean) {
-    this._disableKeyHandler = b;
-  }
+  // set disableKeyHandler(b: boolean) {
+  //   this._disableKeyHandler = b;
+  // }
   constructor(layers: Group[], bisectOnly?: boolean) {
     super(layers);
 
@@ -52,7 +54,7 @@ export default class NSectSegmentHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
-    if (this._disableKeyHandler) return;
+    // if (this._disableKeyHandler) return;
     // This is the only place the selectedNValue can be changed so disable it if bisection is the only thing allowed
     if (this.bisectionOnly) return;
     // console.log(keyEvent.key);
@@ -314,6 +316,47 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
         );
+        /////////////
+        // Create the antipode of the new point, nSectingPoint
+        const newAntipodePoint = new NonFreePoint();
+        // Set the display to the default values
+        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // Adjust the size of the point to the current zoom magnification factor
+        newAntipodePoint.adjustSize();
+
+        // Create the model object for the new point and link them
+        const antipodalVtx = new SEAntipodalPoint(
+          newAntipodePoint,
+          nSectingPoint,
+          false
+        );
+
+        // Create a plottable label
+        // Create an SELabel and link it to the plottable object
+        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+        antipodalVtx.locationVector = nSectingPoint.locationVector;
+        antipodalVtx.locationVector.multiplyScalar(-1);
+        // Set the initial label location
+        this.tmpVector
+          .copy(antipodalVtx.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSEAntipodalLabel.locationVector = this.tmpVector;
+        nSectingPointsCommandGroup.addCommand(
+          new AddAntipodalPointCommand(
+            antipodalVtx,
+            nSectingPoint,
+            newSEAntipodalLabel
+          )
+        );
+        ///////////
       } else {
         console.log("An n-secting point already exists", i);
       }

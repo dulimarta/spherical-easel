@@ -48,6 +48,7 @@ import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 const oldSelections: Array<SENodule> = [];
 const sePencils: Array<SEPencil> = [];
@@ -791,27 +792,36 @@ export const useSEStore = defineStore({
      * If they have the same type put them in alphabetical order.
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
-    createAllIntersectionsWithLine(state) {
-      return (newLine: SELine): SEIntersectionReturnType[] => {
+
+    createAllIntersectionsWithLine(
+      state
+    ): (_l: SELine, _p: SEPoint[]) => SEIntersectionReturnType[] {
+      return (
+        newLine: SELine,
+        existingNewSEPoints?: SEPoint[]
+      ): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
-        // First add the two parent points of the newLine, if they are new, then
-        //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
-        if (!(newLine instanceof SEPolarLine)) {
-          existingSEPoints.push(newLine.startSEPoint);
+        if (existingNewSEPoints) {
+          existingSEPoints.push(...existingNewSEPoints);
         }
-        // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
-        // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
-        if (
-          !(
-            newLine instanceof SEPerpendicularLineThruPoint ||
-            newLine instanceof SEPolarLine ||
-            newLine instanceof SETangentLineThruPoint ||
-            newLine instanceof SENSectLine
-          )
-        ) {
-          existingSEPoints.push(newLine.endSEPoint);
-        }
+        // // First add the two parent points of the newLine, if they are new, then
+        // //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
+        // if (!(newLine instanceof SEPolarLine)) {
+        //   existingSEPoints.push(newLine.startSEPoint);
+        // }
+        // // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
+        // // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
+        // if (
+        //   !(
+        //     newLine instanceof SEPerpendicularLineThruPoint ||
+        //     newLine instanceof SEPolarLine ||
+        //     newLine instanceof SETangentLineThruPoint ||
+        //     newLine instanceof SENSectLine
+        //   )
+        // ) {
+        //   existingSEPoints.push(newLine.endSEPoint);
+        // }
         state.sePoints
           .map(x => x as SEPoint)
           .forEach(pt => {
@@ -1335,14 +1345,23 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-    createAllIntersectionsWithSegment(state) {
-      return (newSegment: SESegment): SEIntersectionReturnType[] => {
+
+    createAllIntersectionsWithSegment(
+      state
+    ): (_s: SESegment, _p: SEPoint[]) => SEIntersectionReturnType[] {
+      return (
+        newSegment: SESegment,
+        existingNewSEPoints?: SEPoint[]
+      ): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
-        // First add the two parent points of the newLine, if they are new, then
-        //  they won't have been added to the state.points array yet so add them first
-        existingSEPoints.push(newSegment.startSEPoint);
-        existingSEPoints.push(newSegment.endSEPoint);
+        if (existingNewSEPoints) {
+          existingSEPoints.push(...existingNewSEPoints);
+        }
+        // // First add the two parent points of the newLine, if they are new, then
+        // //  they won't have been added to the state.points array yet so add them first
+        // existingSEPoints.push(newSegment.startSEPoint);
+        // existingSEPoints.push(newSegment.endSEPoint);
         state.sePoints
           .map(pt => pt as SEPoint)
           .forEach(pt => {
@@ -1864,14 +1883,22 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-    createAllIntersectionsWithCircle(state) {
-      return (newCircle: SECircle): SEIntersectionReturnType[] => {
+    createAllIntersectionsWithCircle(
+      state
+    ): (_c: SECircle, _p: SEPoint[]) => SEIntersectionReturnType[] {
+      return (
+        newCircle: SECircle,
+        existingNewSEPoints?: SEPoint[]
+      ): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
-        // First add the two parent points of the newLine, if they are new, then
-        //  they won't have been added to the state.points array yet so add them first
-        existingSEPoints.push(newCircle.centerSEPoint);
-        existingSEPoints.push(newCircle.circleSEPoint);
+        if (existingNewSEPoints) {
+          existingSEPoints.push(...existingNewSEPoints);
+        }
+        // // First add the two parent points of the newLine, if they are new, then
+        // //  they won't have been added to the state.points array yet so add them first
+        // existingSEPoints.push(newCircle.centerSEPoint);
+        // existingSEPoints.push(newCircle.circleSEPoint);
         state.sePoints
           .map(x => x as SEPoint)
           .forEach(pt => {
@@ -2395,15 +2422,23 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-    createAllIntersectionsWithEllipse(state) {
-      return (newEllipse: SEEllipse): SEIntersectionReturnType[] => {
+    createAllIntersectionsWithEllipse(
+      state
+    ): (_e: SEEllipse, _p: SEPoint[]) => SEIntersectionReturnType[] {
+      return (
+        newEllipse: SEEllipse,
+        existingNewSEPoints?: SEPoint[]
+      ): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
-        // First add the three parent points of the newEllipse, if they are new, then
-        //  they won't have been added to the state.points array yet so add them first
-        existingSEPoints.push(newEllipse.focus1SEPoint);
-        existingSEPoints.push(newEllipse.focus2SEPoint);
-        existingSEPoints.push(newEllipse.ellipseSEPoint);
+        if (existingNewSEPoints) {
+          existingSEPoints.push(...existingNewSEPoints);
+        }
+        // // First add the three parent points of the newEllipse, if they are new, then
+        // //  they won't have been added to the state.points array yet so add them first
+        // existingSEPoints.push(newEllipse.focus1SEPoint);
+        // existingSEPoints.push(newEllipse.focus2SEPoint);
+        // existingSEPoints.push(newEllipse.ellipseSEPoint);
         state.sePoints
           .map(x => x as SEPoint)
           .forEach(pt => {
@@ -2928,18 +2963,27 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-    createAllIntersectionsWithParametric(state) {
-      return (newParametric: SEParametric): SEIntersectionReturnType[] => {
+
+    createAllIntersectionsWithParametric(
+      state
+    ): (_p: SEParametric, _s: SEPoint[]) => SEIntersectionReturnType[] {
+      return (
+        newParametric: SEParametric,
+        existingNewSEPoints?: SEPoint[]
+      ): SEIntersectionReturnType[] => {
         // Avoid creating an intersection where any SEPoint already exists
         const existingSEPoints: SEPoint[] = [];
-        // First add the end points of the newParametric, if they are exist, then
-        //  they won't have been added to the state.points array yet so add them first
-        // Always screen for the zero vector
-        newParametric.endPoints.forEach(pt => {
-          if (!pt.locationVector.isZero()) {
-            existingSEPoints.push(pt);
-          }
-        });
+        if (existingNewSEPoints) {
+          existingSEPoints.push(...existingNewSEPoints);
+        }
+        // // First add the end points of the newParametric, if they are exist, then
+        // //  they won't have been added to the state.points array yet so add them first
+        // // Always screen for the zero vector
+        // newParametric.endPoints.forEach(pt => {
+        //   if (!pt.locationVector.isZero()) {
+        //     existingSEPoints.push(pt);
+        //   }
+        // });
         state.sePoints
           .map(x => x as SEPoint)
           .forEach(pt => {

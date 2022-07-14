@@ -24,6 +24,25 @@ export class SEIntersectionPoint extends SEPoint {
   private _isUserCreated = false;
 
   /**
+   * When two lines/segments are intersected, the intersection points are antipodal. If the user creates the
+   * anitpode of one of them (in previous versions of the code, this would result in two points at the same location
+   * or you would be unable to create that intersection point's antipode -- both of which are not desireable outcomes).
+   * The solution is to create a variable, _isAntipodeMode, which means that the existence of the antipode is
+   * determined by the existence of the original point (the one the use wanted to create the antipode of) and not the
+   * intersection point parents. (the location of the antipode is the same regardless of the value of _isAntipode).
+   * If P and Q are two (antipodal) intersection points, then the value of _isAntipodeMode is never true for both.
+   * If this._isAntipodeMode is true, then _isUserCreated must also be true.
+   */
+  private _isAntipodeMode = false;
+  /**
+   * When two lines/segments are intersected, the intersection points come in antipodal pairs.
+   * _antipodalPointId is the id number of this points intersection (if any).
+   * If this is -1 then this is not a part of a pair of antipodal twins.
+   * if _isAntipodeMode is true, then _antipodalPointId is *not* -1
+   */
+  private _antipodalPointId = -1;
+
+  /**
    * The One-Dimensional parents of this SEInstructionPoint
    */
   private sePrincipleParent1: SEOneDimensional;
@@ -69,6 +88,35 @@ export class SEIntersectionPoint extends SEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
+  }
+
+  public set antipodalPointId(seIntersectionPointID: number) {
+    if (seIntersectionPointID === -1) {
+      // turn off the antipode mode
+      this._antipodalPointId = -1;
+      this._isAntipodeMode = false;
+    } else {
+      const antipode = useSEStore().getSENoduleById(seIntersectionPointID);
+      if (
+        antipode instanceof SEIntersectionPoint &&
+        !antipode._isAntipodeMode
+      ) {
+        this._antipodalPointId = seIntersectionPointID;
+        this._isAntipodeMode = true;
+      } else {
+        throw new Error(
+          `Attempting to set a seIntersectionPoint antipodal with a nonSEIntersection Point (${
+            antipode instanceof SEIntersectionPoint
+          }) or the seIntersectionPoint is already in antipode mode`
+        );
+      }
+    }
+  }
+  public get antipodalPointId(): number {
+    return this._antipodalPointId;
+  }
+  public get isAntipodal(): boolean {
+    return this._isAntipodeMode;
   }
 
   public get noduleDescription(): string {
@@ -500,45 +548,57 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   public shallowUpdate(): void {
-    // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-    const updatedIntersectionInfo: IntersectionReturnType[] =
-      intersectTwoObjects(
-        this.sePrincipleParent1,
-        this.sePrincipleParent2,
-        useSEStore().inverseTotalRotationMatrix
-      );
-    // order is always the order from the intersection of the two principle parents
-    if (updatedIntersectionInfo[this.order] !== undefined) {
-      if (
-        this.locationVector.angleTo(
-          updatedIntersectionInfo[this.order].vector
-        ) <
-        Math.PI / 2 + SETTINGS.tolerance
-      ) {
-        // if the new angle is less than Pi/2 from the old, accept the new angle
-        this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
-      } else {
-        // if the new angle is more than Pi/2 from the old, search the intersection info for a closer one
-        let minIndex = -1;
-        let minAngle = Math.PI;
-        updatedIntersectionInfo.forEach((item, index) => {
-          const angle = item.vector.angleTo(this.locationVector);
-          if (angle < minAngle) {
-            minIndex = index;
-            minAngle = angle;
-          }
-        });
-        this.order = minIndex;
-        this.locationVector = updatedIntersectionInfo[this.order].vector;
+    if (this._isAntipodeMode) {
+      const antipode = useSEStore().getSENoduleById(this._antipodalPointId);
+      if (antipode instanceof SEPoint) {
+        antipode.shallowUpdate(); // this won't create a circular reference because for a pair of antipodal intersection points only one can be in antipode mode
+        this._exists = antipode.exists;
+        if (this._exists) {
+          this.tempVector.copy(antipode.locationVector).multiplyScalar(-1);
+          this.locationVector = this.tempVector;
+        }
       }
-      //check to see if the new location is on two existing parents (principle or other)
-      this.setExistence();
     } else {
-      this._exists = false;
+      // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
+      const updatedIntersectionInfo: IntersectionReturnType[] =
+        intersectTwoObjects(
+          this.sePrincipleParent1,
+          this.sePrincipleParent2,
+          useSEStore().inverseTotalRotationMatrix
+        );
+      // order is always the order from the intersection of the two principle parents
+      if (updatedIntersectionInfo[this.order] !== undefined) {
+        if (
+          this.locationVector.angleTo(
+            updatedIntersectionInfo[this.order].vector
+          ) <
+          Math.PI / 2 + SETTINGS.tolerance
+        ) {
+          // if the new angle is less than Pi/2 from the old, accept the new angle
+          this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+        } else {
+          // if the new angle is more than Pi/2 from the old, search the intersection info for a closer one
+          let minIndex = -1;
+          let minAngle = Math.PI;
+          updatedIntersectionInfo.forEach((item, index) => {
+            const angle = item.vector.angleTo(this.locationVector);
+            if (angle < minAngle) {
+              minIndex = index;
+              minAngle = angle;
+            }
+          });
+          this.order = minIndex;
+          this.locationVector = updatedIntersectionInfo[this.order].vector;
+        }
+        //check to see if the new location is on two existing parents (principle or other)
+        this.setExistence();
+      } else {
+        this._exists = false;
+      }
+      // console.debug(
+      //   `Intersction Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
+      // );
     }
-    // console.debug(
-    //   `Intersction Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
-    // );
     // Update visibility
     if (this._exists && this._isUserCreated && this._showing) {
       this.ref.setVisible(true);

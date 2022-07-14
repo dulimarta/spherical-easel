@@ -2,7 +2,7 @@
 
 import { AddTransformedPointCommand } from "@/commands/AddTransformedPointCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 import { SECircle } from "@/models/SECircle";
@@ -48,7 +48,8 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import {
   SEIntersectionReturnType,
   SEOneDimensional,
-  SEIsometry
+  SEIsometry,
+  AntipodalPointPair
 } from "@/types";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
@@ -59,6 +60,7 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1489,7 +1491,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     transformationSEParent: SETransformation,
     preimageSEPoint: SEPoint,
     displayNotifications = false
-  ): SEPoint {
+  ): AntipodalPointPair {
     // make sure that the transformation will move the point.
     // Don't let users create two points at the same location.
     //Users should not be able to
@@ -1523,7 +1525,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           type: "error"
         });
       }
-      return existingPoint;
+      return { newPoint: existingPoint, newAntipode: null };
     }
 
     if (
@@ -1555,17 +1557,19 @@ export default class ApplyTransformationHandler extends Highlighter {
           type: "error"
         });
       }
-      return existingPoint;
+      return { newPoint: existingPoint, newAntipode: null };
     }
 
     // at this location in the execution, the preimage point will move after being transformed and will not land on top of an existing point
     if (
-      preimageSEPoint instanceof SEIntersectionPoint &&
-      !preimageSEPoint.isUserCreated
+      (preimageSEPoint instanceof SEIntersectionPoint &&
+        !preimageSEPoint.isUserCreated) ||
+      (preimageSEPoint instanceof SEAntipodalPoint &&
+        !preimageSEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created
+      // Mark the intersection or antipodal point as created
       commandGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(preimageSEPoint)
+        new ConvertPtToUserCreatedCommand(preimageSEPoint)
       );
     }
     // we have to create a new transformed point
@@ -1605,12 +1609,54 @@ export default class ApplyTransformationHandler extends Highlighter {
         transformationSEParent
       )
     );
+    /////////////
+    // Create the antipode of the new point, newTransformedSEPoint
+    const newAntipodePoint = new NonFreePoint();
+    // Set the display to the default values
+    newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // Adjust the size of the point to the current zoom magnification factor
+    newAntipodePoint.adjustSize();
+
+    // Create the model object for the new point and link them
+    const antipodalVtx = new SEAntipodalPoint(
+      newAntipodePoint,
+      newTransformedSEPoint,
+      false
+    );
+
+    // Create a plottable label
+    // Create an SELabel and link it to the plottable object
+    const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+    antipodalVtx.locationVector = newTransformedSEPoint.locationVector;
+    antipodalVtx.locationVector.multiplyScalar(-1);
+    // Set the initial label location
+    this.tmpVector
+      .copy(antipodalVtx.locationVector)
+      .add(
+        new Vector3(
+          2 * SETTINGS.point.initialLabelOffset,
+          SETTINGS.point.initialLabelOffset,
+          0
+        )
+      )
+      .normalize();
+    newSEAntipodalLabel.locationVector = this.tmpVector;
+    commandGroup.addCommand(
+      new AddAntipodalPointCommand(
+        antipodalVtx,
+        newTransformedSEPoint,
+        newSEAntipodalLabel
+      )
+    );
+    ///////////
+
     EventBus.fire("show-alert", {
       key: `handlers.newTransformedPointAdded`,
       keyOptions: { name: `${newTransformedSEPoint.name}` },
       type: "success"
     });
-    return newTransformedSEPoint;
+    return { newPoint: newTransformedSEPoint, newAntipode: antipodalVtx };
   }
 
   applyIsometryToSegment(
@@ -1618,6 +1664,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     preimageSESegment: SESegment
   ): void {
     const transformedSegmentCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // make the images of the endpoints of the segment
     //  make sure they don't exist first
     let transformedStartSEPoint: SEPoint | null = null;
@@ -1632,11 +1679,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedStartSEPoint === null) {
       // the start of the segment hasn't been transformed by this transformation
-      transformedStartSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedSegmentCommandGroup,
         transformationSEParent,
         preimageSESegment.startSEPoint
       );
+      transformedStartSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedStartSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedStartSEPoint);
+      }
     }
 
     let transformedEndSEPoint: SEPoint | null = null;
@@ -1651,11 +1707,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedEndSEPoint === null) {
       // the end of the segment hasn't been transformed by this transformation
-      transformedEndSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedSegmentCommandGroup,
         transformationSEParent,
         preimageSESegment.endSEPoint
       );
+      transformedEndSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedEndSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedEndSEPoint);
+      }
     }
 
     // we have to create a new transformed segment
@@ -1702,7 +1767,10 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Add all the intersections with this segment
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithSegment(newIsometrySESegment)
+      .createAllIntersectionsWithSegment(
+        newIsometrySESegment,
+        newlyCreatedSEPoints
+      )
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedSegmentCommandGroup.addCommand(
@@ -1753,6 +1821,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     preimageSELine: SELine
   ): void {
     const transformedLineCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // make the images of the endpoints of the Line
     //  make sure they don't exist first
     let transformedStartSEPoint: SEPoint | null = null;
@@ -1767,11 +1836,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedStartSEPoint === null) {
       // the start of the Line hasn't been transformed by this transformation
-      transformedStartSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedLineCommandGroup,
         transformationSEParent,
         preimageSELine.startSEPoint
       );
+      transformedStartSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedStartSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedStartSEPoint);
+      }
     }
 
     let transformedEndSEPoint: SEPoint | null = null;
@@ -1786,11 +1864,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedEndSEPoint === null) {
       // the end of the Line hasn't been transformed by this transformation
-      transformedEndSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedLineCommandGroup,
         transformationSEParent,
         preimageSELine.endSEPoint
       );
+      transformedEndSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedEndSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedEndSEPoint);
+      }
     }
     // we have to create a new transformed Line
     const newTransformedLine = new NonFreeLine();
@@ -1834,7 +1921,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Add all the intersections with this line
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithLine(newIsometrySELine)
+      .createAllIntersectionsWithLine(newIsometrySELine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedLineCommandGroup.addCommand(
@@ -1886,6 +1973,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     preimageSECircle: SECircle
   ): void {
     const transformedCircleCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // make the images of the center|circle points of the Circle
     //  make sure they don't exist first
     let transformedCenterSEPoint: SEPoint | null = null;
@@ -1900,11 +1988,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedCenterSEPoint === null) {
       // the center of the Circle hasn't been transformed by this transformation
-      transformedCenterSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedCircleCommandGroup,
         transformationSEParent,
         preimageSECircle.centerSEPoint
       );
+      transformedCenterSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedCenterSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedCenterSEPoint);
+      }
     }
 
     let transformedCircleSEPoint: SEPoint | null = null;
@@ -1919,11 +2016,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedCircleSEPoint === null) {
       // the circle point of the Circle hasn't been transformed by this transformation
-      transformedCircleSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedCircleCommandGroup,
         transformationSEParent,
         preimageSECircle.circleSEPoint
       );
+      transformedCircleSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedCircleSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedCircleSEPoint);
+      }
     }
 
     // we have to create a new transformed Circle
@@ -1968,7 +2074,10 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithCircle(newIsometrySECircle)
+      .createAllIntersectionsWithCircle(
+        newIsometrySECircle,
+        newlyCreatedSEPoints
+      )
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedCircleCommandGroup.addCommand(
@@ -2020,6 +2129,8 @@ export default class ApplyTransformationHandler extends Highlighter {
     preimageSEEllipse: SEEllipse
   ): void {
     const transformedEllipseCommandGroup = new CommandGroup();
+
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // make the images of the endpoints of the Ellipse
     //  make sure they don't exist first
     let transformedFocus1SEPoint: SEPoint | null = null;
@@ -2034,11 +2145,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedFocus1SEPoint === null) {
       // the start of the Ellipse hasn't been transformed by this transformation
-      transformedFocus1SEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedEllipseCommandGroup,
         transformationSEParent,
         preimageSEEllipse.focus1SEPoint
       );
+      transformedFocus1SEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedFocus1SEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedFocus1SEPoint);
+      }
     }
 
     let transformedFocus2SEPoint: SEPoint | null = null;
@@ -2053,11 +2173,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedFocus2SEPoint === null) {
       // the start of the Ellipse hasn't been transformed by this transformation
-      transformedFocus2SEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedEllipseCommandGroup,
         transformationSEParent,
         preimageSEEllipse.focus2SEPoint
       );
+      transformedFocus2SEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedFocus2SEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedFocus2SEPoint);
+      }
     }
 
     let transformedEllipseSEPoint: SEPoint | null = null;
@@ -2072,11 +2201,20 @@ export default class ApplyTransformationHandler extends Highlighter {
     });
     if (transformedEllipseSEPoint === null) {
       // the end of the Ellipse hasn't been transformed by this transformation
-      transformedEllipseSEPoint = this.addTransformedPointCommands(
+      const newSEPoints = this.addTransformedPointCommands(
         transformedEllipseCommandGroup,
         transformationSEParent,
         preimageSEEllipse.ellipseSEPoint
       );
+      transformedEllipseSEPoint = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedEllipseSEPoint,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedEllipseSEPoint);
+      }
     }
     // we have to create a new transformed Ellipse
     const newTransformedEllipse = new NonFreeEllipse();
@@ -2122,7 +2260,10 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithEllipse(newIsometrySEEllipse)
+      .createAllIntersectionsWithEllipse(
+        newIsometrySEEllipse,
+        newlyCreatedSEPoints
+      )
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedEllipseCommandGroup.addCommand(
@@ -2262,6 +2403,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   ): void {
     ///
     const invertedCircleOrLineCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // make the image of a point on the Line or circle
     //  make sure they don't exist first
     let transformedSEPointOnLineOrCircle: SEPoint | null = null;
@@ -2279,12 +2421,22 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     });
     if (transformedSEPointOnLineOrCircle === null) {
-      // the start of the Line hasn't been transformed by this transformation
-      transformedSEPointOnLineOrCircle = this.addTransformedPointCommands(
+      // the start of the Line/circle hasn't been transformed by this transformation
+
+      const newSEPoints = this.addTransformedPointCommands(
         invertedCircleOrLineCommandGroup,
         transformationSEParent,
         preimageSEPointOnLineOrCircle
       );
+      transformedSEPointOnLineOrCircle = newSEPoints.newPoint;
+      if (newSEPoints.newAntipode) {
+        newlyCreatedSEPoints.push(
+          transformedSEPointOnLineOrCircle,
+          newSEPoints.newAntipode
+        );
+      } else {
+        newlyCreatedSEPoints.push(transformedSEPointOnLineOrCircle);
+      }
     }
     // we have to create a new transformed circle center, unless there is a point at the location already
     // which happens when the circle being inverted and the circle of inversion are concentric or the centers are anitpodal for example
@@ -2322,7 +2474,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         transformationSEParent
       );
       newInvertedSECircleCenter.update();
-
+      newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
       const newSELabel = new SELabel(new Label(), newInvertedSECircleCenter);
       // Set the initial label location
@@ -2346,6 +2498,48 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformationSEParent
         )
       );
+      /////////////
+      // Create the antipode of the new point, newInvertedSECircleCenter
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(
+        newAntipodePoint,
+        newInvertedSECircleCenter,
+        false
+      );
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = newInvertedSECircleCenter.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      invertedCircleOrLineCommandGroup.addCommand(
+        new AddAntipodalPointCommand(
+          antipodalVtx,
+          newInvertedSECircleCenter,
+          newSEAntipodalLabel
+        )
+      );
+      newlyCreatedSEPoints.push(antipodalVtx);
+      ///////////
     }
 
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
@@ -2397,7 +2591,10 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithCircle(newInvertedSECircle)
+      .createAllIntersectionsWithCircle(
+        newInvertedSECircle,
+        newlyCreatedSEPoints
+      )
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           invertedCircleOrLineCommandGroup.addCommand(

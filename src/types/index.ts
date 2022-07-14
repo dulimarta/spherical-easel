@@ -21,6 +21,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import Nodule from "@/plottables/Nodule";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -70,6 +71,7 @@ export type SavedNames =
   | "labelExists"
   | "pointVector"
   | "antipodalPointsParentName"
+  | "antipodalPointIsUserCreated"
   | "angleMarkerMode"
   | "angleMarkerFirstParentName"
   | "angleMarkerSecondParentName"
@@ -283,6 +285,10 @@ export type IconNames =
   | "redo"
   | "copyToClipboard";
 
+export interface AntipodalPointPair {
+  newPoint: SEPoint;
+  newAntipode: SEAntipodalPoint | null;
+}
 /**
  * Intersection Vector3 and if that intersection exists
  */

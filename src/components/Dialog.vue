@@ -67,11 +67,11 @@ export default class Dialog extends Vue implements DialogAction {
   show(): void {
     this.visible = true;
     // console.debug(`Dialog ${this.title} is active`);
-    EventBus.fire("dialog-box-is-active", { active: true });
+    // EventBus.fire("dialog-box-is-active", { active: true });
   }
   hide(): void {
     this.visible = false;
-    EventBus.fire("dialog-box-is-active", { active: false });
+    // EventBus.fire("dialog-box-is-active", { active: false });
   }
 }
 </script>

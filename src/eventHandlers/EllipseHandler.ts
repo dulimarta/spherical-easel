@@ -11,7 +11,7 @@ import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -25,6 +25,9 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -706,6 +709,7 @@ export default class EllipseHandler extends Highlighter {
     // Create a command group to add the points defining the ellipse and the ellipse to the store
     // This way a single undo click will undo all (potentially three) operations.
     const ellipseCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
 
     // Create (if necessary) and handle the first focus location
     if (this.focus1SEPoint === null) {
@@ -747,6 +751,41 @@ export default class EllipseHandler extends Highlighter {
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.focus1Vector;
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      ellipseCommandGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -761,12 +800,14 @@ export default class EllipseHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.focus1SEPoint = vtx;
     } else if (
-      this.focus1SEPoint instanceof SEIntersectionPoint &&
-      !this.focus1SEPoint.isUserCreated
+      (this.focus1SEPoint instanceof SEIntersectionPoint &&
+        !this.focus1SEPoint.isUserCreated) ||
+      (this.focus1SEPoint instanceof SEAntipodalPoint &&
+        !this.focus1SEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.focus1SEPoint)
+        new ConvertPtToUserCreatedCommand(this.focus1SEPoint)
       );
     }
 
@@ -810,6 +851,41 @@ export default class EllipseHandler extends Highlighter {
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.focus2Vector;
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      ellipseCommandGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -824,12 +900,14 @@ export default class EllipseHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.focus2SEPoint = vtx;
     } else if (
-      this.focus2SEPoint instanceof SEIntersectionPoint &&
-      !this.focus2SEPoint.isUserCreated
+      (this.focus2SEPoint instanceof SEIntersectionPoint &&
+        !this.focus2SEPoint.isUserCreated) ||
+      (this.focus2SEPoint instanceof SEAntipodalPoint &&
+        !this.focus2SEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.focus2SEPoint)
+        new ConvertPtToUserCreatedCommand(this.focus2SEPoint)
       );
     }
 
@@ -852,12 +930,14 @@ export default class EllipseHandler extends Highlighter {
       // this.temporaryEllipse.updateDisplay();
 
       if (
-        this.ellipseSEPoint instanceof SEIntersectionPoint &&
-        !this.ellipseSEPoint.isUserCreated
+        (this.ellipseSEPoint instanceof SEIntersectionPoint &&
+          !this.ellipseSEPoint.isUserCreated) ||
+        (this.ellipseSEPoint instanceof SEAntipodalPoint &&
+          !this.ellipseSEPoint.isUserCreated)
       ) {
-        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
         ellipseCommandGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(this.ellipseSEPoint)
+          new ConvertPtToUserCreatedCommand(this.ellipseSEPoint)
         );
       }
     } else {
@@ -980,6 +1060,42 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
+
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      ellipseCommandGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      ///////////
+
       this.ellipseSEPoint = vtx;
       // Set the initial label location
       this.tmpVector
@@ -1104,7 +1220,7 @@ export default class EllipseHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
     EllipseHandler.store
-      .createAllIntersectionsWithEllipse(newSEEllipse)
+      .createAllIntersectionsWithEllipse(newSEEllipse, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           ellipseCommandGroup.addCommand(
@@ -1204,7 +1320,7 @@ export default class EllipseHandler extends Highlighter {
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the ellipse command so they can be undone.
         EllipseHandler.store
-          .createAllIntersectionsWithEllipse(newSEEllipse)
+          .createAllIntersectionsWithEllipse(newSEEllipse, [])
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
               ellipseCommandGroup.addCommand(

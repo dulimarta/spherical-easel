@@ -6,6 +6,7 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 /**
  * This is used when an intersection point the user converted to user created and now wants to
@@ -15,24 +16,28 @@ import { SENodule } from "@/models/SENodule";
  * This does the opposite of ConvertInterPtToUserCreatedCommand
  *
  */
-export class ConvertUserCreatedInterToNotUserCreatedCommand extends Command {
-  private seIntersectionPoint: SEIntersectionPoint;
-  constructor(seIntersectionPoint: SEIntersectionPoint) {
+export class ConvertUserCreatedToNotUserCreatedCommand extends Command {
+  private seIntersOrAntipodePoint: SEIntersectionPoint | SEAntipodalPoint;
+  constructor(
+    seIntersectionOrAntipodePoint: SEIntersectionPoint | SEAntipodalPoint
+  ) {
     super();
-    this.seIntersectionPoint = seIntersectionPoint;
+    this.seIntersOrAntipodePoint = seIntersectionOrAntipodePoint;
   }
 
   do(): void {
     // hide the label
-    if (this.seIntersectionPoint.label != undefined) {
-      this.seIntersectionPoint.label.showing = false;
+    if (this.seIntersOrAntipodePoint.label != undefined) {
+      this.seIntersOrAntipodePoint.label.showing = false;
     }
     // hide the point
-    this.seIntersectionPoint.showing = false;
+    this.seIntersOrAntipodePoint.showing = false;
     // revert to temporary status
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
+    this.seIntersOrAntipodePoint.ref.stylize(
+      DisplayStyle.ApplyTemporaryVariables
+    );
     // set back to automatically created
-    this.seIntersectionPoint.isUserCreated = false;
+    this.seIntersOrAntipodePoint.isUserCreated = false;
   }
 
   saveState(): void {
@@ -40,18 +45,20 @@ export class ConvertUserCreatedInterToNotUserCreatedCommand extends Command {
   }
 
   restoreState(): void {
-    this.seIntersectionPoint.isUserCreated = true;
+    this.seIntersOrAntipodePoint.isUserCreated = true;
     // Set the display to the default values
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.seIntersOrAntipodePoint.ref.stylize(
+      DisplayStyle.ApplyCurrentVariables
+    );
     // Set the size for the current zoom magnification factor
-    this.seIntersectionPoint.ref.adjustSize();
-    this.seIntersectionPoint.showing = true;
+    this.seIntersOrAntipodePoint.ref.adjustSize();
+    this.seIntersOrAntipodePoint.showing = true;
     // show the label
     if (
-      this.seIntersectionPoint.label != undefined &&
+      this.seIntersOrAntipodePoint.label != undefined &&
       SETTINGS.point.showLabelsOfNonFreePointsInitially
     ) {
-      this.seIntersectionPoint.label.showing = true;
+      this.seIntersOrAntipodePoint.label.showing = true;
     }
   }
 

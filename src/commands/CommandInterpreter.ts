@@ -44,8 +44,8 @@ import { AddIntersectionPointOtherParent } from "./AddIntersectionPointOtherPare
 import { RemoveIntersectionPointOtherParent } from "./RemoveIntersectionPointOtherParent";
 import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
 import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
-import { ConvertInterPtToUserCreatedCommand } from "./ConvertInterPtToUserCreatedCommand";
-import { ConvertUserCreatedInterToNotUserCreatedCommand } from "./ConvertUserCreatedInterToNotUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "./ConvertPtToUserCreatedCommand";
+import { ConvertUserCreatedToNotUserCreatedCommand } from "./ConvertUserCreatedToNotUserCreatedCommand";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 const noduleDictionary = new Map<string, SENodule>();
 

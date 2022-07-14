@@ -47,11 +47,11 @@ export default class SelectionHandler extends Highlighter {
    * An array to store the object selected by the key press handler
    */
   private keyPressSelection: SENodule[] = [];
-  private _disableKeyHandler = false;
+  // private _disableKeyHandler = false;
 
-  set disableKeyHandler(b: boolean) {
-    this._disableKeyHandler = b;
-  }
+  // set disableKeyHandler(b: boolean) {
+  //   this._disableKeyHandler = b;
+  // }
   constructor(layers: Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
@@ -65,7 +65,7 @@ export default class SelectionHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
-    if (this._disableKeyHandler) return;
+    // if (this._disableKeyHandler) return;
     //if (keyEvent.repeat) return; // Ignore repeated events on the same key
     // Clear the keyPressSelection
     this.keyPressSelection.clear();

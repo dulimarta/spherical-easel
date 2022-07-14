@@ -12,7 +12,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -25,6 +25,9 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -491,6 +494,7 @@ export default class LineHandler extends Highlighter {
   private makeLine(): boolean {
     //Create a command group so this can be undone
     const lineGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
 
     if (this.startSEPoint === null) {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
@@ -527,6 +531,41 @@ export default class LineHandler extends Highlighter {
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.startVector;
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      lineGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -541,12 +580,14 @@ export default class LineHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.startSEPoint = vtx;
     } else if (
-      this.startSEPoint instanceof SEIntersectionPoint &&
-      !this.startSEPoint.isUserCreated
+      (this.startSEPoint instanceof SEIntersectionPoint &&
+        !this.startSEPoint.isUserCreated) ||
+      (this.startSEPoint instanceof SEAntipodalPoint &&
+        !this.startSEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
+        new ConvertPtToUserCreatedCommand(this.startSEPoint)
       );
     }
 
@@ -554,12 +595,14 @@ export default class LineHandler extends Highlighter {
     if (this.hitSEPoints.length > 0) {
       this.endSEPoint = this.hitSEPoints[0];
       if (
-        this.endSEPoint instanceof SEIntersectionPoint &&
-        !this.endSEPoint.isUserCreated
+        (this.endSEPoint instanceof SEIntersectionPoint &&
+          !this.endSEPoint.isUserCreated) ||
+        (this.endSEPoint instanceof SEAntipodalPoint &&
+          !this.endSEPoint.isUserCreated)
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
+          new ConvertPtToUserCreatedCommand(this.endSEPoint)
         );
       }
     } else {
@@ -695,6 +738,41 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
+
+      /////////////
+      // Create the antipode of the new point, vtx
+      const newAntipodePoint = new NonFreePoint();
+      // Set the display to the default values
+      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      newAntipodePoint.adjustSize();
+
+      // Create the model object for the new point and link them
+      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
+
+      // Create a plottable label
+      // Create an SELabel and link it to the plottable object
+      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+
+      antipodalVtx.locationVector = vtx.locationVector;
+      antipodalVtx.locationVector.multiplyScalar(-1);
+      // Set the initial label location
+      this.tmpVector
+        .copy(antipodalVtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSEAntipodalLabel.locationVector = this.tmpVector;
+      lineGroup.addCommand(
+        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      );
+      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      ///////////
       this.endSEPoint = vtx;
       // Set the initial label location
       this.tmpVector
@@ -788,7 +866,7 @@ export default class LineHandler extends Highlighter {
     // Determine all new intersection points and add their creation to the command so it can be undone
     // let i = 1;
     LineHandler.store
-      .createAllIntersectionsWithLine(newSELine)
+      .createAllIntersectionsWithLine(newSELine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         // console.debug(
         //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
@@ -892,7 +970,7 @@ export default class LineHandler extends Highlighter {
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
         LineHandler.store
-          .createAllIntersectionsWithLine(newSELine)
+          .createAllIntersectionsWithLine(newSELine, [])
           .forEach((item: SEIntersectionReturnType) => {
             if (item.existingIntersectionPoint) {
               lineCommandGroup.addCommand(

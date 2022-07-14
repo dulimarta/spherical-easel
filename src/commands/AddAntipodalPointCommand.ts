@@ -10,7 +10,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import Label from "@/plottables/Label";
 
 export class AddAntipodalPointCommand extends Command {
-  private sePoint: SEPoint;
+  private seAntipodalPoint: SEAntipodalPoint;
   private parentSEPoint: SEPoint;
   private seLabel: SELabel;
   constructor(
@@ -19,29 +19,29 @@ export class AddAntipodalPointCommand extends Command {
     seLabel: SELabel
   ) {
     super();
-    this.sePoint = sePoint;
+    this.seAntipodalPoint = sePoint;
     this.parentSEPoint = parentSEPoint;
     this.seLabel = seLabel;
   }
 
   do(): void {
-    this.parentSEPoint.registerChild(this.sePoint);
-    this.sePoint.registerChild(this.seLabel);
-    Command.store.addPoint(this.sePoint);
+    this.parentSEPoint.registerChild(this.seAntipodalPoint);
+    this.seAntipodalPoint.registerChild(this.seLabel);
+    Command.store.addPoint(this.seAntipodalPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePoint.markKidsOutOfDate();
-    this.sePoint.update();
+    this.seAntipodalPoint.markKidsOutOfDate();
+    this.seAntipodalPoint.update();
   }
 
   saveState(): void {
-    this.lastState = this.sePoint.id;
+    this.lastState = this.seAntipodalPoint.id;
   }
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
-    this.sePoint.unregisterChild(this.seLabel);
-    this.parentSEPoint.unregisterChild(this.sePoint);
+    this.seAntipodalPoint.unregisterChild(this.seLabel);
+    this.parentSEPoint.unregisterChild(this.seAntipodalPoint);
   }
 
   toOpcode(): null | string | Array<string> {
@@ -49,19 +49,19 @@ export class AddAntipodalPointCommand extends Command {
       "AddAntipodalPoint",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
       // All plottable objects have these attributes
-      "objectName=" + Command.symbolToASCIIDec(this.sePoint.name),
-      "objectExists=" + this.sePoint.exists,
-      "objectShowing=" + this.sePoint.showing,
+      "objectName=" + Command.symbolToASCIIDec(this.seAntipodalPoint.name),
+      "objectExists=" + this.seAntipodalPoint.exists,
+      "objectShowing=" + this.seAntipodalPoint.showing,
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seAntipodalPoint.ref.currentStyleState(StyleEditPanels.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seAntipodalPoint.ref.currentStyleState(StyleEditPanels.Back)
           )
         ),
       // All labels have these attributes
@@ -76,8 +76,9 @@ export class AddAntipodalPointCommand extends Command {
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes necessary for recreating the object
-      "pointVector=" + this.sePoint.locationVector.toFixed(9),
-      "antipodalPointsParentName=" + this.parentSEPoint.name
+      "pointVector=" + this.seAntipodalPoint.locationVector.toFixed(9),
+      "antipodalPointsParentName=" + this.parentSEPoint.name,
+      "antipodalPointIsUserCreated=" + this.seAntipodalPoint.isUserCreated
     ].join("&");
   }
 
@@ -97,7 +98,9 @@ export class AddAntipodalPointCommand extends Command {
     if (parentPoint) {
       //make the point
       const point = new Point();
-      const sePoint = new SEAntipodalPoint(point, parentPoint);
+      const isUserCreated =
+        propMap.get("antipodalPointIsUserCreated") === "true";
+      const sePoint = new SEAntipodalPoint(point, parentPoint, isUserCreated);
       const sePointLocation = new Vector3();
       sePointLocation.from(propMap.get("pointVector"));
       sePoint.locationVector.copy(sePointLocation);
