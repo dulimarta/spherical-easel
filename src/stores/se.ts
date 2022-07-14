@@ -61,6 +61,7 @@ export type PiniaAppState = {
   seSegmentIds: Array<number>;
   seCircleIds: Array<number>;
   seEllipseIds: Array<number>;
+  seLabelIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -69,7 +70,7 @@ const sePoints: Map<number, SEPoint> = new Map();
 const seLines: Map<number, SELine> = new Map();
 const seSegments: Map<number, SESegment> = new Map();
 const seCircles: Map<number, SECircle> = new Map();
-const seLabels: Array<SELabel> = [];
+const seLabels: Map<number, SELabel> = new Map();
 const expressions: Array<SEExpression> = [];
 const seAngleMarkers: Array<SEAngleMarker> = [];
 const seEllipses: Map<number, SEEllipse> = new Map();
@@ -102,6 +103,7 @@ export const useSEStore = defineStore({
     seSegmentIds: [],
     seCircleIds: [],
     seEllipseIds: [],
+    seLabelIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -123,7 +125,7 @@ export const useSEStore = defineStore({
       this.seEllipseIds.splice(0);
       seParametrics.splice(0);
       sePencils.splice(0);
-      seLabels.splice(0);
+      this.seLabelIds.splice(0);
       selectedSENodules.splice(0);
       // intersections.splice(0);
       expressions.splice(0);
@@ -226,15 +228,14 @@ export const useSEStore = defineStore({
     },
     //#endregion addPoint
     removePoint(pointId: number): void {
-      const pos = this.sePointIds.findIndex((x: number) => x === pointId);
-      const pos2 = seNodules.findIndex((x: SENodule) => x.id === pointId);
-      if (pos >= 0) {
-        const victimPoint = sePoints.get(pointId)!;
+      const victimPoint = sePoints.get(pointId);
+      if (victimPoint) {
         victimPoint.ref.removeFromLayers();
+        const pos = this.sePointIds.findIndex((x: number) => x === pointId);
+        const pos2 = seNodules.findIndex((x: SENodule) => x.id === pointId);
         this.sePointIds.splice(pos, 1);
         seNodules.splice(pos2, 1);
         sePoints.delete(pointId);
-        // Remove the associated plottable (Nodule) object from being rendered
         this.hasUnsavedNodules = true;
       }
     },
@@ -268,19 +269,20 @@ export const useSEStore = defineStore({
         const pos = seNodules.findIndex(x => x.id === circleId);
         this.seCircleIds.splice(circlePos, 1); // Remove the circle from the list
         seNodules.splice(pos, 1);
+        seCircles.delete(circleId);
         this.hasUnsavedNodules = true;
       }
     },
 
     removeLine(lineId: number): void {
-      const pos = this.seLineIds.findIndex((id: number) => id === lineId);
-      const pos2 = seNodules.findIndex(x => x.id === lineId);
-      if (pos >= 0) {
+      const victimLine = seLines.get(lineId)!;
+      if (victimLine) {
         /* victim line is found */
-        const victimLine = seLines.get(lineId)!;
         victimLine.ref.removeFromLayers();
-        this.seLineIds.splice(pos, 1); // Remove the line from the list
+        const pos = this.seLineIds.findIndex((id: number) => id === lineId);
+        const pos2 = seNodules.findIndex(x => x.id === lineId);
         seLines.delete(lineId);
+        this.seLineIds.splice(pos, 1); // Remove the line from the list
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -293,12 +295,13 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = true;
     },
     removeSegment(segId: number): void {
-      const pos = this.seSegmentIds.findIndex(id => id === segId);
-      const pos2 = seNodules.findIndex(x => x.id === segId);
-      if (pos >= 0) {
-        const victimSegment = seSegments.get(segId)!;
+      const victimSegment = seSegments.get(segId);
+      if (victimSegment) {
+        const pos = this.seSegmentIds.findIndex(id => id === segId);
+        const pos2 = seNodules.findIndex(x => x.id === segId);
         victimSegment.ref.removeFromLayers();
         this.seSegmentIds.splice(pos, 1);
+        seSegments.delete(segId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -313,13 +316,12 @@ export const useSEStore = defineStore({
     },
 
     removeEllipse(ellipseId: number): void {
-      const ellipsePos = this.seEllipseIds.findIndex(id => id === ellipseId);
-      const pos2 = seNodules.findIndex(x => x.id === ellipseId);
-      if (ellipsePos >= 0) {
+      const victimEllipse = seEllipses.get(ellipseId)!;
+      if (victimEllipse) {
         /* victim line is found */
-        const victimEllipse: SEEllipse = seEllipses.get(ellipsePos)!;
         victimEllipse.ref.removeFromLayers();
-        // victimEllipse.removeSelfSafely();
+        const ellipsePos = this.seEllipseIds.findIndex(id => id === ellipseId);
+        const pos2 = seNodules.findIndex(x => x.id === ellipseId);
         this.seEllipseIds.splice(ellipsePos, 1); // Remove the ellipse from the list
         seEllipses.delete(ellipseId);
         seNodules.splice(pos2, 1);
@@ -327,20 +329,22 @@ export const useSEStore = defineStore({
       }
     },
     addLabel(label: SELabel): void {
-      seLabels.push(label);
+      this.seLabelIds.push(label.id);
+      seLabels.set(label.id, label);
       seNodules.push(label);
       label.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     removeLabel(labelId: number): void {
-      const pos = seLabels.findIndex((x: SELabel) => x.id === labelId);
-      const pos2 = seNodules.findIndex((x: SENodule) => x.id === labelId);
-      if (pos >= 0) {
-        const victimLabel = seLabels[pos];
-        seLabels.splice(pos, 1);
-        seNodules.splice(pos2, 1);
+      const victimLabel = seLabels.get(labelId);
+      if (victimLabel) {
         // Remove the associated plottable (Nodule) object from being rendered
         victimLabel.ref.removeFromLayers(layers);
+        const pos = this.seLabelIds.findIndex(id => id === labelId);
+        const pos2 = seNodules.findIndex((x: SENodule) => x.id === labelId);
+        this.seLabelIds.splice(pos, 1);
+        seLabels.delete(labelId);
+        seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
     },
@@ -628,7 +632,8 @@ export const useSEStore = defineStore({
       state.seSegmentIds.map(id => seSegments.get(id)!),
     seEllipses: (state): Array<SEEllipse> =>
       state.seEllipseIds.map(id => seEllipses.get(id)!),
-    seLabels: (): Array<SELabel> => seLabels,
+    seLabels: (state): Array<SELabel> =>
+      state.seLabelIds.map(id => seLabels.get(id)!),
     seAngleMarkers: (): Array<SEAngleMarker> => seAngleMarkers,
     seParametrics: (): Array<SEParametric> => seParametrics,
     sePolygons: (): Array<SEPolygon> => sePolygons,
