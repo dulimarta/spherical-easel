@@ -56,11 +56,12 @@ export type PiniaAppState = {
   canvasWidth: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   styleSavedFromPanel: StyleEditPanels;
-  sePoints: Array<SEPoint>;
+  sePointIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
 const oldSelections: Array<SENodule> = [];
+const sePoints: Map<number, SEPoint> = new Map();
 const seLines: Array<SELine> = [];
 const seSegments: Array<SESegment> = [];
 const seCircles: Array<SECircle> = [];
@@ -92,7 +93,7 @@ export const useSEStore = defineStore({
     zoomMagnificationFactor: 1,
     zoomTranslation: [0, 0],
     canvasWidth: 0,
-    sePoints: [],
+    sePointIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -105,7 +106,7 @@ export const useSEStore = defineStore({
       // Replace clear() with splice(0). Since clear() is an extension function
       // Update to these arrays are not automatically picked up by VueJS
       seNodules.splice(0);
-      this.sePoints.splice(0);
+      this.sePointIds.splice(0);
       seLines.splice(0);
       seSegments.splice(0);
       seCircles.splice(0);
@@ -163,7 +164,10 @@ export const useSEStore = defineStore({
       seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
       seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
       seLines.forEach((x: SELine) => x.ref.removeFromLayers());
-      this.sePoints.forEach(x => x.ref.removeFromLayers());
+      this.sePointIds.forEach(id => {
+        const pt = sePoints.get(id);
+        if (pt) pt.ref.removeFromLayers();
+      });
       seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
       sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
       seParametrics.forEach((x: SEParametric) => {
@@ -206,23 +210,23 @@ export const useSEStore = defineStore({
     },
     //#region addPoint
     addPoint(point: SEPoint): void {
-      this.sePoints.push(point);
+      this.sePointIds.push(point.id);
+      sePoints.set(point.id, point);
       seNodules.push(point);
       point.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     //#endregion addPoint
     removePoint(pointId: number): void {
-      const pos = this.sePoints
-        .map(x => x as SEPoint)
-        .findIndex((x: SEPoint) => x.id === pointId);
+      const pos = this.sePointIds.findIndex((x: number) => x === pointId);
       const pos2 = seNodules.findIndex((x: SENodule) => x.id === pointId);
       if (pos >= 0) {
-        const victimPoint = this.sePoints[pos];
-        this.sePoints.splice(pos, 1);
-        seNodules.splice(pos2, 1);
-        // Remove the associated plottable (Nodule) object from being rendered
+        const victimPoint = sePoints.get(pointId)!;
         victimPoint.ref.removeFromLayers();
+        this.sePointIds.splice(pos, 1);
+        seNodules.splice(pos2, 1);
+        sePoints.delete(pointId);
+        // Remove the associated plottable (Nodule) object from being rendered
         this.hasUnsavedNodules = true;
       }
     },
@@ -601,7 +605,8 @@ export const useSEStore = defineStore({
     // zoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
     seNodules: (): Array<SENodule> => seNodules,
-    // sePoints: (): Array<SEPoint> => sePoints,
+    sePoints: (state): Array<SEPoint> =>
+      state.sePointIds.map(id => sePoints.get(id)!),
     seLines: (): Array<SELine> => seLines,
     seCircles: (): Array<SECircle> => seCircles,
     seSegments: (): Array<SESegment> => seSegments,
@@ -620,19 +625,19 @@ export const useSEStore = defineStore({
       defaultStyleStatesMap,
     layers: (): Array<Group> => layers,
     hasObjects(state): boolean {
-      return state.sePoints.length > 0;
+      return state.sePointIds.length > 0;
     },
     hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
       return (testPoint: SEPoint): boolean => {
         // create the antipode location vector
         tmpVector.copy(testPoint.locationVector).multiplyScalar(-1);
         // search for the antipode location vector
-        const ind = state.sePoints
-          .map(p => p as SEPoint)
-          .findIndex((p: SEPoint) => {
+        const possibleAntipodes = state.sePointIds
+          .map(id => sePoints.get(id)!)
+          .filter((p: SEPoint) => {
             return tmpVector.equals(p.locationVector);
           });
-        if (ind < 0) {
+        if (possibleAntipodes.length == 0) {
           // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return true)
           return true;
         } else {
@@ -644,30 +649,12 @@ export const useSEStore = defineStore({
 
           // In the case that (2) happens it is possible that there are two points in the array sePoint with *exactly* the
           // same location vector at -1*A, if that happens then the antipode is already created and we should return false (not no antipode = antipode exists)
-          const ind2 = state.sePoints
-            .map(p => p as SEPoint)
-            .findIndex((p: SEPoint, index: number) => {
-              if (index <= ind) {
-                // ignore the entries in sePoint upto index ind, because they have already been searched
-                return false;
-              } else {
-                return tmpVector.equals(p.locationVector);
-              }
-            });
-          // the -1*testPoint.location appears twice!
-          if (ind2 >= 0) {
-            return false;
-          }
 
-          if (state.sePoints[ind] instanceof SEIntersectionPoint) {
-            if (!(state.sePoints[ind] as SEIntersectionPoint).isUserCreated) {
-              return true; // Case (2)
-            } else {
-              return false; // Case (1)
-            }
-          } else {
-            return false;
-          }
+          // Check how many of these candidates are user created
+          const userCreated = possibleAntipodes.filter(
+            p => p instanceof SEIntersectionPoint && p.isUserCreated
+          );
+          return userCreated.length === 0;
         }
       };
     },
@@ -695,8 +682,8 @@ export const useSEStore = defineStore({
         parent1Name: string,
         parent2Name?: string
       ): SEIntersectionPoint[] => {
-        const intersectionPoints = state.sePoints
-          .map(p => p as SEPoint)
+        const intersectionPoints = state.sePointIds
+          .map(id => sePoints.get(id)!)
           .filter(
             (p: SEPoint) =>
               p instanceof SEIntersectionPoint &&
@@ -748,8 +735,8 @@ export const useSEStore = defineStore({
         ) {
           avoidVectors.push(newLine.endSEPoint.locationVector);
         }
-        state.sePoints
-          .map(p => p as SEPoint)
+        state.sePointIds
+          .map(id => sePoints.get(id)!)
           .forEach((pt: SEPoint) => {
             if (!pt.locationVector.isZero()) {
               avoidVectors.push(pt.locationVector);
@@ -898,8 +885,8 @@ export const useSEStore = defineStore({
         //  they won't have been added to the state.points array yet so add them first
         avoidVectors.push(newSegment.startSEPoint.locationVector);
         avoidVectors.push(newSegment.endSEPoint.locationVector);
-        state.sePoints
-          .map(p => p as SEPoint)
+        state.sePointIds
+          .map(id => sePoints.get(id)!)
           .forEach((pt: SEPoint) => {
             if (!pt.locationVector.isZero()) {
               avoidVectors.push(pt.locationVector);
@@ -1089,8 +1076,8 @@ export const useSEStore = defineStore({
         //  they won't have been added to the state.points array yet so add them first
         avoidVectors.push(newCircle.centerSEPoint.locationVector);
         avoidVectors.push(newCircle.circleSEPoint.locationVector);
-        state.sePoints
-          .map(p => p as SEPoint)
+        state.sePointIds
+          .map(id => sePoints.get(id)!)
           .forEach((pt: SEPoint) => {
             if (!pt.locationVector.isZero()) {
               avoidVectors.push(pt.locationVector);
@@ -1282,8 +1269,8 @@ export const useSEStore = defineStore({
         avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
         avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
         avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
-        state.sePoints
-          .map(pt => pt as SEPoint)
+        state.sePointIds
+          .map(id => sePoints.get(id)!)
           .forEach((pt: SEPoint) => {
             if (!pt.locationVector.isZero()) {
               avoidVectors.push(pt.locationVector);
@@ -1481,8 +1468,8 @@ export const useSEStore = defineStore({
             avoidVectors.push(pt.locationVector);
           }
         });
-        state.sePoints
-          .map(pt => pt as SEPoint)
+        state.sePointIds
+          .map(id => sePoints.get(id)!)
           .forEach((pt: SEPoint) => {
             if (!pt.locationVector.isZero()) {
               avoidVectors.push(pt.locationVector);
