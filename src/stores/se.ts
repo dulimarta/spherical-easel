@@ -58,13 +58,14 @@ export type PiniaAppState = {
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
+  seSegmentIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
 const oldSelections: Array<SENodule> = [];
 const sePoints: Map<number, SEPoint> = new Map();
 const seLines: Map<number, SELine> = new Map();
-const seSegments: Array<SESegment> = [];
+const seSegments: Map<number, SESegment> = new Map();
 const seCircles: Array<SECircle> = [];
 const seLabels: Array<SELabel> = [];
 const expressions: Array<SEExpression> = [];
@@ -96,6 +97,7 @@ export const useSEStore = defineStore({
     canvasWidth: 0,
     sePointIds: [],
     seLineIds: [],
+    seSegmentIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -110,7 +112,7 @@ export const useSEStore = defineStore({
       seNodules.splice(0);
       this.sePointIds.splice(0);
       this.seLineIds.splice(0);
-      seSegments.splice(0);
+      this.seSegmentIds.splice(0);
       seCircles.splice(0);
       seAngleMarkers.splice(0);
       sePolygons.splice(0);
@@ -280,18 +282,19 @@ export const useSEStore = defineStore({
       }
     },
     addSegment(segment: SESegment): void {
-      seSegments.push(segment);
+      this.seSegmentIds.push(segment.id);
+      seSegments.set(segment.id, segment);
       seNodules.push(segment);
       segment.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
     removeSegment(segId: number): void {
-      const pos = seSegments.findIndex(x => x.id === segId);
+      const pos = this.seSegmentIds.findIndex(id => id === segId);
       const pos2 = seNodules.findIndex(x => x.id === segId);
       if (pos >= 0) {
-        const victimSegment = seSegments[pos];
+        const victimSegment = seSegments.get(segId)!;
         victimSegment.ref.removeFromLayers();
-        seSegments.splice(pos, 1);
+        this.seSegmentIds.splice(pos, 1);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -614,7 +617,8 @@ export const useSEStore = defineStore({
     seLines: (state): Array<SELine> =>
       state.seLineIds.map(id => seLines.get(id)!),
     seCircles: (): Array<SECircle> => seCircles,
-    seSegments: (): Array<SESegment> => seSegments,
+    seSegments: (state): Array<SESegment> =>
+      state.seSegmentIds.map(id => seSegments.get(id)!),
     seEllipses: (): Array<SEEllipse> => seEllipses,
     seLabels: (): Array<SELabel> => seLabels,
     seAngleMarkers: (): Array<SEAngleMarker> => seAngleMarkers,
@@ -936,7 +940,8 @@ export const useSEStore = defineStore({
           });
         });
         //Intersect this new segment with all old segments
-        seSegments
+        state.seSegmentIds
+          .map(id => seSegments.get(id)!)
           .filter((segment: SESegment) => segment.id !== newSegment.id) // ignore self
           .forEach((oldSegment: SESegment) => {
             const intersectionInfo = intersectSegmentWithSegment(
