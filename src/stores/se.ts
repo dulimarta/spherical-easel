@@ -62,6 +62,8 @@ export type PiniaAppState = {
   seCircleIds: Array<number>;
   seEllipseIds: Array<number>;
   seLabelIds: Array<number>;
+  seExpressionIds: Array<number>;
+  seAngleMarkerIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -71,8 +73,8 @@ const seLines: Map<number, SELine> = new Map();
 const seSegments: Map<number, SESegment> = new Map();
 const seCircles: Map<number, SECircle> = new Map();
 const seLabels: Map<number, SELabel> = new Map();
-const expressions: Array<SEExpression> = [];
-const seAngleMarkers: Array<SEAngleMarker> = [];
+const seExpressions: Map<number, SEExpression> = new Map();
+const seAngleMarkers: Map<number, SEAngleMarker> = new Map();
 const seEllipses: Map<number, SEEllipse> = new Map();
 const seParametrics: Array<SEParametric> = [];
 const sePencils: Array<SEPencil> = [];
@@ -104,6 +106,8 @@ export const useSEStore = defineStore({
     seCircleIds: [],
     seEllipseIds: [],
     seLabelIds: [],
+    seExpressionIds: [],
+    seAngleMarkerIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -120,7 +124,7 @@ export const useSEStore = defineStore({
       this.seLineIds.splice(0);
       this.seSegmentIds.splice(0);
       this.seCircleIds.splice(0);
-      seAngleMarkers.splice(0);
+      this.seAngleMarkerIds.splice(0);
       sePolygons.splice(0);
       this.seEllipseIds.splice(0);
       seParametrics.splice(0);
@@ -128,7 +132,7 @@ export const useSEStore = defineStore({
       this.seLabelIds.splice(0);
       selectedSENodules.splice(0);
       // intersections.splice(0);
-      expressions.splice(0);
+      this.seExpressionIds.splice(0);
       // initialStyleStates.splice(0);
       // defaultStyleStates.splice(0);
       this.hasUnsavedNodules = false;
@@ -355,31 +359,34 @@ export const useSEStore = defineStore({
     },
 
     addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
-      expressions.push(angleMarker);
-      seAngleMarkers.push(angleMarker);
+      this.seExpressionIds.push(angleMarker.id);
+      this.seAngleMarkerIds.push(angleMarker.id);
+      seAngleMarkers.set(angleMarker.id, angleMarker);
+      seExpressions.set(angleMarker.id, angleMarker);
       seNodules.push(angleMarker);
       angleMarker.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeAngleMarkerAndExpression(angleMarkerId: number): void {
-      const angleMarkerPos = seAngleMarkers.findIndex(
-        x => x.id === angleMarkerId
-      );
-      const pos2 = seNodules.findIndex(x => x.id === angleMarkerId);
-      const pos3 = expressions.findIndex(x => x.id === angleMarkerId);
-      if (angleMarkerPos >= 0) {
+      const victimAngleMarker = seAngleMarkers.get(angleMarkerId);
+      if (victimAngleMarker) {
         /* victim angleMarker is found */
-        const victimAngleMarker: SEAngleMarker = seAngleMarkers[angleMarkerPos];
+        victimAngleMarker.ref.removeFromLayers();
+        seAngleMarkers.delete(angleMarkerId);
+        const angleMarkerPos = this.seAngleMarkerIds.findIndex(
+          id => id === angleMarkerId
+        );
+        const pos2 = seNodules.findIndex(x => x.id === angleMarkerId);
+        const pos3 = this.seExpressionIds.findIndex(id => id === angleMarkerId);
         // when removing expressions that have effects on the labels, we must set those label display arrays to empty
         if (victimAngleMarker.label) {
           victimAngleMarker.label.ref.value = [];
         }
-        victimAngleMarker.ref.removeFromLayers();
         // victimCircle.removeSelfSafely();
-        seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
+        this.seAngleMarkerIds.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
         seNodules.splice(pos2, 1);
-        expressions.splice(pos3, 1);
+        this.seExpressionIds.splice(pos3, 1);
         this.hasUnsavedNodules = true;
       }
     },
@@ -412,7 +419,7 @@ export const useSEStore = defineStore({
       }
     },
     addPolygonAndExpression(polygon: SEPolygon): void {
-      expressions.push(polygon);
+      this.seExpressionIds.push(polygon.id);
       sePolygons.push(polygon);
       seNodules.push(polygon);
       polygon.ref.addToLayers(layers);
@@ -422,7 +429,7 @@ export const useSEStore = defineStore({
     removePolygonAndExpression(polygonId: number): void {
       const polygonPos = sePolygons.findIndex(x => x.id === polygonId);
       const pos2 = seNodules.findIndex(x => x.id === polygonId);
-      const pos3 = expressions.findIndex(x => x.id === polygonId);
+      const pos3 = this.seExpressionIds.findIndex(id => id === polygonId);
       if (polygonPos >= 0) {
         /* victim polygon is found */
         const victimPolygon: SEPolygon = sePolygons[polygonPos];
@@ -433,21 +440,23 @@ export const useSEStore = defineStore({
         victimPolygon.ref.removeFromLayers();
         sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
         seNodules.splice(pos2, 1);
-        expressions.splice(pos3, 1);
+        this.seExpressionIds.splice(pos3, 1);
         this.hasUnsavedNodules = true;
       }
     },
     addExpression(measurement: SEExpression): void {
-      expressions.push(measurement);
+      this.seExpressionIds.push(measurement.id);
+      seExpressions.set(measurement.id, measurement);
       seNodules.push(measurement);
       this.hasUnsavedNodules = true;
     },
     removeExpression(measId: number): void {
-      const pos = expressions.findIndex(x => x.id === measId);
-      const pos2 = seNodules.findIndex(x => x.id === measId);
-      if (pos >= 0) {
-        // const victimSegment = this.measurements[pos];
-        expressions.splice(pos, 1);
+      const victimExpr = seExpressions.get(measId);
+      if (victimExpr) {
+        seExpressions.delete(measId);
+        const pos = this.seExpressionIds.findIndex(id => id === measId);
+        const pos2 = seNodules.findIndex(x => x.id === measId);
+        this.seExpressionIds.splice(pos, 1);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -634,10 +643,12 @@ export const useSEStore = defineStore({
       state.seEllipseIds.map(id => seEllipses.get(id)!),
     seLabels: (state): Array<SELabel> =>
       state.seLabelIds.map(id => seLabels.get(id)!),
-    seAngleMarkers: (): Array<SEAngleMarker> => seAngleMarkers,
+    seAngleMarkers: (state): Array<SEAngleMarker> =>
+      state.seAngleMarkerIds.map(id => seAngleMarkers.get(id)!),
     seParametrics: (): Array<SEParametric> => seParametrics,
     sePolygons: (): Array<SEPolygon> => sePolygons,
-    expressions: (): Array<SEExpression> => expressions,
+    expressions: (state): Array<SEExpression> =>
+      state.seExpressionIds.map(id => seExpressions.get(id)!),
     selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
