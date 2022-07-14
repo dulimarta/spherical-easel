@@ -59,6 +59,8 @@ export type PiniaAppState = {
   sePointIds: Array<number>;
   seLineIds: Array<number>;
   seSegmentIds: Array<number>;
+  seCircleIds: Array<number>;
+  seEllipseIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -66,11 +68,11 @@ const oldSelections: Array<SENodule> = [];
 const sePoints: Map<number, SEPoint> = new Map();
 const seLines: Map<number, SELine> = new Map();
 const seSegments: Map<number, SESegment> = new Map();
-const seCircles: Array<SECircle> = [];
+const seCircles: Map<number, SECircle> = new Map();
 const seLabels: Array<SELabel> = [];
 const expressions: Array<SEExpression> = [];
 const seAngleMarkers: Array<SEAngleMarker> = [];
-const seEllipses: Array<SEEllipse> = [];
+const seEllipses: Map<number, SEEllipse> = new Map();
 const seParametrics: Array<SEParametric> = [];
 const sePencils: Array<SEPencil> = [];
 const sePolygons: Array<SEPolygon> = [];
@@ -98,6 +100,8 @@ export const useSEStore = defineStore({
     sePointIds: [],
     seLineIds: [],
     seSegmentIds: [],
+    seCircleIds: [],
+    seEllipseIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -113,10 +117,10 @@ export const useSEStore = defineStore({
       this.sePointIds.splice(0);
       this.seLineIds.splice(0);
       this.seSegmentIds.splice(0);
-      seCircles.splice(0);
+      this.seCircleIds.splice(0);
       seAngleMarkers.splice(0);
       sePolygons.splice(0);
-      seEllipses.splice(0);
+      this.seEllipseIds.splice(0);
       seParametrics.splice(0);
       sePencils.splice(0);
       seLabels.splice(0);
@@ -248,22 +252,22 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = true;
     },
     addCircle(circle: SECircle): void {
-      seCircles.push(circle);
+      this.seCircleIds.push(circle.id);
+      seCircles.set(circle.id, circle);
       seNodules.push(circle);
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeCircle(circleId: number): void {
-      const circlePos = seCircles.findIndex(x => x.id === circleId);
-      const pos2 = seNodules.findIndex(x => x.id === circleId);
-      if (circlePos >= 0) {
+      const victimCircle = seCircles.get(circleId);
+      if (victimCircle) {
         /* victim line is found */
-        const victimCircle: SECircle = seCircles[circlePos];
         victimCircle.ref.removeFromLayers();
-        // victimCircle.removeSelfSafely();
-        seCircles.splice(circlePos, 1); // Remove the circle from the list
-        seNodules.splice(pos2, 1);
+        const circlePos = this.seCircleIds.findIndex(id => id === circleId);
+        const pos = seNodules.findIndex(x => x.id === circleId);
+        this.seCircleIds.splice(circlePos, 1); // Remove the circle from the list
+        seNodules.splice(pos, 1);
         this.hasUnsavedNodules = true;
       }
     },
@@ -301,21 +305,23 @@ export const useSEStore = defineStore({
     },
 
     addEllipse(ellipse: SEEllipse): void {
-      seEllipses.push(ellipse);
+      this.seEllipseIds.push(ellipse.id);
+      seEllipses.set(ellipse.id, ellipse);
       seNodules.push(ellipse);
       ellipse.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
 
     removeEllipse(ellipseId: number): void {
-      const ellipsePos = seEllipses.findIndex(x => x.id === ellipseId);
+      const ellipsePos = this.seEllipseIds.findIndex(id => id === ellipseId);
       const pos2 = seNodules.findIndex(x => x.id === ellipseId);
       if (ellipsePos >= 0) {
         /* victim line is found */
-        const victimEllipse: SEEllipse = seEllipses[ellipsePos];
+        const victimEllipse: SEEllipse = seEllipses.get(ellipsePos)!;
         victimEllipse.ref.removeFromLayers();
         // victimEllipse.removeSelfSafely();
-        seEllipses.splice(ellipsePos, 1); // Remove the ellipse from the list
+        this.seEllipseIds.splice(ellipsePos, 1); // Remove the ellipse from the list
+        seEllipses.delete(ellipseId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -616,10 +622,12 @@ export const useSEStore = defineStore({
       state.sePointIds.map(id => sePoints.get(id)!),
     seLines: (state): Array<SELine> =>
       state.seLineIds.map(id => seLines.get(id)!),
-    seCircles: (): Array<SECircle> => seCircles,
+    seCircles: (state): Array<SECircle> =>
+      state.seCircleIds.map(id => seCircles.get(id)!),
     seSegments: (state): Array<SESegment> =>
       state.seSegmentIds.map(id => seSegments.get(id)!),
-    seEllipses: (): Array<SEEllipse> => seEllipses,
+    seEllipses: (state): Array<SEEllipse> =>
+      state.seEllipseIds.map(id => seEllipses.get(id)!),
     seLabels: (): Array<SELabel> => seLabels,
     seAngleMarkers: (): Array<SEAngleMarker> => seAngleMarkers,
     seParametrics: (): Array<SEParametric> => seParametrics,
@@ -1160,7 +1168,8 @@ export const useSEStore = defineStore({
           });
         });
         //Intersect this new circle with all old circles
-        seCircles
+        state.seCircleIds
+          .map(id => seCircles.get(id)!)
           .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
           .forEach((oldCircle: SECircle) => {
             const intersectionInfo = intersectCircles(
@@ -1393,7 +1402,8 @@ export const useSEStore = defineStore({
         });
 
         //Intersect this new ellipse with all old ellipses
-        seEllipses
+        state.seEllipseIds
+          .map(id => seEllipses.get(id)!)
           .filter((ellipe: SEEllipse) => ellipe.id !== newEllipse.id) // ignore self
           .forEach((oldEllipse: SEEllipse) => {
             const intersectionInfo = intersectEllipseWithEllipse(
