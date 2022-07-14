@@ -338,6 +338,18 @@ export default class Segment extends Nodule {
         negIndex++;
       }
     }
+    console.debug(
+      `Front part visible? ${this._frontPart.visible} vertices ${this._frontPart.vertices.length}, linewidth ${this._frontPart.linewidth}`
+    );
+    console.debug(
+      `Back part visible? ${this._backPart.visible} vertices ${this._backPart.vertices.length}, linewidth ${this._backPart.linewidth}`
+    );
+    console.debug(
+      `Front extra part visible? ${this._frontExtra.visible} extra vertices ${this._frontExtra.vertices.length}, linewidth ${this._frontExtra.linewidth}`
+    );
+    console.debug(
+      `Back extra part visible? ${this._backExtra.visible} extra vertices ${this._backExtra.vertices.length}, linewidth ${this._backExtra.linewidth}`
+    );
   }
 
   /**
@@ -476,7 +488,7 @@ export default class Segment extends Nodule {
       if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this._backExtra.vertices.forEach((v: Anchor, pos: number) => {
+    this.glowingBackExtra.vertices.forEach((v: Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
@@ -485,6 +497,7 @@ export default class Segment extends Nodule {
   }
 
   addToLayers(layers: Group[]): void {
+    //console.debug(`add to layers`);
     this._frontPart.addTo(layers[LAYER.foreground]);
     this._frontExtra.addTo(layers[LAYER.foreground]);
     this._backPart.addTo(layers[LAYER.background]);

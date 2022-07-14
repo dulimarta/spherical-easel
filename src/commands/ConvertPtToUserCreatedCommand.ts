@@ -23,6 +23,9 @@ export class ConvertPtToUserCreatedCommand extends Command {
   }
 
   do(): void {
+    console.debug(
+      `ConvertPtToUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created`
+    );
     this.seIntersectionOrAntipodePoint.isUserCreated = true;
     // Set the display to the default values
     this.seIntersectionOrAntipodePoint.ref.stylize(
@@ -45,6 +48,10 @@ export class ConvertPtToUserCreatedCommand extends Command {
   }
 
   restoreState(): void {
+    console.debug(
+      `ConvertPtToUserCreated: RESTORE changed ${this.seIntersectionOrAntipodePoint.name} to NOT user created`
+    );
+
     // hide the label
     if (this.seIntersectionOrAntipodePoint.label != undefined) {
       this.seIntersectionOrAntipodePoint.label.showing = false;

@@ -148,7 +148,8 @@ export default class ParametricForm extends Vue {
   readonly expressions!: SEExpression[];
   readonly seParametrics!: SEParametric[];
   readonly createAllIntersectionsWithParametric!: (
-    _: SEParametric
+    _s: SEParametric,
+    _p: SEPoint[]
   ) => SEIntersectionReturnType[];
   /**
    * These are string expressions that once set define the Parametric curve

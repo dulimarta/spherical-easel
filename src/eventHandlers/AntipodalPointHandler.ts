@@ -128,6 +128,18 @@ export default class AntipodalPointHandler extends Highlighter {
               )
             );
           }
+          if (
+            this.parentPoint instanceof SEIntersectionPoint &&
+            !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode its parent already exists
+          ) {
+            //Make it user created and turn on the display
+            antipodalCommandGroup.addCommand(
+              new ConvertPtToUserCreatedCommand(
+                this.parentPoint as SEIntersectionPoint
+              )
+            );
+          }
+          antipodalCommandGroup.execute();
         } else {
           // the antipode is already displayed
           //"The antipode of the selected point is the point {pointName} and has already been created.",
@@ -193,19 +205,20 @@ export default class AntipodalPointHandler extends Highlighter {
 
       if (!this.parentPointVector.isZero()) {
         const antipodalCommandGroup = new CommandGroup();
-        if (this.parentPoint !== null) {
-          if (
-            this.parentPoint instanceof SEIntersectionPoint &&
-            !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode it parent already exists
-          ) {
-            //Make it user created and turn on the display
-            antipodalCommandGroup.addCommand(
-              new ConvertPtToUserCreatedCommand(
-                this.parentPoint as SEIntersectionPoint
-              )
-            );
-          }
-        } else if (this.oneDimensionalContainingParentPoint !== null) {
+        //if (this.parentPoint !== null) {
+        //   if (
+        //     this.parentPoint instanceof SEIntersectionPoint &&
+        //     !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode it parent already exists
+        //   ) {
+        //     //Make it user created and turn on the display
+        //     antipodalCommandGroup.addCommand(
+        //       new ConvertPtToUserCreatedCommand(
+        //         this.parentPoint as SEIntersectionPoint
+        //       )
+        //     );
+        //   }
+        // } else
+        if (this.oneDimensionalContainingParentPoint !== null) {
           // create a new point on the object that the user clicked on
           const newPoint = new Point();
           // Set the display to the default values
@@ -317,6 +330,7 @@ export default class AntipodalPointHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    let displayTemporaryAntipode = true;
     // Only one point can be processed at a time, so set the first point nearby to glowing
     // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are the only nearby objects
@@ -363,6 +377,9 @@ export default class AntipodalPointHandler extends Highlighter {
         this.hitSEPoints[0].glowing = true;
         this.snapToTemporaryPoint = this.hitSEPoints[0];
         this.snapToTemporaryOneDimensional = null;
+      } else {
+        // console.debug(`here display temp is falses`);
+        displayTemporaryAntipode = false;
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -421,16 +438,12 @@ export default class AntipodalPointHandler extends Highlighter {
           // Remove the temporary objects from the display.
           this.temporaryPointMarker.removeFromLayers();
           this.isTemporaryPointAdded = false;
-          // // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
-          // // if the nearby point is not antipode-able remove the temporary antipode
-          // const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
-          //   this.hitSEPoints[0]
-          // );
-          // if (possibleAntipode !== null) {
-          //   this.temporaryAntipodeMarker.removeFromLayers();
-          //   this.isTemporaryAntipodeAdded = false;
-          // }
-          //console.debug(`Here antipode`);
+          //console.debug(`Here`);
+          // if the nearby point is not antipode-able remove the temporary antipode
+          if (!displayTemporaryAntipode && this.isTemporaryAntipodeAdded) {
+            this.temporaryAntipodeMarker.removeFromLayers();
+            this.isTemporaryAntipodeAdded = false;
+          }
         }
       } else if (
         this.snapToTemporaryOneDimensional !== null &&
@@ -456,15 +469,12 @@ export default class AntipodalPointHandler extends Highlighter {
           // Remove the temporary objects from the display.
           this.temporaryPointMarker.removeFromLayers();
           this.isTemporaryPointAdded = false;
-          // // EXAMINE THIS TEMPORARY CODE LATER WHEN YOU DECIDE HOW TO FIX THE ANTIPODE ISSUE
-          // // if the nearby point is not antipode-able remove the temporary antipode
-          // const possibleAntipode = AntipodalPointHandler.store.hasNoAntipode(
-          //   this.hitSEPoints[0]
-          // );
-          // if (possibleAntipode !== null) {
-          //   this.temporaryAntipodeMarker.removeFromLayers();
-          //   this.isTemporaryAntipodeAdded = false;
-          // }
+
+          // if the nearby point is not antipode-able remove the temporary antipode
+          if (!displayTemporaryAntipode && this.isTemporaryAntipodeAdded) {
+            this.temporaryAntipodeMarker.removeFromLayers();
+            this.isTemporaryAntipodeAdded = false;
+          }
         }
       } else if (
         this.snapToTemporaryOneDimensional === null &&
@@ -483,6 +493,11 @@ export default class AntipodalPointHandler extends Highlighter {
           // Remove the temporary objects from the display.
           this.temporaryPointMarker.removeFromLayers();
           this.isTemporaryPointAdded = false;
+          // if the nearby point is not antipode-able remove the temporary antipode
+          // if (!displayTemporaryAntipode) {
+          //   this.temporaryAntipodeMarker.removeFromLayers();
+          //   this.isTemporaryAntipodeAdded = false;
+          // }
         }
       }
     } else {
