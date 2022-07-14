@@ -89,13 +89,18 @@ export default class RotateHandler extends Highlighter {
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
   private store: SEStoreType;
+  private _disableKeyHandler = false;
 
+  set disableKeyHandler(b: boolean) {
+    this._disableKeyHandler = b;
+  }
   constructor(layers: Group[]) {
     super(layers);
     this.store = useSEStore();
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {
+    if (this._disableKeyHandler) return;
     if (keyEvent.repeat) return; // Ignore repeated events on the same key
     if (keyEvent.altKey) {
       this.momentumMode = false;
@@ -118,6 +123,7 @@ export default class RotateHandler extends Highlighter {
   };
 
   keyUp = (keyEvent: KeyboardEvent): void => {
+    if (this._disableKeyHandler) return;
     if (this.altKeyDown) {
       this.momentumMode = false;
       EventBus.fire("show-alert", {

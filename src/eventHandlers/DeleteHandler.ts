@@ -14,6 +14,12 @@ import { ChangeIntersectionPointPrincipleParent } from "@/commands/ChangeInterse
 import i18n from "@/i18n";
 import { intersectTwoObjects } from "@/utils/intersections";
 import { RemoveIntersectionPointOtherParent } from "@/commands/RemoveIntersectionPointOtherParent";
+import { del } from "@vue/composition-api";
+import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SEParametric } from "@/models/SEParametric";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -370,7 +376,7 @@ export default class DeleteHandler extends Highlighter {
       const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
 
       if (seNoduleBeforeState !== undefined) {
-        // if the SENodule is not an intersection point, delete it as normal
+        // if the SENodule is not an intersection point, delete it as normal (but if one dimensional remove it as a parent from any intersection point)
         //  if the SENodule is an intersection point delete it (if it is not on the notDeleteSENoduleIDs list),
         // or remove the deleted seNodules in the otherParenArray and change the principle parentage
         //  in the DAG
@@ -524,6 +530,33 @@ export default class DeleteHandler extends Highlighter {
             }
           }
         } else {
+          if (
+            // I would love an operator that works with custom interface types so I could just type
+            // seNoduleBeforeState.object typeof "SEOneDimensional" but I can't :-(
+            seNoduleBeforeState.object instanceof SELine ||
+            seNoduleBeforeState.object instanceof SESegment ||
+            seNoduleBeforeState.object instanceof SECircle ||
+            seNoduleBeforeState.object instanceof SEEllipse ||
+            seNoduleBeforeState.object instanceof SEParametric
+          ) {
+            DeleteHandler.store.sePoints
+              .filter(x => x instanceof SEIntersectionPoint)
+              .map(x => x as SEIntersectionPoint)
+              .forEach(interSEPoint => {
+                if (
+                  interSEPoint.otherParentArray.findIndex(
+                    parent => parent.id === seNoduleBeforeState.object.id
+                  ) > -1
+                ) {
+                  deleteCommandGroup.addCommand(
+                    new RemoveIntersectionPointOtherParent(
+                      interSEPoint,
+                      seNoduleBeforeState.object as SEOneDimensional
+                    )
+                  );
+                }
+              });
+          }
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)
           );

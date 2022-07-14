@@ -17,7 +17,9 @@ export class RemoveIntersectionPointOtherParent extends Command {
   }
 
   do(): void {
-    console.debug(`Remove intersection point parent`);
+    console.debug(
+      `RemoveIntersectionPointOtherParent: DO Remove intersection point parent, ${this.seOtherParent.name}`
+    );
     this.seIntersectionPoint.removeIntersectionOtherParent(this.seOtherParent);
   }
 
@@ -25,6 +27,9 @@ export class RemoveIntersectionPointOtherParent extends Command {
     this.lastState = this.seIntersectionPoint.id;
   }
   restoreState(): void {
+    console.debug(
+      `RemoveIntersectionPointOtherParent: restore Add intersection point parent, ${this.seOtherParent.name}`
+    );
     // Add the parent to the list of parents in the SEIntersectionPoint
     this.seIntersectionPoint.addIntersectionOtherParent(this.seOtherParent);
   }

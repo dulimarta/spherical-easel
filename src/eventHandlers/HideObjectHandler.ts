@@ -16,11 +16,18 @@ export default class HideObjectHandler extends Highlighter {
   // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
   private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
+  private _disableKeyHandler = false;
+
   constructor(layers: Group[]) {
     super(layers);
   }
 
+  set disableKeyHandler(b: boolean) {
+    this._disableKeyHandler = b;
+  }
+
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    if (this._disableKeyHandler) return;
     // See if the S key was pressed, if so show *all* hidden objects
     if (keyEvent.key.match("S")) {
       const setNoduleDisplayCommandGroup = new CommandGroup();

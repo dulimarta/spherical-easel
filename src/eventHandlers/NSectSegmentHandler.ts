@@ -24,7 +24,11 @@ export default class NSectSegmentHandler extends Highlighter {
   private temporarilySelectedSegment: SESegment | null = null;
 
   private tmpVector = new Vector3();
+  private _disableKeyHandler = false;
 
+  set disableKeyHandler(b: boolean) {
+    this._disableKeyHandler = b;
+  }
   constructor(layers: Group[], bisectOnly?: boolean) {
     super(layers);
 
@@ -48,6 +52,7 @@ export default class NSectSegmentHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    if (this._disableKeyHandler) return;
     // This is the only place the selectedNValue can be changed so disable it if bisection is the only thing allowed
     if (this.bisectionOnly) return;
     // console.log(keyEvent.key);
