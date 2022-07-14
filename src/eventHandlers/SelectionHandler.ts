@@ -65,6 +65,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPoints lower case p
     if (keyEvent.code === "KeyP" && !keyEvent.shiftKey) {
       SelectionHandler.store.sePoints
+        .map(n => n as SEPoint)
         .filter(
           (n: SEPoint) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing

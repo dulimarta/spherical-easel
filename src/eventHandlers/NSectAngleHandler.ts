@@ -333,7 +333,7 @@ export default class NSectAngleHandler extends Highlighter {
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
             newLine,
-            startSEPoint,
+            startSEPoint as SEPoint,
             normalVector,
             endSEPoint,
             candidateAngle,
