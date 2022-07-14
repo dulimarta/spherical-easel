@@ -57,12 +57,13 @@ export type PiniaAppState = {
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
+  seLineIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
 const oldSelections: Array<SENodule> = [];
 const sePoints: Map<number, SEPoint> = new Map();
-const seLines: Array<SELine> = [];
+const seLines: Map<number, SELine> = new Map();
 const seSegments: Array<SESegment> = [];
 const seCircles: Array<SECircle> = [];
 const seLabels: Array<SELabel> = [];
@@ -94,6 +95,7 @@ export const useSEStore = defineStore({
     zoomTranslation: [0, 0],
     canvasWidth: 0,
     sePointIds: [],
+    seLineIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -107,7 +109,7 @@ export const useSEStore = defineStore({
       // Update to these arrays are not automatically picked up by VueJS
       seNodules.splice(0);
       this.sePointIds.splice(0);
-      seLines.splice(0);
+      this.seLineIds.splice(0);
       seSegments.splice(0);
       seCircles.splice(0);
       seAngleMarkers.splice(0);
@@ -237,7 +239,8 @@ export const useSEStore = defineStore({
     },
 
     addLine(line: SELine): void {
-      seLines.push(line);
+      this.seLineIds.push(line.id);
+      seLines.set(line.id, line);
       seNodules.push(line as SENodule);
       line.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
@@ -264,13 +267,14 @@ export const useSEStore = defineStore({
     },
 
     removeLine(lineId: number): void {
-      const pos = seLines.findIndex((x: any) => x.id === lineId);
+      const pos = this.seLineIds.findIndex((id: number) => id === lineId);
       const pos2 = seNodules.findIndex(x => x.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
-        const victimLine = seLines[pos];
+        const victimLine = seLines.get(lineId)!;
         victimLine.ref.removeFromLayers();
-        seLines.splice(pos, 1); // Remove the line from the list
+        this.seLineIds.splice(pos, 1); // Remove the line from the list
+        seLines.delete(lineId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
       }
@@ -607,7 +611,8 @@ export const useSEStore = defineStore({
     seNodules: (): Array<SENodule> => seNodules,
     sePoints: (state): Array<SEPoint> =>
       state.sePointIds.map(id => sePoints.get(id)!),
-    seLines: (): Array<SELine> => seLines,
+    seLines: (state): Array<SELine> =>
+      state.seLineIds.map(id => seLines.get(id)!),
     seCircles: (): Array<SECircle> => seCircles,
     seSegments: (): Array<SESegment> => seSegments,
     seEllipses: (): Array<SEEllipse> => seEllipses,
@@ -745,8 +750,9 @@ export const useSEStore = defineStore({
         // The intersectionPointList to return
         const intersectionPointList: SEIntersectionReturnType[] = [];
         // Intersect this new line with all old lines
-        seLines
-          .filter((line: SELine) => line.id !== newLine.id) // ignore self
+        state.seLineIds
+          .filter((id: number) => id !== newLine.id) // ignore self
+          .map((id: number) => seLines.get(id)!)
           .forEach((oldLine: SELine) => {
             const intersectionInfo = intersectLineWithLine(oldLine, newLine);
             intersectionInfo.forEach((info, index) => {
