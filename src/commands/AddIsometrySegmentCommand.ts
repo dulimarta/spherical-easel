@@ -158,7 +158,7 @@ export class AddIsometrySegmentCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("segment", isometrySESegment.name);
       const isometrySESegmentLabel = new SELabel(label, isometrySESegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

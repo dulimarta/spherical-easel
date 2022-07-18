@@ -298,7 +298,7 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        const newLabel2 = new Label();
+        const newLabel2 = new Label("point", nSectingPoint.name);
         const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
         // Set the initial label location
         this.tmpVector
@@ -333,7 +333,10 @@ export default class NSectSegmentHandler extends Highlighter {
 
         // Create a plottable label
         // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+        const newSEAntipodalLabel = new SELabel(
+          new Label("point", antipodalVtx.name),
+          antipodalVtx
+        );
 
         antipodalVtx.locationVector = nSectingPoint.locationVector;
         antipodalVtx.locationVector.multiplyScalar(-1);

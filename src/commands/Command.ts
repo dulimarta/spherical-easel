@@ -147,7 +147,7 @@ export abstract class Command {
         JSON.parse(pointBackStyleString)
       );
 
-    const newLabel = new Label();
+    const newLabel = new Label("point", point.name);
     const label = new SELabel(newLabel, point);
     label.locationVector.copy(labelLocation);
     if (labelStyleString !== undefined)

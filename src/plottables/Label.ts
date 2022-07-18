@@ -10,7 +10,7 @@ import {
   // DEFAULT_LABEL_FRONT_STYLE,
   // DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
-import { LabelDisplayMode } from "@/types";
+import { LabelDisplayMode, LabelParentTypes } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
@@ -37,7 +37,7 @@ export default class Label extends Nodule {
   /**
    * This Label's corresponding SELabel, used so that this Label class can turn off and on the visibility of the object it is labeling and control other things about the object it is labeling
    */
-  public seLabel?: SELabel;
+  //public seLabel?: SELabel; // I shouldn't reference this model object in a plottable object 0 verboten!
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
@@ -66,6 +66,10 @@ export default class Label extends Nodule {
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
   private glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
 
+  private seLabelParentType: LabelParentTypes = "point";
+  // private _seLabelParentID = -1;
+  private _valueDisplayMode = ValueDisplayMode.Number;
+  private _defaultName = "";
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
    * shortUser
@@ -167,9 +171,11 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
-  constructor() {
+  constructor(parentType: LabelParentTypes, defaultName: string) {
     super();
 
+    this.seLabelParentType = parentType;
+    this._defaultName = defaultName;
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Group that they are all members of. To translate the group is to translate all points
@@ -197,6 +203,19 @@ export default class Label extends Nodule {
     // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
+
+  // set seLabelParentID(num: number) {
+  //   this._seLabelParentID = num;
+  // }
+
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  // set defaultName(name: string) {
+  //   this._defaultName = name;
+  // }
   /**
    * Set and get the shortUserName
    */
@@ -252,9 +271,6 @@ export default class Label extends Nodule {
       this._locationVector.x,
       -this._locationVector.y // the minus sign because the up/down coordinate are *not* reversed on text layers
     );
-    if (this.seLabel?.showing) {
-      this.updateDisplay();
-    }
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -406,12 +422,18 @@ export default class Label extends Nodule {
         0,
         SETTINGS.label.maxLabelDisplayCaptionLength
       );
-    if (this.seLabel?.parent instanceof SEAngleMarker) {
-      const angleMarker = this.seLabel.parent;
-      this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
-    } else if (this.seLabel?.parent instanceof SEPolygon) {
-      const polygon = this.seLabel.parent;
-      this._shortUserName = `Po${polygon.polygonNumber}`;
+    // if (this.seLabel?.parent instanceof SEAngleMarker) {
+    //   const angleMarker = this.seLabel.parent;
+    //   this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
+    // } else if (this.seLabel?.parent instanceof SEPolygon) {
+    //   const polygon = this.seLabel.parent;
+    //   this._shortUserName = `Po${polygon.polygonNumber}`;
+    // }
+    // overide any update to the names of the angleMarkers and polygons. why?
+    if (this.seLabelParentType === "angleMarker") {
+      this._shortUserName = this._defaultName; //`Am${this._seLabelParentID}`;
+    } else if (this.seLabelParentType === "polygon") {
+      this._shortUserName = this._defaultName; // `Po${this._seLabelParentID}`;
     }
   }
 
@@ -421,38 +443,63 @@ export default class Label extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Label) {
       let labelDisplayMode = LabelDisplayMode.NameOnly;
-      if (this.seLabel !== undefined) {
-        if (this.seLabel.parent instanceof SEPoint) {
+      // if (this.seLabel !== undefined) {
+      //   if (this.seLabel.parent instanceof SEPoint) {
+      //     labelDisplayMode = SETTINGS.point.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SELine) {
+      //     labelDisplayMode = SETTINGS.line.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SESegment) {
+      //     labelDisplayMode = SETTINGS.segment.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SECircle) {
+      //     labelDisplayMode = SETTINGS.circle.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SEAngleMarker) {
+      //     labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SEParametric) {
+      //     labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
+      //   } else if (this.seLabel.parent instanceof SEEllipse) {
+      //     labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
+      //   }
+      // }
+      switch (this.seLabelParentType) {
+        case "point":
           labelDisplayMode = SETTINGS.point.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SELine) {
+          break;
+        case "line":
           labelDisplayMode = SETTINGS.line.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SESegment) {
+          break;
+        case "segment":
           labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SECircle) {
+          break;
+        case "circle":
           labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEAngleMarker) {
+          break;
+        case "angleMarker":
           labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEParametric) {
+          break;
+        case "parametric":
           labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEEllipse) {
+          break;
+        case "ellipse":
           labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
-        }
+          break;
+        default:
+          labelDisplayMode = LabelDisplayMode.NameOnly;
       }
       // Angle Markers and polygons are exceptions which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use this
       // and the (angleMarker|polygon)Number.
-      let defaultName = "";
-      if (this.seLabel?.parent instanceof SEAngleMarker) {
-        defaultName = `Am${this.seLabel.parent.angleMarkerNumber}`;
-      } else if (this.seLabel?.parent instanceof SEPolygon) {
-        defaultName = `Po${this.seLabel.parent.polygonNumber}`;
-      } else if (this.seLabel) {
-        defaultName = this.seLabel.parent.name;
-      }
+      // let defaultName = "";
+      // if (this.seLabelParentType === "angleMarker) {
+      //   defaultName = `Am${this._seLabelParentID}`;
+      // } else if (this.seLabel?.parent instanceof SEPolygon) {
+      //   defaultName = `Po${this.seLabel.parent.polygonNumber}`;
+      // } else if (this.seLabel) {
+      //   defaultName = this.seLabel.parent.name;
+      // }
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
-        labelDisplayText: defaultName,
+        labelDisplayText: this._defaultName,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
@@ -501,8 +548,8 @@ export default class Label extends Nodule {
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
-        if (this.value.length > 0 && this.seLabel !== undefined) {
-          if (this.seLabel.parent instanceof SEPoint) {
+        if (this.value.length > 0) {
+          if (this.seLabelParentType === "point") {
             labelText =
               "(" +
               `${this._value
@@ -510,22 +557,22 @@ export default class Label extends Nodule {
                 .join(",")}` +
               ")";
           } else {
-            let valueDisplayMode;
-            if (this.seLabel.parent instanceof SEAngleMarker) {
-              valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
-                .valueDisplayMode;
-            }
-            if (this.seLabel.parent instanceof SEPolygon) {
-              valueDisplayMode = (this.seLabel.parent as SEPolygon)
-                .valueDisplayMode;
-            } else if (this.seLabel.parent instanceof SESegment) {
-              const seSegLength = this.seLabel.parent.kids.find(
-                node => node instanceof SESegmentLength
-              );
-              valueDisplayMode = (seSegLength as SESegmentLength)
-                .valueDisplayMode;
-            }
-            switch (valueDisplayMode) {
+            // let valueDisplayMode;
+            // if (this.seLabelParentType === "angleMarker") {
+            //   valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
+            //     .valueDisplayMode;
+            // }
+            // if (this.seLabel.parent instanceof SEPolygon) {
+            //   valueDisplayMode = (this.seLabel.parent as SEPolygon)
+            //     .valueDisplayMode;
+            // } else if (this.seLabel.parent instanceof SESegment) {
+            //   const seSegLength = this.seLabel.parent.kids.find(
+            //     node => node instanceof SESegmentLength
+            //   );
+            //   valueDisplayMode = (seSegLength as SESegmentLength)
+            //     .valueDisplayMode;
+            // }
+            switch (this._valueDisplayMode) {
               case ValueDisplayMode.Number:
                 labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
                 break;

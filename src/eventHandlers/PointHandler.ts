@@ -78,9 +78,6 @@ export default class PointHandler extends Highlighter {
         newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
         let vtx: SEPointOnOneOrTwoDimensional | SEPoint | null = null;
-
-        // Create plottable for the Label
-        const newLabel = new Label();
         let newSELabel: SELabel | null = null;
 
         if (this.hitSESegments.length > 0) {
@@ -91,7 +88,7 @@ export default class PointHandler extends Highlighter {
             this.hitSESegments[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           new AddPointOnOneDimensionalCommand(
@@ -105,7 +102,7 @@ export default class PointHandler extends Highlighter {
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(newPoint, this.hitSELines[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -123,7 +120,7 @@ export default class PointHandler extends Highlighter {
             this.hitSECircles[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -141,7 +138,7 @@ export default class PointHandler extends Highlighter {
             this.hitSEEllipses[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -159,7 +156,7 @@ export default class PointHandler extends Highlighter {
             this.hitSEParametrics[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -177,7 +174,7 @@ export default class PointHandler extends Highlighter {
             this.hitSEPolygons[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -192,7 +189,7 @@ export default class PointHandler extends Highlighter {
           // Create the model object for the new point and link them
           vtx = new SEPoint(newPoint);
           vtx.locationVector = this.currentSphereVector;
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
@@ -211,7 +208,10 @@ export default class PointHandler extends Highlighter {
 
         // Create a plottable label
         // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+        const newSEAntipodalLabel = new SELabel(
+          new Label("point", antipodalVtx.name),
+          antipodalVtx
+        );
 
         antipodalVtx.locationVector = vtx.locationVector;
         antipodalVtx.locationVector.multiplyScalar(-1);

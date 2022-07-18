@@ -160,7 +160,7 @@ export class AddPolarLineCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("line", sePolarLine.name);
       const seLabel = new SELabel(label, sePolarLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

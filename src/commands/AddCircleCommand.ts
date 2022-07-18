@@ -123,7 +123,7 @@ export class AddCircleCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("circle", seCircle.name);
       const seLabel = new SELabel(label, seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

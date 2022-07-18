@@ -428,7 +428,7 @@ export default class CircleHandler extends Highlighter {
       newCenterPoint.adjustSize();
 
       // Create the plottable label
-      const newLabel = new Label();
+      //const newLabel = new Label("point",vtx.name);
       let newSELabel: SELabel | null = null;
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
@@ -440,7 +440,7 @@ export default class CircleHandler extends Highlighter {
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -453,7 +453,7 @@ export default class CircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newCenterPoint);
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
@@ -482,7 +482,10 @@ export default class CircleHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+      const newSEAntipodalLabel = new SELabel(
+        new Label("point", antipodalVtx.name),
+        antipodalVtx
+      );
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -545,8 +548,6 @@ export default class CircleHandler extends Highlighter {
       newCirclePoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
       newCirclePoint.adjustSize();
-      // Create the plottable label
-      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -561,7 +562,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -581,7 +582,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -599,7 +600,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -617,7 +618,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -635,7 +636,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -653,7 +654,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -666,7 +667,7 @@ export default class CircleHandler extends Highlighter {
         vtx = new SEPoint(newCirclePoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
 
@@ -683,7 +684,10 @@ export default class CircleHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+      const newSEAntipodalLabel = new SELabel(
+        new Label("point", antipodalVtx.name),
+        antipodalVtx
+      );
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -761,7 +765,7 @@ export default class CircleHandler extends Highlighter {
       this.circleSEPoint
     );
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("circle", newSECircle.name);
     const newSELabel = new SELabel(newLabel, newSECircle);
     // Set the initial label location
     this.tmpMatrix.makeRotationAxis(
@@ -799,7 +803,7 @@ export default class CircleHandler extends Highlighter {
         } else {
           // the intersection point is newly created and must be added as a child of the two parents returned
           // Create the plottable and model label
-          const newLabel = new Label();
+          const newLabel = new Label("point", item.SEIntersectionPoint.name);
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
           // Set the initial label location
@@ -851,13 +855,13 @@ export default class CircleHandler extends Highlighter {
         newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
         // Set the stroke width to the current width given the zoom level
         newCircle.adjustSize();
-        const newLabel = new Label();
 
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
         // Update the newSECircle so the display is correct when the command group is executed
         newSECircle.markKidsOutOfDate();
         newSECircle.update();
+        const newLabel = new Label("circle", newSECircle.name);
         const newSELabel = new SELabel(newLabel, newSECircle);
         // Set the initial label location
         this.tmpMatrix.makeRotationAxis(object1.locationVector, Math.PI / 2);
@@ -885,7 +889,10 @@ export default class CircleHandler extends Highlighter {
                 )
               );
             } else {
-              const newLabel = new Label();
+              const newLabel = new Label(
+                "point",
+                item.SEIntersectionPoint.name
+              );
               const newSELabel = new SELabel(
                 newLabel,
                 item.SEIntersectionPoint

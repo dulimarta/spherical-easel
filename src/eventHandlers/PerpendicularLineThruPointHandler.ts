@@ -588,8 +588,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // Set the display to the default values
       newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
-      // Create plottable for the Label
-      const newLabel = new Label();
+
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
@@ -599,7 +598,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel(newLabel, this.sePoint);
+        const newSELabel = new SELabel(
+          new Label("point", this.sePoint.name),
+          this.sePoint
+        );
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -624,7 +626,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint(newPoint);
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel(newLabel, this.sePoint);
+        const newSELabel = new SELabel(
+          new Label("point", this.sePoint.name),
+          this.sePoint
+        );
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -660,7 +665,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+      const newSEAntipodalLabel = new SELabel(
+        new Label("point", antipodalVtx.name),
+        antipodalVtx
+      );
 
       antipodalVtx.locationVector = this.sePoint.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -786,7 +794,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       newPerpLine.update();
 
       // Create the plottable label
-      const newLabel = new Label();
+      const newLabel = new Label("line", newPerpLine);
       const newSELabel = new SELabel(newLabel, newPerpLine);
 
       // Set the initial label location
@@ -830,7 +838,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             //   item.SEIntersectionPoint.locationVector.toFixed(4)
             // );
             // Create the plottable label
-            const newLabel = new Label();
+            const newLabel = new Label("point", item.SEIntersectionPoint.name);
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
             // Set the initial label location
             this.tmpVector

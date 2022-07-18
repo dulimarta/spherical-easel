@@ -510,6 +510,16 @@ export type ObjectNames =
   | "isometryEllipse"
   | "invertedCircleCenter";
 
+export type LabelParentTypes =
+  | "angleMarker"
+  | "circle"
+  | "ellipse"
+  | "line"
+  | "parametric"
+  | "point"
+  | "polygon"
+  | "segment";
+
 export interface ObjectState {
   kind: ObjectNames;
   object: SENodule;

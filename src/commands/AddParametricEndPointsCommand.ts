@@ -281,7 +281,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Start End Point Label
-      const startEndPointLabel = new Label();
+      const startEndPointLabel = new Label("point", seStartEndPoint.name);
       const seStartEndPointLabel = new SELabel(
         startEndPointLabel,
         seStartEndPoint
@@ -363,7 +363,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the End End Point Label
-      const endEndPointLabel = new Label();
+      const endEndPointLabel = new Label("point", seEndEndPoint.name);
       const seEndEndPointLabel = new SELabel(endEndPointLabel, seEndEndPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(
@@ -437,7 +437,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label();
+      const tracePointLabel = new Label("point", seTracePoint.name);
       const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seLabelLocation.from(

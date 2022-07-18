@@ -1019,7 +1019,7 @@ export default class AngleHandler extends Highlighter {
         );
 
         // Create a plottable label
-        const newLabel = new Label();
+        const newLabel = new Label("point", vtx.name);
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel(newLabel, vtx);
 
@@ -1056,7 +1056,10 @@ export default class AngleHandler extends Highlighter {
 
         // Create a plottable label
         // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+        const newSEAntipodalLabel = new SELabel(
+          new Label("point", antipodalVtx.name),
+          antipodalVtx
+        );
 
         antipodalVtx.locationVector = this.pointLocations[i];
         antipodalVtx.locationVector.multiplyScalar(-1);
@@ -1094,7 +1097,7 @@ export default class AngleHandler extends Highlighter {
         const vtx = new SEPoint(newPoint);
 
         // Create a plottable label
-        const newLabel = new Label();
+        const newLabel = new Label("point", vtx.name);
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel(newLabel, vtx);
 
@@ -1127,7 +1130,10 @@ export default class AngleHandler extends Highlighter {
 
         // Create a plottable label
         // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(new Label(), antipodalVtx);
+        const newSEAntipodalLabel = new SELabel(
+          new Label("point", antipodalVtx.name),
+          antipodalVtx
+        );
 
         antipodalVtx.locationVector = this.pointLocations[i];
         antipodalVtx.locationVector.multiplyScalar(-1);
@@ -1169,7 +1175,7 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker", newSEAngleMarker.name);
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
@@ -1299,7 +1305,7 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker", newSEAngleMarker.name);
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
@@ -1384,7 +1390,7 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker", newSEAngleMarker.name);
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
@@ -1523,7 +1529,7 @@ export default class AngleHandler extends Highlighter {
       );
     }
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker", newSEAngleMarker.name);
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)

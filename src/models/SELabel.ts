@@ -50,7 +50,7 @@ export class SELabel extends SENodule implements Visitable {
     this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
-    label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
+
     (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
     this.name = "La" + SENodule.LABEL_COUNT;
@@ -123,6 +123,9 @@ export class SELabel extends SENodule implements Visitable {
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
 
   accept(v: Visitor): boolean {
@@ -140,8 +143,11 @@ export class SELabel extends SENodule implements Visitable {
           this.store.zoomMagnificationFactor
         )
       );
-      //Update the location of the associate plottable Label (setter also updates the display)
+      //Update the location of the associate plottable Label
       this.ref.positionVector = this._locationVector;
+      if (this.showing) {
+        this.ref.updateDisplay();
+      }
     }
 
     // Update visibility
@@ -207,6 +213,9 @@ export class SELabel extends SENodule implements Visitable {
     }
     // Set the position of the associated displayed plottable Label
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
   get locationVector(): Vector3 {
     return this._locationVector;

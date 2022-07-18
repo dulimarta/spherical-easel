@@ -139,7 +139,7 @@ export class AddTransformedPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("point", transformedSEPoint.name);
       const transformedSEPointLabel = new SELabel(label, transformedSEPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
