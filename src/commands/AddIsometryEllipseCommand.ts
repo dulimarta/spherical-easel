@@ -159,7 +159,7 @@ export class AddIsometryEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("ellipse", isometrySEEllipse.name);
+      const label = new Label("ellipse");
       const isometrySEEllipseLabel = new SELabel(label, isometrySEEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

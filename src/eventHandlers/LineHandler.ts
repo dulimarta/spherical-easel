@@ -512,7 +512,7 @@ export default class LineHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -524,7 +524,7 @@ export default class LineHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         vtx = new SEPoint(newStartPoint);
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
@@ -542,10 +542,7 @@ export default class LineHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(
-        new Label("point", antipodalVtx.name),
-        antipodalVtx
-      );
+      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -626,7 +623,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -643,7 +640,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -662,7 +659,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -681,7 +678,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -700,7 +697,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -719,7 +716,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -733,7 +730,7 @@ export default class LineHandler extends Highlighter {
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
@@ -751,10 +748,7 @@ export default class LineHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(
-        new Label("point", antipodalVtx.name),
-        antipodalVtx
-      );
+      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -844,7 +838,7 @@ export default class LineHandler extends Highlighter {
       this.endSEPoint
     );
     // Create the plottable label
-    const newLabel = new Label("line", newSELine.name);
+    const newLabel = new Label("line");
     const newSELabel = new SELabel(newLabel, newSELine);
     this.tmpVector
       .addVectors(
@@ -883,7 +877,7 @@ export default class LineHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point", item.SEIntersectionPoint.name);
+          const newLabel = new Label("point");
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector
@@ -954,7 +948,7 @@ export default class LineHandler extends Highlighter {
         // Update the newSELine so the display is correct when the command group is executed
         newSELine.markKidsOutOfDate();
         newSELine.update();
-        const newLabel = new Label("line", newSELine.name);
+        const newLabel = new Label("line");
         const newSELabel = new SELabel(newLabel, newSELine);
         this.tmpVector
           .addVectors(object1.locationVector, object2.locationVector)
@@ -982,10 +976,7 @@ export default class LineHandler extends Highlighter {
               );
             } else {
               // Create the plottable label
-              const newLabel = new Label(
-                "point",
-                item.SEIntersectionPoint.name
-              );
+              const newLabel = new Label("point");
               const newSELabel = new SELabel(
                 newLabel,
                 item.SEIntersectionPoint

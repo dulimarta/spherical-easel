@@ -218,7 +218,9 @@ export type SavedNames =
   | "invertedCircleCenterParentInversionName"
   | "changePrincipleParentSEIntersectionPointName"
   | "changePrincipleParentOldPrincipleName"
-  | "convertToUserCreatedIntersectionPointName;";
+  | "convertToUserCreatedIntersectionPointName"
+  | "setValueDisplayModeOldValue"
+  | "setValueDisplayModeNewValue";
 
 export type ActionMode =
   | "angle"

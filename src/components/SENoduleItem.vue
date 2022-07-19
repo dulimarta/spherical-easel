@@ -467,8 +467,8 @@ export default class SENoduleItem extends Vue {
         ).execute();
       }
     }
-    this.visibilityUpdateKey += 1;
-    this.labelVisibilityUpdateKey += 1;
+    this.visibilityUpdateKey += 1; // Without this, the display icon doesn't change between the two showing and not showing variants.
+    this.labelVisibilityUpdateKey += 1; // Without this, the label icon doesn't change between the two showing and not showing variants.
   }
   copyToClipboard(): void {
     if (this.node instanceof SEExpression) {
@@ -536,14 +536,14 @@ export default class SENoduleItem extends Vue {
   cycleValueDisplayMode(): void {
     // If the user clicks this they the want to have the label showing so turn it on
     if (this.node instanceof SEAngleMarker) {
-      if (!this.node.label?.showing) {
-        if (this.node.label) {
+      if (this.node.label) {
+        if (!this.node.label?.showing) {
           new SetNoduleDisplayCommand(this.node.label, true).execute();
         }
       }
     } else if (this.node instanceof SESegmentLength) {
-      if (!this.node.seSegment.label?.showing) {
-        if (this.node.seSegment.label) {
+      if (this.node.seSegment.label) {
+        if (!this.node.seSegment.label.showing) {
           new SetNoduleDisplayCommand(
             this.node.seSegment.label,
             true
@@ -551,8 +551,8 @@ export default class SENoduleItem extends Vue {
         }
       }
     } else if (this.node instanceof SEPolygon) {
-      if (!this.node.label?.showing) {
-        if (this.node.label) {
+      if (this.node.label) {
+        if (!this.node.label.showing) {
           new SetNoduleDisplayCommand(this.node.label, true).execute();
         }
       }
@@ -577,10 +577,13 @@ export default class SENoduleItem extends Vue {
       newValueDisplayMode
     ).execute();
     // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
-    if (!(this.node instanceof SECalculation)) {
-      this.node.parents[0].markKidsOutOfDate();
-      this.node.parents[0].update();
-    }
+    // if (!(this.node instanceof SECalculation)) {
+    //   this.node.parents[0].markKidsOutOfDate();
+    //   this.node.parents[0].update();
+    // }
+    // console.debug(
+    //   `Cycle display mode: node ${this.node.name}, new mode: ${newValueDisplayMode}`
+    // );
     this.visibilityUpdateKey += 1;
     this.labelVisibilityUpdateKey += 1;
   }

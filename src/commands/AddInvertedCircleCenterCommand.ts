@@ -138,7 +138,7 @@ export class AddInvertedCircleCenterCommand extends Command {
         pt.updateStyle(StyleEditPanels.Back, JSON.parse(pointBackStyleString));
 
       //make the label and set its location
-      const label = new Label("point", inversionSECircleCenterPoint.name);
+      const label = new Label("point");
       const inversionSECircleCenterLabel = new SELabel(
         label,
         inversionSECircleCenterPoint

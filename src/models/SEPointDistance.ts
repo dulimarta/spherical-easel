@@ -1,6 +1,6 @@
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 const emptySet = new Set<string>();
@@ -34,6 +34,14 @@ export class SEPointDistance extends SEExpression {
     );
   }
 
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label, but SECalculations have no SELabel or Label
+  }
   public shallowUpdate(): void {
     this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
   }

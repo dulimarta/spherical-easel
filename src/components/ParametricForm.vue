@@ -705,7 +705,7 @@ export default class ParametricForm extends Vue {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label("parametric", newSEParametric.name);
+    const newLabel = new Label("parametric");
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
     this.tempVector
@@ -727,7 +727,7 @@ export default class ParametricForm extends Vue {
       tracePoint,
       newSEParametric
     );
-    const traceLabel = new Label("point", traceSEPoint.name);
+    const traceLabel = new Label("point");
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
     // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
@@ -758,8 +758,8 @@ export default class ParametricForm extends Vue {
       );
 
       // Create the plottable labels
-      const startLabel = new Label("point", startSEEndPoint.name);
-      const endLabel = new Label("point", endSEEndPoint.name);
+      const startLabel = new Label("point");
+      const endLabel = new Label("point");
       const startSELabel = new SELabel(startLabel, startSEEndPoint);
       const endSELabel = new SELabel(endLabel, endSEEndPoint);
 
@@ -804,7 +804,7 @@ export default class ParametricForm extends Vue {
         );
       } else {
         // Create the plottable label
-        const newLabel = new Label("point", item.SEIntersectionPoint.name);
+        const newLabel = new Label("point");
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
         // Set the initial label location
         this.tempVector

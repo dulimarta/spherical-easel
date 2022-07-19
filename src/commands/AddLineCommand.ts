@@ -129,7 +129,7 @@ export class AddLineCommand extends Command {
         line.updateStyle(StyleEditPanels.Back, JSON.parse(lineBackStyleString));
 
       //make the label and set its location
-      const label = new Label("line", seLine.name);
+      const label = new Label("line");
       const seLabel = new SELabel(label, seLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

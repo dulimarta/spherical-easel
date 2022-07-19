@@ -148,7 +148,7 @@ export class AddIsometryLineCommand extends Command {
         seg.updateStyle(StyleEditPanels.Back, JSON.parse(LineBackStyleString));
 
       //make the label and set its location
-      const label = new Label("line", isometrySELine.name);
+      const label = new Label("line");
       const isometrySELineLabel = new SELabel(label, isometrySELine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

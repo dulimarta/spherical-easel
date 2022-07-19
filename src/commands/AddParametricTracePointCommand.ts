@@ -152,7 +152,7 @@ export class AddParametricTracePointCommand extends Command {
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label("point", seTracePoint.name);
+      const tracePointLabel = new Label("point");
       const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seTracePointLabelLocation.from(

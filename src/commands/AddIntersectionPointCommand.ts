@@ -196,7 +196,7 @@ export class AddIntersectionPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("point", seIntersectionPoint.name);
+      const label = new Label("point");
       const seLabel = new SELabel(label, seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

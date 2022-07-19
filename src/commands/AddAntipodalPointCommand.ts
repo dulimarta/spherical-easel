@@ -124,7 +124,7 @@ export class AddAntipodalPointCommand extends Command {
         );
 
       //make the label
-      const label = new Label("point", sePoint.name);
+      const label = new Label("point");
       const seLabel = new SELabel(label, sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));

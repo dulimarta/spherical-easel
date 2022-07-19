@@ -500,7 +500,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -513,7 +513,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newCenterPoint);
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
@@ -530,10 +530,7 @@ export default class MeasuredCircleHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(
-        new Label("point", antipodalVtx.name),
-        antipodalVtx
-      );
+      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -752,7 +749,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         measurementSEExpression
       );
       // Create the plottable and model label
-      const newLabel = new Label("circle", newMeasuredSECircle.name);
+      const newLabel = new Label("circle");
       const newSELabel = new SELabel(newLabel, newMeasuredSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
@@ -791,7 +788,7 @@ export default class MeasuredCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            const newLabel = new Label("point", item.SEIntersectionPoint.name);
+            const newLabel = new Label("point");
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
             // Set the initial label location

@@ -100,7 +100,7 @@ export class AddPointCommand extends Command {
       point.updateStyle(StyleEditPanels.Back, JSON.parse(pointBackStyleString));
 
     //make the label
-    const label = new Label("point", sePoint.name);
+    const label = new Label("point");
     const seLabel = new SELabel(label, sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number

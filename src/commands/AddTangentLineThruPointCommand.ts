@@ -170,7 +170,7 @@ export class AddTangentLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line", tangentLineThruPointLine.name);
+      const label = new Label("line");
       const seLabel = new SELabel(label, tangentLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

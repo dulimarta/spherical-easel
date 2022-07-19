@@ -232,7 +232,7 @@ export default class AntipodalPointHandler extends Highlighter {
           );
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point", this.parentPoint.name);
+          const newLabel = new Label("point");
           const newSELabel = new SELabel(newLabel, this.parentPoint);
           // Set the initial label location
           this.tmpVector
@@ -265,7 +265,7 @@ export default class AntipodalPointHandler extends Highlighter {
           this.parentPoint = new SEPoint(newPoint);
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point", this.parentPoint.name);
+          const newLabel = new Label("point");
           const newSELabel = new SELabel(newLabel, this.parentPoint);
           // Set the initial label location
           this.tmpVector
@@ -294,7 +294,7 @@ export default class AntipodalPointHandler extends Highlighter {
         const vtx = new SEAntipodalPoint(newPoint, this.parentPoint, true);
 
         // Create the plottable label
-        const newLabel = new Label("point", vtx.name);
+        const newLabel = new Label("point");
         const newSELabel = new SELabel(newLabel, vtx);
 
         // Set the initial label location
@@ -551,7 +551,7 @@ export default class AntipodalPointHandler extends Highlighter {
         const vtx = new SEAntipodalPoint(newPoint, object, true);
 
         // Create the plottable label
-        const newLabel = new Label("point", vtx.name);
+        const newLabel = new Label("point");
         const newSELabel = new SELabel(newLabel, vtx);
 
         // Set the initial label location

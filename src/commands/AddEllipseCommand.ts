@@ -139,7 +139,7 @@ export class AddEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("ellipse", seEllipse.name);
+      const label = new Label("ellipse");
       const seLabel = new SELabel(label, seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

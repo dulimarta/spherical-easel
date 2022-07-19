@@ -6,7 +6,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4, LineBasicMaterial } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
@@ -153,6 +153,18 @@ export class SEAngleMarker
 
   public customStyles(): Set<string> {
     return styleSet;
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.label) {
+      this.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   get angleMarkerNumber(): number {

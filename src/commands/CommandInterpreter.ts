@@ -47,6 +47,8 @@ import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPoin
 import { ConvertPtToUserCreatedCommand } from "./ConvertPtToUserCreatedCommand";
 import { ConvertUserCreatedToNotUserCreatedCommand } from "./ConvertUserCreatedToNotUserCreatedCommand";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
+import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
+import { NoEmitOnErrorsPlugin } from "webpack";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -163,6 +165,8 @@ function executeIndividual(command: string): Command {
       );
     case "SetNoduleDisplay":
       return SetNoduleDisplayCommand.parse(command, noduleDictionary);
+    case "SetValueDisplayMode":
+      return SetValueDisplayModeCommand.parse(command, noduleDictionary);
     // case "ConvertIntersectionToUserCreated":
     //   return ConvertInterPtToUserCreatedCommand.parse(
     //     command,

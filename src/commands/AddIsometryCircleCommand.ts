@@ -152,7 +152,7 @@ export class AddIsometryCircleCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("circle", isometrySECircle.name);
+      const label = new Label("circle");
       const isometrySECircleLabel = new SELabel(label, isometrySECircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

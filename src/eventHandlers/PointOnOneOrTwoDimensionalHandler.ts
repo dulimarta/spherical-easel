@@ -80,7 +80,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
-        const newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        const newSELabel = new SELabel(new Label("point"), vtx);
         // Set the initial label location
         this.tmpVector
           .copy(vtx.locationVector)
@@ -116,7 +116,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         // Create a plottable label
         // Create an SELabel and link it to the plottable object
         const newSEAntipodalLabel = new SELabel(
-          new Label("point", antipodalVtx.name),
+          new Label("point"),
           antipodalVtx
         );
 

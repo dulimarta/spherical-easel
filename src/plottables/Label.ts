@@ -171,11 +171,11 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
-  constructor(parentType: LabelParentTypes, defaultName: string) {
+  constructor(parentType: LabelParentTypes) {
     super();
 
     this.seLabelParentType = parentType;
-    this._defaultName = defaultName;
+
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Group that they are all members of. To translate the group is to translate all points
@@ -204,18 +204,14 @@ export default class Label extends Nodule {
     // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
 
-  // set seLabelParentID(num: number) {
-  //   this._seLabelParentID = num;
-  // }
-
   set valueDisplayMode(vdm: ValueDisplayMode) {
     this._valueDisplayMode = vdm;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  // set defaultName(name: string) {
-  //   this._defaultName = name;
-  // }
+  set defaultName(name: string) {
+    this._defaultName = name;
+  }
   /**
    * Set and get the shortUserName
    */
@@ -227,7 +223,6 @@ export default class Label extends Nodule {
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
   get shortUserName(): string {
     return this._shortUserName;
   }

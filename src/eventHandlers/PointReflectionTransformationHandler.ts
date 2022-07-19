@@ -387,7 +387,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
           this.rotationSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         pointRotationCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -400,7 +400,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newRotationPoint);
-        newSELabel = new SELabel(new Label("point", vtx.name), vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         pointRotationCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );
@@ -419,10 +419,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(
-        new Label("point", antipodalVtx.name),
-        antipodalVtx
-      );
+      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
 
       antipodalVtx.locationVector = vtx.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);

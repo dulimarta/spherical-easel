@@ -7,7 +7,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE
 } from "@/types/Styles";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
@@ -152,6 +152,18 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.label?.ref.shortUserName +
       `: ${this.prettyValue}`
     );
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.label) {
+      this.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   /**

@@ -50,6 +50,7 @@ export class SELabel extends SENodule implements Visitable {
     this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
+    this.ref.defaultName = this.parent.name;
 
     (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;

@@ -141,7 +141,7 @@ export class AddSegmentCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("segment", seSegment.name);
+      const label = new Label("segment");
       const seLabel = new SELabel(label, seSegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

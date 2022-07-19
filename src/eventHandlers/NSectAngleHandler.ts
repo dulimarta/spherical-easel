@@ -351,7 +351,7 @@ export default class NSectAngleHandler extends Highlighter {
           );
 
           // Create plottable for the Label
-          const newLabel2 = new Label("line", nSectingLine.name);
+          const newLabel2 = new Label("line");
           const newSELabel2 = new SELabel(newLabel2, nSectingLine);
           // Set the initial label location
           this.tmpVector
@@ -386,10 +386,7 @@ export default class NSectAngleHandler extends Highlighter {
                 );
               } else {
                 // Create the plottable label
-                const newLabel = new Label(
-                  "point",
-                  item.SEIntersectionPoint.name
-                );
+                const newLabel = new Label("point");
                 const newSELabel = new SELabel(
                   newLabel,
                   item.SEIntersectionPoint

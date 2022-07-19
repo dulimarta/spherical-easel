@@ -17,13 +17,11 @@ export abstract class SEExpression extends SENodule {
     this.name = `M${SEExpression.EXPR_COUNT}`;
   }
 
-  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
-  get valueDisplayMode(): ValueDisplayMode {
-    return this._valueDisplayMode;
-  }
-  set valueDisplayMode(vdm: ValueDisplayMode) {
-    this._valueDisplayMode = vdm;
-  }
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
+   * The setter must update the plottable label (if the expression is attached to a label)
+   */
+  abstract get valueDisplayMode(): ValueDisplayMode;
+  abstract set valueDisplayMode(vdm: ValueDisplayMode);
 
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;

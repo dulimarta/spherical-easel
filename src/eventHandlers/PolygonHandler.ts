@@ -361,7 +361,7 @@ export default class PolygonHandler extends Highlighter {
         );
 
         // Create the plottable label
-        const newLabel = new Label("polygon", vtx.name);
+        const newLabel = new Label("polygon");
         const newSELabel = new SELabel(newLabel, vtx);
 
         if (this.startSEPoint) {
@@ -816,7 +816,7 @@ export default class PolygonHandler extends Highlighter {
       );
 
       // Create the plottable and model label
-      const newLabel = new Label("angleMarker", newSEAngleMarker.name);
+      const newLabel = new Label("angleMarker");
       const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
       // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)

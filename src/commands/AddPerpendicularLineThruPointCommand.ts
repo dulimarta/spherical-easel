@@ -173,7 +173,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line", perpendicularLineThruPointLine.name);
+      const label = new Label("line");
       const seLabel = new SELabel(label, perpendicularLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

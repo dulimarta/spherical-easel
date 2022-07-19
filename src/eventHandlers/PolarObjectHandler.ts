@@ -481,7 +481,7 @@ export default class PolarObjectHandler extends Highlighter {
     polarPoint1.locationVector = parentLineOrSegment.normalVector;
 
     // Create plottable for the Label
-    const newLabel1 = new Label("point", polarPoint1.name);
+    const newLabel1 = new Label("point");
     const newSELabel1 = new SELabel(newLabel1, polarPoint1);
     // Set the initial label location
     this.tmpVector
@@ -512,7 +512,7 @@ export default class PolarObjectHandler extends Highlighter {
       parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
-    const newLabel2 = new Label("point", polarPoint2.name);
+    const newLabel2 = new Label("point");
     const newSELabel2 = new SELabel(newLabel2, polarPoint2);
     // Set the initial label location
     this.tmpVector
@@ -569,10 +569,7 @@ export default class PolarObjectHandler extends Highlighter {
           this.oneDimensionalContainingParentPoint
         );
         this.parentPoint.locationVector = this.parentPointVector;
-        const newSELabel = new SELabel(
-          new Label("point", this.parentPoint.name),
-          this.parentPoint
-        );
+        const newSELabel = new SELabel(new Label("point"), this.parentPoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.parentPoint.locationVector)
@@ -603,10 +600,7 @@ export default class PolarObjectHandler extends Highlighter {
 
         this.parentPoint = new SEPoint(newPoint);
         this.parentPoint.locationVector = this.parentPointVector;
-        const newSELabel = new SELabel(
-          new Label("point", this.parentPoint.name),
-          this.parentPoint
-        );
+        const newSELabel = new SELabel(new Label("point"), this.parentPoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.parentPoint.locationVector)
@@ -642,10 +636,7 @@ export default class PolarObjectHandler extends Highlighter {
 
       // Create a plottable label
       // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(
-        new Label("point", antipodalVtx.name),
-        antipodalVtx
-      );
+      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
 
       antipodalVtx.locationVector = this.parentPoint.locationVector;
       antipodalVtx.locationVector.multiplyScalar(-1);
@@ -705,7 +696,7 @@ export default class PolarObjectHandler extends Highlighter {
     );
 
     // Create the plottable label
-    const newLabel = new Label("line", newPolarLine.name);
+    const newLabel = new Label("line");
     const newSELabel = new SELabel(newLabel, newPolarLine);
 
     // Set the initial label location
@@ -742,7 +733,7 @@ export default class PolarObjectHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point", item.SEIntersectionPoint.name);
+          const newLabel = new Label("point");
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector

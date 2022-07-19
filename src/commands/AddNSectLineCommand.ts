@@ -165,7 +165,7 @@ export class AddNSectLineCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line", seNSectLine.name);
+      const label = new Label("line");
       const seLabel = new SELabel(label, seNSectLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
