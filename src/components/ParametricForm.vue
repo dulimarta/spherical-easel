@@ -9,13 +9,12 @@
             Keyboard shortcuts:
             <ul>
               <li>Ctrl-Alt-C: Circle</li>
-              <li>Ctrl-Alt-E: Ellipse (Requires M1)</li>
-              <li>Ctrl-Alt-L: Loxodrome</li>
-              <li>Ctrl-Alt-R: Cardioid</li>
               <li>Ctrl-Alt-S: Spiral</li>
               <li>Ctrl-Alt-T: Trochoid</li>
               <li>Ctrl-Alt-Y: Cycloid</li>
-
+              <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
+              <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+              <li>Ctrl-Alt-R: Cardioid (M1)</li>
             </ul>
 
           </v-row>
@@ -254,7 +253,7 @@ export default class ParametricForm extends Vue {
       this.setCardioidExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyS") {
-      this.setSprialExpressions();
+      this.setSpiralExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyL") {
       this.setLoxodromeExpressions();
@@ -303,7 +302,7 @@ export default class ParametricForm extends Vue {
     //   "2*cos(M1)^2*sin(M1)*cos(t)*(1-cos(t)) + 2*cos(M1)^2*sin(M1)*sin(t)*(sin(t))";
     // this.primeCoordinateExpressions.z = "-2*cos(M1)*sin(M1)^2*sin(t)";
   }
-  setSprialExpressions(): void {
+  setSpiralExpressions(): void {
     this.tNumbers.min = 0;
     this.tNumbers.max = 0.9;
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";

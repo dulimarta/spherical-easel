@@ -36,17 +36,19 @@ import {
   IGetCompareValue
 } from "@datastructures-js/priority-queue";
 
-type TVec3 = {
-  t: number;
+// To keep the sample points in t-value order when new sample points
+// are appended to the array, keep track of its left and right neighbors
+type TSample = {
+  t: number; // Floating point
+  left: number; // integer index
+  right: number; // integer index
   value: Vector3;
 };
 type TCurve = {
-  // t: number;
   index: number;
   curvature: number;
 };
 
-const getTValue: IGetCompareValue<TVec3> = z => z.t;
 const getCurvature: IGetCompareValue<TCurve> = z => z.curvature;
 
 export class SEParametric
@@ -261,19 +263,17 @@ export class SEParametric
     this._tValues.push(...tSamples.map(x => x.t));
     this.fnValues.push(...tSamples.map(x => x.value));
     this.calculateDerivatives(tSamples); // true: First build
-    // let ptr: Parametric | null = this.ref;
-    // while (ptr !== null) {
-    //   ptr.updateDisplay();
-    //   ptr = ptr.next;
-    // }
   }
 
   get tValues(): Array<number> {
     return this._tValues;
   }
 
-  private createSamplingPoints(): Array<TVec3> {
-    const computeArea = (a: TVec3, b: TVec3, c: TVec3): number => {
+  /** Generate adaptive sampling points based of "local curvatures" */
+  private createSamplingPoints(): Array<TSample> {
+    // Area of a triangle formed by three consecutive sample points
+    // This also measures the local curvature
+    const computeArea = (a: TSample, b: TSample, c: TSample): number => {
       return (
         0.5 *
         Math.abs(
@@ -289,11 +289,11 @@ export class SEParametric
     const rotationMat4 = this.tmpMatrix
       .copy(this.store.inverseTotalRotationMatrix)
       .invert();
-    const N = 5;
+    const N = 5; // initial number of sample points
     const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
     let vecValue: Vector3;
-    const fnValues: Array<TVec3> = [];
-    // Build equally time-spaced points on the curve
+    const fnValues: Array<TSample> = [];
+    // To initialize, place equally time-spaced sample points on the curve
     for (let i = 0; i < N; i++) {
       const tValue = this._tNumbersHardLimit.min + (i * RANGE) / (N - 1);
       this.varMap.set("t", tValue);
@@ -303,32 +303,48 @@ export class SEParametric
         ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
       );
       vecValue.applyMatrix4(rotationMat4);
-      console.debug(`At t=${tValue}`, vecValue.toFixed(4));
-      fnValues.push({ t: tValue, value: vecValue });
+      console.debug(`At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
+      fnValues.push({
+        t: tValue,
+        left: i > 0 ? i - 1 : 0,
+        right: i < N - 1 ? i + 1 : N - 1,
+        value: vecValue
+      });
     }
-    // Create initial sample points
-    const AREA_THRESHOLD = 0.00001;
+    // Calculate the local curvatures of the inner sample points
+    const AREA_THRESHOLD = 0.001;
     const curvatureHeap = new MaxPriorityQueue<TCurve>(getCurvature);
-    let prev: TVec3 = fnValues[0];
-    let curr: TVec3 = fnValues[1];
+    let prev: TSample = fnValues[0];
+    let curr: TSample = fnValues[1];
     for (let k = 2; k < N; k++) {
       const next = fnValues[k];
       const curvature = computeArea(prev, curr, next);
-      if (curvature > AREA_THRESHOLD) {
-        curvatureHeap.enqueue({ index: k - 1, curvature });
-        console.debug(`Curvature at k=${k - 1} t=${curr.t} is ${curvature}`);
-      }
+      // console.debug(
+      //   `Initial curvature at k=${k - 1}` +
+      //     `t=${curr.t.toFixed(4)} is ${curvature.toFixed(5)}`
+      // );
+
+      curvatureHeap.enqueue({ index: k - 1, curvature });
+
       prev = curr;
       curr = next;
     }
+    // Improve the samples by adding sample points around existing points
+    // with high curvature.
+    // Since we use a max heap, highest curvature will be
+    // processed first
     while (curvatureHeap.size() > 0) {
+      // In the following loop, 3 equally-spaced points L, M, R are expanded
+      // into 4 equally-spaced points L, M1, M2, R
       const { index, curvature } = curvatureHeap.dequeue();
       const tValue = fnValues[index].t;
       console.debug(`Curvature ${curvature} at ${index} t=${tValue}`);
+      const leftIndex = fnValues[index].left;
+      const tLeft = fnValues[leftIndex].t;
+      const rightIndex = fnValues[index].right;
+      const tRight = fnValues[rightIndex].t;
       // Recalculate the point on the left third
-      const tLeft = fnValues[index - 1].t;
-      const tRight = fnValues[index + 1].t;
-      const t1 = (2 * tLeft + tRight) / 3;
+      const t1 = (2 * tLeft + tRight) / 3; // T-value for M1
       this.varMap.set("t", t1);
       const xLeft = ExpressionParser.evaluate(
         this.coordinateSyntaxTrees.x,
@@ -342,9 +358,8 @@ export class SEParametric
         this.coordinateSyntaxTrees.z,
         this.varMap
       );
-      fnValues[index].t = t1;
-      fnValues[index].value.set(xLeft, yLeft, zLeft);
-      const t2 = (tLeft + 2 * tRight) / 3;
+      // Recalculate the point on the right third
+      const t2 = (tLeft + 2 * tRight) / 3; // T-value for M2
       this.varMap.set("t", t2);
       const xRight = ExpressionParser.evaluate(
         this.coordinateSyntaxTrees.x,
@@ -358,31 +373,48 @@ export class SEParametric
         this.coordinateSyntaxTrees.z,
         this.varMap
       );
-      fnValues.splice(index + 1, 0, {
+      const newIndex = fnValues.length; // Must be the length BEFORE push
+      // Reuse the space previously occupied by M for M1
+      fnValues[index].t = t1;
+      // left neighbor of M (now becomes M1) remains the same (L)
+      fnValues[index].right = newIndex;
+      fnValues[index].value.set(xLeft, yLeft, zLeft);
+      // The new sample point M2 is between current (or M1) and old right (R)
+      fnValues.push({
         t: t2,
+        left: index, // previously point M, now M1
+        right: rightIndex, // point R
         value: new Vector3(xRight, yRight, zRight)
       });
+
+      // Left neighbor of R changes to M2
+      fnValues[rightIndex].left = newIndex;
       const area1 = computeArea(
-        fnValues[index - 1],
-        fnValues[index],
-        fnValues[index + 1]
+        fnValues[leftIndex], // L
+        fnValues[index], // M (or now M1)
+        fnValues[newIndex] // the new M2
       );
       if (area1 > AREA_THRESHOLD)
-        curvatureHeap.enqueue({ index, curvature: area1 });
+        curvatureHeap.enqueue({
+          index,
+          curvature: area1
+        });
       const area2 = computeArea(
-        fnValues[index],
-        fnValues[index + 1],
-        fnValues[index + 2]
+        fnValues[index], // M (or now M1)
+        fnValues[newIndex], // the new M2
+        fnValues[rightIndex] // R
       );
       if (area2 > AREA_THRESHOLD)
-        curvatureHeap.enqueue({ index: index + 1, curvature: area2 });
+        curvatureHeap.enqueue({ index: newIndex, curvature: area2 });
     }
-    const tValues = fnValues.map((z: TVec3) => z.t);
+    // Sort by time
+    fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
+    const tValues = fnValues.map((z: TSample) => z.t);
     console.debug(`SEParametric ${this.id} values`, tValues);
     return fnValues;
   }
 
-  private calculateDerivatives(samples: TVec3[], firstBuild = false): void {
+  private calculateDerivatives(samples: TSample[], firstBuild = false): void {
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
