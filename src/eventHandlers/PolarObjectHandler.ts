@@ -12,7 +12,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -35,6 +34,7 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 enum Create {
   NONE,
@@ -550,8 +550,9 @@ export default class PolarObjectHandler extends Highlighter {
       ) {
         //Make it user created and turn on the display
         polarLineCommandGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(
-            this.parentPoint as SEIntersectionPoint
+          new SetPointUserCreatedValueCommand(
+            this.parentPoint as SEIntersectionPoint,
+            true
           )
         );
       }

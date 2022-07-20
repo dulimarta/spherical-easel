@@ -16,6 +16,7 @@ import { SELabel } from "./SELabel";
 // => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
@@ -26,6 +27,14 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
 
+  /**
+   * This determines if a point has been visible before so that the
+   * first time a point is visible, the label short name can be
+   * set to P# where # will make sense to the user. That is
+   * the user will have made or seen # many points before seeing the
+   * label P#. This should respect the undo/redo operations.
+   */
+  protected _pointVisibleBefore = false;
   /**
    * Pointer to the label of this point
    */
@@ -61,6 +70,11 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
     //Update the location of the associate plottable Point (setter also updates the display)
     this.ref.positionVector = this._locationVector;
+
+    if (!this._pointVisibleBefore && this.showing) {
+      // This should execute once unless the point is deleted/converted to not user created
+      new SetPointInitialVisibilityAndLabel(this, true).execute();
+    }
 
     if (this.showing) {
       this.ref.setVisible(true);
@@ -100,6 +114,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.updateKids(objectState, orderedSENoduleList);
   }
 
+  set pointVisibleBefore(b: boolean) {
+    this._pointVisibleBefore = b;
+  }
+  get pointVisibleBefore(): boolean {
+    return this._pointVisibleBefore;
+  }
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere
    */

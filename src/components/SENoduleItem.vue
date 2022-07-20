@@ -310,7 +310,6 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { Matrix4, Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { ConvertUserCreatedToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedToNotUserCreatedCommand";
 import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
@@ -490,47 +489,6 @@ export default class SENoduleItem extends Vue {
     });
     // when deleting mesurements, the measure object(if any) must be unglowed
     this.unglowAllSENodules();
-
-    // /// WARNING!!! THIS IS DUPLICATE CODE FROM DeleteHandler.delete(victim); TODO: CAN THIS DUPLICATION BE ELIMINATED?
-    // // Clear the delete array and map
-    // this.beforeDeleteStateMap.clear();
-    // this.beforeDeleteSENoduleIDList.splice(0);
-    // // First mark all children of the victim out of date so that the update method does a topological sort
-    // this.node.markKidsOutOfDate();
-    // //Record the state of the this.node and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    // this.node.update(
-    //   this.beforeDeleteStateMap,
-    //   this.beforeDeleteSENoduleIDList
-    // );
-
-    // const deleteCommandGroup = new CommandGroup();
-    // // The update method orders the objects from the this.node to the leaf (i.e objects with only in arrows)
-    // // To delete remove from the leaves to the this.node (and to undo build from the this.node to leaves -- accomplished
-    // // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
-    // this.beforeDeleteSENoduleIDList.reverse();
-    // this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
-    //   // Get the SENodule via the beforeState
-    //   const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
-
-    //   if (seNoduleBeforeState !== undefined) {
-    //     if (
-    //       seNoduleBeforeState.object instanceof SEIntersectionPoint &&
-    //       (seNoduleBeforeState.object as SEIntersectionPoint).isUserCreated
-    //     ) {
-    //       // don't delete a user created intersection point, covert it back to not user created.
-    //       deleteCommandGroup.addCommand(
-    //         new ConvertUserCreatedInterToNotUserCreatedCommand(
-    //           seNoduleBeforeState.object
-    //         )
-    //       );
-    //     } else {
-    //       deleteCommandGroup.addCommand(
-    //         new DeleteNoduleCommand(seNoduleBeforeState.object)
-    //       );
-    //     }
-    //   }
-    // });
-    // deleteCommandGroup.execute();
   }
 
   cycleValueDisplayMode(): void {

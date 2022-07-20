@@ -1,25 +1,23 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
+import { ObjectState, SEOneDimensional } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { ConvertUserCreatedToNotUserCreatedCommand } from "@/commands/ConvertUserCreatedToNotUserCreatedCommand";
 import { Group } from "two.js/src/group";
 import { ChangeIntersectionPointPrincipleParent } from "@/commands/ChangeIntersectionPointPrincipleParent";
 import i18n from "@/i18n";
-import { intersectTwoObjects } from "@/utils/intersections";
 import { RemoveIntersectionPointOtherParent } from "@/commands/RemoveIntersectionPointOtherParent";
-import { del } from "@vue/composition-api";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -401,12 +399,23 @@ export default class DeleteHandler extends Highlighter {
             if (seNoduleBeforeState.object.isUserCreated) {
               // convert it back to not user created (if it was)
               deleteCommandGroup.addCommand(
-                new ConvertUserCreatedToNotUserCreatedCommand(
-                  seNoduleBeforeState.object
+                new SetPointUserCreatedValueCommand(
+                  seNoduleBeforeState.object,
+                  false
                 )
               );
             }
-            // finally delete the intersection point
+            // finally delete the intersection point, but first set the initial
+            // visibility status so if the user undoes this the points are labeled in a
+            // consecutive way as they are made visible to the user
+
+            deleteCommandGroup.addCommand(
+              new SetPointInitialVisibilityAndLabel(
+                seNoduleBeforeState.object,
+                false
+              )
+            );
+
             deleteCommandGroup.addCommand(
               new DeleteNoduleCommand(seNoduleBeforeState.object)
             );
@@ -522,9 +531,19 @@ export default class DeleteHandler extends Highlighter {
               !seIntersectionPointExists
             ) {
               // convert it back to not user created because it doesn't exist
+              // Also reset the initial visibility and label so the point numbering is consecutive based on when the points are first shown to the user
+
               deleteCommandGroup.addCommand(
-                new ConvertUserCreatedToNotUserCreatedCommand(
-                  seNoduleBeforeState.object
+                new SetPointInitialVisibilityAndLabel(
+                  seNoduleBeforeState.object,
+                  false
+                )
+              );
+
+              deleteCommandGroup.addCommand(
+                new SetPointUserCreatedValueCommand(
+                  seNoduleBeforeState.object,
+                  false
                 )
               );
             }
@@ -556,6 +575,17 @@ export default class DeleteHandler extends Highlighter {
                   );
                 }
               });
+          }
+          // finally delete the object, but first if the object is a SEPoint set the initial
+          // visibility status so if the user undoes this the points are labeled in a
+          // consecutive way as they are made visible to the user
+          if (seNoduleBeforeState.object instanceof SEPoint) {
+            deleteCommandGroup.addCommand(
+              new SetPointInitialVisibilityAndLabel(
+                seNoduleBeforeState.object,
+                false
+              )
+            );
           }
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)

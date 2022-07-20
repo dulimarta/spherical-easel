@@ -1,4 +1,3 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddTangentLineThruPointCommand } from "@/commands/AddTangentLineThruPointCommand";
@@ -23,19 +22,15 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
-
-// const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 type TemporaryLine = {
   line: Line;
@@ -613,7 +608,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
       ) {
         //Make it user created and turn on the display
         addTangentLineGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(sePoint as SEIntersectionPoint)
+          new SetPointUserCreatedValueCommand(
+            sePoint as SEIntersectionPoint,
+            true
+          )
         );
       }
       this.sePoint = sePoint;

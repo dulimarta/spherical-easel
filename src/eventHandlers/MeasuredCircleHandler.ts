@@ -1,18 +1,14 @@
-/** @format */
-
 import { Vector3, Matrix4 } from "three";
 import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -40,11 +36,10 @@ import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -573,7 +568,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.centerSEPoint)
+        new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
       );
     }
 

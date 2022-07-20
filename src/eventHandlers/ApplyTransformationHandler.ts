@@ -2,7 +2,6 @@
 
 import { AddTransformedPointCommand } from "@/commands/AddTransformedPointCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 import { SECircle } from "@/models/SECircle";
@@ -61,6 +60,7 @@ import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1569,7 +1569,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     ) {
       // Mark the intersection or antipodal point as created
       commandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(preimageSEPoint)
+        new SetPointUserCreatedValueCommand(preimageSEPoint, true)
       );
     }
     // we have to create a new transformed point

@@ -29,6 +29,7 @@ export abstract class SENodule implements Visitable {
   public static REFLECTION_COUNT = 0;
   public static INVERSION_COUNT = 0;
   public static POINT_REFLECTION_COUNT = 0;
+  public static VISIBLE_POINT_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -48,6 +49,7 @@ export abstract class SENodule implements Visitable {
     SENodule.REFLECTION_COUNT = 0;
     SENodule.INVERSION_COUNT = 0;
     SENodule.POINT_REFLECTION_COUNT = 0;
+    SENodule.VISIBLE_POINT_COUNT = 0;
   }
 
   /**
@@ -491,6 +493,17 @@ export abstract class SENodule implements Visitable {
           tVal: d2
         };
     }
+  }
+
+  /**
+   * Increment the VISIBLE_POINT_COUNT by one and returns the number
+   */
+  get nextVisiblePointCount(): number {
+    SENodule.VISIBLE_POINT_COUNT++;
+    return SENodule.VISIBLE_POINT_COUNT;
+  }
+  public decrementVisiblePointCount(): void {
+    SENodule.VISIBLE_POINT_COUNT--;
   }
 
   /**

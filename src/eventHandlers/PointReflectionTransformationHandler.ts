@@ -1,4 +1,3 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
@@ -16,11 +15,11 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import SETTINGS from "@/global-settings";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class PointReflectionTransformationHandler extends Highlighter {
   /**
    * Center vector of the created rotation
@@ -461,7 +460,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       pointRotationCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.rotationSEPoint)
+        new SetPointUserCreatedValueCommand(this.rotationSEPoint, true)
       );
     }
 

@@ -220,7 +220,8 @@ export type SavedNames =
   | "changePrincipleParentOldPrincipleName"
   | "convertToUserCreatedIntersectionPointName"
   | "setValueDisplayModeOldValue"
-  | "setValueDisplayModeNewValue";
+  | "setValueDisplayModeNewValue"
+  | "pointVisibleBefore";
 
 export type ActionMode =
   | "angle"

@@ -1,18 +1,14 @@
-/** @format */
-
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddLineCommand } from "@/commands/AddLineCommand";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -23,11 +19,10 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -585,7 +580,7 @@ export default class LineHandler extends Highlighter {
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.startSEPoint)
+        new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
     }
 
@@ -600,7 +595,7 @@ export default class LineHandler extends Highlighter {
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(this.endSEPoint)
+          new SetPointUserCreatedValueCommand(this.endSEPoint, true)
         );
       }
     } else {

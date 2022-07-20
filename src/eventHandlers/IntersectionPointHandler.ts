@@ -1,26 +1,14 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import {
-  IntersectionReturnType,
-  SEOneDimensional,
-  SEOneOrTwoDimensional
-} from "@/types";
+import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
-import { SEEllipse } from "@/models/SEEllipse";
-
-// import { IntersectionPointHandler.store } from "@/store";
 import { intersectTwoObjects } from "@/utils/intersections";
-import { SEParametric } from "@/models/SEParametric";
 import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -56,7 +44,10 @@ export default class IntersectionPointHandler extends Highlighter {
             !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertPtToUserCreatedCommand(this.hitSEPoints[0]).execute();
+          new SetPointUserCreatedValueCommand(
+            this.hitSEPoints[0],
+            true
+          ).execute();
           return;
         }
         return;
@@ -287,7 +278,7 @@ export default class IntersectionPointHandler extends Highlighter {
         if (!element.isUserCreated) {
           if (this.updatedIntersectionInfo[index].exists) {
             intersectionConversionCommandGroup.addCommand(
-              new ConvertPtToUserCreatedCommand(element)
+              new SetPointUserCreatedValueCommand(element, true)
             );
             EventBus.fire("show-alert", {
               key: `handlers.intersectionOneDimensionalPointCreated`,

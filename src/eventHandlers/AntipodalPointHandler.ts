@@ -11,7 +11,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -19,6 +18,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -117,7 +117,7 @@ export default class AntipodalPointHandler extends Highlighter {
           //The antipode is not displayed
           const antipodalCommandGroup = new CommandGroup();
           antipodalCommandGroup.addCommand(
-            new ConvertPtToUserCreatedCommand(possibleAntipode)
+            new SetPointUserCreatedValueCommand(possibleAntipode, true)
           );
           // if the possible antipode is an intersection point convert it to antipodal mode
           if (possibleAntipode instanceof SEIntersectionPoint) {
@@ -134,8 +134,9 @@ export default class AntipodalPointHandler extends Highlighter {
           ) {
             //Make it user created and turn on the display
             antipodalCommandGroup.addCommand(
-              new ConvertPtToUserCreatedCommand(
-                this.parentPoint as SEIntersectionPoint
+              new SetPointUserCreatedValueCommand(
+                this.parentPoint as SEIntersectionPoint,
+                true
               )
             );
           }
@@ -205,19 +206,7 @@ export default class AntipodalPointHandler extends Highlighter {
 
       if (!this.parentPointVector.isZero()) {
         const antipodalCommandGroup = new CommandGroup();
-        //if (this.parentPoint !== null) {
-        //   if (
-        //     this.parentPoint instanceof SEIntersectionPoint &&
-        //     !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode it parent already exists
-        //   ) {
-        //     //Make it user created and turn on the display
-        //     antipodalCommandGroup.addCommand(
-        //       new ConvertPtToUserCreatedCommand(
-        //         this.parentPoint as SEIntersectionPoint
-        //       )
-        //     );
-        //   }
-        // } else
+
         if (this.oneDimensionalContainingParentPoint !== null) {
           // create a new point on the object that the user clicked on
           const newPoint = new Point();

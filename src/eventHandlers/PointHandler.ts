@@ -1,11 +1,9 @@
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import Label from "@/plottables/Label";
@@ -19,6 +17,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -58,8 +57,9 @@ export default class PointHandler extends Highlighter {
             !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertPtToUserCreatedCommand(
-            this.hitSEPoints[0] as SEIntersectionPoint
+          new SetPointUserCreatedValueCommand(
+            this.hitSEPoints[0] as SEIntersectionPoint,
+            true
           ).execute();
           return;
         }

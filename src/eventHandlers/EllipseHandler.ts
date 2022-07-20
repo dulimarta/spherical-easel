@@ -11,7 +11,6 @@ import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -28,6 +27,7 @@ import { getAncestors } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -805,7 +805,7 @@ export default class EllipseHandler extends Highlighter {
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.focus1SEPoint)
+        new SetPointUserCreatedValueCommand(this.focus1SEPoint, true)
       );
     }
 
@@ -903,7 +903,7 @@ export default class EllipseHandler extends Highlighter {
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.focus2SEPoint)
+        new SetPointUserCreatedValueCommand(this.focus2SEPoint, true)
       );
     }
 
@@ -933,7 +933,7 @@ export default class EllipseHandler extends Highlighter {
       ) {
         // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
         ellipseCommandGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(this.ellipseSEPoint)
+          new SetPointUserCreatedValueCommand(this.ellipseSEPoint, true)
         );
       }
     } else {

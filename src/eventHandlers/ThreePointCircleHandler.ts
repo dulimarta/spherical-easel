@@ -1,16 +1,12 @@
-/** @format */
-
 import { Vector3, Matrix4 } from "three";
 import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -25,12 +21,11 @@ import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -870,7 +865,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       threePointCircleCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.point1SEPoint)
+        new SetPointUserCreatedValueCommand(this.point1SEPoint, true)
       );
     }
 
@@ -969,7 +964,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     ) {
       // Mark the intersection/antipode point as created, the display style is changed and the glowing style is set up
       threePointCircleCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.point2SEPoint)
+        new SetPointUserCreatedValueCommand(this.point2SEPoint, true)
       );
     }
 
@@ -989,7 +984,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         threePointCircleCommandGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(this.point3SEPoint)
+          new SetPointUserCreatedValueCommand(this.point3SEPoint, true)
         );
       }
     } else {

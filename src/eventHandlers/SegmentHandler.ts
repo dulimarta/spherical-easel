@@ -1,6 +1,3 @@
-/** @format */
-
-import Two from "two.js";
 import { Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import Segment from "@/plottables/Segment";
@@ -15,7 +12,6 @@ import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
@@ -23,11 +19,10 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -602,7 +597,7 @@ export default class SegmentHandler extends Highlighter {
     ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       segmentGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.startSEPoint)
+        new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
     }
     // Look for an endpoint at the mouse release location
@@ -630,7 +625,7 @@ export default class SegmentHandler extends Highlighter {
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         segmentGroup.addCommand(
-          new ConvertPtToUserCreatedCommand(this.endSEPoint)
+          new SetPointUserCreatedValueCommand(this.endSEPoint, true)
         );
       }
     } else {

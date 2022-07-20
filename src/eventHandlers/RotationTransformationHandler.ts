@@ -19,7 +19,6 @@ import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { ConvertPtToUserCreatedCommand } from "@/commands/ConvertPtToUserCreatedCommand";
 import { SECircle } from "@/models/SECircle";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
@@ -30,6 +29,7 @@ import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class RotationTransformationHandler extends Highlighter {
   /**
    * Center vector of the created rotation
@@ -482,7 +482,7 @@ export default class RotationTransformationHandler extends Highlighter {
     ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       rotationCommandGroup.addCommand(
-        new ConvertPtToUserCreatedCommand(this.rotationSEPoint)
+        new SetPointUserCreatedValueCommand(this.rotationSEPoint, true)
       );
     }
 
