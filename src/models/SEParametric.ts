@@ -1,6 +1,4 @@
 import { SENodule } from "./SENodule";
-// import { SEPoint } from "./SEPoint";
-// import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -33,6 +31,24 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
 ]);
+import {
+  MaxPriorityQueue,
+  IGetCompareValue
+} from "@datastructures-js/priority-queue";
+
+type TVec3 = {
+  t: number;
+  value: Vector3;
+};
+type TCurve = {
+  // t: number;
+  index: number;
+  curvature: number;
+};
+
+const getTValue: IGetCompareValue<TVec3> = z => z.t;
+const getCurvature: IGetCompareValue<TCurve> = z => z.curvature;
+
 export class SEParametric
   extends SENodule
   implements Visitable, OneDimensional, Labelable
@@ -98,6 +114,10 @@ export class SEParametric
   private _tExpressions: MinMaxExpression = { min: "", max: "" };
   private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
   private _tNumbersHardLimit: MinMaxNumber = { min: NaN, max: NaN };
+  private _tValues: Array<number> = [];
+  private fnValues: Vector3[] = [];
+  private fnPrimeValues: Vector3[] = [];
+  private fnPPrimeValues: Vector3[] = [];
 
   private _c1DiscontinuityParameterValues: number[] = [];
 
@@ -123,16 +143,23 @@ export class SEParametric
    * @param parametric The plottable TwoJS Object associated to this object
    */
   constructor(
-    parametric: Parametric,
+    // parametric: Parametric,
     coordinateExpressions: { x: string; y: string; z: string },
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number } /* hard limit */,
     c1DiscontinuityParameterValues: number[],
-    measurementParents: SEExpression[]
+    measurementParents: SEExpression[],
+    isClosed = false
   ) {
     super();
     this.store = useSEStore();
-    this.ref = parametric;
+    this.ref = new Parametric(
+      tNumbers.min,
+      tNumbers.max,
+      tNumbers.min,
+      tNumbers.max,
+      isClosed
+    ); // FIXME
     // Set the expressions for the curve, its derivative, and the tMin & tMax
     this.coordinateExpressions.x = coordinateExpressions.x;
     this.coordinateExpressions.y = coordinateExpressions.y;
@@ -210,7 +237,7 @@ export class SEParametric
       ) {
         const p = new Parametric();
         p.partId = m;
-        ptr.next = p;
+        // ptr.next = p;
         ptr = p;
       }
     }
@@ -230,15 +257,132 @@ export class SEParametric
 
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
-    this.calculateFunctionAndDerivatives(true); // true: First build
-    let ptr: Parametric | null = this.ref;
-    while (ptr !== null) {
-      ptr.updateDisplay();
-      ptr = ptr.next;
-    }
+    const tSamples = this.createSamplingPoints();
+    this._tValues.push(...tSamples.map(x => x.t));
+    this.fnValues.push(...tSamples.map(x => x.value));
+    this.calculateDerivatives(tSamples); // true: First build
+    // let ptr: Parametric | null = this.ref;
+    // while (ptr !== null) {
+    //   ptr.updateDisplay();
+    //   ptr = ptr.next;
+    // }
   }
 
-  private calculateFunctionAndDerivatives(firstBuild = false): void {
+  get tValues(): Array<number> {
+    return this._tValues;
+  }
+
+  private createSamplingPoints(): Array<TVec3> {
+    const computeArea = (a: TVec3, b: TVec3, c: TVec3): number => {
+      return (
+        0.5 *
+        Math.abs(
+          a.value.x * b.value.y +
+            b.value.x * c.value.y +
+            c.value.x * a.value.y -
+            a.value.x * c.value.y -
+            b.value.x * a.value.y -
+            c.value.x * b.value.y
+        )
+      );
+    };
+    const rotationMat4 = this.tmpMatrix
+      .copy(this.store.inverseTotalRotationMatrix)
+      .invert();
+    const N = 5;
+    const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
+    let vecValue: Vector3;
+    const fnValues: Array<TVec3> = [];
+    // Build equally time-spaced points on the curve
+    for (let i = 0; i < N; i++) {
+      const tValue = this._tNumbersHardLimit.min + (i * RANGE) / (N - 1);
+      this.varMap.set("t", tValue);
+      vecValue = new Vector3(
+        ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
+        ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
+        ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
+      );
+      vecValue.applyMatrix4(rotationMat4);
+      console.debug(`At t=${tValue}`, vecValue.toFixed(4));
+      fnValues.push({ t: tValue, value: vecValue });
+    }
+    // Create initial sample points
+    const AREA_THRESHOLD = 0.00001;
+    const curvatureHeap = new MaxPriorityQueue<TCurve>(getCurvature);
+    let prev: TVec3 = fnValues[0];
+    let curr: TVec3 = fnValues[1];
+    for (let k = 2; k < N; k++) {
+      const next = fnValues[k];
+      const curvature = computeArea(prev, curr, next);
+      if (curvature > AREA_THRESHOLD) {
+        curvatureHeap.enqueue({ index: k - 1, curvature });
+        console.debug(`Curvature at k=${k - 1} t=${curr.t} is ${curvature}`);
+      }
+      prev = curr;
+      curr = next;
+    }
+    while (curvatureHeap.size() > 0) {
+      const { index, curvature } = curvatureHeap.dequeue();
+      const tValue = fnValues[index].t;
+      console.debug(`Curvature ${curvature} at ${index} t=${tValue}`);
+      // Recalculate the point on the left third
+      const tLeft = fnValues[index - 1].t;
+      const tRight = fnValues[index + 1].t;
+      const t1 = (2 * tLeft + tRight) / 3;
+      this.varMap.set("t", t1);
+      const xLeft = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.x,
+        this.varMap
+      );
+      const yLeft = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.y,
+        this.varMap
+      );
+      const zLeft = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.z,
+        this.varMap
+      );
+      fnValues[index].t = t1;
+      fnValues[index].value.set(xLeft, yLeft, zLeft);
+      const t2 = (tLeft + 2 * tRight) / 3;
+      this.varMap.set("t", t2);
+      const xRight = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.x,
+        this.varMap
+      );
+      const yRight = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.y,
+        this.varMap
+      );
+      const zRight = ExpressionParser.evaluate(
+        this.coordinateSyntaxTrees.z,
+        this.varMap
+      );
+      fnValues.splice(index + 1, 0, {
+        t: t2,
+        value: new Vector3(xRight, yRight, zRight)
+      });
+      const area1 = computeArea(
+        fnValues[index - 1],
+        fnValues[index],
+        fnValues[index + 1]
+      );
+      if (area1 > AREA_THRESHOLD)
+        curvatureHeap.enqueue({ index, curvature: area1 });
+      const area2 = computeArea(
+        fnValues[index],
+        fnValues[index + 1],
+        fnValues[index + 2]
+      );
+      if (area2 > AREA_THRESHOLD)
+        curvatureHeap.enqueue({ index: index + 1, curvature: area2 });
+    }
+    const tValues = fnValues.map((z: TVec3) => z.t);
+    console.debug(`SEParametric ${this.id} values`, tValues);
+    return fnValues;
+  }
+
+  private calculateDerivatives(samples: TVec3[], firstBuild = false): void {
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
@@ -257,9 +401,8 @@ export class SEParametric
     // We have to rebuild when either this call is the FIRST build
     // OR some variables have changed their value
     // console.debug("(Re)building function and its derivatives");
-    const fnValues: Vector3[] = [];
-    const fnPrimeValues: Vector3[] = [];
-    const fnPPrimeValues: Vector3[] = [];
+    // const fnValues: Vector3[] = [];
+    const tSamples = samples.map(z => z.t);
     if (this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED) {
       const minValue = ExpressionParser.evaluate(
         this.tSyntaxTrees.min,
@@ -275,26 +418,31 @@ export class SEParametric
       );
       this._tNumbers.max = Math.min(this._tNumbersHardLimit.max, maxValue);
     } else this._tNumbers.max = this._tNumbersHardLimit.max;
-    this.evaluateFunctionAndCache(this.coordinateSyntaxTrees, fnValues);
+    // this.evaluateFunctionAndCache(this.coordinateSyntaxTrees);
     this.evaluateFunctionAndCache(
+      tSamples,
       this.primeCoordinateSyntaxTrees,
-      fnPrimeValues
+      this.fnPrimeValues
     );
     this.evaluateFunctionAndCache(
+      tSamples,
       this.primeX2CoordinateSyntaxTrees,
-      fnPPrimeValues
+      this.fnPPrimeValues
     );
     if (this._c1DiscontinuityParameterValues.length === 0) {
-      console.debug("We have just ONE continuous curve");
+      console.debug(`SEParametric ${this.id} consists of only ONE curve`);
       this.ref.setRangeAndFunctions(
-        fnValues,
-        fnPrimeValues,
-        fnPPrimeValues,
+        this.tValues,
+        this.fnValues,
+        this.fnPrimeValues,
+        this.fnPPrimeValues,
         this._tNumbersHardLimit.min,
         this._tNumbersHardLimit.max,
         this.tNumbers.min,
         this.tNumbers.max
       );
+      this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.ref.adjustSize();
     } else {
       console.debug(
         "We have",
@@ -305,10 +453,13 @@ export class SEParametric
       const breakPoints = this._c1DiscontinuityParameterValues;
       let m = 1;
       while (p !== null) {
+        console.debug(`SEParametric ${this.id} set functions`);
+
         p.setRangeAndFunctions(
-          fnValues,
-          fnPrimeValues,
-          fnPPrimeValues,
+          this.tValues,
+          this.fnValues,
+          this.fnPrimeValues,
+          this.fnPPrimeValues,
           this._tNumbersHardLimit.min,
           this._tNumbersHardLimit.max,
           breakPoints[m - 1],
@@ -323,19 +474,18 @@ export class SEParametric
   }
 
   private evaluateFunctionAndCache(
+    tSamples: Array<number>,
     fn: CoordinateSyntaxTrees,
     cache: Array<Vector3>
   ): void {
-    const N = SETTINGS.parameterization.subdivisions * 4;
-    const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
     // console.debug(
     //   `Evaluate function in range, [${this._tNumbersHardLimit.min}, ${this._tNumbersHardLimit.max}]`
     // );
     cache.splice(0);
 
     let vecValue: Vector3;
-    for (let i = 0; i < N; i++) {
-      const tValue = this._tNumbersHardLimit.min + (i * RANGE) / (N - 1);
+    for (let i = 0; i < tSamples.length; i++) {
+      const tValue = tSamples[i];
       this.varMap.set("t", tValue);
       vecValue = new Vector3(
         ExpressionParser.evaluate(fn.x, this.varMap),
@@ -345,6 +495,61 @@ export class SEParametric
       cache.push(vecValue);
     }
   }
+
+  private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
+    const N = arr.length;
+    if (N >= 2) {
+      let sIndex = 0;
+      while (sIndex < N && t > this._tValues[sIndex]) sIndex++;
+      if (sIndex < N - 1) {
+        // the amount of deviation from the ideal location
+        const fraction =
+          (t - this._tValues[sIndex]) /
+          (this._tValues[sIndex + 1] - this._tValues[sIndex]);
+        const toRight = this._tValues[sIndex + 1] - t;
+        /* Use linear interpolation of two neighboring values in the array */
+
+        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
+        this.tmpVector.set(0, 0, 0);
+        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
+        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
+      } else this.tmpVector.copy(arr[N - 1]);
+    } else {
+      console.error(
+        `Attempt to evaluate function value at t=${t} for SEParametric ${this.id} with ${N} fn samples`
+      );
+      // throw new Error(`Attempt to evaluate function value at t=${t}`);
+      this.tmpVector.set(0, 0, 0);
+    }
+    return this.tmpVector;
+  }
+  /**
+   * The parameterization of the curve.
+   * @param t the parameter
+   * @returns vector containing the location
+   */
+  public P(t: number): Vector3 {
+    return this.lookupFunctionValueAt(t, this.fnValues);
+  }
+
+  /**
+   * The parameterization of the derivative of the curve
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter
+   */
+  public PPrime(t: number): Vector3 {
+    return this.lookupFunctionValueAt(t, this.fnPrimeValues);
+  }
+
+  /**
+   * The parameterization of the derivative of the curve
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter
+   */
+  public PPPrime(t: number): Vector3 {
+    return this.lookupFunctionValueAt(t, this.fnPPrimeValues);
+  }
+
   /**
    * The tMin & tMax starting *tracing* parameter of the curve.
    */
@@ -431,7 +636,8 @@ export class SEParametric
 
     if (this._exists) {
       // display the updated parametric
-      this.calculateFunctionAndDerivatives();
+      // TODO: FIXME
+      // this.calculateDerivatives(this.tValues.map(z => z.t));
       let ptr: Parametric | null = this.ref;
       while (ptr !== null) {
         ptr.updateDisplay();
@@ -476,30 +682,31 @@ export class SEParametric
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
-    //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
-    const transformedToStandard = new Vector3();
-    transformedToStandard.copy(idealUnitSphereVector);
-    transformedToStandard.applyMatrix4(this.store.inverseTotalRotationMatrix);
+    if (this.tValues.length > 0) {
+      //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
+      const transformedToStandard = new Vector3();
+      transformedToStandard.copy(idealUnitSphereVector);
+      transformedToStandard.applyMatrix4(this.store.inverseTotalRotationMatrix);
 
-    // find the tracing tMin and tMax
-    const [tMin, tMax] = this.tMinMaxExpressionValues();
-    // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
+      // find the tracing tMin and tMax
+      const [tMin, tMax] = this.tMinMaxExpressionValues();
+      // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
-    const closestStandardVector = new Vector3();
-    closestStandardVector.copy(
-      SENodule.closestVectorParametrically(
-        this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
-        this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
-        transformedToStandard,
-        tMin,
-        tMax,
-        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
-      ).vector
-    );
-    // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
-    return closestStandardVector.applyMatrix4(
-      this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
-    );
+      const closestStandardVector = new Vector3();
+      closestStandardVector.copy(
+        SENodule.closestVectorParametrically(
+          this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
+          this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+          transformedToStandard,
+          this._tValues,
+          this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+        ).vector
+      );
+      // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
+      return closestStandardVector.applyMatrix4(
+        this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
+      );
+    } else return idealUnitSphereVector;
   }
   /**
    * Return the vector near the SEParameteric (within SETTINGS.parametric.maxLabelDistance) that is closest to the idealUnitSphereVector
@@ -586,13 +793,12 @@ export class SEParametric
 
     // TODO: Replace with a loop here
     normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
-      // this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
-      this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+      // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
+      this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
-      tMin,
-      tMax,
+      this._tValues,
       [],
-      this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+      this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
     );
 
     // console.log("# normals before", normalList.length);
@@ -609,7 +815,7 @@ export class SEParametric
     this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
     normalList.forEach((pair: NormalVectorAndTValue) => {
       pair.normal.applyMatrix4(this.tmpMatrix).normalize();
-      this.tmpVector1.copy(this.ref.P(pair.tVal));
+      this.tmpVector1.copy(this.P(pair.tVal));
       this.tmpVector1.applyMatrix4(this.tmpMatrix).normalize();
     });
     return normalList;
@@ -646,17 +852,16 @@ export class SEParametric
       0.01 / this.store.zoomMagnificationFactor
     ) {
       const coorespondingTVal = SENodule.closestVectorParametrically(
-        this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.P.bind(this), // bind the this so that this in the this.E method is this
+        this.PPrime.bind(this), // bind the this so that this in the this.E method is this
         transformedToStandard,
-        tMin,
-        tMax,
-        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        this._tValues,
+        this.PPPrime.bind(this) // bind the this so that this in the this.E method is this
       ).tVal;
       const tangentVector = new Vector3();
-      tangentVector.copy(this.ref.PPrime(coorespondingTVal));
+      tangentVector.copy(this.PPrime(coorespondingTVal));
       tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
-      tangentVector.cross(this.ref.P(coorespondingTVal));
+      tangentVector.cross(this.P(coorespondingTVal));
       avoidTValues.push(coorespondingTVal);
       normalList.push(tangentVector.normalize());
     }
@@ -665,13 +870,12 @@ export class SEParametric
 
     normalList.push(
       ...SENodule.getNormalsToTangentLinesThruParametrically(
-        this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
-        this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+        this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
+        this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         transformedToStandard,
-        tMin,
-        tMax,
+        this._tValues,
         avoidTValues,
-        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+        this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
     const taggedList: Array<NormalVectorAndTValue> = normalList.map(

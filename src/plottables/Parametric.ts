@@ -53,7 +53,8 @@ export default class Parametric extends Nodule {
    */
   // private _initialArcLength: number;
   // private _arcLengthValues: Array<number> = [];
-  private numAnchors = 0;
+  // private numAnchors = 0;
+  private _tValues: Array<number> = [];
   private _coordValues: Array<Vector3> = [];
   private _pPrimeValues: Array<Vector3> = [];
   private _ppPrimeValues: Array<Vector3> = [];
@@ -142,6 +143,7 @@ export default class Parametric extends Nodule {
   }
 
   public setRangeAndFunctions(
+    tValues: number[],
     fn: Vector3[],
     fnPrime: Vector3[],
     fnDoublePrime: Vector3[],
@@ -150,15 +152,17 @@ export default class Parametric extends Nodule {
     tMinPart: number,
     tMaxPart: number
   ): void {
-    // console.debug(
-    //   `Parametric::setRangeAndFunctions part-${this.partId}`,
-    //   tMinPart,
-    //   tMaxPart
-    // );
+    console.debug(
+      `Parametric::setRangeAndFunctions part-${this.partId}`,
+      tMinPart,
+      tMaxPart
+    );
     this.tGlobalMin = tMinGlobal;
     this.tGlobalMax = tMaxGlobal;
     this.tPartMin = tMinPart;
     this.tPartMax = tMaxPart;
+    this._tValues.splice(0);
+    this._tValues.push(...tValues);
     this._coordValues.splice(0);
     this._coordValues.push(...fn);
     this._pPrimeValues.splice(0);
@@ -169,8 +173,8 @@ export default class Parametric extends Nodule {
   }
 
   private buildCurve() {
-    this.numAnchors = this.determineAnchorsFromArcLength();
-    console.debug("Use", this.numAnchors, "anchor points");
+    const numAnchors = this._coordValues.length;
+    console.debug(`Use ${numAnchors} anchor points`);
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -178,7 +182,7 @@ export default class Parametric extends Nodule {
       // );
       // This is a new build
       const frontVertices: Anchor[] = [];
-      for (let k = 0; k < this.numAnchors; k++) {
+      for (let k = 0; k < numAnchors; k++) {
         // Create Vectors for the paths that will be cloned later
         frontVertices.push(new Anchor(0, 0));
       }
@@ -221,7 +225,7 @@ export default class Parametric extends Nodule {
     } else {
       console.debug(
         `Parametric::buildCurve(). a rebuild of part-${this.partId} with number of anchors`,
-        this.numAnchors
+        numAnchors
       );
       // This is a rebuild, check if the number of anchors has changed
       const frontVertexCount = this.frontParts
@@ -230,7 +234,7 @@ export default class Parametric extends Nodule {
       const backVertexCount = this.backParts
         .map((p: Path) => p.vertices.length)
         .reduce((total: number, currLen: number) => total + currLen);
-      const delta = this.numAnchors - (frontVertexCount + backVertexCount);
+      const delta = numAnchors - (frontVertexCount + backVertexCount);
       if (delta > 0) {
         console.debug("*** Adding", delta, "more anchor points!!!");
         // We have to add more anchor points
@@ -253,111 +257,64 @@ export default class Parametric extends Nodule {
     this.adjustSize();
   }
 
-  private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
-    const N = arr.length;
-    if (N > 0) {
-      const range = this.tGlobalMax - this.tGlobalMin;
-      // Convert t in [tMin, tMax] to s in [0,1]
-      const s = (t - this.tGlobalMin) / range;
-      const idealIndex = s * N; // Where ideal location in the array
-      const sIndex = Math.floor(idealIndex); // the discretized location in the array
-      if (sIndex < N - 1) {
-        /* Use linear interpolation of two neighboring values in the array */
-        const fraction = idealIndex - sIndex; // the amount of deviation from the ideal location
-
-        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-        this.tmpVector.set(0, 0, 0);
-        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
-        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-      } else this.tmpVector.copy(arr[N - 1]);
-      return this.tmpVector;
-    } else throw new Error(`Attempt to evaluate function value at t=${t}`);
-  }
-  /**
-   * The parameterization of the curve.
-   * @param t the parameter
-   * @returns vector containing the location
-   */
-  public P(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._coordValues);
-  }
-
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._pPrimeValues);
-  }
-
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._ppPrimeValues);
-  }
-
   /**
    * Pre-compute arc length and store the cumulative values in an array
    */
-  private determineAnchorsFromArcLength(): number {
-    // console.debug(
-    //   `Parametric::determineAnchor() part-${this.partId}`,
-    //   this.tPartMin,
-    //   this.tPartMax
-    // );
-    // const tMin = this._tNumbers.min;
-    // const tMax = this._tNumbers.max;
-    // let oldArcLength = 0;
-    let newArcLength = 0;
-    let currArcLength = 0;
-    let iteration = 1;
-    let interAnchorDistance = 0;
-    const curr = new Vector3();
-    const next = new Vector3();
-    do {
-      newArcLength = 0;
-      // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
-      const tRange = this.tPartMax - this.tPartMin;
+  // private determineAnchorsFromArcLength_not_used(): number {
+  //   // console.debug(
+  //   //   `Parametric::determineAnchor() part-${this.partId}`,
+  //   //   this.tPartMin,
+  //   //   this.tPartMax
+  //   // );
+  //   // const tMin = this._tNumbers.min;
+  //   // const tMax = this._tNumbers.max;
+  //   // let oldArcLength = 0;
+  //   let newArcLength = 0;
+  //   let currArcLength = 0;
+  //   let iteration = 1;
+  //   let interAnchorDistance = 0;
+  //   const curr = new Vector3();
+  //   const next = new Vector3();
+  //   do {
+  //     newArcLength = 0;
+  //     // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
+  //     const tRange = this.tPartMax - this.tPartMin;
 
-      // Approximate the length using inter sample distance
-      curr.copy(this.P(this.tPartMin));
-      for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
-        const tValue =
-          this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
-        const len = next.copy(this.P(tValue)).sub(curr).length();
+  //     // Approximate the length using inter sample distance
+  //     curr.copy(this.P(this.tPartMin));
+  //     for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
+  //       const tValue =
+  //         this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
+  //       const len = next.copy(this.P(tValue)).sub(curr).length();
 
-        if (!isNaN(len)) {
-          newArcLength += len;
-        }
-        curr.copy(this.P(tValue));
-      }
-      interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
-      const growth = (newArcLength - currArcLength) / newArcLength;
-      // console.debug(
-      //   `Iteration-${iteration} length changed from ${currArcLength.toFixed(
-      //     5
-      //   )} to ${newArcLength.toFixed(5)}.` + `Growth = ${growth.toFixed(5)}`,
-      //   "inter anchor distance",
-      //   interAnchorDistance.toFixed(5)
-      // );
-      // When the arc length increase is no longer "significant"
-      // we assume that the curve subdivision is good enough
-      if (growth < SETTINGS.parameterization.maxChangeInArcLength) {
-        return iteration * SUBDIVISIONS;
-      } else {
-        currArcLength = newArcLength;
-      }
-      iteration++;
-    } while (
-      iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
-    );
-    // this._initialArcLength = newArcLength;
-    return iteration * SUBDIVISIONS;
-  }
+  //       if (!isNaN(len)) {
+  //         newArcLength += len;
+  //       }
+  //       curr.copy(this.P(tValue));
+  //     }
+  //     interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
+  //     const growth = (newArcLength - currArcLength) / newArcLength;
+  //     // console.debug(
+  //     //   `Iteration-${iteration} length changed from ${currArcLength.toFixed(
+  //     //     5
+  //     //   )} to ${newArcLength.toFixed(5)}.` + `Growth = ${growth.toFixed(5)}`,
+  //     //   "inter anchor distance",
+  //     //   interAnchorDistance.toFixed(5)
+  //     // );
+  //     // When the arc length increase is no longer "significant"
+  //     // we assume that the curve subdivision is good enough
+  //     if (growth < SETTINGS.parameterization.maxChangeInArcLength) {
+  //       return iteration * SUBDIVISIONS;
+  //     } else {
+  //       currArcLength = newArcLength;
+  //     }
+  //     iteration++;
+  //   } while (
+  //     iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
+  //   );
+  //   // this._initialArcLength = newArcLength;
+  //   return iteration * SUBDIVISIONS;
+  // }
 
   /**
    * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the un-rotated
@@ -423,12 +380,12 @@ export default class Parametric extends Nodule {
     let firstFrontPart = true;
 
     const tRange = this.tPartMax - this.tPartMin;
-    for (let index = 0; index < this.numAnchors; index++) {
+    for (let index = 0; index < this._tValues.length; index++) {
       // The t value
-      const tVal = this.tPartMin + (index / (this.numAnchors - 1)) * tRange;
+      const tVal = this._tValues[index];
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-      this.tmpVector.copy(this.P(tVal));
+      this.tmpVector.copy(this._coordValues[index]);
       // Set tmpVector equal to location on the target Parametric in rotated position
       this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -594,14 +551,12 @@ export default class Parametric extends Nodule {
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
     if (this.tGlobalMax <= this.tGlobalMin) return undefined;
 
-    let tVal: number;
     if (minMax) {
-      tVal = this.tGlobalMin;
+      this.tmpVector.copy(this._coordValues[0]);
     } else {
-      tVal = this.tGlobalMax;
+      this.tmpVector.copy(this._coordValues[this._coordValues.length - 1]);
     }
     // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-    this.tmpVector.copy(this.P(tVal));
     // Set tmpVector equal to location on the target Parametric in rotated position
     return this.tmpVector.applyMatrix4(transformMatrix);
   }

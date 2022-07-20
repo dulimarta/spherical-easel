@@ -83,7 +83,7 @@ export class SEParametricTracePoint extends SEPoint {
   public setLocationByTime(tVal: number): void {
     this.parametricTime = tVal;
     // console.log("location by time");
-    const pos = this.parametricParent.ref.P(tVal);
+    const pos = this.parametricParent.P(tVal);
     this.pointDirectLocationSetter(pos);
     this.markKidsOutOfDate();
     this.update();
@@ -96,7 +96,7 @@ export class SEParametricTracePoint extends SEPoint {
   public shallowUpdate(): void {
     this._exists = this.parametricParent.exists;
 
-    const possibleVec = this._parametricParent.ref.P(this.parametricTime);
+    const possibleVec = this._parametricParent.P(this.parametricTime);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();

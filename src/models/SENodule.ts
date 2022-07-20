@@ -391,8 +391,7 @@ export abstract class SENodule implements Visitable {
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     PPPrime?: (t: number) => Vector3
   ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
@@ -419,7 +418,7 @@ export abstract class SENodule implements Visitable {
       dpp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
+    const zeros = this.findZerosParametrically(dp, tValues, [], dpp);
     if (zeros.length > 0) {
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
       let minTVal: number = zeros[0]; // The t value that minimizes d
@@ -435,6 +434,8 @@ export abstract class SENodule implements Visitable {
 
       return returnPair;
     } else {
+      const tMin = tValues[0];
+      const tMax = tValues[tValues.length - 1];
       const d1 = d(tMin);
       const d2 = d(tMax);
       if (d1 < d2) {
@@ -495,8 +496,7 @@ export abstract class SENodule implements Visitable {
     // P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): NormalVectorAndTValue[] {
@@ -519,8 +519,7 @@ export abstract class SENodule implements Visitable {
 
     const zeros = this.findZerosParametrically(
       d,
-      tMin,
-      tMax,
+      tValues,
       avoidTheseTValues,
       dp
     );
@@ -585,8 +584,7 @@ export abstract class SENodule implements Visitable {
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): Vector3[] {
@@ -613,8 +611,7 @@ export abstract class SENodule implements Visitable {
 
     const zeros = this.findZerosParametrically(
       d,
-      tMin,
-      tMax,
+      tValues,
       avoidTheseTValues,
       dp
     );
@@ -631,8 +628,7 @@ export abstract class SENodule implements Visitable {
 
   public static findZerosParametrically(
     f: (t: number) => number,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
@@ -641,7 +637,11 @@ export abstract class SENodule implements Visitable {
     const zeros: number[] = [];
 
     let tVal: number;
-    let lastTVal = tMin;
+    const tLen = tValues.length;
+    const tMin = tValues[0];
+    const tMax = tValues[tLen - 1];
+    let lastTVal = tValues[tLen - 1];
+
     if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
       // make sure that tMin is not on the avoid list
       if (
@@ -657,9 +657,8 @@ export abstract class SENodule implements Visitable {
       // console.log("Actual zero! tMin", tMin, f(tMin));
     }
 
-    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
-      tVal =
-        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+    for (let i = 0; i < tValues.length; i++) {
+      tVal = tValues[i];
       if (tVal < tMin || tVal > tMax)
         console.debug("Evaluating at t", tVal, "out of range", tMin, tMax);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {

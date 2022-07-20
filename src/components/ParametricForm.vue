@@ -691,17 +691,17 @@ export default class ParametricForm extends Vue {
     }
 
     // TODO: Use multiple parametric if we have discontinuity
-    const parametric = new Parametric(
-      this.tNumbers.min, // global min-max
-      this.tNumbers.max,
-      this.tNumbers.min, // part min-max
-      this.tNumbers.max,
-      closed
-    );
-    // Set the display to the default values
-    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    parametric.adjustSize();
+    // const parametric = new Parametric(
+    //   this.tNumbers.min, // global min-max
+    //   this.tNumbers.max,
+    //   this.tNumbers.min, // part min-max
+    //   this.tNumbers.max,
+    //   closed
+    // );
+    // // Set the display to the default values
+    // parametric.stylize(DisplayStyle.ApplyCurrentVariables);
+    // // Adjust the stroke width to the current zoom magnification factor
+    // parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     // if (this.tExpressions.min === "")
@@ -709,7 +709,7 @@ export default class ParametricForm extends Vue {
     // if (this.tExpressions.max === "")
     //   this.tExpressions.max = this.tNumbers.max.toString();
     const newSEParametric = new SEParametric(
-      parametric,
+      // parametric,
       this.coordinateExpressions,
       this.tExpressions,
       this.tNumbers,
@@ -722,7 +722,7 @@ export default class ParametricForm extends Vue {
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
     this.tempVector
-      .copy(parametric.P(this.tNumbers.min))
+      .copy(newSEParametric.P(this.tNumbers.min))
       .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tempVector;

@@ -17,6 +17,7 @@
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/assets/languages/**/*.json'"
   },
   "dependencies": {
+    "@datastructures-js/priority-queue": "^6.1.1",
     "@firebase/auth-types": "^0.10.3",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",

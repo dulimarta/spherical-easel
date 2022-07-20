@@ -193,35 +193,38 @@ export class AddParametricCommand extends Command {
         min: parametricMinNumber,
         max: parametricMaxNumber
       };
-      const parametric = new Parametric(
-        tNumbers.min,
-        tNumbers.max,
-        tNumbers.min,
-        tNumbers.max,
-        parametricCurveClosed === "true"
-      );
+      // Create the Parametric in the SEParametric constructor
+      // Not here!
+      // const parametric = new Parametric(
+      //   tNumbers.min,
+      //   tNumbers.max,
+      //   tNumbers.min,
+      //   tNumbers.max,
+      //   parametricCurveClosed === "true"
+      // );
       const seParametric = new SEParametric(
-        parametric,
+        // parametric,
         coordinateExpressions,
         tExpressions,
         tNumbers,
         parametricCuspParameterValues,
-        parametricExpressionParents.map(par => par as SEExpression)
+        parametricExpressionParents.map(par => par as SEExpression),
+        parametricCurveClosed === "true"
       );
 
       //style the parametric
-      const parametricFrontStyleString = propMap.get("objectFrontStyle");
-      if (parametricFrontStyleString !== undefined)
-        parametric.updateStyle(
-          StyleEditPanels.Front,
-          JSON.parse(parametricFrontStyleString)
-        );
-      const parametricBackStyleString = propMap.get("objectBackStyle");
-      if (parametricBackStyleString !== undefined)
-        parametric.updateStyle(
-          StyleEditPanels.Back,
-          JSON.parse(parametricBackStyleString)
-        );
+      // const parametricFrontStyleString = propMap.get("objectFrontStyle");
+      // if (parametricFrontStyleString !== undefined)
+      //   parametric.updateStyle(
+      //     StyleEditPanels.Front,
+      //     JSON.parse(parametricFrontStyleString)
+      //   );
+      // const parametricBackStyleString = propMap.get("objectBackStyle");
+      // if (parametricBackStyleString !== undefined)
+      //   parametric.updateStyle(
+      //     StyleEditPanels.Back,
+      //     JSON.parse(parametricBackStyleString)
+      //   );
 
       //make the label and set its location
       const label = new Label();

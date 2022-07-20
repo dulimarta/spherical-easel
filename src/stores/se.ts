@@ -44,7 +44,7 @@ import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
 
-export type PiniaAppState = {
+type PiniaAppState = {
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   activeToolName: string;
@@ -54,7 +54,8 @@ export type PiniaAppState = {
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
-  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
@@ -492,7 +493,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat).invert();
-      inverseTotalRotationMatrix.multiply(tmpMatrix);
+      this.inverseTotalRotationMatrix.multiply(tmpMatrix);
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];

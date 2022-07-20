@@ -33,7 +33,7 @@
     "src/**/*.vue",
     // "src/types/two.js/index.d.ts",
     // "tests/*.d.ts",
-    "src/stores/unused-se-module.ts",
+    "src/node_modules/two.js/types.d.ts",
     "src/utils/memory.js"
   ],
   "verbose": true

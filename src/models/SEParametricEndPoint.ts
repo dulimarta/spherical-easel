@@ -103,9 +103,11 @@ export class SEParametricEndPoint extends SEPoint {
   public shallowUpdate(): void {
     this._exists = this.parametricParent.exists;
 
-    const possibleVec = this._parametricParent.ref.endPointVector(
-      this._endpoint
-    );
+    let possibleVec: Vector3 | undefined = undefined;
+    if (this.parents.length > 0)
+      possibleVec = (this.parents[0] as SEParametric).ref.endPointVector(
+        this._endpoint
+      );
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();

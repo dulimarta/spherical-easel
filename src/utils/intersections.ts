@@ -247,10 +247,12 @@ export function intersectLineWithEllipse(
         return ellipse.ref.Epp(t).dot(tmpVector);
       };
 
+      // FIXME
       const zeros = SENodule.findZerosParametrically(
         dp,
-        ellipse.ref.tMin,
-        ellipse.ref.tMax,
+        [],
+        // ellipse.ref.tMin,
+        // ellipse.ref.tMax,
         [],
         dpp
       );
@@ -291,8 +293,10 @@ export function intersectLineWithEllipse(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    [],
+    // FIXME
+    // ellipse.ref.tMin,
+    // ellipse.ref.tMax,
     [],
     dp
   );
@@ -366,23 +370,22 @@ export function intersectLineWithParametric(
       );
       // First form the objective function, this is the function whose minimum we want to find.
       const d: (t: number) => number = function (t: number): number {
-        return parametric.ref.P(t).dot(tmpVector);
+        return parametric.P(t).dot(tmpVector);
       };
 
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
       const dp: (t: number) => number = function (t: number): number {
-        return parametric.ref.PPrime(t).dot(tmpVector);
+        return parametric.PPrime(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
       const dpp = function (t: number): number {
-        return parametric.ref.PPPrime(t).dot(tmpVector);
+        return parametric.PPrime(t).dot(tmpVector);
       };
 
       const zeros = SENodule.findZerosParametrically(
         dp,
-        parametric.tNumbers.min,
-        parametric.tNumbers.max,
+        parametric.tValues,
         [],
         dpp
       );
@@ -405,7 +408,7 @@ export function intersectLineWithParametric(
       tmpMatrix.copy(inverseTotalRotationMatrix).invert();
       minTVal.forEach(min => {
         const returnVec = new Vector3();
-        returnVec.copy(parametric.ref.P(min).applyMatrix4(tmpMatrix));
+        returnVec.copy(parametric.P(min).applyMatrix4(tmpMatrix));
         avoidTValues.push(min);
         returnItems.push({
           vector: returnVec,
@@ -423,17 +426,16 @@ export function intersectLineWithParametric(
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
   const d: (t: number) => number = function (t: number): number {
-    return parametric.ref.P(t).dot(transformedToStandard);
+    return parametric.P(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
   const dp = function (t: number): number {
-    return parametric.ref.PPrime(t).dot(transformedToStandard);
+    return parametric.PPrime(t).dot(transformedToStandard);
   };
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
+    parametric.tValues,
     avoidTValues,
     dp
   );
@@ -443,7 +445,7 @@ export function intersectLineWithParametric(
   tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   return zeros.map((tValue: number): IntersectionReturnType => {
     const vector = new Vector3();
-    vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
+    vector.copy(parametric.P(tValue)).applyMatrix4(tmpMatrix);
     return {
       vector,
       exists: tracingTMin <= tValue && tValue <= tracingTMax
@@ -557,8 +559,8 @@ export function intersectSegmentWithEllipse(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    // FIXME
+    [],
     [],
     dp
   );
@@ -610,19 +612,18 @@ export function intersectSegmentWithParametric(
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
   const d: (t: number) => number = function (t: number): number {
-    return parametric.ref.P(t).dot(transformedToStandard);
+    return parametric.P(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
   const dp = function (t: number): number {
-    return parametric.ref.PPrime(t).dot(transformedToStandard);
+    return parametric.PPrime(t).dot(transformedToStandard);
   };
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
+    parametric.tValues,
     parametric.c1DiscontinuityParameterValues,
     dp
   );
@@ -642,7 +643,7 @@ export function intersectSegmentWithParametric(
   if (returnItems.length >= zeros.length) {
     tmpMatrix.copy(inverseTotalRotationMatrix).invert();
     zeros.forEach((z, ind) => {
-      returnItems[ind].vector.copy(parametric.ref.P(z).applyMatrix4(tmpMatrix));
+      returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
       if (tracingTMin <= z && z <= tracingTMax) {
         // it must be on both the segment and the visible part of the parametric
         returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
@@ -843,8 +844,10 @@ export function intersectCircleWithEllipse(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    // FIXME
+    [],
+    // ellipse.ref.tMin,
+    // ellipse.ref.tMax,
     [],
     dp
   );
@@ -901,26 +904,23 @@ export function intersectCircleWithParametric(
   const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
-        Math.max(
-          -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
-        )
+        Math.max(-1, Math.min(parametric.P(t).dot(transformedToStandard), 1))
       ) - radius
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
   const dp = function (t: number): number {
     return (
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandard)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandard)) /
       Math.sqrt(
         1 -
           Math.max(
             -1,
-            Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
+            Math.min(parametric.P(t).dot(transformedToStandard), 1)
           ) *
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
+              Math.min(parametric.P(t).dot(transformedToStandard), 1)
             )
       )
     );
@@ -931,8 +931,7 @@ export function intersectCircleWithParametric(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
+    parametric.tValues,
     parametric.c1DiscontinuityParameterValues,
     dp
   );
@@ -951,7 +950,7 @@ export function intersectCircleWithParametric(
   // console.log("Number of Para/circ Intersections:", zeros.length);
   tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(parametric.ref.P(z).applyMatrix4(tmpMatrix));
+    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the circle (which by being a zero of d, it is!) and the visible part of the parametric
       returnItems[ind].exists = true;
@@ -1032,8 +1031,9 @@ export function intersectEllipseWithEllipse(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse2.ref.tMin,
-    ellipse2.ref.tMax,
+    [], // FIXME
+    // ellipse2.ref.tMin,
+    // ellipse2.ref.tMax,
     [],
     dp
   );
@@ -1093,13 +1093,13 @@ export function intersectEllipseWithParametric(
       Math.acos(
         Math.max(
           -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandardFocus1), 1)
+          Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
         )
       ) +
       Math.acos(
         Math.max(
           -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandardFocus2), 1)
+          Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
         )
       ) -
       angleSum
@@ -1108,34 +1108,28 @@ export function intersectEllipseWithParametric(
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
   const dp = function (t: number): number {
     return (
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandardFocus1)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
           1 -
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandardFocus1), 1)
+              Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
             ) *
               Math.max(
                 -1,
-                Math.min(
-                  parametric.ref.P(t).dot(transformedToStandardFocus1),
-                  1
-                )
+                Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
               )
         ) +
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandardFocus2)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus2)) /
         Math.sqrt(
           1 -
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandardFocus2), 1)
+              Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
             ) *
               Math.max(
                 -1,
-                Math.min(
-                  parametric.ref.P(t).dot(transformedToStandardFocus2),
-                  1
-                )
+                Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
               )
         )
     );
@@ -1146,8 +1140,7 @@ export function intersectEllipseWithParametric(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
+    parametric.tValues,
     parametric.c1DiscontinuityParameterValues,
     dp
   );
@@ -1166,7 +1159,7 @@ export function intersectEllipseWithParametric(
   // console.log("Number of Para/ellsp Intersections:", zeros.length);
   tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(parametric.ref.P(z).applyMatrix4(tmpMatrix));
+    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the ellipse (which by being a zero of d, it is!) and the visible part of the parametric
       returnItems[ind].exists = true;
