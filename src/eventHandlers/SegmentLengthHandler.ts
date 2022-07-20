@@ -11,6 +11,7 @@ import { StyleEditPanels } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { Group } from "two.js/src/group";
+import Label from "@/plottables/Label";
 export default class SegmentLengthHandler extends Highlighter {
   /**
    * Segment to measure
@@ -45,7 +46,7 @@ export default class SegmentLengthHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateSegmentMeasurement`,
           keyOptions: {
-            segName: `${this.targetSegment?.name}`,
+            segName: `${this.targetSegment?.label?.ref.shortUserName}`,
             measurementName: `${measurementName}`
           },
           type: "error"
@@ -163,7 +164,7 @@ export default class SegmentLengthHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.duplicateSegmentMeasurement`,
             keyOptions: {
-              segName: `${object1.name}`,
+              segName: `${object1.label?.ref.shortUserName}`,
               measurementName: `${measurementName}`
             },
             type: "error"

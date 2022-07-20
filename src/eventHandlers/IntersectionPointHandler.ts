@@ -70,7 +70,9 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional1.selected = true;
           EventBus.fire("show-alert", {
             key: `handlers.intersectionOneDimensionalSelected`,
-            keyOptions: { name: `${this.oneDimensional1.name}` },
+            keyOptions: {
+              name: `${this.oneDimensional1.label?.ref.shortUserName}`
+            },
             type: "info"
           });
         }

@@ -320,7 +320,7 @@ export default class PolygonHandler extends Highlighter {
                 }
               });
               if (measuredBefore) {
-                token = poly.name;
+                token = poly.label?.ref.shortUserName ?? "";
               }
             }
           }
@@ -789,8 +789,8 @@ export default class PolygonHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateSegmentAngleMeasurement`,
           keyOptions: {
-            seg0Name: `${seg0?.name}`,
-            seg1Name: `${seg1?.name}`,
+            seg0Name: `${seg0?.label?.ref.shortUserName}`,
+            seg1Name: `${seg1?.label?.ref.shortUserName}`,
             measurementName: `${oldAngleMarker.name}`
           },
           type: "warning"
@@ -895,7 +895,7 @@ export default class PolygonHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateSegmentMeasurement`,
           keyOptions: {
-            segName: `${seg.name}`,
+            segName: `${seg.label?.ref.shortUserName}`,
             measurementName: `${oldSegmentLength.name}`
           },
           type: "warning"

@@ -51,7 +51,7 @@ export default class PointCoordinateHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicatePointCoordinateMeasurement`,
           keyOptions: {
-            ptName: `${this.targetPoint?.name}`
+            ptName: `${this.targetPoint?.label?.ref.shortUserName}`
           },
           type: "error"
         });

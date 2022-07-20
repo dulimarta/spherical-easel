@@ -158,7 +158,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               key: `handlers.duplicateTransformedObject`,
               keyOptions: {
                 object: i18n.tc(`objects.points`, 3),
-                name: this.hitSEPoints[0].name,
+                name: this.hitSEPoints[0].label?.ref.shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name
               },
@@ -198,7 +198,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   .subVectors(pt.locationVector, transformedLocation)
                   .isZero()
               ) {
-                existingPointName = pt.name;
+                existingPointName = pt.label?.ref.shortUserName ?? "";
                 return true;
               } else {
                 return false;
@@ -308,7 +308,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.segments`, 3),
-                  name: this.hitSESegments[0].name,
+                  name: this.hitSESegments[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -362,7 +362,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.lines`, 3),
-                  name: this.hitSELines[0].name,
+                  name: this.hitSELines[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -408,7 +408,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.circles`, 3),
-                  name: this.hitSECircles[0].name,
+                  name: this.hitSECircles[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -479,7 +479,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.ellipses`, 3),
-                  name: this.hitSEEllipses[0].name,
+                  name: this.hitSEEllipses[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -540,7 +540,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //     key: `handlers.duplicateTransformedObject`,
             //     keyOptions: {
             //       object: i18n.tc(`objects.segments`, 3),
-            //       name: this.hitSESegments[0].name,
+            //       name: this.hitSESegments[0].label?.ref.shortUserName,
             //       type: this.transformationType,
             //       trans: this.transformationSEParent.name
             //     },
@@ -586,7 +586,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.lines`, 3),
-                  name: this.hitSELines[0].name,
+                  name: this.hitSELines[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -652,7 +652,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
                   object: i18n.tc(`objects.circles`, 3),
-                  name: this.hitSECircles[0].name,
+                  name: this.hitSECircles[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
                 },
@@ -724,7 +724,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //     key: `handlers.duplicateTransformedObject`,
             //     keyOptions: {
             //       object: i18n.tc(`objects.ellipses`, 3),
-            //       name: this.hitSEEllipses[0].name,
+            //       name: this.hitSEEllipses[0].label?.ref.shortUserName,
             //       type: this.transformationType,
             //       trans: this.transformationSEParent.name
             //     },
@@ -1819,7 +1819,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     transformedSegmentCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometrySegmentAdded`,
-      keyOptions: { name: `${newIsometrySESegment.name}` },
+      keyOptions: { name: `${newIsometrySESegment.label?.ref.shortUserName}` },
       type: "success"
     });
   }
@@ -1971,7 +1971,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     transformedLineCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryLineAdded`,
-      keyOptions: { name: `${newIsometrySELine.name}` },
+      keyOptions: { name: `${newIsometrySELine.label?.ref.shortUserName}` },
       type: "success"
     });
   }
@@ -2127,7 +2127,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     transformedCircleCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryCircleAdded`,
-      keyOptions: { name: `${newIsometrySECircle.name}` },
+      keyOptions: { name: `${newIsometrySECircle.label?.ref.shortUserName}` },
       type: "success"
     });
   }
@@ -2313,7 +2313,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     transformedEllipseCommandGroup.execute();
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryEllipseAdded`,
-      keyOptions: { name: `${newIsometrySEEllipse.name}` },
+      keyOptions: { name: `${newIsometrySEEllipse.label?.ref.shortUserName}` },
       type: "success"
     });
   }
@@ -2654,7 +2654,9 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     invertedCircleOrLineCommandGroup.execute();
     const centerName =
-      newInvertedSECircleCenter !== null ? newInvertedSECircleCenter.name : ""; // this should never happen newInvertedCircleCenter is defined above
+      newInvertedSECircleCenter !== null
+        ? newInvertedSECircleCenter.label?.ref.shortUserName
+        : ""; // this should never happen newInvertedCircleCenter is defined above
 
     EventBus.fire("show-alert", {
       key: `handlers.newInvertedLineOrCircleAdded`,

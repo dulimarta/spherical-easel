@@ -1327,8 +1327,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateLineAngleMeasurement`,
         keyOptions: {
-          line0Name: `${this.targetLines[0]?.name}`,
-          line1Name: `${this.targetLines[1]?.name}`,
+          line0Name: `${this.targetLines[0]?.label?.ref.shortUserName}`,
+          line1Name: `${this.targetLines[1]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"
@@ -1415,8 +1415,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateSegmentAngleMeasurement`,
         keyOptions: {
-          seg0Name: `${this.targetSegments[0]?.name}`,
-          seg1Name: `${this.targetSegments[1]?.name}`,
+          seg0Name: `${this.targetSegments[0]?.label?.ref.shortUserName}`,
+          seg1Name: `${this.targetSegments[1]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"
@@ -1543,8 +1543,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateSegmentLineAngleMeasurement`,
         keyOptions: {
-          lineName: `${this.targetLines[0]?.name}`,
-          segName: `${this.targetSegments[0]?.name}`,
+          lineName: `${this.targetLines[0]?.label?.ref.shortUserName}`,
+          segName: `${this.targetSegments[0]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"

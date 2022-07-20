@@ -153,7 +153,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.bisectedSegmentAlready`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "error"
@@ -162,7 +162,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.nSectedSegmentAlready`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "error"
@@ -177,7 +177,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.segmentSuccessfullyBisected`,
             keyOptions: {
-              segment: candidateSegment.name
+              segment: candidateSegment.label?.ref.shortUserName
             },
             type: "success"
           });
@@ -185,7 +185,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.segmentSuccessfullyNSected`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "success"

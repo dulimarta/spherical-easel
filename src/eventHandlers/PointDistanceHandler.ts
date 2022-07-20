@@ -63,8 +63,8 @@ export default class PointDistanceHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointDistanceMeasurement`,
             keyOptions: {
-              pt0Name: `${this.targetPoints[0].name}`,
-              pt1Name: `${this.targetPoints[1].name}`,
+              pt0Name: `${this.targetPoints[0].label?.ref.shortUserName}`,
+              pt1Name: `${this.targetPoints[1].label?.ref.shortUserName}`,
               measurementName: `${measurementName}`
             },
             type: "error"
@@ -153,8 +153,8 @@ export default class PointDistanceHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointDistanceMeasurement`,
             keyOptions: {
-              pt0Name: `${object1.name}`,
-              pt1Name: `${object2.name}`,
+              pt0Name: `${object1.label?.ref.shortUserName}`,
+              pt1Name: `${object2.label?.ref.shortUserName}`,
               measurementName: `${measurementName}`
             },
             type: "error"
