@@ -48,6 +48,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { ActionMode } from "@/types";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 //@Component({ components: { SENoduleItem, SESliderItem } })
 
 @Component({
@@ -86,7 +87,8 @@ export default class SENoduleTree extends Vue {
 
   get existingChildren(): SENodule[] {
     return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint) return n.isUserCreated && n.exists;
+      if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint)
+        return n.isUserCreated && n.exists;
       else return n.exists;
     });
   }

@@ -17,6 +17,7 @@ import { SELabel } from "./SELabel";
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+import EventBus from "@/eventHandlers/EventBus";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
@@ -73,7 +74,10 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
     if (!this._pointVisibleBefore && this.showing) {
       // This should execute once unless the point is deleted/converted to not user created
-      new SetPointInitialVisibilityAndLabel(this, true).execute();
+      EventBus.fire("set-point-visibility-and-label", {
+        point: this,
+        val: true
+      });
     }
 
     if (this.showing) {

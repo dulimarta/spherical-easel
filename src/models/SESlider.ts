@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 const emptySet = new Set<string>();
 
@@ -51,6 +51,15 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
         val: this.prettyValue
       })
     );
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label, but SESliders have no SELabel or Label
   }
 
   shallowUpdate(): void {

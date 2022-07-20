@@ -2,6 +2,7 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 
 export class SEAntipodalPoint extends SEPoint {
   /**
@@ -80,6 +81,14 @@ export class SEAntipodalPoint extends SEPoint {
 
     // Update visibility
     if (this._showing && this._isUserCreated && this._exists) {
+      if (!this._pointVisibleBefore) {
+        console.debug(`Here point visibility antipode`);
+        // This should execute once unless the point is deleted/converted to not user created
+        EventBus.fire("set-point-visibility-and-label", {
+          point: this,
+          val: true
+        });
+      }
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

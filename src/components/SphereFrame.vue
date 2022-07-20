@@ -55,7 +55,6 @@ import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEExpression } from "@/models/SEExpression";
 import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
@@ -65,6 +64,8 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import i18n from "@/i18n";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+import { SEPoint } from "@/models/SEPoint";
 
 @Component({
   computed: {
@@ -276,6 +277,10 @@ export default class SphereFrame extends VueComponent {
     );
     EventBus.listen("delete-node", this.deleteNode);
     // EventBus.listen("dialog-box-is-active", this.dialogBoxIsActive);
+    EventBus.listen(
+      "set-point-visibility-and-label",
+      this.setPointInitialVibilityAndLabel
+    );
   }
 
   mounted(): void {
@@ -354,6 +359,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("set-transformation-for-tool");
     EventBus.unlisten("delete-node");
     // EventBus.unlisten("dialog-box-is-active");
+    EventBus.unlisten("set-point-visibility-and-label");
   }
 
   @Watch("canvasSize")
@@ -712,6 +718,9 @@ export default class SphereFrame extends VueComponent {
     });
   }
 
+  setPointInitialVibilityAndLabel(m: { point: SEPoint; val: boolean }) {
+    new SetPointInitialVisibilityAndLabel(m.point, m.val).execute();
+  }
   // dialogBoxIsActive(e: { active: boolean }): void {
   //   // console.debug(`dialog box is active is ${e.active}`);
   //   if (this.hideTool) {

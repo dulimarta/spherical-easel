@@ -9,14 +9,13 @@
  * the actual action of the command.
  */
 
-import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleEditPanels } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 export abstract class Command {
   protected static store: SEStoreType;
@@ -147,7 +146,7 @@ export abstract class Command {
         JSON.parse(pointBackStyleString)
       );
 
-    const newLabel = new Label("point", point.name);
+    const newLabel = new Label("point");
     const label = new SELabel(newLabel, point);
     label.locationVector.copy(labelLocation);
     if (labelStyleString !== undefined)
