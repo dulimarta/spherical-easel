@@ -45,6 +45,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     ) {
       this.seIntersectionOrAntipodePoint.label.showing = this.userCreatedValue;
     }
+    this.seIntersectionOrAntipodePoint.update();
     //}
     //  else {
     //   // hide the label
@@ -88,6 +89,8 @@ export class SetPointUserCreatedValueCommand extends Command {
     );
     // set back to automatically created
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
+
+    this.seIntersectionOrAntipodePoint.update();
     // } else {
     //   this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
     //   // Set the display to the default values

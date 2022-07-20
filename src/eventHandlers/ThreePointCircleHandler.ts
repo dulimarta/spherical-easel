@@ -26,6 +26,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -809,6 +810,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
+      // set the label to follow the visible ordering
+      threePointCircleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       vtx.locationVector = this.point1Vector;
       /////////////
       // Create the antipode of the new point, vtx
@@ -867,6 +872,10 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point1SEPoint, true)
       );
+      // set the label to follow the visible ordering
+      threePointCircleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.point1SEPoint, true)
+      );
     }
 
     // Create (if necessary) and handle the second vector location
@@ -908,6 +917,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
+      // set the label to follow the visible ordering
+      threePointCircleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       vtx.locationVector = this.point2Vector;
       /////////////
       // Create the antipode of the new point, vtx
@@ -966,6 +979,10 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point2SEPoint, true)
       );
+      // set the label to follow the visible ordering
+      threePointCircleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.point2SEPoint, true)
+      );
     }
 
     // Create (if necessary) and handle the third vector release location
@@ -985,6 +1002,10 @@ export default class ThreePointCircleHandler extends Highlighter {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         threePointCircleCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.point3SEPoint, true)
+        );
+        // set the label to follow the visible ordering
+        threePointCircleCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.point3SEPoint, true)
         );
       }
     } else {
@@ -1107,6 +1128,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
+      // set the label to follow the visible ordering
+      threePointCircleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       this.point3SEPoint = vtx;
       /////////////
       // Create the antipode of the new point, vtx
@@ -1210,6 +1235,11 @@ export default class ThreePointCircleHandler extends Highlighter {
       )
     );
     newSEThreePointCircleCenter.update();
+
+    // set the label to follow the visible ordering
+    threePointCircleCommandGroup.addCommand(
+      new SetPointInitialVisibilityAndLabel(newSEThreePointCircleCenter, true)
+    );
     /////////////
     // Create the antipode of the new point, newSEThreePointCircleCenter
     const newAntipodePoint = new NonFreePoint();

@@ -40,6 +40,7 @@ import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -512,6 +513,11 @@ export default class MeasuredCircleHandler extends Highlighter {
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
+
+      // set the label to follow the visible ordering
+      circleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -569,6 +575,10 @@ export default class MeasuredCircleHandler extends Highlighter {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
+      );
+      // set the label to follow the visible ordering
+      circleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.centerSEPoint, true)
       );
     }
 

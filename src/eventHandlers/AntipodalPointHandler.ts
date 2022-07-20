@@ -19,6 +19,7 @@ import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -140,6 +141,10 @@ export default class AntipodalPointHandler extends Highlighter {
               )
             );
           }
+          // The antipode is now going to be displayed so set the label to the displayed order
+          antipodalCommandGroup.addCommand(
+            new SetPointInitialVisibilityAndLabel(possibleAntipode, true)
+          );
           antipodalCommandGroup.execute();
         } else {
           // the antipode is already displayed

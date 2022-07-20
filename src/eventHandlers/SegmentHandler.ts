@@ -23,6 +23,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -539,6 +540,8 @@ export default class SegmentHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
+      // set the label to follow the visible ordering
+      segmentGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       vtx.locationVector = this.startVector;
       /////////////
       // Create the antipode of the new point, vtx
@@ -599,6 +602,10 @@ export default class SegmentHandler extends Highlighter {
       segmentGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
+      // set the label to follow the visible ordering
+      segmentGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.startSEPoint, true)
+      );
     }
     // Look for an endpoint at the mouse release location
     if (this.hitSEPoints.length > 0) {
@@ -626,6 +633,10 @@ export default class SegmentHandler extends Highlighter {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         segmentGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.endSEPoint, true)
+        );
+        // set the label to follow the visible ordering
+        segmentGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.endSEPoint, true)
         );
       }
     } else {
@@ -759,6 +770,8 @@ export default class SegmentHandler extends Highlighter {
         segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       this.endSEPoint = vtx;
+      // set the label to follow the visible ordering
+      segmentGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();

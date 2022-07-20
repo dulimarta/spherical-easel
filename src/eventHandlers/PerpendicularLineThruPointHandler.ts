@@ -36,6 +36,7 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 type TemporaryLine = {
   line: Line;
@@ -637,7 +638,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           new AddPointCommand(this.sePoint, newSELabel)
         );
       }
-
+      // set the label to follow the visible ordering
+      addPerpendicularLineGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.sePoint, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -690,6 +694,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         //Make it user created and turn on the display
         addPerpendicularLineGroup.addCommand(
           new SetPointUserCreatedValueCommand(
+            sePoint as SEIntersectionPoint,
+            true
+          )
+        );
+        // set the label to follow the visible ordering
+        addPerpendicularLineGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(
             sePoint as SEIntersectionPoint,
             true
           )

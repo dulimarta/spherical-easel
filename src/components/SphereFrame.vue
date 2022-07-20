@@ -277,10 +277,10 @@ export default class SphereFrame extends VueComponent {
     );
     EventBus.listen("delete-node", this.deleteNode);
     // EventBus.listen("dialog-box-is-active", this.dialogBoxIsActive);
-    EventBus.listen(
-      "set-point-visibility-and-label",
-      this.setPointInitialVibilityAndLabel
-    );
+    // EventBus.listen(
+    //   "set-point-visibility-and-label",
+    //   this.setPointInitialVibilityAndLabel
+    // );
   }
 
   mounted(): void {
@@ -359,7 +359,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("set-transformation-for-tool");
     EventBus.unlisten("delete-node");
     // EventBus.unlisten("dialog-box-is-active");
-    EventBus.unlisten("set-point-visibility-and-label");
+    //EventBus.unlisten("set-point-visibility-and-label");
   }
 
   @Watch("canvasSize")
@@ -718,9 +718,9 @@ export default class SphereFrame extends VueComponent {
     });
   }
 
-  setPointInitialVibilityAndLabel(m: { point: SEPoint; val: boolean }) {
-    new SetPointInitialVisibilityAndLabel(m.point, m.val).execute();
-  }
+  // setPointInitialVibilityAndLabel(m: { point: SEPoint; val: boolean }) {
+  //   new SetPointInitialVisibilityAndLabel(m.point, m.val).execute();
+  // }
   // dialogBoxIsActive(e: { active: boolean }): void {
   //   // console.debug(`dialog box is active is ${e.active}`);
   //   if (this.hideTool) {

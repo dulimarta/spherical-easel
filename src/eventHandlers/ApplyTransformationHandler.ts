@@ -61,6 +61,7 @@ import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1552,7 +1553,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             preimagePt: preimageSEPoint.label?.ref.shortUserName,
             type: this.transformationType,
             trans: transformationSEParent.name,
-            existingPt: existingPoint.name
+            existingPt: existingPoint.label?.ref.shortUserName
           },
           type: "error"
         });
@@ -1567,9 +1568,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       (preimageSEPoint instanceof SEAntipodalPoint &&
         !preimageSEPoint.isUserCreated)
     ) {
-      // Mark the intersection or antipodal point as created
+      // Mark the intersection or antipodal point as created and set the label to display the created order
       commandGroup.addCommand(
         new SetPointUserCreatedValueCommand(preimageSEPoint, true)
+      );
+      commandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(preimageSEPoint, true)
       );
     }
     // we have to create a new transformed point
@@ -1608,6 +1612,10 @@ export default class ApplyTransformationHandler extends Highlighter {
         preimageSEPoint,
         transformationSEParent
       )
+    );
+    // create the next label for the point in the display ordering
+    commandGroup.addCommand(
+      new SetPointInitialVisibilityAndLabel(newTransformedSEPoint, true)
     );
     /////////////
     // Create the antipode of the new point, newTransformedSEPoint
@@ -2500,6 +2508,10 @@ export default class ApplyTransformationHandler extends Highlighter {
           lineOrCircle,
           transformationSEParent
         )
+      );
+      // Set the label display to visible order of the newly created center
+      invertedCircleOrLineCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(newInvertedSECircleCenter, true)
       );
       /////////////
       // Create the antipode of the new point, newInvertedSECircleCenter

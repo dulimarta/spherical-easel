@@ -28,6 +28,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -749,6 +750,10 @@ export default class EllipseHandler extends Highlighter {
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.focus1Vector;
+      // set the label to follow the visible ordering
+      ellipseCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -807,6 +812,10 @@ export default class EllipseHandler extends Highlighter {
       ellipseCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.focus1SEPoint, true)
       );
+      // set the label to follow the visible ordering
+      ellipseCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.focus1SEPoint, true)
+      );
     }
 
     // Create (if necessary) and handle the second focus location
@@ -847,6 +856,10 @@ export default class EllipseHandler extends Highlighter {
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.focus2Vector;
+      // set the label to follow the visible ordering
+      ellipseCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -905,6 +918,10 @@ export default class EllipseHandler extends Highlighter {
       ellipseCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.focus2SEPoint, true)
       );
+      // set the label to follow the visible ordering
+      ellipseCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.focus2SEPoint, true)
+      );
     }
 
     // Create (if necessary) and handle the ellipse point release location
@@ -934,6 +951,10 @@ export default class EllipseHandler extends Highlighter {
         // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
         ellipseCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.ellipseSEPoint, true)
+        );
+        // set the label to follow the visible ordering
+        ellipseCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.ellipseSEPoint, true)
         );
       }
     } else {
@@ -1054,7 +1075,10 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-
+      // set the label to follow the visible ordering
+      ellipseCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();

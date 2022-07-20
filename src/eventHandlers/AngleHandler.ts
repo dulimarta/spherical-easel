@@ -26,6 +26,9 @@ import { Group } from "two.js/src/group";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 enum HighlightMode {
   NONE,
   ONLYPOINTS,
@@ -766,14 +769,29 @@ export default class AngleHandler extends Highlighter {
             //Update its location to the mouse
             this.temporaryFirstPoint.positionVector = this.currentSphereVector;
 
-            //If there is a nearby point, line or segment turn off the temporary point marker, but leave in for circles and ellipses
-            if (
-              this.hitSENodules.filter(
-                p =>
-                  p instanceof SEPoint ||
-                  p instanceof SELine ||
-                  p instanceof SESegment
-              ).length > 0
+            //If there is a nearby *visible* point, line or segment turn off the temporary point marker, but leave in for circles and ellipses because the user can create a point on circles or ellipses
+            if (this.hitSEPoints[0] instanceof SEPoint) {
+              if (
+                this.hitSEPoints[0] instanceof SEIntersectionPoint ||
+                this.hitSEPoints[0] instanceof SEAntipodalPoint
+              ) {
+                if (this.hitSEPoints[0].isUserCreated) {
+                  // remove the temporary point
+                  this.temporaryFirstPoint.removeFromLayers();
+                  this.isTemporaryFirstPointAdded = false;
+                } else {
+                  // snap the temporary point to the uncreated location
+                  this.temporaryFirstPoint.positionVector =
+                    this.hitSEPoints[0].locationVector;
+                }
+              } else {
+                // remove the temporary point
+                this.temporaryFirstPoint.removeFromLayers();
+                this.isTemporaryFirstPointAdded = false;
+              }
+            } else if (
+              this.hitSELines.length > 0 ||
+              this.hitSESegments.length > 0
             ) {
               this.temporaryFirstPoint.removeFromLayers();
               this.isTemporaryFirstPointAdded = false;
@@ -786,8 +804,14 @@ export default class AngleHandler extends Highlighter {
               this.isTemporarySecondPointAdded = true;
               this.temporarySecondPoint.addToLayers(this.layers);
             }
-            //Remove the second marker if there is a nearby point
-            if (this.snapPoint !== null) {
+            //Remove the second marker if there is a nearby *visible* point
+            if (
+              this.snapPoint !== null &&
+              ((this.snapPoint instanceof SEIntersectionPoint &&
+                this.snapPoint.isUserCreated) ||
+                (this.snapPoint instanceof SEAntipodalPoint &&
+                  this.snapPoint.isUserCreated))
+            ) {
               this.temporarySecondPoint.removeFromLayers();
               this.isTemporarySecondPointAdded = false;
             }
@@ -983,9 +1007,9 @@ export default class AngleHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateThreePointAngleMeasurement`,
           keyOptions: {
-            pt0Name: `${this.targetPoints[0]?.name}`,
-            pt1Name: `${this.targetPoints[1]?.name}`,
-            pt2Name: `${this.targetPoints[2]?.name}`,
+            pt0Name: `${this.targetPoints[0]?.label?.ref.shortUserName}`,
+            pt1Name: `${this.targetPoints[1]?.label?.ref.shortUserName}`,
+            pt2Name: `${this.targetPoints[2]?.label?.ref.shortUserName}`,
             measurementName: `${measurementName}`
           },
           type: "error"
@@ -1155,6 +1179,32 @@ export default class AngleHandler extends Highlighter {
 
         //Add the newly created point to the targetPoint array
         this.targetPoints[i] = vtx;
+      } else {
+        // check if the points selected are uncreated intersection point or antipodal points
+        if (
+          (this.targetPoints[i] instanceof SEIntersectionPoint &&
+            !(this.targetPoints[i] as SEIntersectionPoint).isUserCreated) ||
+          (this.targetPoints[i] instanceof SEAntipodalPoint &&
+            !(this.targetPoints[i] as SEAntipodalPoint).isUserCreated)
+        ) {
+          angleMarkerCommandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.targetPoints[i] as SEIntersectionPoint | SEAntipodalPoint,
+              true
+            )
+          );
+        }
+      }
+      // if the points have not been displayed before turn on the label to visible order
+      if (this.targetPoints[i] !== null) {
+        if (!this.targetPoints[i]!.pointVisibleBefore) {
+          angleMarkerCommandGroup.addCommand(
+            new SetPointInitialVisibilityAndLabel(
+              this.targetPoints[i] as SEIntersectionPoint | SEAntipodalPoint,
+              true
+            )
+          );
+        }
       }
     }
 

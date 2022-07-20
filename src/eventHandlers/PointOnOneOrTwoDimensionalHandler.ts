@@ -15,6 +15,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -101,6 +102,10 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
             this.oneDimensional,
             newSELabel
           )
+        );
+        // set the label to follow the visible ordering
+        pointOnOneDimensionalCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(vtx, true)
         );
         /////////////
         // Create the antipode of the new point, vtx

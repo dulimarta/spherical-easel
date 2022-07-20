@@ -15,6 +15,7 @@ import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 import { Group } from "two.js/src/group";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -315,6 +316,10 @@ export default class NSectSegmentHandler extends Highlighter {
 
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
+        );
+        // set the label to follow the visible ordering
+        nSectingPointsCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(nSectingPoint, true)
         );
         /////////////
         // Create the antipode of the new point, nSectingPoint

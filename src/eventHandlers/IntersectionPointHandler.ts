@@ -9,6 +9,7 @@ import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -279,6 +280,10 @@ export default class IntersectionPointHandler extends Highlighter {
           if (this.updatedIntersectionInfo[index].exists) {
             intersectionConversionCommandGroup.addCommand(
               new SetPointUserCreatedValueCommand(element, true)
+            );
+            // set the label to follow the visible ordering
+            intersectionConversionCommandGroup.addCommand(
+              new SetPointInitialVisibilityAndLabel(element, true)
             );
             EventBus.fire("show-alert", {
               key: `handlers.intersectionOneDimensionalPointCreated`,

@@ -20,6 +20,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class PointReflectionTransformationHandler extends Highlighter {
   /**
    * Center vector of the created rotation
@@ -405,6 +406,10 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         );
       }
       vtx.locationVector = this.rotationVector;
+      // set the label to follow the visible ordering
+      pointRotationCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -461,6 +466,10 @@ export default class PointReflectionTransformationHandler extends Highlighter {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       pointRotationCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.rotationSEPoint, true)
+      );
+      // set the label to follow the visible ordering
+      pointRotationCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.rotationSEPoint, true)
       );
     }
 

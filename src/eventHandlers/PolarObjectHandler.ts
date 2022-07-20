@@ -35,6 +35,7 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SENodule } from "@/models/SENodule";
 import { getAncestors } from "@/utils/helpingfunctions";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 enum Create {
   NONE,
@@ -500,6 +501,11 @@ export default class PolarObjectHandler extends Highlighter {
       new AddPolarPointCommand(polarPoint1, 0, parentLineOrSegment, newSELabel1)
     );
 
+    // set the label to follow the visible ordering
+    polarPointsCommandGroup.addCommand(
+      new SetPointInitialVisibilityAndLabel(polarPoint1, true)
+    );
+
     // Create the second polar point
     const newPoint2 = new NonFreePoint();
     // Set the display to the default values
@@ -530,6 +536,11 @@ export default class PolarObjectHandler extends Highlighter {
     polarPointsCommandGroup.addCommand(
       new AddPolarPointCommand(polarPoint2, 1, parentLineOrSegment, newSELabel2)
     );
+    // set the label to follow the visible ordering
+    polarPointsCommandGroup.addCommand(
+      new SetPointInitialVisibilityAndLabel(polarPoint2, true)
+    );
+
     polarPointsCommandGroup.execute();
     polarPoint1.markKidsOutOfDate();
     polarPoint1.update();
@@ -554,6 +565,10 @@ export default class PolarObjectHandler extends Highlighter {
             this.parentPoint as SEIntersectionPoint,
             true
           )
+        );
+        // set the label to follow the visible ordering
+        polarLineCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
         );
       }
     } else {
@@ -619,7 +634,10 @@ export default class PolarObjectHandler extends Highlighter {
           new AddPointCommand(this.parentPoint, newSELabel)
         );
       }
-
+      // set the label to follow the visible ordering
+      polarLineCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
+      );
       /////////////
       // Create the antipode of the new point, this.parentPoint
       const newAntipodePoint = new NonFreePoint();

@@ -18,6 +18,7 @@ import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -48,7 +49,7 @@ export default class PointHandler extends Highlighter {
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
-      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection point
+      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection or antipodeal point
       if (this.hitSEPoints.length > 0) {
         if (
           (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
@@ -57,10 +58,23 @@ export default class PointHandler extends Highlighter {
             !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new SetPointUserCreatedValueCommand(
-            this.hitSEPoints[0] as SEIntersectionPoint,
-            true
-          ).execute();
+          // set the display to visible order
+          const antipodalCommandGroup = new CommandGroup();
+          antipodalCommandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.hitSEPoints[0] as SEIntersectionPoint,
+              true
+            )
+          );
+          // set the label to follow the visible ordering
+          antipodalCommandGroup.addCommand(
+            new SetPointInitialVisibilityAndLabel(
+              this.hitSEPoints[0] as SEIntersectionPoint,
+              true
+            )
+          );
+
+          antipodalCommandGroup.execute();
           return;
         }
         EventBus.fire("show-alert", {
@@ -91,11 +105,13 @@ export default class PointHandler extends Highlighter {
           newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSESegments[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSESegments[0],
+              newSELabel
+            )
+          );
           //#endregion linkNoduleSENodule
         } else if (this.hitSELines.length > 0) {
           // The new point will be a point on a line
@@ -194,6 +210,11 @@ export default class PointHandler extends Highlighter {
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
         }
+
+        // any of the vtx objects are new and are going to be displayed (unlike the antipode below) so set the label to visible count order
+        pointCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(vtx, true)
+        );
 
         /////////////
         // Create the antipode of the new point, vtx

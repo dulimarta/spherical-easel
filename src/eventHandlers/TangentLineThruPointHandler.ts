@@ -31,6 +31,7 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 type TemporaryLine = {
   line: Line;
@@ -557,6 +558,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
           new AddPointCommand(this.sePoint, newSELabel)
         );
       }
+      addTangentLineGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.sePoint, true)
+      );
       /////////////
       // Create the antipode of the new point, this.sePoint
       const newAntipodePoint = new NonFreePoint();
@@ -615,6 +619,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
       }
       this.sePoint = sePoint;
+      // set the label to follow the visible ordering
+      addTangentLineGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.sePoint, true)
+      );
     }
 
     // For each type of oneDimensional compute the normal vectors and copy them into normalVectors

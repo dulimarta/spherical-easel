@@ -27,6 +27,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 const tmpVector = new Vector3();
 
@@ -469,6 +470,11 @@ export default class CircleHandler extends Highlighter {
         )
         .normalize();
       newSELabel.locationVector = this.tmpVector;
+
+      // set the label to follow the visible ordering
+      circleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
@@ -514,6 +520,10 @@ export default class CircleHandler extends Highlighter {
       circleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
       );
+      // set the label to follow the visible ordering
+      circleCommandGroup.addCommand(
+        new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
+      );
     }
 
     // Check to see if the release location is near any points
@@ -536,6 +546,10 @@ export default class CircleHandler extends Highlighter {
         // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
         circleCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.circleSEPoint, true)
+        );
+        // set the label to follow the visible ordering
+        circleCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.circleSEPoint, true)
         );
       }
     } else {
@@ -667,7 +681,10 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-
+      //vtx is a new displayed point so set the label to follow the created order
+      circleCommandGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(vtx, true)
+      );
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();

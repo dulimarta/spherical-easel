@@ -23,6 +23,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -523,6 +524,8 @@ export default class LineHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
+      // set the label to follow the visible ordering
+      lineGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       vtx.locationVector = this.startVector;
       /////////////
       // Create the antipode of the new point, vtx
@@ -582,6 +585,10 @@ export default class LineHandler extends Highlighter {
       lineGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
+      // set the label to follow the visible ordering
+      lineGroup.addCommand(
+        new SetPointInitialVisibilityAndLabel(this.startSEPoint, true)
+      );
     }
 
     // Check to see if the release location is near any points
@@ -596,6 +603,10 @@ export default class LineHandler extends Highlighter {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.endSEPoint, true)
+        );
+        // set the label to follow the visible ordering
+        lineGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(this.endSEPoint, true)
         );
       }
     } else {
@@ -730,6 +741,8 @@ export default class LineHandler extends Highlighter {
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
 
+      // set the label to follow the visible ordering
+      lineGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       /////////////
       // Create the antipode of the new point, vtx
       const newAntipodePoint = new NonFreePoint();
