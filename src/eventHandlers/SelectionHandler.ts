@@ -126,11 +126,12 @@ export default class SelectionHandler extends Highlighter {
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
-          let ptr: Parametric | null = n.ref;
-          while (ptr !== null) {
-            ptr.glowingDisplay();
-            ptr = ptr.next;
-          }
+          n.ref.glowingDisplay();
+          // let ptr: Parametric | null = n.ref;
+          // while (ptr !== null) {
+          //   ptr.glowingDisplay();
+          //   ptr = ptr.next;
+          // }
         });
     }
     // Get all SEPolygons upper case O

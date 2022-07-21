@@ -624,7 +624,8 @@ export function intersectSegmentWithParametric(
   const zeros = SENodule.findZerosParametrically(
     d,
     parametric.tValues,
-    parametric.c1DiscontinuityParameterValues,
+    [], // FIXME
+    // parametric.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -932,7 +933,8 @@ export function intersectCircleWithParametric(
   const zeros = SENodule.findZerosParametrically(
     d,
     parametric.tValues,
-    parametric.c1DiscontinuityParameterValues,
+    [], // FIXME
+    // parametric.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -1141,7 +1143,8 @@ export function intersectEllipseWithParametric(
   const zeros = SENodule.findZerosParametrically(
     d,
     parametric.tValues,
-    parametric.c1DiscontinuityParameterValues,
+    [], // FIXME
+    // parametric.c1DiscontinuityParameterValues,
     dp
   );
 

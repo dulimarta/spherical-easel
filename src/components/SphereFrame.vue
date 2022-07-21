@@ -159,7 +159,6 @@ export default class SphereFrame extends VueComponent {
       autostart: true
       // ratio: window.devicePixelRatio
     });
-    console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
     this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
     // this.layers.splice(0);

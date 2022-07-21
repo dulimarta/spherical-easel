@@ -44,6 +44,8 @@ type TSample = {
   right: number; // integer index
   value: Vector3;
 };
+
+// Data structure stored in a max heap used for adaptive smoothing
 type TCurve = {
   index: number;
   curvature: number;
@@ -121,7 +123,7 @@ export class SEParametric
   private fnPrimeValues: Vector3[] = [];
   private fnPPrimeValues: Vector3[] = [];
 
-  private _c1DiscontinuityParameterValues: number[] = [];
+  // private _c1DiscontinuityParameterValues: number[] = [];
 
   private tSyntaxTrees: MinMaxSyntaxTrees = {
     min: ExpressionParser.NOT_DEFINED,
@@ -149,11 +151,12 @@ export class SEParametric
     coordinateExpressions: { x: string; y: string; z: string },
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number } /* hard limit */,
-    c1DiscontinuityParameterValues: number[],
+    // c1DiscontinuityParameterValues: number[],
     measurementParents: SEExpression[],
     isClosed = false
   ) {
     super();
+    console.debug(`SEParametric constructor ID=${this.id}`);
     this.store = useSEStore();
     this.ref = new Parametric(
       tNumbers.min,
@@ -214,35 +217,35 @@ export class SEParametric
       this.tSyntaxTrees.max = ExpressionParser.parse(tExpressions.max);
     }
 
-    const numDiscontinuity = c1DiscontinuityParameterValues.length;
-    if (numDiscontinuity > 0) {
-      console.log(
-        "****** Parametric curve with discontinuity!!!!!",
-        c1DiscontinuityParameterValues
-      );
-      if (this._tNumbersHardLimit.min < c1DiscontinuityParameterValues[0]) {
-        this._c1DiscontinuityParameterValues.push(this._tNumbers.min);
-      }
-      this._c1DiscontinuityParameterValues.push(
-        ...c1DiscontinuityParameterValues
-      );
-      if (
-        this._tNumbersHardLimit.max >
-        c1DiscontinuityParameterValues[numDiscontinuity - 1]
-      )
-        this._c1DiscontinuityParameterValues.push(this._tNumbers.max);
-      let ptr: Parametric | null = this.ref; // Head of the list
-      for (
-        let m = 1;
-        m < this._c1DiscontinuityParameterValues.length - 1;
-        m++
-      ) {
-        const p = new Parametric();
-        p.partId = m;
-        // ptr.next = p;
-        ptr = p;
-      }
-    }
+    // const numDiscontinuity = c1DiscontinuityParameterValues.length;
+    // if (numDiscontinuity > 0) {
+    //   console.log(
+    //     "****** Parametric curve with discontinuity!!!!!",
+    //     c1DiscontinuityParameterValues
+    //   );
+    //   if (this._tNumbersHardLimit.min < c1DiscontinuityParameterValues[0]) {
+    //     this._c1DiscontinuityParameterValues.push(this._tNumbers.min);
+    //   }
+    //   this._c1DiscontinuityParameterValues.push(
+    //     ...c1DiscontinuityParameterValues
+    //   );
+    //   if (
+    //     this._tNumbersHardLimit.max >
+    //     c1DiscontinuityParameterValues[numDiscontinuity - 1]
+    //   )
+    //     this._c1DiscontinuityParameterValues.push(this._tNumbers.max);
+    //   let ptr: Parametric | null = this.ref; // Head of the list
+    //   for (
+    //     let m = 1;
+    //     m < this._c1DiscontinuityParameterValues.length - 1;
+    //     m++
+    //   ) {
+    //     const p = new Parametric();
+    //     p.partId = m;
+    //     // ptr.next = p;
+    //     ptr = p;
+    //   }
+    // }
     this._seParentExpressions.push(...measurementParents);
 
     // Sample for max number of perpendiculars from any point on the sphere
@@ -303,7 +306,7 @@ export class SEParametric
         ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
       );
       vecValue.applyMatrix4(rotationMat4);
-      console.debug(`At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
+      // console.debug(`At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
       fnValues.push({
         t: tValue,
         left: i > 0 ? i - 1 : 0,
@@ -319,13 +322,7 @@ export class SEParametric
     for (let k = 2; k < N; k++) {
       const next = fnValues[k];
       const curvature = computeArea(prev, curr, next);
-      // console.debug(
-      //   `Initial curvature at k=${k - 1}` +
-      //     `t=${curr.t.toFixed(4)} is ${curvature.toFixed(5)}`
-      // );
-
       curvatureHeap.enqueue({ index: k - 1, curvature });
-
       prev = curr;
       curr = next;
     }
@@ -336,9 +333,8 @@ export class SEParametric
     while (curvatureHeap.size() > 0) {
       // In the following loop, 3 equally-spaced points L, M, R are expanded
       // into 4 equally-spaced points L, M1, M2, R
-      const { index, curvature } = curvatureHeap.dequeue();
-      const tValue = fnValues[index].t;
-      console.debug(`Curvature ${curvature} at ${index} t=${tValue}`);
+      const { index } = curvatureHeap.dequeue();
+      // console.debug(`Curvature ${curvature} at ${index} t=${tValue}`);
       const leftIndex = fnValues[index].left;
       const tLeft = fnValues[leftIndex].t;
       const rightIndex = fnValues[index].right;
@@ -407,10 +403,10 @@ export class SEParametric
       if (area2 > AREA_THRESHOLD)
         curvatureHeap.enqueue({ index: newIndex, curvature: area2 });
     }
-    // Sort by time
+    // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
     const tValues = fnValues.map((z: TSample) => z.t);
-    console.debug(`SEParametric ${this.id} values`, tValues);
+    // console.debug(`SEParametric ${this.id} values`, tValues);
     return fnValues;
   }
 
@@ -461,48 +457,46 @@ export class SEParametric
       this.primeX2CoordinateSyntaxTrees,
       this.fnPPrimeValues
     );
-    if (this._c1DiscontinuityParameterValues.length === 0) {
-      console.debug(`SEParametric ${this.id} consists of only ONE curve`);
-      this.ref.setRangeAndFunctions(
-        this.tValues,
-        this.fnValues,
-        this.fnPrimeValues,
-        this.fnPPrimeValues,
-        this._tNumbersHardLimit.min,
-        this._tNumbersHardLimit.max,
-        this.tNumbers.min,
-        this.tNumbers.max
-      );
-      this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-      this.ref.adjustSize();
-    } else {
-      console.debug(
-        "We have",
-        this._c1DiscontinuityParameterValues.length - 1,
-        "continuous curves"
-      );
-      let p: Parametric | null = this.ref;
-      const breakPoints = this._c1DiscontinuityParameterValues;
-      let m = 1;
-      while (p !== null) {
-        console.debug(`SEParametric ${this.id} set functions`);
+    // if (this._c1DiscontinuityParameterValues.length === 0) {
+    console.debug(`SEParametric ${this.id} consists of only ONE curve`);
+    this.ref.setRangeAndFunctions(
+      this.tValues,
+      this.fnValues,
+      this.fnPrimeValues,
+      this.fnPPrimeValues,
+      this._tNumbersHardLimit.min,
+      this._tNumbersHardLimit.max,
+      this.tNumbers.min,
+      this.tNumbers.max
+    );
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
+    // } else {
+    //   console.debug(
+    //     "We have",
+    //     this._c1DiscontinuityParameterValues.length - 1,
+    //     "continuous curves"
+    //   );
+    //   let p: Parametric = this.ref;
+    //   const breakPoints = this._c1DiscontinuityParameterValues;
+    //   let m = 1;
+    //   console.debug(`SEParametric ${this.id} set functions`);
 
-        p.setRangeAndFunctions(
-          this.tValues,
-          this.fnValues,
-          this.fnPrimeValues,
-          this.fnPPrimeValues,
-          this._tNumbersHardLimit.min,
-          this._tNumbersHardLimit.max,
-          breakPoints[m - 1],
-          breakPoints[m]
-        );
-        p.stylize(DisplayStyle.ApplyCurrentVariables);
-        p.adjustSize();
-        m++;
-        p = p.next;
-      }
-    }
+    //   p.setRangeAndFunctions(
+    //     this.tValues,
+    //     this.fnValues,
+    //     this.fnPrimeValues,
+    //     this.fnPPrimeValues,
+    //     this._tNumbersHardLimit.min,
+    //     this._tNumbersHardLimit.max,
+    //     breakPoints[m - 1],
+    //     breakPoints[m]
+    //   );
+    //   p.stylize(DisplayStyle.ApplyCurrentVariables);
+    //   p.adjustSize();
+    //   m++;
+    //   // p = p.next;
+    // }
   }
 
   private evaluateFunctionAndCache(
@@ -670,11 +664,12 @@ export class SEParametric
       // display the updated parametric
       // TODO: FIXME
       // this.calculateDerivatives(this.tValues.map(z => z.t));
-      let ptr: Parametric | null = this.ref;
-      while (ptr !== null) {
-        ptr.updateDisplay();
-        ptr = ptr.next;
-      }
+      // let ptr: Parametric | null = this.ref;
+      // while (ptr !== null) {
+      //   ptr.updateDisplay();
+      //   ptr = ptr.next;
+      // }
+      this.ref.updateDisplay();
     }
 
     if (this.showing && this._exists) {
@@ -952,9 +947,9 @@ export class SEParametric
   get coordinateExpressions(): CoordExpression {
     return this._coordinateExpressions;
   }
-  get c1DiscontinuityParameterValues(): number[] {
-    return this._c1DiscontinuityParameterValues;
-  }
+  // get c1DiscontinuityParameterValues(): number[] {
+  //   return this._c1DiscontinuityParameterValues;
+  // }
   get tExpressions(): MinMaxExpression {
     return this._tExpressions;
   }
@@ -976,16 +971,16 @@ export class SEParametric
   // Factor out specialized glowing setter from SENodule
   // to SEParametric to remove dependency from SENodule to Parametric
   set glowing(b: boolean) {
-    let ptr: Parametric | null = this.ref;
-    if (b)
-      while (ptr !== null) {
-        ptr.glowingDisplay();
-        ptr = ptr.next;
-      }
-    else
-      while (ptr !== null) {
-        ptr.normalDisplay();
-        ptr = ptr.next;
-      }
+    // let ptr: Parametric | null = this.ref;
+    if (b) this.ref.glowingDisplay();
+    // while (ptr !== null) {
+    //   ptr.glowingDisplay();
+    //   ptr = ptr.next;
+    // }
+    else this.ref.normalDisplay();
+    // while (ptr !== null) {
+    //   ptr.normalDisplay();
+    //   ptr = ptr.next;
+    // }
   }
 }

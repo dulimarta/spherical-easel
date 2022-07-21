@@ -46,14 +46,8 @@ export default class Parametric extends Nodule {
    * When an SEParametric consists of multiple Parametric, organize
    * them into a linked list
    */
-  public next: Parametric | null = null;
+  // public next: Parametric | null = null;
 
-  /**
-   * The arcLength of the parametric curve from tNumber.min to tNumber.Max
-   */
-  // private _initialArcLength: number;
-  // private _arcLengthValues: Array<number> = [];
-  // private numAnchors = 0;
   private _tValues: Array<number> = [];
   private _coordValues: Array<Vector3> = [];
   private _pPrimeValues: Array<Vector3> = [];
@@ -152,11 +146,6 @@ export default class Parametric extends Nodule {
     tMinPart: number,
     tMaxPart: number
   ): void {
-    console.debug(
-      `Parametric::setRangeAndFunctions part-${this.partId}`,
-      tMinPart,
-      tMaxPart
-    );
     this.tGlobalMin = tMinGlobal;
     this.tGlobalMax = tMaxGlobal;
     this.tPartMin = tMinPart;
@@ -174,7 +163,7 @@ export default class Parametric extends Nodule {
 
   private buildCurve() {
     const numAnchors = this._coordValues.length;
-    console.debug(`Use ${numAnchors} anchor points`);
+    // console.debug(`Use ${numAnchors} anchor points`);
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -256,65 +245,6 @@ export default class Parametric extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
-
-  /**
-   * Pre-compute arc length and store the cumulative values in an array
-   */
-  // private determineAnchorsFromArcLength_not_used(): number {
-  //   // console.debug(
-  //   //   `Parametric::determineAnchor() part-${this.partId}`,
-  //   //   this.tPartMin,
-  //   //   this.tPartMax
-  //   // );
-  //   // const tMin = this._tNumbers.min;
-  //   // const tMax = this._tNumbers.max;
-  //   // let oldArcLength = 0;
-  //   let newArcLength = 0;
-  //   let currArcLength = 0;
-  //   let iteration = 1;
-  //   let interAnchorDistance = 0;
-  //   const curr = new Vector3();
-  //   const next = new Vector3();
-  //   do {
-  //     newArcLength = 0;
-  //     // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
-  //     const tRange = this.tPartMax - this.tPartMin;
-
-  //     // Approximate the length using inter sample distance
-  //     curr.copy(this.P(this.tPartMin));
-  //     for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
-  //       const tValue =
-  //         this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
-  //       const len = next.copy(this.P(tValue)).sub(curr).length();
-
-  //       if (!isNaN(len)) {
-  //         newArcLength += len;
-  //       }
-  //       curr.copy(this.P(tValue));
-  //     }
-  //     interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
-  //     const growth = (newArcLength - currArcLength) / newArcLength;
-  //     // console.debug(
-  //     //   `Iteration-${iteration} length changed from ${currArcLength.toFixed(
-  //     //     5
-  //     //   )} to ${newArcLength.toFixed(5)}.` + `Growth = ${growth.toFixed(5)}`,
-  //     //   "inter anchor distance",
-  //     //   interAnchorDistance.toFixed(5)
-  //     // );
-  //     // When the arc length increase is no longer "significant"
-  //     // we assume that the curve subdivision is good enough
-  //     if (growth < SETTINGS.parameterization.maxChangeInArcLength) {
-  //       return iteration * SUBDIVISIONS;
-  //     } else {
-  //       currArcLength = newArcLength;
-  //     }
-  //     iteration++;
-  //   } while (
-  //     iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
-  //   );
-  //   // this._initialArcLength = newArcLength;
-  //   return iteration * SUBDIVISIONS;
-  // }
 
   /**
    * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the un-rotated
@@ -401,9 +331,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentBackPartIndex >= this.backParts.length) {
-            console.info(
-              "Parametric update: Needs more back parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric update: Needs more back parts than were allocated initially"
+            // );
             const newPath = new Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
@@ -456,9 +386,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentFrontPartIndex >= this.frontParts.length) {
-            console.info(
-              "Parametric Update: Needs more front parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric Update: Needs more front parts than were allocated initially"
+            // );
             const newPath = new Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();

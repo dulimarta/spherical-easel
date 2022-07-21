@@ -3,9 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
-import Parametric from "@/plottables/Parametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
   CoordExpression,
@@ -101,11 +99,12 @@ export class AddParametricCommand extends Command {
       "parametricExpressionParentsNames=" +
         this.seParametric.seParentExpressions
           .map((n: SEExpression) => Command.symbolToASCIIDec(n.name))
-          .join("@"),
-      "parametricCuspParameterValues=" +
-        this.seParametric.c1DiscontinuityParameterValues
-          .map(num => Command.symbolToASCIIDec(num.toString()))
           .join("@")
+      // FIXME
+      // "parametricCuspParameterValues=" +
+      //   this.seParametric.c1DiscontinuityParameterValues
+      //     .map(num => Command.symbolToASCIIDec(num.toString()))
+      //     .join("@")
     ].join("&");
   }
 
@@ -195,19 +194,12 @@ export class AddParametricCommand extends Command {
       };
       // Create the Parametric in the SEParametric constructor
       // Not here!
-      // const parametric = new Parametric(
-      //   tNumbers.min,
-      //   tNumbers.max,
-      //   tNumbers.min,
-      //   tNumbers.max,
-      //   parametricCurveClosed === "true"
-      // );
       const seParametric = new SEParametric(
         // parametric,
         coordinateExpressions,
         tExpressions,
         tNumbers,
-        parametricCuspParameterValues,
+        // parametricCuspParameterValues,
         parametricExpressionParents.map(par => par as SEExpression),
         parametricCurveClosed === "true"
       );

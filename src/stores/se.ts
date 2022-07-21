@@ -198,11 +198,12 @@ export const useSEStore = defineStore({
       seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
       sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
       seParametrics.forEach((x: SEParametric) => {
-        let ptr: Parametric | null = x.ref;
-        while (ptr !== null) {
-          ptr.removeFromLayers();
-          ptr = ptr.next;
-        }
+        x.ref.removeFromLayers();
+        // let ptr: Parametric | null = x.ref;
+        // while (ptr !== null) {
+        //   ptr.removeFromLayers();
+        //   ptr = ptr.next;
+        // }
       });
       sePencils.forEach((p: SEPencil) => {
         p.lines.forEach((l: SEPerpendicularLineThruPoint) => {
@@ -410,11 +411,12 @@ export const useSEStore = defineStore({
       this.seParametricIds.push(parametric.id);
       seParametrics.set(parametric.id, parametric);
       seNodules.push(parametric);
-      let ptr: Parametric | null = parametric.ref;
-      while (ptr) {
-        ptr.addToLayers(layers);
-        ptr = ptr.next;
-      }
+      parametric.ref.addToLayers(layers);
+      // let ptr: Parametric | null = parametric.ref;
+      // while (ptr) {
+      //   ptr.addToLayers(layers);
+      //   ptr = ptr.next;
+      // }
       this.hasUnsavedNodules = true;
     },
 
@@ -426,11 +428,12 @@ export const useSEStore = defineStore({
           id => id === parametricId
         );
         const pos2 = seNodules.findIndex(x => x.id === parametricId);
-        let ptr: Parametric | null = victimParametric.ref;
-        while (ptr !== null) {
-          ptr.removeFromLayers();
-          ptr = ptr.next;
-        }
+        victimParametric.ref.removeFromLayers();
+        // let ptr: Parametric | null = victimParametric.ref;
+        // while (ptr !== null) {
+        //   ptr.removeFromLayers();
+        //   ptr = ptr.next;
+        // }
         // victimParametric.removeSelfSafely();
         this.seParametricIds.splice(parametricPos, 1); // Remove the parametric from the list
         seParametrics.delete(parametricId);
