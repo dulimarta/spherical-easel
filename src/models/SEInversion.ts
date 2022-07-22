@@ -18,6 +18,7 @@ export class SEInversion extends SETransformation {
     this.ref = circleOfInversion.ref;
     SETransformation.INVERSION_COUNT++;
     this.name = `In${SETransformation.INVERSION_COUNT}`;
+    this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }
 

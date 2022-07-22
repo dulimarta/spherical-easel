@@ -409,6 +409,7 @@ export type plottableType =
   | "ellipse"
   | "parametric"
   | "polygon";
+
 export type sides = "front" | "back" | "mid";
 export type plottableProperties = {
   type: plottableType;

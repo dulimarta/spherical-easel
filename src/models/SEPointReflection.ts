@@ -16,6 +16,7 @@ export class SEPointReflection extends SETransformation {
     this.ref = pointOfReflection.ref;
     SETransformation.POINT_REFLECTION_COUNT;
     this.name = `Rp${SETransformation.POINT_REFLECTION_COUNT}`;
+    this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }
 

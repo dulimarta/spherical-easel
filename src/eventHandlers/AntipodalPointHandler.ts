@@ -277,6 +277,9 @@ export default class AntipodalPointHandler extends Highlighter {
           antipodalCommandGroup.addCommand(
             new AddPointCommand(this.parentPoint, newSELabel)
           );
+          antipodalCommandGroup.addCommand(
+            new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
+          );
         }
 
         const newPoint = new NonFreePoint();
@@ -305,11 +308,14 @@ export default class AntipodalPointHandler extends Highlighter {
         newSELabel.locationVector = this.tmpVector;
 
         // Create and execute the command to create a new point for undo/redo
-        antipodalCommandGroup
-          .addCommand(
-            new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
-          )
-          .execute();
+        antipodalCommandGroup.addCommand(
+          new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
+        );
+        antipodalCommandGroup.addCommand(
+          new SetPointInitialVisibilityAndLabel(vtx, true)
+        );
+
+        antipodalCommandGroup.execute();
         // Update the display of the antipodal point
         // TODO: move this update() call into AddAntipodalPointCommand
         // vtx.markKidsOutOfDate();

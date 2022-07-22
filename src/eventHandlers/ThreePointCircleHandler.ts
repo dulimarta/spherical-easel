@@ -1234,6 +1234,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         newSELabel
       )
     );
+    newSEThreePointCircleCenter.markKidsOutOfDate();
     newSEThreePointCircleCenter.update();
 
     // set the label to follow the visible ordering
@@ -1487,6 +1488,7 @@ export default class ThreePointCircleHandler extends Highlighter {
             newSELabel1
           )
         );
+        newSECircle.markKidsOutOfDate();
         newSECircle.update();
 
         // Generate new intersection points. These points must be computed and created

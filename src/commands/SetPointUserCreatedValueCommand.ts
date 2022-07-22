@@ -45,6 +45,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     ) {
       this.seIntersectionOrAntipodePoint.label.showing = this.userCreatedValue;
     }
+    this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
     //}
     //  else {
@@ -89,7 +90,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     );
     // set back to automatically created
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
-
+    this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
     // } else {
     //   this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;

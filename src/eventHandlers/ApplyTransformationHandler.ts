@@ -1588,6 +1588,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       preimageSEPoint,
       transformationSEParent
     );
+    newTransformedSEPoint.markKidsOutOfDate();
     newTransformedSEPoint.update();
 
     // Create the label
@@ -1747,6 +1748,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       preimageSESegment,
       transformationSEParent
     );
+    newIsometrySESegment.markKidsOutOfDate();
     newIsometrySESegment.update();
 
     // Create the label
@@ -1902,6 +1904,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       preimageSELine,
       transformationSEParent
     );
+    newIsometrySELine.markKidsOutOfDate();
     newIsometrySELine.update();
 
     // Create the label
@@ -2054,6 +2057,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       preimageSECircle,
       transformationSEParent
     );
+    newIsometrySECircle.markKidsOutOfDate();
     newIsometrySECircle.update();
 
     // Create the label
@@ -2239,6 +2243,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       preimageSEEllipse,
       transformationSEParent
     );
+    newIsometrySEEllipse.markKidsOutOfDate();
     newIsometrySEEllipse.update();
 
     // Create the label
@@ -2481,6 +2486,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         lineOrCircle,
         transformationSEParent
       );
+      newInvertedSECircleCenter.markKidsOutOfDate();
       newInvertedSECircleCenter.update();
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
@@ -2573,6 +2579,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
       transformedSEPointOnLineOrCircle
     );
+    newInvertedSECircle.markKidsOutOfDate();
     newInvertedSECircle.update();
     console.debug(
       "new inversion circle radius",

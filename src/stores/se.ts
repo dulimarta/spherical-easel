@@ -254,6 +254,7 @@ export const useSEStore = defineStore({
       const pos = this.sePoints.findIndex(x => x.id === move.pointId);
       if (pos > -1) {
         this.sePoints[pos].accept(pointMoverVisitor);
+        //sePoints[pos].markKidsOutOfDate();
         //sePoints[pos].update();
       }
     },
@@ -584,6 +585,7 @@ export const useSEStore = defineStore({
       const pos = this.seSegments.findIndex(x => x.id === change.segmentId);
       if (pos >= 0) {
         this.seSegments[pos].accept(segmentNormalArcLengthVisitor);
+        // this.seSegments[pos].markKidsOutOfDate();
         // this.seSegments[pos].update();
       }
     },
@@ -593,6 +595,7 @@ export const useSEStore = defineStore({
       const pos = this.seLines.findIndex(x => x.id === change.lineId);
       if (pos >= 0) {
         this.seLines[pos].accept(lineNormalVisitor);
+        // seLines[pos].markKidsOutOfDate();
         // seLines[pos].update();
       }
     },
@@ -860,7 +863,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //Never happens if a line and line don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -959,7 +964,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a line and segment don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1054,7 +1061,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a line and circle don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1149,7 +1158,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a line and ellipse don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1246,7 +1257,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a line and parametric don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1401,7 +1414,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a segment and line don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1498,7 +1513,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a segment and segment don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1593,7 +1610,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a segment and circle don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1688,7 +1707,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a segment and ellipse don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1784,7 +1805,9 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() //if a segment and parametric don't initially intersect the intersection is the zero vector,
+                    //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -1935,7 +1958,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a line and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2030,7 +2054,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a segment and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2129,7 +2154,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a circle and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2225,7 +2251,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2322,7 +2349,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2476,7 +2504,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and line don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2572,7 +2601,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and segment don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2668,7 +2698,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2766,7 +2797,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and ellipse don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -2863,7 +2895,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a ellipse and parametric don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -3022,7 +3055,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and line don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -3118,7 +3152,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and segment don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -3214,7 +3249,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and circle don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -3310,7 +3346,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and ellipse don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;
@@ -3408,7 +3445,8 @@ export const useSEStore = defineStore({
                   if (
                     tmpVector
                       .subVectors(info.vector, pt.locationVector)
-                      .isZero()
+                      .isZero() &&
+                    !pt.locationVector.isZero() // if a parametric and parametric don't initially intersect the intersection is the zero vector
                   ) {
                     if (pt instanceof SEIntersectionPoint) {
                       existingSEIntersectionPoint = pt;

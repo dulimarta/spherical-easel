@@ -47,7 +47,7 @@ import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { ActionMode } from "@/types";
+import { ActionMode, Labelable } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 //@Component({ components: { SENoduleItem, SESliderItem } })
 
@@ -86,11 +86,31 @@ export default class SENoduleTree extends Vue {
   // }
 
   get existingChildren(): SENodule[] {
-    return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint)
-        return n.isUserCreated && n.exists;
-      else return n.exists;
-    });
+    return this.children
+      .filter((n: SENodule) => {
+        if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint)
+          return n.isUserCreated && n.exists;
+        else return n.exists;
+      })
+      .sort((a, b) => {
+        if (a.isLabelable() && b.isLabelable) {
+          const aLabelString = (a as any).label.ref.shortUserName;
+          const bLabelString = (b as any).label.ref.shortUserName;
+          if (aLabelString.length < bLabelString.length) {
+            return -1;
+          } else if (aLabelString.length > bLabelString.length) {
+            return 1;
+          } else {
+            if (aLabelString < bLabelString) {
+              return -1;
+            } else {
+              return 1;
+            }
+          }
+        } else {
+          return 0;
+        }
+      });
   }
   //When the user activates the measured circle tool
   // the object tool tab is open and the existing measurements sheet is expanded and the others are closed

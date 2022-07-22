@@ -93,6 +93,7 @@ export default class SESliderItem extends Vue {
       this.timer = null;
     } else {
       this.node.value += this.node.step;
+      this.node.markKidsOutOfDate();
       this.node.update();
     }
   }
@@ -102,6 +103,7 @@ export default class SESliderItem extends Vue {
       this.node.value = this.node.min;
     } else {
       this.node.value += this.node.step;
+      this.node.markKidsOutOfDate();
       this.node.update();
     }
   }
@@ -114,6 +116,7 @@ export default class SESliderItem extends Vue {
     }
     if (this.playbackForward) this.node.value += this.node.step;
     else this.node.value -= this.node.step;
+    this.node.markKidsOutOfDate();
     this.node.update();
   }
 

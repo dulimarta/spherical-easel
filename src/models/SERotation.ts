@@ -19,6 +19,7 @@ export class SERotation extends SETransformation {
     this.ref = rotationPoint.ref;
     SETransformation.ROTATION_COUNT++;
     this.name = `Ro${SETransformation.ROTATION_COUNT}`;
+    this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }
 
