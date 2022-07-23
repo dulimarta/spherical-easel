@@ -323,22 +323,24 @@ export function intersectLineWithEllipse(
   };
   returnItems.push(intersection1);
   returnItems.push(intersection2);
+
   // remove duplicate zeros and those that correspond to the same point on the ellipse
   const uniqueZeros: number[] = [];
-  zeros.forEach((z, ind) => {
-    if (ind > 0) {
-      if (
-        uniqueZeros.every(
-          uniZ =>
-            Math.abs(z - uniZ) > SETTINGS.tolerance &&
-            !tempVec.subVectors(ellipse.ref.E(uniZ), ellipse.ref.E(z)).isZero()
-        )
-      ) {
-        uniqueZeros.push(z);
-      }
+  zeros.forEach(z => {
+    if (
+      uniqueZeros.every((uniZ, ind) => {
+        tempVec.copy(ellipse.ref.E(uniZ));
+        tempVec1.copy(ellipse.ref.E(z));
+        return (
+          Math.abs(z - uniZ) > SETTINGS.tolerance &&
+          !tempVec2.subVectors(tempVec, tempVec1).isZero()
+        );
+      })
+    ) {
+      uniqueZeros.push(z);
     }
   });
-  console.debug(`unique zeros length ${uniqueZeros.length}`);
+
   uniqueZeros.forEach((z, ind) => {
     // console.log("ind", ind);
     if (ind > 1) {
@@ -351,9 +353,7 @@ export function intersectLineWithEllipse(
       returnItems[ind].vector.copy(
         ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
       );
-      console.debug(
-        `ellipse line intersection ${ellipse.ref.E(z).toFixed(2)}, index ${ind}`
-      );
+
       returnItems[ind].exists = true;
     }
   });
@@ -625,16 +625,17 @@ export function intersectSegmentWithEllipse(
   // remove duplicate zeros and those that correspond to the same point on the ellipse
   const uniqueZeros: number[] = [];
   zeros.forEach((z, ind) => {
-    if (ind > 0) {
-      if (
-        uniqueZeros.every(
-          uniZ =>
-            Math.abs(z - uniZ) > SETTINGS.tolerance &&
-            !tempVec.subVectors(ellipse.ref.E(uniZ), ellipse.ref.E(z)).isZero()
-        )
-      ) {
-        uniqueZeros.push(z);
-      }
+    if (
+      uniqueZeros.every(uniZ => {
+        tempVec.copy(ellipse.ref.E(uniZ));
+        tempVec1.copy(ellipse.ref.E(z));
+        return (
+          Math.abs(z - uniZ) > SETTINGS.tolerance &&
+          !tempVec2.subVectors(tempVec, tempVec1).isZero()
+        );
+      })
+    ) {
+      uniqueZeros.push(z);
     }
   });
 

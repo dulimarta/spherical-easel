@@ -357,7 +357,6 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("set-transformation-for-tool");
     EventBus.unlisten("delete-node");
     // EventBus.unlisten("dialog-box-is-active");
-    //EventBus.unlisten("set-point-visibility-and-label");
   }
 
   @Watch("canvasSize")
@@ -751,30 +750,33 @@ export default class SphereFrame extends VueComponent {
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     switch (mode) {
       case "select":
-        if (!this.selectTool)
+        if (!this.selectTool) {
           this.selectTool = new SelectionHandler(this.layers);
+        }
         this.currentTool = this.selectTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "delete":
-        if (!this.deleteTool) this.deleteTool = new DeleteHandler(this.layers);
+        if (!this.deleteTool) {
+          this.deleteTool = new DeleteHandler(this.layers);
+        }
         this.currentTool = this.deleteTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomIn":
-        this.currentTool = this.zoomTool;
         if (!this.zoomTool) {
           this.zoomTool = new PanZoomHandler(this.$refs.canvas);
         }
         this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
+        this.currentTool = this.zoomTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomOut":
-        this.currentTool = this.zoomTool;
         if (!this.zoomTool) {
           this.zoomTool = new PanZoomHandler(this.$refs.canvas);
         }
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
+        this.currentTool = this.zoomTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomFit":
@@ -790,196 +792,237 @@ export default class SphereFrame extends VueComponent {
 
       case "iconFactory":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
-        if (!this.iconFactoryTool)
+        if (!this.iconFactoryTool) {
           this.iconFactoryTool = new IconFactoryHandler();
+        }
         this.iconFactoryTool.createIconPaths();
         this.revertActionMode();
         break;
 
       case "hide":
-        if (!this.hideTool) this.hideTool = new HideObjectHandler(this.layers);
+        if (!this.hideTool) {
+          this.hideTool = new HideObjectHandler(this.layers);
+        }
         this.currentTool = this.hideTool;
         break;
       case "move":
-        if (!this.moveTool) this.moveTool = new MoveHandler(this.layers);
+        if (!this.moveTool) {
+          this.moveTool = new MoveHandler(this.layers);
+        }
         this.currentTool = this.moveTool;
         EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
         break;
       case "rotate":
-        if (!this.rotateTool) this.rotateTool = new RotateHandler(this.layers);
+        if (!this.rotateTool) {
+          this.rotateTool = new RotateHandler(this.layers);
+        }
         this.currentTool = this.rotateTool;
         break;
 
       case "point":
-        if (!this.pointTool) this.pointTool = new PointHandler(this.layers);
+        if (!this.pointTool) {
+          this.pointTool = new PointHandler(this.layers);
+        }
         this.currentTool = this.pointTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "line":
-        if (!this.lineTool) this.lineTool = new LineHandler(this.layers);
+        if (!this.lineTool) {
+          this.lineTool = new LineHandler(this.layers);
+        }
         this.currentTool = this.lineTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "segment":
-        if (!this.segmentTool)
+        if (!this.segmentTool) {
           this.segmentTool = new SegmentHandler(this.layers);
+        }
         this.currentTool = this.segmentTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "circle":
-        if (!this.circleTool) this.circleTool = new CircleHandler(this.layers);
+        if (!this.circleTool) {
+          this.circleTool = new CircleHandler(this.layers);
+        }
         this.currentTool = this.circleTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "ellipse":
-        if (!this.ellipseTool)
+        if (!this.ellipseTool) {
           this.ellipseTool = new EllipseHandler(this.layers);
+        }
         this.currentTool = this.ellipseTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "antipodalPoint":
-        if (!this.antipodalPointTool)
+        if (!this.antipodalPointTool) {
           this.antipodalPointTool = new AntipodalPointHandler(this.layers);
+        }
         this.currentTool = this.antipodalPointTool;
         break;
       case "polar":
-        if (!this.polarObjectTool)
+        if (!this.polarObjectTool) {
           this.polarObjectTool = new PolarObjectHandler(this.layers);
+        }
         this.currentTool = this.polarObjectTool;
         break;
       case "intersect":
-        if (!this.intersectTool)
+        if (!this.intersectTool) {
           this.intersectTool = new IntersectionPointHandler(this.layers);
+        }
         this.currentTool = this.intersectTool;
         break;
       case "pointOnObject":
-        if (!this.pointOnOneDimensionalTool)
+        if (!this.pointOnOneDimensionalTool) {
           this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
             this.layers
           );
+        }
         this.currentTool = this.pointOnOneDimensionalTool;
         break;
 
       case "segmentLength":
-        if (!this.segmentLengthTool)
+        if (!this.segmentLengthTool) {
           this.segmentLengthTool = new SegmentLengthHandler(this.layers);
+        }
         this.currentTool = this.segmentLengthTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "pointDistance":
-        if (!this.pointDistanceTool)
+        if (!this.pointDistanceTool) {
           this.pointDistanceTool = new PointDistanceHandler(this.layers);
+        }
         this.currentTool = this.pointDistanceTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "angle":
-        if (!this.angleTool) this.angleTool = new AngleHandler(this.layers);
+        if (!this.angleTool) {
+          this.angleTool = new AngleHandler(this.layers);
+        }
         this.currentTool = this.angleTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "coordinate":
-        if (!this.coordinateTool)
+        if (!this.coordinateTool) {
           this.coordinateTool = new CoordinateHandler(this.layers);
+        }
         this.currentTool = this.coordinateTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "toggleLabelDisplay":
-        if (!this.toggleLabelDisplayTool)
+        if (!this.toggleLabelDisplayTool) {
           this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(
             this.layers
           );
+        }
         this.currentTool = this.toggleLabelDisplayTool;
         break;
       case "perpendicular":
-        if (!this.perpendicularLineThruPointTool)
+        if (!this.perpendicularLineThruPointTool) {
           this.perpendicularLineThruPointTool =
             new PerpendicularLineThruPointHandler(this.layers);
+        }
 
         this.currentTool = this.perpendicularLineThruPointTool;
         break;
       case "tangent":
-        if (!this.tangentLineThruPointTool)
+        if (!this.tangentLineThruPointTool) {
           this.tangentLineThruPointTool = new TangentLineThruPointHandler(
             this.layers
           );
+        }
         this.currentTool = this.tangentLineThruPointTool;
         break;
       case "measureTriangle":
-        if (!this.measureTriangleTool)
+        if (!this.measureTriangleTool) {
           this.measureTriangleTool = new PolygonHandler(this.layers, true);
+        }
         this.currentTool = this.measureTriangleTool;
         break;
       case "measurePolygon":
-        if (!this.measurePolygonTool)
+        if (!this.measurePolygonTool) {
           this.measurePolygonTool = new PolygonHandler(this.layers, false);
+        }
         this.currentTool = this.measurePolygonTool;
         break;
       case "midpoint":
-        if (!this.midpointTool)
+        if (!this.midpointTool) {
           this.midpointTool = new NSectSegmentHandler(this.layers, true);
+        }
         this.currentTool = this.midpointTool;
         break;
       case "nSectPoint":
-        if (!this.nSectSegmentTool)
+        if (!this.nSectSegmentTool) {
           this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
+        }
         this.currentTool = this.nSectSegmentTool;
         break;
       case "angleBisector":
-        if (!this.angleBisectorTool)
+        if (!this.angleBisectorTool) {
           this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
+        }
         this.currentTool = this.angleBisectorTool;
         break;
       case "nSectLine":
-        if (!this.nSectAngleTool)
+        if (!this.nSectAngleTool) {
           this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
+        }
         this.currentTool = this.nSectAngleTool;
         break;
       case "threePointCircle":
-        if (!this.threePointCircleTool)
+        if (!this.threePointCircleTool) {
           this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
+        }
         this.currentTool = this.threePointCircleTool;
         break;
       case "measuredCircle":
-        if (!this.measuredCircleTool)
+        if (!this.measuredCircleTool) {
           this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+        }
         this.currentTool = this.measuredCircleTool;
         break;
       case "translation":
-        if (!this.translationTool)
+        if (!this.translationTool) {
           this.translationTool = new TranslationTransformationHandler(
             this.layers
           );
+        }
         this.currentTool = this.translationTool;
         break;
       case "rotation":
-        if (!this.rotationTool)
+        if (!this.rotationTool) {
           this.rotationTool = new RotationTransformationHandler(this.layers);
+        }
         this.currentTool = this.rotationTool;
         break;
       case "reflection":
-        if (!this.reflectionTool)
+        if (!this.reflectionTool) {
           this.reflectionTool = new ReflectionTransformationHandler(
             this.layers
           );
+        }
         this.currentTool = this.reflectionTool;
         break;
       case "pointReflection":
-        if (!this.pointReflectionTool)
+        if (!this.pointReflectionTool) {
           this.pointReflectionTool = new PointReflectionTransformationHandler(
             this.layers
           );
+        }
         this.currentTool = this.pointReflectionTool;
         break;
       case "inversion":
-        if (!this.inversionTool)
+        if (!this.inversionTool) {
           this.inversionTool = new InversionTransformationHandler(this.layers);
+        }
         this.currentTool = this.inversionTool;
         break;
       case "applyTransformation":
-        if (!this.applyTransformationTool)
+        if (!this.applyTransformationTool) {
           this.applyTransformationTool = new ApplyTransformationHandler(
             this.layers
           );
+        }
         this.currentTool = this.applyTransformationTool;
         break;
       default:

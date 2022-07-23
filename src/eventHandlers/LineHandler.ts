@@ -522,7 +522,7 @@ export default class LineHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-
+      vtx.locationVector = this.startVector;
       /////////////
       // Create the antipode of the new point, vtx
       const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
