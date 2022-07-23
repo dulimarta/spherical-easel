@@ -116,13 +116,13 @@ import { SEParametric } from "@/models/SEParametric";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddParametricCommand } from "@/commands/AddParametricCommand";
 import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
-import { AddParametricGroupCommand } from "@/commands/AddParametricGroupCommand";
+// import { AddParametricGroupCommand } from "@/commands/AddParametricGroupCommand";
 import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePointCommand";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { SEParametricGroup } from "@/models/SEParametricGroup";
+// import { SEParametricGroup } from "@/models/SEParametricGroup";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 
@@ -712,173 +712,168 @@ export default class ParametricForm extends Vue {
     //   this.tExpressions.max = this.tNumbers.max.toString();
     // Create the Parametric in the SEParametric constructor
     // Not here!
-    if (this.c1DiscontinuityParameterValues.length > 0) {
-      let breakpoints: Array<number> = [];
-      // console.debug(
-      //   "Discontinuity T-values",
-      //   this.c1DiscontinuityParameterValues
-      // );
-      // console.debug("T range", this.tNumbers);
-      if (this.tNumbers.min < this.c1DiscontinuityParameterValues[0])
-        breakpoints.push(this.tNumbers.min);
-      breakpoints.push(...this.c1DiscontinuityParameterValues);
-      const N = this.c1DiscontinuityParameterValues.length;
-      if (this.tNumbers.max > this.c1DiscontinuityParameterValues[N - 1])
-        breakpoints.push(this.tNumbers.max);
-      const parametricGroup = new SEParametricGroup();
-      for (let k = 0; k < breakpoints.length - 1; k++) {
-        console.debug(
-          `SEParametric part ${k} from ${breakpoints[k]} to ${
-            breakpoints[k + 1]
-          }`
-        );
-        const newSEParametric = new SEParametric(
-          this.coordinateExpressions,
-          this.tExpressions,
-          { min: breakpoints[k], max: breakpoints[k + 1] }, // T-value hard limits
-          calculationParents
-        );
-        parametricGroup.add(newSEParametric);
-      }
-      const paramGroupCommand = new AddParametricGroupCommand(parametricGroup);
-      paramGroupCommand.execute();
-      parametricGroup.members.forEach(par => {
-        par.markKidsOutOfDate();
-        par.update();
-      });
-    } else {
-      const newSEParametric = new SEParametric(
-        // parametric,
-        this.coordinateExpressions,
-        this.tExpressions,
-        this.tNumbers,
-        // this.c1DiscontinuityParameterValues,
-        calculationParents
+    // if (this.c1DiscontinuityParameterValues.length > 0) {
+    //   let breakpoints: Array<number> = [];
+    //   // console.debug(
+    //   //   "Discontinuity T-values",
+    //   //   this.c1DiscontinuityParameterValues
+    //   // );
+    //   // console.debug("T range", this.tNumbers);
+    //   if (this.tNumbers.min < this.c1DiscontinuityParameterValues[0])
+    //     breakpoints.push(this.tNumbers.min);
+    //   breakpoints.push(...this.c1DiscontinuityParameterValues);
+    //   const N = this.c1DiscontinuityParameterValues.length;
+    //   if (this.tNumbers.max > this.c1DiscontinuityParameterValues[N - 1])
+    //     breakpoints.push(this.tNumbers.max);
+    //   const parametricGroup = new SEParametricGroup();
+    //   for (let k = 0; k < breakpoints.length - 1; k++) {
+    //     console.debug(
+    //       `SEParametric part ${k} from ${breakpoints[k]} to ${
+    //         breakpoints[k + 1]
+    //       }`
+    //     );
+    //     const newSEParametric = new SEParametric(
+    //       this.coordinateExpressions,
+    //       this.tExpressions,
+    //       { min: breakpoints[k], max: breakpoints[k + 1] }, // T-value hard limits
+    //       calculationParents
+    //     );
+    //     parametricGroup.add(newSEParametric);
+    //   }
+    //   const paramGroupCommand = new AddParametricGroupCommand(parametricGroup);
+    //   paramGroupCommand.execute();
+    //   parametricGroup.members.forEach(par => {
+    //     par.markKidsOutOfDate();
+    //     par.update();
+    //   });
+    // } else {
+    const newSEParametric = new SEParametric(
+      // parametric,
+      this.coordinateExpressions,
+      this.tExpressions,
+      this.tNumbers,
+      this.c1DiscontinuityParameterValues,
+      calculationParents
+    );
+    // Create the plottable and model label
+    const newLabel = new Label();
+    const newSELabel = new SELabel(newLabel, newSEParametric);
+    // Set the initial label location at the start of the curve
+    this.tempVector
+      .copy(newSEParametric.P(this.tNumbers.min))
+      .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
+      .normalize();
+    newSELabel.locationVector = this.tempVector;
+    // Create a command group to add the parametric to the store
+    // This way a single undo click will undo all operations.
+    const parametricCommandGroup = new CommandGroup();
+
+    parametricCommandGroup.addCommand(
+      new AddParametricCommand(newSEParametric, calculationParents, newSELabel)
+    );
+    const tracePoint = new NonFreePoint();
+    tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    tracePoint.adjustSize();
+    const traceSEPoint = new SEParametricTracePoint(
+      tracePoint,
+      newSEParametric
+    );
+    const traceLabel = new Label();
+    const traceSELabel = new SELabel(traceLabel, traceSEPoint);
+
+    // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
+
+    // create the parametric endpoints if there are tracing expressions or the curve is not closed
+    if (this.tExpressions.min.length !== 0 || !closed) {
+      // we have to create a two points
+      const startPoint = new NonFreePoint();
+      const endPoint = new NonFreePoint();
+      // Set the display to the default values
+      startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      startPoint.adjustSize();
+      endPoint.adjustSize();
+
+      // create the endPoints
+      const startSEEndPoint = new SEParametricEndPoint(
+        startPoint,
+        newSEParametric,
+        "min"
       );
-      // Create the plottable and model label
-      const newLabel = new Label();
-      const newSELabel = new SELabel(newLabel, newSEParametric);
-      // Set the initial label location at the start of the curve
-      this.tempVector
-        .copy(newSEParametric.P(this.tNumbers.min))
-        .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
-        .normalize();
-      newSELabel.locationVector = this.tempVector;
-      // Create a command group to add the parametric to the store
-      // This way a single undo click will undo all operations.
-      const parametricCommandGroup = new CommandGroup();
+
+      const endSEEndPoint = new SEParametricEndPoint(
+        endPoint,
+        newSEParametric,
+        "max"
+      );
+
+      // Create the plottable labels
+      const startLabel = new Label();
+      const endLabel = new Label();
+      const startSELabel = new SELabel(startLabel, startSEEndPoint);
+      const endSELabel = new SELabel(endLabel, endSEEndPoint);
 
       parametricCommandGroup.addCommand(
-        new AddParametricCommand(
+        new AddParametricEndPointsCommand(
           newSEParametric,
-          calculationParents,
-          newSELabel
+          startSEEndPoint,
+          startSELabel,
+          endSEEndPoint,
+          endSELabel,
+          traceSEPoint,
+          traceSELabel
         )
       );
-      const tracePoint = new NonFreePoint();
-      tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      tracePoint.adjustSize();
-      const traceSEPoint = new SEParametricTracePoint(
-        tracePoint,
-        newSEParametric
-      );
-      const traceLabel = new Label();
-      const traceSELabel = new SELabel(traceLabel, traceSEPoint);
-
-      // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
-
-      // create the parametric endpoints if there are tracing expressions or the curve is not closed
-      if (this.tExpressions.min.length !== 0 || !closed) {
-        // we have to create a two points
-        const startPoint = new NonFreePoint();
-        const endPoint = new NonFreePoint();
-        // Set the display to the default values
-        startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        startPoint.adjustSize();
-        endPoint.adjustSize();
-
-        // create the endPoints
-        const startSEEndPoint = new SEParametricEndPoint(
-          startPoint,
+      newSEParametric.endPoints = [startSEEndPoint, endSEEndPoint];
+    } else if (closed) {
+      parametricCommandGroup.addCommand(
+        new AddParametricTracePointCommand(
           newSEParametric,
-          "min"
-        );
-
-        const endSEEndPoint = new SEParametricEndPoint(
-          endPoint,
-          newSEParametric,
-          "max"
-        );
-
-        // Create the plottable labels
-        const startLabel = new Label();
-        const endLabel = new Label();
-        const startSELabel = new SELabel(startLabel, startSEEndPoint);
-        const endSELabel = new SELabel(endLabel, endSEEndPoint);
-
-        parametricCommandGroup.addCommand(
-          new AddParametricEndPointsCommand(
-            newSEParametric,
-            startSEEndPoint,
-            startSELabel,
-            endSEEndPoint,
-            endSELabel,
-            traceSEPoint,
-            traceSELabel
-          )
-        );
-        newSEParametric.endPoints = [startSEEndPoint, endSEEndPoint];
-      } else if (closed) {
-        parametricCommandGroup.addCommand(
-          new AddParametricTracePointCommand(
-            newSEParametric,
-            traceSEPoint,
-            traceSELabel
-          )
-        );
-      }
-      // Generate new intersection points. These points must be computed and created
-      // in the store. Add the new created points to the parametric command so they can be undone.
-      this.createAllIntersectionsWithParametric(newSEParametric).forEach(
-        (item: SEIntersectionReturnType) => {
-          // Create the plottable and model label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tempVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tempVector;
-
-          parametricCommandGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-          newSELabel.showing = false;
-        }
+          traceSEPoint,
+          traceSELabel
+        )
       );
-
-      parametricCommandGroup.execute();
-
-      newSEParametric.markKidsOutOfDate();
-      newSEParametric.update();
     }
-    console.log("add Parametric commands");
+    // Generate new intersection points. These points must be computed and created
+    // in the store. Add the new created points to the parametric command so they can be undone.
+    this.createAllIntersectionsWithParametric(newSEParametric).forEach(
+      (item: SEIntersectionReturnType) => {
+        // Create the plottable and model label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+        // Set the initial label location
+        this.tempVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tempVector;
+
+        parametricCommandGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        newSELabel.showing = false;
+      }
+    );
+
+    parametricCommandGroup.execute();
+
+    newSEParametric.markKidsOutOfDate();
+    newSEParametric.update();
+    // }
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };
     this.tExpressions = { min: "", max: "" };

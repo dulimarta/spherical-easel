@@ -62,13 +62,13 @@ export class AddParametricCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref.currentStyleState(StyleEditPanels.Front)
+            this.seParametric.ref?.currentStyleState(StyleEditPanels.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref.currentStyleState(StyleEditPanels.Back)
+            this.seParametric.ref?.currentStyleState(StyleEditPanels.Back)
           )
         ),
       // All labels have these attributes
@@ -95,7 +95,7 @@ export class AddParametricCommand extends Command {
         Command.symbolToASCIIDec(this.seParametric.tExpressions.max),
       "parametricMinNumber=" + this.seParametric.tNumbers.min,
       "parametricMaxNumber=" + this.seParametric.tNumbers.max,
-      "parametricCurveClosed=" + this.seParametric.ref.closed,
+      "parametricCurveClosed=" + this.seParametric.isClosedCurve,
       "parametricExpressionParentsNames=" +
         this.seParametric.seParentExpressions
           .map((n: SEExpression) => Command.symbolToASCIIDec(n.name))
@@ -199,7 +199,7 @@ export class AddParametricCommand extends Command {
         coordinateExpressions,
         tExpressions,
         tNumbers,
-        // parametricCuspParameterValues,
+        parametricCuspParameterValues,
         parametricExpressionParents.map(par => par as SEExpression),
         parametricCurveClosed === "true"
       );

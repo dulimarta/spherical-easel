@@ -60,7 +60,7 @@ export class SEParametric
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Parametric;
+  // private ref: Parametric;
   /**
    * Pointer to the label of this SEParametric
    */
@@ -119,11 +119,14 @@ export class SEParametric
   private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
   private _tNumbersHardLimit: MinMaxNumber = { min: NaN, max: NaN };
   private _tValues: Array<number> = [];
+  private partitionedTValues: Array<Array<number>> = [];
+  private _isClosed: boolean;
+  private tIntervals: Array<MinMaxNumber> = [];
   private fnValues: Vector3[] = [];
   private fnPrimeValues: Vector3[] = [];
   private fnPPrimeValues: Vector3[] = [];
 
-  // private _c1DiscontinuityParameterValues: number[] = [];
+  private _c1DiscontinuityParameterValues: number[] = [];
 
   private tSyntaxTrees: MinMaxSyntaxTrees = {
     min: ExpressionParser.NOT_DEFINED,
@@ -151,20 +154,18 @@ export class SEParametric
     coordinateExpressions: { x: string; y: string; z: string },
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number } /* hard limit */,
-    // c1DiscontinuityParameterValues: number[],
+    c1DiscontinuityParameterValues: number[],
     measurementParents: SEExpression[],
     isClosed = false
   ) {
     super();
     console.debug(`SEParametric constructor ID=${this.id}`);
     this.store = useSEStore();
-    this.ref = new Parametric(
-      tNumbers.min,
-      tNumbers.max,
-      tNumbers.min,
-      tNumbers.max,
-      isClosed
-    ); // FIXME
+    this._isClosed = isClosed;
+    this._c1DiscontinuityParameterValues.push(
+      ...c1DiscontinuityParameterValues
+    );
+    this.ref = new Parametric(tNumbers.min, tNumbers.max, isClosed); // FIXME
     // Set the expressions for the curve, its derivative, and the tMin & tMax
     this.coordinateExpressions.x = coordinateExpressions.x;
     this.coordinateExpressions.y = coordinateExpressions.y;
@@ -207,7 +208,12 @@ export class SEParametric
       this.primeCoordinateSyntaxTrees.z,
       "t"
     );
-    this._tNumbersHardLimit = tNumbers;
+    this._tNumbersHardLimit.min = tNumbers.min;
+    this._tNumbersHardLimit.max = tNumbers.max;
+    const tVals = this.tMinMaxExpressionValues();
+    this._tNumbers.min = tVals[0];
+    this._tNumbers.max = tVals[1];
+
     if (tExpressions.min.trim().length > 0) {
       this._tExpressions.min = tExpressions.min;
       this.tSyntaxTrees.min = ExpressionParser.parse(tExpressions.min);
@@ -217,7 +223,6 @@ export class SEParametric
       this.tSyntaxTrees.max = ExpressionParser.parse(tExpressions.max);
     }
 
-    // const numDiscontinuity = c1DiscontinuityParameterValues.length;
     // if (numDiscontinuity > 0) {
     //   console.log(
     //     "****** Parametric curve with discontinuity!!!!!",
@@ -265,13 +270,51 @@ export class SEParametric
     const tSamples = this.createSamplingPoints();
     this._tValues.push(...tSamples.map(x => x.t));
     this.fnValues.push(...tSamples.map(x => x.value));
-    this.calculateDerivatives(tSamples); // true: First build
+    const numDiscontinuity = c1DiscontinuityParameterValues.length;
+    if (numDiscontinuity === 0) {
+      this.tIntervals.push(tNumbers);
+      this.partitionedTValues.push(this._tValues);
+    } else {
+      if (tNumbers.min < c1DiscontinuityParameterValues[0]) {
+        this.tIntervals.push({
+          min: tNumbers.min,
+          max: c1DiscontinuityParameterValues[0]
+        });
+      }
+      for (let k = 0; k < numDiscontinuity - 1; k++) {
+        this.tIntervals.push({
+          min: c1DiscontinuityParameterValues[k],
+          max: c1DiscontinuityParameterValues[k + 1]
+        });
+      }
+      if (tNumbers.max > c1DiscontinuityParameterValues[numDiscontinuity - 1])
+        this.tIntervals.push({
+          min: c1DiscontinuityParameterValues[numDiscontinuity - 1],
+          max: tNumbers.max
+        });
+      let k = 0;
+      for (const span of this.tIntervals) {
+        const tVals = [];
+        while (this._tValues[k] < span.max) {
+          tVals.push(this._tValues[k]);
+          k++;
+        }
+        this.partitionedTValues.push(tVals.slice(0));
+      }
+      // this.partitionedTValues.forEach((p, pos) => {
+      //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
+      // });
+    }
+    this.calculateDerivatives(tSamples);
   }
 
   get tValues(): Array<number> {
     return this._tValues;
   }
 
+  get isClosedCurve(): boolean {
+    return this._isClosed;
+  }
   /** Generate adaptive sampling points based of "local curvatures" */
   private createSamplingPoints(): Array<TSample> {
     // Area of a triangle formed by three consecutive sample points
@@ -321,6 +364,8 @@ export class SEParametric
     let curr: TSample = fnValues[1];
     for (let k = 2; k < N; k++) {
       const next = fnValues[k];
+      // Use the area of the triangle made of three consecutive points
+      // as the approximation to the local curvature
       const curvature = computeArea(prev, curr, next);
       curvatureHeap.enqueue({ index: k - 1, curvature });
       prev = curr;
@@ -457,46 +502,16 @@ export class SEParametric
       this.primeX2CoordinateSyntaxTrees,
       this.fnPPrimeValues
     );
-    // if (this._c1DiscontinuityParameterValues.length === 0) {
-    console.debug(`SEParametric ${this.id} consists of only ONE curve`);
-    this.ref.setRangeAndFunctions(
+    (this.ref as Parametric).setRangeAndFunctions(
       this.tValues,
       this.fnValues,
-      this.fnPrimeValues,
-      this.fnPPrimeValues,
-      this._tNumbersHardLimit.min,
-      this._tNumbersHardLimit.max,
-      this.tNumbers.min,
-      this.tNumbers.max
+      // this.fnPrimeValues,
+      // this.fnPPrimeValues,
+      Math.max(this._tNumbersHardLimit.min, this.tNumbers.min),
+      Math.min(this._tNumbersHardLimit.max, this.tNumbers.max)
     );
-    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
-    // } else {
-    //   console.debug(
-    //     "We have",
-    //     this._c1DiscontinuityParameterValues.length - 1,
-    //     "continuous curves"
-    //   );
-    //   let p: Parametric = this.ref;
-    //   const breakPoints = this._c1DiscontinuityParameterValues;
-    //   let m = 1;
-    //   console.debug(`SEParametric ${this.id} set functions`);
-
-    //   p.setRangeAndFunctions(
-    //     this.tValues,
-    //     this.fnValues,
-    //     this.fnPrimeValues,
-    //     this.fnPPrimeValues,
-    //     this._tNumbersHardLimit.min,
-    //     this._tNumbersHardLimit.max,
-    //     breakPoints[m - 1],
-    //     breakPoints[m]
-    //   );
-    //   p.stylize(DisplayStyle.ApplyCurrentVariables);
-    //   p.adjustSize();
-    //   m++;
-    //   // p = p.next;
-    // }
+    (this.ref as Parametric).stylize(DisplayStyle.ApplyCurrentVariables);
+    (this.ref as Parametric).adjustSize();
   }
 
   private evaluateFunctionAndCache(
@@ -641,12 +656,22 @@ export class SEParametric
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
   ): boolean {
-    return (
-      this.tmpVector
-        .subVectors(unitIdealVector, this.closestVector(unitIdealVector))
-        .length() <
-      SETTINGS.parametric.hitIdealDistance / currentMagnificationFactor
-    );
+    const distance = this.tmpVector
+      .subVectors(unitIdealVector, this.closestVector(unitIdealVector))
+      .length();
+    const isHit =
+      distance <
+      SETTINGS.parametric.hitIdealDistance / currentMagnificationFactor;
+    // console.debug(
+    //   "Distance from",
+    //   unitIdealVector.toFixed(3),
+    //   "and",
+    //   this.tmpVector.toFixed(3),
+    //   "is",
+    //   distance,
+    //   isHit ? "HIT" : "MISS"
+    // );
+    return isHit;
   }
 
   public shallowUpdate(): void {
@@ -656,6 +681,7 @@ export class SEParametric
     // find the tracing tMin and tMax
     const [tMin, tMax] = this.tMinMaxExpressionValues();
     // if the tMin/tMax values are out of order then parametric curve doesn't exist
+    console.debug("SEParametric shallow update", tMin, tMax);
     if (tMax <= tMin) {
       this._exists = false;
     }
@@ -669,13 +695,14 @@ export class SEParametric
       //   ptr.updateDisplay();
       //   ptr = ptr.next;
       // }
-      this.ref.updateDisplay();
+      console.debug("SEParametric calling Parametric::updateDisplay()");
+      this.ref?.updateDisplay();
     }
 
     if (this.showing && this._exists) {
-      this.ref.setVisible(true);
+      this.ref?.setVisible(true);
     } else {
-      this.ref.setVisible(false);
+      this.ref?.setVisible(false);
     }
   }
   public update(
@@ -705,10 +732,18 @@ export class SEParametric
   }
 
   /**
-   * Return the vector on the SECircle that is closest to the idealUnitSphereVector
+   * Return the vector on the SEParametric that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
+    // console.debug(
+    //   "Looking for closest point to parametric",
+    //   this.id,
+    //   "with",
+    //   this.tValues.length,
+    //   "sample points from",
+    //   idealUnitSphereVector.toFixed(3)
+    // );
     if (this.tValues.length > 0) {
       //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
       const transformedToStandard = new Vector3();
@@ -722,14 +757,20 @@ export class SEParametric
       const closestStandardVector = new Vector3();
       closestStandardVector.copy(
         SENodule.closestVectorParametrically(
-          this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
-          this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+          this.P.bind(this), // bind the this so that this in the this.P method is this.ref
+          this.PPrime.bind(this), // bind the this so that this in the this.PPrime method is this
           transformedToStandard,
           this._tValues,
-          this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+          this.PPPrime.bind(this) // bind the this so that this in the this.PPPrime method is this
         ).vector
       );
       // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
+      // console.debug(
+      //   "Closest point to parametric",
+      //   this.id,
+      //   "at",
+      //   closestStandardVector.toFixed(3)
+      // );
       return closestStandardVector.applyMatrix4(
         this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
       );
@@ -800,8 +841,8 @@ export class SEParametric
    */
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
-    oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
-    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
+    oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
+    // useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
   ): Array<NormalVectorAndTValue> {
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
@@ -810,22 +851,24 @@ export class SEParametric
       .normalize();
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = useFullTInterval
-      ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
-      : this.tMinMaxExpressionValues();
+    // const [tMin, tMax] = useFullTInterval
+    //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
+    //   : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
     // console.log("normal search");
     let normalList: Array<NormalVectorAndTValue> = [];
 
     // TODO: Replace with a loop here
-    normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
-      // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
-      this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
-      transformedToStandard,
-      this._tValues,
-      [],
-      this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+    normalList = this.partitionedTValues.flatMap(tVals =>
+      SENodule.getNormalsToPerpendicularLinesThruParametrically(
+        // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
+        this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+        transformedToStandard,
+        tVals,
+        [], // this._c1DiscontinuityParameterValues,
+        this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+      )
     );
 
     // console.log("# normals before", normalList.length);
@@ -867,9 +910,9 @@ export class SEParametric
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = useFullTInterval
-      ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
-      : this.tMinMaxExpressionValues();
+    // const [tMin, tMax] = useFullTInterval
+    //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
+    //   : this.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
     // avoidTValues.push(...this._c1DiscontinuityParameterValues);
     const normalList: Vector3[] = [];
@@ -895,16 +938,18 @@ export class SEParametric
 
     // console.log("normal search");
 
-    normalList.push(
-      ...SENodule.getNormalsToTangentLinesThruParametrically(
+    const out = this.partitionedTValues.flatMap(tVals =>
+      SENodule.getNormalsToTangentLinesThruParametrically(
         this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         transformedToStandard,
-        this._tValues,
+        tVals,
         avoidTValues,
         this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
+    normalList.push(...out);
+
     const taggedList: Array<NormalVectorAndTValue> = normalList.map(
       (vec: Vector3) => {
         return {
@@ -972,12 +1017,12 @@ export class SEParametric
   // to SEParametric to remove dependency from SENodule to Parametric
   set glowing(b: boolean) {
     // let ptr: Parametric | null = this.ref;
-    if (b) this.ref.glowingDisplay();
+    if (b) this.ref?.glowingDisplay();
     // while (ptr !== null) {
     //   ptr.glowingDisplay();
     //   ptr = ptr.next;
     // }
-    else this.ref.normalDisplay();
+    else this.ref?.normalDisplay();
     // while (ptr !== null) {
     //   ptr.normalDisplay();
     //   ptr = ptr.next;

@@ -198,7 +198,7 @@ export const useSEStore = defineStore({
       seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
       sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
       seParametrics.forEach((x: SEParametric) => {
-        x.ref.removeFromLayers();
+        x.ref?.removeFromLayers();
         // let ptr: Parametric | null = x.ref;
         // while (ptr !== null) {
         //   ptr.removeFromLayers();
@@ -411,7 +411,7 @@ export const useSEStore = defineStore({
       this.seParametricIds.push(parametric.id);
       seParametrics.set(parametric.id, parametric);
       seNodules.push(parametric);
-      parametric.ref.addToLayers(layers);
+      parametric.ref?.addToLayers(layers);
       // let ptr: Parametric | null = parametric.ref;
       // while (ptr) {
       //   ptr.addToLayers(layers);
@@ -428,7 +428,7 @@ export const useSEStore = defineStore({
           id => id === parametricId
         );
         const pos2 = seNodules.findIndex(x => x.id === parametricId);
-        victimParametric.ref.removeFromLayers();
+        victimParametric.ref?.removeFromLayers();
         // let ptr: Parametric | null = victimParametric.ref;
         // while (ptr !== null) {
         //   ptr.removeFromLayers();
@@ -503,7 +503,7 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          console.debug(parent.name, "invalidates", m.name);
+          // console.debug(parent.name, "invalidates", m.name);
           if (m.exists) {
             if (m.canUpdateNow()) {
               if (!updateCandidates.find((x: SENodule) => x.name === m.name))

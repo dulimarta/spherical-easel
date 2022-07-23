@@ -629,7 +629,8 @@ export function intersectSegmentWithParametric(
     dp
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  // FIXME: handle SEParametricGroup
+  const maxNumberOfIntersections = 2;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
@@ -938,7 +939,7 @@ export function intersectCircleWithParametric(
     dp
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
@@ -1148,7 +1149,7 @@ export function intersectEllipseWithParametric(
     dp
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {

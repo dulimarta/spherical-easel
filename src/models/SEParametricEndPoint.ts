@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
+import Parametric from "@/plottables/Parametric";
 
 const MAX = false;
 const MIN = true;
@@ -37,9 +38,9 @@ export class SEParametricEndPoint extends SEPoint {
     // If the parent is not out of date, use the closest vector, if not set the location directly
     // and the program will update the parent later so that the set location is on the parent (even though it is
     // at the time of execution)
-    const possibleVec = this._parametricParent.ref.endPointVector(
-      this._endpoint
-    );
+    const possibleVec = (
+      this._parametricParent.ref as Parametric
+    ).endPointVector(this._endpoint);
     if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
       this._locationVector.copy(possibleVec).normalize();
     } else {
@@ -105,9 +106,9 @@ export class SEParametricEndPoint extends SEPoint {
 
     let possibleVec: Vector3 | undefined = undefined;
     if (this.parents.length > 0)
-      possibleVec = (this.parents[0] as SEParametric).ref.endPointVector(
-        this._endpoint
-      );
+      possibleVec = (
+        (this.parents[0] as SEParametric).ref as Parametric
+      ).endPointVector(this._endpoint);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();

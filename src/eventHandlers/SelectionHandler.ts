@@ -126,7 +126,7 @@ export default class SelectionHandler extends Highlighter {
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
-          n.ref.glowingDisplay();
+          n.ref?.glowingDisplay();
           // let ptr: Parametric | null = n.ref;
           // while (ptr !== null) {
           //   ptr.glowingDisplay();

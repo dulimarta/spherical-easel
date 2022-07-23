@@ -90,7 +90,6 @@ export default class ExpressionForm extends Vue {
   }
 
   addVarToExpr(param: any): void {
-    console.debug("Variable selected", param);
     this.calcExpression += param;
     this.onKeyPressed();
   }

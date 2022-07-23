@@ -50,14 +50,14 @@ export default class Parametric extends Nodule {
 
   private _tValues: Array<number> = [];
   private _coordValues: Array<Vector3> = [];
-  private _pPrimeValues: Array<Vector3> = [];
-  private _ppPrimeValues: Array<Vector3> = [];
+  // private _pPrimeValues: Array<Vector3> = [];
+  // private _ppPrimeValues: Array<Vector3> = [];
 
   // tGlobalMin <= tPartMin < tPartMax <= tGlobalMax
-  private tGlobalMin = 0;
-  private tGlobalMax = 1;
-  private tPartMin = 0;
-  private tPartMax = 1;
+  // private tGlobalMin = 0;
+  // private tGlobalMax = 1;
+  private tMin = 0;
+  private tMax = 1;
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -112,18 +112,11 @@ export default class Parametric extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   private inverseTotalRotationMatrix: Matrix4;
-  constructor(
-    tGlobalMin = 0,
-    tGlobalMax = 1,
-    tPartMin = 0,
-    tPartMax = 1,
-    closed = false
-  ) {
+  constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-    this.tGlobalMin = tGlobalMin;
-    this.tGlobalMax = tGlobalMax;
-    this.tPartMin = tPartMin;
-    this.tPartMax = tPartMax;
+    console.debug("Parametric constructor", tMin, tMax);
+    this.tMin = tMin;
+    this.tMax = tMax;
 
     this._closed = closed;
 
@@ -139,25 +132,25 @@ export default class Parametric extends Nodule {
   public setRangeAndFunctions(
     tValues: number[],
     fn: Vector3[],
-    fnPrime: Vector3[],
-    fnDoublePrime: Vector3[],
-    tMinGlobal: number,
-    tMaxGlobal: number,
-    tMinPart: number,
-    tMaxPart: number
+    // fnPrime: Vector3[],
+    // fnDoublePrime: Vector3[],
+    // tMinGlobal: number,
+    // tMaxGlobal: number,
+    tMin: number,
+    tMax: number
   ): void {
-    this.tGlobalMin = tMinGlobal;
-    this.tGlobalMax = tMaxGlobal;
-    this.tPartMin = tMinPart;
-    this.tPartMax = tMaxPart;
+    // this.tGlobalMin = tMinGlobal;
+    // this.tGlobalMax = tMaxGlobal;
+    this.tMin = tMin;
+    this.tMax = tMax;
     this._tValues.splice(0);
     this._tValues.push(...tValues);
     this._coordValues.splice(0);
     this._coordValues.push(...fn);
-    this._pPrimeValues.splice(0);
-    this._pPrimeValues.push(...fnPrime);
-    this._ppPrimeValues.splice(0);
-    this._ppPrimeValues.push(...fnDoublePrime);
+    // this._pPrimeValues.splice(0);
+    // this._pPrimeValues.push(...fnPrime);
+    // this._ppPrimeValues.splice(0);
+    // this._ppPrimeValues.push(...fnDoublePrime);
     this.buildCurve();
   }
 
@@ -244,6 +237,13 @@ export default class Parametric extends Nodule {
     }
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
+    console.debug(`End of buildCurve()`);
+    this.frontParts.forEach((z, pos) => {
+      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
+    });
+    this.backParts.forEach((z, pos) => {
+      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
+    });
   }
 
   /**
@@ -252,10 +252,10 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    console.debug(
-      `Parametric::updateDisplay part-${this.partId} applying rotation`,
-      this.inverseTotalRotationMatrix.elements
-    );
+    // console.debug(
+    //   `Parametric::updateDisplay part-${this.partId} applying rotation`,
+    //   this.inverseTotalRotationMatrix.elements
+    // );
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 
@@ -282,7 +282,7 @@ export default class Parametric extends Nodule {
     // const [tMin, tMax] = this.tMinMaxExpressionValues();
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (this.tPartMax <= this.tPartMin) return;
+    if (this.tMax <= this.tMin) return;
     // const tMin = this._tNumbers.min;
     // const tMax = this._tNumbers.max;
 
@@ -309,10 +309,10 @@ export default class Parametric extends Nodule {
     let firstBackPart = true;
     let firstFrontPart = true;
 
-    const tRange = this.tPartMax - this.tPartMin;
+    // const tRange = this.tPartMax - this.tPartMin;
     for (let index = 0; index < this._tValues.length; index++) {
       // The t value
-      const tVal = this._tValues[index];
+      // const tVal = this._tValues[index];
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
       this.tmpVector.copy(this._coordValues[index]);
@@ -331,9 +331,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentBackPartIndex >= this.backParts.length) {
-            // console.info(
-            //   "Parametric update: Needs more back parts than were allocated initially"
-            // );
+            console.info(
+              "Parametric update: Needs more back parts than were allocated initially"
+            );
             const newPath = new Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
@@ -355,8 +355,8 @@ export default class Parametric extends Nodule {
                 part: currentBackPartIndex.toString()
               }
             );
-            this.stylize(DisplayStyle.ApplyCurrentVariables);
-            this.adjustSize();
+            // this.stylize(DisplayStyle.ApplyCurrentVariables);
+            // this.adjustSize();
           }
         }
         firstBackPart = false;
@@ -386,9 +386,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentFrontPartIndex >= this.frontParts.length) {
-            // console.info(
-            //   "Parametric Update: Needs more front parts than were allocated initially"
-            // );
+            console.info(
+              "Parametric Update: Needs more front parts than were allocated initially"
+            );
             const newPath = new Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();
@@ -410,8 +410,6 @@ export default class Parametric extends Nodule {
                 part: currentFrontPartIndex.toString()
               }
             );
-            this.stylize(DisplayStyle.ApplyCurrentVariables);
-            this.adjustSize();
           }
         }
         firstFrontPart = false;
@@ -433,6 +431,13 @@ export default class Parametric extends Nodule {
         }
       }
     }
+    const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
+    const backCounts = this.backParts.map(p => p.vertices.length).join(",");
+    console.debug(
+      `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
+    );
+    // this.stylize(DisplayStyle.ApplyCurrentVariables);
+    // this.adjustSize();
   }
 
   /**
@@ -479,7 +484,7 @@ export default class Parametric extends Nodule {
     // ];
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (this.tGlobalMax <= this.tGlobalMin) return undefined;
+    if (this.tMax <= this.tMin) return undefined;
 
     if (minMax) {
       this.tmpVector.copy(this._coordValues[0]);
@@ -556,6 +561,7 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
+    console.debug("addToLayers() called");
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])

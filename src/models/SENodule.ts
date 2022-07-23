@@ -636,50 +636,44 @@ export abstract class SENodule implements Visitable {
     const signChanges = [];
     const zeros: number[] = [];
 
-    let tVal: number;
-    const tLen = tValues.length;
-    const tMin = tValues[0];
-    const tMax = tValues[tLen - 1];
-    let lastTVal = tValues[tLen - 1];
+    // const tMin = tValues[0];
+    // const tMax = tValues[tLen - 1];
 
-    if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
-      // make sure that tMin is not on the avoid list
-      if (
-        avoidTheseTValues.every(
-          num => Math.abs(num - tMin) > SETTINGS.tolerance
-        )
-      ) {
-        zeros.push(tMin);
-      }
-      // else {
-      //   console.log("Excluded value", tMin);
-      // }
-      // console.log("Actual zero! tMin", tMin, f(tMin));
-    }
+    // if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
+    //   // make sure that tMin is not on the avoid list
+    //   if (
+    //     avoidTheseTValues.every(
+    //       num => Math.abs(num - tMin) > SETTINGS.tolerance
+    //     )
+    //   ) {
+    //     zeros.push(tMin);
+    //   }
+    //   // else {
+    //   //   console.log("Excluded value", tMin);
+    //   // }
+    //   // console.log("Actual zero! tMin", tMin, f(tMin));
+    // }
+    const filteredTValues = tValues.filter(t =>
+      avoidTheseTValues.every(num => Math.abs(num - t) > SETTINGS.tolerance)
+    );
+    const tLen = filteredTValues.length;
+    let lastTVal = filteredTValues[tLen - 1];
 
-    for (let i = 0; i < tValues.length; i++) {
-      tVal = tValues[i];
-      if (tVal < tMin || tVal > tMax)
-        console.debug("Evaluating at t", tVal, "out of range", tMin, tMax);
+    for (let i = 0; i < filteredTValues.length; i++) {
+      const tVal = filteredTValues[i];
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
         // make sure that tVal is not on the avoid list
-        if (
-          avoidTheseTValues.every(
-            num => Math.abs(num - tVal) > SETTINGS.tolerance
-          )
-        ) {
-          zeros.push(tVal);
-        }
+        zeros.push(tVal);
         // else {
         //   console.log("Excluded value", tVal);
         // }
         // console.log("Actual zero!", tVal, f(tVal));
       } else if (f(tVal) * f(lastTVal) < 0) {
         // make sure that tMin is not on the avoid list
-        if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
-          // console.log("sign Change", tVal, f(tVal));
-          signChanges.push([lastTVal, tVal]);
-        }
+        // if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
+        // console.log("sign Change", tVal, f(tVal));
+        signChanges.push([lastTVal, tVal]);
+        // }
         // else {
         //   console.log("Excluded Interval", lastTVal, tVal);
         // }

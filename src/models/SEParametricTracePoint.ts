@@ -5,6 +5,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import Parametric from "@/plottables/Parametric";
 const MIN = true;
 
 export class SEParametricTracePoint extends SEPoint {
@@ -34,7 +35,9 @@ export class SEParametricTracePoint extends SEPoint {
     // If the parent is not out of date, use the closest vector, if not set the location directly
     // and the program will update the parent later so that the set location is on the parent (even though it is
     // at the time of execution)
-    const possibleVec = this._parametricParent.ref.endPointVector(MIN);
+    const possibleVec = (
+      this._parametricParent.ref as Parametric
+    )?.endPointVector(MIN);
     if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
       this._locationVector.copy(possibleVec).normalize();
     } else {
