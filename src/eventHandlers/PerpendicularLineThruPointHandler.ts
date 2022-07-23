@@ -34,9 +34,7 @@ import { AddPencilCommand } from "@/commands/AddPencilCommand";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 type TemporaryLine = {
   line: Line;
@@ -638,51 +636,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           new AddPointCommand(this.sePoint, newSELabel)
         );
       }
-      // set the label to follow the visible ordering
-      addPerpendicularLineGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.sePoint, true)
-      );
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(
-        newAntipodePoint,
-        this.sePoint,
-        false
-      );
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = this.sePoint.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      addPerpendicularLineGroup.addCommand(
-        new AddAntipodalPointCommand(
-          antipodalVtx,
+      const antipode =
+        PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
           this.sePoint,
-          newSEAntipodalLabel
-        )
-      );
-      newlyCreatedSEPoints.push(antipodalVtx, this.sePoint);
+          addPerpendicularLineGroup
+        );
+      newlyCreatedSEPoints.push(antipode, this.sePoint);
       ///////////
     } else {
       // sePoint is not null so either sePoint is an existing point (in which case nothing needs to be created)
@@ -694,13 +655,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         //Make it user created and turn on the display
         addPerpendicularLineGroup.addCommand(
           new SetPointUserCreatedValueCommand(
-            sePoint as SEIntersectionPoint,
-            true
-          )
-        );
-        // set the label to follow the visible ordering
-        addPerpendicularLineGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(
             sePoint as SEIntersectionPoint,
             true
           )
@@ -866,6 +820,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              if (usePencil) {
+                PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  addPencilGroup
+                );
+              } else {
+                PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  addPerpendicularLineGroup
+                );
+              }
+            }
           }
         });
       // console.log("after create intersections");

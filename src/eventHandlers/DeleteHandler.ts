@@ -17,7 +17,6 @@ import { SECircle } from "@/models/SECircle";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -405,17 +404,7 @@ export default class DeleteHandler extends Highlighter {
                 )
               );
             }
-            // finally delete the intersection point, but first set the initial
-            // visibility status so if the user undoes this the points are labeled in a
-            // consecutive way as they are made visible to the user
-            if (seNoduleBeforeState.object.pointVisibleBefore) {
-              deleteCommandGroup.addCommand(
-                new SetPointInitialVisibilityAndLabel(
-                  seNoduleBeforeState.object,
-                  false
-                )
-              );
-            }
+            // finally delete the intersection point,
             deleteCommandGroup.addCommand(
               new DeleteNoduleCommand(seNoduleBeforeState.object)
             );
@@ -531,15 +520,7 @@ export default class DeleteHandler extends Highlighter {
               !seIntersectionPointExists
             ) {
               // convert it back to not user created because it doesn't exist
-              // Also reset the initial visibility, if it had been earlier set, and label so the point numbering is consecutive based on when the points are first shown to the user
-              if (seNoduleBeforeState.object.pointVisibleBefore) {
-                deleteCommandGroup.addCommand(
-                  new SetPointInitialVisibilityAndLabel(
-                    seNoduleBeforeState.object,
-                    false
-                  )
-                );
-              }
+
               deleteCommandGroup.addCommand(
                 new SetPointUserCreatedValueCommand(
                   seNoduleBeforeState.object,
@@ -576,20 +557,7 @@ export default class DeleteHandler extends Highlighter {
                 }
               });
           }
-          // finally delete the object, but first if the object is a SEPoint set the initial
-          // visibility status so if the user undoes this the points are labeled in a
-          // consecutive way as they are made visible to the user
-          if (
-            seNoduleBeforeState.object instanceof SEPoint &&
-            seNoduleBeforeState.object.pointVisibleBefore
-          ) {
-            deleteCommandGroup.addCommand(
-              new SetPointInitialVisibilityAndLabel(
-                seNoduleBeforeState.object,
-                false
-              )
-            );
-          }
+          // finally delete the object,
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)
           );

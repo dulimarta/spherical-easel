@@ -46,7 +46,6 @@ import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
 import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
-import { SetPointInitialVisibilityAndLabel } from "./SetPointInitialVisibilityAndLabel";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -165,18 +164,7 @@ function executeIndividual(command: string): Command {
       return SetNoduleDisplayCommand.parse(command, noduleDictionary);
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
-    case "SetPointVisibility":
-      return SetPointInitialVisibilityAndLabel.parse(command, noduleDictionary);
-    // case "ConvertIntersectionToUserCreated":
-    //   return ConvertInterPtToUserCreatedCommand.parse(
-    //     command,
-    //     noduleDictionary
-    //   );
-    // case "ConvertIntersectionToNotUserCreated":
-    //   return ConvertUserCreatedInterToNotUserCreatedCommand.parse(
-    //     command,
-    //     noduleDictionary
-    //   );
+
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

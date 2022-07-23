@@ -64,6 +64,7 @@ export type SavedNames =
   | "objectShowing"
   | "objectFrontStyle"
   | "objectBackStyle"
+  | "pointImmediatelyVisible"
   | "labelName"
   | "labelStyle"
   | "labelVector"
@@ -308,6 +309,7 @@ export interface SEIntersectionReturnType {
   parent1: SEOneDimensional;
   parent2: SEOneDimensional;
   existingIntersectionPoint: boolean; // if this is true then the object that is receiving this SEIntersectionReturnType is a (possibly new) parent of this intersection point
+  createAntipodalPoint: boolean; // true if a *new* intersection point doesn't have an existing antipode
 }
 
 /**

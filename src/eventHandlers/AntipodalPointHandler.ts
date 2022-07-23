@@ -19,7 +19,6 @@ import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -141,10 +140,6 @@ export default class AntipodalPointHandler extends Highlighter {
               )
             );
           }
-          // The antipode is now going to be displayed so set the label to the displayed order
-          antipodalCommandGroup.addCommand(
-            new SetPointInitialVisibilityAndLabel(possibleAntipode, true)
-          );
           antipodalCommandGroup.execute();
         } else {
           // the antipode is already displayed
@@ -241,7 +236,7 @@ export default class AntipodalPointHandler extends Highlighter {
             .normalize();
           newSELabel.locationVector = this.tmpVector;
           // Create and execute the command to create a new point for undo/redo
-          //new AddPointCommand(vtx, newSELabel).execute();
+
           antipodalCommandGroup.addCommand(
             new AddPointOnOneDimensionalCommand(
               this.parentPoint as SEPointOnOneOrTwoDimensional,
@@ -277,9 +272,6 @@ export default class AntipodalPointHandler extends Highlighter {
           antipodalCommandGroup.addCommand(
             new AddPointCommand(this.parentPoint, newSELabel)
           );
-          antipodalCommandGroup.addCommand(
-            new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
-          );
         }
 
         const newPoint = new NonFreePoint();
@@ -311,15 +303,8 @@ export default class AntipodalPointHandler extends Highlighter {
         antipodalCommandGroup.addCommand(
           new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
         );
-        antipodalCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(vtx, true)
-        );
 
         antipodalCommandGroup.execute();
-        // Update the display of the antipodal point
-        // TODO: move this update() call into AddAntipodalPointCommand
-        // vtx.markKidsOutOfDate();
-        // vtx.update();
 
         // reset in prep for next antipodal point
         this.mouseLeave(event);
@@ -378,7 +363,7 @@ export default class AntipodalPointHandler extends Highlighter {
         this.snapToTemporaryPoint = this.hitSEPoints[0];
         this.snapToTemporaryOneDimensional = null;
       } else {
-        // console.debug(`here display temp is falses`);
+        // console.debug(`here display temp is false`);
         displayTemporaryAntipode = false;
       }
     } else if (this.hitSESegments.length > 0) {

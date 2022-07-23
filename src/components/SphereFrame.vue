@@ -64,8 +64,6 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import i18n from "@/i18n";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
-import { SEPoint } from "@/models/SEPoint";
 
 @Component({
   computed: {
@@ -718,9 +716,6 @@ export default class SphereFrame extends VueComponent {
     });
   }
 
-  // setPointInitialVibilityAndLabel(m: { point: SEPoint; val: boolean }) {
-  //   new SetPointInitialVisibilityAndLabel(m.point, m.val).execute();
-  // }
   // dialogBoxIsActive(e: { active: boolean }): void {
   //   // console.debug(`dialog box is active is ${e.active}`);
   //   if (this.hideTool) {

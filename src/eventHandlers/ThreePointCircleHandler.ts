@@ -23,10 +23,8 @@ import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
@@ -810,44 +808,14 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
-      // set the label to follow the visible ordering
-      threePointCircleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       vtx.locationVector = this.point1Vector;
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      threePointCircleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
+        vtx,
+        threePointCircleCommandGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      newlyCreatedSEPoints.push(vtx, antipode);
       ///////////
       // Set the initial label location
       this.tmpVector
@@ -872,10 +840,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point1SEPoint, true)
       );
-      // set the label to follow the visible ordering
-      threePointCircleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.point1SEPoint, true)
-      );
+
     }
 
     // Create (if necessary) and handle the second vector location
@@ -917,44 +882,14 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
-      // set the label to follow the visible ordering
-      threePointCircleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       vtx.locationVector = this.point2Vector;
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      threePointCircleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
+        vtx,
+        threePointCircleCommandGroup
       );
-      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      newlyCreatedSEPoints.push(antipode, vtx);
       ///////////
       // Set the initial label location
       this.tmpVector
@@ -979,10 +914,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point2SEPoint, true)
       );
-      // set the label to follow the visible ordering
-      threePointCircleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.point2SEPoint, true)
-      );
+
     }
 
     // Create (if necessary) and handle the third vector release location
@@ -1003,10 +935,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         threePointCircleCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.point3SEPoint, true)
         );
-        // set the label to follow the visible ordering
-        threePointCircleCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(this.point3SEPoint, true)
-        );
+
       }
     } else {
       // We have to create a new Point for the third point/vector
@@ -1128,44 +1057,14 @@ export default class ThreePointCircleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
       }
-      // set the label to follow the visible ordering
-      threePointCircleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       this.point3SEPoint = vtx;
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      threePointCircleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
+        vtx,
+        threePointCircleCommandGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      newlyCreatedSEPoints.push(antipode, vtx);
       ///////////
       // Set the initial label location
       this.tmpVector
@@ -1237,51 +1136,13 @@ export default class ThreePointCircleHandler extends Highlighter {
     newSEThreePointCircleCenter.markKidsOutOfDate();
     newSEThreePointCircleCenter.update();
 
-    // set the label to follow the visible ordering
-    threePointCircleCommandGroup.addCommand(
-      new SetPointInitialVisibilityAndLabel(newSEThreePointCircleCenter, true)
-    );
     /////////////
     // Create the antipode of the new point, newSEThreePointCircleCenter
-    const newAntipodePoint = new NonFreePoint();
-    // Set the display to the default values
-    newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newAntipodePoint.adjustSize();
-
-    // Create the model object for the new point and link them
-    const antipodalVtx = new SEAntipodalPoint(
-      newAntipodePoint,
+    const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
       newSEThreePointCircleCenter,
-      false
+      threePointCircleCommandGroup
     );
-
-    // Create a plottable label
-    // Create an SELabel and link it to the plottable object
-    const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-    antipodalVtx.locationVector = newSEThreePointCircleCenter.locationVector;
-    antipodalVtx.locationVector.multiplyScalar(-1);
-    // Set the initial label location
-    this.tmpVector
-      .copy(antipodalVtx.locationVector)
-      .add(
-        new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
-        )
-      )
-      .normalize();
-    newSEAntipodalLabel.locationVector = this.tmpVector;
-    threePointCircleCommandGroup.addCommand(
-      new AddAntipodalPointCommand(
-        antipodalVtx,
-        newSEThreePointCircleCenter,
-        newSEAntipodalLabel
-      )
-    );
-    newlyCreatedSEPoints.push(newSEThreePointCircleCenter, antipodalVtx);
+    newlyCreatedSEPoints.push(newSEThreePointCircleCenter, antipode);
     ///////////
 
     // Clone the current three point circle
@@ -1361,6 +1222,12 @@ export default class ThreePointCircleHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ThreePointCircleHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              threePointCircleCommandGroup
+            );
+          }
         }
       });
 
@@ -1534,6 +1401,12 @@ export default class ThreePointCircleHandler extends Highlighter {
               );
               item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
               newSELabel.showing = false;
+              if (item.createAntipodalPoint) {
+                ThreePointCircleHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  threePointCircleCommandGroup
+                );
+              }
             }
           });
 

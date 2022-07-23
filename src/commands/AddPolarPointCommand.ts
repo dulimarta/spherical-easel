@@ -39,6 +39,12 @@ export class AddPolarPointCommand extends Command {
     }
     Command.store.addPoint(this.sePolarPoint);
     Command.store.addLabel(this.seLabel);
+    // Set the label to display the name of the point in visible count order
+    this.sePolarPoint.pointVisibleBefore = true;
+    if (this.sePolarPoint.label) {
+      this.sePolarPoint.incrementVisiblePointCount();
+      this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
+    }
     this.sePolarPoint.markKidsOutOfDate();
     this.sePolarPoint.update();
   }
@@ -48,6 +54,11 @@ export class AddPolarPointCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.sePolarPoint.label) {
+      this.sePolarPoint.decrementVisiblePointCount();
+      this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
+    }
+    this.sePolarPoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.sePolarPoint.unregisterChild(this.seLabel);

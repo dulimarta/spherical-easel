@@ -5,7 +5,6 @@ import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
-import Two from "two.js";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
@@ -13,9 +12,7 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 import { Group } from "two.js/src/group";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -317,54 +314,13 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
         );
-        // set the label to follow the visible ordering
-        nSectingPointsCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(nSectingPoint, true)
-        );
+
         /////////////
         // Create the antipode of the new point, nSectingPoint
-        const newAntipodePoint = new NonFreePoint();
-        // Set the display to the default values
-        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        newAntipodePoint.adjustSize();
-
-        // Create the model object for the new point and link them
-        const antipodalVtx = new SEAntipodalPoint(
-          newAntipodePoint,
+        NSectSegmentHandler.addCreateAntipodeCommand(
           nSectingPoint,
-          false
+          nSectingPointsCommandGroup
         );
-
-        // Create a plottable label
-        // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(
-          new Label("point"),
-          antipodalVtx
-        );
-
-        antipodalVtx.locationVector = nSectingPoint.locationVector;
-        antipodalVtx.locationVector.multiplyScalar(-1);
-        // Set the initial label location
-        this.tmpVector
-          .copy(antipodalVtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSEAntipodalLabel.locationVector = this.tmpVector;
-        nSectingPointsCommandGroup.addCommand(
-          new AddAntipodalPointCommand(
-            antipodalVtx,
-            nSectingPoint,
-            newSEAntipodalLabel
-          )
-        );
-        ///////////
       } else {
         console.log("An n-secting point already exists", i);
       }

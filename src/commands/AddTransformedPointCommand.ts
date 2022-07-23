@@ -40,6 +40,12 @@ export class AddTransformedPointCommand extends Command {
     this.transformedSEPoint.registerChild(this.transformedSEPointLabel);
     Command.store.addPoint(this.transformedSEPoint);
     Command.store.addLabel(this.transformedSEPointLabel);
+    // Set the label to display the name of the point in visible count order
+    this.transformedSEPoint.pointVisibleBefore = true;
+    if (this.transformedSEPoint.label) {
+      this.transformedSEPoint.incrementVisiblePointCount();
+      this.transformedSEPoint.label.ref.shortUserName = `P${this.transformedSEPoint.visiblePointCount}`;
+    }
   }
 
   saveState(): void {
@@ -47,6 +53,11 @@ export class AddTransformedPointCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.transformedSEPoint.label) {
+      this.transformedSEPoint.decrementVisiblePointCount();
+      this.transformedSEPoint.label.ref.shortUserName = `P${this.transformedSEPoint.visiblePointCount}`;
+    }
+    this.transformedSEPoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.transformedSEPointLabel.id);
     Command.store.removePoint(this.lastState);
     this.transformedSEPoint.unregisterChild(this.transformedSEPointLabel);

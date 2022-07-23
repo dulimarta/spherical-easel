@@ -36,6 +36,12 @@ export class AddInvertedCircleCenterCommand extends Command {
     this.invertedSECircleCenter.registerChild(this.invertedSECircleCenterLabel);
     Command.store.addPoint(this.invertedSECircleCenter);
     Command.store.addLabel(this.invertedSECircleCenterLabel);
+    // Set the label to display the name of the point in visible count order
+    this.invertedSECircleCenter.pointVisibleBefore = true;
+    if (this.invertedSECircleCenter.label) {
+      this.invertedSECircleCenter.incrementVisiblePointCount();
+      this.invertedSECircleCenter.label.ref.shortUserName = `P${this.invertedSECircleCenter.visiblePointCount}`;
+    }
   }
 
   saveState(): void {
@@ -43,6 +49,11 @@ export class AddInvertedCircleCenterCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.invertedSECircleCenter.label) {
+      this.invertedSECircleCenter.decrementVisiblePointCount();
+      this.invertedSECircleCenter.label.ref.shortUserName = `P${this.invertedSECircleCenter.visiblePointCount}`;
+    }
+    this.invertedSECircleCenter.pointVisibleBefore = false;
     Command.store.removeLabel(this.invertedSECircleCenterLabel.id);
     Command.store.removePoint(this.lastState);
     this.invertedSECircleCenter.unregisterChild(

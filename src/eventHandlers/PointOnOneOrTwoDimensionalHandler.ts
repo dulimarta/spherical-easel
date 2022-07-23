@@ -12,10 +12,6 @@ import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands/CommandGroup";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -94,8 +90,8 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
-        // Create and execute the command to create a new point for undo/redo
-        //new AddPointCommand(vtx, newSELabel).execute();
+        // Create the command to create a new point for undo/redo
+
         pointOnOneDimensionalCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -103,46 +99,13 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
             newSELabel
           )
         );
-        // set the label to follow the visible ordering
-        pointOnOneDimensionalCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(vtx, true)
-        );
+
         /////////////
         // Create the antipode of the new point, vtx
-        const newAntipodePoint = new NonFreePoint();
-        // Set the display to the default values
-        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        newAntipodePoint.adjustSize();
-
-        // Create the model object for the new point and link them
-        const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-        // Create a plottable label
-        // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(
-          new Label("point"),
-          antipodalVtx
+        PointOnOneDimensionalHandler.addCreateAntipodeCommand(
+          vtx,
+          pointOnOneDimensionalCommandGroup
         );
-
-        antipodalVtx.locationVector = vtx.locationVector;
-        antipodalVtx.locationVector.multiplyScalar(-1);
-        // Set the initial label location
-        this.tmpVector
-          .copy(antipodalVtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSEAntipodalLabel.locationVector = this.tmpVector;
-        pointOnOneDimensionalCommandGroup.addCommand(
-          new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-        );
-        ///////////
         pointOnOneDimensionalCommandGroup.execute();
         //run the mouse moved event so that the temporary marker is immediately removed
         this.mouseMoved(event);

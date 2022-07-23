@@ -42,6 +42,12 @@ export class AddThreePointCircleCenterCommand extends Command {
     this.thirdSEPoint.registerChild(this.seThreePointCircleCenter);
     Command.store.addPoint(this.seThreePointCircleCenter);
     Command.store.addLabel(this.seLabel);
+    // Set the label to display the name of the points in visible count order
+    this.seThreePointCircleCenter.pointVisibleBefore = true;
+    if (this.seThreePointCircleCenter.label) {
+      this.seThreePointCircleCenter.incrementVisiblePointCount();
+      this.seThreePointCircleCenter.label.ref.shortUserName = `P${this.seThreePointCircleCenter.visiblePointCount}`;
+    }
   }
 
   saveState(): void {
@@ -49,6 +55,11 @@ export class AddThreePointCircleCenterCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.seThreePointCircleCenter.label) {
+      this.seThreePointCircleCenter.decrementVisiblePointCount();
+      this.seThreePointCircleCenter.label.ref.shortUserName = `P${this.seThreePointCircleCenter.visiblePointCount}`;
+    }
+    this.seThreePointCircleCenter.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.thirdSEPoint.unregisterChild(this.seThreePointCircleCenter);

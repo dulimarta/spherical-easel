@@ -38,9 +38,7 @@ import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -514,43 +512,13 @@ export default class MeasuredCircleHandler extends Highlighter {
       }
       vtx.locationVector = this.centerVector;
 
-      // set the label to follow the visible ordering
-      circleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      circleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = MeasuredCircleHandler.addCreateAntipodeCommand(
+        vtx,
+        circleCommandGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      newlyCreatedSEPoints.push(vtx, antipode);
       ///////////
 
       // Set the initial label location
@@ -575,10 +543,6 @@ export default class MeasuredCircleHandler extends Highlighter {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
-      );
-      // set the label to follow the visible ordering
-      circleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.centerSEPoint, true)
       );
     }
 
@@ -819,6 +783,12 @@ export default class MeasuredCircleHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
             newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              MeasuredCircleHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                circleCommandGroup
+              );
+            }
           }
         });
     }

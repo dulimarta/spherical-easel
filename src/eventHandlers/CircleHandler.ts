@@ -1,5 +1,3 @@
-/** @format */
-
 import { Vector3, Matrix4 } from "three";
 import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
@@ -21,13 +19,8 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 const tmpVector = new Vector3();
 
@@ -471,44 +464,14 @@ export default class CircleHandler extends Highlighter {
         .normalize();
       newSELabel.locationVector = this.tmpVector;
 
-      // set the label to follow the visible ordering
-      circleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      circleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = CircleHandler.addCreateAntipodeCommand(
+        vtx,
+        circleCommandGroup
       );
-      ///////////
-      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+
+      newlyCreatedSEPoints.push(antipode, vtx);
       this.centerSEPoint = vtx;
     } else if (
       (this.centerSEPoint instanceof SEIntersectionPoint &&
@@ -546,10 +509,6 @@ export default class CircleHandler extends Highlighter {
         // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
         circleCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.circleSEPoint, true)
-        );
-        // set the label to follow the visible ordering
-        circleCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(this.circleSEPoint, true)
         );
       }
     } else {
@@ -681,44 +640,15 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-      //vtx is a new displayed point so set the label to follow the created order
-      circleCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
+
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      circleCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = CircleHandler.addCreateAntipodeCommand(
+        vtx,
+        circleCommandGroup
       );
-      ///////////
-      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+
+      newlyCreatedSEPoints.push(antipode, vtx);
       this.circleSEPoint = vtx;
       // Set the initial label location
       this.tmpVector
@@ -840,6 +770,12 @@ export default class CircleHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            CircleHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              circleCommandGroup
+            );
+          }
         }
       });
 
@@ -928,6 +864,12 @@ export default class CircleHandler extends Highlighter {
               );
               item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
               newSELabel.showing = false;
+              if (item.createAntipodalPoint) {
+                CircleHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  circleCommandGroup
+                );
+              }
             }
           });
 

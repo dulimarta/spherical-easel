@@ -414,6 +414,12 @@ export default class NSectAngleHandler extends Highlighter {
                 );
                 item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
                 newSELabel.showing = false;
+                if (item.createAntipodalPoint) {
+                  NSectAngleHandler.addCreateAntipodeCommand(
+                    item.SEIntersectionPoint,
+                    nSectingLinesCommandGroup
+                  );
+                }
               }
             });
         } else {

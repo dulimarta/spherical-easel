@@ -897,7 +897,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
                   parent2: newLine,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -912,7 +913,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newLine, // this is the new parent of the intersection point
                       parent2: newLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -925,7 +927,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldLine, // this is the new parent of the intersection point
                       parent2: oldLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -998,7 +1001,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newLine,
                   parent2: oldSegment,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1013,7 +1017,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newLine, // this is the new parent of the intersection point
                       parent2: newLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1026,7 +1031,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldSegment, // this is the new parent of the intersection point
                       parent2: oldSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1095,7 +1101,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newLine,
                   parent2: oldCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1110,7 +1117,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newLine, // this is the new parent of the intersection point
                       parent2: newLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1123,7 +1131,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldCircle, // this is the new parent of the intersection point
                       parent2: oldCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1192,7 +1201,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newLine,
                   parent2: oldEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1207,7 +1217,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newLine, // this is the new parent of the intersection point
                       parent2: newLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1220,7 +1231,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldEllipse, // this is the new parent of the intersection point
                       parent2: oldEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1291,7 +1303,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newLine,
                   parent2: oldParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1306,7 +1319,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newLine, // this is the new parent of the intersection point
                       parent2: newLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1319,7 +1333,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldParametric, // this is the new parent of the intersection point
                       parent2: oldParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1448,7 +1463,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
                   parent2: newSegment,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1463,7 +1479,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newSegment, // this is the new parent of the intersection point
                       parent2: newSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1476,7 +1493,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldLine, // this is the new parent of the intersection point
                       parent2: oldLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1547,7 +1565,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newSegment,
                   parent2: oldSegment,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1562,7 +1581,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newSegment, // this is the new parent of the intersection point
                       parent2: newSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1575,7 +1595,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldSegment, // this is the new parent of the intersection point
                       parent2: oldSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1644,7 +1665,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newSegment,
                   parent2: oldCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1659,7 +1681,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newSegment, // this is the new parent of the intersection point
                       parent2: newSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1672,7 +1695,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldCircle, // this is the new parent of the intersection point
                       parent2: oldCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1741,7 +1765,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newSegment,
                   parent2: oldEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1756,7 +1781,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newSegment, // this is the new parent of the intersection point
                       parent2: newSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1769,7 +1795,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldEllipse, // this is the new parent of the intersection point
                       parent2: oldEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1839,7 +1866,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newSegment,
                   parent2: oldParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -1854,7 +1882,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newSegment, // this is the new parent of the intersection point
                       parent2: newSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1867,7 +1896,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldParametric, // this is the new parent of the intersection point
                       parent2: oldParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -1991,7 +2021,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
                   parent2: newCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2006,7 +2037,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newCircle, // this is the new parent of the intersection point
                       parent2: newCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2019,7 +2051,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldLine, // this is the new parent of the intersection point
                       parent2: oldLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2087,7 +2120,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldSegment,
                   parent2: newCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2102,7 +2136,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newCircle, // this is the new parent of the intersection point
                       parent2: newCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2115,7 +2150,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldSegment, // this is the new parent of the intersection point
                       parent2: oldSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2187,7 +2223,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldCircle,
                   parent2: newCircle,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2202,7 +2239,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newCircle, // this is the new parent of the intersection point
                       parent2: newCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2215,7 +2253,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldCircle, // this is the new parent of the intersection point
                       parent2: oldCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2284,7 +2323,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newCircle,
                   parent2: oldEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2299,7 +2339,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newCircle, // this is the new parent of the intersection point
                       parent2: newCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2312,7 +2353,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldEllipse, // this is the new parent of the intersection point
                       parent2: oldEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2382,7 +2424,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newCircle,
                   parent2: oldParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2397,7 +2440,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newCircle, // this is the new parent of the intersection point
                       parent2: newCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2410,7 +2454,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldParametric, // this is the new parent of the intersection point
                       parent2: oldParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2537,7 +2582,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
                   parent2: newEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2552,7 +2598,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newEllipse, // this is the new parent of the intersection point
                       parent2: newEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2565,7 +2612,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldLine, // this is the new parent of the intersection point
                       parent2: oldLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2634,7 +2682,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldSegment,
                   parent2: newEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2649,7 +2698,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newEllipse, // this is the new parent of the intersection point
                       parent2: newEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2662,7 +2712,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldSegment, // this is the new parent of the intersection point
                       parent2: oldSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2731,7 +2782,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldCircle,
                   parent2: newEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2746,7 +2798,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newEllipse, // this is the new parent of the intersection point
                       parent2: newEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2759,7 +2812,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldCircle, // this is the new parent of the intersection point
                       parent2: oldCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2830,7 +2884,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldEllipse,
                   parent2: newEllipse,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2845,7 +2900,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newEllipse, // this is the new parent of the intersection point
                       parent2: newEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2858,7 +2914,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldEllipse, // this is the new parent of the intersection point
                       parent2: oldEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2928,7 +2985,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newEllipse,
                   parent2: oldParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -2943,7 +3001,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newEllipse, // this is the new parent of the intersection point
                       parent2: newEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -2956,7 +3015,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldParametric, // this is the new parent of the intersection point
                       parent2: oldParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3088,7 +3148,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldLine,
                   parent2: newParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -3103,7 +3164,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newParametric, // this is the new parent of the intersection point
                       parent2: newParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3116,7 +3178,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldLine, // this is the new parent of the intersection point
                       parent2: oldLine,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3185,7 +3248,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldSegment,
                   parent2: newParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -3200,7 +3264,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newParametric, // this is the new parent of the intersection point
                       parent2: newParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3213,7 +3278,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldSegment, // this is the new parent of the intersection point
                       parent2: oldSegment,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: false // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3282,7 +3348,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldCircle,
                   parent2: newParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -3297,7 +3364,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newParametric, // this is the new parent of the intersection point
                       parent2: newParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3310,7 +3378,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldCircle, // this is the new parent of the intersection point
                       parent2: oldCircle,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3379,7 +3448,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: oldEllipse,
                   parent2: newParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -3394,7 +3464,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newParametric, // this is the new parent of the intersection point
                       parent2: newParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3407,7 +3478,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldEllipse, // this is the new parent of the intersection point
                       parent2: oldEllipse,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3478,7 +3550,8 @@ export const useSEStore = defineStore({
                   SEIntersectionPoint: newSEIntersectionPt,
                   parent1: newParametric,
                   parent2: oldParametric,
-                  existingIntersectionPoint: false
+                  existingIntersectionPoint: false,
+                  createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                 });
               } else {
                 // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an intersection point)
@@ -3493,7 +3566,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: newParametric, // this is the new parent of the intersection point
                       parent2: newParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {
@@ -3506,7 +3580,8 @@ export const useSEStore = defineStore({
                       SEIntersectionPoint: existingSEIntersectionPoint,
                       parent1: oldParametric, // this is the new parent of the intersection point
                       parent2: oldParametric,
-                      existingIntersectionPoint: true
+                      existingIntersectionPoint: true,
+                      createAntipodalPoint: true // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
                     });
                     // update the existence with the new parent if it exists (otherwise leave it alone)
                     if (info.exists === true) {

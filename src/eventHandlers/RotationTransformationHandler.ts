@@ -27,10 +27,8 @@ import { AddRotationCommand } from "@/commands/AddRotationCommand";
 import { Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+
 export default class RotationTransformationHandler extends Highlighter {
   /**
    * Center vector of the created rotation
@@ -427,44 +425,13 @@ export default class RotationTransformationHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         rotationCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-      // set the label to follow the visible ordering
-      rotationCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(vtx, true)
-      );
       vtx.locationVector = this.rotationVector;
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      rotationCommandGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      RotationTransformationHandler.addCreateAntipodeCommand(
+        vtx,
+        rotationCommandGroup
       );
-      ///////////
 
       // Set the initial label location
       this.tmpVector
@@ -488,10 +455,6 @@ export default class RotationTransformationHandler extends Highlighter {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       rotationCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.rotationSEPoint, true)
-      );
-      // set the label to follow the visible ordering
-      rotationCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.rotationSEPoint, true)
       );
     }
 

@@ -56,12 +56,8 @@ import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCent
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { Group } from "two.js/src/group";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -1572,9 +1568,6 @@ export default class ApplyTransformationHandler extends Highlighter {
       commandGroup.addCommand(
         new SetPointUserCreatedValueCommand(preimageSEPoint, true)
       );
-      commandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(preimageSEPoint, true)
-      );
     }
     // we have to create a new transformed point
     const newTransformedPoint = new NonFreePoint();
@@ -1614,51 +1607,12 @@ export default class ApplyTransformationHandler extends Highlighter {
         transformationSEParent
       )
     );
-    // create the next label for the point in the display ordering
-    commandGroup.addCommand(
-      new SetPointInitialVisibilityAndLabel(newTransformedSEPoint, true)
-    );
     /////////////
     // Create the antipode of the new point, newTransformedSEPoint
-    const newAntipodePoint = new NonFreePoint();
-    // Set the display to the default values
-    newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newAntipodePoint.adjustSize();
-
-    // Create the model object for the new point and link them
-    const antipodalVtx = new SEAntipodalPoint(
-      newAntipodePoint,
+    const antipodalVtx = ApplyTransformationHandler.addCreateAntipodeCommand(
       newTransformedSEPoint,
-      false
+      commandGroup
     );
-
-    // Create a plottable label
-    // Create an SELabel and link it to the plottable object
-    const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-    antipodalVtx.locationVector = newTransformedSEPoint.locationVector;
-    antipodalVtx.locationVector.multiplyScalar(-1);
-    // Set the initial label location
-    this.tmpVector
-      .copy(antipodalVtx.locationVector)
-      .add(
-        new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
-        )
-      )
-      .normalize();
-    newSEAntipodalLabel.locationVector = this.tmpVector;
-    commandGroup.addCommand(
-      new AddAntipodalPointCommand(
-        antipodalVtx,
-        newTransformedSEPoint,
-        newSEAntipodalLabel
-      )
-    );
-    ///////////
 
     EventBus.fire("show-alert", {
       key: `handlers.newTransformedPointAdded`,
@@ -1816,6 +1770,12 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ApplyTransformationHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              transformedSegmentCommandGroup
+            );
+          }
         }
       });
     transformedSegmentCommandGroup.execute();
@@ -1968,6 +1928,12 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ApplyTransformationHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              transformedLineCommandGroup
+            );
+          }
         }
       });
 
@@ -2126,6 +2092,12 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ApplyTransformationHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              transformedCircleCommandGroup
+            );
+          }
         }
       });
     transformedCircleCommandGroup.execute();
@@ -2313,6 +2285,12 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ApplyTransformationHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              transformedEllipseCommandGroup
+            );
+          }
         }
       });
     transformedEllipseCommandGroup.execute();
@@ -2515,52 +2493,14 @@ export default class ApplyTransformationHandler extends Highlighter {
           transformationSEParent
         )
       );
-      // Set the label display to visible order of the newly created center
-      invertedCircleOrLineCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(newInvertedSECircleCenter, true)
-      );
       /////////////
       // Create the antipode of the new point, newInvertedSECircleCenter
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(
-        newAntipodePoint,
+      const antipode = ApplyTransformationHandler.addCreateAntipodeCommand(
         newInvertedSECircleCenter,
-        false
+        invertedCircleOrLineCommandGroup
       );
 
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = newInvertedSECircleCenter.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      invertedCircleOrLineCommandGroup.addCommand(
-        new AddAntipodalPointCommand(
-          antipodalVtx,
-          newInvertedSECircleCenter,
-          newSEAntipodalLabel
-        )
-      );
-      newlyCreatedSEPoints.push(antipodalVtx);
-      ///////////
+      newlyCreatedSEPoints.push(newInvertedSECircleCenter, antipode);
     }
 
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
@@ -2656,6 +2596,12 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            ApplyTransformationHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              invertedCircleOrLineCommandGroup
+            );
+          }
         }
       });
 

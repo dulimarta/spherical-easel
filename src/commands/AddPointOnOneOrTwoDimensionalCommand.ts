@@ -34,6 +34,12 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
     Command.store.addPoint(this.sePointOnOneOrTwoDimensional);
     Command.store.addLabel(this.seLabel);
+    // Set the label to display the name of the point in visible count order
+    this.sePointOnOneOrTwoDimensional.pointVisibleBefore = true;
+    if (this.sePointOnOneOrTwoDimensional.label) {
+      this.sePointOnOneOrTwoDimensional.incrementVisiblePointCount();
+      this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
+    }
     this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
     this.sePointOnOneOrTwoDimensional.update();
   }
@@ -43,6 +49,11 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.sePointOnOneOrTwoDimensional.label) {
+      this.sePointOnOneOrTwoDimensional.decrementVisiblePointCount();
+      this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
+    }
+    this.sePointOnOneOrTwoDimensional.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.sePointOnOneOrTwoDimensional.unregisterChild(this.seLabel);

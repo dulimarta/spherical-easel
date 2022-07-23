@@ -20,10 +20,8 @@ import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -540,42 +538,15 @@ export default class SegmentHandler extends Highlighter {
         newSELabel = new SELabel(new Label("point"), vtx);
         segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-      // set the label to follow the visible ordering
-      segmentGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
+
       vtx.locationVector = this.startVector;
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      segmentGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = SegmentHandler.addCreateAntipodeCommand(
+        vtx,
+        segmentGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      newlyCreatedSEPoints.push(vtx, antipode);
       ///////////
 
       // Set the initial label location
@@ -601,10 +572,6 @@ export default class SegmentHandler extends Highlighter {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       segmentGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.startSEPoint, true)
-      );
-      // set the label to follow the visible ordering
-      segmentGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.startSEPoint, true)
       );
     }
     // Look for an endpoint at the mouse release location
@@ -633,10 +600,6 @@ export default class SegmentHandler extends Highlighter {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         segmentGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.endSEPoint, true)
-        );
-        // set the label to follow the visible ordering
-        segmentGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(this.endSEPoint, true)
         );
       }
     } else {
@@ -770,41 +733,13 @@ export default class SegmentHandler extends Highlighter {
         segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       this.endSEPoint = vtx;
-      // set the label to follow the visible ordering
-      segmentGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      segmentGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
+      const antipode = SegmentHandler.addCreateAntipodeCommand(
+        vtx,
+        segmentGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      newlyCreatedSEPoints.push(vtx, antipode);
       ///////////
       // Set the initial label location
       this.tmpVector
@@ -962,9 +897,12 @@ export default class SegmentHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
-          // console.debug(
-          //   `Added intersection point ${item.SEIntersectionPoint.name}`
-          // );
+          if (item.createAntipodalPoint) {
+            SegmentHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              segmentGroup
+            );
+          }
         }
       });
     segmentGroup.execute();
@@ -1098,12 +1036,10 @@ export default class SegmentHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
-        let i = 1;
         SegmentHandler.store
           .createAllIntersectionsWithSegment(newSESegment, [])
           .forEach((item: SEIntersectionReturnType) => {
             //console.debug(`Segment intersections ${i}`);
-            i += 1;
             if (item.existingIntersectionPoint) {
               segmentCommandGroup.addCommand(
                 new AddIntersectionPointOtherParent(
@@ -1141,6 +1077,13 @@ export default class SegmentHandler extends Highlighter {
               );
               item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
               newSELabel.showing = false;
+
+              if (item.createAntipodalPoint) {
+                SegmentHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  segmentCommandGroup
+                );
+              }
             }
           });
 

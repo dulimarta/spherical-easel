@@ -2,7 +2,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType, SEOneDimensional } from "@/types";
+import { IntersectionReturnType } from "@/types";
 import { Vector3, Matrix4 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
@@ -53,7 +53,6 @@ const tmpMatrix = new Matrix4();
 function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
   return vectorList.some(v => tempVec.subVectors(vec, v).isZero());
 }
-
 
 /**
  * Return an ordered list of IntersectionReturnType (i.e. a vector location and exists flag) for the
@@ -325,7 +324,7 @@ export function intersectLineWithEllipse(
   returnItems.push(intersection1);
   returnItems.push(intersection2);
   // remove duplicate zeros and those that correspond to the same point on the ellipse
-  const uniqueZeros: number[] = [zeros[0]];
+  const uniqueZeros: number[] = [];
   zeros.forEach((z, ind) => {
     if (ind > 0) {
       if (
@@ -339,7 +338,7 @@ export function intersectLineWithEllipse(
       }
     }
   });
-
+  console.debug(`unique zeros length ${uniqueZeros.length}`);
   uniqueZeros.forEach((z, ind) => {
     // console.log("ind", ind);
     if (ind > 1) {
@@ -351,6 +350,9 @@ export function intersectLineWithEllipse(
     } else {
       returnItems[ind].vector.copy(
         ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+      );
+      console.debug(
+        `ellipse line intersection ${ellipse.ref.E(z).toFixed(2)}, index ${ind}`
       );
       returnItems[ind].exists = true;
     }
@@ -621,7 +623,7 @@ export function intersectSegmentWithEllipse(
   returnItems.push(intersection2);
 
   // remove duplicate zeros and those that correspond to the same point on the ellipse
-  const uniqueZeros: number[] = [zeros[0]];
+  const uniqueZeros: number[] = [];
   zeros.forEach((z, ind) => {
     if (ind > 0) {
       if (

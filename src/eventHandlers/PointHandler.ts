@@ -14,11 +14,8 @@ import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -66,14 +63,6 @@ export default class PointHandler extends Highlighter {
               true
             )
           );
-          // set the label to follow the visible ordering
-          antipodalCommandGroup.addCommand(
-            new SetPointInitialVisibilityAndLabel(
-              this.hitSEPoints[0] as SEIntersectionPoint,
-              true
-            )
-          );
-
           antipodalCommandGroup.execute();
           return;
         }
@@ -211,46 +200,9 @@ export default class PointHandler extends Highlighter {
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
         }
 
-        // any of the vtx objects are new and are going to be displayed (unlike the antipode below) so set the label to visible count order
-        pointCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(vtx, true)
-        );
-
         /////////////
         // Create the antipode of the new point, vtx
-        const newAntipodePoint = new NonFreePoint();
-        // Set the display to the default values
-        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        newAntipodePoint.adjustSize();
-
-        // Create the model object for the new point and link them
-        const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-        // Create a plottable label
-        // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(
-          new Label("point"),
-          antipodalVtx
-        );
-
-        antipodalVtx.locationVector = vtx.locationVector;
-        antipodalVtx.locationVector.multiplyScalar(-1);
-        // Set the initial label location
-        this.tmpVector
-          .copy(antipodalVtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSEAntipodalLabel.locationVector = this.tmpVector;
-        pointCommandGroup.addCommand(
-          new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-        );
+        PointHandler.addCreateAntipodeCommand(vtx, pointCommandGroup);
         ///////////
 
         // Set the initial label location

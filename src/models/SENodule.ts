@@ -498,16 +498,18 @@ export abstract class SENodule implements Visitable {
   /**
    * Increment the VISIBLE_POINT_COUNT by one and returns the number
    */
-  get nextVisiblePointCount(): number {
-    SENodule.VISIBLE_POINT_COUNT++;
-    console.debug(`Plus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+  get visiblePointCount(): number {
     return SENodule.VISIBLE_POINT_COUNT;
   }
   public decrementVisiblePointCount(): void {
     SENodule.VISIBLE_POINT_COUNT--;
-    console.debug(`MinsuVISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+    console.debug(`Minus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
   }
 
+  public incrementVisiblePointCount(): void {
+    SENodule.VISIBLE_POINT_COUNT++;
+    console.debug(`Plus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+  }
   /**
    * A recursive method to implement the bisection method
    * @param f The continuous function whose zero we want to compute

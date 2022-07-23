@@ -113,6 +113,8 @@ import { SENodule } from "@/models/SENodule";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { getAncestors } from "@/utils/helpingfunctions";
 import { SEPoint } from "@/models/SEPoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -829,6 +831,55 @@ export default class ParametricForm extends Vue {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
+        if (item.createAntipodalPoint) {
+          /////////////
+          // Create the antipode of the new point, vtx
+          ///// WARNING This is duplicate code from the method addCreateAntipodeCommand in Highlighter.ts
+          const newAntipodePoint = new NonFreePoint();
+          // Set the display to the default values
+          newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // Adjust the size of the point to the current zoom magnification factor
+          newAntipodePoint.adjustSize();
+
+          // Create the model object for the new point and link them
+          const antipodalVtx = new SEAntipodalPoint(
+            newAntipodePoint,
+            item.SEIntersectionPoint,
+            false
+          );
+
+          // Create a plottable label
+          // Create an SELabel and link it to the plottable object
+          const newSEAntipodalLabel = new SELabel(
+            new Label("point"),
+            antipodalVtx
+          );
+
+          antipodalVtx.locationVector = item.SEIntersectionPoint.locationVector;
+          antipodalVtx.locationVector.multiplyScalar(-1);
+          // Set the initial label location
+          const tmpVector = new Vector3();
+          tmpVector
+            .copy(antipodalVtx.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSEAntipodalLabel.locationVector = tmpVector;
+          parametricCommandGroup.addCommand(
+            new AddAntipodalPointCommand(
+              antipodalVtx,
+              item.SEIntersectionPoint,
+              newSEAntipodalLabel
+            )
+          );
+          newlyCreatedSEPoints.push(antipodalVtx, item.SEIntersectionPoint);
+          ///////////
+        }
       }
       // // Create the plottable and model label
       // const newLabel = new Label();

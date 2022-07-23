@@ -16,8 +16,6 @@ import { SELabel } from "./SELabel";
 // => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
-import EventBus from "@/eventHandlers/EventBus";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),

@@ -20,10 +20,8 @@ import EventBus from "./EventBus";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
+
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -524,42 +522,11 @@ export default class LineHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-      // set the label to follow the visible ordering
-      lineGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
-      vtx.locationVector = this.startVector;
+
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      lineGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-      );
-      newlyCreatedSEPoints.push(vtx, antipodalVtx);
+      const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
+      newlyCreatedSEPoints.push(vtx, antipode);
       ///////////
 
       // Set the initial label location
@@ -585,10 +552,6 @@ export default class LineHandler extends Highlighter {
       lineGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
-      // set the label to follow the visible ordering
-      lineGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.startSEPoint, true)
-      );
     }
 
     // Check to see if the release location is near any points
@@ -603,10 +566,6 @@ export default class LineHandler extends Highlighter {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.endSEPoint, true)
-        );
-        // set the label to follow the visible ordering
-        lineGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(this.endSEPoint, true)
         );
       }
     } else {
@@ -740,42 +699,10 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
-
-      // set the label to follow the visible ordering
-      lineGroup.addCommand(new SetPointInitialVisibilityAndLabel(vtx, true));
       /////////////
       // Create the antipode of the new point, vtx
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = vtx.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      lineGroup.addCommand(
-        new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-      );
-      newlyCreatedSEPoints.push(antipodalVtx, vtx);
+      const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
+      newlyCreatedSEPoints.push(antipode, vtx);
       ///////////
       this.endSEPoint = vtx;
       // Set the initial label location
@@ -910,6 +837,13 @@ export default class LineHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
+
+          if (item.createAntipodalPoint) {
+            LineHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              lineGroup
+            );
+          }
         }
       });
     lineGroup.execute();
@@ -1012,6 +946,12 @@ export default class LineHandler extends Highlighter {
               );
               item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
               newSELabel.showing = false;
+              if (item.createAntipodalPoint) {
+                LineHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  lineCommandGroup
+                );
+              }
             }
           });
 

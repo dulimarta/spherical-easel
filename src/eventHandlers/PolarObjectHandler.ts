@@ -32,10 +32,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 
 enum Create {
   NONE,
@@ -501,11 +498,6 @@ export default class PolarObjectHandler extends Highlighter {
       new AddPolarPointCommand(polarPoint1, 0, parentLineOrSegment, newSELabel1)
     );
 
-    // set the label to follow the visible ordering
-    polarPointsCommandGroup.addCommand(
-      new SetPointInitialVisibilityAndLabel(polarPoint1, true)
-    );
-
     // Create the second polar point
     const newPoint2 = new NonFreePoint();
     // Set the display to the default values
@@ -536,10 +528,6 @@ export default class PolarObjectHandler extends Highlighter {
     polarPointsCommandGroup.addCommand(
       new AddPolarPointCommand(polarPoint2, 1, parentLineOrSegment, newSELabel2)
     );
-    // set the label to follow the visible ordering
-    polarPointsCommandGroup.addCommand(
-      new SetPointInitialVisibilityAndLabel(polarPoint2, true)
-    );
 
     polarPointsCommandGroup.execute();
     polarPoint1.markKidsOutOfDate();
@@ -565,10 +553,6 @@ export default class PolarObjectHandler extends Highlighter {
             this.parentPoint as SEIntersectionPoint,
             true
           )
-        );
-        // set the label to follow the visible ordering
-        polarLineCommandGroup.addCommand(
-          new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
         );
       }
     } else {
@@ -599,7 +583,6 @@ export default class PolarObjectHandler extends Highlighter {
           .normalize();
         newSELabel.locationVector = this.tmpVector;
         // Create the command to create a new point for undo/redo
-        //new AddPointCommand(vtx, newSELabel).execute();
         polarLineCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             this.parentPoint as SEPointOnOneOrTwoDimensional,
@@ -634,51 +617,14 @@ export default class PolarObjectHandler extends Highlighter {
           new AddPointCommand(this.parentPoint, newSELabel)
         );
       }
-      // set the label to follow the visible ordering
-      polarLineCommandGroup.addCommand(
-        new SetPointInitialVisibilityAndLabel(this.parentPoint, true)
-      );
+
       /////////////
       // Create the antipode of the new point, this.parentPoint
-      const newAntipodePoint = new NonFreePoint();
-      // Set the display to the default values
-      newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newAntipodePoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const antipodalVtx = new SEAntipodalPoint(
-        newAntipodePoint,
+      const antipode = PolarObjectHandler.addCreateAntipodeCommand(
         this.parentPoint,
-        false
+        polarLineCommandGroup
       );
-
-      // Create a plottable label
-      // Create an SELabel and link it to the plottable object
-      const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
-
-      antipodalVtx.locationVector = this.parentPoint.locationVector;
-      antipodalVtx.locationVector.multiplyScalar(-1);
-      // Set the initial label location
-      this.tmpVector
-        .copy(antipodalVtx.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSEAntipodalLabel.locationVector = this.tmpVector;
-      polarLineCommandGroup.addCommand(
-        new AddAntipodalPointCommand(
-          antipodalVtx,
-          this.parentPoint,
-          newSEAntipodalLabel
-        )
-      );
-      newlyCreatedSEPoints.push(antipodalVtx, this.parentPoint);
+      newlyCreatedSEPoints.push(antipode, this.parentPoint);
       ///////////
     }
 
@@ -777,6 +723,12 @@ export default class PolarObjectHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            PolarObjectHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              polarLineCommandGroup
+            );
+          }
         }
       });
     polarLineCommandGroup.execute();

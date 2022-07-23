@@ -35,6 +35,12 @@ export class AddParametricTracePointCommand extends Command {
     }
     Command.store.addPoint(this.seTracePoint);
     Command.store.addLabel(this.seTraceLabel);
+    // Set the label to display the name of the point in visible count order
+    this.seTracePoint.pointVisibleBefore = true;
+    if (this.seTracePoint.label) {
+      this.seTracePoint.incrementVisiblePointCount();
+      this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
+    }
     this.seTracePoint.markKidsOutOfDate();
     this.seTracePoint.update();
   }
@@ -44,28 +50,16 @@ export class AddParametricTracePointCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.seTracePoint.label) {
+      this.seTracePoint.decrementVisiblePointCount();
+      this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
+    }
+    this.seTracePoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seTraceLabel.id);
     Command.store.removePoint(this.seTracePoint.id);
     this.seTracePoint.unregisterChild(this.seTraceLabel);
     this.parametricParent.unregisterChild(this.seTracePoint);
   }
-
-  // toOpcode(): null | string | Array<string> {
-  //   return [
-  //     "AddParametricTracePoint",
-
-  //     /* arg-2 */ this.seTracePoint.name,
-  //     /* arg-3 */ this.seTracePoint.locationVector.toFixed(9),
-  //     /* arg-4 */ this.seTracePoint.showing,
-  //     /* arg-5 */ this.seTracePoint.exists,
-
-  //     /* arg-6 */ this.seTraceLabel.name,
-  //     /* arg-7 */ this.seTraceLabel.showing,
-  //     /* arg-8 */ this.seTraceLabel.exists
-
-  //     /* arg-1 */ this.parametricParent.name,
-  //   ].join("/");
-  // }
 
   toOpcode(): null | string | Array<string> {
     return [
@@ -210,46 +204,4 @@ export class AddParametricTracePointCommand extends Command {
       );
     }
   }
-  // static parse(command: string, objMap: Map<string, SENodule>): Command {
-  //   const tokens = command.split("/");
-  //   const parametricParent = objMap.get(tokens[1]) as SEParametric | undefined;
-  //   if (parametricParent) {
-  //     const tracePosition = new Vector3();
-  //     tracePosition.from(tokens[3]);
-  //     const tracePoint = new Point();
-  //     tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  //     tracePoint.adjustSize();
-  //     const seTracePoint = new SEParametricTracePoint(
-  //       tracePoint,
-  //       parametricParent
-  //     );
-  //     seTracePoint.locationVector.copy(tracePosition);
-  //     seTracePoint.showing = tokens[4] === "true";
-  //     seTracePoint.exists = tokens[5] === "true";
-  //     seTracePoint.name = tokens[2];
-  //     objMap.set(tokens[2], seTracePoint);
-
-  //     const offset = SETTINGS.point.initialLabelOffset;
-
-  //     const traceLabel = new SELabel(new Label(), seTracePoint);
-  //     traceLabel.locationVector.copy(tracePosition);
-  //     traceLabel.locationVector
-  //       .add(new Vector3(2 * offset, offset, 0))
-  //       .normalize();
-  //     traceLabel.showing = tokens[7] === "true";
-  //     traceLabel.exists = tokens[8] === "true";
-  //     traceLabel.name = tokens[6];
-  //     objMap.set(tokens[6], traceLabel);
-
-  //     return new AddParametricTracePointCommand(
-  //       parametricParent,
-  //       seTracePoint,
-  //       traceLabel
-  //     );
-  //   } else {
-  //     throw new Error(
-  //       `AddParametricEndPoints: parametric parent ${tokens[1]} is undefined`
-  //     );
-  //   }
-  // }
 }

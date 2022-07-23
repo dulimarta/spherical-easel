@@ -35,6 +35,12 @@ export class AddNSectPointCommand extends Command {
     }
     Command.store.addPoint(this.seNSectPoint);
     Command.store.addLabel(this.seLabel);
+    this.seNSectPoint.pointVisibleBefore = true;
+    // Set the label to display the name of the point in visible count order
+    if (this.seNSectPoint.label) {
+      this.seNSectPoint.incrementVisiblePointCount();
+      this.seNSectPoint.label.ref.shortUserName = `P${this.seNSectPoint.visiblePointCount}`;
+    }
     this.seNSectPoint.markKidsOutOfDate();
     this.seNSectPoint.update();
   }
@@ -44,6 +50,11 @@ export class AddNSectPointCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.seNSectPoint.label) {
+      this.seNSectPoint.decrementVisiblePointCount();
+      this.seNSectPoint.label.ref.shortUserName = `P${this.seNSectPoint.visiblePointCount}`;
+    }
+    this.seNSectPoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.seNSectPoint.unregisterChild(this.seLabel);

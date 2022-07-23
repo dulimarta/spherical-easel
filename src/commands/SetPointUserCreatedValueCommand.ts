@@ -45,23 +45,22 @@ export class SetPointUserCreatedValueCommand extends Command {
     ) {
       this.seIntersectionOrAntipodePoint.label.showing = this.userCreatedValue;
     }
+    if (this.userCreatedValue) {
+      // Set the label to display the name of the point in visible count order
+      this.seIntersectionOrAntipodePoint.pointVisibleBefore = true;
+      if (this.seIntersectionOrAntipodePoint.label) {
+        this.seIntersectionOrAntipodePoint.incrementVisiblePointCount();
+        this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
+      }
+    } else {
+      if (this.seIntersectionOrAntipodePoint.label) {
+        this.seIntersectionOrAntipodePoint.decrementVisiblePointCount();
+        this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
+      }
+      this.seIntersectionOrAntipodePoint.pointVisibleBefore = false;
+    }
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
-    //}
-    //  else {
-    //   // hide the label
-    //   if (this.seIntersectionOrAntipodePoint.label != undefined) {
-    //     this.seIntersectionOrAntipodePoint.label.showing = false;
-    //   }
-    //   // hide the point
-    //   this.seIntersectionOrAntipodePoint.showing = false;
-    //   // revert to temporary status
-    //   this.seIntersectionOrAntipodePoint.ref.stylize(
-    //     DisplayStyle.ApplyTemporaryVariables
-    //   );
-    //   // set back to automatically created
-    //   this.seIntersectionOrAntipodePoint.isUserCreated = false;
-    // }
   }
 
   saveState(): void {
@@ -74,8 +73,20 @@ export class SetPointUserCreatedValueCommand extends Command {
         this.seIntersectionOrAntipodePoint.name
       } to user created: ${!this.userCreatedValue}`
     );
-    //if (!this.userCreatedValue) {
-    // hide the label
+    if (this.userCreatedValue) {
+      if (this.seIntersectionOrAntipodePoint.label) {
+        this.seIntersectionOrAntipodePoint.decrementVisiblePointCount();
+        this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
+      }
+      this.seIntersectionOrAntipodePoint.pointVisibleBefore = false;
+    } else {
+      // Set the label to display the name of the point in visible count order
+      this.seIntersectionOrAntipodePoint.pointVisibleBefore = true;
+      if (this.seIntersectionOrAntipodePoint.label) {
+        this.seIntersectionOrAntipodePoint.incrementVisiblePointCount();
+        this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
+      }
+    }
     if (
       this.seIntersectionOrAntipodePoint.label &&
       SETTINGS.point.showLabelsOfNonFreePointsInitially
@@ -92,24 +103,6 @@ export class SetPointUserCreatedValueCommand extends Command {
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
-    // } else {
-    //   this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
-    //   // Set the display to the default values
-    //   this.seIntersectionOrAntipodePoint.ref.stylize(
-    //     DisplayStyle.ApplyCurrentVariables
-    //   );
-    //   // Set the size for the current zoom magnification factor
-    //   this.seIntersectionOrAntipodePoint.ref.adjustSize();
-    //   this.seIntersectionOrAntipodePoint.showing = !this.userCreatedValue;
-    //   // show the label
-    //   if (
-    //     this.seIntersectionOrAntipodePoint.label != undefined &&
-    //     SETTINGS.point.showLabelsOfNonFreePointsInitially
-    //   ) {
-    //     this.seIntersectionOrAntipodePoint.label.showing =
-    //       !this.userCreatedValue;
-    //   }
-    // }
   }
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation

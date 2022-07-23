@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -21,12 +21,8 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { AngleMode } from "@/types";
 import { SEParametric } from "@/models/SEParametric";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
-import MouseHandler from "./MouseHandler";
 import { Group } from "two.js/src/group";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { SetPointInitialVisibilityAndLabel } from "@/commands/SetPointInitialVisibilityAndLabel";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 enum HighlightMode {
@@ -34,13 +30,6 @@ enum HighlightMode {
   ONLYPOINTS,
   ONLYLINESANDSEGMENTS
 }
-type SEOneDimensionalPlusSEPoint =
-  | SELine
-  | SESegment
-  | SECircle
-  | SEEllipse
-  | SEParametric
-  | SEPoint;
 
 export default class AngleHandler extends Highlighter {
   /**
@@ -1067,43 +1056,10 @@ export default class AngleHandler extends Highlighter {
             newSELabel
           )
         );
-        /////////////
+
         // Create the antipode of the new point, vtx
-        const newAntipodePoint = new NonFreePoint();
-        // Set the display to the default values
-        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        newAntipodePoint.adjustSize();
+        AngleHandler.addCreateAntipodeCommand(vtx, angleMarkerCommandGroup);
 
-        // Create the model object for the new point and link them
-        const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-        // Create a plottable label
-        // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(
-          new Label("point"),
-          antipodalVtx
-        );
-
-        antipodalVtx.locationVector = this.pointLocations[i];
-        antipodalVtx.locationVector.multiplyScalar(-1);
-        // Set the initial label location
-        this.tmpVector
-          .copy(antipodalVtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSEAntipodalLabel.locationVector = this.tmpVector;
-        angleMarkerCommandGroup.addCommand(
-          new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-        );
-        ///////////
-        //Add the newly created point to the targetPoint array
         this.targetPoints[i] = vtx;
       } else if (
         this.sePointOneDimensionalParents[i] === null &&
@@ -1143,39 +1099,7 @@ export default class AngleHandler extends Highlighter {
         newSELabel.locationVector = this.tmpVector;
 
         // Create the antipode of the new point, vtx
-        const newAntipodePoint = new NonFreePoint();
-        // Set the display to the default values
-        newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        newAntipodePoint.adjustSize();
-
-        // Create the model object for the new point and link them
-        const antipodalVtx = new SEAntipodalPoint(newAntipodePoint, vtx, false);
-
-        // Create a plottable label
-        // Create an SELabel and link it to the plottable object
-        const newSEAntipodalLabel = new SELabel(
-          new Label("point"),
-          antipodalVtx
-        );
-
-        antipodalVtx.locationVector = this.pointLocations[i];
-        antipodalVtx.locationVector.multiplyScalar(-1);
-        // Set the initial label location
-        this.tmpVector
-          .copy(antipodalVtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSEAntipodalLabel.locationVector = this.tmpVector;
-        angleMarkerCommandGroup.addCommand(
-          new AddAntipodalPointCommand(antipodalVtx, vtx, newSEAntipodalLabel)
-        );
+        AngleHandler.addCreateAntipodeCommand(vtx, angleMarkerCommandGroup);
 
         //Add the newly created point to the targetPoint array
         this.targetPoints[i] = vtx;
@@ -1189,17 +1113,6 @@ export default class AngleHandler extends Highlighter {
         ) {
           angleMarkerCommandGroup.addCommand(
             new SetPointUserCreatedValueCommand(
-              this.targetPoints[i] as SEIntersectionPoint | SEAntipodalPoint,
-              true
-            )
-          );
-        }
-      }
-      // if the points have not been displayed before turn on the label to visible order
-      if (this.targetPoints[i] !== null) {
-        if (!this.targetPoints[i]!.pointVisibleBefore) {
-          angleMarkerCommandGroup.addCommand(
-            new SetPointInitialVisibilityAndLabel(
               this.targetPoints[i] as SEIntersectionPoint | SEAntipodalPoint,
               true
             )

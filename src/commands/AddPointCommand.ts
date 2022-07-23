@@ -22,8 +22,12 @@ export class AddPointCommand extends Command {
     Command.store.addLabel(this.seLabel);
     this.sePoint.registerChild(this.seLabel);
     Command.store.addPoint(this.sePoint);
-    // Thanks to Will for suggesting the following magic line
-    // that makes the objects show up correctly on the canvas
+    // Set the label to display the name of the point in visible count order
+    this.sePoint.pointVisibleBefore = true;
+    if (this.sePoint.label) {
+      this.sePoint.incrementVisiblePointCount();
+      this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
+    }
     this.sePoint.markKidsOutOfDate();
     this.sePoint.update();
   }
@@ -33,6 +37,11 @@ export class AddPointCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.sePoint.label) {
+      this.sePoint.decrementVisiblePointCount();
+      this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
+    }
+    this.sePoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     this.sePoint.unregisterChild(this.seLabel);
     Command.store.removePoint(this.lastState);
