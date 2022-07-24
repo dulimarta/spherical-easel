@@ -13,7 +13,7 @@ import SETTINGS from "@/global-settings";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AngleMode } from "@/types";
+import { AngleMode, LabelDisplayMode } from "@/types";
 import Polygon from "@/plottables/Polygon";
 import { SEPolygon } from "@/models/SEPolygon";
 import { AddPolygonCommand } from "@/commands/AddPolygonAndExpressionCommand";
@@ -24,6 +24,7 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { Group } from "two.js/src/group";
+import ToggleLabelDisplayHandler from "./ToggleLabelDisplayHandler";
 
 export default class PolygonHandler extends Highlighter {
   /**
@@ -364,20 +365,39 @@ export default class PolygonHandler extends Highlighter {
         const newLabel = new Label("polygon");
         const newSELabel = new SELabel(newLabel, vtx);
 
-        if (this.startSEPoint) {
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.startSEPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.polygon.initialLabelOffset,
-                SETTINGS.polygon.initialLabelOffset,
-                0
-              )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
-        }
+        // Set the initial label location as the average of all the vertices
+        this.tmpVector.set(0, 0, 0);
+        this.seEdgeSegments.forEach((seSegment, index) => {
+          if (index === this.seEdgeSegments.length) return; // ignore the last segment because that would add the start point in again
+          if (this.segmentIsFlipped[index]) {
+            this.tmpVector.add(seSegment.endSEPoint.locationVector);
+          } else {
+            this.tmpVector.add(seSegment.startSEPoint.locationVector);
+          }
+        });
+        this.tmpVector.normalize();
+        newSELabel.locationVector = this.tmpVector;
+
+        // set the label to display the label and the number that is the area
+        polygonCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(newSELabel, true)
+        );
+        polygonCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [newLabel],
+            StyleEditPanels.Label,
+            [
+              {
+                labelDisplayMode: SETTINGS.polygon.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                labelDisplayMode: SETTINGS.polygon.defaultLabelMode
+              }
+            ]
+          )
+        );
         // Create and execute the command to create a new point for undo/redo
         polygonCommandGroup
           .addCommand(

@@ -1,5 +1,3 @@
-/** @format */
-
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
@@ -7,25 +5,12 @@ import {
   StyleOptions,
   StyleEditPanels,
   DEFAULT_LABEL_TEXT_STYLE
-  // DEFAULT_LABEL_FRONT_STYLE,
-  // DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
 import { LabelDisplayMode, LabelParentTypes } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SESegmentLength } from "@/models/SESegmentLength";
 import { ValueDisplayMode } from "@/types";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SEParametric } from "@/models/SEParametric";
-import { SEEllipse } from "@/models/SEEllipse";
 import { Vector } from "two.js/src/vector";
 import { Text } from "two.js/src/text";
 import { Group } from "two.js/src/group";
-import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -425,11 +410,11 @@ export default class Label extends Nodule {
     //   this._shortUserName = `Po${polygon.polygonNumber}`;
     // }
     // overide any update to the names of the angleMarkers and polygons. why?
-    if (this.seLabelParentType === "angleMarker") {
-      this._shortUserName = this._defaultName; //`Am${this._seLabelParentID}`;
-    } else if (this.seLabelParentType === "polygon") {
-      this._shortUserName = this._defaultName; // `Po${this._seLabelParentID}`;
-    }
+    // if (this.seLabelParentType === "angleMarker") {
+    //   this._shortUserName = this._defaultName; //`Am${this._seLabelParentID}`;
+    // } else if (this.seLabelParentType === "polygon") {
+    //   this._shortUserName = this._defaultName; // `Po${this._seLabelParentID}`;
+    // }
   }
 
   /**
@@ -438,23 +423,7 @@ export default class Label extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Label) {
       let labelDisplayMode = LabelDisplayMode.NameOnly;
-      // if (this.seLabel !== undefined) {
-      //   if (this.seLabel.parent instanceof SEPoint) {
-      //     labelDisplayMode = SETTINGS.point.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SELine) {
-      //     labelDisplayMode = SETTINGS.line.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SESegment) {
-      //     labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SECircle) {
-      //     labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SEAngleMarker) {
-      //     labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SEParametric) {
-      //     labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
-      //   } else if (this.seLabel.parent instanceof SEEllipse) {
-      //     labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
-      //   }
-      // }
+
       switch (this.seLabelParentType) {
         case "point":
           labelDisplayMode = SETTINGS.point.defaultLabelMode;
@@ -477,6 +446,9 @@ export default class Label extends Nodule {
         case "ellipse":
           labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
           break;
+        case "polygon":
+          labelDisplayMode = SETTINGS.polygon.defaultLabelMode;
+          break;
         default:
           labelDisplayMode = LabelDisplayMode.NameOnly;
       }
@@ -484,14 +456,7 @@ export default class Label extends Nodule {
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use this
       // and the (angleMarker|polygon)Number.
-      // let defaultName = "";
-      // if (this.seLabelParentType === "angleMarker) {
-      //   defaultName = `Am${this._seLabelParentID}`;
-      // } else if (this.seLabel?.parent instanceof SEPolygon) {
-      //   defaultName = `Po${this.seLabel.parent.polygonNumber}`;
-      // } else if (this.seLabel) {
-      //   defaultName = this.seLabel.parent.name;
-      // }
+      // The default name is set in the constructor for all objects
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
         labelDisplayText: this._defaultName,
@@ -552,21 +517,6 @@ export default class Label extends Nodule {
                 .join(",")}` +
               ")";
           } else {
-            // let valueDisplayMode;
-            // if (this.seLabelParentType === "angleMarker") {
-            //   valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
-            //     .valueDisplayMode;
-            // }
-            // if (this.seLabel.parent instanceof SEPolygon) {
-            //   valueDisplayMode = (this.seLabel.parent as SEPolygon)
-            //     .valueDisplayMode;
-            // } else if (this.seLabel.parent instanceof SESegment) {
-            //   const seSegLength = this.seLabel.parent.kids.find(
-            //     node => node instanceof SESegmentLength
-            //   );
-            //   valueDisplayMode = (seSegLength as SESegmentLength)
-            //     .valueDisplayMode;
-            // }
             switch (this._valueDisplayMode) {
               case ValueDisplayMode.Number:
                 labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
@@ -589,7 +539,7 @@ export default class Label extends Nodule {
 
         switch (labelStyle?.labelDisplayMode) {
           case LabelDisplayMode.NameOnly: {
-            labelText = labelStyle?.labelDisplayText ?? "No Label";
+            labelText = labelStyle?.labelDisplayText ?? "No Label Text1";
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
@@ -599,21 +549,32 @@ export default class Label extends Nodule {
           case LabelDisplayMode.ValueOnly: {
             if (this._value.length === 0) {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortUserName;
+              //labelText = this.shortUserName;
+              labelText = labelStyle?.labelDisplayText ?? "No Label Text2";
             }
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
             labelText =
-              this.shortUserName + ": " + labelStyle?.labelDisplayCaption;
+              labelStyle?.labelDisplayText +
+              ": " +
+              labelStyle?.labelDisplayCaption;
+            //this.shortUserName + ": " + labelStyle?.labelDisplayCaption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              labelText = this.shortUserName + ": " + labelText;
+              if (
+                this.seLabelParentType === "angleMarker" ||
+                this.seLabelParentType === "polygon"
+              ) {
+                labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              } else {
+                labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              }
             } else {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortUserName;
+              labelText = labelStyle?.labelDisplayText ?? "No Label Text3"; //this.shortUserName;
             }
             break;
           }

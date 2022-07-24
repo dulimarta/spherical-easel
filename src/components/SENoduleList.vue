@@ -93,22 +93,22 @@ export default class SENoduleTree extends Vue {
         else return n.exists;
       })
       .sort((a, b) => {
-        if (a.isLabelable() && b.isLabelable) {
-          const aLabelString = (a as any).label.ref.shortUserName;
-          const bLabelString = (b as any).label.ref.shortUserName;
-          if (aLabelString.length < bLabelString.length) {
-            return -1;
-          } else if (aLabelString.length > bLabelString.length) {
-            return 1;
-          } else {
-            if (aLabelString < bLabelString) {
-              return -1;
-            } else {
-              return 1;
-            }
-          }
+        let aLabelString = a.name;
+        let bLabelString = b.name;
+        if (a.isLabelable() && b.isLabelable()) {
+          aLabelString = (a as any).label.ref.shortUserName;
+          bLabelString = (b as any).label.ref.shortUserName;
+        }
+        if (aLabelString.length < bLabelString.length) {
+          return -1;
+        } else if (aLabelString.length > bLabelString.length) {
+          return 1;
         } else {
-          return 0;
+          if (aLabelString < bLabelString) {
+            return -1;
+          } else {
+            return 1;
+          }
         }
       });
   }

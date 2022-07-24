@@ -355,7 +355,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -388,7 +388,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -498,6 +498,10 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     }
 
     if (this.showing && this._exists) {
+      // When this updates send its value to the label of the polygon
+      if (this.label) {
+        this.label.ref.value = [this.value];
+      }
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

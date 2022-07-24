@@ -50,7 +50,6 @@ export class SELabel extends SENodule implements Visitable {
     this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
-    this.ref.defaultName = this.parent.name;
 
     (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
@@ -63,14 +62,17 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
+      this.ref.defaultName = `Am${this.parent.angleMarkerNumber}`;
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
+      this.ref.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
       label.shortUserName = parent.name;
+      this.ref.defaultName = this.parent.name;
     }
     // Set the size for zoom
     this.ref.adjustSize();

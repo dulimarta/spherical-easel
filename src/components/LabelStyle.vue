@@ -62,7 +62,7 @@
             </template>
             {{selectionCount>1 ? $t('style.multiLabelTextToolTip'):$t('style.singleLabelTextToolTip')}}
           </v-tooltip>
-          <!-- Label Diplay Mode Selections -->
+          <!-- Label Display Mode Selections -->
 
           <v-select v-model.lazy="styleOptions.labelDisplayMode"
             :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelDisplayMode}]"
