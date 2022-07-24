@@ -50,8 +50,6 @@ import Nodule from "@/plottables/Nodule";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
-import { Circle } from "two.js/src/shapes/circle";
-import { Group } from "two.js/src/group";
 
 @Component({
   computed: {
@@ -86,7 +84,7 @@ export default class SphereFrame extends VueComponent {
   readonly seLabels!: SELabel[];
 
   readonly init!: () => void;
-  readonly setLayers!: (_: Array<Group>) => void;
+  readonly setLayers!: (_: Array<Two.Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
@@ -108,7 +106,7 @@ export default class SphereFrame extends VueComponent {
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
-  private boundaryCircle!: Circle;
+  private boundaryCircle!: Two.Circle;
   /**
    * The Global Vuex Store
    */
@@ -150,7 +148,7 @@ export default class SphereFrame extends VueComponent {
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  readonly layers!: Group[];
+  readonly layers!: Two.Group[];
 
   created(): void {
     this.twoInstance = new Two({
@@ -159,7 +157,7 @@ export default class SphereFrame extends VueComponent {
       autostart: true
       // ratio: window.devicePixelRatio
     });
-    this.twoInstance.scene.matrix.manual = true;
+    // this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
     // this.layers.splice(0);
 
@@ -174,22 +172,23 @@ export default class SphereFrame extends VueComponent {
 
     // Create a detached group to prevent duplicate group ID
     // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
-    const dummy_group = new Group();
-    let groups: Array<Group> = [];
+    const dummy_group = new Two.Group();
+    let groups: Array<Two.Group> = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
-        const newLayer = new Group();
+        const newLayer = new Two.Group();
         if (layerIdx === LAYER.background)
           console.debug("Background layer is", newLayer.id);
         if (layerIdx === LAYER.foreground)
           console.debug("Foreground layer is", newLayer.id);
-        newLayer.matrix.manual = true;
+        // newLayer.matrix.manual = true;
         // Undo the y-flip on text layers
         if (textLayers.indexOf(layerIdx) >= 0) {
           // Not in textLayers
-          newLayer.matrix.scale(1, -1);
+          newLayer.scale = new Two.Vector(1, -1);
+          // newLayer.matrix.scale(1, -1);
         }
 
         newLayer.addTo(this.twoInstance.scene);
@@ -207,7 +206,7 @@ export default class SphereFrame extends VueComponent {
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
-    this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
+    this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.boundaryCircle.addTo(this.layers[Number(LAYER.midground)]);
@@ -251,26 +250,12 @@ export default class SphereFrame extends VueComponent {
     // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
     // Set up the listeners
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mousemove",
-      this.handleMouseMoved
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mousedown",
-      this.handleMousePressed
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mouseup",
-      this.handleMouseReleased
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mouseleave",
-      this.handleMouseLeave
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "wheel",
-      this.handleMouseWheel
-    );
+
+    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
+    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
 
     // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
     // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -289,26 +274,11 @@ export default class SphereFrame extends VueComponent {
   }
 
   beforeDestroy(): void {
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mousemove",
-      this.handleMouseMoved
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mousedown",
-      this.handleMousePressed
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mouseup",
-      this.handleMouseReleased
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mouseleave",
-      this.handleMouseLeave
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "wheel",
-      this.handleMouseWheel
-    );
+    this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
+    this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
     // Does this remove the context menu listener? I'm not sure.
     this.$refs.canvas.removeEventListener("contextmenu", event =>
       event.preventDefault()
@@ -356,10 +326,15 @@ export default class SphereFrame extends VueComponent {
     const transVector = this.zoomTranslation;
     const origin = this.canvasSize / 2;
 
-    this.twoInstance.scene.matrix
-      .identity()
-      .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
-      .scale(mag, -mag); // (translate & scale) is important
+    this.twoInstance.scene.translation = new Two.Vector(
+      origin + transVector[0],
+      origin + transVector[1]
+    );
+    this.twoInstance.scene.scale = new Two.Vector(mag, -mag);
+    // this.twoInstance.scene.matrix
+    //   .identity()
+    //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
+    //   .scale(mag, -mag); // (translate & scale) is important
     //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
       l.update();

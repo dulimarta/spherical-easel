@@ -23,7 +23,6 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { Group } from "two.js/src/group";
 
 export default class PolygonHandler extends Highlighter {
   /**
@@ -68,7 +67,7 @@ export default class PolygonHandler extends Highlighter {
   /** Has the temporary angleMarker been added to the scene?*/
   private temporaryAngleMarkersAdded: boolean[] = [];
 
-  constructor(layers: Group[], selectOnlyTriangles?: boolean) {
+  constructor(layers: Two.Group[], selectOnlyTriangles?: boolean) {
     super(layers);
     this.triangleSelectionMode = selectOnlyTriangles ?? false;
 

@@ -1,22 +1,25 @@
-import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
-import { ActionMode, SEIntersectionReturnType } from "@/types";
-import { Matrix4, Vector3 } from "three";
-import { SEPoint } from "@/models/SEPoint";
-import { SENodule } from "@/models/SENodule";
-import { SELine } from "@/models/SELine";
-import { SELabel } from "@/models/SELabel";
-import { SEExpression } from "@/models/SEExpression";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SECircle } from "@/models/SECircle";
 import EventBus from "@/eventHandlers/EventBus";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
-import { SEParametric } from "@/models/SEParametric";
-import Parametric from "@/plottables/Parametric";
-import { SESegment } from "@/models/SESegment";
-import { SEPolygon } from "@/models/SEPolygon";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEExpression } from "@/models/SEExpression";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SELabel } from "@/models/SELabel";
+import { SELine } from "@/models/SELine";
+import { SENodule } from "@/models/SENodule";
+import { SENSectLine } from "@/models/SENSectLine";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPencil } from "@/models/SEPencil";
+import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEPoint } from "@/models/SEPoint";
+import { SEPolarLine } from "@/models/SEPolarLine";
+import { SEPolygon } from "@/models/SEPolygon";
+import { SESegment } from "@/models/SESegment";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { ActionMode, SEIntersectionReturnType } from "@/types";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
   intersectCircleWithEllipse,
@@ -34,15 +37,10 @@ import {
   intersectSegmentWithParametric,
   intersectSegmentWithSegment
 } from "@/utils/intersections";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SEPolarLine } from "@/models/SEPolarLine";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
-import { SENSectLine } from "@/models/SENSectLine";
-import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
-import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
+import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
+import { Matrix4, Vector3 } from "three";
+import Two from "two.js";
 
 type PiniaAppState = {
   actionMode: ActionMode;
@@ -82,7 +80,7 @@ const seEllipses: Map<number, SEEllipse> = new Map();
 const seParametrics: Map<number, SEParametric> = new Map();
 const sePolygons: Map<number, SEPolygon> = new Map();
 const sePencils: Array<SEPencil> = [];
-const layers: Array<Group> = [];
+const layers: Array<Two.Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
@@ -157,7 +155,7 @@ export const useSEStore = defineStore({
       // because the constructors of the tools (handlers) place the temporary Nodules
       // in this array *before* the this.init is called in App.vue mount.
     },
-    setLayers(grp: Array<Group>): void {
+    setLayers(grp: Array<Two.Group>): void {
       layers.splice(0);
       layers.push(...grp);
     },
@@ -685,7 +683,7 @@ export const useSEStore = defineStore({
       initialStyleStatesMap,
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
-    layers: (): Array<Group> => layers,
+    layers: (): Array<Two.Group> => layers,
     hasObjects(state): boolean {
       return state.sePointIds.length > 0;
     },
@@ -728,8 +726,11 @@ export const useSEStore = defineStore({
       };
     },
     //#region findNearbyGetter
-    findNearbySENodules(): (_p: Vector3, _s: Vector) => SENodule[] {
-      return (unitIdealVector: Vector3, screenPosition: Vector): SENodule[] => {
+    findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
+      return (
+        unitIdealVector: Vector3,
+        screenPosition: Two.Vector
+      ): SENodule[] => {
         return seNodules.filter((obj: SENodule) => {
           return obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor);
         });

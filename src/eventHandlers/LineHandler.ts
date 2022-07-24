@@ -21,7 +21,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { Group } from "two.js/src/group";
+
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -81,7 +81,7 @@ export default class LineHandler extends Highlighter {
    * Make a line handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary line
     this.temporaryLine = new Line();

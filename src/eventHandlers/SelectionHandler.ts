@@ -15,7 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
-import { Group } from "two.js/src/group";
+
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
 const screenVector = new Two.Vector(0, 0);
@@ -47,7 +47,7 @@ export default class SelectionHandler extends Highlighter {
    */
   private keyPressSelection: SENodule[] = [];
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]

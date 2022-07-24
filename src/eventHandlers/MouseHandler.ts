@@ -15,8 +15,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEStoreType } from "@/stores/se";
-import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
+import Two from "two.js";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -27,7 +26,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * This is canvas is the midGround layer in the twoInstance (the main Two object).
    * Used to determine the Default Screen Coordinates of the mouse event
    */
-  protected readonly canvas: Group;
+  protected readonly canvas: Two.Group;
   /**
    * Vuex global state
    */
@@ -40,8 +39,8 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * The vector location of the current and previous mouse event in the Default Sphere Plane
    */
-  protected currentScreenVector: Vector;
-  protected previousScreenVector: Vector;
+  protected currentScreenVector: Two.Vector;
+  protected previousScreenVector: Two.Vector;
   /**
    * True if the mouse event is on the default sphere
    */
@@ -65,7 +64,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Holds the layers for each type of object, background, glowing background, etc..
    * This allow the created objects to be put in the correct layers
    */
-  protected layers: Group[];
+  protected layers: Two.Group[];
 
   /**
    * Temporary objects that help process the mouse event location
@@ -81,13 +80,13 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Abstract class, whose MouseMoved event sets the current/previous sphere/screen points
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     this.layers = layers;
     this.canvas = layers[LAYER.midground];
     this.currentSphereVector = new Vector3();
-    this.currentScreenVector = new Vector(0, 0);
+    this.currentScreenVector = new Two.Vector(0, 0);
     this.previousSphereVector = new Vector3();
-    this.previousScreenVector = new Vector(0, 0);
+    this.previousScreenVector = new Two.Vector(0, 0);
     this.isOnSphere = false;
   }
   static setGlobalStore(store: SEStoreType): void {

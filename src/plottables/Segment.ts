@@ -1,4 +1,5 @@
 import { Vector3, Matrix4 } from "three";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -7,9 +8,6 @@ import {
   DEFAULT_SEGMENT_FRONT_STYLE,
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
-import { Path } from "two.js/src/path";
-import { Anchor } from "two.js/src/anchor";
-import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -50,14 +48,14 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Path;
-  private _frontExtra: Path;
-  private _backPart: Path;
-  private _backExtra: Path;
-  private glowingFrontPart: Path;
-  private glowingFrontExtra: Path;
-  private glowingBackPart: Path;
-  private glowingBackExtra: Path;
+  private _frontPart: Two.Path;
+  private _frontExtra: Two.Path;
+  private _backPart: Two.Path;
+  private _backExtra: Two.Path;
+  private glowingFrontPart: Two.Path;
+  private glowingFrontExtra: Two.Path;
+  private glowingBackPart: Two.Path;
+  private glowingBackExtra: Two.Path;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -106,19 +104,23 @@ export default class Segment extends Nodule {
     super();
 
     // Create the vertices for the segment
-    const vertices: Anchor[] = [];
+    const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
-      vertices.push(new Anchor(0, 0));
+      vertices.push(new Two.Vector(0, 0));
     }
-    this._frontPart = new Path(vertices, /* closed */ false, /* curve */ false);
+    this._frontPart = new Two.Path(
+      vertices,
+      /* closed */ false,
+      /* curve */ false
+    );
     // Create the other parts cloning the front part
-    this.glowingFrontPart = this._frontPart.clone() as Path;
-    this._frontExtra = this._frontPart.clone() as Path;
-    this.glowingFrontExtra = this._frontPart.clone() as Path;
-    this._backPart = this._frontPart.clone() as Path;
-    this.glowingBackPart = this._frontPart.clone() as Path;
-    this._backExtra = this._backPart.clone() as Path;
-    this.glowingBackExtra = this._backPart.clone() as Path;
+    this.glowingFrontPart = this._frontPart.clone();
+    this._frontExtra = this._frontPart.clone();
+    this.glowingFrontExtra = this._frontPart.clone();
+    this._backPart = this._frontPart.clone();
+    this.glowingBackPart = this._frontPart.clone();
+    this._backExtra = this._backPart.clone();
+    this.glowingBackExtra = this._backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
     // The clear() extension function works only on JS Array, but
@@ -250,12 +252,12 @@ export default class Segment extends Nodule {
     // Bring all the anchor points to a common pool
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
-    const pool: Anchor[] = [];
+    const pool: Two.Anchor[] = [];
     pool.push(...this._frontPart.vertices.splice(0));
     pool.push(...this._frontExtra.vertices.splice(0));
     pool.push(...this._backPart.vertices.splice(0));
     pool.push(...this._backExtra.vertices.splice(0));
-    const glowingPool: Anchor[] = [];
+    const glowingPool: Two.Anchor[] = [];
     glowingPool.push(...this.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...this.glowingFrontExtra.vertices.splice(0));
     glowingPool.push(...this.glowingBackPart.vertices.splice(0));
@@ -369,16 +371,16 @@ export default class Segment extends Nodule {
     this._normalVector.copy(idealUnitNormalVector).normalize();
   }
 
-  get frontPart(): Path {
+  get frontPart(): Two.Path {
     return this._frontPart;
   }
-  get backPart(): Path {
+  get backPart(): Two.Path {
     return this._backPart;
   }
-  get frontPartExtra(): Path {
+  get frontPartExtra(): Two.Path {
     return this._frontExtra;
   }
-  get backPartExtra(): Path {
+  get backPartExtra(): Two.Path {
     return this._backExtra;
   }
   get firstVertexIsOnFront(): boolean {
@@ -428,12 +430,12 @@ export default class Segment extends Nodule {
     dup._startVector.copy(this._startVector);
     dup._normalVector.copy(this._normalVector);
     //Copy the vertices of front/back/part
-    const pool: Anchor[] = [];
+    const pool: Two.Anchor[] = [];
     pool.push(...dup._frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
     pool.push(...dup._backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
 
     // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
-    this._frontPart.vertices.forEach((v: Anchor, pos: number) => {
+    this._frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       // Add a vertex in the frontPart (while taking one away from the pool)
       const v1 = pool.pop();
       if (v1) dup._frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
@@ -441,42 +443,42 @@ export default class Segment extends Nodule {
       dup._frontPart.vertices[pos].copy(v); //
     });
     // Repeat for the frontExtra/backPart/backExtra
-    this._frontExtra.vertices.forEach((v: Anchor, pos: number) => {
+    this._frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
       if (v1) dup._frontExtra.vertices.push(v1);
       dup._frontExtra.vertices[pos].copy(v);
     });
-    this._backPart.vertices.forEach((v: Anchor, pos: number) => {
+    this._backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
       if (v1) dup._backPart.vertices.push(v1);
       dup._backPart.vertices[pos].copy(v);
     });
-    this._backExtra.vertices.forEach((v: Anchor, pos: number) => {
+    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
       if (v1) dup._backExtra.vertices.push(v1);
       dup._backExtra.vertices[pos].copy(v);
     });
 
     // Repeat for all glowing parts/extras
-    const glowingPool: Anchor[] = [];
+    const glowingPool: Two.Anchor[] = [];
     glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
-    this.glowingFrontPart.vertices.forEach((v: Anchor, pos: number) => {
+    this.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingFrontPart.vertices.push(v1);
       dup.glowingFrontPart.vertices[pos].copy(v);
     });
-    this.glowingFrontExtra.vertices.forEach((v: Anchor, pos: number) => {
+    this.glowingFrontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingFrontExtra.vertices.push(v1);
       dup.glowingFrontExtra.vertices[pos].copy(v);
     });
-    this.glowingBackPart.vertices.forEach((v: Anchor, pos: number) => {
+    this.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this._backExtra.vertices.forEach((v: Anchor, pos: number) => {
+    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
@@ -484,7 +486,7 @@ export default class Segment extends Nodule {
     return dup as this;
   }
 
-  addToLayers(layers: Group[]): void {
+  addToLayers(layers: Two.Group[]): void {
     this._frontPart.addTo(layers[LAYER.foreground]);
     this._frontExtra.addTo(layers[LAYER.foreground]);
     this._backPart.addTo(layers[LAYER.background]);

@@ -17,7 +17,8 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
+
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -54,7 +55,7 @@ export default class AntipodalPointHandler extends Highlighter {
   private isTemporaryAntipodeAdded = false;
   private isTemporaryPointAdded = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();

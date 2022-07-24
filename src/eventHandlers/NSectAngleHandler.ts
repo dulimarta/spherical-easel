@@ -16,10 +16,6 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
-import { Group } from "two.js/src/group";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
-// import { SESegment } from "@/models/SESegment";
 export default class NSectAngleHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -32,7 +28,7 @@ export default class NSectAngleHandler extends Highlighter {
 
   private tmpVector = new Vector3();
 
-  constructor(layers: Group[], bisectOnly?: boolean) {
+  constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary lines

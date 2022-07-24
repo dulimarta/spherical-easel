@@ -19,13 +19,12 @@ import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
-
 import { SEPolygon } from "@/models/SEPolygon";
 import { ObjectNames, ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
-import { Group } from "two.js/src/group";
+
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
@@ -78,7 +77,7 @@ export default class MoveHandler extends Highlighter {
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

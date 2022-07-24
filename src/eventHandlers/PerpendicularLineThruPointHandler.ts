@@ -34,7 +34,7 @@ import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
 
 type TemporaryLine = {
   line: Line;
@@ -90,7 +90,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
    */
   private numberOfPerpendiculars = 1;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
 
     // Create and style the temporary line (initially allocate one)

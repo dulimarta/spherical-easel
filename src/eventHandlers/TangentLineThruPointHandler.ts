@@ -30,7 +30,6 @@ import { SEEllipse } from "@/models/SEEllipse";
 // const MAXNUMBEROFTANGENTS = 10; // maximum number of tangents to a one dimensional through a point across all objects
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
-import { Group } from "two.js/src/group";
 
 type TemporaryLine = {
   line: Line;
@@ -86,7 +85,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
    */
   private numberOfTangents = 1;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
 
     // Create and style the temporary lines (initially allocate one)

@@ -21,7 +21,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
-import { Group } from "two.js/src/group";
+
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -77,7 +77,7 @@ export default class EllipseHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.focus1Vector = new Vector3();
     this.focus2Vector = new Vector3();

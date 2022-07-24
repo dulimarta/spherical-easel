@@ -20,7 +20,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
 
 const tmpVector = new Vector3();
 
@@ -75,7 +75,7 @@ export default class CircleHandler extends Highlighter {
    */
   private centerLocationSelected = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.centerVector = new Vector3();
     this.temporaryCircle = new Circle();

@@ -21,7 +21,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import { Group } from "two.js/src/group";
+
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -99,7 +99,7 @@ export default class SegmentHandler extends Highlighter {
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);

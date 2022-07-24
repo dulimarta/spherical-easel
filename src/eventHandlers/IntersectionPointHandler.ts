@@ -14,7 +14,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 // import { IntersectionPointHandler.store } from "@/store";
 import { intersectTwoObjects } from "@/utils/intersections";
 import { SEParametric } from "@/models/SEParametric";
-import { Group } from "two.js/src/group";
+
 export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
@@ -33,7 +33,7 @@ export default class IntersectionPointHandler extends Highlighter {
    */
   // private intersectionPointParentNames = "";
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

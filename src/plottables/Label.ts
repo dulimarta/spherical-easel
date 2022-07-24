@@ -22,10 +22,11 @@ import { ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
-import { Vector } from "two.js/src/vector";
-import { Text } from "two.js/src/text";
-import { Group } from "two.js/src/group";
-import { Shape } from "two.js/src/shape";
+import Two from "two.js";
+// import { Vector } from "two.js/src/vector";
+// import { Text } from "two.js/src/text";
+// import { Group } from "two.js/src/group";
+// import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -45,22 +46,22 @@ export default class Label extends Nodule {
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
   public _locationVector = new Vector3(1, 0, 0);
-  public defaultScreenVectorLocation = new Vector(1, 0);
+  public defaultScreenVectorLocation = new Two.Vector(1, 0);
 
   /**
    * The TwoJS objects that are used to display the label.
    * One is for the front, the other for the back. Only one is displayed at a time
    */
-  protected frontText = new Text("Test", 1, 0, {
+  protected frontText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected backText = new Text("Test", 1, 0, {
+  protected backText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingFrontText = new Text("Test", 1, 0, {
+  protected glowingFrontText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingBackText = new Text("Test", 1, 0, {
+  protected glowingBackText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
@@ -337,26 +338,26 @@ export default class Label extends Nodule {
     }
   }
 
-  addToLayers(layers: Group[]): void {
-    // layers[LAYER.foregroundText].add(this.frontText);
-    // layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
-    // layers[LAYER.backgroundText].add(this.backText);
-    // layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
-    this.frontText.addTo(layers[LAYER.foregroundText]);
-    this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
-    this.backText.addTo(layers[LAYER.backgroundText]);
-    this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
+  addToLayers(layers: Two.Group[]): void {
+    layers[LAYER.foregroundText].add(this.frontText);
+    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
+    layers[LAYER.backgroundText].add(this.backText);
+    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+    // this.frontText.addTo(layers[LAYER.foregroundText]);
+    // this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
+    // this.backText.addTo(layers[LAYER.backgroundText]);
+    // this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
   }
 
-  removeFromLayers(layers: Group[]): void {
-    // layers[LAYER.foregroundText].remove(this.frontText);
-    // layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
-    // layers[LAYER.backgroundText].remove(this.backText);
-    // layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
-    this.frontText.remove();
-    this.glowingFrontText.remove();
-    this.backText.remove();
-    this.glowingBackText.remove();
+  removeFromLayers(layers: Two.Group[]): void {
+    layers[LAYER.foregroundText].remove(this.frontText);
+    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundText].remove(this.backText);
+    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+    // this.frontText.remove();
+    // this.glowingFrontText.remove();
+    // this.backText.remove();
+    // this.glowingBackText.remove();
   }
 
   updateDisplay(): void {

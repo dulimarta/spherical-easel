@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -22,7 +22,7 @@ import { AngleMode } from "@/types";
 import { SEParametric } from "@/models/SEParametric";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
 import MouseHandler from "./MouseHandler";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
 enum HighlightMode {
   NONE,
   ONLYPOINTS,
@@ -125,7 +125,7 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     console.log("AngleHandler ctor");
 

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "strict": true,
     "declaration": true,
     "jsx": "preserve",
@@ -30,11 +30,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    // "src/types/two.js/index.d.ts",
+    "src/**/*.vue"
     // "tests/*.d.ts",
-    "src/node_modules/two.js/types.d.ts",
-    "src/utils/memory.js"
   ],
   "verbose": true
   // "globals": {
