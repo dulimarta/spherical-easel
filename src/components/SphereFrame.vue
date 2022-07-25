@@ -368,10 +368,15 @@ export default class SphereFrame extends VueComponent {
     const transVector = this.zoomTranslation;
     const origin = this.canvasSize / 2;
 
-    this.twoInstance.scene.matrix
-      .identity()
-      .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
-      .scale(mag, -mag); // (translate & scale) is important
+    this.twoInstance.scene.translation = new Two.Vector(
+      origin + transVector[0],
+      origin + transVector[1]
+    );
+    this.twoInstance.scene.scale = new Two.Vector(mag, -mag);
+    // this.twoInstance.scene.matrix
+    //   .identity()
+    //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
+    //   .scale(mag, -mag); // (translate & scale) is important
     //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
       l.update();

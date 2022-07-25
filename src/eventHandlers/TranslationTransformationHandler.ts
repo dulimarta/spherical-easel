@@ -18,7 +18,7 @@ import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
-import { Group } from "two.js/src/group";
+// import { Group } from "two.js/src/group";
 export default class TranslationTransformationHandler extends Highlighter {
   /**  The model object line or line segment to translate along */
   private translationLineOrSegment: SELine | SESegment | null = null;

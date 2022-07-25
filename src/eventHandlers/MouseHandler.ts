@@ -15,8 +15,9 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEStoreType } from "@/stores/se";
-import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
+// import { Vector } from "two.js/src/vector";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -40,8 +41,8 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * The vector location of the current and previous mouse event in the Default Sphere Plane
    */
-  protected currentScreenVector: Vector;
-  protected previousScreenVector: Vector;
+  protected currentScreenVector: Two.Vector;
+  protected previousScreenVector: Two.Vector;
   /**
    * True if the mouse event is on the default sphere
    */
@@ -85,9 +86,9 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.layers = layers;
     this.canvas = layers[LAYER.midground];
     this.currentSphereVector = new Vector3();
-    this.currentScreenVector = new Vector(0, 0);
+    this.currentScreenVector = new Two.Vector(0, 0);
     this.previousSphereVector = new Vector3();
-    this.previousScreenVector = new Vector(0, 0);
+    this.previousScreenVector = new Two.Vector(0, 0);
     this.isOnSphere = false;
   }
   static setGlobalStore(store: SEStoreType): void {

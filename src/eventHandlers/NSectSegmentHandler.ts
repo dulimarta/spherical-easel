@@ -11,7 +11,8 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
 
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;

@@ -25,7 +25,8 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import { SERotation } from "@/models/SERotation";
 import { AddRotationCommand } from "@/commands/AddRotationCommand";
 import { Vector3 } from "three";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 

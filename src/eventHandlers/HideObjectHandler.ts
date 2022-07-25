@@ -6,7 +6,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
-import { Group } from "two.js/src/group";
+//import { Group } from "two.js/src/group";
 
 export default class HideObjectHandler extends Highlighter {
   /**

@@ -5,7 +5,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SELine } from "@/models/SELine";
 import { SEReflection } from "@/models/SEReflection";
 import { AddReflectionCommand } from "@/commands/AddReflectionCommand";
-import { Group } from "two.js/src/group";
+// import { Group } from "two.js/src/group";
 export default class ReflectionTransformationHandler extends Highlighter {
   /**
    * Segment to measure

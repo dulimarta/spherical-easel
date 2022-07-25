@@ -10,7 +10,7 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
-import { Group } from "two.js/src/group";
+// import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands/CommandGroup";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {

@@ -56,7 +56,7 @@ import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCent
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { Group } from "two.js/src/group";
+//import { Group } from "two.js/src/group";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class ApplyTransformationHandler extends Highlighter {

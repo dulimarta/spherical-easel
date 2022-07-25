@@ -6,7 +6,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
-import { Group } from "two.js/src/group";
+// import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**

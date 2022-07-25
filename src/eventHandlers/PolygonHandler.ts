@@ -23,7 +23,7 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { Group } from "two.js/src/group";
+// import { Group } from "two.js/src/group";
 import ToggleLabelDisplayHandler from "./ToggleLabelDisplayHandler";
 
 export default class PolygonHandler extends Highlighter {
