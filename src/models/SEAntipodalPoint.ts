@@ -2,7 +2,6 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import EventBus from "@/eventHandlers/EventBus";
 
 export class SEAntipodalPoint extends SEPoint {
   /**

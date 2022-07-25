@@ -35,24 +35,20 @@ import {
   intersectSegmentWithSegment
 } from "@/utils/intersections";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
-import { SENSectLine } from "@/models/SENSectLine";
 import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
+import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
 import { SETransformation } from "@/models/SETransformation";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 const oldSelections: Array<SENodule> = [];
 const sePencils: Array<SEPencil> = [];
-const layers: Array<Group> = [];
+const layers: Array<Two.Group> = [];
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();

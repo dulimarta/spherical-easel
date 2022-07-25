@@ -3,7 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import AngleMarker from "@/plottables/AngleMarker";
-import { Vector3, Matrix4, LineBasicMaterial } from "three";
+import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { ObjectState, ValueDisplayMode } from "@/types";
