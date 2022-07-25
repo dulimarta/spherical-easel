@@ -12,7 +12,7 @@ export default class InversionTransformationHandler extends Highlighter {
    */
   private targetCircleOfInversion: SECircle | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

@@ -9,11 +9,11 @@
 <script lang="ts">
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -53,6 +53,7 @@ import Nodule from "@/plottables/Nodule";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
+import Two from "two.js";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { SEExpression } from "@/models/SEExpression";

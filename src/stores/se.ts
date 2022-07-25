@@ -39,7 +39,6 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SEPencil } from "@/models/SEPencil";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import Two from "two.js";
-import { Group } from "two.js/src/group";
 import { SETransformation } from "@/models/SETransformation";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
@@ -146,7 +145,7 @@ export const useSEStore = defineStore({
       // because the constructors of the tools (handlers) place the temporary Nodules
       // in this array *before* the this.init is called in App.vue mount.
     },
-    setLayers(grp: Array<Group>): void {
+    setLayers(grp: Array<Two.Group>): void {
       layers.splice(0);
       layers.push(...grp);
     },
@@ -675,7 +674,7 @@ export const useSEStore = defineStore({
     // selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
-    layers: (): Group[] => layers,
+    layers: (): Two.Group[] => layers,
     initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       initialStyleStatesMap,
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
@@ -742,8 +741,11 @@ export const useSEStore = defineStore({
         state.seNodules.map(z => z as SENodule).find(z => z.id === id);
     },
     //#region findNearbyGetter
-    findNearbySENodules(state): (_p: Vector3, _s: Vector) => SENodule[] {
-      return (unitIdealVector: Vector3, screenPosition: Vector): SENodule[] => {
+    findNearbySENodules(state): (_p: Vector3, _s: Two.Vector) => SENodule[] {
+      return (
+        unitIdealVector: Vector3,
+        screenPosition: Two.Vector
+      ): SENodule[] => {
         return state.seNodules
           .map(obj => obj as SENodule)
           .filter(obj => {

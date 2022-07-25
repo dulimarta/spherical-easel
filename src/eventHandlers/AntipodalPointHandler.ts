@@ -56,7 +56,7 @@ export default class AntipodalPointHandler extends Highlighter {
   private isTemporaryAntipodeAdded = false;
   private isTemporaryPointAdded = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();

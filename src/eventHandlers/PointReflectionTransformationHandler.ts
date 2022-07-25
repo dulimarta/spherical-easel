@@ -48,7 +48,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
 
     // Create and style the temporary points marking the start/end of an object being created

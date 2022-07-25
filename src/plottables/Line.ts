@@ -7,9 +7,10 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-import { Path } from "two.js/src/path";
-import { Anchor } from "two.js/src/anchor";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -35,10 +36,10 @@ export default class Line extends Nodule {
   /**
    * A line has half on the front and half on the back.There are glowing counterparts for each part.
    */
-  protected frontHalf: Path;
-  protected backHalf: Path;
-  protected glowingFrontHalf: Path;
-  protected glowingBackHalf: Path;
+  protected frontHalf: Two.Path;
+  protected backHalf: Two.Path;
+  protected glowingFrontHalf: Two.Path;
+  protected glowingBackHalf: Two.Path;
 
   // /**
   //  * What are these for?
@@ -88,24 +89,28 @@ export default class Line extends Nodule {
     super();
 
     const radius = SETTINGS.boundaryCircle.radius;
-    const vertices: Anchor[] = [];
-    const glowingVertices: Anchor[] = [];
+    const vertices: Two.Vector[] = [];
+    const glowingVertices: Two.Vector[] = [];
 
     // Generate 2D coordinates of a half circle
     for (let k = 0; k < SUBDIVS; k++) {
       const angle = (k * Math.PI) / SUBDIVS;
       const px = radius * Math.cos(angle);
       const py = radius * Math.sin(angle);
-      vertices.push(new Anchor(px, py));
-      glowingVertices.push(new Anchor(px, py));
+      vertices.push(new Two.Vector(px, py));
+      glowingVertices.push(new Two.Vector(px, py));
     }
 
-    this.frontHalf = new Path(vertices, /* closed */ false, /* curve */ false);
+    this.frontHalf = new Two.Path(
+      vertices,
+      /* closed */ false,
+      /* curve */ false
+    );
 
     // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone() as Path;
-    this.glowingBackHalf = this.frontHalf.clone() as Path;
-    this.glowingFrontHalf = this.frontHalf.clone() as Path;
+    this.backHalf = this.frontHalf.clone() as Two.Path;
+    this.glowingBackHalf = this.frontHalf.clone() as Two.Path;
+    this.glowingFrontHalf = this.frontHalf.clone() as Two.Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
@@ -227,7 +232,7 @@ export default class Line extends Nodule {
       lastSign = thisSign;
       if (this.tmpVector.z > 0) {
         if (posIndex === this.frontHalf.vertices.length) {
-          let extra: Anchor | undefined;
+          let extra: Two.Anchor | undefined;
           extra = this.backHalf.vertices.pop();
           if (extra) this.frontHalf.vertices.push(extra);
           extra = this.glowingBackHalf.vertices.pop();
@@ -240,7 +245,7 @@ export default class Line extends Nodule {
         posIndex++;
       } else {
         if (negIndex === this.backHalf.vertices.length) {
-          let extra: Anchor | undefined;
+          let extra: Two.Anchor | undefined;
           extra = this.frontHalf.vertices.pop();
           if (extra) this.backHalf.vertices.push(extra);
           extra = this.glowingFrontHalf.vertices.pop();
@@ -306,22 +311,22 @@ export default class Line extends Nodule {
     dup.backHalf.rotation = this.backHalf.rotation;
     // dup.frontArcLen = this.frontArcLen;
     // dup.backArcLen = this.backArcLen;
-    dup.frontHalf.vertices.forEach((v: Anchor, pos: number) => {
+    dup.frontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontHalf.vertices[pos]);
     });
-    dup.backHalf.vertices.forEach((v: Anchor, pos: number) => {
+    dup.backHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backHalf.vertices[pos]);
     });
-    dup.glowingFrontHalf.vertices.forEach((v: Anchor, pos: number) => {
+    dup.glowingFrontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingFrontHalf.vertices[pos]);
     });
-    dup.glowingBackHalf.vertices.forEach((v: Anchor, pos: number) => {
+    dup.glowingBackHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingBackHalf.vertices[pos]);
     });
     return dup as this;
   }
 
-  addToLayers(layers: Group[]): void {
+  addToLayers(layers: Two.Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
     this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this.backHalf.addTo(layers[LAYER.background]);

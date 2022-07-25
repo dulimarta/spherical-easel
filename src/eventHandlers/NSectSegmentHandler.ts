@@ -29,7 +29,7 @@ export default class NSectSegmentHandler extends Highlighter {
   // set disableKeyHandler(b: boolean) {
   //   this._disableKeyHandler = b;
   // }
-  constructor(layers: Group[], bisectOnly?: boolean) {
+  constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary antipode/point marking the antipode/point being created

@@ -81,7 +81,7 @@ export default class LineHandler extends Highlighter {
    * Make a line handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary line
     this.temporaryLine = new Line();

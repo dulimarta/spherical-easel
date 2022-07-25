@@ -99,7 +99,7 @@ export default class SegmentHandler extends Highlighter {
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
     SegmentHandler.store.addTemporaryNodule(this.temporarySegment);

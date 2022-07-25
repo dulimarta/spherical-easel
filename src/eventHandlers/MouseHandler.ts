@@ -27,7 +27,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * This is canvas is the midGround layer in the twoInstance (the main Two object).
    * Used to determine the Default Screen Coordinates of the mouse event
    */
-  protected readonly canvas: Group;
+  protected readonly canvas: Two.Group;
   /**
    * Vuex global state
    */
@@ -65,7 +65,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Holds the layers for each type of object, background, glowing background, etc..
    * This allow the created objects to be put in the correct layers
    */
-  protected layers: Group[];
+  protected layers: Two.Group[];
 
   /**
    * Temporary objects that help process the mouse event location
@@ -81,7 +81,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Abstract class, whose MouseMoved event sets the current/previous sphere/screen points
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     this.layers = layers;
     this.canvas = layers[LAYER.midground];
     this.currentSphereVector = new Vector3();

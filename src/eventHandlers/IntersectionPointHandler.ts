@@ -28,7 +28,7 @@ export default class IntersectionPointHandler extends Highlighter {
    */
   // private intersectionPointParentNames = "";
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

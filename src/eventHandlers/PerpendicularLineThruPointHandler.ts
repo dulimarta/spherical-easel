@@ -90,7 +90,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
    */
   private numberOfPerpendiculars = 1;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
 
     // Create and style the temporary line (initially allocate one)

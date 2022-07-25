@@ -18,7 +18,7 @@ export default class HideObjectHandler extends Highlighter {
 
   //private _disableKeyHandler = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

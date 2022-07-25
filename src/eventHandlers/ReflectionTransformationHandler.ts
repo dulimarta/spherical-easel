@@ -12,7 +12,7 @@ export default class ReflectionTransformationHandler extends Highlighter {
    */
   private targetLineOrSegment: SESegment | SELine | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

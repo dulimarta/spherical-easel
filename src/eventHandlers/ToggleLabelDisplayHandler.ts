@@ -20,7 +20,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   //   this._disableKeyHandler = b;
   // }
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

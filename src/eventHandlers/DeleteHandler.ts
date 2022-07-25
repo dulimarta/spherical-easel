@@ -33,7 +33,7 @@ export default class DeleteHandler extends Highlighter {
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

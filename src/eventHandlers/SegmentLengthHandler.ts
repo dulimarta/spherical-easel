@@ -18,7 +18,7 @@ export default class SegmentLengthHandler extends Highlighter {
    */
   private targetSegment: SESegment | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

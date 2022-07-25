@@ -13,11 +13,12 @@ import { location, visitedIndex } from "@/types";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
-import { Path } from "two.js/src/path";
-import { Anchor } from "two.js/src/anchor";
-import { Stop } from "two.js/src/effects/stop";
-import { RadialGradient } from "two.js/src/effects/radial-gradient";
-import { Group } from "two.js/src/group";
+import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
+// import { Group } from "two.js/src/group";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -66,35 +67,39 @@ export default class Polygon extends Nodule {
   /**
    * The TwoJS objects to display the front/back fill parts.
    */
-  private frontFills: Path[] = [];
-  private backFills: Path[] = [];
+  private frontFills: Two.Path[] = [];
+  private backFills: Two.Path[] = [];
 
-  private pool: Anchor[] = []; //The pool of vertices
+  private pool: Two.Anchor[] = []; //The pool of vertices
 
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
-  private frontGradientColor = new Stop(
+  private frontGradientColorCenter = new Two.Stop(
+    0,
+    SETTINGS.fill.frontWhite,
+    1
+  );
+  private frontGradientColor = new Two.Stop(
     2 * SETTINGS.boundaryCircle.radius,
     SETTINGS.polygon.drawn.fillColor.front,
     1
   );
 
-  private frontGradient = new RadialGradient(
+  private frontGradient = new Two.RadialGradient(
     SETTINGS.fill.lightSource.x,
     SETTINGS.fill.lightSource.y,
     1 * SETTINGS.boundaryCircle.radius,
     [this.frontGradientColorCenter, this.frontGradientColor]
   );
 
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Stop(
+  private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColor = new Two.Stop(
     1 * SETTINGS.boundaryCircle.radius,
     SETTINGS.polygon.drawn.fillColor.back,
     1
   );
-  private backGradient = new RadialGradient(
+  private backGradient = new Two.RadialGradient(
     -SETTINGS.fill.lightSource.x,
     -SETTINGS.fill.lightSource.y,
     2 * SETTINGS.boundaryCircle.radius,
@@ -121,7 +126,7 @@ export default class Polygon extends Nodule {
     // To render the polygon we use the number of vertices in each segment plus 2*BOUNDARYSUBDIVISIONS plus 2 (the extra 2 are to close up the annular region when the polygon is a hole on the front or back)
 
     // Each segment (all parts) is rendered with 2*SETTINGS.segment.numPoints
-    const verticesFill: Anchor[] = [];
+    const verticesFill: Two.Vector[] = [];
     for (
       let k = 0;
       k <
@@ -130,9 +135,9 @@ export default class Polygon extends Nodule {
         1;
       k++
     ) {
-      verticesFill.push(new Anchor(0, 0));
+      verticesFill.push(new Two.Vector(0, 0));
     }
-    this.frontFills[0] = new Path(
+    this.frontFills[0] = new Two.Path(
       verticesFill,
       /* closed */ true,
       /* curve */ false
@@ -141,11 +146,11 @@ export default class Polygon extends Nodule {
     // now create, record ids, and set noStroke (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
     for (let i = 0; i < this.edgeSegments.length; i++) {
       // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
-      this.backFills[i] = this.frontFills[0].clone() as Path;
+      this.backFills[i] = this.frontFills[0].clone() as Two.Path;
 
       if (i > 0) {
         // clear the vectors from all the parts so that the total number (between front and back) of vectors is 2*SUBDIVISIONS
-        this.frontFills[i] = this.frontFills[0].clone() as Path;
+        this.frontFills[i] = this.frontFills[0].clone() as Two.Path;
         this.frontFills[i].vertices.splice(0);
         this.backFills[i].vertices.splice(0);
       }
@@ -967,14 +972,14 @@ export default class Polygon extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Group[]): void {
+  addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));
     this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
   }
 
-  removeFromLayers(/*layers: Group[]*/): void {
+  removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontFills.forEach(part => part.remove());
     this.backFills.forEach(part => part.remove());
   }

@@ -12,7 +12,7 @@ export default class PointDistanceHandler extends Highlighter {
    */
   private targetPoints: SEPoint[] = [];
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
   }
 

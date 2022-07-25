@@ -120,7 +120,7 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // console.log("AngleHandler ctor");
 

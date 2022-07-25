@@ -39,7 +39,7 @@ export default class NSectAngleHandler extends Highlighter {
   // set disableKeyHandler(b: boolean) {
   //   this._disableKeyHandler = b;
   // }
-  constructor(layers: Group[], bisectOnly?: boolean) {
+  constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary lines

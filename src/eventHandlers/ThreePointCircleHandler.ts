@@ -80,7 +80,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.point1Vector = new Vector3();
     this.point2Vector = new Vector3();
@@ -840,7 +840,6 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point1SEPoint, true)
       );
-
     }
 
     // Create (if necessary) and handle the second vector location
@@ -914,7 +913,6 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.point2SEPoint, true)
       );
-
     }
 
     // Create (if necessary) and handle the third vector release location
@@ -935,7 +933,6 @@ export default class ThreePointCircleHandler extends Highlighter {
         threePointCircleCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(this.point3SEPoint, true)
         );
-
       }
     } else {
       // We have to create a new Point for the third point/vector

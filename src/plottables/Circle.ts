@@ -9,11 +9,12 @@ import {
   DEFAULT_CIRCLE_FRONT_STYLE,
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
-import { Path } from "two.js/src/path";
-import { Anchor } from "two.js/src/anchor";
-import { Group } from "two.js/src/group";
-import { Stop } from "two.js/src/effects/stop";
-import { RadialGradient } from "two.js/src/effects/radial-gradient";
+import Two from "two.js";
+// import { Two.Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
+// import { Two.Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -56,21 +57,21 @@ export default class Circle extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  protected frontPart: Path;
-  protected backPart: Path;
-  protected glowingFrontPart: Path;
-  protected glowingBackPart: Path;
+  protected frontPart: Two.Path;
+  protected backPart: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingBackPart: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  protected frontFill: Path;
-  protected backFill: Path;
+  protected frontFill: Two.Path;
+  protected backFill: Two.Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
-  private fillStorageAnchors: Anchor[] = [];
+  private fillStorageAnchors: Two.Anchor[] = [];
 
   /**
    * The styling variables for the drawn circle. The user can modify these.
@@ -83,27 +84,31 @@ export default class Circle extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
-  private frontGradientColor = new Stop(
+  private frontGradientColorCenter = new Two.Stop(
+    0,
+    SETTINGS.fill.frontWhite,
+    1
+  );
+  private frontGradientColor = new Two.Stop(
     2 * SETTINGS.boundaryCircle.radius,
     SETTINGS.circle.drawn.fillColor.front,
     1
   );
 
-  private frontGradient = new RadialGradient(
+  private frontGradient = new Two.RadialGradient(
     SETTINGS.fill.lightSource.x,
     SETTINGS.fill.lightSource.y,
     1 * SETTINGS.boundaryCircle.radius,
     [this.frontGradientColorCenter, this.frontGradientColor]
   );
 
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Stop(
+  private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColor = new Two.Stop(
     1 * SETTINGS.boundaryCircle.radius,
     SETTINGS.circle.drawn.fillColor.back,
     1
   );
-  private backGradient = new RadialGradient(
+  private backGradient = new Two.RadialGradient(
     -SETTINGS.fill.lightSource.x,
     -SETTINGS.fill.lightSource.y,
     2 * SETTINGS.boundaryCircle.radius,
@@ -154,10 +159,10 @@ export default class Circle extends Nodule {
     // frontFillVertices = SUBDIVISIONS
     // The non-frontVertices are ones on the boundary circle.
     // Similar for the back vertices. Initially the length of back/front FillVertices must be SUBDIVISIONS.
-    const frontVertices: Anchor[] = [];
+    const frontVertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
       // Create Vectors for the paths that will be cloned later
-      frontVertices.push(new Anchor(0, 0));
+      frontVertices.push(new Two.Vector(0, 0));
 
       //create the original vertices (the ones that are on the boundary of the circle) and will be transformed to the target circle
       const angle1 = ((2 * k) / SUBDIVISIONS) * Math.PI;
@@ -175,12 +180,16 @@ export default class Circle extends Nodule {
         )
       );
     }
-    this.frontPart = new Path(frontVertices, /*closed*/ false, /*curve*/ false);
+    this.frontPart = new Two.Path(
+      frontVertices,
+      /*closed*/ false,
+      /*curve*/ false
+    );
 
     // Clone the glowing/back/fill parts.
-    this.glowingFrontPart = this.frontPart.clone() as Path;
-    this.backPart = this.frontPart.clone() as Path;
-    this.glowingBackPart = this.frontPart.clone() as Path;
+    this.glowingFrontPart = this.frontPart.clone() as Two.Path;
+    this.backPart = this.frontPart.clone() as Two.Path;
+    this.glowingBackPart = this.frontPart.clone() as Two.Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
@@ -215,18 +224,18 @@ export default class Circle extends Nodule {
     // bigger than Pi/2 and there is no front/back part and the circle is a 'hole')
     // anchors across both fill regions and the anchorStorage (storage is used when the circle doesn't cross a boundary).
 
-    const verticesFill: Anchor[] = [];
+    const verticesFill: Two.Vector[] = [];
     for (let k = 0; k < 2 * SUBDIVISIONS + 1; k++) {
-      verticesFill.push(new Anchor(0, 0));
+      verticesFill.push(new Two.Vector(0, 0));
     }
-    this.frontFill = new Path(
+    this.frontFill = new Two.Path(
       verticesFill,
       /* closed */ true,
       /* curve */ false
     );
 
     // create the back part
-    this.backFill = this.frontFill.clone() as Path;
+    this.backFill = this.frontFill.clone() as Two.Path;
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontFill.id), {
@@ -392,7 +401,7 @@ export default class Circle extends Nodule {
     // Each front/back fill path will pull anchor points from
     // this pool as needed
     // any remaining are put in storage
-    const pool: Anchor[] = [];
+    const pool: Two.Anchor[] = [];
     pool.push(...this.frontFill.vertices.splice(0));
     pool.push(...this.backFill.vertices.splice(0));
     pool.push(...this.fillStorageAnchors.splice(0));
@@ -404,7 +413,7 @@ export default class Circle extends Nodule {
     // The circle interior is only on the front of the sphere
     if (backLen === 0 && this._circleRadius < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
-      this.frontPart.vertices.forEach((v: Anchor) => {
+      this.frontPart.vertices.forEach((v: Two.Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -471,7 +480,7 @@ export default class Circle extends Nodule {
       );
 
       // Build the frontFill- first add the frontPart.vertices
-      this.frontPart.vertices.forEach((node: Anchor) => {
+      this.frontPart.vertices.forEach((node: Two.Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -493,7 +502,7 @@ export default class Circle extends Nodule {
       // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
       // console.log("pool size", pool.length);
       // Build the backFill- first add the backPart.vertices
-      this.backPart.vertices.forEach((node: Anchor) => {
+      this.backPart.vertices.forEach((node: Two.Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -522,7 +531,7 @@ export default class Circle extends Nodule {
     else if (frontLen === 0 && this._circleRadius < Math.PI / 2) {
       //
       // In this case the backFillVertices are the same as the backVertices
-      this.backPart.vertices.forEach((v: Anchor, index: number) => {
+      this.backPart.vertices.forEach((v: Two.Anchor, index: number) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -588,7 +597,7 @@ export default class Circle extends Nodule {
       negIndexFill++;
 
       // now add the backPart vertices
-      this.backPart.vertices.forEach((v: Anchor, index: number) => {
+      this.backPart.vertices.forEach((v: Two.Anchor, index: number) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -660,7 +669,7 @@ export default class Circle extends Nodule {
       posIndexFill++;
 
       // now add the frontPart vertices
-      this.frontPart.vertices.forEach((v: Anchor, index: number) => {
+      this.frontPart.vertices.forEach((v: Two.Anchor, index: number) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -841,16 +850,16 @@ export default class Circle extends Nodule {
     }
     // After the above two while statement execute this. glowing/not front/back and dup. glowing/not front/back are the same length
     // Now we can copy the vertices from the this.front/back to the dup.front/back
-    dup.frontPart.vertices.forEach((v: Anchor, pos: number) => {
+    dup.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontPart.vertices[pos]);
     });
-    dup.backPart.vertices.forEach((v: Anchor, pos: number) => {
+    dup.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backPart.vertices[pos]);
     });
-    dup.glowingFrontPart.vertices.forEach((v: Anchor, pos: number) => {
+    dup.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingFrontPart.vertices[pos]);
     });
-    dup.glowingBackPart.vertices.forEach((v: Anchor, pos: number) => {
+    dup.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingBackPart.vertices[pos]);
     });
 
@@ -869,11 +878,11 @@ export default class Circle extends Nodule {
     }
     dup.fillStorageAnchors.push(...poolFill.splice(0));
 
-    dup.frontFill.vertices.forEach((v: Anchor, pos: number) => {
+    dup.frontFill.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontFill.vertices[pos]);
     });
 
-    dup.backFill.vertices.forEach((v: Anchor, pos: number) => {
+    dup.backFill.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backFill.vertices[pos]);
     });
 
@@ -884,7 +893,7 @@ export default class Circle extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Group[]): void {
+  addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill.addTo(layers[LAYER.foregroundFills]);

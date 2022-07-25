@@ -94,7 +94,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   private tmpVector2 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     // Set the style using the temporary defaults
     this.temporaryPoint1 = new Point();

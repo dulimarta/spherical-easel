@@ -84,7 +84,7 @@ export default class MeasuredCircleHandler extends Highlighter {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults

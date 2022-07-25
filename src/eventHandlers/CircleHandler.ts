@@ -73,7 +73,7 @@ export default class CircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Group[]) {
+  constructor(layers: Two.Group[]) {
     super(layers);
     this.centerVector = new Vector3();
     this.temporaryCircle = new Circle();
