@@ -383,11 +383,8 @@ export function intersectLineWithParametric(
         return parametric.PPrime(t).dot(tmpVector);
       };
 
-      const zeros = SENodule.findZerosParametrically(
-        dp,
-        parametric.tValues,
-        [],
-        dpp
+      const zeros = parametric.tRanges.flatMap(tValues =>
+        SENodule.findZerosParametrically(dp, tValues, [], dpp)
       );
 
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
@@ -433,11 +430,8 @@ export function intersectLineWithParametric(
     return parametric.PPrime(t).dot(transformedToStandard);
   };
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tValues,
-    avoidTValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(d, tValues, avoidTValues, dp)
   );
 
   // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
@@ -621,12 +615,14 @@ export function intersectSegmentWithParametric(
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tValues,
-    [], // FIXME
-    // parametric.c1DiscontinuityParameterValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(
+      d,
+      tValues,
+      [], // FIXME
+      // parametric.c1DiscontinuityParameterValues,
+      dp
+    )
   );
 
   // FIXME: handle SEParametricGroup
@@ -931,12 +927,14 @@ export function intersectCircleWithParametric(
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tValues,
-    [], // FIXME
-    // parametric.c1DiscontinuityParameterValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(
+      d,
+      tValues,
+      [], // FIXME
+      // parametric.c1DiscontinuityParameterValues,
+      dp
+    )
   );
 
   const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
@@ -1141,12 +1139,14 @@ export function intersectEllipseWithParametric(
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tValues,
-    [], // FIXME
-    // parametric.c1DiscontinuityParameterValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(
+      d,
+      tValues,
+      [], // FIXME
+      // parametric.c1DiscontinuityParameterValues,
+      dp
+    )
   );
 
   const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;

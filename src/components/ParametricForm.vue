@@ -108,7 +108,6 @@ import ParametricCuspParameterValues from "@/components/ParametricCuspParameterV
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-// import Parametric from "@/plottables/Parametric";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -116,13 +115,11 @@ import { SEParametric } from "@/models/SEParametric";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddParametricCommand } from "@/commands/AddParametricCommand";
 import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
-// import { AddParametricGroupCommand } from "@/commands/AddParametricGroupCommand";
 import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePointCommand";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-// import { SEParametricGroup } from "@/models/SEParametricGroup";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 
@@ -692,19 +689,6 @@ export default class ParametricForm extends Vue {
       }
     }
 
-    // TODO: Use multiple parametric if we have discontinuity
-    // const parametric = new Parametric(
-    //   this.tNumbers.min, // global min-max
-    //   this.tNumbers.max,
-    //   this.tNumbers.min, // part min-max
-    //   this.tNumbers.max,
-    //   closed
-    // );
-    // // Set the display to the default values
-    // parametric.stylize(DisplayStyle.ApplyCurrentVariables);
-    // // Adjust the stroke width to the current zoom magnification factor
-    // parametric.adjustSize();
-
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     // if (this.tExpressions.min === "")
     //   this.tExpressions.min = this.tNumbers.min.toString();
@@ -712,41 +696,6 @@ export default class ParametricForm extends Vue {
     //   this.tExpressions.max = this.tNumbers.max.toString();
     // Create the Parametric in the SEParametric constructor
     // Not here!
-    // if (this.c1DiscontinuityParameterValues.length > 0) {
-    //   let breakpoints: Array<number> = [];
-    //   // console.debug(
-    //   //   "Discontinuity T-values",
-    //   //   this.c1DiscontinuityParameterValues
-    //   // );
-    //   // console.debug("T range", this.tNumbers);
-    //   if (this.tNumbers.min < this.c1DiscontinuityParameterValues[0])
-    //     breakpoints.push(this.tNumbers.min);
-    //   breakpoints.push(...this.c1DiscontinuityParameterValues);
-    //   const N = this.c1DiscontinuityParameterValues.length;
-    //   if (this.tNumbers.max > this.c1DiscontinuityParameterValues[N - 1])
-    //     breakpoints.push(this.tNumbers.max);
-    //   const parametricGroup = new SEParametricGroup();
-    //   for (let k = 0; k < breakpoints.length - 1; k++) {
-    //     console.debug(
-    //       `SEParametric part ${k} from ${breakpoints[k]} to ${
-    //         breakpoints[k + 1]
-    //       }`
-    //     );
-    //     const newSEParametric = new SEParametric(
-    //       this.coordinateExpressions,
-    //       this.tExpressions,
-    //       { min: breakpoints[k], max: breakpoints[k + 1] }, // T-value hard limits
-    //       calculationParents
-    //     );
-    //     parametricGroup.add(newSEParametric);
-    //   }
-    //   const paramGroupCommand = new AddParametricGroupCommand(parametricGroup);
-    //   paramGroupCommand.execute();
-    //   parametricGroup.members.forEach(par => {
-    //     par.markKidsOutOfDate();
-    //     par.update();
-    //   });
-    // } else {
     const newSEParametric = new SEParametric(
       // parametric,
       this.coordinateExpressions,
@@ -756,11 +705,13 @@ export default class ParametricForm extends Vue {
       calculationParents
     );
     // Create the plottable and model label
+
     const newLabel = new Label();
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
+    const startVector = newSEParametric.P(this.tNumbers.min);
     this.tempVector
-      .copy(newSEParametric.P(this.tNumbers.min))
+      .copy(startVector)
       .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tempVector;
@@ -778,6 +729,8 @@ export default class ParametricForm extends Vue {
       tracePoint,
       newSEParametric
     );
+
+    traceSEPoint.locationVector = startVector;
     const traceLabel = new Label();
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
@@ -835,6 +788,7 @@ export default class ParametricForm extends Vue {
         )
       );
     }
+
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the parametric command so they can be undone.
     this.createAllIntersectionsWithParametric(newSEParametric).forEach(

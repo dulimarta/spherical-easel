@@ -189,7 +189,7 @@ export const useSEStore = defineStore({
       seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
       seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
       seLines.forEach((x: SELine) => x.ref.removeFromLayers());
-      this.sePointIds.forEach(id => {
+      this.sePointIds.forEach((id: number) => {
         const pt = sePoints.get(id);
         if (pt) pt.ref.removeFromLayers();
       });
@@ -211,7 +211,7 @@ export const useSEStore = defineStore({
     },
     // Update the display of all free SEPoints to update the entire display
     updateDisplay(): void {
-      this.seNodules
+      seNodules
         .filter(obj => obj.isFreeToMove())
         .forEach(obj => {
           // First mark the kids out of date so that the update method does a topological sort
@@ -283,7 +283,9 @@ export const useSEStore = defineStore({
       if (victimCircle) {
         /* victim line is found */
         victimCircle.ref.removeFromLayers();
-        const circlePos = this.seCircleIds.findIndex(id => id === circleId);
+        const circlePos = this.seCircleIds.findIndex(
+          (id: number) => id === circleId
+        );
         const pos = seNodules.findIndex(x => x.id === circleId);
         this.seCircleIds.splice(circlePos, 1); // Remove the circle from the list
         seNodules.splice(pos, 1);
@@ -315,7 +317,7 @@ export const useSEStore = defineStore({
     removeSegment(segId: number): void {
       const victimSegment = seSegments.get(segId);
       if (victimSegment) {
-        const pos = this.seSegmentIds.findIndex(id => id === segId);
+        const pos = this.seSegmentIds.findIndex((id: number) => id === segId);
         const pos2 = seNodules.findIndex(x => x.id === segId);
         victimSegment.ref.removeFromLayers();
         this.seSegmentIds.splice(pos, 1);
@@ -338,7 +340,9 @@ export const useSEStore = defineStore({
       if (victimEllipse) {
         /* victim line is found */
         victimEllipse.ref.removeFromLayers();
-        const ellipsePos = this.seEllipseIds.findIndex(id => id === ellipseId);
+        const ellipsePos = this.seEllipseIds.findIndex(
+          (id: number) => id === ellipseId
+        );
         const pos2 = seNodules.findIndex(x => x.id === ellipseId);
         this.seEllipseIds.splice(ellipsePos, 1); // Remove the ellipse from the list
         seEllipses.delete(ellipseId);
@@ -358,7 +362,7 @@ export const useSEStore = defineStore({
       if (victimLabel) {
         // Remove the associated plottable (Nodule) object from being rendered
         victimLabel.ref.removeFromLayers(layers);
-        const pos = this.seLabelIds.findIndex(id => id === labelId);
+        const pos = this.seLabelIds.findIndex((id: number) => id === labelId);
         const pos2 = seNodules.findIndex((x: SENodule) => x.id === labelId);
         this.seLabelIds.splice(pos, 1);
         seLabels.delete(labelId);
@@ -390,10 +394,12 @@ export const useSEStore = defineStore({
         seAngleMarkers.delete(angleMarkerId);
         seExpressions.delete(angleMarkerId);
         const angleMarkerPos = this.seAngleMarkerIds.findIndex(
-          id => id === angleMarkerId
+          (id: number) => id === angleMarkerId
         );
         const pos2 = seNodules.findIndex(x => x.id === angleMarkerId);
-        const pos3 = this.seExpressionIds.findIndex(id => id === angleMarkerId);
+        const pos3 = this.seExpressionIds.findIndex(
+          (id: number) => id === angleMarkerId
+        );
         // when removing expressions that have effects on the labels, we must set those label display arrays to empty
         if (victimAngleMarker.label) {
           victimAngleMarker.label.ref.value = [];
@@ -423,7 +429,7 @@ export const useSEStore = defineStore({
       if (victimParametric) {
         /* victim line is found */
         const parametricPos = this.seParametricIds.findIndex(
-          id => id === parametricId
+          (id: number) => id === parametricId
         );
         const pos2 = seNodules.findIndex(x => x.id === parametricId);
         victimParametric.ref?.removeFromLayers();
@@ -452,9 +458,13 @@ export const useSEStore = defineStore({
     removePolygonAndExpression(polygonId: number): void {
       const victimPolygon = sePolygons.get(polygonId);
       if (victimPolygon) {
-        const polygonPos = this.sePolygonIds.findIndex(id => id === polygonId);
+        const polygonPos = this.sePolygonIds.findIndex(
+          (id: number) => id === polygonId
+        );
         const pos2 = seNodules.findIndex(x => x.id === polygonId);
-        const pos3 = this.seExpressionIds.findIndex(id => id === polygonId);
+        const pos3 = this.seExpressionIds.findIndex(
+          (id: number) => id === polygonId
+        );
         /* victim polygon is found */
         // when removing expressions that have effects on the labels, we must set those label display arrays to empty
         if (victimPolygon.label) {
@@ -479,7 +489,9 @@ export const useSEStore = defineStore({
       const victimExpr = seExpressions.get(measId);
       if (victimExpr) {
         seExpressions.delete(measId);
-        const pos = this.seExpressionIds.findIndex(id => id === measId);
+        const pos = this.seExpressionIds.findIndex(
+          (id: number) => id === measId
+        );
         const pos2 = seNodules.findIndex(x => x.id === measId);
         this.seExpressionIds.splice(pos, 1);
         seNodules.splice(pos2, 1);
@@ -501,13 +513,13 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          // console.debug(parent.name, "invalidates", m.name);
+          console.debug(parent.name, "invalidates", m.name);
           if (m.exists) {
             if (m.canUpdateNow()) {
               if (!updateCandidates.find((x: SENodule) => x.name === m.name))
                 updateCandidates.push(m);
             } else {
-              // console.debug("!!! Dependent ", m.name, " can't be updated now");
+              console.debug("!!! Dependent ", m.name, " can't be updated now");
             }
           }
         });
@@ -580,7 +592,7 @@ export const useSEStore = defineStore({
     changeBackContrast(newContrast: number): void {
       Nodule.setBackStyleContrast(newContrast);
       // update all objects display
-      this.seNodules.forEach(seNodule => {
+      seNodules.forEach(seNodule => {
         // update the style of the objects
         // console.log("name", seNodule.name);
         seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -645,7 +657,7 @@ export const useSEStore = defineStore({
 
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
-      this.seNodules.forEach(p => {
+      seNodules.forEach(p => {
         if (!p.selected && p.exists) {
           p.glowing = false;
         }

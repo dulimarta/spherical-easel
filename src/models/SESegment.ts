@@ -31,7 +31,7 @@ export class SESegment
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Segment;
+  public declare ref: Segment;
   /**
    * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
    */

@@ -25,7 +25,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Polygon;
+  public declare ref: Polygon;
   /**
    * Pointer to the label of this SEPolygon
    */

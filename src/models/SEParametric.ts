@@ -47,20 +47,22 @@ type TSample = {
 
 // Data structure stored in a max heap used for adaptive smoothing
 type TCurve = {
-  index: number;
-  curvature: number;
+  index: number; // index into the TSample array
+  curvature: number; // local curvature at the sample point
 };
 
-const getCurvature: IGetCompareValue<TCurve> = z => z.curvature;
+// Get the comparison key for the max heap
+const getCurvature: IGetCompareValue<TCurve> = tc => tc.curvature;
 
 export class SEParametric
   extends SENodule
   implements Visitable, OneDimensional, Labelable
 {
   /**
-   * The plottable (TwoJS) segment associated with this model segment
+   * The corresponding plottable TwoJS object
    */
-  // private ref: Parametric;
+  public declare ref: Parametric;
+
   /**
    * Pointer to the label of this SEParametric
    */
@@ -116,12 +118,16 @@ export class SEParametric
    * However, the active tNumbers must always be bound by the hard limits.
    */
   private _tExpressions: MinMaxExpression = { min: "", max: "" };
+
+  /** the current T-value bounds which can be affected by measurement expressions */
   private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
+
+  /** the current T-value bounds which can be affected by measurement expressions */
   private _tNumbersHardLimit: MinMaxNumber = { min: NaN, max: NaN };
+
   private _tValues: Array<number> = [];
   private partitionedTValues: Array<Array<number>> = [];
   private _isClosed: boolean;
-  private tIntervals: Array<MinMaxNumber> = [];
   private fnValues: Vector3[] = [];
   private fnPrimeValues: Vector3[] = [];
   private fnPPrimeValues: Vector3[] = [];
@@ -210,9 +216,9 @@ export class SEParametric
     );
     this._tNumbersHardLimit.min = tNumbers.min;
     this._tNumbersHardLimit.max = tNumbers.max;
-    const tVals = this.tMinMaxExpressionValues();
-    this._tNumbers.min = tVals[0];
-    this._tNumbers.max = tVals[1];
+    const currentTValues = this.tMinMaxExpressionValues();
+    this._tNumbers.min = currentTValues[0];
+    this._tNumbers.max = currentTValues[1];
 
     if (tExpressions.min.trim().length > 0) {
       this._tExpressions.min = tExpressions.min;
@@ -223,34 +229,6 @@ export class SEParametric
       this.tSyntaxTrees.max = ExpressionParser.parse(tExpressions.max);
     }
 
-    // if (numDiscontinuity > 0) {
-    //   console.log(
-    //     "****** Parametric curve with discontinuity!!!!!",
-    //     c1DiscontinuityParameterValues
-    //   );
-    //   if (this._tNumbersHardLimit.min < c1DiscontinuityParameterValues[0]) {
-    //     this._c1DiscontinuityParameterValues.push(this._tNumbers.min);
-    //   }
-    //   this._c1DiscontinuityParameterValues.push(
-    //     ...c1DiscontinuityParameterValues
-    //   );
-    //   if (
-    //     this._tNumbersHardLimit.max >
-    //     c1DiscontinuityParameterValues[numDiscontinuity - 1]
-    //   )
-    //     this._c1DiscontinuityParameterValues.push(this._tNumbers.max);
-    //   let ptr: Parametric | null = this.ref; // Head of the list
-    //   for (
-    //     let m = 1;
-    //     m < this._c1DiscontinuityParameterValues.length - 1;
-    //     m++
-    //   ) {
-    //     const p = new Parametric();
-    //     p.partId = m;
-    //     // ptr.next = p;
-    //     ptr = p;
-    //   }
-    // }
     this._seParentExpressions.push(...measurementParents);
 
     // Sample for max number of perpendiculars from any point on the sphere
@@ -271,33 +249,32 @@ export class SEParametric
     this._tValues.push(...tSamples.map(x => x.t));
     this.fnValues.push(...tSamples.map(x => x.value));
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
+    // const tIntervals: Array<MinMaxNumber> = [];
+
+    // Create partitioned T-values from the T-values of the sample points
     if (numDiscontinuity === 0) {
-      this.tIntervals.push(tNumbers);
+      // Only a single range of T values
+      // Partition-0: t0, t1, t2, ..., tN
+      // tIntervals.push(tNumbers);
       this.partitionedTValues.push(this._tValues);
     } else {
-      if (tNumbers.min < c1DiscontinuityParameterValues[0]) {
-        this.tIntervals.push({
-          min: tNumbers.min,
-          max: c1DiscontinuityParameterValues[0]
-        });
-      }
-      for (let k = 0; k < numDiscontinuity - 1; k++) {
-        this.tIntervals.push({
-          min: c1DiscontinuityParameterValues[k],
-          max: c1DiscontinuityParameterValues[k + 1]
-        });
-      }
+      // Multiple ranges of (partitioned) T values from Cusp points C1, C2, ..., Ck
+      const breakPoints = c1DiscontinuityParameterValues.slice(0);
+      // Take the smaller of the two upper bounds
       if (tNumbers.max > c1DiscontinuityParameterValues[numDiscontinuity - 1])
-        this.tIntervals.push({
-          min: c1DiscontinuityParameterValues[numDiscontinuity - 1],
-          max: tNumbers.max
-        });
-      let k = 0;
-      for (const span of this.tIntervals) {
+        breakPoints.push(currentTValues[1]);
+
+      // Partition the T-values t0, t1, t2, ..., tN based on the break points b1, b2, b3, ..., bM
+      // Partition-1: t0, t1, ..., ti  (all values <= b1)
+      // Partition-2: ti+1, ..., tj (all values <= b2)
+      // And so on
+      // Partition-M: tk, tk+1, ... , tN (all values <= bM)
+      let index = 0;
+      for (const upperBound of breakPoints) {
         const tVals = [];
-        while (this._tValues[k] < span.max) {
-          tVals.push(this._tValues[k]);
-          k++;
+        while (this._tValues[index] < upperBound) {
+          tVals.push(this._tValues[index]);
+          index++;
         }
         this.partitionedTValues.push(tVals.slice(0));
       }
@@ -308,8 +285,8 @@ export class SEParametric
     this.calculateDerivatives(tSamples);
   }
 
-  get tValues(): Array<number> {
-    return this._tValues;
+  get tRanges(): Array<Array<number>> {
+    return this.partitionedTValues;
   }
 
   get isClosedCurve(): boolean {
@@ -502,16 +479,16 @@ export class SEParametric
       this.primeX2CoordinateSyntaxTrees,
       this.fnPPrimeValues
     );
-    (this.ref as Parametric).setRangeAndFunctions(
-      this.tValues,
+    this.ref.setRangeAndFunctions(
+      this._tValues,
       this.fnValues,
       // this.fnPrimeValues,
       // this.fnPPrimeValues,
       Math.max(this._tNumbersHardLimit.min, this.tNumbers.min),
       Math.min(this._tNumbersHardLimit.max, this.tNumbers.max)
     );
-    (this.ref as Parametric).stylize(DisplayStyle.ApplyCurrentVariables);
-    (this.ref as Parametric).adjustSize();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
   }
 
   private evaluateFunctionAndCache(
@@ -538,6 +515,8 @@ export class SEParametric
   }
 
   private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
+    if (arr === undefined)
+      console.debug("I am called by", this.lookupFunctionValueAt.caller.name);
     const N = arr.length;
     if (N >= 2) {
       let sIndex = 0;
@@ -547,7 +526,6 @@ export class SEParametric
         const fraction =
           (t - this._tValues[sIndex]) /
           (this._tValues[sIndex + 1] - this._tValues[sIndex]);
-        const toRight = this._tValues[sIndex + 1] - t;
         /* Use linear interpolation of two neighboring values in the array */
 
         // compute weighted average (1-f)*arr[k] + f*arr[k+1]
@@ -690,11 +668,6 @@ export class SEParametric
       // display the updated parametric
       // TODO: FIXME
       // this.calculateDerivatives(this.tValues.map(z => z.t));
-      // let ptr: Parametric | null = this.ref;
-      // while (ptr !== null) {
-      //   ptr.updateDisplay();
-      //   ptr = ptr.next;
-      // }
       console.debug("SEParametric calling Parametric::updateDisplay()");
       this.ref?.updateDisplay();
     }
@@ -744,7 +717,7 @@ export class SEParametric
     //   "sample points from",
     //   idealUnitSphereVector.toFixed(3)
     // );
-    if (this.tValues.length > 0) {
+    if (this._tValues.length > 0) {
       //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
       const transformedToStandard = new Vector3();
       transformedToStandard.copy(idealUnitSphereVector);

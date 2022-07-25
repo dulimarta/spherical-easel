@@ -4,7 +4,6 @@ import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
-import Parametric from "@/plottables/Parametric";
 
 const MAX = false;
 const MIN = true;
@@ -14,7 +13,7 @@ export class SEParametricEndPoint extends SEPoint {
    * The parent of this SEParametricEndPoint
    */
   private _parametricParent: SEParametric;
-  private _endpoint = MIN;
+  private _isMinPoint = MIN;
 
   private tmpVector4 = new Vector3();
 
@@ -22,45 +21,60 @@ export class SEParametricEndPoint extends SEPoint {
     super(point);
     this.ref = point;
     this._parametricParent = parametricParent;
-    if (endPoint === "min") {
-      this._endpoint = MIN;
-    } else if (endPoint === "max") {
-      this._endpoint = MAX;
-    }
+    this._isMinPoint = endPoint === "min";
+    if (this._isMinPoint)
+      console.debug(
+        `Point ${this.name} is a minimum endppoint for parametric ${parametricParent.name}`
+      );
+    else
+      console.debug(
+        `Point ${this.name} is a maximum endppoint for parametric ${parametricParent.name}`
+      );
   }
 
   /**
    * Set or get the location vector of the SEPointOnOneDim on the unit ideal sphere
    * If you over ride a setting your must also override the getter! (And Vice Versa)
    */
-  set locationVector(pos: Vector3) {
-    // Record the location on the unit ideal sphere of this SEPointOnOneDim
-    // If the parent is not out of date, use the closest vector, if not set the location directly
-    // and the program will update the parent later so that the set location is on the parent (even though it is
-    // at the time of execution)
-    const possibleVec = (
-      this._parametricParent.ref as Parametric
-    ).endPointVector(this._endpoint);
-    if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
-      this._locationVector.copy(possibleVec).normalize();
-    } else {
-      this._locationVector.copy(pos);
-    }
-    // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this._locationVector;
-  }
+  // set locationVector(pos: Vector3) {
+  //   // Record the location on the unit ideal sphere of this SEPointOnOneDim
+  //   // If the parent is not out of date, use the closest vector, if not set the location directly
+  //   // and the program will update the parent later so that the set location is on the parent (even though it is
+  //   // at the time of execution)
+  //   let possibleVec: Vector3 | undefined;
+  //   if (this.parents.length > 0) {
+  //     const parent = this.parents[0] as SEParametric;
+  //     let tValue: number;
+  //     if (this._endpoint)
+  //       // Start point
+  //       tValue = parent.tRanges[0][0];
+  //     else {
+  //       const nRange = parent.tRanges.length;
+  //       const len = parent.tRanges[nRange - 1].length;
+  //       tValue = parent.tRanges[nRange - 1][len - 1];
+  //     }
+  //     possibleVec = parent.P(tValue);
+  //   }
+  //   if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
+  //     this._locationVector.copy(possibleVec).normalize();
+  //   } else {
+  //     this._locationVector.copy(pos);
+  //   }
+  //   // Set the position of the associated displayed plottable Point
+  //   this.ref.positionVector = this._locationVector;
+  // }
 
-  get locationVector(): Vector3 {
-    return this._locationVector;
-  }
+  // get locationVector(): Vector3 {
+  //   return this._locationVector;
+  // }
 
-  get endPoint(): boolean {
-    return this._endpoint;
+  get isMinPoint(): boolean {
+    return this._isMinPoint;
   }
 
   public get noduleDescription(): string {
     let endPoint: string;
-    if (this._endpoint) {
+    if (this._isMinPoint) {
       endPoint = "start";
     } else {
       endPoint = "end";
@@ -105,10 +119,19 @@ export class SEParametricEndPoint extends SEPoint {
     this._exists = this.parametricParent.exists;
 
     let possibleVec: Vector3 | undefined = undefined;
-    if (this.parents.length > 0)
-      possibleVec = (
-        (this.parents[0] as SEParametric).ref as Parametric
-      ).endPointVector(this._endpoint);
+    if (this.parents.length > 0) {
+      const parent = this.parents[0] as SEParametric;
+      let tValue: number;
+      if (this._isMinPoint)
+        // Start point
+        tValue = parent.tRanges[0][0];
+      else {
+        const nRange = parent.tRanges.length;
+        const len = parent.tRanges[nRange - 1].length;
+        tValue = parent.tRanges[nRange - 1][len - 1];
+      }
+      possibleVec = parent.P(tValue);
+    }
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();

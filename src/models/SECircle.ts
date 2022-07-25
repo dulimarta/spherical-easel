@@ -26,7 +26,7 @@ export class SECircle
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Circle;
+  public declare ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */

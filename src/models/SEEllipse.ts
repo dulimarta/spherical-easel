@@ -25,7 +25,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Ellipse;
+  public declare ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */

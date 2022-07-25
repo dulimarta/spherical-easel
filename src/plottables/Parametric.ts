@@ -157,7 +157,6 @@ export default class Parametric extends Nodule {
 
   private buildCurve() {
     const numAnchors = this._coordValues.length;
-    // console.debug(`Use ${numAnchors} anchor points`);
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -176,7 +175,6 @@ export default class Parametric extends Nodule {
       // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Two.Path([], false, false));
       this.glowingBackParts.push(new Two.Path([], false, false));
-
       // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
         type: "parametric",
@@ -191,7 +189,6 @@ export default class Parametric extends Nodule {
         part: "0"
       });
       // #endregion updatePlottableMap
-
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
       // The front/back fill have no stroke because that is handled by the front/back part
@@ -199,7 +196,6 @@ export default class Parametric extends Nodule {
       this.backParts[0].noFill();
       this.glowingFrontParts[0].noFill();
       this.glowingBackParts[0].noFill();
-
       //Turn off the glowing display initially but leave it on so that the temporary objects show up
       this.frontParts[0].visible = true;
       this.backParts[0].visible = true;
@@ -238,7 +234,6 @@ export default class Parametric extends Nodule {
     }
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
-    console.debug(`End of buildCurve()`);
     this.frontParts.forEach((z, pos) => {
       console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
     });
@@ -437,8 +432,8 @@ export default class Parametric extends Nodule {
     console.debug(
       `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
     );
-    // this.stylize(DisplayStyle.ApplyCurrentVariables);
-    // this.adjustSize();
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.adjustSize();
   }
 
   /**
@@ -469,33 +464,33 @@ export default class Parametric extends Nodule {
     );
   }
 
-  public endPointVector(minMax: boolean): Vector3 | undefined {
-    transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
-    this.tmpMatrix.makeScale(
-      SETTINGS.boundaryCircle.radius,
-      SETTINGS.boundaryCircle.radius,
-      SETTINGS.boundaryCircle.radius
-    );
-    transformMatrix.multiply(this.tmpMatrix);
+  // public endPointVector(minMax: boolean): Vector3 | undefined {
+  //   transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
+  //   this.tmpMatrix.makeScale(
+  //     SETTINGS.boundaryCircle.radius,
+  //     SETTINGS.boundaryCircle.radius,
+  //     SETTINGS.boundaryCircle.radius
+  //   );
+  //   transformMatrix.multiply(this.tmpMatrix);
 
-    // find the tracing tMin and tMax
-    // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
-    //   this._tNumbers.min,
-    //   this._tNumbers.max
-    // ];
+  //   // find the tracing tMin and tMax
+  //   // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+  //   //   this._tNumbers.min,
+  //   //   this._tNumbers.max
+  //   // ];
 
-    // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (this.tMax <= this.tMin) return undefined;
+  //   // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
+  //   if (this.tMax <= this.tMin) return undefined;
 
-    if (minMax) {
-      this.tmpVector.copy(this._coordValues[0]);
-    } else {
-      this.tmpVector.copy(this._coordValues[this._coordValues.length - 1]);
-    }
-    // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-    // Set tmpVector equal to location on the target Parametric in rotated position
-    return this.tmpVector.applyMatrix4(transformMatrix);
-  }
+  //   if (minMax) {
+  //     this.tmpVector.copy(this._coordValues[0]);
+  //   } else {
+  //     this.tmpVector.copy(this._coordValues[this._coordValues.length - 1]);
+  //   }
+  //   // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
+  //   // Set tmpVector equal to location on the target Parametric in rotated position
+  //   return this.tmpVector.applyMatrix4(transformMatrix);
+  // }
 
   frontGlowingDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));

@@ -32,7 +32,7 @@ export class SELine
   /**
    * The corresponding plottable TwoJS object
    */
-  public ref: Line;
+  public declare ref: Line;
   /**
    * Pointer to the label of this SESegment
    */
