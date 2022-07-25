@@ -185,7 +185,7 @@ export default class SphereFrame extends VueComponent {
       // ratio: window.devicePixelRatio
     });
     console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
-    this.twoInstance.scene.matrix.manual = true;
+    //this.twoInstance.scene.matrix.manual = true;
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
