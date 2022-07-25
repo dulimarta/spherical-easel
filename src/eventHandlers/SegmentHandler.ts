@@ -928,7 +928,6 @@ export default class SegmentHandler extends Highlighter {
       if (this.normalVector.length() == 0) {
         // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
         // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
-        this.tmpVector.set(1, 0, 0);
         this.tmpVector.crossVectors(this.startVector, this.tmpVector);
         if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
           this.tmpVector.set(0, 1, 0);
@@ -972,6 +971,10 @@ export default class SegmentHandler extends Highlighter {
     // The user can override this algorithm and make the segment longer than PI
     if (ctrlPressed) {
       this.longerThanPi = true;
+    } else {
+      // Without this else statement once the user presses ctrl, then can't get back to less than pi length
+      // this way when the user releases the length is less than pi.
+      this.longerThanPi = false;
     }
     // Update the arcLength based on longThanPi
     if (this.longerThanPi) {
