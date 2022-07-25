@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "strict": true,
-    "declaration": false,
+    "declaration": true,
     "jsx": "preserve",
     "importHelpers": true,
     "noImplicitAny": true,
@@ -24,18 +24,14 @@
       "@/*": ["src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
-    "resolveJsonModule": true,
-    "skipLibCheck": true
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "**/__tests__/**", "**/tests/unit/**"],
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    // "src/types/two.js/index.d.ts",
+    "src/**/*.vue"
     // "tests/*.d.ts",
-    "src/stores/unused-se-module.ts",
-    "src/utils/memory.js"
   ],
   "verbose": true
   // "globals": {
