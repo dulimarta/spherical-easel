@@ -141,24 +141,40 @@ export default class extends Vue {
   // or when the mouse moves while a new construction is being loaded
   async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
-    this.lastDocId = s.id;
-    const newSvg = await axios
-      .get(s.previewData)
-      .then((r: AxiosResponse) => r.data)
-      .then((svgString: string) => {
-        const newDoc = this.domParser.parseFromString(
-          svgString,
-          "image/svg+xml"
-        );
-        return newDoc.querySelector("svg") as SVGElement;
-      });
 
-    // If we are previewing a construction replace that with the new one
-    // Otherwise replace the current top-level SVG with the new one
-    if (this.previewSVG !== null) this.previewSVG.replaceWith(newSvg);
-    else this.svgRoot.replaceWith(newSvg);
-    // console.debug("onItemHover:", this.previewSVG);
-    this.previewSVG = newSvg;
+    this.lastDocId = s.id;
+    let aDoc: Document | undefined = undefined;
+
+    if (s.previewData.startsWith("data:")) {
+      const regex = /^data:.+\/(.+);base64,(.*)$/;
+      const parts = s.previewData.match(regex);
+      if (parts) {
+        const buff = Buffer.from(parts[2], "base64");
+        aDoc = this.domParser.parseFromString(buff.toString(), "image/svg+xml");
+      }
+    } else {
+      aDoc = await axios
+        .get(s.previewData, { responseType: "text" })
+        .then((r: AxiosResponse) => r.data)
+        .then((svgString: string) => {
+          const newDoc = this.domParser.parseFromString(
+            svgString,
+            "image/svg+xml"
+          );
+          return newDoc; // .querySelector("svg") as SVGElement;
+        });
+    }
+    if (aDoc) {
+      const newSvg = aDoc.querySelector("svg") as SVGElement;
+
+      // If we are previewing a construction replace that with the new one
+      // Otherwise replace the current top-level SVG with the new one
+
+      if (this.previewSVG !== null) this.previewSVG.replaceWith(newSvg);
+      else this.svgRoot.replaceWith(newSvg);
+      // console.debug("onItemHover:", this.previewSVG);
+      this.previewSVG = newSvg;
+    }
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {

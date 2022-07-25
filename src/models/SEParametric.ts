@@ -668,7 +668,6 @@ export class SEParametric
       // display the updated parametric
       // TODO: FIXME
       // this.calculateDerivatives(this.tValues.map(z => z.t));
-      console.debug("SEParametric calling Parametric::updateDisplay()");
       this.ref?.updateDisplay();
     }
 
