@@ -54,8 +54,8 @@ import { mapState, mapActions, mapWritableState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { Matrix4 } from "three";
 import Two from "two.js";
-import { Circle } from "two.js/src/shapes/circle";
-import { Group } from "two.js/src/group";
+// import { Circle } from "two.js/src/shapes/circle";
+// import { Group } from "two.js/src/group";
 import { SEExpression } from "@/models/SEExpression";
 import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
@@ -102,7 +102,7 @@ export default class SphereFrame extends VueComponent {
   readonly seLabels!: SELabel[];
 
   readonly init!: () => void;
-  readonly setLayers!: (_: Array<Group>) => void;
+  readonly setLayers!: (_: Array<Two.Group>) => void;
   readonly setCanvas!: (_: HTMLDivElement | null) => void;
   readonly setCanvasWidth!: (_: number) => void;
   // readonly setSphereRadius!: (_: number) => void;
@@ -127,7 +127,7 @@ export default class SphereFrame extends VueComponent {
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
-  private boundaryCircle!: Circle;
+  private boundaryCircle!: Two.Circle;
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -175,7 +175,7 @@ export default class SphereFrame extends VueComponent {
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  readonly layers!: Group[];
+  readonly layers!: Two.Group[];
 
   created(): void {
     this.twoInstance = new Two({
@@ -198,13 +198,13 @@ export default class SphereFrame extends VueComponent {
 
     // Create a detached group to prevent duplicate group ID
     // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
-    const dummy_group = new Group();
-    let groups: Array<Group> = [];
+    const dummy_group = new Two.Group();
+    let groups: Array<Two.Group> = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
-        const newLayer = new Group();
+        const newLayer = new Two.Group();
         newLayer.matrix.manual = true;
         // Undo the y-flip on text layers
         if (textLayers.indexOf(layerIdx) >= 0) {
@@ -227,7 +227,7 @@ export default class SphereFrame extends VueComponent {
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
-    this.boundaryCircle = new Circle(0, 0, SETTINGS.boundaryCircle.radius);
+    this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.boundaryCircle.addTo(this.layers[Number(LAYER.midground)]);

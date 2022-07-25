@@ -1,6 +1,6 @@
 const { defineConfig } = require("@vue/cli-service");
 
-module.exports = defineConfig({
+module.exports = {
   productionSourceMap: false, // disable source map on production build
   transpileDependencies: ["vuetify"],
   pluginOptions: {
@@ -36,4 +36,4 @@ module.exports = defineConfig({
       .loader("babel-loader")
       .end();
   }
-});
+};
