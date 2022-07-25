@@ -286,26 +286,11 @@ export default class SphereFrame extends VueComponent {
     // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
     // Set up the listeners
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mousemove",
-      this.handleMouseMoved
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mousedown",
-      this.handleMousePressed
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mouseup",
-      this.handleMouseReleased
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "mouseleave",
-      this.handleMouseLeave
-    );
-    this.twoInstance.renderer.domElement.addEventListener(
-      "wheel",
-      this.handleMouseWheel
-    );
+    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
+    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
 
     // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
     // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -324,26 +309,11 @@ export default class SphereFrame extends VueComponent {
   }
 
   beforeDestroy(): void {
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mousemove",
-      this.handleMouseMoved
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mousedown",
-      this.handleMousePressed
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mouseup",
-      this.handleMouseReleased
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "mouseleave",
-      this.handleMouseLeave
-    );
-    this.twoInstance.renderer.domElement.removeEventListener(
-      "wheel",
-      this.handleMouseWheel
-    );
+    this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
+    this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
     // Does this remove the context menu listener? I'm not sure.
     this.$refs.canvas.removeEventListener("contextmenu", event =>
       event.preventDefault()
