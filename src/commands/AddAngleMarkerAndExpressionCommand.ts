@@ -87,7 +87,8 @@ export class AddAngleMarkerCommand extends Command {
       "AddAngleMarker",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
       // All plottable objects have these attributes
-      "objectName=" + Command.symbolToASCIIDec(this.seAngleMarker.name),
+      "objectName=" +
+        Command.symbolToASCIIDec(this.seAngleMarker.name),
       "objectExists=" + this.seAngleMarker.exists,
       "objectShowing=" + this.seAngleMarker.showing,
       "objectFrontStyle=" +

@@ -20,18 +20,25 @@ export class AddTransformedPointCommand extends Command {
   private parentTransformation: SETransformation;
   private transformedSEPoint: SEPoint;
   private transformedSEPointLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
 
   constructor(
     transformedPoint: SETransformedPoint,
     transformedPointLabel: SELabel,
     preimageSEPoint: SEPoint,
-    parentTransformation: SETransformation
+    parentTransformation: SETransformation,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.preimageSEPoint = preimageSEPoint;
     this.transformedSEPoint = transformedPoint;
     this.parentTransformation = parentTransformation;
     this.transformedSEPointLabel = transformedPointLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -42,8 +49,8 @@ export class AddTransformedPointCommand extends Command {
     Command.store.addLabel(this.transformedSEPointLabel);
     // Set the label to display the name of the point in visible count order
     this.transformedSEPoint.pointVisibleBefore = true;
-    if (this.transformedSEPoint.label) {
-      this.transformedSEPoint.incrementVisiblePointCount();
+    this.transformedSEPoint.incrementVisiblePointCount();
+    if (this.transformedSEPoint.label && this.useVisiblePointCountToRename) {
       this.transformedSEPoint.label.ref.shortUserName = `P${this.transformedSEPoint.visiblePointCount}`;
     }
   }
@@ -53,8 +60,8 @@ export class AddTransformedPointCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.transformedSEPoint.label) {
-      this.transformedSEPoint.decrementVisiblePointCount();
+    this.transformedSEPoint.decrementVisiblePointCount();
+    if (this.transformedSEPoint.label && this.useVisiblePointCountToRename) {
       this.transformedSEPoint.label.ref.shortUserName = `P${this.transformedSEPoint.visiblePointCount}`;
     }
     this.transformedSEPoint.pointVisibleBefore = false;
@@ -184,7 +191,8 @@ export class AddTransformedPointCommand extends Command {
         transformedSEPoint,
         transformedSEPointLabel,
         parentSEPoint,
-        transformedPointParentTransformation
+        transformedPointParentTransformation,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

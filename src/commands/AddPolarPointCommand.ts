@@ -16,17 +16,24 @@ export class AddPolarPointCommand extends Command {
   private index: number;
   private parent: SELine | SESegment;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     sePolarPoint: SEPolarPoint,
     index: number,
     parent: SELine | SESegment,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.sePolarPoint = sePolarPoint;
     this.parent = parent;
     this.seLabel = seLabel;
     this.index = index;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -41,8 +48,8 @@ export class AddPolarPointCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // Set the label to display the name of the point in visible count order
     this.sePolarPoint.pointVisibleBefore = true;
-    if (this.sePolarPoint.label) {
-      this.sePolarPoint.incrementVisiblePointCount();
+    this.sePolarPoint.incrementVisiblePointCount();
+    if (this.sePolarPoint.label && this.useVisiblePointCountToRename) {
       this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
     }
     this.sePolarPoint.markKidsOutOfDate();
@@ -54,8 +61,8 @@ export class AddPolarPointCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.sePolarPoint.label) {
-      this.sePolarPoint.decrementVisiblePointCount();
+    this.sePolarPoint.decrementVisiblePointCount();
+    if (this.sePolarPoint.label && this.useVisiblePointCountToRename) {
       this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
     }
     this.sePolarPoint.pointVisibleBefore = false;
@@ -184,7 +191,8 @@ export class AddPolarPointCommand extends Command {
         sePolarPoint,
         sePolarPointIndex,
         sePolarPointParent,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

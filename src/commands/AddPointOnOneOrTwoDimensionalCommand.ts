@@ -13,15 +13,22 @@ export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
   private parent: SEOneOrTwoDimensional;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     sePointOnOneDimensional: SEPointOnOneOrTwoDimensional,
     parent: SEOneOrTwoDimensional,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.sePointOnOneOrTwoDimensional = sePointOnOneDimensional;
     this.parent = parent;
     this.seLabel = seLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -36,7 +43,10 @@ export class AddPointOnOneDimensionalCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // Set the label to display the name of the point in visible count order
     this.sePointOnOneOrTwoDimensional.pointVisibleBefore = true;
-    if (this.sePointOnOneOrTwoDimensional.label) {
+    if (
+      this.sePointOnOneOrTwoDimensional.label &&
+      this.useVisiblePointCountToRename
+    ) {
       this.sePointOnOneOrTwoDimensional.incrementVisiblePointCount();
       this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
     }
@@ -49,7 +59,10 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.sePointOnOneOrTwoDimensional.label) {
+    if (
+      this.sePointOnOneOrTwoDimensional.label &&
+      this.useVisiblePointCountToRename
+    ) {
       this.sePointOnOneOrTwoDimensional.decrementVisiblePointCount();
       this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
     }
@@ -193,7 +206,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
       return new AddPointOnOneDimensionalCommand(
         sePointOnOneOrTwoDimensional,
         pointOnOneOrTwoDimensionalParent,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

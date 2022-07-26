@@ -15,6 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 // import { Vector } from "two.js/src/vector";
 const MESHSIZE = 10;
@@ -225,7 +226,7 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangleSelection.splice(0);
 
     // If the user clicks on a label warn them about labels not being selectable.
-    if (this.hitSENodules[0] && this.hitSENodules[0].isLabel()) {
+    if (this.hitSELabels[0]) {
       EventBus.fire("show-alert", {
         key: `style.cannotSelectLabels`,
         keyOptions: {},
@@ -271,24 +272,46 @@ export default class SelectionHandler extends Highlighter {
       );
     } else {
       // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
-      this.hitSENodules
-        .filter((p: SENodule) => {
-          if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
-          ) {
-            return false;
-          } else {
-            return true;
-          }
-        })
-        .forEach((n: SENodule, index) => {
-          if (index === 0 || n.selected) {
-            n.glowing = true;
-          } else {
-            n.glowing = false;
-          }
-        });
+      // Glow one object, first a point, then lines, then segments, then circles, then ellipses, then parametrics
+      if (this.hitSEPoints.length > 0) {
+        if (
+          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+            this.hitSEPoints[0].isUserCreated) &&
+          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+            this.hitSEPoints[0].isUserCreated)
+        ) {
+          this.hitSEPoints[0].glowing = true;
+        }
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+      } else if (this.hitSEEllipses.length > 0) {
+        this.hitSEEllipses[0].glowing = true;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+      }
+      // this.hitSENodules
+      //   .filter((p: SENodule) => {
+      //     if (
+      //       (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
+      //       (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+      //       p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
+      //     ) {
+      //       return false;
+      //     } else {
+      //       return true;
+      //     }
+      //   })
+      //   .forEach((n: SENodule, index) => {
+      //     if (index === 0 || n.selected) {
+      //       n.glowing = true;
+      //     } else {
+      //       n.glowing = false;
+      //     }
+      //   });
     }
   }
 
@@ -315,17 +338,40 @@ export default class SelectionHandler extends Highlighter {
         this.currentSelection.push(...newKeyPressSelections);
         this.keyPressSelection.splice(0);
       } else {
-        // Remove non-selectable intersection points
-        const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        // Remove non-selectable intersection and antipodal points
+        // const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        //   if (
+        //     (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
+        //     (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+        //     p.isLabel() // no labels can be selected
+        //   ) {
+        //     return false;
+        //   } else {
+        //     return true;
+        //   }
+        // });
+        const possibleAdditions: SENodule[] = [];
+        if (this.hitSEPoints.length > 0) {
           if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            p.isLabel() // no labels can be selected
+            (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+              this.hitSEPoints[0].isUserCreated) &&
+            (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+              this.hitSEPoints[0].isUserCreated)
           ) {
-            return false;
-          } else {
-            return true;
+            possibleAdditions.push(this.hitSEPoints[0]);
           }
-        });
+        } else if (this.hitSELines.length > 0) {
+          possibleAdditions.push(this.hitSELines[0]);
+        } else if (this.hitSESegments.length > 0) {
+          possibleAdditions.push(this.hitSESegments[0]);
+        } else if (this.hitSECircles.length > 0) {
+          possibleAdditions.push(this.hitSECircles[0]);
+        } else if (this.hitSEEllipses.length > 0) {
+          possibleAdditions.push(this.hitSEEllipses[0]);
+        } else if (this.hitSEParametrics.length > 0) {
+          possibleAdditions.push(this.hitSEParametrics[0]);
+        }
+
         if (event.altKey) {
           // Add current hit object list to the current selection
           possibleAdditions[0].selected = !possibleAdditions[0].selected;

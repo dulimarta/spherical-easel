@@ -203,11 +203,20 @@ export class AddIntersectionPointCommand extends Command {
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
-      if (labelStyleString !== undefined)
+      console.debug(
+        `Intersection point label style string ${labelStyleString}`
+      );
+      if (labelStyleString !== undefined) {
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+      }
 
       //put the intersection point in the object map
       if (propMap.get("objectName") !== undefined) {
+        console.debug(
+          `old name ${seIntersectionPoint.name}, new name ${propMap.get(
+            "objectName"
+          )}`
+        );
         seIntersectionPoint.name = propMap.get("objectName") ?? "";
         seIntersectionPoint.showing = propMap.get("objectShowing") === "true";
         seIntersectionPoint.exists = propMap.get("objectExists") === "true";

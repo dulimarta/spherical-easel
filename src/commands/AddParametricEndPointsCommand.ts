@@ -19,6 +19,7 @@ export class AddParametricEndPointsCommand extends Command {
   private seStartLabel: SELabel;
   private seEndLabel: SELabel;
   private seTraceLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     parametricParent: SEParametric,
     startEndPoint: SEParametricEndPoint,
@@ -26,7 +27,8 @@ export class AddParametricEndPointsCommand extends Command {
     endEndPoint: SEParametricEndPoint,
     endLabel: SELabel,
     tracePoint: SEParametricTracePoint,
-    traceLabel: SELabel
+    traceLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.seStartEndPoint = startEndPoint;
@@ -36,6 +38,11 @@ export class AddParametricEndPointsCommand extends Command {
     this.seEndLabel = endLabel;
     this.seTracePoint = tracePoint;
     this.seTraceLabel = traceLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -62,20 +69,20 @@ export class AddParametricEndPointsCommand extends Command {
     Command.store.addLabel(this.seTraceLabel);
     // Set the label to display the name of the points in visible count order
     this.seStartEndPoint.pointVisibleBefore = true;
-    if (this.seStartEndPoint.label) {
-      this.seStartEndPoint.incrementVisiblePointCount();
+    this.seStartEndPoint.incrementVisiblePointCount();
+    if (this.seStartEndPoint.label && this.useVisiblePointCountToRename) {
       this.seStartEndPoint.label.ref.shortUserName = `P${this.seStartEndPoint.visiblePointCount}`;
     }
 
     this.seTracePoint.pointVisibleBefore = true;
-    if (this.seTracePoint.label) {
-      this.seTracePoint.incrementVisiblePointCount();
+    this.seTracePoint.incrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
       this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
     }
 
     this.seEndEndPoint.pointVisibleBefore = true;
-    if (this.seEndEndPoint.label) {
-      this.seEndEndPoint.incrementVisiblePointCount();
+    this.seEndEndPoint.incrementVisiblePointCount();
+    if (this.seEndEndPoint.label && this.useVisiblePointCountToRename) {
       this.seEndEndPoint.label.ref.shortUserName = `P${this.seEndEndPoint.visiblePointCount}`;
     }
 
@@ -92,20 +99,20 @@ export class AddParametricEndPointsCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.seStartEndPoint.label) {
-      this.seStartEndPoint.decrementVisiblePointCount();
+    this.seStartEndPoint.decrementVisiblePointCount();
+    if (this.seStartEndPoint.label && this.useVisiblePointCountToRename) {
       this.seStartEndPoint.label.ref.shortUserName = `P${this.seStartEndPoint.visiblePointCount}`;
     }
     this.seStartEndPoint.pointVisibleBefore = false;
 
-    if (this.seTracePoint.label) {
-      this.seTracePoint.decrementVisiblePointCount();
+    this.seTracePoint.decrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
       this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
     }
     this.seTracePoint.pointVisibleBefore = false;
 
-    if (this.seEndEndPoint.label) {
-      this.seEndEndPoint.decrementVisiblePointCount();
+    this.seEndEndPoint.decrementVisiblePointCount();
+    if (this.seEndEndPoint.label && this.useVisiblePointCountToRename) {
       this.seEndEndPoint.label.ref.shortUserName = `P${this.seEndEndPoint.visiblePointCount}`;
     }
     this.seEndEndPoint.pointVisibleBefore = false;
@@ -494,7 +501,8 @@ export class AddParametricEndPointsCommand extends Command {
         seEndEndPoint,
         seEndEndPointLabel,
         seTracePoint,
-        seTracePointLabel
+        seTracePointLabel,
+        false //The name of these points are set by the saved value and not the visible count
       );
     } else {
       throw new Error(

@@ -16,13 +16,20 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 export class SetPointUserCreatedValueCommand extends Command {
   private seIntersectionOrAntipodePoint: SEIntersectionPoint | SEAntipodalPoint;
   private userCreatedValue: boolean;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     seIntersectionOrAntipodePoint: SEIntersectionPoint | SEAntipodalPoint,
-    userCreatedValue: boolean
+    userCreatedValue: boolean,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.seIntersectionOrAntipodePoint = seIntersectionOrAntipodePoint;
     this.userCreatedValue = userCreatedValue;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -48,12 +55,18 @@ export class SetPointUserCreatedValueCommand extends Command {
     if (this.userCreatedValue) {
       // Set the label to display the name of the point in visible count order
       this.seIntersectionOrAntipodePoint.pointVisibleBefore = true;
-      if (this.seIntersectionOrAntipodePoint.label) {
+      if (
+        this.seIntersectionOrAntipodePoint.label &&
+        this.useVisiblePointCountToRename
+      ) {
         this.seIntersectionOrAntipodePoint.incrementVisiblePointCount();
         this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
       }
     } else {
-      if (this.seIntersectionOrAntipodePoint.label) {
+      if (
+        this.seIntersectionOrAntipodePoint.label &&
+        this.useVisiblePointCountToRename
+      ) {
         this.seIntersectionOrAntipodePoint.decrementVisiblePointCount();
         this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
       }
@@ -74,7 +87,10 @@ export class SetPointUserCreatedValueCommand extends Command {
       } to user created: ${!this.userCreatedValue}`
     );
     if (this.userCreatedValue) {
-      if (this.seIntersectionOrAntipodePoint.label) {
+      if (
+        this.seIntersectionOrAntipodePoint.label &&
+        this.useVisiblePointCountToRename
+      ) {
         this.seIntersectionOrAntipodePoint.decrementVisiblePointCount();
         this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
       }
@@ -82,7 +98,10 @@ export class SetPointUserCreatedValueCommand extends Command {
     } else {
       // Set the label to display the name of the point in visible count order
       this.seIntersectionOrAntipodePoint.pointVisibleBefore = true;
-      if (this.seIntersectionOrAntipodePoint.label) {
+      if (
+        this.seIntersectionOrAntipodePoint.label &&
+        this.useVisiblePointCountToRename
+      ) {
         this.seIntersectionOrAntipodePoint.incrementVisiblePointCount();
         this.seIntersectionOrAntipodePoint.label.ref.shortUserName = `P${this.seIntersectionOrAntipodePoint.visiblePointCount}`;
       }

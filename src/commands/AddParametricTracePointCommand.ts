@@ -14,15 +14,22 @@ export class AddParametricTracePointCommand extends Command {
   private seTracePoint: SEParametricTracePoint;
   private parametricParent: SEParametric;
   private seTraceLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     parametricParent: SEParametric,
     tracePoint: SEParametricTracePoint,
-    traceLabel: SELabel
+    traceLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.parametricParent = parametricParent;
     this.seTracePoint = tracePoint;
     this.seTraceLabel = traceLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -37,8 +44,8 @@ export class AddParametricTracePointCommand extends Command {
     Command.store.addLabel(this.seTraceLabel);
     // Set the label to display the name of the point in visible count order
     this.seTracePoint.pointVisibleBefore = true;
-    if (this.seTracePoint.label) {
-      this.seTracePoint.incrementVisiblePointCount();
+    this.seTracePoint.incrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
       this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
     }
     this.seTracePoint.markKidsOutOfDate();
@@ -50,8 +57,8 @@ export class AddParametricTracePointCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.seTracePoint.label) {
-      this.seTracePoint.decrementVisiblePointCount();
+    this.seTracePoint.decrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
       this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
     }
     this.seTracePoint.pointVisibleBefore = false;
@@ -196,7 +203,8 @@ export class AddParametricTracePointCommand extends Command {
       return new AddParametricTracePointCommand(
         parametricParent,
         seTracePoint,
-        seTracePointLabel
+        seTracePointLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     } else {
       throw new Error(

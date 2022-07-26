@@ -190,7 +190,10 @@ export abstract class Command {
   abstract toOpcode(): null | string | Array<string>;
 
   // remove the &, / and & from a string and replace with hex equivalent / -> %47, = -> , and & -> %38
-  static symbolToASCIIDec(inputString: string): string {
+  static symbolToASCIIDec(inputString: string | undefined): string {
+    if (inputString === undefined) {
+      return "";
+    }
     if (inputString.match(/%61|%47|%38|%64/)) {
       console.error(
         `Save Command: Forbidden pattern %61, %47, %38, or %64 found in string ${inputString}`

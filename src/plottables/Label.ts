@@ -391,6 +391,7 @@ export default class Label extends Nodule {
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     super.updateStyle(mode, options);
+
     if (options.labelDisplayText) {
       this._shortUserName = options.labelDisplayText.slice(
         0,
@@ -398,11 +399,13 @@ export default class Label extends Nodule {
       );
     }
 
-    if (options.labelDisplayCaption)
+    if (options.labelDisplayCaption) {
       this._caption = options.labelDisplayCaption.slice(
         0,
         SETTINGS.label.maxLabelDisplayCaptionLength
       );
+    }
+
     // if (this.seLabel?.parent instanceof SEAngleMarker) {
     //   const angleMarker = this.seLabel.parent;
     //   this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;

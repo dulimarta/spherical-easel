@@ -16,18 +16,25 @@ export class AddInvertedCircleCenterCommand extends Command {
   private parentInversion: SEInversion;
   private invertedSECircleCenter: SEInversionCircleCenter;
   private invertedSECircleCenterLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
 
   constructor(
     invertedSECircleCenter: SEInversionCircleCenter,
     invertedSECircleCenterLabel: SELabel,
     preimageSECircleOrLine: SECircle | SELine,
-    parentInversion: SEInversion
+    parentInversion: SEInversion,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.preimageSECircleOrLine = preimageSECircleOrLine;
     this.invertedSECircleCenter = invertedSECircleCenter;
     this.parentInversion = parentInversion;
     this.invertedSECircleCenterLabel = invertedSECircleCenterLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -38,7 +45,10 @@ export class AddInvertedCircleCenterCommand extends Command {
     Command.store.addLabel(this.invertedSECircleCenterLabel);
     // Set the label to display the name of the point in visible count order
     this.invertedSECircleCenter.pointVisibleBefore = true;
-    if (this.invertedSECircleCenter.label) {
+    if (
+      this.invertedSECircleCenter.label &&
+      this.useVisiblePointCountToRename
+    ) {
       this.invertedSECircleCenter.incrementVisiblePointCount();
       this.invertedSECircleCenter.label.ref.shortUserName = `P${this.invertedSECircleCenter.visiblePointCount}`;
     }
@@ -49,7 +59,10 @@ export class AddInvertedCircleCenterCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.invertedSECircleCenter.label) {
+    if (
+      this.invertedSECircleCenter.label &&
+      this.useVisiblePointCountToRename
+    ) {
       this.invertedSECircleCenter.decrementVisiblePointCount();
       this.invertedSECircleCenter.label.ref.shortUserName = `P${this.invertedSECircleCenter.visiblePointCount}`;
     }
@@ -197,7 +210,8 @@ export class AddInvertedCircleCenterCommand extends Command {
         inversionSECircleCenterPoint,
         inversionSECircleCenterLabel,
         parentSECircleOrLine,
-        invertedCircleCenterParentInversion
+        invertedCircleCenterParentInversion,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

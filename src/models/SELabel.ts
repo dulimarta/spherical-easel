@@ -71,7 +71,9 @@ export class SELabel extends SENodule implements Visitable {
       label.shortUserName = `Po${this.parent.polygonNumber}`;
       this.ref.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
-      label.shortUserName = parent.name;
+      if (!(this.parent instanceof SEPoint)) {
+        label.shortUserName = parent.name; // the short user name of a point's label is set else where via point visible count
+      }
       this.ref.defaultName = this.parent.name;
     }
     // Set the size for zoom

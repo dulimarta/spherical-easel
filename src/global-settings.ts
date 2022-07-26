@@ -225,7 +225,7 @@ export const SETTINGS = {
       // No dashing for points
     },
     nonFree: {
-      scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
+      scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
         frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
