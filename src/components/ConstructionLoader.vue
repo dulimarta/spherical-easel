@@ -164,8 +164,13 @@ export default class ConstructionLoader extends Vue {
     targetArr.splice(0);
     qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
-      let parsedScript: ConstructionScript;
-      if (doc.script.startsWith("https:")) {
+      let parsedScript: ConstructionScript | undefined = undefined;
+
+      // Ignore constructions with empty script
+      if (doc.script.trim().length === 0) return;
+      const trimmedScript = doc.script.trim();
+      if (trimmedScript.startsWith("https:")) {
+        // Fetch the script from Firebase Storage
         const scriptText = await this.$appStorage
           .refFromURL(doc.script)
           .getDownloadURL()
@@ -174,19 +179,20 @@ export default class ConstructionLoader extends Vue {
 
         parsedScript = scriptText as ConstructionScript;
       } else {
-        parsedScript = JSON.parse(doc.script) as ConstructionScript;
+        // Parse the script directly from the Firestore document
+        parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
       }
-      let svgData: string | undefined;
-      if (doc.preview?.startsWith("https:")) {
-        svgData = await this.$appStorage
-          .refFromURL(doc.preview)
-          .getDownloadURL()
-          .then((url: string) => axios.get(url))
-          .then((r: AxiosResponse) => r.data);
-      } else svgData = doc.preview;
 
-      if (parsedScript.length > 0) {
+      if (parsedScript && parsedScript.length > 0) {
         // we care only for non-empty script
+        let svgData: string | undefined;
+        if (doc.preview?.startsWith("https:")) {
+          svgData = await this.$appStorage
+            .refFromURL(doc.preview)
+            .getDownloadURL()
+            .then((url: string) => axios.get(url))
+            .then((r: AxiosResponse) => r.data);
+        } else svgData = doc.preview;
         const objectCount = parsedScript
           // A simple command contributes 1 object
           // A CommandGroup contributes N objects (as many elements in its subcommands)
