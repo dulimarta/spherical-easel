@@ -1,6 +1,6 @@
-const { defineConfig } = require("@vue/cli-service");
+// const { defineConfig } = require("@vue/cli-service");
 
-module.exports = {
+module.exports = /*defineConfig(*/ {
   productionSourceMap: false, // disable source map on production build
   transpileDependencies: ["vuetify"],
   pluginOptions: {
@@ -28,12 +28,19 @@ module.exports = {
   //   }
   // }
   chainWebpack: config => {
-    // Use babel-loader for files under node_modules/two.js
     config.module
+      // Use babel-loader for files under node_modules/two.js
       .rule("ES6 loader")
       .test(/.+two\.js.+\.js/)
       .use("babel-loader")
       .loader("babel-loader")
       .end();
+    // To fix errors from Pinia .mjs files
+    // config.module
+    //   .rule("JS Module")
+    //   .test(/\.mjs$/)
+    //   .include.add(/node_modules/)
+    //   .end()
+    //   .type("javascript/auto");
   }
-};
+} /*)*/;

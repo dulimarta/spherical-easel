@@ -16,8 +16,6 @@ export default class HideObjectHandler extends Highlighter {
   // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
   private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
-  //private _disableKeyHandler = false;
-
   constructor(layers: Two.Group[]) {
     super(layers);
   }
@@ -32,7 +30,7 @@ export default class HideObjectHandler extends Highlighter {
     if (keyEvent.key.match("S")) {
       const setNoduleDisplayCommandGroup = new CommandGroup();
       HideObjectHandler.store.seNodules
-        .map(x => x as SENodule)
+        .map(n => n as SENodule)
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (
@@ -60,7 +58,7 @@ export default class HideObjectHandler extends Highlighter {
       // if the lower case s key was pushed restore/show only those objects that the user has hidden since activating the tool
       const setNoduleDisplayCommandGroup = new CommandGroup();
       HideObjectHandler.store.seNodules
-        .map(x => x as SENodule)
+        .map(n => n as SENodule)
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (

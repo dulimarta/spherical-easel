@@ -1,9 +1,23 @@
 <template>
   <div>
+
     <v-card raised
       outlined>
       <v-card-text>
         <v-container>
+          <v-row v-if="!inProductionMode">
+            Keyboard shortcuts:
+            <ul>
+              <li>Ctrl-Alt-C: Circle</li>
+              <li>Ctrl-Alt-S: Spiral</li>
+              <li>Ctrl-Alt-T: Trochoid</li>
+              <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
+              <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
+              <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+              <li>Ctrl-Alt-R: Cardioid (M1)</li>
+            </ul>
+
+          </v-row>
           <v-row>
             <v-col cols="12">
               <v-sheet rounded
@@ -94,7 +108,6 @@ import ParametricCuspParameterValues from "@/components/ParametricCuspParameterV
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import Parametric from "@/plottables/Parametric";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -144,9 +157,6 @@ interface ParametricDataType {
   methods: {}
 })
 export default class ParametricForm extends Vue {
-  mounted(): void {
-    EventBus.listen("parametric-data-update", this.processParameticData);
-  }
   readonly expressions!: SEExpression[];
   readonly seParametrics!: SEParametric[];
   readonly createAllIntersectionsWithParametric!: (
@@ -159,7 +169,7 @@ export default class ParametricForm extends Vue {
   private coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
   private tExpressions: MinMaxExpression = { min: "", max: "" };
   private tNumbers: MinMaxNumber = { min: NaN, max: NaN };
-  private c1DiscontunityParameterValues: number[] = [];
+  private c1DiscontinuityParameterValues: number[] = [];
 
   private parser = new ExpressionParser();
   readonly varMap = new Map<string, number>();
@@ -226,12 +236,19 @@ export default class ParametricForm extends Vue {
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
   }
+  mounted(): void {
+    EventBus.listen("parametric-data-update", this.processParameticData);
+  }
+
+  get inProductionMode(): boolean {
+    return process.env.NODE_ENV === "production";
+  }
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
 
-    this.c1DiscontunityParameterValues.splice(0);
+    this.c1DiscontinuityParameterValues.splice(0);
     if (ev.code === "KeyC") {
       this.setCircleExpressions();
       this.addParametricCurve();
@@ -242,7 +259,7 @@ export default class ParametricForm extends Vue {
       this.setCardioidExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyS") {
-      this.setSprialExpressions();
+      this.setSpiralExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyL") {
       this.setLoxodromeExpressions();
@@ -284,14 +301,14 @@ export default class ParametricForm extends Vue {
       "sin(M1)+2*cos(M1)^2*sin(M1)*(cos(t)-cos(t)^2)";
     this.coordinateExpressions.y = "2*cos(M1)^2*sin(M1)*sin(t)*(1-cos(t))";
     this.coordinateExpressions.z = "cos(M1)-2*cos(M1)*sin(M1)^2*(1-cos(t))";
-    this.c1DiscontunityParameterValues.push(0, 2 * Math.PI);
+    this.c1DiscontinuityParameterValues.push(0, 2 * Math.PI);
     // this.primeCoordinateExpressions.x =
     //   "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
     // this.primeCoordinateExpressions.y =
     //   "2*cos(M1)^2*sin(M1)*cos(t)*(1-cos(t)) + 2*cos(M1)^2*sin(M1)*sin(t)*(sin(t))";
     // this.primeCoordinateExpressions.z = "-2*cos(M1)*sin(M1)^2*sin(t)";
   }
-  setSprialExpressions(): void {
+  setSpiralExpressions(): void {
     this.tNumbers.min = 0;
     this.tNumbers.max = 0.9;
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";
@@ -333,7 +350,7 @@ export default class ParametricForm extends Vue {
     // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
-    // this.c1DiscontunityParameterValues = [
+    // this.c1DiscontinuityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
     //   (4 * Math.PI) / 3,
@@ -345,7 +362,7 @@ export default class ParametricForm extends Vue {
     // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
-    // this.c1DiscontunityParameterValues = [
+    // this.c1DiscontinuityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
     //   (4 * Math.PI) / 3,
@@ -357,7 +374,7 @@ export default class ParametricForm extends Vue {
     const b = "0.75";
     this.tNumbers.min = 0;
     this.tNumbers.max = 8 * Math.PI;
-    this.c1DiscontunityParameterValues.push(
+    this.c1DiscontinuityParameterValues.push(
       0,
       ((1 * 8) / 6) * Math.PI,
       ((2 * 8) / 6) * Math.PI,
@@ -413,7 +430,7 @@ export default class ParametricForm extends Vue {
     const q = "3";
     this.tNumbers.min = 0;
     this.tNumbers.max = 2 * Math.PI;
-    this.c1DiscontunityParameterValues = [];
+    this.c1DiscontinuityParameterValues = [];
 
     // //curve 2 //this doesn't work at the moment, but it works in Mathematica, I don't know what the issue it, but it might have to do to with the parser?
     // const b = "1/2";
@@ -422,7 +439,7 @@ export default class ParametricForm extends Vue {
     // const q = "8/10";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 10 * Math.PI;
-    // this.c1DiscontunityParameterValues = [];
+    // this.c1DiscontinuityParameterValues = [];
     //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Cos[t]+d*Sin[t]*Sin[q*t]) Mathematica input
     this.coordinateExpressions.x =
       "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
@@ -476,9 +493,9 @@ export default class ParametricForm extends Vue {
       this.coordinateExpressions.z = obj.zCoord;
     }
     if (obj.cuspParameterValues !== undefined) {
-      // this.c1DiscontunityParameterValues.splice(0);
-      this.c1DiscontunityParameterValues.push(...obj.cuspParameterValues);
-      console.log("cusp", this.c1DiscontunityParameterValues);
+      // this.c1DiscontinuityParameterValues.splice(0);
+      this.c1DiscontinuityParameterValues.push(...obj.cuspParameterValues);
+      console.log("cusp", this.c1DiscontinuityParameterValues);
     }
   }
 
@@ -522,8 +539,8 @@ export default class ParametricForm extends Vue {
     }
     // the cusp parameter values must all be between tMinNumber and tMaxNumber
     if (
-      this.c1DiscontunityParameterValues.length > 0 &&
-      !this.c1DiscontunityParameterValues.every(
+      this.c1DiscontinuityParameterValues.length > 0 &&
+      !this.c1DiscontinuityParameterValues.every(
         num => this.tNumbers.min <= num && num <= this.tNumbers.max
       )
     ) {
@@ -663,6 +680,7 @@ export default class ParametricForm extends Vue {
     let l: keyof MinMaxExpression;
     for (l in this.tExpressions) {
       const exp = this.tExpressions[l];
+      // Match all measurement variables Mxxx
       for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
         const pos = this.expressions.findIndex(z =>
           z.name.startsWith(`${v[0]}`)
@@ -679,39 +697,28 @@ export default class ParametricForm extends Vue {
       }
     }
 
-    // TODO: Use multiple parametric if we have discontinuity
-    const parametric = new Parametric(
-      this.tNumbers.min, // global min-max
-      this.tNumbers.max,
-      this.tNumbers.min, // part min-max
-      this.tNumbers.max,
-      closed
-    );
-    // Set the display to the default values
-    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    parametric.adjustSize();
-
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     // if (this.tExpressions.min === "")
     //   this.tExpressions.min = this.tNumbers.min.toString();
     // if (this.tExpressions.max === "")
     //   this.tExpressions.max = this.tNumbers.max.toString();
+    // Create the Parametric in the SEParametric constructor
+    // Not here!
     const newSEParametric = new SEParametric(
-      parametric,
+      // parametric,
       this.coordinateExpressions,
       this.tExpressions,
       this.tNumbers,
-      this.c1DiscontunityParameterValues,
+      this.c1DiscontinuityParameterValues,
       calculationParents
     );
-
     // Create the plottable and model label
     const newLabel = new Label("parametric");
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
+    const startVector = newSEParametric.P(this.tNumbers.min);
     this.tempVector
-      .copy(parametric.P(this.tNumbers.min))
+      .copy(startVector)
       .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tempVector;
@@ -729,6 +736,7 @@ export default class ParametricForm extends Vue {
       tracePoint,
       newSEParametric
     );
+    traceSEPoint.locationVector = startVector;
     const traceLabel = new Label("point");
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
@@ -786,11 +794,6 @@ export default class ParametricForm extends Vue {
         )
       );
     }
-    newSEParametric.endPoints.forEach(pt => {
-      if (!pt.locationVector.isZero()) {
-        newlyCreatedSEPoints.push(pt);
-      }
-    });
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the parametric command so they can be undone.
     this.createAllIntersectionsWithParametric(
@@ -914,12 +917,12 @@ export default class ParametricForm extends Vue {
 
     newSEParametric.markKidsOutOfDate();
     newSEParametric.update();
-    console.log("add Parametric comands");
+    // }
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };
     this.tExpressions = { min: "", max: "" };
     this.tNumbers = { min: NaN, max: NaN };
-    this.c1DiscontunityParameterValues = [];
+    this.c1DiscontinuityParameterValues = [];
     // clear the entries in the components
     EventBus.fire("parametric-clear-data", {});
   }

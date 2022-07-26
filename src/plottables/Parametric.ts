@@ -11,8 +11,8 @@ import {
 } from "@/types/Styles";
 import { useSEStore } from "@/stores/se";
 import Two from "two.js";
-// import { Two.Path } from "two.js/src/path";
-// import { Two.Anchor } from "two.js/src/anchor";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
 // import { Group } from "two.js/src/group";
 
 // const desiredXAxis = new Vector3();
@@ -47,23 +47,18 @@ export default class Parametric extends Nodule {
    * When an SEParametric consists of multiple Parametric, organize
    * them into a linked list
    */
-  public next: Parametric | null = null;
+  // public next: Parametric | null = null;
 
-  /**
-   * The arcLength of the parametric curve from tNumber.min to tNumber.Max
-   */
-  // private _initialArcLength: number;
-  // private _arcLengthValues: Array<number> = [];
-  private numAnchors = 0;
+  private _tValues: Array<number> = [];
   private _coordValues: Array<Vector3> = [];
-  private _pPrimeValues: Array<Vector3> = [];
-  private _ppPrimeValues: Array<Vector3> = [];
+  // private _pPrimeValues: Array<Vector3> = [];
+  // private _ppPrimeValues: Array<Vector3> = [];
 
   // tGlobalMin <= tPartMin < tPartMax <= tGlobalMax
-  private tGlobalMin = 0;
-  private tGlobalMax = 1;
-  private tPartMin = 0;
-  private tPartMax = 1;
+  // private tGlobalMin = 0;
+  // private tGlobalMax = 1;
+  private tMin = 0;
+  private tMax = 1;
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -118,18 +113,11 @@ export default class Parametric extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   private inverseTotalRotationMatrix: Matrix4;
-  constructor(
-    tGlobalMin = 0,
-    tGlobalMax = 1,
-    tPartMin = 0,
-    tPartMax = 1,
-    closed = false
-  ) {
+  constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-    this.tGlobalMin = tGlobalMin;
-    this.tGlobalMax = tGlobalMax;
-    this.tPartMin = tPartMin;
-    this.tPartMax = tPartMax;
+    console.debug("Parametric constructor", tMin, tMax);
+    this.tMin = tMin;
+    this.tMax = tMax;
 
     this._closed = closed;
 
@@ -143,35 +131,32 @@ export default class Parametric extends Nodule {
   }
 
   public setRangeAndFunctions(
+    tValues: number[],
     fn: Vector3[],
-    fnPrime: Vector3[],
-    fnDoublePrime: Vector3[],
-    tMinGlobal: number,
-    tMaxGlobal: number,
-    tMinPart: number,
-    tMaxPart: number
+    // fnPrime: Vector3[],
+    // fnDoublePrime: Vector3[],
+    // tMinGlobal: number,
+    // tMaxGlobal: number,
+    tMin: number,
+    tMax: number
   ): void {
-    // console.debug(
-    //   `Parametric::setRangeAndFunctions part-${this.partId}`,
-    //   tMinPart,
-    //   tMaxPart
-    // );
-    this.tGlobalMin = tMinGlobal;
-    this.tGlobalMax = tMaxGlobal;
-    this.tPartMin = tMinPart;
-    this.tPartMax = tMaxPart;
+    // this.tGlobalMin = tMinGlobal;
+    // this.tGlobalMax = tMaxGlobal;
+    this.tMin = tMin;
+    this.tMax = tMax;
+    this._tValues.splice(0);
+    this._tValues.push(...tValues);
     this._coordValues.splice(0);
     this._coordValues.push(...fn);
-    this._pPrimeValues.splice(0);
-    this._pPrimeValues.push(...fnPrime);
-    this._ppPrimeValues.splice(0);
-    this._ppPrimeValues.push(...fnDoublePrime);
+    // this._pPrimeValues.splice(0);
+    // this._pPrimeValues.push(...fnPrime);
+    // this._ppPrimeValues.splice(0);
+    // this._ppPrimeValues.push(...fnDoublePrime);
     this.buildCurve();
   }
 
   private buildCurve() {
-    this.numAnchors = this.determineAnchorsFromArcLength();
-    console.debug("Use", this.numAnchors, "anchor points");
+    const numAnchors = this._coordValues.length;
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -179,18 +164,17 @@ export default class Parametric extends Nodule {
       // );
       // This is a new build
       const frontVertices: Two.Vector[] = [];
-      for (let k = 0; k < this.numAnchors; k++) {
+      for (let k = 0; k < numAnchors; k++) {
         // Create Vectors for the paths that will be cloned later
         frontVertices.push(new Two.Vector(0, 0));
       }
       this.frontParts.push(
         new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
       );
-      this.glowingFrontParts.push(this.frontParts[0].clone() as Two.Path);
+      this.glowingFrontParts.push(this.frontParts[0].clone());
       // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Two.Path([], false, false));
       this.glowingBackParts.push(new Two.Path([], false, false));
-
       // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
         type: "parametric",
@@ -205,7 +189,6 @@ export default class Parametric extends Nodule {
         part: "0"
       });
       // #endregion updatePlottableMap
-
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
       // The front/back fill have no stroke because that is handled by the front/back part
@@ -213,7 +196,6 @@ export default class Parametric extends Nodule {
       this.backParts[0].noFill();
       this.glowingFrontParts[0].noFill();
       this.glowingBackParts[0].noFill();
-
       //Turn off the glowing display initially but leave it on so that the temporary objects show up
       this.frontParts[0].visible = true;
       this.backParts[0].visible = true;
@@ -222,7 +204,7 @@ export default class Parametric extends Nodule {
     } else {
       console.debug(
         `Parametric::buildCurve(). a rebuild of part-${this.partId} with number of anchors`,
-        this.numAnchors
+        numAnchors
       );
       // This is a rebuild, check if the number of anchors has changed
       const frontVertexCount = this.frontParts
@@ -231,12 +213,12 @@ export default class Parametric extends Nodule {
       const backVertexCount = this.backParts
         .map((p: Two.Path) => p.vertices.length)
         .reduce((total: number, currLen: number) => total + currLen);
-      const delta = this.numAnchors - (frontVertexCount + backVertexCount);
+      const delta = numAnchors - (frontVertexCount + backVertexCount);
       if (delta > 0) {
         console.debug("*** Adding", delta, "more anchor points!!!");
         // We have to add more anchor points
         let anchor: Two.Anchor;
-        // Clone from an existing Two.Anchor (either from frontPart or backPart)
+        // Clone from an existing Anchor (either from frontPart or backPart)
         if (this.frontParts[0].vertices.length > 0)
           anchor = this.frontParts[0].vertices[0].clone();
         else anchor = this.backParts[0].vertices[0].clone();
@@ -252,112 +234,12 @@ export default class Parametric extends Nodule {
     }
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
-  }
-
-  private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
-    const N = arr.length;
-    if (N > 0) {
-      const range = this.tGlobalMax - this.tGlobalMin;
-      // Convert t in [tMin, tMax] to s in [0,1]
-      const s = (t - this.tGlobalMin) / range;
-      const idealIndex = s * N; // Where ideal location in the array
-      const sIndex = Math.floor(idealIndex); // the discretized location in the array
-      if (sIndex < N - 1) {
-        /* Use linear interpolation of two neighboring values in the array */
-        const fraction = idealIndex - sIndex; // the amount of deviation from the ideal location
-
-        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-        this.tmpVector.set(0, 0, 0);
-        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
-        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-      } else this.tmpVector.copy(arr[N - 1]);
-      return this.tmpVector;
-    } else throw new Error(`Attempt to evaluate function value at t=${t}`);
-  }
-  /**
-   * The parameterization of the curve.
-   * @param t the parameter
-   * @returns vector containing the location
-   */
-  public P(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._coordValues);
-  }
-
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._pPrimeValues);
-  }
-
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._ppPrimeValues);
-  }
-
-  /**
-   * Pre-compute arc length and store the cumulative values in an array
-   */
-  private determineAnchorsFromArcLength(): number {
-    // console.debug(
-    //   `Parametric::determineAnchor() part-${this.partId}`,
-    //   this.tPartMin,
-    //   this.tPartMax
-    // );
-    // const tMin = this._tNumbers.min;
-    // const tMax = this._tNumbers.max;
-    // let oldArcLength = 0;
-    let newArcLength = 0;
-    let currArcLength = 0;
-    let iteration = 1;
-    let interAnchorDistance = 0;
-    const curr = new Vector3();
-    const next = new Vector3();
-    do {
-      newArcLength = 0;
-      // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
-      const tRange = this.tPartMax - this.tPartMin;
-
-      // Approximate the length using inter sample distance
-      curr.copy(this.P(this.tPartMin));
-      for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
-        const tValue =
-          this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
-        const len = next.copy(this.P(tValue)).sub(curr).length();
-
-        if (!isNaN(len)) {
-          newArcLength += len;
-        }
-        curr.copy(this.P(tValue));
-      }
-      interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
-      const growth = (newArcLength - currArcLength) / newArcLength;
-      // console.debug(
-      //   `Iteration-${iteration} length changed from ${currArcLength.toFixed(
-      //     5
-      //   )} to ${newArcLength.toFixed(5)}.` + `Growth = ${growth.toFixed(5)}`,
-      //   "inter anchor distance",
-      //   interAnchorDistance.toFixed(5)
-      // );
-      // When the arc length increase is no longer "significant"
-      // we assume that the curve subdivision is good enough
-      if (growth < SETTINGS.parameterization.maxChangeInArcLength) {
-        return iteration * SUBDIVISIONS;
-      } else {
-        currArcLength = newArcLength;
-      }
-      iteration++;
-    } while (
-      iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
-    );
-    // this._initialArcLength = newArcLength;
-    return iteration * SUBDIVISIONS;
+    this.frontParts.forEach((z, pos) => {
+      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
+    });
+    this.backParts.forEach((z, pos) => {
+      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
+    });
   }
 
   /**
@@ -366,7 +248,10 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    // console.debug(`Parametric::updateDisplay part-${this.partId}`);
+    // console.debug(
+    //   `Parametric::updateDisplay part-${this.partId} applying rotation`,
+    //   this.inverseTotalRotationMatrix.elements
+    // );
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 
@@ -393,7 +278,7 @@ export default class Parametric extends Nodule {
     // const [tMin, tMax] = this.tMinMaxExpressionValues();
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (this.tPartMax <= this.tPartMin) return;
+    if (this.tMax <= this.tMin) return;
     // const tMin = this._tNumbers.min;
     // const tMax = this._tNumbers.max;
 
@@ -420,13 +305,13 @@ export default class Parametric extends Nodule {
     let firstBackPart = true;
     let firstFrontPart = true;
 
-    const tRange = this.tPartMax - this.tPartMin;
-    for (let index = 0; index < this.numAnchors; index++) {
+    // const tRange = this.tPartMax - this.tPartMin;
+    for (let index = 0; index < this._tValues.length; index++) {
       // The t value
-      const tVal = this.tPartMin + (index / (this.numAnchors - 1)) * tRange;
+      // const tVal = this._tValues[index];
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-      this.tmpVector.copy(this.P(tVal));
+      this.tmpVector.copy(this._coordValues[index]);
       // Set tmpVector equal to location on the target Parametric in rotated position
       this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -466,8 +351,8 @@ export default class Parametric extends Nodule {
                 part: currentBackPartIndex.toString()
               }
             );
-            this.stylize(DisplayStyle.ApplyCurrentVariables);
-            this.adjustSize();
+            // this.stylize(DisplayStyle.ApplyCurrentVariables);
+            // this.adjustSize();
           }
         }
         firstBackPart = false;
@@ -521,8 +406,6 @@ export default class Parametric extends Nodule {
                 part: currentFrontPartIndex.toString()
               }
             );
-            this.stylize(DisplayStyle.ApplyCurrentVariables);
-            this.adjustSize();
           }
         }
         firstFrontPart = false;
@@ -544,6 +427,13 @@ export default class Parametric extends Nodule {
         }
       }
     }
+    const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
+    const backCounts = this.backParts.map(p => p.vertices.length).join(",");
+    console.debug(
+      `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
+    );
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.adjustSize();
   }
 
   /**
@@ -574,35 +464,33 @@ export default class Parametric extends Nodule {
     );
   }
 
-  public endPointVector(minMax: boolean): Vector3 | undefined {
-    transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
-    this.tmpMatrix.makeScale(
-      SETTINGS.boundaryCircle.radius,
-      SETTINGS.boundaryCircle.radius,
-      SETTINGS.boundaryCircle.radius
-    );
-    transformMatrix.multiply(this.tmpMatrix);
+  // public endPointVector(minMax: boolean): Vector3 | undefined {
+  //   transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
+  //   this.tmpMatrix.makeScale(
+  //     SETTINGS.boundaryCircle.radius,
+  //     SETTINGS.boundaryCircle.radius,
+  //     SETTINGS.boundaryCircle.radius
+  //   );
+  //   transformMatrix.multiply(this.tmpMatrix);
 
-    // find the tracing tMin and tMax
-    // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
-    //   this._tNumbers.min,
-    //   this._tNumbers.max
-    // ];
+  //   // find the tracing tMin and tMax
+  //   // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+  //   //   this._tNumbers.min,
+  //   //   this._tNumbers.max
+  //   // ];
 
-    // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (this.tGlobalMax <= this.tGlobalMin) return undefined;
+  //   // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
+  //   if (this.tMax <= this.tMin) return undefined;
 
-    let tVal: number;
-    if (minMax) {
-      tVal = this.tGlobalMin;
-    } else {
-      tVal = this.tGlobalMax;
-    }
-    // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-    this.tmpVector.copy(this.P(tVal));
-    // Set tmpVector equal to location on the target Parametric in rotated position
-    return this.tmpVector.applyMatrix4(transformMatrix);
-  }
+  //   if (minMax) {
+  //     this.tmpVector.copy(this._coordValues[0]);
+  //   } else {
+  //     this.tmpVector.copy(this._coordValues[this._coordValues.length - 1]);
+  //   }
+  //   // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
+  //   // Set tmpVector equal to location on the target Parametric in rotated position
+  //   return this.tmpVector.applyMatrix4(transformMatrix);
+  // }
 
   frontGlowingDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));
@@ -669,6 +557,7 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
+    console.debug("addToLayers() called");
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])

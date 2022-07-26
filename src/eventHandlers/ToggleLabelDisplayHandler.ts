@@ -6,6 +6,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
@@ -13,12 +14,6 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    * Object to hide - the victim!
    */
   private label: SELabel | null = null;
-
-  // private _disableKeyHandler = false;
-
-  // set disableKeyHandler(b: boolean) {
-  //   this._disableKeyHandler = b;
-  // }
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -75,8 +70,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .filter(
           // no non-user created points
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            !(
+              object instanceof SEIntersectionPoint ||
+              object instanceof SEAntipodalPoint
+            ) || (object as SEIntersectionPoint).isUserCreated
         )
         .filter(
           // no hidden objects

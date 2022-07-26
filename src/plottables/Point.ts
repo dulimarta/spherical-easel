@@ -11,7 +11,7 @@ import {
 } from "@/types/Styles";
 import Two from "two.js";
 // import { Vector } from "two.js/src/vector";
-// import { Two.Circle } from "two.js/src/shapes/circle";
+// import { Circle } from "two.js/src/shapes/circle";
 // import { Group } from "two.js/src/group";
 
 /**

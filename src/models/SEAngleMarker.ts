@@ -29,7 +29,7 @@ export class SEAngleMarker
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
-  public ref: AngleMarker;
+  public declare ref: AngleMarker;
   /**
    * Pointer to the label of this SEAngleMarker
    */

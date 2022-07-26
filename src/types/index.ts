@@ -7,12 +7,10 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
-import { SETransformation } from "@/models/SETransformation";
 import { SETranslation } from "@/models/SETranslation";
 import { SERotation } from "@/models/SERotation";
 import { SEReflection } from "@/models/SEReflection";
@@ -20,7 +18,6 @@ import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
-import Nodule from "@/plottables/Nodule";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export interface Selectable {

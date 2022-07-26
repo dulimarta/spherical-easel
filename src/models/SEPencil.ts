@@ -48,7 +48,7 @@ export class SEPencil extends SENodule {
     const N = this._lines.length;
     if (normals.length > N) {
       const numMissing = normals.length - N;
-      console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
+      // console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
       for (let k = N; k < normals.length; k++) {
         const plottableEndPoint = new NonFreePoint();
         const endSEPoint = new SEPoint(plottableEndPoint);

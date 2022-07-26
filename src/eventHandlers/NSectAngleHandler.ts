@@ -18,11 +18,7 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
 // import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { SENodule } from "@/models/SENodule";
-import { getAncestors } from "@/utils/helpingfunctions";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
-// import { SESegment } from "@/models/SESegment";
+
 export default class NSectAngleHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -36,9 +32,6 @@ export default class NSectAngleHandler extends Highlighter {
   private tmpVector = new Vector3();
   // private _disableKeyHandler = false;
 
-  // set disableKeyHandler(b: boolean) {
-  //   this._disableKeyHandler = b;
-  // }
   constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
 

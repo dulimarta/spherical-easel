@@ -1,4 +1,5 @@
 import { Vector3, Matrix4 } from "three";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -7,10 +8,6 @@ import {
   DEFAULT_SEGMENT_FRONT_STYLE,
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Path } from "two.js/src/path";
-// import { Anchor } from "two.js/src/anchor";
-// import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -117,13 +114,13 @@ export default class Segment extends Nodule {
       /* curve */ false
     );
     // Create the other parts cloning the front part
-    this.glowingFrontPart = this._frontPart.clone() as Two.Path;
-    this._frontExtra = this._frontPart.clone() as Two.Path;
-    this.glowingFrontExtra = this._frontPart.clone() as Two.Path;
-    this._backPart = this._frontPart.clone() as Two.Path;
-    this.glowingBackPart = this._frontPart.clone() as Two.Path;
-    this._backExtra = this._backPart.clone() as Two.Path;
-    this.glowingBackExtra = this._backPart.clone() as Two.Path;
+    this.glowingFrontPart = this._frontPart.clone();
+    this._frontExtra = this._frontPart.clone();
+    this.glowingFrontExtra = this._frontPart.clone();
+    this._backPart = this._frontPart.clone();
+    this.glowingBackPart = this._frontPart.clone();
+    this._backExtra = this._backPart.clone();
+    this.glowingBackExtra = this._backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
     // The clear() extension function works only on JS Array, but
@@ -502,7 +499,6 @@ export default class Segment extends Nodule {
   }
 
   addToLayers(layers: Two.Group[]): void {
-    //console.debug(`add to layers`);
     this._frontPart.addTo(layers[LAYER.foreground]);
     this._frontExtra.addTo(layers[LAYER.foreground]);
     this._backPart.addTo(layers[LAYER.background]);

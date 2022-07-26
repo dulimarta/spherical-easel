@@ -26,6 +26,7 @@ import Two from "two.js";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+
 enum HighlightMode {
   NONE,
   ONLYPOINTS,

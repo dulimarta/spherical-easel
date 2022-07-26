@@ -121,7 +121,7 @@ export default class SESliderItem extends Vue {
   }
 
   play(): void {
-    console.debug("Playback mode", this.playbackMode, this.timer);
+    // console.debug("Playback mode", this.playbackMode, this.timer);
     if (this.timer === null) {
       switch (this.playbackMode) {
         case SliderPlaybackMode.ONCE:
@@ -147,7 +147,7 @@ export default class SESliderItem extends Vue {
   }
 
   stop(): void {
-    console.debug("Stop slider anim");
+    // console.debug("Stop slider anim");
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;

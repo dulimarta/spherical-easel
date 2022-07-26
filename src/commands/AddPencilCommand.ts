@@ -26,10 +26,6 @@ export class AddPencilCommand extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      "Undoing SEPencil, number of perp lines",
-      this.pencil.lines.length
-    );
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
       this.pencil.commonPoint.unregisterChild(line);
       this.pencil.commonParametric.unregisterChild(line);

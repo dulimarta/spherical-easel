@@ -5,6 +5,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import Parametric from "@/plottables/Parametric";
 const MIN = true;
 
 export class SEParametricTracePoint extends SEPoint {
@@ -22,6 +23,12 @@ export class SEParametricTracePoint extends SEPoint {
     this.ref = point;
     this._parametricParent = parametricParent;
     this.parametricParent.tracePoint = this;
+    const tMin = parametricParent.tMinMaxExpressionValues()[0];
+    this.parametricTime = tMin;
+    point.updateDisplay();
+    console.debug(
+      `Point ${this.name} is a trace point of parametric curve ${parametricParent.name}`
+    );
     this.store = useSEStore();
   }
 
@@ -29,24 +36,26 @@ export class SEParametricTracePoint extends SEPoint {
    * Set or get the location vector of the SEPointOnOneDim on the unit ideal sphere
    * If you over ride a setting your must also override the getter! (And Vice Versa)
    */
-  set locationVector(pos: Vector3) {
-    // Record the location on the unit ideal sphere of this SEPointOnOneDim
-    // If the parent is not out of date, use the closest vector, if not set the location directly
-    // and the program will update the parent later so that the set location is on the parent (even though it is
-    // at the time of execution)
-    const possibleVec = this._parametricParent.ref.endPointVector(MIN);
-    if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
-      this._locationVector.copy(possibleVec).normalize();
-    } else {
-      this._locationVector.copy(pos);
-    }
-    // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this._locationVector;
-  }
+  // set locationVector(pos: Vector3) {
+  //   // Record the location on the unit ideal sphere of this SEPointOnOneDim
+  //   // If the parent is not out of date, use the closest vector, if not set the location directly
+  //   // and the program will update the parent later so that the set location is on the parent (even though it is
+  //   // at the time of execution)
+  //   const possibleVec = (
+  //     this._parametricParent.ref as Parametric
+  //   )?.endPointVector(MIN);
+  //   if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
+  //     this._locationVector.copy(possibleVec).normalize();
+  //   } else {
+  //     this._locationVector.copy(pos);
+  //   }
+  //   // Set the position of the associated displayed plottable Point
+  //   this.ref.positionVector = this._locationVector;
+  // }
 
-  get locationVector(): Vector3 {
-    return this._locationVector;
-  }
+  // get locationVector(): Vector3 {
+  //   return this._locationVector;
+  // }
 
   public get noduleDescription(): string {
     return String(
@@ -83,7 +92,7 @@ export class SEParametricTracePoint extends SEPoint {
   public setLocationByTime(tVal: number): void {
     this.parametricTime = tVal;
     // console.log("location by time");
-    const pos = this.parametricParent.ref.P(tVal);
+    const pos = this.parametricParent.P(tVal);
     this.pointDirectLocationSetter(pos);
     this.markKidsOutOfDate();
     this.update();
@@ -95,8 +104,8 @@ export class SEParametricTracePoint extends SEPoint {
 
   public shallowUpdate(): void {
     this._exists = this.parametricParent.exists;
-
-    const possibleVec = this._parametricParent.ref.P(this.parametricTime);
+    console.debug(`Updating Parametric trace point P${this.name}`);
+    const possibleVec = this._parametricParent.P(this.parametricTime);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();

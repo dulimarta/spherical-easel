@@ -91,9 +91,6 @@ export default class RotateHandler extends Highlighter {
   private store: SEStoreType;
   // private _disableKeyHandler = false;
 
-  // set disableKeyHandler(b: boolean) {
-  //   this._disableKeyHandler = b;
-  // }
   constructor(layers: Two.Group[]) {
     super(layers);
     this.store = useSEStore();

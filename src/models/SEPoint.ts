@@ -24,7 +24,7 @@ const styleSet = new Set([
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
-  public ref: Point;
+  public declare ref: Point;
 
   /**
    * This determines if a point has been visible before so that the
@@ -58,6 +58,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.ref = point;
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;
+    console.debug("Creating a new point", this.name);
   }
   customStyles(): Set<string> {
     return styleSet;

@@ -128,6 +128,9 @@ export default class SphereFrame extends VueComponent {
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
   private boundaryCircle!: Two.Circle;
+  /**
+   * The Global Vuex Store
+   */
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -184,8 +187,9 @@ export default class SphereFrame extends VueComponent {
       autostart: true
       // ratio: window.devicePixelRatio
     });
-    console.debug("TwoJS scene is Group", this.twoInstance.scene.id);
-    //this.twoInstance.scene.matrix.manual = true;
+    // this.twoInstance.scene.matrix.manual = true;
+    // Clear layer array
+    // this.layers.splice(0);
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them

@@ -187,9 +187,9 @@ export default class Circle extends Nodule {
     );
 
     // Clone the glowing/back/fill parts.
-    this.glowingFrontPart = this.frontPart.clone() as Two.Path;
-    this.backPart = this.frontPart.clone() as Two.Path;
-    this.glowingBackPart = this.frontPart.clone() as Two.Path;
+    this.glowingFrontPart = this.frontPart.clone();
+    this.backPart = this.frontPart.clone();
+    this.glowingBackPart = this.frontPart.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
@@ -235,7 +235,7 @@ export default class Circle extends Nodule {
     );
 
     // create the back part
-    this.backFill = this.frontFill.clone() as Two.Path;
+    this.backFill = this.frontFill.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontFill.id), {

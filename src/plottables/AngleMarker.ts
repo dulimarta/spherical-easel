@@ -262,36 +262,27 @@ export default class AngleMarker extends Nodule {
     );
 
     // Create the other parts cloning the front circle path start
-    this.frontCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Two.Path;
-    this.frontCirclePathTail = this.frontCirclePathStart.clone() as Two.Path;
-    this.frontCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Two.Path;
+    this.frontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.frontCirclePathTail = this.frontCirclePathStart.clone();
+    this.frontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    this.backCirclePathStart = this.frontCirclePathStart.clone() as Two.Path;
-    this.backCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Two.Path;
-    this.backCirclePathTail = this.frontCirclePathStart.clone() as Two.Path;
-    this.backCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Two.Path;
+    this.backCirclePathStart = this.frontCirclePathStart.clone();
+    this.backCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.backCirclePathTail = this.frontCirclePathStart.clone();
+    this.backCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    this.glowingFrontCirclePathStart =
-      this.frontCirclePathStart.clone() as Two.Path;
+    this.glowingFrontCirclePathStart = this.frontCirclePathStart.clone();
     this.glowingFrontCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Two.Path;
-    this.glowingFrontCirclePathTail =
-      this.frontCirclePathStart.clone() as Two.Path;
+      this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone();
     this.glowingFrontCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Two.Path;
+      this.frontCirclePathStart.clone();
 
-    this.glowingBackCirclePathStart =
-      this.frontCirclePathStart.clone() as Two.Path;
+    this.glowingBackCirclePathStart = this.frontCirclePathStart.clone();
     this.glowingBackCirclePathDoubleArcStart =
-      this.frontCirclePathStart.clone() as Two.Path;
-    this.glowingBackCirclePathTail =
-      this.frontCirclePathStart.clone() as Two.Path;
-    this.glowingBackCirclePathDoubleArcTail =
-      this.frontCirclePathStart.clone() as Two.Path;
+      this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontCirclePathStart.id), {
@@ -445,15 +436,14 @@ export default class AngleMarker extends Nodule {
     );
 
     // Create the other parts cloning the front straight path start
-    this.backStraightStart = this.frontStraightStart.clone() as Two.Path;
-    this.frontStraightEnd = this.frontStraightStart.clone() as Two.Path;
-    this.backStraightEnd = this.frontStraightStart.clone() as Two.Path;
+    this.backStraightStart = this.frontStraightStart.clone();
+    this.frontStraightEnd = this.frontStraightStart.clone();
+    this.backStraightEnd = this.frontStraightStart.clone();
 
-    this.glowingFrontStraightStart =
-      this.frontStraightStart.clone() as Two.Path;
-    this.glowingBackStraightStart = this.frontStraightStart.clone() as Two.Path;
-    this.glowingFrontStraightEnd = this.frontStraightStart.clone() as Two.Path;
-    this.glowingBackStraightEnd = this.frontStraightStart.clone() as Two.Path;
+    this.glowingFrontStraightStart = this.frontStraightStart.clone();
+    this.glowingBackStraightStart = this.frontStraightStart.clone();
+    this.glowingFrontStraightEnd = this.frontStraightStart.clone();
+    this.glowingBackStraightEnd = this.frontStraightStart.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontStraightStart.id), {
@@ -527,10 +517,9 @@ export default class AngleMarker extends Nodule {
     );
 
     // Create the other parts cloning the front arrow head path
-    this.glowingFrontArrowHeadPath =
-      this.frontArrowHeadPath.clone() as Two.Path;
-    this.backArrowHeadPath = this.frontArrowHeadPath.clone() as Two.Path;
-    this.glowingBackArrowHeadPath = this.frontArrowHeadPath.clone() as Two.Path;
+    this.glowingFrontArrowHeadPath = this.frontArrowHeadPath.clone();
+    this.backArrowHeadPath = this.frontArrowHeadPath.clone();
+    this.glowingBackArrowHeadPath = this.frontArrowHeadPath.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontArrowHeadPath.id), {
@@ -582,9 +571,9 @@ export default class AngleMarker extends Nodule {
     );
 
     // Create the other parts cloning the front straight path start
-    this.frontFill2 = this.frontFill1.clone() as Two.Path;
-    this.backFill1 = this.frontFill1.clone() as Two.Path;
-    this.backFill2 = this.frontFill1.clone() as Two.Path;
+    this.frontFill2 = this.frontFill1.clone();
+    this.backFill1 = this.frontFill1.clone();
+    this.backFill2 = this.frontFill1.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontFill1.id), {
@@ -1379,42 +1368,42 @@ export default class AngleMarker extends Nodule {
     // console.log("pool Fill #", poolFill.length);
     // The possible legs in an outline of an angle marker cut by the boundary circle
     const leg1F: number[][] = [];
-    this.frontStraightStart.vertices.forEach((node: Two.Vector) =>
+    this.frontStraightStart.vertices.forEach((node: Two.Anchor) =>
       leg1F.push([node.x, node.y])
     );
 
     const leg1B: number[][] = [];
-    this.backStraightStart.vertices.forEach((node: Two.Vector) =>
+    this.backStraightStart.vertices.forEach((node: Two.Anchor) =>
       leg1B.push([node.x, node.y])
     );
 
     const leg2F: number[][] = [];
-    this.frontCirclePathStart.vertices.forEach((node: Two.Vector) =>
+    this.frontCirclePathStart.vertices.forEach((node: Two.Anchor) =>
       leg2F.push([node.x, node.y])
     );
 
     const leg2B: number[][] = [];
-    this.backCirclePathStart.vertices.forEach((node: Two.Vector) =>
+    this.backCirclePathStart.vertices.forEach((node: Two.Anchor) =>
       leg2B.push([node.x, node.y])
     );
 
     const leg3F: number[][] = [];
-    this.frontCirclePathTail.vertices.forEach((node: Two.Vector) =>
+    this.frontCirclePathTail.vertices.forEach((node: Two.Anchor) =>
       leg3F.push([node.x, node.y])
     );
 
     const leg3B: number[][] = [];
-    this.backCirclePathTail.vertices.forEach((node: Two.Vector) =>
+    this.backCirclePathTail.vertices.forEach((node: Two.Anchor) =>
       leg3B.push([node.x, node.y])
     );
 
     const leg4F: number[][] = [];
-    this.frontStraightEnd.vertices.forEach((node: Two.Vector) =>
+    this.frontStraightEnd.vertices.forEach((node: Two.Anchor) =>
       leg4F.push([node.x, node.y])
     );
 
     const leg4B: number[][] = [];
-    this.backStraightEnd.vertices.forEach((node: Two.Vector) =>
+    this.backStraightEnd.vertices.forEach((node: Two.Anchor) =>
       leg4B.push([node.x, node.y])
     );
 
@@ -2804,142 +2793,142 @@ export default class AngleMarker extends Nodule {
     // After the above statements execute this.front/back/start/tail and dup.front/back/start/tail are the same length
 
     // Now we can copy the vertices from the this.front/back start/tail to the dup.front/back start/tail
-    dup.frontCirclePathStart.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontCirclePathStart.vertices[pos]);
     });
-    dup.backCirclePathStart.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backCirclePathStart.vertices[pos]);
     });
     dup.glowingFrontCirclePathStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathStart.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathStart.vertices[pos]);
       }
     );
 
-    dup.frontStraightStart.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontStraightStart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontStraightStart.vertices[pos]);
     });
-    dup.backStraightStart.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backStraightStart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backCirclePathStart.vertices[pos]);
     });
     dup.glowingFrontStraightStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontStraightStart.vertices[pos]);
       }
     );
     dup.glowingBackStraightStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackStraightStart.vertices[pos]);
       }
     );
 
     dup.frontCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.frontCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.backCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.backCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.glowingFrontCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathDoubleArcStart.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathDoubleArcStart.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathDoubleArcStart.vertices[pos]);
       }
     );
 
-    dup.frontCirclePathTail.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontCirclePathTail.vertices[pos]);
     });
-    dup.backCirclePathTail.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backCirclePathTail.vertices[pos]);
     });
     dup.glowingFrontCirclePathTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathTail.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathTail.vertices[pos]);
       }
     );
 
-    dup.frontStraightEnd.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontStraightEnd.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontStraightEnd.vertices[pos]);
     });
-    dup.backStraightEnd.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backStraightEnd.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backStraightEnd.vertices[pos]);
     });
     dup.glowingFrontStraightEnd.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontStraightEnd.vertices[pos]);
       }
     );
     dup.glowingBackStraightEnd.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackStraightEnd.vertices[pos]);
       }
     );
 
     dup.frontCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.frontCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.backCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.backCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.glowingFrontCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontCirclePathDoubleArcTail.vertices[pos]);
       }
     );
     dup.glowingBackCirclePathDoubleArcTail.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackCirclePathDoubleArcTail.vertices[pos]);
       }
     );
 
-    dup.frontFill1.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontFill1.vertices[pos]);
     });
-    dup.frontFill2.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontFill2.vertices[pos]);
     });
-    dup.backFill1.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backFill1.vertices[pos]);
     });
-    dup.backFill2.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backFill2.vertices[pos]);
     });
 
-    dup.frontArrowHeadPath.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.frontArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontArrowHeadPath.vertices[pos]);
     });
-    dup.backArrowHeadPath.vertices.forEach((v: Two.Vector, pos: number) => {
+    dup.backArrowHeadPath.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backArrowHeadPath.vertices[pos]);
     });
     dup.glowingFrontArrowHeadPath.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingFrontArrowHeadPath.vertices[pos]);
       }
     );
     dup.glowingBackArrowHeadPath.vertices.forEach(
-      (v: Two.Vector, pos: number) => {
+      (v: Two.Anchor, pos: number) => {
         v.copy(this.glowingBackArrowHeadPath.vertices[pos]);
       }
     );

@@ -146,11 +146,11 @@ export default class Polygon extends Nodule {
     // now create, record ids, and set noStroke (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
     for (let i = 0; i < this.edgeSegments.length; i++) {
       // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
-      this.backFills[i] = this.frontFills[0].clone() as Two.Path;
+      this.backFills[i] = this.frontFills[0].clone();
 
       if (i > 0) {
         // clear the vectors from all the parts so that the total number (between front and back) of vectors is 2*SUBDIVISIONS
-        this.frontFills[i] = this.frontFills[0].clone() as Two.Path;
+        this.frontFills[i] = this.frontFills[0].clone();
         this.frontFills[i].vertices.splice(0);
         this.backFills[i].vertices.splice(0);
       }

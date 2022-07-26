@@ -8,10 +8,12 @@ import {
 } from "@/types/Styles";
 import { LabelDisplayMode, LabelParentTypes } from "@/types";
 import { ValueDisplayMode } from "@/types";
+
 import Two from "two.js";
 // import { Vector } from "two.js/src/vector";
 // import { Text } from "two.js/src/text";
 // import { Group } from "two.js/src/group";
+// import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.

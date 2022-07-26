@@ -25,7 +25,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Ellipse;
+  public declare ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
@@ -296,8 +296,9 @@ export class SEEllipse
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
+        [], // FIXME
+        // this.ref.tMin,
+        // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).vector
     );
@@ -410,8 +411,9 @@ export class SEEllipse
           // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
-          this.ref.tMin,
-          this.ref.tMax,
+          [], // FIXME
+          // this.ref.tMin,
+          // this.ref.tMax,
           [], // Avoid these t values
           this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
         );
@@ -476,8 +478,9 @@ export class SEEllipse
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
+        [], // FIXME
+        // this.ref.tMin,
+        // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).tVal;
       // console.log("coord t val", coorespondingTVal);
@@ -511,8 +514,9 @@ export class SEEllipse
       this.ref.E.bind(this.ref),
       this.ref.Ep.bind(this.ref),
       transformedToStandard,
-      this.ref.tMin,
-      this.ref.tMax,
+      [], // FIXME
+      // this.ref.tMin,
+      // this.ref.tMax,
       [], // Avoid these t values
       this.ref.Epp.bind(this.ref)
     );

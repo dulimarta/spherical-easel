@@ -27,7 +27,7 @@ export class SELabel extends SENodule implements Visitable {
   // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
-  public ref: Label;
+  public declare ref: Label;
   /**
    * The  parent of this SELabel
    */

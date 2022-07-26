@@ -1,9 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
@@ -13,7 +11,7 @@ import SETTINGS from "@/global-settings";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AngleMode, LabelDisplayMode } from "@/types";
+import { AngleMode } from "@/types";
 import Polygon from "@/plottables/Polygon";
 import { SEPolygon } from "@/models/SEPolygon";
 import { AddPolygonCommand } from "@/commands/AddPolygonAndExpressionCommand";
@@ -23,8 +21,6 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-// import { Group } from "two.js/src/group";
-import ToggleLabelDisplayHandler from "./ToggleLabelDisplayHandler";
 
 export default class PolygonHandler extends Highlighter {
   /**

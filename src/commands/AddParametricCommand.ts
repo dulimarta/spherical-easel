@@ -3,9 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
-import Parametric from "@/plottables/Parametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
   CoordExpression,
@@ -64,13 +62,13 @@ export class AddParametricCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref.currentStyleState(StyleEditPanels.Front)
+            this.seParametric.ref?.currentStyleState(StyleEditPanels.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref.currentStyleState(StyleEditPanels.Back)
+            this.seParametric.ref?.currentStyleState(StyleEditPanels.Back)
           )
         ),
       // All labels have these attributes
@@ -97,15 +95,16 @@ export class AddParametricCommand extends Command {
         Command.symbolToASCIIDec(this.seParametric.tExpressions.max),
       "parametricMinNumber=" + this.seParametric.tNumbers.min,
       "parametricMaxNumber=" + this.seParametric.tNumbers.max,
-      "parametricCurveClosed=" + this.seParametric.ref.closed,
+      "parametricCurveClosed=" + this.seParametric.isClosedCurve,
       "parametricExpressionParentsNames=" +
         this.seParametric.seParentExpressions
           .map((n: SEExpression) => Command.symbolToASCIIDec(n.name))
-          .join("@"),
-      "parametricCuspParameterValues=" +
-        this.seParametric.c1DiscontinuityParameterValues
-          .map(num => Command.symbolToASCIIDec(num.toString()))
           .join("@")
+      // FIXME
+      // "parametricCuspParameterValues=" +
+      //   this.seParametric.c1DiscontinuityParameterValues
+      //     .map(num => Command.symbolToASCIIDec(num.toString()))
+      //     .join("@")
     ].join("&");
   }
 
@@ -193,35 +192,31 @@ export class AddParametricCommand extends Command {
         min: parametricMinNumber,
         max: parametricMaxNumber
       };
-      const parametric = new Parametric(
-        tNumbers.min,
-        tNumbers.max,
-        tNumbers.min,
-        tNumbers.max,
-        parametricCurveClosed === "true"
-      );
+      // Create the Parametric in the SEParametric constructor
+      // Not here!
       const seParametric = new SEParametric(
-        parametric,
+        // parametric,
         coordinateExpressions,
         tExpressions,
         tNumbers,
         parametricCuspParameterValues,
-        parametricExpressionParents.map(par => par as SEExpression)
+        parametricExpressionParents.map(par => par as SEExpression),
+        parametricCurveClosed === "true"
       );
 
       //style the parametric
-      const parametricFrontStyleString = propMap.get("objectFrontStyle");
-      if (parametricFrontStyleString !== undefined)
-        parametric.updateStyle(
-          StyleEditPanels.Front,
-          JSON.parse(parametricFrontStyleString)
-        );
-      const parametricBackStyleString = propMap.get("objectBackStyle");
-      if (parametricBackStyleString !== undefined)
-        parametric.updateStyle(
-          StyleEditPanels.Back,
-          JSON.parse(parametricBackStyleString)
-        );
+      // const parametricFrontStyleString = propMap.get("objectFrontStyle");
+      // if (parametricFrontStyleString !== undefined)
+      //   parametric.updateStyle(
+      //     StyleEditPanels.Front,
+      //     JSON.parse(parametricFrontStyleString)
+      //   );
+      // const parametricBackStyleString = propMap.get("objectBackStyle");
+      // if (parametricBackStyleString !== undefined)
+      //   parametric.updateStyle(
+      //     StyleEditPanels.Back,
+      //     JSON.parse(parametricBackStyleString)
+      //   );
 
       //make the label and set its location
       const label = new Label("parametric");

@@ -27,9 +27,6 @@ export default class NSectSegmentHandler extends Highlighter {
   private tmpVector = new Vector3();
   // private _disableKeyHandler = false;
 
-  // set disableKeyHandler(b: boolean) {
-  //   this._disableKeyHandler = b;
-  // }
   constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
 

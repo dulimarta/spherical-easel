@@ -108,9 +108,9 @@ export default class Line extends Nodule {
     );
 
     // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone() as Two.Path;
-    this.glowingBackHalf = this.frontHalf.clone() as Two.Path;
-    this.glowingFrontHalf = this.frontHalf.clone() as Two.Path;
+    this.backHalf = this.frontHalf.clone();
+    this.glowingBackHalf = this.frontHalf.clone();
+    this.glowingFrontHalf = this.frontHalf.clone();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {

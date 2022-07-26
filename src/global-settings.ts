@@ -1087,216 +1087,216 @@ export const SETTINGS = {
     coordinate: {
       props: {
         mdiIcon: "mdi-axis-arrow-info",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     delete: {
       props: {
         mdiIcon: "mdi-delete",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     hide: {
       props: {
         mdiIcon: "mdi-file-hidden",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     iconFactory: {
       props: {
         mdiIcon: "mdi-plus",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     move: {
       props: {
         mdiIcon: "mdi-cursor-move",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     rotate: {
       props: {
         mdiIcon: "mdi-rotate-3d-variant",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     select: {
       props: {
         mdiIcon: "mdi-cursor-pointer",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toggleLabelDisplay: {
       props: {
         mdiIcon: "mdi-toggle-switch-off-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomFit: {
       props: {
         mdiIcon: "mdi-magnify-scan",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomIn: {
       props: {
         mdiIcon: "mdi-magnify-plus-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomOut: {
       props: {
         mdiIcon: "mdi-magnify-minus-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toolsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tools",
         filePath: ""
       }
     },
     objectsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-list-bulleted",
         filePath: ""
       }
     },
     constructionsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-database",
         filePath: ""
       }
     },
     calculationObject: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-calculator-variant",
         filePath: ""
       }
     },
     measurementObject: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-math-compass",
         filePath: ""
       }
     },
     slider: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-slide",
         filePath: ""
       }
     },
     stylePanel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
         filePath: ""
       }
     },
     downloadConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-download",
         filePath: ""
       }
     },
     shareConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-share-variant",
         filePath: ""
       }
     },
     deleteConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can",
         filePath: ""
       }
     },
     cycleNodeValueDisplayMode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
         filePath: ""
       }
     },
     showNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye",
         filePath: ""
       }
     },
     hideNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
         filePath: ""
       }
     },
     showNodeLabel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-outline",
         filePath: ""
       }
     },
     hideNodeLabel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-off-outline",
         filePath: ""
       }
     },
     deleteNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can-outline",
         filePath: ""
       }
     },
     appSettings: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-cog",
         filePath: ""
       }
     },
     clearConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-broom",
         filePath: ""
       }
     },
     undo: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-undo",
         filePath: ""
       }
     },
     redo: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-redo",
         filePath: ""
       }

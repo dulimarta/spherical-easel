@@ -52,12 +52,11 @@ export default class IconBase extends Vue {
     this.filePath = SETTINGS.icons[this.iconName].props.filePath;
     this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
     this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;
-
     if (typeof this.mdiIcon !== "string") {
       this.doneFetching = false;
       // By default, axios assumes a JSON response and the input will be parsed as JSON.
       // We want to override it to "text"
-      axios.get(this.filePath, { responseType: "text" }).then(r => {
+      axios.get(this.filePath).then(r => {
         this.svgSnippetRaw = r.data;
         this.doneFetching = true;
         const parts = this.svgSnippetRaw.split(";");
