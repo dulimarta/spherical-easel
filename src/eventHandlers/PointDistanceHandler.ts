@@ -6,6 +6,7 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import SETTINGS from "@/global-settings";
 // import { Group } from "two.js/src/group";
 export default class PointDistanceHandler extends Highlighter {
   /**
@@ -86,6 +87,8 @@ export default class PointDistanceHandler extends Highlighter {
           this.targetPoints[0],
           this.targetPoints[1]
         );
+        distanceMeasure.valueDisplayMode =
+          SETTINGS.point.initialValueDisplayMode;
         EventBus.fire("show-alert", {
           key: `handlers.newMeasurementAdded`,
           keyOptions: { name: `${distanceMeasure.name}` },

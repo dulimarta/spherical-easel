@@ -360,6 +360,7 @@ export default class PolygonHandler extends Highlighter {
         // Create the plottable label
         const newLabel = new Label("polygon");
         const newSELabel = new SELabel(newLabel, vtx);
+        vtx.valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
 
         // Set the initial label location as the average of all the vertices
         this.tmpVector.set(0, 0, 0);
@@ -374,10 +375,21 @@ export default class PolygonHandler extends Highlighter {
         this.tmpVector.normalize();
         newSELabel.locationVector = this.tmpVector;
 
+        polygonCommandGroup.addCommand(
+          new AddPolygonCommand(
+            vtx,
+            this.seEdgeSegments,
+            this.segmentIsFlipped,
+            seAngleMarkerList,
+            newSELabel
+          )
+        );
+
         // set the label to display the label and the number that is the area
         polygonCommandGroup.addCommand(
           new SetNoduleDisplayCommand(newSELabel, true)
         );
+
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
             [newLabel],
@@ -395,17 +407,7 @@ export default class PolygonHandler extends Highlighter {
           )
         );
         // Create and execute the command to create a new point for undo/redo
-        polygonCommandGroup
-          .addCommand(
-            new AddPolygonCommand(
-              vtx,
-              this.seEdgeSegments,
-              this.segmentIsFlipped,
-              seAngleMarkerList,
-              newSELabel
-            )
-          )
-          .execute();
+        polygonCommandGroup.execute();
         // Update the display
         vtx.markKidsOutOfDate();
         vtx.update();
@@ -834,6 +836,8 @@ export default class PolygonHandler extends Highlighter {
       // Create the plottable and model label
       const newLabel = new Label("angleMarker");
       const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+      newSEAngleMarker.valueDisplayMode =
+        SETTINGS.angleMarker.initialValueDisplayMode;
 
       // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
       newSEAngleMarker.markKidsOutOfDate();
@@ -921,6 +925,7 @@ export default class PolygonHandler extends Highlighter {
       }
 
       const lenMeasure = new SESegmentLength(seg);
+      lenMeasure.valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
 
       polygonCommandGroup.addCommand(
         new AddLengthMeasurementCommand(lenMeasure, seg)

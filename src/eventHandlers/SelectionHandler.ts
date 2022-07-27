@@ -298,6 +298,10 @@ export default class SelectionHandler extends Highlighter {
         this.hitSEEllipses[0].glowing = true;
       } else if (this.hitSEParametrics.length > 0) {
         this.hitSEParametrics[0].glowing = true;
+      } else if (this.hitSEAngleMarkers.length > 0) {
+        this.hitSEAngleMarkers[0].glowing = true;
+      } else if (this.hitSEPolygons.length > 0) {
+        this.hitSEPolygons[0].glowing = true;
       }
       // this.hitSENodules
       //   .filter((p: SENodule) => {
@@ -376,6 +380,10 @@ export default class SelectionHandler extends Highlighter {
           possibleAdditions.push(this.hitSEEllipses[0]);
         } else if (this.hitSEParametrics.length > 0) {
           possibleAdditions.push(this.hitSEParametrics[0]);
+        } else if (this.hitSEAngleMarkers.length > 0) {
+          possibleAdditions.push(this.hitSEAngleMarkers[0]);
+        } else if (this.hitSEPolygons.length > 0) {
+          possibleAdditions.push(this.hitSEPolygons[0]);
         }
 
         if (event.altKey) {

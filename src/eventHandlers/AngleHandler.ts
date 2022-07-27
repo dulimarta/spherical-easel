@@ -1142,6 +1142,8 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1272,6 +1274,8 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1357,6 +1361,8 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1496,6 +1502,8 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();

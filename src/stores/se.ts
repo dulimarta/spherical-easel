@@ -544,13 +544,13 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          console.debug(parent.name, "invalidates", m.name);
+          // console.debug(parent.name, "invalidates", m.name);
           if (m.exists) {
             if (m.canUpdateNow()) {
               if (!updateCandidates.find((x: SENodule) => x.name === m.name))
                 updateCandidates.push(m);
             } else {
-              console.debug("!!! Dependent ", m.name, " can't be updated now");
+              //console.debug("!!! Dependent ", m.name, " can't be updated now");
             }
           }
         });

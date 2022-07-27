@@ -59,6 +59,8 @@ export default class SegmentLengthHandler extends Highlighter {
         this.targetSegment.label !== undefined
       ) {
         const lenMeasure = new SESegmentLength(this.targetSegment);
+        lenMeasure.valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
+
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
           keyOptions: { name: `${lenMeasure.name}` },

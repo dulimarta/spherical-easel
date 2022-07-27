@@ -163,6 +163,7 @@ export const SETTINGS = {
   },
   // #endregion boundarycircle
   point: {
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the point distance
     showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point?
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
