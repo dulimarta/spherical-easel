@@ -444,7 +444,6 @@ export abstract class SENodule implements Visitable {
     const d: (t: number) => number = function (t: number): number {
       return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
-
     // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
     //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
     // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
@@ -464,6 +463,7 @@ export abstract class SENodule implements Visitable {
     }
 
     const zeros = this.findZerosParametrically(dp, tValues, [], dpp);
+
     if (zeros.length > 0) {
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
       let minTVal: number = zeros[0]; // The t value that minimizes d

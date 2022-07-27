@@ -41,7 +41,7 @@ export class SEIsometrySegment extends SESegment {
     );
     // switch end and start because of mirroring for reflections
     if (parentTransformation instanceof SEReflection) {
-      console.debug("here");
+      // console.debug("here");
       super(
         seg,
         segmentEndSEPoint,

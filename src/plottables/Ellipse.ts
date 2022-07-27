@@ -448,7 +448,7 @@ export default class Ellipse extends Nodule {
       this.tmpVector.copy(this.E(tVal));
       // Set tmpVector equal to location on the target ellipse
       this.tmpVector.applyMatrix4(transformMatrix);
-
+      // console.debug(`tempvec ${this.tmpVector.toFixed(2)}`);
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere
       if (this.tmpVector.z > 0) {
@@ -807,6 +807,7 @@ export default class Ellipse extends Nodule {
       // put remaining vertices in the storage (There shouldn't be any in this case)
       this.fillStorageAnchors.push(...pool.splice(0));
     }
+    console.debug(`end of Ellipse update`);
   }
 
   /**
@@ -863,6 +864,7 @@ export default class Ellipse extends Nodule {
     return this._focus2Vector;
   }
   get ellipseFrame(): Matrix4 {
+    //console.debug(`EllipseFrame ${this._ellipseFrame.toArray()}`);
     return this._ellipseFrame;
   }
   /**

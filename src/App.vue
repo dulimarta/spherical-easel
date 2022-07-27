@@ -517,7 +517,7 @@ export default class App extends Vue {
       const currentWidth = canvasReference.clientWidth;
 
       //set the view of the image to be around the circle
-      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+      //linear equation determined by comparing "console.log(currentWidth);" with successful hard codes
       svgElement.setAttribute(
         "viewBox",
         0.476 * currentWidth -
@@ -529,7 +529,7 @@ export default class App extends Vue {
 
       //remove the transform so the circle shows up
       //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
-      //svgElement.style.removeProperty("transform");
+      svgElement.style.removeProperty("transform");
 
       //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {

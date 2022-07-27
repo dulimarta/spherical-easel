@@ -31,6 +31,7 @@ export class AddEllipseCommand extends Command {
   }
 
   do(): void {
+    console.debug(`Do ellipse add`);
     this.focus1SEPoint.registerChild(this.seEllipse);
     this.focus2SEPoint.registerChild(this.seEllipse);
     this.ellipseSEPoint.registerChild(this.seEllipse);

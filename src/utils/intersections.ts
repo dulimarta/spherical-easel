@@ -264,9 +264,14 @@ export function intersectLineWithEllipse(
       };
 
       // FIXME
+      //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const zeros = SENodule.findZerosParametrically(
         dp,
-        [],
+        tValues,
         // ellipse.ref.tMin,
         // ellipse.ref.tMax,
         [],
@@ -306,10 +311,14 @@ export function intersectLineWithEllipse(
   const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    [],
+    tValues,
     // FIXME
     // ellipse.ref.tMin,
     // ellipse.ref.tMax,
@@ -593,11 +602,15 @@ export function intersectSegmentWithEllipse(
   const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
     // FIXME
-    [],
+    tValues,
     [],
     dp
   );
@@ -931,11 +944,15 @@ export function intersectCircleWithEllipse(
       )
     );
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
     // FIXME
-    [],
+    tValues,
     // ellipse.ref.tMin,
     // ellipse.ref.tMax,
     [],
@@ -1195,9 +1212,14 @@ export function intersectEllipseWithEllipse(
     );
   };
 
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    [], // FIXME
+    tValues, // FIXME
     // ellipse2.ref.tMin,
     // ellipse2.ref.tMax,
     [],

@@ -470,6 +470,13 @@ export default class EllipseHandler extends Highlighter {
             this.snapTemporaryPointMarkerToOneDimensional.closestVector(
               this.currentSphereVector
             );
+          // console.debug(
+          //   `snap object ${
+          //     this.snapTemporaryPointMarkerToOneDimensional.name
+          //   } location ${this.temporaryFocus1Marker.positionVector.toFixed(
+          //     2
+          //   )} from ${this.currentSphereVector.toFixed(2)}`
+          // );
         }
         // otherwise move the focus1marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
@@ -1119,6 +1126,7 @@ export default class EllipseHandler extends Highlighter {
       .add(new Vector3(0, SETTINGS.ellipse.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tmpVector;
+    newSEEllipse.shallowUpdate();
 
     ellipseCommandGroup.addCommand(
       new AddEllipseCommand(
