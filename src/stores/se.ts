@@ -16,6 +16,7 @@ import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { ActionMode, SEIntersectionReturnType } from "@/types";
@@ -69,6 +70,7 @@ type PiniaAppState = {
   seAngleMarkerIds: Array<number>;
   seParametricIds: Array<number>;
   sePolygonIds: Array<number>;
+  seTransformationIds: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -83,6 +85,7 @@ const seAngleMarkers: Map<number, SEAngleMarker> = new Map();
 const seEllipses: Map<number, SEEllipse> = new Map();
 const seParametrics: Map<number, SEParametric> = new Map();
 const sePolygons: Map<number, SEPolygon> = new Map();
+const seTransformations: Map<number, SETransformation> = new Map();
 const sePencils: Array<SEPencil> = [];
 const layers: Array<Two.Group> = [];
 const selectedSENodules: Array<SENodule> = [];
@@ -116,6 +119,7 @@ export const useSEStore = defineStore({
     seAngleMarkerIds: [],
     seParametricIds: [],
     sePolygonIds: [],
+    seTransformationIds: [],
     // oldSelections: SELine[],
     styleSavedFromPanel: StyleEditPanels.Label,
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -145,6 +149,8 @@ export const useSEStore = defineStore({
       seEllipses.clear();
       this.seParametricIds.splice(0);
       seParametrics.clear();
+      this.seTransformationIds.splice(0);
+      seTransformations.clear();
       sePencils.splice(0);
       this.seLabelIds.splice(0);
       selectedSENodules.splice(0);
@@ -278,6 +284,19 @@ export const useSEStore = defineStore({
       line.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
     },
+    removeLine(lineId: number): void {
+      const victimLine = seLines.get(lineId)!;
+      if (victimLine) {
+        /* victim line is found */
+        victimLine.ref.removeFromLayers();
+        const pos = this.seLineIds.findIndex((id: number) => id === lineId);
+        const pos2 = seNodules.findIndex(x => x.id === lineId);
+        seLines.delete(lineId);
+        this.seLineIds.splice(pos, 1); // Remove the line from the list
+        seNodules.splice(pos2, 1);
+        this.hasUnsavedNodules = true;
+      }
+    },
     addCircle(circle: SECircle): void {
       this.seCircleIds.push(circle.id);
       seCircles.set(circle.id, circle);
@@ -300,16 +319,23 @@ export const useSEStore = defineStore({
         this.hasUnsavedNodules = true;
       }
     },
-    removeLine(lineId: number): void {
-      const victimLine = seLines.get(lineId)!;
-      if (victimLine) {
+    addTransformation(transformation: SETransformation): void {
+      this.seTransformationIds.push(transformation.id);
+      seTransformations.set(transformation.id, transformation);
+      seNodules.push(transformation);
+      this.hasUnsavedNodules = true;
+    },
+    removeTransformation(transformationId: number): void {
+      const victimTransformation = seTransformations.get(transformationId);
+      if (victimTransformation) {
         /* victim line is found */
-        victimLine.ref.removeFromLayers();
-        const pos = this.seLineIds.findIndex((id: number) => id === lineId);
-        const pos2 = seNodules.findIndex(x => x.id === lineId);
-        seLines.delete(lineId);
-        this.seLineIds.splice(pos, 1); // Remove the line from the list
-        seNodules.splice(pos2, 1);
+        const transformationPos = this.seTransformationIds.findIndex(
+          (id: number) => id === transformationId
+        );
+        const pos = seNodules.findIndex(x => x.id === transformationId);
+        this.seTransformationIds.splice(transformationPos, 1); // Remove the transformation from the list
+        seNodules.splice(pos, 1);
+        seTransformations.delete(transformationId);
         this.hasUnsavedNodules = true;
       }
     },
@@ -724,6 +750,8 @@ export const useSEStore = defineStore({
       state.sePolygonIds.map(id => sePolygons.get(id)!),
     expressions: (state): Array<SEExpression> =>
       state.seExpressionIds.map(id => seExpressions.get(id)!),
+    seTransformations: (state): Array<SETransformation> =>
+      state.seTransformationIds.map(id => seTransformations.get(id)!),
     selectedSENodules: (): Array<SENodule> => selectedSENodules,
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     oldStyleSelections: (): Array<SENodule> => oldSelections,
