@@ -165,8 +165,8 @@ export default class ConstructionLoader extends Vue {
     targetArr.splice(0);
     qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
-
       let parsedScript: ConstructionScript | undefined = undefined;
+
       // Ignore constructions with empty script
       if (doc.script.trim().length === 0) return;
       const trimmedScript = doc.script.trim();
@@ -194,7 +194,6 @@ export default class ConstructionLoader extends Vue {
             .then((url: string) => axios.get(url))
             .then((r: AxiosResponse) => r.data);
         } else svgData = doc.preview;
-        // we care only for non-empty script
         const objectCount = parsedScript
           // A simple command contributes 1 object
           // A CommandGroup contributes N objects (as many elements in its subcommands)

@@ -104,7 +104,6 @@ export class SEParametricTracePoint extends SEPoint {
 
   public shallowUpdate(): void {
     this._exists = this.parametricParent.exists;
-    console.debug(`Updating Parametric trace point P${this.name}`);
     const possibleVec = this._parametricParent.P(this.parametricTime);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location

@@ -141,6 +141,7 @@ export default class extends Vue {
   // or when the mouse moves while a new construction is being loaded
   async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
+
     this.lastDocId = s.id;
     let aDoc: Document | undefined = undefined;
 
