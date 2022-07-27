@@ -71,10 +71,11 @@ type PiniaAppState = {
   seParametricIds: Array<number>;
   sePolygonIds: Array<number>;
   seTransformationIds: Array<number>;
+  selectedSENoduleIds: Array<number>;
+  oldSelectedSENoduleIDs: Array<number>;
 };
 
 const seNodules: Array<SENodule> = [];
-const oldSelections: Array<SENodule> = [];
 const sePoints: Map<number, SEPoint> = new Map();
 const seLines: Map<number, SELine> = new Map();
 const seSegments: Map<number, SESegment> = new Map();
@@ -88,7 +89,8 @@ const sePolygons: Map<number, SEPolygon> = new Map();
 const seTransformations: Map<number, SETransformation> = new Map();
 const sePencils: Array<SEPencil> = [];
 const layers: Array<Two.Group> = [];
-const selectedSENodules: Array<SENodule> = [];
+const selectedSENodules: Map<number, SENodule> = new Map();
+const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
@@ -120,10 +122,10 @@ export const useSEStore = defineStore({
     seParametricIds: [],
     sePolygonIds: [],
     seTransformationIds: [],
-    // oldSelections: SELine[],
+    oldSelectedSENoduleIDs: [],
     styleSavedFromPanel: StyleEditPanels.Label,
-    inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
-    //selectedSENodules: []
+    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    selectedSENoduleIds: []
   }),
   actions: {
     init(): void {
@@ -153,7 +155,10 @@ export const useSEStore = defineStore({
       seTransformations.clear();
       sePencils.splice(0);
       this.seLabelIds.splice(0);
-      selectedSENodules.splice(0);
+      selectedSENodules.clear();
+      this.selectedSENoduleIds.splice(0);
+      oldSelectedSENodules.clear();
+      this.oldSelectedSENoduleIDs.splice(0);
       // intersections.splice(0);
       this.seExpressionIds.splice(0);
       // initialStyleStates.splice(0);
@@ -626,7 +631,6 @@ export const useSEStore = defineStore({
         seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
       });
     },
-
     changeSegmentNormalVectorArcLength(change: {
       segmentId: number;
       normal: Vector3;
@@ -679,12 +683,19 @@ export const useSEStore = defineStore({
         )
       ) {
         console.debug("Selected nodules differ");
-        //reset the glowing color to usual
+        //reset previous selection glowing color to usual
         this.selectedSENodules.forEach(n => {
           n.ref?.setSelectedColoring(false);
         });
-        this.selectedSENodules.splice(0);
-        this.selectedSENodules.push(...payload);
+        // clear the selectedSENodules map and id array
+        selectedSENodules.clear();
+        this.selectedSENoduleIds.splice(0);
+        payload.forEach(seNodule => {
+          this.selectedSENoduleIds.push(seNodule.id);
+          selectedSENodules.set(seNodule.id, seNodule);
+        });
+        // this.selectedSENodules.splice(0);
+        // this.selectedSENodules.push(...payload);
         //set the glowing color to selected
         this.selectedSENodules.forEach(n => {
           n.ref?.setSelectedColoring(true);
@@ -692,8 +703,14 @@ export const useSEStore = defineStore({
       }
     },
     setOldSelection(payload: SENodule[]): void {
-      oldSelections.splice(0);
-      oldSelections.push(...payload);
+      // clear the last old selection
+      oldSelectedSENodules.clear();
+      this.oldSelectedSENoduleIDs.splice(0);
+      // set the new selection
+      payload.forEach(seNodule => {
+        this.oldSelectedSENoduleIDs.push(seNodule.id);
+        oldSelectedSENodules.set(seNodule.id, seNodule);
+      });
     },
     recordStyleState(data: {
       panel: StyleEditPanels;
@@ -752,9 +769,11 @@ export const useSEStore = defineStore({
       state.seExpressionIds.map(id => seExpressions.get(id)!),
     seTransformations: (state): Array<SETransformation> =>
       state.seTransformationIds.map(id => seTransformations.get(id)!),
-    selectedSENodules: (): Array<SENodule> => selectedSENodules,
+    selectedSENodules: (state): Array<SENodule> =>
+      state.selectedSENoduleIds.map(id => selectedSENodules.get(id)!),
+    oldStyleSelections: (state): Array<SENodule> =>
+      state.selectedSENoduleIds.map(id => oldSelectedSENodules.get(id)!),
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
-    oldStyleSelections: (): Array<SENodule> => oldSelections,
     layers: (): Two.Group[] => layers,
     initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       initialStyleStatesMap,
