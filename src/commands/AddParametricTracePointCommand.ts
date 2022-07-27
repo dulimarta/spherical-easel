@@ -48,8 +48,8 @@ export class AddParametricTracePointCommand extends Command {
     if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
       this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
     }
-    this.seTracePoint.markKidsOutOfDate();
-    this.seTracePoint.update();
+    // this.seTracePoint.markKidsOutOfDate();
+    // this.seTracePoint.update();
   }
 
   saveState(): void {

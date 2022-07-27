@@ -52,8 +52,8 @@ export class AddPolarPointCommand extends Command {
     if (this.sePolarPoint.label && this.useVisiblePointCountToRename) {
       this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
     }
-    this.sePolarPoint.markKidsOutOfDate();
-    this.sePolarPoint.update();
+    // this.sePolarPoint.markKidsOutOfDate();
+    // this.sePolarPoint.update();
   }
 
   saveState(): void {

@@ -50,8 +50,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
       this.sePointOnOneOrTwoDimensional.incrementVisiblePointCount();
       this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
     }
-    this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
-    this.sePointOnOneOrTwoDimensional.update();
+    // this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
+    // this.sePointOnOneOrTwoDimensional.update();
   }
 
   saveState(): void {
@@ -134,12 +134,9 @@ export class AddPointOnOneDimensionalCommand extends Command {
 
     const positionVector = new Vector3();
     positionVector.from(propMap.get("pointOnOneOrTwoDimensionalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
-    // console.log(
-    //   objMap,
-    //   "pointOnOneOrTwoDimensionalParent",
-    //   pointOnOneOrTwoDimensionalParent,
-    //   propMap.get("pointOnOneOrTwoDimensionalParentName")
-    // );
+    console.debug(
+      `point on one or two dim vector ${positionVector.toFixed(2)}`
+    );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
       const point = new Point();
@@ -147,7 +144,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
         point,
         pointOnOneOrTwoDimensionalParent
       );
-      sePointOnOneOrTwoDimensional.locationVector = positionVector;
+      // use the direct setter because the parent may be out of date
+      sePointOnOneOrTwoDimensional.pointDirectLocationSetter(positionVector);
       //style the point on object
       const pointOnOneOrTwoDimensionalFrontStyleString =
         propMap.get("objectFrontStyle");

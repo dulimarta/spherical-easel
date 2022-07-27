@@ -807,7 +807,6 @@ export default class Ellipse extends Nodule {
       // put remaining vertices in the storage (There shouldn't be any in this case)
       this.fillStorageAnchors.push(...pool.splice(0));
     }
-    console.debug(`end of Ellipse update`);
   }
 
   /**

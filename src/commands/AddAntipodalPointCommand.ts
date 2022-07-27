@@ -32,8 +32,8 @@ export class AddAntipodalPointCommand extends Command {
     this.seAntipodalPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seAntipodalPoint);
     Command.store.addLabel(this.seLabel);
-    this.seAntipodalPoint.markKidsOutOfDate();
-    this.seAntipodalPoint.update();
+    // this.seAntipodalPoint.markKidsOutOfDate();
+    // this.seAntipodalPoint.update();
   }
 
   saveState(): void {

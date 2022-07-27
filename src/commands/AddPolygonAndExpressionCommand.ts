@@ -54,8 +54,8 @@ export class AddPolygonCommand extends Command {
     this.sePolygon.registerChild(this.seLabel);
     Command.store.addPolygonAndExpression(this.sePolygon);
     Command.store.addLabel(this.seLabel);
-    this.sePolygon.markKidsOutOfDate();
-    this.sePolygon.update();
+    // this.sePolygon.markKidsOutOfDate();
+    // this.sePolygon.update();
   }
 
   saveState(): void {

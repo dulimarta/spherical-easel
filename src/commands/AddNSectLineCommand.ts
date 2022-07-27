@@ -37,8 +37,8 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    this.seNSectLine.markKidsOutOfDate();
-    this.seNSectLine.update();
+    // this.seNSectLine.markKidsOutOfDate();
+    // this.seNSectLine.update();
   }
 
   saveState(): void {

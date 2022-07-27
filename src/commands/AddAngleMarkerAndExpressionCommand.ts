@@ -63,8 +63,8 @@ export class AddAngleMarkerCommand extends Command {
     this.seAngleMarker.registerChild(this.seLabel);
     Command.store.addAngleMarkerAndExpression(this.seAngleMarker);
     Command.store.addLabel(this.seLabel);
-    this.seAngleMarker.markKidsOutOfDate();
-    this.seAngleMarker.update();
+    // this.seAngleMarker.markKidsOutOfDate();
+    // this.seAngleMarker.update();
   }
 
   saveState(): void {
@@ -87,8 +87,7 @@ export class AddAngleMarkerCommand extends Command {
       "AddAngleMarker",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
       // All plottable objects have these attributes
-      "objectName=" +
-        Command.symbolToASCIIDec(this.seAngleMarker.name),
+      "objectName=" + Command.symbolToASCIIDec(this.seAngleMarker.name),
       "objectExists=" + this.seAngleMarker.exists,
       "objectShowing=" + this.seAngleMarker.showing,
       "objectFrontStyle=" +

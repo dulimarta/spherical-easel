@@ -66,18 +66,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
   public shallowUpdate(): void {
     //These points always exist - they have no parents to depend on
-    this.ref.updateDisplay();
-
     //Update the location of the associate plottable Point (setter also updates the display)
     this.ref.positionVector = this._locationVector;
-
-    // if (!this._pointVisibleBefore && this.showing) {
-    //   // This should execute once unless the point is deleted/converted to not user created
-    //   EventBus.fire("set-point-visibility-and-label", {
-    //     point: this,
-    //     val: true
-    //   });
-    // }
 
     if (this.showing) {
       this.ref.setVisible(true);

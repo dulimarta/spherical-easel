@@ -86,12 +86,12 @@ export class AddParametricEndPointsCommand extends Command {
       this.seEndEndPoint.label.ref.shortUserName = `P${this.seEndEndPoint.visiblePointCount}`;
     }
 
-    this.seStartEndPoint.markKidsOutOfDate();
-    this.seStartEndPoint.update();
-    this.seEndEndPoint.markKidsOutOfDate();
-    this.seEndEndPoint.update();
-    this.seTracePoint.markKidsOutOfDate();
-    this.seTracePoint.update();
+    // this.seStartEndPoint.markKidsOutOfDate();
+    // this.seStartEndPoint.update();
+    // this.seEndEndPoint.markKidsOutOfDate();
+    // this.seEndEndPoint.update();
+    // this.seTracePoint.markKidsOutOfDate();
+    // this.seTracePoint.update();
   }
 
   saveState(): void {

@@ -48,8 +48,8 @@ export class AddNSectPointCommand extends Command {
     if (this.seNSectPoint.label && this.useVisiblePointCountToRename) {
       this.seNSectPoint.label.ref.shortUserName = `P${this.seNSectPoint.visiblePointCount}`;
     }
-    this.seNSectPoint.markKidsOutOfDate();
-    this.seNSectPoint.update();
+    // this.seNSectPoint.markKidsOutOfDate();
+    // this.seNSectPoint.update();
   }
 
   saveState(): void {
