@@ -124,7 +124,9 @@ export default class IntersectionPointHandler extends Highlighter {
     if (this.hitSEPoints.length > 0 && this.oneDimensional1 === null) {
       // never highlight user created intersection points
       const filtered = this.hitSEPoints.filter(
-        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
+        (p: SEPoint) =>
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
       );
       if (filtered.length > 0) filtered[0].glowing = true;
     } else if (this.hitSELines.length > 0) {

@@ -329,8 +329,10 @@ export default class PolarObjectHandler extends Highlighter {
           // ????glowing when the user select that location and then moves the mouse away ) we don't
           // remove the temporary point from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
-            !this.snapToTemporaryPoint.isUserCreated
+            (this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
+              !this.snapToTemporaryPoint.isUserCreated) ||
+            (this.snapToTemporaryPoint instanceof SEAntipodalPoint &&
+              !this.snapToTemporaryPoint.isUserCreated)
           ) {
             this.temporaryPoint.positionVector =
               this.snapToTemporaryPoint.locationVector;

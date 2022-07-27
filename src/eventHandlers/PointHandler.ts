@@ -236,7 +236,9 @@ export default class PointHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
       const filteredIntersections = this.hitSEPoints.filter(
-        p => p instanceof SEIntersectionPoint && !p.isUserCreated
+        p =>
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
       );
       if (filteredIntersections.length > 0) {
         filteredIntersections[0].glowing = true;

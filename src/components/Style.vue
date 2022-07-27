@@ -160,7 +160,6 @@ export default class Style extends Vue {
       this.toggleLabelsShowing.bind(this)
     );
   }
-
   buttonListItems(): string[] {
     if (navigator.userAgent.indexOf("Mac OS X") === -1) {
       // the user is on a PC
@@ -189,8 +188,7 @@ export default class Style extends Vue {
 
   @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
-    // console.log("Style All Labels: onSelectionChanged");
-
+    console.log("Style All Labels: onSelectionChanged");
     this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
         return (node as unknown as Labelable).label!.showing;

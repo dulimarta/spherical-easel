@@ -95,7 +95,7 @@ export default class LineHandler extends Highlighter {
     this.temporaryEndMarker = new Point();
     LineHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
-  //eslint-disable-next-line
+
   mousePressed(event: MouseEvent): void {
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move

@@ -843,7 +843,6 @@ export const useSEStore = defineStore({
         }
       };
     },
-
     /**
      * Create the intersection of two one-dimensional objects
      * Make sure the SENodules are in the correct order: SELines, SESegments, SECircles then SEEllipses.
@@ -854,7 +853,6 @@ export const useSEStore = defineStore({
      * If they have the same type put them in alphabetical order.
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
-
     createAllIntersectionsWithLine(
       state
     ): (_l: SELine, _p: SEPoint[]) => SEIntersectionReturnType[] {
@@ -901,7 +899,7 @@ export const useSEStore = defineStore({
           //   .map(x => x as SELine)
           //          .filter((line: SELine) => line.id !== newLine.id) // ignore self
           .forEach((oldLine: SELine) => {
-            if (oldLine.id !== newLine.id) {
+            if (oldLine.id === newLine.id) {
               return;
             } // ignore self
             const intersectionInfo = intersectLineWithLine(
@@ -1422,7 +1420,6 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-
     createAllIntersectionsWithSegment(
       state
     ): (_s: SESegment, _p: SEPoint[]) => SEIntersectionReturnType[] {
@@ -1554,7 +1551,7 @@ export const useSEStore = defineStore({
         });
         //Intersect this new segment with all old segments
         seSegments.forEach((oldSegment: SESegment) => {
-          if (oldSegment.id !== newSegment.id) {
+          if (oldSegment.id === newSegment.id) {
             return;
           } // ignore self
           const intersectionInfo = intersectSegmentWithSegment(
@@ -2196,7 +2193,7 @@ export const useSEStore = defineStore({
         });
         //Intersect this new circle with all old circles
         seCircles.forEach((oldCircle: SECircle) => {
-          if (oldCircle.id !== newCircle.id) {
+          if (oldCircle.id === newCircle.id) {
             return;
           } // ignore self
           const intersectionInfo = intersectCircles(
@@ -2847,7 +2844,7 @@ export const useSEStore = defineStore({
 
         //Intersect this new ellipse with all old ellipses
         seEllipses.forEach((oldEllipse: SEEllipse) => {
-          if (oldEllipse.id !== newEllipse.id) {
+          if (oldEllipse.id === newEllipse.id) {
             return;
           } // ignore self
           const intersectionInfo = intersectEllipseWithEllipse(
@@ -3072,7 +3069,6 @@ export const useSEStore = defineStore({
         return filteredIntersectionPointList;
       };
     },
-
     createAllIntersectionsWithParametric(
       state
     ): (_p: SEParametric, _s: SEPoint[]) => SEIntersectionReturnType[] {
@@ -3500,7 +3496,7 @@ export const useSEStore = defineStore({
         });
         //Intersect this new parametric with all old parametrics
         seParametrics.forEach((oldParametric: SEParametric) => {
-          if (oldParametric.id !== newParametric.id) {
+          if (oldParametric.id === newParametric.id) {
             return;
           } // ignore self
           const intersectionInfo = intersectParametricWithParametric(

@@ -65,7 +65,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSENodules = Highlighter.store
       .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
+        if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
           if (!n.isUserCreated) {
             return n.exists; //You always hit automatically created intersection points if it exists
           } else {

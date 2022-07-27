@@ -10,6 +10,7 @@ import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 
 const desiredZAxis = new Vector3();
@@ -158,8 +159,8 @@ export default class RotateHandler extends Highlighter {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !(p as SEIntersectionPoint).isUserCreated
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            (p instanceof SEAntipodalPoint && !p.isUserCreated)
           ) {
             return false;
           } else {
@@ -349,8 +350,8 @@ export default class RotateHandler extends Highlighter {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !(p as SEIntersectionPoint).isUserCreated
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            (p instanceof SEAntipodalPoint && !p.isUserCreated)
           ) {
             return false;
           } else {

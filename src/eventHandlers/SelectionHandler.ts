@@ -73,7 +73,11 @@ export default class SelectionHandler extends Highlighter {
         .map(n => n as SEPoint)
         .filter(
           (n: SEPoint) =>
-            !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
+            !(
+              (n instanceof SEIntersectionPoint ||
+                n instanceof SEAntipodalPoint) &&
+              !n.isUserCreated
+            ) && n.showing
         ) // no unUserCreated intersection points allowed and no hidden points allowed
         .forEach((n: SEPoint) => {
           this.keyPressSelection.push(n);
@@ -198,7 +202,11 @@ export default class SelectionHandler extends Highlighter {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
       this.hitSENodules
-        .filter(n => !(n instanceof SEIntersectionPoint && !n.isUserCreated)) // no uncreated intersection points allowed
+        .filter(
+          n =>
+            !(n instanceof SEIntersectionPoint && !n.isUserCreated) &&
+            !(n instanceof SEAntipodalPoint && !n.isUserCreated)
+        ) // no uncreated intersection points allowed
         .forEach((n, pos) => {
           if (pos === val) {
             // add the item to the list
@@ -404,7 +412,10 @@ export default class SelectionHandler extends Highlighter {
               .findNearbySENodules(sphereVec, this.currentScreenVector)
               .filter((n: SENodule) => !n.isLabel()) // remove all labels from the selection
               .filter((n: SENodule) => {
-                if (n instanceof SEIntersectionPoint) {
+                if (
+                  n instanceof SEIntersectionPoint ||
+                  n instanceof SEAntipodalPoint
+                ) {
                   if (!n.isUserCreated) {
                     return n.exists; //You always hit automatically created intersection points if it exists
                   } else {
@@ -618,7 +629,10 @@ export default class SelectionHandler extends Highlighter {
             .findNearbySENodules(sphereVector, screenVector)
             .filter((n: SENodule) => !n.isLabel()) // remove any labels
             .filter((n: SENodule) => {
-              if (n instanceof SEIntersectionPoint) {
+              if (
+                n instanceof SEIntersectionPoint ||
+                n instanceof SEAntipodalPoint
+              ) {
                 if (!n.isUserCreated) {
                   return false; // you can't select non-user created points
                 } else {

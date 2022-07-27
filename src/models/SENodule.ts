@@ -504,12 +504,12 @@ export abstract class SENodule implements Visitable {
   }
   public decrementVisiblePointCount(): void {
     SENodule.VISIBLE_POINT_COUNT--;
-    console.debug(`Minus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+    // console.debug(`Minus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
   }
 
   public incrementVisiblePointCount(): void {
     SENodule.VISIBLE_POINT_COUNT++;
-    console.debug(`Plus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+    // console.debug(`Plus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
   }
   /**
    * A recursive method to implement the bisection method

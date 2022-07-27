@@ -131,8 +131,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
           if (
-            this.sePoint instanceof SEIntersectionPoint &&
-            !this.sePoint.isUserCreated
+            (this.sePoint instanceof SEIntersectionPoint &&
+              !this.sePoint.isUserCreated) ||
+            (this.sePoint instanceof SEAntipodalPoint &&
+              !this.sePoint.isUserCreated)
           ) {
             this.temporaryPointMarker.positionVector = this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
@@ -387,8 +389,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
           // ????glowing when the user select that location and then moves the mouse away - see line 119) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
-            !this.snapToTemporaryPoint.isUserCreated
+            (this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
+              !this.snapToTemporaryPoint.isUserCreated) ||
+            (this.snapToTemporaryPoint instanceof SEAntipodalPoint &&
+              !this.snapToTemporaryPoint.isUserCreated)
           ) {
             this.temporaryPointMarker.positionVector =
               this.snapToTemporaryPoint.locationVector;
@@ -734,8 +738,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (
-          !(object2 instanceof SEIntersectionPoint) ||
-          (object2 as SEIntersectionPoint).isUserCreated
+          (!(object2 instanceof SEIntersectionPoint) ||
+            object2.isUserCreated) &&
+          (!(object2 instanceof SEAntipodalPoint) || object2.isUserCreated)
         ) {
           if (
             object1 instanceof SECircle ||
@@ -754,8 +759,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       if (object2.isOneDimensional() && object1.isPoint()) {
         if (
-          !(object1 instanceof SEIntersectionPoint) ||
-          (object1 as SEIntersectionPoint).isUserCreated
+          (!(object1 instanceof SEIntersectionPoint) ||
+            object1.isUserCreated) &&
+          (!(object1 instanceof SEAntipodalPoint) || object1.isUserCreated)
         ) {
           if (
             object2 instanceof SECircle ||

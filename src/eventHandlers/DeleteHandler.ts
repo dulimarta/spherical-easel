@@ -18,6 +18,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -46,8 +47,10 @@ export default class DeleteHandler extends Highlighter {
       // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
         if (
-          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+            this.hitSEPoints[0].isUserCreated) &&
+          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+            this.hitSEPoints[0].isUserCreated)
         ) {
           this.victim = this.hitSEPoints[0];
           this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
@@ -116,7 +119,10 @@ export default class DeleteHandler extends Highlighter {
     if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection points
       const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+        if (
+          p instanceof SEIntersectionPoint ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
+        ) {
           return false;
         } else {
           return true;
@@ -161,11 +167,12 @@ export default class DeleteHandler extends Highlighter {
       // also delete object2, so that you should not also try to delete object again.
       const deletedObjectIDs: number[] = [];
       DeleteHandler.store.selectedSENodules
-        .map(x => x as SENodule)
+        //.map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            (!(object instanceof SEIntersectionPoint) ||
+              object.isUserCreated) &&
+            (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
         )
         .forEach(object => {
           //if object has already been deleted don't do anything

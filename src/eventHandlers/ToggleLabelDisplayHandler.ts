@@ -31,8 +31,9 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .filter(
           // no non-user created points
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            (!(object instanceof SEIntersectionPoint) ||
+              object.isUserCreated) &&
+            (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
         )
         .filter(
           // no hidden objects
@@ -73,7 +74,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
             !(
               object instanceof SEIntersectionPoint ||
               object instanceof SEAntipodalPoint
-            ) || (object as SEIntersectionPoint).isUserCreated
+            ) || object.isUserCreated
         )
         .filter(
           // no hidden objects
@@ -110,8 +111,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
       if (
         this.hitSEPoints.length > 0 &&
         !(
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         )
       ) {
         if (this.hitSEPoints[0].label != null) {
@@ -166,8 +169,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (
       this.hitSEPoints.length > 0 &&
       !(
-        this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-        !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+          !this.hitSEPoints[0].isUserCreated) ||
+        (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+          !this.hitSEPoints[0].isUserCreated)
       )
     ) {
       // never highlight non user created intersection points
@@ -206,8 +211,9 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            (!(object instanceof SEIntersectionPoint) ||
+              object.isUserCreated) &&
+            (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable

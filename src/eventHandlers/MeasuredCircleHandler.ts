@@ -294,7 +294,9 @@ export default class MeasuredCircleHandler extends Highlighter {
         // glowing when the user select that location and then moves the mouse away - see line 115) we don't
         // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
         if (
-          this.snapTemporaryPointMarkerToPoint instanceof SEIntersectionPoint &&
+          (this.snapTemporaryPointMarkerToPoint instanceof
+            SEIntersectionPoint ||
+            this.snapTemporaryPointMarkerToPoint instanceof SEAntipodalPoint) &&
           !this.snapTemporaryPointMarkerToPoint.isUserCreated
         ) {
           this.temporaryCenterMarker.positionVector =

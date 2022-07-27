@@ -5,6 +5,7 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 export default class PointDistanceHandler extends Highlighter {
   /**
@@ -19,9 +20,16 @@ export default class PointDistanceHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     if (this.isOnSphere) {
       let possibleTargetPointList: SEPoint[] = [];
-      possibleTargetPointList = this.hitSEPoints.filter(
-        p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-      );
+      possibleTargetPointList = this.hitSEPoints.filter(p => {
+        if (
+          (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
+          (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      });
       if (possibleTargetPointList.length > 0) {
         const pos = this.targetPoints.findIndex(
           (p: SEPoint) => p.id === possibleTargetPointList[0].id
@@ -104,7 +112,9 @@ export default class PointDistanceHandler extends Highlighter {
 
     // Glow only the first SEPoint (must be user created)
     const hitPoints = this.hitSEPoints.filter(
-      p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
+      p =>
+        !(p instanceof SEIntersectionPoint && !p.isUserCreated) &&
+        !(p instanceof SEAntipodalPoint && !p.isUserCreated)
     );
     if (hitPoints.length > 0) hitPoints[0].glowing = true;
   }

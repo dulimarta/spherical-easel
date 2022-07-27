@@ -137,7 +137,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
           if (
-            this.sePoint instanceof SEIntersectionPoint &&
+            (this.sePoint instanceof SEIntersectionPoint ||
+              this.sePoint instanceof SEAntipodalPoint) &&
             !this.sePoint.isUserCreated
           ) {
             this.temporaryPointMarker.positionVector = this.sePointVector;
@@ -650,8 +651,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // sePoint is not null so either sePoint is an existing point (in which case nothing needs to be created)
       // or an intersection point that need to be converted to isUserCreated
       if (
-        (sePoint instanceof SEIntersectionPoint && !sePoint.isUserCreated) ||
-        (sePoint instanceof SEAntipodalPoint && !sePoint.isUserCreated)
+        (sePoint instanceof SEIntersectionPoint ||
+          sePoint instanceof SEAntipodalPoint) &&
+        !sePoint.isUserCreated
       ) {
         //Make it user created and turn on the display
         addPerpendicularLineGroup.addCommand(
@@ -868,8 +870,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (
-          !(object2 instanceof SEIntersectionPoint) ||
-          (object2 as SEIntersectionPoint).isUserCreated
+          ((!(object2 instanceof SEIntersectionPoint) ||
+            object2.isUserCreated) &&
+            !(object2 instanceof SEAntipodalPoint)) ||
+          object2.isUserCreated
         ) {
           this.createPerpendicular(
             object1 as SEOneDimensional,
@@ -882,8 +886,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       if (object2.isOneDimensional() && object1.isPoint()) {
         if (
-          !(object1 instanceof SEIntersectionPoint) ||
-          (object1 as SEIntersectionPoint).isUserCreated
+          (!(object1 instanceof SEIntersectionPoint) ||
+            object1.isUserCreated) &&
+          (!(object1 instanceof SEAntipodalPoint) || object1.isUserCreated)
         ) {
           this.createPerpendicular(
             object2 as SEOneDimensional,

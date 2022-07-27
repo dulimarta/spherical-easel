@@ -24,6 +24,7 @@ import { ObjectNames, ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
@@ -238,7 +239,10 @@ export default class MoveHandler extends Highlighter {
       const hitSENodules = MoveHandler.store
         .findNearbySENodules(sphereVec, this.currentScreenVector)
         .filter((n: SENodule) => {
-          if (n instanceof SEIntersectionPoint) {
+          if (
+            n instanceof SEIntersectionPoint ||
+            n instanceof SEAntipodalPoint
+          ) {
             if (!n.isUserCreated) {
               return n.exists; //You always hit automatically created intersection points if it exists
             } else {
