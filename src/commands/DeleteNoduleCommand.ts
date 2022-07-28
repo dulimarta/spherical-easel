@@ -103,12 +103,12 @@ export class DeleteNoduleCommand extends Command {
     // Add the object to the store and turn on display
     if (this.seNodule instanceof SETransformation) {
       Command.store.addTransformation(this.seNodule);
-    } else if (this.seNodule instanceof SEExpression) {
-      Command.store.addExpression(this.seNodule);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.addPolygonAndExpression(this.seNodule);
     } else if (this.seNodule instanceof SEAngleMarker) {
       Command.store.addAngleMarkerAndExpression(this.seNodule);
+    } else if (this.seNodule instanceof SEExpression) {
+      Command.store.addExpression(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {
       Command.store.addLabel(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {

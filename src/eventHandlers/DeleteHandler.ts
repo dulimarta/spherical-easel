@@ -213,8 +213,12 @@ export default class DeleteHandler extends Highlighter {
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
     victim.update(this.beforeDeleteStateMap, this.beforeDeleteSENoduleIDList);
 
-    // this.beforeDeleteStateMap.forEach(n => console.log(n.kind, n.object.id));
-    // this.beforeDeleteSENoduleIDList.forEach(n => console.log(n));
+    this.beforeDeleteStateMap.forEach(n =>
+      console.log("kind, id,", n.kind, n.object.id)
+    );
+    this.beforeDeleteSENoduleIDList.forEach((n, ind) =>
+      console.log("id and num", n, ind)
+    );
 
     const deleteCommandGroup = new CommandGroup();
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
@@ -565,6 +569,9 @@ export default class DeleteHandler extends Highlighter {
                 }
               });
           }
+          console.debug(
+            `delete ${seNoduleBeforeState.object.name}, ${seNoduleBeforeState.object.id}`
+          );
           // finally delete the object,
           deleteCommandGroup.addCommand(
             new DeleteNoduleCommand(seNoduleBeforeState.object)
@@ -575,6 +582,9 @@ export default class DeleteHandler extends Highlighter {
     });
     deleteCommandGroup.execute();
     console.debug(`${deletedNodeIds.length} Nodules deleted`);
+    // for (let i = 0; i < deletedNodeIds.length; i++) {
+    //   console.debug(`delete nodules with id ${deletedNodeIds[i]}`);
+    // }
     return deletedNodeIds;
   }
 }

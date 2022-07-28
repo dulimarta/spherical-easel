@@ -479,6 +479,7 @@ export const useSEStore = defineStore({
       }
     },
     addPolygonAndExpression(polygon: SEPolygon): void {
+      console.debug(`add polygon with id ${polygon.id}`);
       this.seExpressionIds.push(polygon.id);
       seExpressions.set(polygon.id, polygon);
       this.sePolygonIds.push(polygon.id);
@@ -488,8 +489,10 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = true;
     },
     removePolygonAndExpression(polygonId: number): void {
+      console.debug(`Remove polygon with id ${polygonId}`);
       const victimPolygon = sePolygons.get(polygonId);
       if (victimPolygon) {
+        console.debug(`Polygon found`);
         const polygonPos = this.sePolygonIds.findIndex(
           (id: number) => id === polygonId
         );

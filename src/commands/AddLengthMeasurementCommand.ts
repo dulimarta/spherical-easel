@@ -4,7 +4,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SESegment } from "@/models/SESegment";
 import { SESegmentLength } from "@/models/SESegmentLength";
-import { SavedNames } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 
 export class AddLengthMeasurementCommand extends AddExpressionCommand {
   /**
@@ -29,7 +29,8 @@ export class AddLengthMeasurementCommand extends AddExpressionCommand {
 
       // Object specific attributes
       "lengthMeasurementSegmentParentName=" +
-        Command.symbolToASCIIDec(this.parents[0].name)
+        Command.symbolToASCIIDec(this.parents[0].name),
+      "valueDisplayMode=" + this.seExpression.valueDisplayMode
     ].join("&");
   }
 
@@ -48,9 +49,13 @@ export class AddLengthMeasurementCommand extends AddExpressionCommand {
       propMap.get("lengthMeasurementSegmentParentName") ?? ""
     ) as SESegment | undefined;
 
-    if (segmentParent) {
-      const lengthMeasure = new SESegmentLength(segmentParent);
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
 
+    if (segmentParent && valueDisplayMode) {
+      const lengthMeasure = new SESegmentLength(segmentParent);
+      lengthMeasure.valueDisplayMode = valueDisplayMode;
       //put the length measure in the object map
       if (propMap.get("objectName") !== undefined) {
         lengthMeasure.name = propMap.get("objectName") ?? "";

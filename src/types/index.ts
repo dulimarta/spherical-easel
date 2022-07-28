@@ -67,6 +67,7 @@ export type SavedNames =
   | "labelVector"
   | "labelShowing"
   | "labelExists"
+  | "valueDisplayMode"
   | "pointVector"
   | "antipodalPointsParentName"
   | "antipodalPointIsUserCreated"

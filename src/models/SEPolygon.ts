@@ -521,7 +521,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // These polygons are completely determined by their line/segment/point parents and an update on the parents
     // will cause this polygon to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
-      orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
         console.log(
           `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`

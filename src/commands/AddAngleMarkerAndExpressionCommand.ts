@@ -8,7 +8,7 @@ import { SENodule } from "@/models/SENodule";
 import AngleMarker from "@/plottables/AngleMarker";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { AngleMode, SavedNames } from "@/types";
+import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddAngleMarkerCommand extends Command {
@@ -117,7 +117,8 @@ export class AddAngleMarkerCommand extends Command {
       "angleMarkerMode=" + this.mode,
       "angleMarkerFirstParentName=" + this._firstSEParent.name,
       "angleMarkerSecondParentName=" + this._secondSEParent.name,
-      "angleMarkerThirdParentName=" + this._thirdSEParent?.name // this can be undefined
+      "angleMarkerThirdParentName=" + this._thirdSEParent?.name, // this can be undefined
+      "valueDisplayMode=" + this.seAngleMarker.valueDisplayMode
     ].join("&");
   }
 
@@ -149,7 +150,11 @@ export class AddAngleMarkerCommand extends Command {
       | AngleMode
       | undefined;
 
-    if (firstParent && secondParent && mode) {
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
+
+    if (firstParent && secondParent && mode && valueDisplayMode) {
       //make the angleMarker
       const angleMarker = new AngleMarker();
       const seAngleMarker = new SEAngleMarker(
@@ -160,6 +165,7 @@ export class AddAngleMarkerCommand extends Command {
         secondParent,
         thirdParentPoint
       );
+
       //style the angle marker
       const angleMarkerFrontStyleString = propMap.get("objectFrontStyle");
       if (angleMarkerFrontStyleString !== undefined)
@@ -184,7 +190,8 @@ export class AddAngleMarkerCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
-
+      // Must be done after the SELabel is created and linked
+      seAngleMarker.valueDisplayMode = valueDisplayMode;
       //put the angleMarker in the object map
       if (propMap.get("objectName") !== undefined) {
         seAngleMarker.name = propMap.get("objectName") ?? "";

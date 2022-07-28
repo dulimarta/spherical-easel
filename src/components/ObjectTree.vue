@@ -85,7 +85,7 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="seTransformations.length">
+          v-show="seTransformations.length>0">
           <SENoduleList i18LabelKey="objects.transformations"
             :children="seTransformations"></SENoduleList>
         </v-sheet>

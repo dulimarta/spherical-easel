@@ -3,7 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEPointDistance } from "@/models/SEPointDistance";
-import { SavedNames } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 
 export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   // /**
@@ -31,7 +31,8 @@ export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
       "distanceMeasurementParentPoint1Name=" +
         Command.symbolToASCIIDec(this.parents[0].name),
       "distanceMeasurementParentPoint2Name=" +
-        Command.symbolToASCIIDec(this.parents[1].name)
+        Command.symbolToASCIIDec(this.parents[1].name),
+      "valueDisplayMode=" + this.seExpression.valueDisplayMode
     ].join("&");
   }
 
@@ -54,9 +55,13 @@ export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
       propMap.get("distanceMeasurementParentPoint2Name") ?? ""
     ) as SEPoint | undefined;
 
-    if (parentPoint1 && parentPoint2) {
-      const distanceMeasure = new SEPointDistance(parentPoint1, parentPoint2);
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
 
+    if (parentPoint1 && parentPoint2 && valueDisplayMode) {
+      const distanceMeasure = new SEPointDistance(parentPoint1, parentPoint2);
+      distanceMeasure.valueDisplayMode = valueDisplayMode;
       //put the distance measure in the object map
       if (propMap.get("objectName") !== undefined) {
         distanceMeasure.name = propMap.get("objectName") ?? "";

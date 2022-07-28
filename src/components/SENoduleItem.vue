@@ -614,7 +614,7 @@ export default class SENoduleItem extends Vue {
   }
   get isCircle(): boolean {
     //return this.node instanceof SECircle;
-    if (this.node instanceof SESegment) {
+    if (this.node instanceof SECircle) {
       this.nodeName = this.node.label?.ref.shortUserName ?? "";
       this.nodeType = i18n.tc(`objects.segments`, 3);
       return true;

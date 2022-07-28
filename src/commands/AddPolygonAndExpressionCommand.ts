@@ -5,7 +5,7 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import Polygon from "@/plottables/Polygon";
 import { StyleEditPanels } from "@/types/Styles";
@@ -112,7 +112,8 @@ export class AddPolygonCommand extends Command {
           .map((n: SESegment) => Command.symbolToASCIIDec(n.name))
           .join("@"),
       "polygonSegmentFlippedList=" +
-        this.segmentIsFlipped.map(bool => bool.toString()).join("@")
+        this.segmentIsFlipped.map(bool => bool.toString()).join("@"),
+      "valueDisplayMode=" + this.sePolygon.valueDisplayMode
     ].join("&");
   }
 
@@ -165,11 +166,16 @@ export class AddPolygonCommand extends Command {
         );
     }
 
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
+
     if (
       polygonAngleMarkerParents.every(
         angleMarker => angleMarker !== undefined
       ) &&
-      polygonSegmentParents.every(segment => segment !== undefined)
+      polygonSegmentParents.every(segment => segment !== undefined) &&
+      valueDisplayMode
     ) {
       //make the polygon
       const polygon = new Polygon(
@@ -207,6 +213,8 @@ export class AddPolygonCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+      // Must be done after the SELabel is created and linked
+      sePolygon.valueDisplayMode = valueDisplayMode;
 
       //put the Polygon in the object map
       if (propMap.get("objectName") !== undefined) {
