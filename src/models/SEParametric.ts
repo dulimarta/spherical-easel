@@ -10,7 +10,8 @@ import {
   MinMaxExpression,
   MinMaxSyntaxTrees,
   NormalVectorAndTValue,
-  ObjectState
+  ObjectState,
+  ParametricVectorAndTValue
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
@@ -151,7 +152,6 @@ export class SEParametric
    * @param parametric The plottable TwoJS Object associated to this object
    */
   constructor(
-    // parametric: Parametric,
     coordinateExpressions: { x: string; y: string; z: string },
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number } /* hard limit */,
@@ -165,7 +165,7 @@ export class SEParametric
     this._c1DiscontinuityParameterValues.push(
       ...c1DiscontinuityParameterValues
     );
-    this.ref = new Parametric(tNumbers.min, tNumbers.max, isClosed); // FIXME
+    this.ref = new Parametric(tNumbers.min, tNumbers.max, isClosed);
     // Set the expressions for the curve, its derivative, and the tMin & tMax
     this.coordinateExpressions.x = coordinateExpressions.x;
     this.coordinateExpressions.y = coordinateExpressions.y;
@@ -243,6 +243,7 @@ export class SEParametric
     this._tValues.push(...tSamples.map(x => x.t));
     this.fnValues.push(...tSamples.map(x => x.value));
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
+    console.debug("Creating a new parametric", this.name);
 
     // Create partitioned T-values from the T-values of the sample points
     if (numDiscontinuity === 0) {
@@ -327,8 +328,8 @@ export class SEParametric
       // console.debug(`At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
       fnValues.push({
         t: tValue,
-        left: i > 0 ? i - 1 : 0, // left neighbor of the first point is itself
-        right: i < N - 1 ? i + 1 : N - 1, // right neighbor of the last point is itself
+        left: i > 0 ? i - 1 : this._isClosed ? N - 1 : 0, // left neighbor of the first point is itself (unless it is a closed curve)
+        right: i < N - 1 ? i + 1 : this._isClosed ? 0 : N - 1, // right neighbor of the last point is itself
         value: vecValue
       });
     }
@@ -361,7 +362,6 @@ export class SEParametric
     // with high curvature.
     // Since we use a max heap, highest curvature will be
     // processed first
-    const tempBuffer: TCurve[] = [];
     while (curvatureHeap.size() > 0) {
       // In the following loop, 3 equally-spaced points L, M, R are expanded
       // into 4 equally-spaced points L, M1, M2, R
@@ -481,12 +481,10 @@ export class SEParametric
     }
     // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
-    const tValues = fnValues.map((z: TSample) => z.t);
-    // console.debug(`SEParametric ${this.id} values`, tValues);
     return fnValues;
   }
 
-  private calculateDerivatives(samples: TSample[], firstBuild = false): void {
+  private calculateDerivatives(samples: TSample[]): void {
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
@@ -498,7 +496,7 @@ export class SEParametric
         this.prevVarMap.set(key, val);
       }
     }
-    if (!firstBuild && updatedCount === 0) {
+    if (updatedCount === 0) {
       // console.debug("No rebuilding function and its derivatives required");
       return;
     }
@@ -536,8 +534,6 @@ export class SEParametric
     this.ref.setRangeAndFunctions(
       this._tValues,
       this.fnValues,
-      // this.fnPrimeValues,
-      // this.fnPPrimeValues,
       Math.max(this._tNumbersHardLimit.min, this.tNumbers.min),
       Math.min(this._tNumbersHardLimit.max, this.tNumbers.max)
     );
@@ -704,15 +700,20 @@ export class SEParametric
     // find the tracing tMin and tMax
     const [tMin, tMax] = this.tMinMaxExpressionValues();
     // if the tMin/tMax values are out of order then parametric curve doesn't exist
-    console.debug("SEParametric shallow update", tMin, tMax);
     if (tMax <= tMin) {
       this._exists = false;
     }
 
     if (this._exists) {
-      // display the updated parametric
-      // TODO: FIXME
-      // this.calculateDerivatives(this.tValues.map(z => z.t));
+      // TODO: when is it necessary to recreate the sample points?
+      // console.debug("Recreating sample points");
+      // this.createSamplingPoints();
+      // const tSamples = this.createSamplingPoints();
+      // this._tValues.splice(0);
+      // this.fnValues.splice(0);
+      // this._tValues.push(...tSamples.map(x => x.t));
+      // this.fnValues.push(...tSamples.map(x => x.value));
+      // this.calculateDerivatives(tSamples);
       this.ref?.updateDisplay();
     }
 
@@ -768,7 +769,7 @@ export class SEParametric
       transformedToStandard.applyMatrix4(this.store.inverseTotalRotationMatrix);
 
       // find the tracing tMin and tMax
-      const [tMin, tMax] = this.tMinMaxExpressionValues();
+      // const [tMin, tMax] = this.tMinMaxExpressionValues();
       // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
       const closestStandardVector = new Vector3();
@@ -829,7 +830,9 @@ export class SEParametric
         .normalize();
     }
   }
+
   accept(v: Visitor): boolean {
+    console.debug("SEParametric accepting visitor");
     return v.actionOnParametric(this);
   }
 
@@ -927,10 +930,12 @@ export class SEParametric
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     // find the tracing tMin and tMax
-    // const [tMin, tMax] = useFullTInterval
-    //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
-    //   : this.tMinMaxExpressionValues();
-    const avoidTValues: number[] = [];
+    const [tMin, tMax] = useFullTInterval
+      ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
+      : this.tMinMaxExpressionValues();
+    if (tMax < tMin) return [];
+
+    // const avoidTValues: number[] = [];
     // avoidTValues.push(...this._c1DiscontinuityParameterValues);
     const normalList: Vector3[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
@@ -938,22 +943,37 @@ export class SEParametric
       this.closestVector(sePointVector).angleTo(sePointVector) <
       0.01 / this.store.zoomMagnificationFactor
     ) {
-      const coorespondingTVal = SENodule.closestVectorParametrically(
-        this.P.bind(this), // bind the this so that this in the this.E method is this
-        this.PPrime.bind(this), // bind the this so that this in the this.E method is this
-        transformedToStandard,
-        this._tValues,
-        this.PPPrime.bind(this) // bind the this so that this in the this.E method is this
-      ).tVal;
+      const coorespondingTVal = this.partitionedTValues
+        .map(tVals =>
+          SENodule.closestVectorParametrically(
+            this.P.bind(this), // bind the this so that this in the this.E method is this
+            this.PPrime.bind(this), // bind the this so that this in the this.E method is this
+            transformedToStandard,
+            tVals,
+            this.PPPrime.bind(this) // bind the this so that this in the this.E method is this
+          )
+        )
+        .reduce(
+          (
+            prev: ParametricVectorAndTValue,
+            curr: ParametricVectorAndTValue
+          ) => {
+            // If we have several partitions, find the closest among all of them
+            const d1 = prev.vector.distanceTo(transformedToStandard);
+            const d2 = curr.vector.distanceTo(transformedToStandard);
+            return d1 < d2 ? prev : curr;
+          }
+        ).tVal;
       const tangentVector = new Vector3();
       tangentVector.copy(this.PPrime(coorespondingTVal));
       tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
       tangentVector.cross(this.P(coorespondingTVal));
-      avoidTValues.push(coorespondingTVal);
+      // avoidTValues.push(coorespondingTVal);
       normalList.push(tangentVector.normalize());
     }
 
-    // console.log("normal search");
+    if (normalList.length > 0)
+      console.log("normals to tangent so far", normalList);
 
     const out = this.partitionedTValues.flatMap(tVals =>
       SENodule.getNormalsToTangentLinesThruParametrically(
@@ -961,11 +981,14 @@ export class SEParametric
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         transformedToStandard,
         tVals,
-        avoidTValues,
+        [],
         this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
-    normalList.push(...out);
+    if (out.length > 0) {
+      normalList.push(...out);
+      console.log("normals to tangent updated", normalList);
+    }
 
     const taggedList: Array<NormalVectorAndTValue> = normalList.map(
       (vec: Vector3) => {
@@ -976,23 +999,23 @@ export class SEParametric
       }
     );
 
-    // normalList.forEach((vec, ind) => {
-    //   if (
-    //     Math.abs(vec.dot(transformedToStandard)) >
-    //     SETTINGS.tolerance / 1000
-    //   ) {
-    //     console.log(ind, "NOT through point");
-    //   }
-    //   if (vec.isZero(SETTINGS.tolerance / 1000)) {
-    //     console.log(ind, " Vector is ZERO");
-    //   }
-    // });
+    normalList.forEach((vec, ind) => {
+      if (
+        Math.abs(vec.dot(transformedToStandard)) >
+        SETTINGS.tolerance / 1000
+      ) {
+        console.log(ind, "NOT through point");
+      }
+      if (vec.isZero(SETTINGS.tolerance / 1000)) {
+        console.log(ind, " Vector is ZERO");
+      }
+    });
 
     // remove duplicates from the list
     // console.log("perpendiculars", normalList);
     this.removeDuplicateVectors(taggedList);
 
-    // console.log("unique perpendicular", normalList);
+    if (normalList.length > 0) console.log("unique perpendicular", normalList);
 
     // if (uniqueNormals.length > this._maxNumberOfTangents) {
     //   console.debug(
@@ -1009,9 +1032,9 @@ export class SEParametric
   get coordinateExpressions(): CoordExpression {
     return this._coordinateExpressions;
   }
-  // get c1DiscontinuityParameterValues(): number[] {
-  //   return this._c1DiscontinuityParameterValues;
-  // }
+  get c1DiscontinuityParameterValues(): number[] {
+    return this._c1DiscontinuityParameterValues;
+  }
   get tExpressions(): MinMaxExpression {
     return this._tExpressions;
   }

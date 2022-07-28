@@ -50,7 +50,6 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.ref = point;
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;
-    console.debug("Creating a new point", this.name);
   }
   customStyles(): Set<string> {
     return styleSet;

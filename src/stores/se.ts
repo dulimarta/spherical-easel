@@ -53,7 +53,7 @@ type PiniaAppState = {
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  inverseTotalRotationMatrix: Matrix4;
+  // inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
@@ -112,8 +112,8 @@ export const useSEStore = defineStore({
     seParametricIds: [],
     sePolygonIds: [],
     // oldSelections: SELine[],
-    styleSavedFromPanel: StyleEditPanels.Label,
-    inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    styleSavedFromPanel: StyleEditPanels.Label
+    // inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   }),
   actions: {
     init(): void {
@@ -148,6 +148,7 @@ export const useSEStore = defineStore({
       // defaultStyleStates.splice(0);
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
+      inverseTotalRotationMatrix.identity();
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -506,14 +507,14 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat).invert();
-      this.inverseTotalRotationMatrix.multiply(tmpMatrix);
+      inverseTotalRotationMatrix.multiply(tmpMatrix);
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          // console.debug(parent.name, "invalidates", m.name);
+          console.debug(parent.name, "invalidates", m.name);
           if (m.exists) {
             if (m.canUpdateNow()) {
               if (!updateCandidates.find((x: SENodule) => x.name === m.name))
@@ -526,22 +527,22 @@ export const useSEStore = defineStore({
       }
 
       // Begin updating those objects with no parents
-      seNodules
-        .filter((p: SENodule) => p.parents.length === 0)
-        .forEach((target: SENodule) => {
-          // console.debug("Seed update from ", target.name);
-          target.accept(rotationVisitor);
-          target.setOutOfDate(false);
-          target.markKidsOutOfDate();
-          addCandidatesFrom(target); // Expand the update tree
-        });
+      updateCandidates.push(
+        ...seNodules.filter((p: SENodule) => p.parents.length === 0)
+      );
+      console.debug(
+        "Update candidates",
+        updateCandidates.map(z => z.name).join(", ")
+      );
       while (updateCandidates.length > 0) {
         const target = updateCandidates.shift()!;
-        if (!target.accept(rotationVisitor)) {
-          // console.debug(
-          //   target.name,
-          //   "does not accept rotation visitor, try its shallowUpdate"
-          // );
+        const accepted = target.accept(rotationVisitor);
+        // console.debug(`What's going on with ${target.name}?`, accepted);
+        if (!accepted) {
+          console.debug(
+            target.name,
+            "does not accept rotation visitor, try its shallowUpdate"
+          );
           target.shallowUpdate();
         }
         target.setOutOfDate(false);
@@ -699,6 +700,7 @@ export const useSEStore = defineStore({
     hasObjects(state): boolean {
       return state.sePointIds.length > 0;
     },
+    inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
     hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
       return (testPoint: SEPoint): boolean => {
         // create the antipode location vector

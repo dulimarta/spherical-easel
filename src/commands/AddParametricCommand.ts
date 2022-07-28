@@ -99,12 +99,11 @@ export class AddParametricCommand extends Command {
       "parametricExpressionParentsNames=" +
         this.seParametric.seParentExpressions
           .map((n: SEExpression) => Command.symbolToASCIIDec(n.name))
+          .join("@"),
+      "parametricCuspParameterValues=" +
+        this.seParametric.c1DiscontinuityParameterValues
+          .map(num => Command.symbolToASCIIDec(num.toString()))
           .join("@")
-      // FIXME
-      // "parametricCuspParameterValues=" +
-      //   this.seParametric.c1DiscontinuityParameterValues
-      //     .map(num => Command.symbolToASCIIDec(num.toString()))
-      //     .join("@")
     ].join("&");
   }
 

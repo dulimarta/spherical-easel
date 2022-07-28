@@ -102,10 +102,10 @@ export class RotationVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnParametric(e: SEParametric): boolean {
     // console.debug(
-    //   "SEParametric accepting rotation",
+    //   "??????? SEParametric accepting rotation",
     //   e.name,
-    //   "with ref to",
-    //   e.ref
+    //   e.ref,
+    //   this.transformMatrix.elements
     // );
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
     e.ref?.updateDisplay();

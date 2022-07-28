@@ -35,8 +35,8 @@ const SUBDIVISIONS = SETTINGS.parametric.numPoints;
  * may change: longer path will hold more subdivision points (while keeping the
  * total points 2N so we don't create/remove new points)
  */
+
 export default class Parametric extends Nodule {
-  public partId = 0; // just for debugging
   /**
    * The vector P(t) for tMin <= t <= tMax P(t)= parameterization traces out the curve
    * And the vector P'(t) = parameterizationPrime of the curve.
@@ -115,7 +115,6 @@ export default class Parametric extends Nodule {
   private inverseTotalRotationMatrix: Matrix4;
   constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-    console.debug("Parametric constructor", tMin, tMax);
     this.tMin = tMin;
     this.tMax = tMax;
 
@@ -128,6 +127,13 @@ export default class Parametric extends Nodule {
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
     const store = useSEStore();
     this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
+    console.debug(
+      "Parametric constructor",
+      tMin,
+      tMax,
+      "with rotation",
+      this.inverseTotalRotationMatrix.elements
+    );
   }
 
   public setRangeAndFunctions(
@@ -203,7 +209,7 @@ export default class Parametric extends Nodule {
       this.glowingFrontParts[0].visible = false;
     } else {
       console.debug(
-        `Parametric::buildCurve(). a rebuild of part-${this.partId} with number of anchors`,
+        `Parametric::buildCurve(). a rebuild of with number of anchors`,
         numAnchors
       );
       // This is a rebuild, check if the number of anchors has changed
@@ -234,12 +240,6 @@ export default class Parametric extends Nodule {
     }
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
-    this.frontParts.forEach((z, pos) => {
-      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
-    });
-    this.backParts.forEach((z, pos) => {
-      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
-    });
   }
 
   /**
@@ -248,10 +248,16 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    // console.debug(
-    //   `Parametric::updateDisplay part-${this.partId} applying rotation`,
-    //   this.inverseTotalRotationMatrix.elements
-    // );
+    console.debug(
+      `Parametric::updateDisplay applying rotation`,
+      this.inverseTotalRotationMatrix.elements
+    );
+    this.frontParts.forEach((z, pos) => {
+      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
+    });
+    this.backParts.forEach((z, pos) => {
+      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
+    });
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 
@@ -259,7 +265,7 @@ export default class Parametric extends Nodule {
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
     // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
-    transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
+    transformMatrix.copy(this.inverseTotalRotationMatrix!).invert();
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
@@ -427,11 +433,11 @@ export default class Parametric extends Nodule {
         }
       }
     }
-    const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
-    const backCounts = this.backParts.map(p => p.vertices.length).join(",");
-    console.debug(
-      `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
-    );
+    // const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
+    // const backCounts = this.backParts.map(p => p.vertices.length).join(",");
+    // console.debug(
+    //   `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
+    // );
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
