@@ -269,6 +269,7 @@ import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import i18n from "./i18n";
+import ConstructionListVue from "./components/ConstructionList.vue";
 // import { gzip } from "node-gzip";
 
 // Register vue router in-component navigation guard functions
@@ -349,7 +350,8 @@ export default class App extends Vue {
   accountEnabled = false;
 
   // target formats for export window
-  formats = ["SVG", "PNG", "GIF"];
+  //formats = ["SVG", "PNG", "GIF"];
+  formats = ["SVG", "PNG"];
 
   // Text of the transformation being applied - only displayed when the tool is applyTransformation
   applyTransformationText = i18n.t(`objects.selectTransformation`);
@@ -477,11 +479,7 @@ export default class App extends Vue {
     const currentWidth = canvasReference.clientWidth;
     svgElement.setAttribute(
       "viewBox",
-      0.476 * currentWidth -
-        348.57 +
-        " " +
-        (0.476 * currentWidth - 348.57) +
-        " 733 733"
+      "0 0 " + currentWidth + " " + currentWidth
     );
     svgElement.setAttribute("height", "400px");
     svgElement.setAttribute("width", "400px");
@@ -498,39 +496,28 @@ export default class App extends Vue {
 
   async doExportButton(): Promise<void> {
     this.$refs.exportConstructionDialog.hide();
+    //Clone the SVG
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    //get the current width of canvas
+    const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+    const currentWidth = canvasReference.clientWidth;
 
+    //required line of code for svg elements
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Set dimensions of exported image based on slider values
+    svgElement.setAttribute("height", this.slider + "");
+    svgElement.setAttribute("width", this.slider + "");
+
+    svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgElement.setAttribute("transform", "matrix(1 0 0 -1 0 0)");
+    svgElement.setAttribute(
+      "viewBox",
+      "0 0 " + currentWidth + " " + currentWidth
+    );
+    svgElement.setAttribute("vector-effect", "non-scaling-stroke");
     // export construction to desired file format
     if (this.selectedFormat == "SVG") {
-      //Clone the SVG
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-      //required line of code for svg elements
-      svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-      // Set dimensions of exported image based on slider values
-      svgElement.setAttribute("height", this.slider + "px");
-      svgElement.setAttribute("width", this.slider + "px");
-
-      //get the current width of canvas
-      const canvasReference = document.querySelector(
-        "#canvas"
-      ) as HTMLDivElement;
-      const currentWidth = canvasReference.clientWidth;
-
-      //set the view of the image to be around the circle
-      //linear equation determined by comparing "console.log(currentWidth);" with successful hard codes
-      svgElement.setAttribute(
-        "viewBox",
-        0.476 * currentWidth -
-          348.57 +
-          " " +
-          (0.476 * currentWidth - 348.57) +
-          " 733 733"
-      );
-
-      //remove the transform so the circle shows up
-      //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
-      svgElement.style.removeProperty("transform");
-
       //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {
         type: "image/svg+xml;charset=utf-8"
@@ -540,44 +527,18 @@ export default class App extends Vue {
 
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
-      //Clone the SVG
-      const clone = this.svgRoot.cloneNode(true) as SVGElement;
-      //required line of code for svg elements
-      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
       //set the ID of the clone and append it to body
-      clone.id = "clonedSVG";
-      document.body.append(clone);
+      svgElement.id = "clonedSVG";
+      document.body.append(svgElement);
 
-      // Set dimensions of exported image based on slider values
-      clone.setAttribute("height", this.slider + "px");
-      clone.setAttribute("width", this.slider + "px");
-
-      //get the current width of canvas
-      const canvasReference = document.querySelector(
-        "#canvas"
-      ) as HTMLDivElement;
-      const currentWidth = canvasReference.clientWidth;
-
-      //set the view of the image to be around the circle
-      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
-      clone.setAttribute(
-        "viewBox",
-        0.476 * currentWidth -
-          348.57 +
-          " " +
-          (0.476 * currentWidth - 348.57) +
-          " 733 733"
-      );
-
-      //since d3ToPng exports the png as it appears in browser, we must remove the transform
-      clone.style.removeProperty("transform");
+      //to make this appear right side up remove the transform
+      svgElement.removeAttribute("transform");
 
       //export using module
-      var png = await d3ToPng("#clonedSVG", "name");
+      var png = await d3ToPng("#clonedSVG", "PNGname");
 
       //clean up workspace and finish
-      clone.remove();
+      svgElement.remove();
       console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
       // create GIF to add frames to
@@ -647,6 +608,31 @@ export default class App extends Vue {
       gif.render();
 
       console.log("GIF exported");
+      // //set the ID of the clone and append it to body
+      // svgElement.id = "clonedSVG";
+      // document.body.append(svgElement);
+
+      // //export PNG to the gif stream
+      // var png3 = await d3ToPng("#clonedSVG", "1", {
+      //   download: false,
+      //   format: "png"
+      // }).then(fileData => {
+      //   var img = new HTMLImageElement();
+      //   img.src = fileData; // fileData is base64
+      //   gif.addFrame(img);
+      // });
+
+      // // process final GIF
+      // gif.on("finished", function (blob: any) {
+      //   //window.open(URL.createObjectURL(blob));
+      //   const gifURL = URL.createObjectURL(blob);
+      //   FileSaver.saveAs(gifURL, "mygif.gif");
+      //   svgElement.remove();
+      // });
+
+      // gif.render();
+
+      // console.log("GIF exported");
     }
   }
 
