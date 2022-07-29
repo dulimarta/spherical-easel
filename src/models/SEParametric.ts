@@ -160,6 +160,18 @@ export class SEParametric
     isClosed = false
   ) {
     super();
+    // console.debug("x(t)", coordinateExpressions.x);
+    // console.debug("y(t)", coordinateExpressions.y);
+    // console.debug("z(t)", coordinateExpressions.z);
+    // console.debug("T-min", tExpressions.min, "with value", tNumbers.min);
+    // console.debug(
+    //   "T-max",
+    //   tExpressions.max,
+    //   "with value",
+    //   tNumbers.max,
+    //   "Closed?",
+    //   isClosed
+    // );
     this.store = useSEStore();
     this._isClosed = isClosed;
     this._c1DiscontinuityParameterValues.push(
@@ -243,7 +255,7 @@ export class SEParametric
     this._tValues.push(...tSamples.map(x => x.t));
     this.fnValues.push(...tSamples.map(x => x.value));
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
-    console.debug("Creating a new parametric", this.name);
+    // console.debug("Creating a new parametric", this.name);
 
     // Create partitioned T-values from the T-values of the sample points
     if (numDiscontinuity === 0) {
@@ -291,7 +303,9 @@ export class SEParametric
     return this._isClosed;
   }
 
-  /** Generate adaptive sampling points based of "local curvatures" */
+  /** Generate  sampling points based of "local curvatures"
+   * when the ideal sphere is in its neutral (unrotated) position
+   */
   private createSamplingPoints(): Array<TSample> {
     // Area of a triangle formed by three consecutive sample points
     // This also measures the local curvature
@@ -308,9 +322,9 @@ export class SEParametric
         )
       );
     };
-    const rotationMat4 = this.tmpMatrix
-      .copy(this.store.inverseTotalRotationMatrix)
-      .invert();
+    // const rotationMat4 = this.tmpMatrix
+    //   .copy(this.store.inverseTotalRotationMatrix)
+    //   .invert();
     const N = 5; // initial number of sample points
     const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
     let vecValue: Vector3;
@@ -324,8 +338,8 @@ export class SEParametric
         ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
         ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
       );
-      vecValue.applyMatrix4(rotationMat4);
-      // console.debug(`At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
+      // vecValue.applyMatrix4(rotationMat4);
+      // console.debug(`Seed At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
       fnValues.push({
         t: tValue,
         left: i > 0 ? i - 1 : this._isClosed ? N - 1 : 0, // left neighbor of the first point is itself (unless it is a closed curve)
@@ -415,12 +429,14 @@ export class SEParametric
       // left neighbor of M1 remains the same (L), but its right neighbor is now M2
       fnValues[indexM1].right = indexM2;
       fnValues[indexM1].value.set(xLeft, yLeft, zLeft);
+      // fnValues[indexM1].value.applyMatrix4(rotationMat4);
+
       // The new sample point M2 is between or M1 and old right R
       fnValues.push({
         t: t2,
         left: indexM1,
         right: indexR,
-        value: new Vector3(xRight, yRight, zRight)
+        value: new Vector3(xRight, yRight, zRight) // .applyMatrix4(rotationMat4)
       });
 
       // Left neighbor of R changes to M2
@@ -481,6 +497,9 @@ export class SEParametric
     }
     // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
+    fnValues.forEach((s: TSample, idx: number) => {
+      console.debug(`Point-${idx}: t=${s.t.toFixed(8)} ${s.value.toFixed(3)}`);
+    });
     return fnValues;
   }
 

@@ -97,10 +97,11 @@ import { useSEStore } from "@/stores/se";
     ...mapActions(useSEStore, [
       "removeAllFromLayers",
       "init",
-      "rotateSphere",
+      // "rotateSphere",
       "clearUnsavedFlag",
       "updateDisplay",
-      "setActionMode"
+      "setActionMode",
+      "setRotationMatrix"
     ])
   }
 })
@@ -115,7 +116,8 @@ export default class ConstructionLoader extends Vue {
   readonly resetToolset!: (b: boolean) => void;
   readonly removeAllFromLayers!: () => void;
   readonly init!: () => void;
-  readonly rotateSphere!: (_: Matrix4) => void;
+  // readonly rotateSphere!: (_: Matrix4) => void;
+  readonly setRotationMatrix!: (_: Matrix4) => void;
   readonly clearUnsavedFlag!: () => void;
   readonly updateDisplay!: () => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
@@ -259,11 +261,10 @@ export default class ConstructionLoader extends Vue {
     }
     if (toolSet === undefined) {
       console.debug("Include all tools");
-      this.resetToolset(true);
-      /* include all tools */
+      this.resetToolset(true); /* include all tools */
     } else {
       console.debug("Exclude all tools");
-      this.resetToolset(false /* exclude all */);
+      this.resetToolset(false); /* exclude all */
       toolSet.forEach((toolAction: ActionMode) => {
         this.includeToolName(toolAction);
       });
@@ -280,7 +281,8 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    this.rotateSphere(rotationMatrix);
+    // this.rotateSphere(rotationMatrix.invert());
+    this.setRotationMatrix(rotationMatrix);
     run(script);
     this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});

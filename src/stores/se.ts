@@ -166,6 +166,9 @@ export const useSEStore = defineStore({
     setCanvasWidth(w: number): void {
       this.canvasWidth = w;
     },
+    setRotationMatrix(mat: Matrix4): void {
+      inverseTotalRotationMatrix.copy(mat);
+    },
     // setSphereRadius(r: number): void {
     //   // TODO
     // },
@@ -514,7 +517,7 @@ export const useSEStore = defineStore({
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
-          console.debug(parent.name, "invalidates", m.name);
+          // console.debug(parent.name, "invalidates", m.name);
           if (m.exists) {
             if (m.canUpdateNow()) {
               if (!updateCandidates.find((x: SENodule) => x.name === m.name))
@@ -530,19 +533,19 @@ export const useSEStore = defineStore({
       updateCandidates.push(
         ...seNodules.filter((p: SENodule) => p.parents.length === 0)
       );
-      console.debug(
-        "Update candidates",
-        updateCandidates.map(z => z.name).join(", ")
-      );
+      // console.debug(
+      //   "Update candidates",
+      //   updateCandidates.map(z => z.name).join(", ")
+      // );
       while (updateCandidates.length > 0) {
         const target = updateCandidates.shift()!;
         const accepted = target.accept(rotationVisitor);
         // console.debug(`What's going on with ${target.name}?`, accepted);
         if (!accepted) {
-          console.debug(
-            target.name,
-            "does not accept rotation visitor, try its shallowUpdate"
-          );
+          // console.debug(
+          //   target.name,
+          //   "does not accept rotation visitor, try its shallowUpdate"
+          // );
           target.shallowUpdate();
         }
         target.setOutOfDate(false);

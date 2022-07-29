@@ -354,6 +354,11 @@ export default class App extends Vue {
     /* dump the command history */
     const scriptOut = Command.dumpOpcode();
 
+    // TODO: should we decouple the zoomFactor from the rotation matrix when
+    // saving a construction?. Possible issue: the construction
+    // was saved by a user working on a larger screen (large zoomFactor),
+    // but loaded by a user working on a smaller screen (small zoomFactor)
+
     const rotationMat = this.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
       ? "constructions"

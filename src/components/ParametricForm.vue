@@ -697,7 +697,6 @@ export default class ParametricForm extends Vue {
     // Create the Parametric in the SEParametric constructor
     // Not here!
     const newSEParametric = new SEParametric(
-      // parametric,
       this.coordinateExpressions,
       this.tExpressions,
       this.tNumbers,

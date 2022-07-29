@@ -248,16 +248,10 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    console.debug(
-      `Parametric::updateDisplay applying rotation`,
-      this.inverseTotalRotationMatrix.elements
-    );
-    this.frontParts.forEach((z, pos) => {
-      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
-    });
-    this.backParts.forEach((z, pos) => {
-      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
-    });
+    const frontCount = this.frontParts.map(z => z.vertices.length).join(",");
+    const backCount = this.backParts.map(z => z.vertices.length).join(",");
+    console.debug(`Front parts:  ${frontCount}     Back parts:${backCount}`);
+
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 
@@ -333,9 +327,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentBackPartIndex >= this.backParts.length) {
-            console.info(
-              "Parametric update: Needs more back parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric update: Needs more back parts than were allocated initially"
+            // );
             const newPath = new Two.Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
@@ -388,9 +382,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentFrontPartIndex >= this.frontParts.length) {
-            console.info(
-              "Parametric Update: Needs more front parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric Update: Needs more front parts than were allocated initially"
+            // );
             const newPath = new Two.Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();
@@ -563,7 +557,6 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
-    console.debug("addToLayers() called");
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])

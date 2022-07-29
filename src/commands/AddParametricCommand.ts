@@ -110,6 +110,7 @@ export class AddParametricCommand extends Command {
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     // console.log(command);
     const tokens = command.split("&");
+    console.debug("Parsing", tokens[0]);
     const propMap = new Map<SavedNames, string>();
     // load the tokens into the map
     tokens.forEach((token, ind) => {
@@ -194,7 +195,6 @@ export class AddParametricCommand extends Command {
       // Create the Parametric in the SEParametric constructor
       // Not here!
       const seParametric = new SEParametric(
-        // parametric,
         coordinateExpressions,
         tExpressions,
         tNumbers,
