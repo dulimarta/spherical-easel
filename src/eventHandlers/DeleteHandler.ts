@@ -214,11 +214,11 @@ export default class DeleteHandler extends Highlighter {
     victim.update(this.beforeDeleteStateMap, this.beforeDeleteSENoduleIDList);
 
     this.beforeDeleteStateMap.forEach(n =>
-      console.log("kind, id,", n.kind, n.object.id)
+      console.log("kind, id, name", n.kind, n.object.id, n.object.name)
     );
-    this.beforeDeleteSENoduleIDList.forEach((n, ind) =>
-      console.log("id and num", n, ind)
-    );
+    // this.beforeDeleteSENoduleIDList.forEach((n, ind) =>
+    //   console.log("id and num", n, ind)
+    // );
 
     const deleteCommandGroup = new CommandGroup();
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
@@ -227,7 +227,7 @@ export default class DeleteHandler extends Highlighter {
     this.beforeDeleteSENoduleIDList.reverse();
 
     // First determine which SEIntersection points, that are *on* the beforeDeleteSENoduleISList, will *not* actually be deleted because
-    // they will still have two or more parents after this deletion is complete, eventually this array may contain non SEIntersection Points
+    // they will still have two or more *viable* parents after this deletion is complete, eventually (after the this.beforeDeleteSENoduleIDList.forEach command) this array may contain non SEIntersection Points
     const notDeletedSENoduleIDs: number[] = [];
     this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
       // Get the SENodule via the beforeState
@@ -248,32 +248,23 @@ export default class DeleteHandler extends Highlighter {
           ...seNoduleBeforeState.object.otherParentArray
         ];
 
-        const survivingParentsIDList: number[] = [];
+        const survivingParents: SENodule[] = [];
         parents.forEach(parent => {
           console.debug(`Parent ${parent.name}`);
           if (!this.beforeDeleteStateMap.has(parent.id)) {
             // count all the parents that are not slated to be deleted
-            survivingParentsIDList.push(parent.id);
-            console.debug(`Added`);
+            survivingParents.push(parent);
+            console.debug(`Survives`);
+          } else {
+            console.debug(`Is deleted`);
           }
         });
-        // console.debug(
-        //   `notDeletedParentsSENoduleCount ${survivingParentsIDList.length}`
-        // );
+        console.debug(
+          `notDeletedParentsSENoduleCount ${survivingParents.length}`
+        );
         // There must be two or more not deleted (surviving) parents for the intersection point to survive (i.e. not be deleted)
-        if (survivingParentsIDList.length >= 2) {
+        if (survivingParents.length >= 2) {
           // now make sure that there are two parents on the list that will intersect at the existing intersection point
-          const survivingParents = parents.filter(parent => {
-            if (
-              survivingParentsIDList.findIndex(
-                sParentID => sParentID === parent.id
-              ) > -1
-            ) {
-              return true;
-            } else {
-              return false;
-            }
-          });
           let exit_loops = false;
           for (let i = 0; i < survivingParents.length; i++) {
             for (let j = i + 1; j < survivingParents.length; j++) {
@@ -281,15 +272,15 @@ export default class DeleteHandler extends Highlighter {
                 `Intersect ${survivingParents[i].name} and ${
                   survivingParents[j].name
                 } and the result is ${seNoduleBeforeState.object.checkIntersectionBetweenTwoPotentialParents(
-                  survivingParents[i],
-                  survivingParents[j]
+                  survivingParents[i] as SEOneDimensional,
+                  survivingParents[j] as SEOneDimensional
                 )}`
               );
 
               if (
                 seNoduleBeforeState.object.checkIntersectionBetweenTwoPotentialParents(
-                  survivingParents[i],
-                  survivingParents[j]
+                  survivingParents[i] as SEOneDimensional,
+                  survivingParents[j] as SEOneDimensional
                 ) !== -1
               ) {
                 console.debug(
@@ -309,12 +300,11 @@ export default class DeleteHandler extends Highlighter {
     });
     // now determine if any not deleted intersection point means that other objects (that are descendants of the non deleted intersection point) in the this.beforeDeleteStateMap are not going to be deleted
     // by determining if the children of the not deleted intersection points will survive, if so put them on the notDeletedSENoduleIDs list and check their children
-    // console.debug(
-    //   `Length of notDeletedSENoduleIDs ${notDeletedSENoduleIDs.length} before`
-    // );
+    console.debug(
+      `Length of notDeletedSENoduleIDs ${notDeletedSENoduleIDs.length} before`
+    );
     let totalNotDeletedSENodules = notDeletedSENoduleIDs.length;
     let examined = 0;
-    // notDeletedSENoduleIDs.forEach(seNoduleID => {
     while (totalNotDeletedSENodules > examined) {
       // console.debug(`SENodule number examined: ${examined}`);
       // console.debug(`total not deleted SENodules: ${examined}`);
@@ -322,12 +312,12 @@ export default class DeleteHandler extends Highlighter {
       const notDeletedSENodule = this.beforeDeleteStateMap.get(
         notDeletedSENoduleIDs[examined]
       );
-      // console.debug(`Examine the kids of ${notDeletedSENodule?.object.name}`);
+      console.debug(`Examine the kids of ${notDeletedSENodule?.object.name}`);
       if (notDeletedSENodule !== undefined) {
         examined += 1;
         // Now check the kids of the non deleted SENodule
         notDeletedSENodule.object.kids.forEach(kid => {
-          // console.debug(`Examine kid ${kid.name}`);
+          console.debug(`Examine kid ${kid.name}`);
           // The kid, as a descendant of point on the delete list, is slated to be deleted
           // if every parent of the kid is not deleted by the current action because the parent is either on the notDeleted list or
           //    it is not in the beforeDeleteStateMap (which means it was not slated to be deleted in the first place), then add the kid to the not delete list
@@ -338,19 +328,22 @@ export default class DeleteHandler extends Highlighter {
                 !this.beforeDeleteStateMap.has(parent.id)
             )
           ) {
-            // console.debug(
-            //   `Added kid ${kid.name} to the notDeletedSENoduleIDs array`
-            // );
-            notDeletedSENoduleIDs.push(kid.id);
-            totalNotDeletedSENodules += 1;
+            console.debug(
+              `Added kid ${kid.name} to the notDeletedSENoduleIDs array`
+            );
+            // make sure the the kid is not on the list already
+            if (notDeletedSENoduleIDs.every(id => id !== kid.id)) {
+              notDeletedSENoduleIDs.push(kid.id);
+              totalNotDeletedSENodules += 1;
+            }
           }
         });
       }
     }
-    //});
-    // console.debug(
-    //   `Length of notDeletedSENoduleIDs ${notDeletedSENoduleIDs.length} after`
-    // );
+
+    console.debug(
+      `Length of notDeletedSENoduleIDs ${notDeletedSENoduleIDs.length} after`
+    );
     // now remove the non-(SEintersection point) that are on the notDeletedSENoduleIDs array
     // we don't remove the SEintersection points because we have to be careful about how their parents are removed -- we must do so in such a way that principle parents are always defined and this is reflected in the DAG and the otherParents array
     notDeletedSENoduleIDs.forEach(seNoduleID => {
@@ -375,7 +368,7 @@ export default class DeleteHandler extends Highlighter {
         }
       } else {
         throw new Error(
-          "Delete Handler: An object from the notDeletedSENoduleIDS doesn't exist in the beforeDeleteStateMap"
+          `Delete Handler: An object from the notDeletedSENoduleIDS ${seNoduleID} doesn't exist in the beforeDeleteStateMap`
         );
       }
     });
