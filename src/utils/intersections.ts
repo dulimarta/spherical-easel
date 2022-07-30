@@ -596,60 +596,46 @@ export function intersectSegmentWithParametric(
   segment: SESegment,
   parametric: SEParametric,
   inverseTotalRotationMatrix: Matrix4
-  // layer: Group
 ): IntersectionReturnType[] {
-  // Transform the line into the standard coordinates of the parametric.
-  const transformedToStandard = new Vector3();
-  transformedToStandard.copy(segment.normalVector);
-  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
-
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
   const d: (t: number) => number = function (t: number): number {
-    return parametric.P(t).dot(transformedToStandard);
+    return parametric.P(t).dot(segment.normalVector);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
   const dp = function (t: number): number {
-    return parametric.PPrime(t).dot(transformedToStandard);
+    return parametric.PPrime(t).dot(segment.normalVector);
   };
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = parametric.tRanges.flatMap(tValues =>
-    SENodule.findZerosParametrically(
-      d,
-      tValues,
-      [], // FIXME
-      // parametric.c1DiscontinuityParameterValues,
-      dp
-    )
-  );
+  const zeros = parametric.tRanges
+    // .map(tRange => [
+    //   Math.max(tRange[0], tracingTMin), // the lower bound of the interval must be the max of these numbers
+    //   Math.min(tRange[1], tracingTMax) // the upper bound of the interval must be the min of these numbers
+    // ])
+    .flatMap(tValues =>
+      SENodule.findZerosParametrically(
+        d,
+        tValues,
+        [], // FIXME
+        // parametric.c1DiscontinuityParameterValues,
+        dp
+      )
+    );
 
-  // FIXME: handle SEParametricGroup
-  const maxNumberOfIntersections = 2;
+  console.log("Number of Para/seg Intersections:", zeros.length);
+  const returnItems: IntersectionReturnType[] = zeros.map((z, ind) => {
+    const intersectionPoint = new Vector3();
+    intersectionPoint.copy(parametric.P(z));
 
-  const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
+    // it must be on both the segment and the visible part of the parametric
+    return {
+      vector: intersectionPoint,
+      exists: segment.onSegment(intersectionPoint)
     };
-    returnItems.push(intersection);
-  }
+  });
 
-  // console.log("Number of Para/seg Intersections:", zeros.length);
-  if (returnItems.length >= zeros.length) {
-    tmpMatrix.copy(inverseTotalRotationMatrix).invert();
-    zeros.forEach((z, ind) => {
-      returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
-      if (tracingTMin <= z && z <= tracingTMax) {
-        // it must be on both the segment and the visible part of the parametric
-        returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
-      } else {
-        returnItems[ind].exists = false;
-      }
-    });
-  }
   return returnItems;
 }
 
