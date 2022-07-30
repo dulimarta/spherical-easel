@@ -124,7 +124,7 @@ export class SEParametric
   private _tValues: Array<number> = [];
   private partitionedTValues: Array<Array<number>> = [];
   private _isClosed: boolean;
-  private fnValues: Vector3[] = [];
+  private _fnValues: Vector3[] = [];
   private fnPrimeValues: Vector3[] = [];
   private fnPPrimeValues: Vector3[] = [];
 
@@ -253,7 +253,7 @@ export class SEParametric
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
     const tSamples = this.createSamplingPoints();
     this._tValues.push(...tSamples.map(x => x.t));
-    this.fnValues.push(...tSamples.map(x => x.value));
+    this._fnValues.push(...tSamples.map(x => x.value));
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
     // console.debug("Creating a new parametric", this.name);
 
@@ -297,6 +297,10 @@ export class SEParametric
   // A curve with no cusp points has only ONE partition
   get tRanges(): Array<Array<number>> {
     return this.partitionedTValues;
+  }
+
+  get fnValues(): Array<Vector3> {
+    return this._fnValues;
   }
 
   get isClosedCurve(): boolean {
@@ -497,9 +501,11 @@ export class SEParametric
     }
     // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
-    fnValues.forEach((s: TSample, idx: number) => {
-      console.debug(`Point-${idx}: t=${s.t.toFixed(8)} ${s.value.toFixed(3)}`);
-    });
+    console.debug("Min point at", fnValues[0].value.toFixed(4));
+    console.debug(
+      "Max point at",
+      fnValues[fnValues.length - 1].value.toFixed(4)
+    );
     return fnValues;
   }
 
@@ -552,7 +558,7 @@ export class SEParametric
     );
     this.ref.setRangeAndFunctions(
       this._tValues,
-      this.fnValues,
+      this._fnValues,
       Math.max(this._tNumbersHardLimit.min, this.tNumbers.min),
       Math.min(this._tNumbersHardLimit.max, this.tNumbers.max)
     );
@@ -617,7 +623,7 @@ export class SEParametric
    * @returns vector containing the location
    */
   public P(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this.fnValues);
+    return this.lookupFunctionValueAt(t, this._fnValues);
   }
 
   /**
@@ -725,6 +731,7 @@ export class SEParametric
 
     if (this._exists) {
       // TODO: when is it necessary to recreate the sample points?
+      // TODO: check if measurement parents are updated
       // console.debug("Recreating sample points");
       // this.createSamplingPoints();
       // const tSamples = this.createSamplingPoints();
@@ -851,7 +858,6 @@ export class SEParametric
   }
 
   accept(v: Visitor): boolean {
-    console.debug("SEParametric accepting visitor");
     return v.actionOnParametric(this);
   }
 

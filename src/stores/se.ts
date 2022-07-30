@@ -542,10 +542,10 @@ export const useSEStore = defineStore({
         const accepted = target.accept(rotationVisitor);
         // console.debug(`What's going on with ${target.name}?`, accepted);
         if (!accepted) {
-          // console.debug(
-          //   target.name,
-          //   "does not accept rotation visitor, try its shallowUpdate"
-          // );
+          console.debug(
+            target.name,
+            "does not accept rotation visitor, try its shallowUpdate"
+          );
           target.shallowUpdate();
         }
         target.setOutOfDate(false);

@@ -9,7 +9,7 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import { useSEStore } from "@/stores/se";
+// import { useSEStore } from "@/stores/se";
 import Two from "two.js";
 // import { Path } from "two.js/src/path";
 // import { Anchor } from "two.js/src/anchor";
@@ -19,7 +19,7 @@ import Two from "two.js";
 // const desiredYAxis = new Vector3();
 // const desiredZAxis = new Vector3();
 // // const Z_AXIS = new Vector3(0, 0, 1);
-const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
+// const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
 const SUBDIVISIONS = SETTINGS.parametric.numPoints;
 
 // WARNING: We can't use one "ptr" declared globally
@@ -112,7 +112,7 @@ export default class Parametric extends Nodule {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
-  private inverseTotalRotationMatrix: Matrix4;
+  // private inverseTotalRotationMatrix: Matrix4;
   constructor(tMin = 0, tMax = 1, closed = false) {
     super();
     this.tMin = tMin;
@@ -125,24 +125,20 @@ export default class Parametric extends Nodule {
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
-    const store = useSEStore();
-    this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
+    // const store = useSEStore();
+    // this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
     console.debug(
       "Parametric constructor",
       tMin,
       tMax,
-      "with rotation",
-      this.inverseTotalRotationMatrix.elements
+      "with rotation"
+      // this.inverseTotalRotationMatrix.elements
     );
   }
 
   public setRangeAndFunctions(
     tValues: number[],
     fn: Vector3[],
-    // fnPrime: Vector3[],
-    // fnDoublePrime: Vector3[],
-    // tMinGlobal: number,
-    // tMaxGlobal: number,
     tMin: number,
     tMax: number
   ): void {
@@ -150,10 +146,12 @@ export default class Parametric extends Nodule {
     // this.tGlobalMax = tMaxGlobal;
     this.tMin = tMin;
     this.tMax = tMax;
-    this._tValues.splice(0);
-    this._tValues.push(...tValues);
-    this._coordValues.splice(0);
-    this._coordValues.push(...fn);
+    this._tValues = tValues;
+    this._coordValues = fn;
+    // this._tValues.splice(0);
+    // this._tValues.push(...tValues);
+    // this._coordValues.splice(0);
+    // this._coordValues.push(...fn);
     // this._pPrimeValues.splice(0);
     // this._pPrimeValues.push(...fnPrime);
     // this._ppPrimeValues.splice(0);
@@ -259,13 +257,13 @@ export default class Parametric extends Nodule {
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
     // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
-    transformMatrix.copy(this.inverseTotalRotationMatrix!).invert();
+    // transformMatrix.copy(this.inverseTotalRotationMatrix!).invert();
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius
     );
-    transformMatrix.multiply(this.tmpMatrix);
+    // transformMatrix.multiply(this.tmpMatrix);
     // console.log(transformMatrix);
     // transformMatrix now maps the un-rotated parametric to the target parametric
 
@@ -313,7 +311,7 @@ export default class Parametric extends Nodule {
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
       this.tmpVector.copy(this._coordValues[index]);
       // Set tmpVector equal to location on the target Parametric in rotated position
-      this.tmpVector.applyMatrix4(transformMatrix);
+      this.tmpVector.applyMatrix4(this.tmpMatrix);
 
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere

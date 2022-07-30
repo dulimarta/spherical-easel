@@ -97,7 +97,7 @@ import { useSEStore } from "@/stores/se";
     ...mapActions(useSEStore, [
       "removeAllFromLayers",
       "init",
-      // "rotateSphere",
+      "rotateSphere",
       "clearUnsavedFlag",
       "updateDisplay",
       "setActionMode",
@@ -116,7 +116,7 @@ export default class ConstructionLoader extends Vue {
   readonly resetToolset!: (b: boolean) => void;
   readonly removeAllFromLayers!: () => void;
   readonly init!: () => void;
-  // readonly rotateSphere!: (_: Matrix4) => void;
+  readonly rotateSphere!: (_: Matrix4) => void;
   readonly setRotationMatrix!: (_: Matrix4) => void;
   readonly clearUnsavedFlag!: () => void;
   readonly updateDisplay!: () => void;
@@ -281,9 +281,9 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    // this.rotateSphere(rotationMatrix.invert());
-    this.setRotationMatrix(rotationMatrix);
+    // this.setRotationMatrix(rotationMatrix);
     run(script);
+    this.rotateSphere(rotationMatrix.invert());
     this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all

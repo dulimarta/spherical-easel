@@ -30,6 +30,7 @@ export class SEParametricEndPoint extends SEPoint {
       console.debug(
         `Point ${this.name} is a maximum endppoint for parametric ${parametricParent.name}`
       );
+    point.updateDisplay();
   }
 
   /**
