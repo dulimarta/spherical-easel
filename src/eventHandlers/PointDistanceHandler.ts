@@ -147,17 +147,18 @@ export default class PointDistanceHandler extends Highlighter {
       ) {
         this.addPointDistance(object1, object2);
       }
-    } else if (PointDistanceHandler.store.sePoints.length < 2) {
-      //pointDistanceHandlerNoPoint: "Before using this tool you must create at least two points.",
-      EventBus.fire("show-alert", {
-        key: `handlers.pointDistanceHandlerNoPoint`,
-        type: "error"
-      });
-      PointDistanceHandler.store.setActionMode({
-        id: "point",
-        name: "CreatePointDisplayedName"
-      });
     }
+    // else if (PointDistanceHandler.store.sePoints.length < 2) {
+    //   //pointDistanceHandlerNoPoint: "Before using this tool you must create at least two points.",
+    //   EventBus.fire("show-alert", {
+    //     key: `handlers.pointDistanceHandlerNoPoint`,
+    //     type: "error"
+    //   });
+    //   PointDistanceHandler.store.setActionMode({
+    //     id: "point",
+    //     name: "CreatePointDisplayedName"
+    //   });
+    // }
     //Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
