@@ -277,14 +277,21 @@ export class SEParametric
       // And so on
       // Partition-M: tm, tm+1, ... , tN (all values <= Ck or values <= tMax)
       let partIndex = 0;
+      let sampleIndex = 0;
       for (const upperBound of breakPoints) {
         const tVals = [];
-        while (this._tValues[partIndex] < upperBound) {
-          // Loop to create a single partition
-          tVals.push(this._tValues[partIndex]);
-          partIndex++; // next partition
+        while (
+          sampleIndex < this._tValues.length &&
+          this._tValues[sampleIndex] < upperBound
+        ) {
+          // Loop to create a single partiti
+          tVals.push(this._tValues[sampleIndex]);
+          sampleIndex++;
         }
-        this.partitionedTValues.push(tVals.slice(0));
+        partIndex++; // next partition
+        if (tVals.length > 0)
+          // skip empty partition
+          this.partitionedTValues.push(tVals.slice(0));
       }
       // this.partitionedTValues.forEach((p, pos) => {
       //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
@@ -501,11 +508,6 @@ export class SEParametric
     }
     // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
-    console.debug("Min point at", fnValues[0].value.toFixed(4));
-    console.debug(
-      "Max point at",
-      fnValues[fnValues.length - 1].value.toFixed(4)
-    );
     return fnValues;
   }
 

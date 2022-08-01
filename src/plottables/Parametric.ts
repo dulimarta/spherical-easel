@@ -70,6 +70,9 @@ export default class Parametric extends Nodule {
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
+  private markers: Two.Group = new Two.Group();
+
+  private markerPool: Two.Circle[] = [];
   /**
    * The styling variables for the drawn curve. The user can modify these.
    */
@@ -161,6 +164,7 @@ export default class Parametric extends Nodule {
 
   private buildCurve() {
     const numAnchors = this._coordValues.length;
+
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -171,6 +175,8 @@ export default class Parametric extends Nodule {
       for (let k = 0; k < numAnchors; k++) {
         // Create Vectors for the paths that will be cloned later
         frontVertices.push(new Two.Vector(0, 0));
+        // TODO: Remove the marker circles
+        this.markerPool.push(new Two.Circle(0, 0, 2));
       }
       this.frontParts.push(
         new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
@@ -293,6 +299,13 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach((path: Two.Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
+    this.markers.children.forEach((m: Two.Object) => {
+      this.markerPool.push(m as Two.Circle);
+    });
+    this.markerPool.forEach(c => {
+      c.remove();
+    });
+    this.markers.children.clear();
 
     let lastPositiveIndex = -1;
     let lastNegativeIndex = -1;
@@ -371,6 +384,11 @@ export default class Parametric extends Nodule {
           );
         }
       } else {
+        // Show the sample point markers only on foreground points
+        // TODO: remove the markers
+        const aMarker = this.markerPool.pop();
+        aMarker?.translation.set(this.tmpVector.x, this.tmpVector.y);
+        aMarker?.addTo(this.markers);
         // Move to the next front part if necessary
         if (lastPositiveIndex !== index - 1 && !firstFrontPart) {
           currentFrontPartIndex++;
@@ -555,6 +573,8 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
+    // TODO: Remove the marker layers
+    this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -568,6 +588,7 @@ export default class Parametric extends Nodule {
 
   public removeFromLayers(/*layers: Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
+    this.markers.remove();
 
     this.glowingFrontParts.forEach(part => part.remove());
     this.backParts.forEach(part => part.remove());
