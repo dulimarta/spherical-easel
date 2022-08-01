@@ -1,4 +1,4 @@
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, TriangleFanDrawMode } from "three";
 import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
@@ -723,7 +723,9 @@ export default class ThreePointCircleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-
+    this.prepareForNextThreePointCircle();
+  }
+  prepareForNextThreePointCircle(): void {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
     this.temporaryThreePointCircleCenter.removeFromLayers();
@@ -764,7 +766,7 @@ export default class ThreePointCircleHandler extends Highlighter {
   /**
    * Add a new three point circle if it hasn't already been added
    */
-  makeThreePointCircleAndCenter(): boolean {
+  makeThreePointCircleAndCenter(fromActivate = false): boolean {
     // Create a command group to add the points defining the three point circle and the three point to the store
     // This way a single undo click will undo all (potentially five) operations.
     const threePointCircleCommandGroup = new CommandGroup();
@@ -921,7 +923,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     // the this.temporaryPoint3Marker.positionVector is not either of the previous two vectors.
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0) {
+    if (this.hitSEPoints.length > 0 && !fromActivate) {
       this.point3SEPoint = this.hitSEPoints[0];
 
       if (
@@ -935,7 +937,7 @@ export default class ThreePointCircleHandler extends Highlighter {
           new SetPointUserCreatedValueCommand(this.point3SEPoint, true)
         );
       }
-    } else {
+    } else if (!fromActivate) {
       // We have to create a new Point for the third point/vector
       const newThirdPoint = new Point();
       // Set the display to the default values
@@ -1078,158 +1080,162 @@ export default class ThreePointCircleHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
     }
 
-    // check to make sure that this three point circle center doesn't already exist
-    if (
-      ThreePointCircleHandler.store.sePoints.some(pt =>
-        this.tmpVector
-          .subVectors(
-            pt.locationVector,
-            this.tmpVector1
-              .copy(this.temporaryThreePointCircleCenter._locationVector)
-              .normalize()
-          )
-          .isZero()
-      )
-    ) {
-      return false;
-    }
+    if (this.point3SEPoint) {
+      // check to make sure that this three point circle center doesn't already exist
+      if (
+        ThreePointCircleHandler.store.sePoints.some(pt =>
+          this.tmpVector
+            .subVectors(
+              pt.locationVector,
+              this.tmpVector1
+                .copy(this.temporaryThreePointCircleCenter._locationVector)
+                .normalize()
+            )
+            .isZero()
+        )
+      ) {
+        return false;
+      }
 
-    // Clone the current three point circle center
-    const newThreePointCircleCenter =
-      this.temporaryThreePointCircleCenter.clone();
-    // Set the display to the default values
-    newThreePointCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    newThreePointCircleCenter.adjustSize();
-    newThreePointCircleCenter.updateDisplay();
+      // Clone the current three point circle center
+      const newThreePointCircleCenter =
+        this.temporaryThreePointCircleCenter.clone();
+      // Set the display to the default values
+      newThreePointCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the stroke width to the current zoom magnification factor
+      newThreePointCircleCenter.adjustSize();
+      newThreePointCircleCenter.updateDisplay();
 
-    // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-    const newSEThreePointCircleCenter = new SEThreePointCircleCenter(
-      newThreePointCircleCenter,
-      this.point1SEPoint,
-      this.point2SEPoint,
-      this.point3SEPoint
-    );
-    // Create the plottable and model label
-    const newLabel = new Label("point");
-    const newSELabel = new SELabel(newLabel, newSEThreePointCircleCenter);
-    // Set the initial label location
-
-    this.tmpVector
-      .copy(newSEThreePointCircleCenter.locationVector)
-      .add(new Vector3(0, SETTINGS.point.initialLabelOffset, 0))
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
-
-    // Add this new point to the store
-    threePointCircleCommandGroup.addCommand(
-      new AddThreePointCircleCenterCommand(
-        newSEThreePointCircleCenter,
+      // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+      const newSEThreePointCircleCenter = new SEThreePointCircleCenter(
+        newThreePointCircleCenter,
         this.point1SEPoint,
         this.point2SEPoint,
-        this.point3SEPoint,
-        newSELabel
-      )
-    );
-    newSEThreePointCircleCenter.markKidsOutOfDate();
-    newSEThreePointCircleCenter.update();
+        this.point3SEPoint
+      );
+      // Create the plottable and model label
+      const newLabel = new Label("point");
+      const newSELabel = new SELabel(newLabel, newSEThreePointCircleCenter);
+      // Set the initial label location
 
-    /////////////
-    // Create the antipode of the new point, newSEThreePointCircleCenter
-    const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
-      newSEThreePointCircleCenter,
-      threePointCircleCommandGroup
-    );
-    newlyCreatedSEPoints.push(newSEThreePointCircleCenter, antipode);
-    ///////////
+      this.tmpVector
+        .copy(newSEThreePointCircleCenter.locationVector)
+        .add(new Vector3(0, SETTINGS.point.initialLabelOffset, 0))
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
 
-    // Clone the current three point circle
-    // const newNonFreeCircle = this.temporaryThreePointCircle.clone();
-    const newNonFreeCircle = new NonFreeCircle();
-    newNonFreeCircle.centerVector = this.temporaryThreePointCircle.centerVector;
-    newNonFreeCircle.circleRadius = this.temporaryThreePointCircle.circleRadius;
+      // Add this new point to the store
+      threePointCircleCommandGroup.addCommand(
+        new AddThreePointCircleCenterCommand(
+          newSEThreePointCircleCenter,
+          this.point1SEPoint,
+          this.point2SEPoint,
+          this.point3SEPoint,
+          newSELabel
+        )
+      );
 
-    // Set the display to the default values
-    newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    newNonFreeCircle.adjustSize();
-    newNonFreeCircle.updateDisplay();
-
-    //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
-    const newSECircle = new SECircle(
-      newNonFreeCircle,
-      newSEThreePointCircleCenter,
-      this.point1SEPoint
-    );
-    // Create the plottable and model label
-    const newLabel1 = new Label("circle");
-    const newSELabel1 = new SELabel(newLabel1, newSECircle);
-    // Set the initial label location
-    this.tmpVector
-      .copy(this.point1SEPoint.locationVector)
-      .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
-      .normalize();
-    newSELabel1.locationVector = this.tmpVector;
-
-    threePointCircleCommandGroup.addCommand(
-      new AddCircleCommand(
-        newSECircle,
+      /////////////
+      // Create the antipode of the new point, newSEThreePointCircleCenter
+      const antipode = ThreePointCircleHandler.addCreateAntipodeCommand(
         newSEThreePointCircleCenter,
-        this.point1SEPoint,
-        newSELabel1
-      )
-    );
+        threePointCircleCommandGroup
+      );
+      newlyCreatedSEPoints.push(newSEThreePointCircleCenter, antipode);
+      ///////////
 
-    // Generate new intersection points. These points must be computed and created
-    // in the store. Add the new created points to the ellipse command so they can be undone.
-    ThreePointCircleHandler.store
-      .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
-      .forEach((item: SEIntersectionReturnType) => {
-        if (item.existingIntersectionPoint) {
-          threePointCircleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
-          );
-        } else {
-          // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+      // Clone the current three point circle
+      // const newNonFreeCircle = this.temporaryThreePointCircle.clone();
+      const newNonFreeCircle = new NonFreeCircle();
+      newNonFreeCircle.centerVector =
+        this.temporaryThreePointCircle.centerVector;
+      newNonFreeCircle.circleRadius =
+        this.temporaryThreePointCircle.circleRadius;
 
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+      // Set the display to the default values
+      newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the stroke width to the current zoom magnification factor
+      newNonFreeCircle.adjustSize();
+      newNonFreeCircle.updateDisplay();
+
+      //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
+      const newSECircle = new SECircle(
+        newNonFreeCircle,
+        newSEThreePointCircleCenter,
+        this.point1SEPoint
+      );
+      // Create the plottable and model label
+      const newLabel1 = new Label("circle");
+      const newSELabel1 = new SELabel(newLabel1, newSECircle);
+      // Set the initial label location
+      this.tmpVector
+        .copy(this.point1SEPoint.locationVector)
+        .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
+        .normalize();
+      newSELabel1.locationVector = this.tmpVector;
+
+      threePointCircleCommandGroup.addCommand(
+        new AddCircleCommand(
+          newSECircle,
+          newSEThreePointCircleCenter,
+          this.point1SEPoint,
+          newSELabel1
+        )
+      );
+
+      // Generate new intersection points. These points must be computed and created
+      // in the store. Add the new created points to the ellipse command so they can be undone.
+      ThreePointCircleHandler.store
+        .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
+        .forEach((item: SEIntersectionReturnType) => {
+          if (item.existingIntersectionPoint) {
+            threePointCircleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
-
-          threePointCircleCommandGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-          newSELabel.showing = false;
-          if (item.createAntipodalPoint) {
-            ThreePointCircleHandler.addCreateAntipodeCommand(
-              item.SEIntersectionPoint,
-              threePointCircleCommandGroup
             );
-          }
-        }
-      });
+          } else {
+            // Create the plottable and model label
+            const newLabel = new Label("point");
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-    threePointCircleCommandGroup.execute();
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
+            threePointCircleCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+            newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              ThreePointCircleHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                threePointCircleCommandGroup
+              );
+            }
+          }
+        });
+
+      threePointCircleCommandGroup.execute();
+      newSEThreePointCircleCenter.markKidsOutOfDate();
+      newSEThreePointCircleCenter.update();
+    }
     return true;
   }
 
@@ -1252,163 +1258,22 @@ export default class ThreePointCircleHandler extends Highlighter {
             .isZero()
         ) // if the points all the same do nothing
       ) {
-        const threePointCircleCommandGroup = new CommandGroup();
-        // Clone the current three point circle center
-        const newThreePointCircleCenter = new ThreePointCircleCenter();
-        newThreePointCircleCenter.vector1 = object1.locationVector;
-        newThreePointCircleCenter.vector2 = object2.locationVector;
-        newThreePointCircleCenter.vector3 = object3.locationVector;
-        // once the three vectors are set, update the display so that the location is computed
-        newThreePointCircleCenter.updateDisplay();
-        // Set the display to the default values
-        newThreePointCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the stroke width to the current zoom magnification factor
-        newThreePointCircleCenter.adjustSize();
-
-        // check to make sure that this three point circle center doesn't already exist
-        if (
-          ThreePointCircleHandler.store.sePoints.some(pt =>
-            this.tmpVector
-              .subVectors(
-                pt.locationVector,
-                newThreePointCircleCenter._locationVector
-              )
-              .isZero()
-          )
-        ) {
+        this.point1SEPoint = object1;
+        this.point2SEPoint = object2;
+        this.point3SEPoint = object3;
+        this.temporaryThreePointCircleCenter.vector1 = object1.locationVector;
+        this.temporaryThreePointCircleCenter.vector2 = object2.locationVector;
+        this.temporaryThreePointCircleCenter.vector3 = object3.locationVector;
+        this.temporaryThreePointCircleCenter.updateDisplay();
+        //this.temporaryThreePointCircleCenter._locationVector=
+        if (!this.makeThreePointCircleAndCenter(true)) {
           EventBus.fire("show-alert", {
             key: `handlers.threePointCircleCreationAttemptDuplicate`,
             keyOptions: {},
             type: "error"
           });
-          return;
         }
-
-        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-        const newSEThreePointCircleCenter = new SEThreePointCircleCenter(
-          newThreePointCircleCenter,
-          object1,
-          object2,
-          object3
-        );
-        // Create the plottable and model label
-        const newLabel = new Label("point");
-        const newSELabel = new SELabel(newLabel, newSEThreePointCircleCenter);
-        // Set the initial label location
-
-        this.tmpVector
-          .copy(newSEThreePointCircleCenter.locationVector)
-          .add(new Vector3(0, SETTINGS.point.initialLabelOffset, 0))
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
-
-        // Add this new point to the store
-        threePointCircleCommandGroup.addCommand(
-          new AddThreePointCircleCenterCommand(
-            newSEThreePointCircleCenter,
-            object1,
-            object2,
-            object3,
-            newSELabel
-          )
-        );
-
-        // a new  circle
-        const newNonFreeCircle = new NonFreeCircle();
-
-        // Set the display to the default values
-        newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-
-        newNonFreeCircle.circleRadius =
-          newThreePointCircleCenter._locationVector.angleTo(
-            object1.locationVector
-          );
-        newNonFreeCircle.centerVector =
-          newThreePointCircleCenter._locationVector;
-        // Adjust the stroke width to the current zoom magnification factor
-        newNonFreeCircle.adjustSize();
-        newNonFreeCircle.updateDisplay();
-
-        //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
-        const newSECircle = new SECircle(
-          newNonFreeCircle,
-          newSEThreePointCircleCenter,
-          object1
-        );
-        // Create the plottable and model label
-        const newLabel1 = new Label("circle");
-        const newSELabel1 = new SELabel(newLabel1, newSECircle);
-        // Set the initial label location
-        this.tmpVector
-          .copy(object1.locationVector)
-          .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
-          .normalize();
-        newSELabel1.locationVector = this.tmpVector;
-
-        threePointCircleCommandGroup.addCommand(
-          new AddCircleCommand(
-            newSECircle,
-            newSEThreePointCircleCenter,
-            object1,
-            newSELabel1
-          )
-        );
-        newSECircle.markKidsOutOfDate();
-        newSECircle.update();
-
-        // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the ellipse command so they can be undone.
-        ThreePointCircleHandler.store
-          .createAllIntersectionsWithCircle(newSECircle, [])
-          .forEach((item: SEIntersectionReturnType) => {
-            if (item.existingIntersectionPoint) {
-              threePointCircleCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  item.parent1
-                )
-              );
-            } else {
-              // Create the plottable and model label
-              const newLabel = new Label("point");
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.point.initialLabelOffset,
-                    SETTINGS.point.initialLabelOffset,
-                    0
-                  )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
-
-              threePointCircleCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-              newSELabel.showing = false;
-              if (item.createAntipodalPoint) {
-                ThreePointCircleHandler.addCreateAntipodeCommand(
-                  item.SEIntersectionPoint,
-                  threePointCircleCommandGroup
-                );
-              }
-            }
-          });
-
-        threePointCircleCommandGroup.execute();
+        this.prepareForNextThreePointCircle();
       }
     }
     // Unselect the selected objects and clear the selectedObject array
@@ -1416,5 +1281,6 @@ export default class ThreePointCircleHandler extends Highlighter {
   }
   deactivate(): void {
     super.deactivate();
+    this.prepareForNextThreePointCircle();
   }
 }

@@ -492,7 +492,7 @@ export default class SENoduleItem extends Vue {
     // If the user clicks this they the want to have the label showing so turn it on
     if (this.node instanceof SEAngleMarker) {
       if (this.node.label) {
-        if (!this.node.label?.showing) {
+        if (!this.node.label.showing) {
           new SetNoduleDisplayCommand(this.node.label, true).execute();
         }
       }

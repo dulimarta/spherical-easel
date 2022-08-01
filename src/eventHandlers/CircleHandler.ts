@@ -287,9 +287,12 @@ export default class CircleHandler extends Highlighter {
           // if the user is over a non user created intersection point (which can't be selected so will not remain
           // glowing when the user select that location and then moves the mouse away - see line 115) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
+
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
+            (this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint ||
+              this.snapTemporaryPointMarkerToPoint instanceof
+                SEAntipodalPoint) &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryEndMarker.positionVector =
@@ -305,7 +308,7 @@ export default class CircleHandler extends Highlighter {
             this.snapTemporaryPointMarkerToOneDimensional.closestVector(
               this.currentSphereVector
             );
-        } else {
+        } else if (this.snapTemporaryPointMarkerToPoint === null) {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
 
@@ -377,7 +380,10 @@ export default class CircleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.prepareForNextCircle();
+  }
 
+  prepareForNextCircle(): void {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
 
@@ -408,7 +414,7 @@ export default class CircleHandler extends Highlighter {
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
    */
-  makeCircle(): boolean {
+  makeCircle(fromActivate = false): boolean {
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const circleCommandGroup = new CommandGroup();
@@ -484,14 +490,11 @@ export default class CircleHandler extends Highlighter {
       circleCommandGroup.addCommand(
         new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
       );
-      // set the label to follow the visible ordering
-      circleCommandGroup.addCommand(
-        new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
-      );
     }
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0) {
+    // fromActivate = true means that this.circleSEPoint is already set
+    if (this.hitSEPoints.length > 0 && !fromActivate) {
       this.circleSEPoint = this.hitSEPoints[0];
       //compute the radius of the temporary circle using the hit point
       this.arcRadius = this.temporaryCircle.centerVector.angleTo(
@@ -512,7 +515,7 @@ export default class CircleHandler extends Highlighter {
           new SetPointUserCreatedValueCommand(this.circleSEPoint, true)
         );
       }
-    } else {
+    } else if (!fromActivate) {
       // We have to create a new Point for the end
       const newCirclePoint = new Point();
       // Set the display to the default values
@@ -664,123 +667,126 @@ export default class CircleHandler extends Highlighter {
         .normalize();
       newSELabel.locationVector = this.tmpVector;
     }
-    // Update the display of the circle based on a potentially new location of the circleSEPoint
-    // Move the endMarker to the current mouse location
-    this.temporaryEndMarker.positionVector = this.circleSEPoint.locationVector;
-    //compute the radius of the temporary circle
-    this.arcRadius = this.temporaryCircle.centerVector.angleTo(
-      this.circleSEPoint.locationVector
-    );
-    // Set the radius of the temporary circle, the center was set in Mouse Press
-    this.temporaryCircle.circleRadius = this.arcRadius;
-    //update the display
-    this.temporaryCircle.updateDisplay();
+    if (this.circleSEPoint) {
+      // Update the display of the circle based on a potentially new location of the circleSEPoint
+      // Move the endMarker to the current mouse location
+      this.temporaryEndMarker.positionVector =
+        this.circleSEPoint.locationVector;
+      //compute the radius of the temporary circle
+      this.arcRadius = this.temporaryCircle.centerVector.angleTo(
+        this.circleSEPoint.locationVector
+      );
+      // Set the radius of the temporary circle, the center was set in Mouse Press
+      this.temporaryCircle.circleRadius = this.arcRadius;
+      //update the display
+      this.temporaryCircle.updateDisplay();
 
-    // check to make sure that this circle doesn't already exist
-    if (
-      CircleHandler.store.seCircles.some(
-        circ =>
-          this.tmpVector
-            .subVectors(
-              circ.centerSEPoint.locationVector,
-              this.centerSEPoint
-                ? this.centerSEPoint.locationVector
-                : this.tmpVector
-            )
-            .isZero() &&
-          Math.abs(this.arcRadius - circ.circleRadius) < SETTINGS.tolerance
-      )
-    ) {
-      return false;
-    }
-    // Clone the current circle after the circlePoint is set
-    const newCircle = this.temporaryCircle.clone();
-    // Set the display to the default values
-    newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    newCircle.adjustSize();
-
-    // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-    const newSECircle = new SECircle(
-      newCircle,
-      this.centerSEPoint,
-      this.circleSEPoint
-    );
-    // Create the plottable and model label
-    const newLabel = new Label("circle");
-    const newSELabel = new SELabel(newLabel, newSECircle);
-    // Set the initial label location
-    this.tmpMatrix.makeRotationAxis(
-      this.centerSEPoint.locationVector,
-      Math.PI / 2
-    );
-    this.tmpVector
-      .copy(this.circleSEPoint.locationVector)
-      .applyMatrix4(this.tmpMatrix)
-      .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
-
-    circleCommandGroup.addCommand(
-      new AddCircleCommand(
-        newSECircle,
-        this.centerSEPoint,
-        this.circleSEPoint,
-        newSELabel
-      )
-    );
-    // Generate new intersection points. These points must be computed and created
-    // in the store. Add the new created points to the circle command so they can be undone.
-
-    CircleHandler.store
-      .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
-      .forEach((item: SEIntersectionReturnType) => {
-        if (item.existingIntersectionPoint) {
-          circleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
-          );
-        } else {
-          // the intersection point is newly created and must be added as a child of the two parents returned
-          // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+      // check to make sure that this circle doesn't already exist
+      if (
+        CircleHandler.store.seCircles.some(
+          circ =>
+            this.tmpVector
+              .subVectors(
+                circ.centerSEPoint.locationVector,
+                this.centerSEPoint
+                  ? this.centerSEPoint.locationVector
+                  : this.tmpVector
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+              .isZero() &&
+            Math.abs(this.arcRadius - circ.circleRadius) < SETTINGS.tolerance
+        )
+      ) {
+        return false;
+      }
+      // Clone the current circle after the circlePoint is set
+      const newCircle = this.temporaryCircle.clone();
+      // Set the display to the default values
+      newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the stroke width to the current zoom magnification factor
+      newCircle.adjustSize();
 
-          circleCommandGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-          newSELabel.showing = false;
-          if (item.createAntipodalPoint) {
-            CircleHandler.addCreateAntipodeCommand(
-              item.SEIntersectionPoint,
-              circleCommandGroup
+      // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+      const newSECircle = new SECircle(
+        newCircle,
+        this.centerSEPoint,
+        this.circleSEPoint
+      );
+      // Create the plottable and model label
+      const newLabel = new Label("circle");
+      const newSELabel = new SELabel(newLabel, newSECircle);
+      // Set the initial label location
+      this.tmpMatrix.makeRotationAxis(
+        this.centerSEPoint.locationVector,
+        Math.PI / 2
+      );
+      this.tmpVector
+        .copy(this.circleSEPoint.locationVector)
+        .applyMatrix4(this.tmpMatrix)
+        .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
+
+      circleCommandGroup.addCommand(
+        new AddCircleCommand(
+          newSECircle,
+          this.centerSEPoint,
+          this.circleSEPoint,
+          newSELabel
+        )
+      );
+      // Generate new intersection points. These points must be computed and created
+      // in the store. Add the new created points to the circle command so they can be undone.
+
+      CircleHandler.store
+        .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
+        .forEach((item: SEIntersectionReturnType) => {
+          if (item.existingIntersectionPoint) {
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
+              )
             );
-          }
-        }
-      });
+          } else {
+            // the intersection point is newly created and must be added as a child of the two parents returned
+            // Create the plottable and model label
+            const newLabel = new Label("point");
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-    circleCommandGroup.execute();
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+            newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              CircleHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                circleCommandGroup
+              );
+            }
+          }
+        });
+
+      circleCommandGroup.execute();
+    }
     return true;
   }
 
@@ -795,86 +801,19 @@ export default class CircleHandler extends Highlighter {
         object2 instanceof SEPoint &&
         !tmpVector
           .crossVectors(object1.locationVector, object2.locationVector)
-          .isZero(SETTINGS.nearlyAntipodalIdeal) // if the points are antipodal do nothing
+          .isZero(SETTINGS.nearlyAntipodalIdeal) // if the points are antipodal or the same do nothing
       ) {
-        // Create a new plottable Circle
-        const newCircle = new Circle();
-        // Set the display to the default values
-        newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Set the stroke width to the current width given the zoom level
-        newCircle.adjustSize();
-
-        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-        const newSECircle = new SECircle(newCircle, object1, object2);
-        // Update the newSECircle so the display is correct when the command group is executed
-        newSECircle.markKidsOutOfDate();
-        newSECircle.update();
-        const newLabel = new Label("circle");
-        const newSELabel = new SELabel(newLabel, newSECircle);
-        // Set the initial label location
-        this.tmpMatrix.makeRotationAxis(object1.locationVector, Math.PI / 2);
-        this.tmpVector
-          .copy(object2.locationVector)
-          .applyMatrix4(this.tmpMatrix)
-          .add(new Vector3(0, SETTINGS.circle.initialLabelOffset, 0))
-          .normalize();
-
-        const circleCommandGroup = new CommandGroup();
-        circleCommandGroup.addCommand(
-          new AddCircleCommand(newSECircle, object1, object2, newSELabel)
-        );
-
-        // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the circle command so they can be undone.
-        CircleHandler.store
-          .createAllIntersectionsWithCircle(newSECircle, [])
-          .forEach((item: SEIntersectionReturnType) => {
-            if (item.existingIntersectionPoint) {
-              circleCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  item.parent1
-                )
-              );
-            } else {
-              const newLabel = new Label("point");
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.point.initialLabelOffset,
-                    SETTINGS.point.initialLabelOffset,
-                    0
-                  )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
-              circleCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-              newSELabel.showing = false;
-              if (item.createAntipodalPoint) {
-                CircleHandler.addCreateAntipodeCommand(
-                  item.SEIntersectionPoint,
-                  circleCommandGroup
-                );
-              }
-            }
+        this.centerSEPoint = object1;
+        this.circleSEPoint = object2;
+        this.temporaryCircle.centerVector = object1.locationVector;
+        if (!this.makeCircle(true)) {
+          EventBus.fire("show-alert", {
+            key: `handlers.circleCreationAttemptDuplicate`,
+            keyOptions: {},
+            type: "error"
           });
-
-        circleCommandGroup.execute();
+        }
+        this.prepareForNextCircle();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

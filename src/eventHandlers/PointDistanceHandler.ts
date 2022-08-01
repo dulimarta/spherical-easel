@@ -52,52 +52,7 @@ export default class PointDistanceHandler extends Highlighter {
 
       if (this.targetPoints.length === 2) {
         // make sure that this pair of points has not been measured already
-        let measurementName = "";
-        if (
-          PointDistanceHandler.store.expressions.some(exp => {
-            if (
-              exp instanceof SEPointDistance &&
-              ((exp.parents[0].name === this.targetPoints[0].name &&
-                exp.parents[1].name === this.targetPoints[1].name) ||
-                (exp.parents[0].name === this.targetPoints[1].name &&
-                  exp.parents[1].name === this.targetPoints[0].name))
-            ) {
-              measurementName = exp.name;
-              return true;
-            } else {
-              return false;
-            }
-          })
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.duplicatePointDistanceMeasurement`,
-            keyOptions: {
-              pt0Name: `${this.targetPoints[0].label?.ref.shortUserName}`,
-              pt1Name: `${this.targetPoints[1].label?.ref.shortUserName}`,
-              measurementName: `${measurementName}`
-            },
-            type: "error"
-          });
-          // reset for another distance measurement
-          this.mouseLeave(event);
-          return;
-        }
-
-        const distanceMeasure = new SEPointDistance(
-          this.targetPoints[0],
-          this.targetPoints[1]
-        );
-        distanceMeasure.valueDisplayMode =
-          SETTINGS.point.initialValueDisplayMode;
-        EventBus.fire("show-alert", {
-          key: `handlers.newMeasurementAdded`,
-          keyOptions: { name: `${distanceMeasure.name}` },
-          type: "success"
-        });
-        new AddPointDistanceMeasurementCommand(distanceMeasure, [
-          this.targetPoints[0],
-          this.targetPoints[1]
-        ]).execute();
+        this.addPointDistance(this.targetPoints[0], this.targetPoints[1]);
         // reset for another distance measurement
         this.mouseLeave(event);
       } else
@@ -127,12 +82,57 @@ export default class PointDistanceHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.prepareForNextPointDistance();
+  }
+  prepareForNextPointDistance(): void {
     // Reset the target points in preparation for another measure
     this.targetPoints.forEach(p => {
       p.selected = false;
       p.glowing = false;
     });
     this.targetPoints.splice(0);
+  }
+
+  addPointDistance(sePoint1: SEPoint, sePoint2: SEPoint): void {
+    // make sure that this pair of points has not been measured already
+    let measurementName = "";
+    if (
+      PointDistanceHandler.store.expressions.some(exp => {
+        if (
+          exp instanceof SEPointDistance &&
+          ((exp.parents[0].name === sePoint1.name &&
+            exp.parents[1].name === sePoint2.name) ||
+            (exp.parents[0].name === sePoint2.name &&
+              exp.parents[1].name === sePoint1.name))
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      EventBus.fire("show-alert", {
+        key: `handlers.duplicatePointDistanceMeasurement`,
+        keyOptions: {
+          pt0Name: `${sePoint1.label?.ref.shortUserName}`,
+          pt1Name: `${sePoint2.label?.ref.shortUserName}`,
+          measurementName: `${measurementName}`
+        },
+        type: "error"
+      });
+    } else {
+      const distanceMeasure = new SEPointDistance(sePoint1, sePoint2);
+
+      EventBus.fire("show-alert", {
+        text: `New measurement ${distanceMeasure.name} added`,
+        type: "success"
+      });
+      new AddPointDistanceMeasurementCommand(distanceMeasure, [
+        sePoint1,
+        sePoint2
+      ]).execute();
+    }
   }
 
   activate(): void {
@@ -145,51 +145,24 @@ export default class PointDistanceHandler extends Highlighter {
         object2 instanceof SEPoint &&
         object1 !== object2
       ) {
-        // make sure that this pair of points has not been measured already
-        let measurementName = "";
-        if (
-          PointDistanceHandler.store.expressions.some(exp => {
-            if (
-              exp instanceof SEPointDistance &&
-              ((exp.parents[0].name === object1.name &&
-                exp.parents[1].name === object2.name) ||
-                (exp.parents[0].name === object2.name &&
-                  exp.parents[1].name === object1.name))
-            ) {
-              measurementName = exp.name;
-              return true;
-            } else {
-              return false;
-            }
-          })
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.duplicatePointDistanceMeasurement`,
-            keyOptions: {
-              pt0Name: `${object1.label?.ref.shortUserName}`,
-              pt1Name: `${object2.label?.ref.shortUserName}`,
-              measurementName: `${measurementName}`
-            },
-            type: "error"
-          });
-        } else {
-          const distanceMeasure = new SEPointDistance(object1, object2);
-
-          EventBus.fire("show-alert", {
-            text: `New measurement ${distanceMeasure.name} added`,
-            type: "success"
-          });
-          new AddPointDistanceMeasurementCommand(distanceMeasure, [
-            object1,
-            object2
-          ]).execute();
-        }
+        this.addPointDistance(object1, object2);
       }
+    } else if (PointDistanceHandler.store.sePoints.length < 2) {
+      //pointDistanceHandlerNoPoint: "Before using this tool you must create at least two points.",
+      EventBus.fire("show-alert", {
+        key: `handlers.pointDistanceHandlerNoPoint`,
+        type: "error"
+      });
+      PointDistanceHandler.store.setActionMode({
+        id: "point",
+        name: "CreatePointDisplayedName"
+      });
     }
     //Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
   deactivate(): void {
     super.deactivate();
+    this.prepareForNextPointDistance();
   }
 }

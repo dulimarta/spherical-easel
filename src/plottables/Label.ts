@@ -570,14 +570,15 @@ export default class Label extends Nodule {
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              if (
-                this.seLabelParentType === "angleMarker" ||
-                this.seLabelParentType === "polygon"
-              ) {
-                labelText = labelStyle?.labelDisplayText + ": " + labelText;
-              } else {
-                labelText = labelStyle?.labelDisplayText + ": " + labelText;
-              }
+              // if (
+              //   this.seLabelParentType === "angleMarker" ||
+              //   this.seLabelParentType === "polygon"
+              // ) {
+              //   labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              // } else {
+
+              labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              // }
             } else {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
               labelText = labelStyle?.labelDisplayText ?? "No Label Text3"; //this.shortUserName;

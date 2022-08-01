@@ -12,7 +12,8 @@
     </v-btn>
 
     <div v-for="(g,gpos) in buttonGroup"
-      :key="gpos">
+      :key="gpos"
+      :ref="g.group">
       <template v-if="g.children.length > 0">
         <h3 class="body-1 font-weight-bold">{{$t(`toolGroups.${g.group}`)}}
         </h3>

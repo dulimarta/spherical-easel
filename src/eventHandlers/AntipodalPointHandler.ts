@@ -102,57 +102,10 @@ export default class AntipodalPointHandler extends Highlighter {
             `AntipodePointHandler: The point ${this.parentPoint.name} doesn't have an antipode!`
           );
         } else {
-          possibleAntipode = AntipodalPointHandler.store.sePoints[
-            antipodeIndex
-          ] as SEPoint;
+          possibleAntipode =
+            AntipodalPointHandler.store.sePoints[antipodeIndex];
         }
-
-        if (
-          possibleAntipode !== null &&
-          ((possibleAntipode instanceof SEAntipodalPoint &&
-            !possibleAntipode.isUserCreated) ||
-            (possibleAntipode instanceof SEIntersectionPoint &&
-              !possibleAntipode.isUserCreated &&
-              !possibleAntipode.isAntipodal))
-        ) {
-          //The antipode is not displayed
-          const antipodalCommandGroup = new CommandGroup();
-          antipodalCommandGroup.addCommand(
-            new SetPointUserCreatedValueCommand(possibleAntipode, true)
-          );
-          // if the possible antipode is an intersection point convert it to antipodal mode
-          if (possibleAntipode instanceof SEIntersectionPoint) {
-            antipodalCommandGroup.addCommand(
-              new ConvertIntersectionPointToAntipodalMode(
-                possibleAntipode,
-                this.parentPoint as SEIntersectionPoint
-              )
-            );
-          }
-          if (
-            this.parentPoint instanceof SEIntersectionPoint &&
-            !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode its parent already exists
-          ) {
-            //Make it user created and turn on the display
-            antipodalCommandGroup.addCommand(
-              new SetPointUserCreatedValueCommand(
-                this.parentPoint as SEIntersectionPoint,
-                true
-              )
-            );
-          }
-          antipodalCommandGroup.execute();
-        } else {
-          // the antipode is already displayed
-          //"The antipode of the selected point is the point {pointName} and has already been created.",
-          EventBus.fire("show-alert", {
-            key: `handlers.antipodeDuplicate`,
-            keyOptions: {
-              pointName: this.parentPoint.label!.ref.shortUserName
-            },
-            type: "error"
-          });
-        }
+        this.revealAntipode(possibleAntipode, this.parentPoint);
       } else if (this.hitSESegments.length > 0) {
         // The user selected a segment and we will create a point on it
         this.oneDimensionalContainingParentPoint = this.hitSESegments[0];
@@ -304,6 +257,7 @@ export default class AntipodalPointHandler extends Highlighter {
         antipodalCommandGroup.addCommand(
           new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
         );
+        vtx.shallowUpdate();
 
         antipodalCommandGroup.execute();
 
@@ -343,7 +297,7 @@ export default class AntipodalPointHandler extends Highlighter {
       let possibleAntipode: SEPoint | null = null;
       if (antipodeIndex === -1) {
         throw new Error(
-          `AntipodePointHandler: The point ${this.hitSEPoints[0].name} doesn't have an antipode!`
+          `AntipodePointHandler: The point ${this.hitSEPoints[0].name} doesn't have an antipode 1!`
         );
       } else {
         possibleAntipode = AntipodalPointHandler.store.sePoints[
@@ -524,47 +478,87 @@ export default class AntipodalPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
   activate(): void {
-    // If there is exactly one point selected, create its anitpode
+    // If there is exactly one point selected, reveal its anitpode unless it is already visible
     if (AntipodalPointHandler.store.selectedSENodules.length == 1) {
       const object = AntipodalPointHandler.store.selectedSENodules[0];
       if (object instanceof SEPoint) {
-        const newPoint = new NonFreePoint();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
-
-        // Create the model object for the new point and link them
-        const vtx = new SEAntipodalPoint(newPoint, object, true);
-
-        // Create the plottable label
-        const newLabel = new Label("point");
-        const newSELabel = new SELabel(newLabel, vtx);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(vtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
-
-        // Create and execute the command to create a new point for undo/redo
-        new AddAntipodalPointCommand(vtx, object, newSELabel).execute();
-        // Update the display of the antipodal point
-        // TODO: move this update() call into AddAntipodalPointCommand
-        vtx.markKidsOutOfDate();
-        vtx.update();
+        // find the antipode
+        const antipodeIndex = AntipodalPointHandler.store.sePoints.findIndex(
+          pt => {
+            this.tmpVector.copy(pt.locationVector).multiplyScalar(-1);
+            this.tmpVector.sub(object.locationVector);
+            if (this.tmpVector.isZero()) {
+              return true;
+            } else {
+              return false;
+            }
+          }
+        );
+        if (antipodeIndex > -1) {
+          const possibleAntipode =
+            AntipodalPointHandler.store.sePoints[antipodeIndex];
+          this.revealAntipode(possibleAntipode, object);
+        } else {
+          console.warn(
+            `Antipode Point Handler: Antipode of selected point ${object.name} doesn't exist!!!!!`
+          );
+        }
       }
     }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
+
   deactivate(): void {
     super.deactivate();
+  }
+
+  revealAntipode(possibleAntipode: SEPoint, parent: SEPoint): void {
+    if (
+      possibleAntipode !== null &&
+      ((possibleAntipode instanceof SEAntipodalPoint &&
+        !possibleAntipode.isUserCreated) ||
+        (possibleAntipode instanceof SEIntersectionPoint &&
+          !possibleAntipode.isUserCreated &&
+          !possibleAntipode.isAntipodal))
+    ) {
+      //The antipode is not displayed
+      const antipodalCommandGroup = new CommandGroup();
+      antipodalCommandGroup.addCommand(
+        new SetPointUserCreatedValueCommand(possibleAntipode, true)
+      );
+      // if the possible antipode is an intersection point convert it to antipodal mode
+      if (possibleAntipode instanceof SEIntersectionPoint) {
+        antipodalCommandGroup.addCommand(
+          new ConvertIntersectionPointToAntipodalMode(
+            possibleAntipode,
+            this.parentPoint as SEIntersectionPoint
+          )
+        );
+      }
+      if (
+        this.parentPoint instanceof SEIntersectionPoint &&
+        !this.parentPoint.isUserCreated // Do not add antipodal points here because if this parentPoint is seAntipode its parent already exists
+      ) {
+        //Make it user created and turn on the display
+        antipodalCommandGroup.addCommand(
+          new SetPointUserCreatedValueCommand(
+            this.parentPoint as SEIntersectionPoint,
+            true
+          )
+        );
+      }
+      antipodalCommandGroup.execute();
+    } else {
+      // the antipode is already displayed
+      //"The antipode of the selected point is the point {pointName} and has already been created.",
+      EventBus.fire("show-alert", {
+        key: `handlers.antipodeDuplicate`,
+        keyOptions: {
+          pointName: parent.label!.ref.shortUserName
+        },
+        type: "error"
+      });
+    }
   }
 }

@@ -905,6 +905,14 @@ export default class AngleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.deactivate();
+  }
+
+  activate(): void {
+    super.activate();
+  }
+  deactivate(): void {
+    super.deactivate();
     // unselect all points, lines, segments (unglow happens in super.mouseLeave(event))
     this.targetLines.forEach(l => (l.selected = false));
     this.targetSegments.forEach(l => (l.selected = false));
@@ -921,45 +929,6 @@ export default class AngleHandler extends Highlighter {
     this.targetSegments.splice(0);
     this.pointLocations.splice(0);
     this.sePointOneDimensionalParents.splice(0);
-    this.makingAnAngleMarker = false;
-    this.angleMode = AngleMode.NONE;
-    // Remove temporary objects
-    this.temporaryFirstPoint.removeFromLayers();
-    this.isTemporaryFirstPointAdded = false;
-    this.temporarySecondPoint.removeFromLayers();
-    this.isTemporarySecondPointAdded = false;
-    this.temporaryThirdPoint.removeFromLayers();
-    this.isTemporaryThirdPointAdded = false;
-    this.temporaryAngleMarker.removeFromLayers();
-    this.isTemporaryAngleMarkerAdded = false;
-    this.snapOneDimensional = null;
-    this.snapPoint = null;
-  }
-
-  activate(): void {
-    super.activate();
-  }
-  deactivate(): void {
-    super.deactivate();
-    // call an unglow all command
-    AngleHandler.store.unglowAllSENodules();
-    this.infoText.hide();
-    // unselect all points, lines, segments
-    this.targetLines.forEach(l => (l.selected = false));
-    this.targetSegments.forEach(l => (l.selected = false));
-    this.targetPoints.forEach(l => {
-      if (l !== null) {
-        l.selected = false;
-      }
-    });
-    //clear the arrays and prepare for the next angle
-    this.targetPoints.clear();
-    this.targetLines.clear();
-    this.lineClickLocation1.set(0, 0, 0);
-    this.lineClickLocation2.set(0, 0, 0);
-    this.targetSegments.clear();
-    this.pointLocations.clear();
-    this.sePointOneDimensionalParents.clear();
     this.makingAnAngleMarker = false;
     this.angleMode = AngleMode.NONE;
     // Remove temporary objects

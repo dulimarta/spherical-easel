@@ -506,9 +506,12 @@ export default {
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
+    pointDistanceHandlerNoPoint:
+      "Before using this tool you must create at least two points.",
     duplicatePointDistanceMeasurement:
       "The distance between points {pt0Name} and {pt1Name} has already been measured. This distance is measurement {measurementName}.",
     newMeasurementAdded: "New measurement {name} added.",
+
     selectAnotherPoint: "Select the next point.",
 
     newSegmentMeasurementAdded: "New measurement {name} added.",

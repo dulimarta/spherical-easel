@@ -213,7 +213,6 @@ export class SELabel extends SENodule implements Visitable {
         )
         .normalize();
     } else {
-      console.log("label parent out of date");
       this._locationVector.copy(pos);
     }
     // Set the position of the associated displayed plottable Label

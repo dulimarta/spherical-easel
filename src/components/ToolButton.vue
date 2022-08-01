@@ -1,7 +1,8 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
   <div class="pa-0"
-    :id="button.id">
+    :id="button.actionModeValue"
+    :ref="button.actionModeValue">
     <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
     <v-tooltip bottom
@@ -79,13 +80,9 @@ import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-// import { namespace } from "vuex-class";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "@/models/SEExpression";
 import { SETransformation } from "@/models/SETransformation";
-// import { SEStore } from "@/store";
-
-// const SE = namespace("se");
 
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component({
@@ -127,10 +124,11 @@ export default class ToolButton extends Vue {
   @Watch("actionMode")
   private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
-      // console.log("set elevation in");
-      this.elev = 1;
+      // console.log("set elevation 1", this.button.actionModeValue);
+      this.elev = 10;
       this.weight = "bold";
     } else {
+      // console.log("set elevation 0", this.button.actionModeValue);
       this.elev = 0;
       this.weight = "normal";
     }

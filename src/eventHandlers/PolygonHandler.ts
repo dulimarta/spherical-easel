@@ -623,23 +623,7 @@ export default class PolygonHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // console.log("mouse leave");
-    // call an unglow all command
-    PolygonHandler.store.unglowAllSENodules();
-    this.infoText.hide();
-    // unselect segments
-    this.seEdgeSegments.forEach(l => (l.selected = false));
-    this.seEdgeSegments.splice(0);
-    this.segmentIsFlipped.splice(0);
-    this.chainClosed = false;
-    this.startSEPoint = null;
-    this.endSEPoint = null;
-
-    // remove all temporary angle markers
-    this.temporaryAngleMarkers.forEach((am, ind) => {
-      am.removeFromLayers();
-      this.temporaryAngleMarkersAdded[ind] = false;
-    });
+    this.deactivate();
   }
 
   activate(): void {
@@ -657,6 +641,11 @@ export default class PolygonHandler extends Highlighter {
     this.chainClosed = false;
     this.startSEPoint = null;
     this.endSEPoint = null;
+    // remove all temporary angle markers
+    this.temporaryAngleMarkers.forEach((am, ind) => {
+      am.removeFromLayers();
+      this.temporaryAngleMarkersAdded[ind] = false;
+    });
   }
 
   /**

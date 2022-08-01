@@ -22,6 +22,7 @@ import Two from "two.js";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { TwitterAuthProvider_Instance } from "@firebase/auth-types";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -444,7 +445,7 @@ export default class SegmentHandler extends Highlighter {
           this.startVector.angleTo(this.currentSphereVector) >
           SETTINGS.segment.minimumArcLength
         ) {
-          if (!this.makeSegment(event)) {
+          if (!this.makeSegment(event.ctrlKey)) {
             EventBus.fire("show-alert", {
               key: `handlers.segmentCreationAttemptDuplicate`,
               keyOptions: {},
@@ -473,7 +474,9 @@ export default class SegmentHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-
+    this.prepareForNextSegment();
+  }
+  prepareForNextSegment(): void {
     this.temporarySegment.removeFromLayers();
     this.temporaryStartMarker.removeFromLayers();
     this.temporaryEndMarker.removeFromLayers();
@@ -502,8 +505,7 @@ export default class SegmentHandler extends Highlighter {
     // call an unglow all command
     SegmentHandler.store.unglowAllSENodules();
   }
-
-  private makeSegment(event: MouseEvent): boolean {
+  private makeSegment(eventCtrlKey: boolean, fromActivate = false): boolean {
     // Create a new command group to store potentially three commands. Those to add the endpoints (which might be new) and the segment itself.
     const segmentGroup = new CommandGroup();
     const newlyCreatedSEPoints: SEPoint[] = [];
@@ -576,7 +578,7 @@ export default class SegmentHandler extends Highlighter {
       );
     }
     // Look for an endpoint at the mouse release location
-    if (this.hitSEPoints.length > 0) {
+    if (this.hitSEPoints.length > 0 && !fromActivate) {
       // The end point is an existing point
       this.endSEPoint = this.hitSEPoints[0];
 
@@ -584,7 +586,7 @@ export default class SegmentHandler extends Highlighter {
       // This ensures that the initial display of the segment is nice and the endpoint
       // looks like the endpoint and is not off to the side
       this.setArcLengthAndNormalVector(
-        event.ctrlKey,
+        eventCtrlKey,
         this.endSEPoint.locationVector
       );
       // Start vector is already set in mouse press
@@ -603,7 +605,7 @@ export default class SegmentHandler extends Highlighter {
           new SetPointUserCreatedValueCommand(this.endSEPoint, true)
         );
       }
-    } else {
+    } else if (!fromActivate) {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display to the default values
@@ -756,43 +758,28 @@ export default class SegmentHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
     }
 
-    // update the display based on the potentially new endSEPoint location
-    this.setArcLengthAndNormalVector(
-      event.ctrlKey,
-      this.endSEPoint.locationVector
-    );
+    if (this.endSEPoint) {
+      // update the display based on the potentially new endSEPoint location
+      this.setArcLengthAndNormalVector(
+        eventCtrlKey,
+        this.endSEPoint.locationVector
+      );
 
-    // update the location of the endMarker
-    this.temporaryEndMarker.positionVector = this.endSEPoint.locationVector;
+      // update the location of the endMarker
+      this.temporaryEndMarker.positionVector = this.endSEPoint.locationVector;
 
-    // Finally set the values for the unit vectors defining the segment and update the display
-    this.temporarySegment.arcLength = this.arcLength;
-    this.temporarySegment.normalVector = this.normalVector;
-    this.temporarySegment.updateDisplay();
+      // Finally set the values for the unit vectors defining the segment and update the display
+      this.temporarySegment.arcLength = this.arcLength;
+      this.temporarySegment.normalVector = this.normalVector;
+      this.temporarySegment.updateDisplay();
 
-    // make sure that this segment hasn't been added before
-    if (
-      SegmentHandler.store.seSegments.some(
-        seg =>
-          ((this.tmpVector
-            .subVectors(
-              seg.startSEPoint.locationVector,
-              this.startSEPoint
-                ? this.startSEPoint.locationVector
-                : this.tmpVector
-            )
-            .isZero() &&
-            this.tmpVector1
+      // make sure that this segment hasn't been added before
+      if (
+        SegmentHandler.store.seSegments.some(
+          seg =>
+            ((this.tmpVector
               .subVectors(
-                seg.endSEPoint.locationVector,
-                this.endSEPoint
-                  ? this.endSEPoint.locationVector
-                  : this.tmpVector1
-              )
-              .isZero()) ||
-            (this.tmpVector
-              .subVectors(
-                seg.endSEPoint.locationVector,
+                seg.startSEPoint.locationVector,
                 this.startSEPoint
                   ? this.startSEPoint.locationVector
                   : this.tmpVector
@@ -800,113 +787,129 @@ export default class SegmentHandler extends Highlighter {
               .isZero() &&
               this.tmpVector1
                 .subVectors(
-                  seg.startSEPoint.locationVector,
+                  seg.endSEPoint.locationVector,
                   this.endSEPoint
                     ? this.endSEPoint.locationVector
                     : this.tmpVector1
                 )
-                .isZero())) &&
-          seg.longerThanPi === this.longerThanPi &&
-          (this.tmpVector2
-            .copy(this.normalVector)
-            .sub(seg.normalVector)
-            .isZero() ||
-            this.tmpVector3
+                .isZero()) ||
+              (this.tmpVector
+                .subVectors(
+                  seg.endSEPoint.locationVector,
+                  this.startSEPoint
+                    ? this.startSEPoint.locationVector
+                    : this.tmpVector1
+                )
+                .isZero() &&
+                this.tmpVector1
+                  .subVectors(
+                    seg.startSEPoint.locationVector,
+                    this.endSEPoint
+                      ? this.endSEPoint.locationVector
+                      : this.tmpVector
+                  )
+                  .isZero())) &&
+            seg.longerThanPi === this.longerThanPi &&
+            (this.tmpVector2
               .copy(this.normalVector)
-              .multiplyScalar(-1)
               .sub(seg.normalVector)
-              .isZero())
-      )
-    ) {
-      return false;
-    }
-    // Clone the temporary segment and mark it removed from the scene,
-    const newSegment = this.temporarySegment.clone();
-    this.isTemporarySegmentAdded = false;
-    // Stylize the new segment
-    newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
-    newSegment.adjustSize();
+              .isZero() ||
+              this.tmpVector3
+                .copy(this.normalVector)
+                .multiplyScalar(-1)
+                .sub(seg.normalVector)
+                .isZero())
+        )
+      ) {
+        return false;
+      }
+      // Clone the temporary segment and mark it removed from the scene,
+      const newSegment = this.temporarySegment.clone();
+      this.isTemporarySegmentAdded = false;
+      // Stylize the new segment
+      newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
+      newSegment.adjustSize();
 
-    const newSESegment = new SESegment(
-      newSegment,
-      this.startSEPoint,
-      this.normalVector,
-      this.arcLength,
-      this.endSEPoint
-    );
-    // Create Plottable Label
-    const newLabel = new Label("segment");
-    const newSELabel = new SELabel(newLabel, newSESegment);
-    this.tmpVector
-      .addVectors(
-        this.startSEPoint.locationVector,
-        this.endSEPoint.locationVector
-      )
-      .normalize()
-      .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
-      .normalize();
-    if (this.arcLength > Math.PI) {
-      this.tmpVector.multiplyScalar(-1);
-    }
-    newSELabel.locationVector = this.tmpVector;
-
-    segmentGroup.addCommand(
-      new AddSegmentCommand(
-        newSESegment,
+      const newSESegment = new SESegment(
+        newSegment,
         this.startSEPoint,
-        this.endSEPoint,
-        newSELabel
-      )
-    );
-    let i = 1;
-    SegmentHandler.store
-      .createAllIntersectionsWithSegment(newSESegment, newlyCreatedSEPoints)
-      .forEach((item: SEIntersectionReturnType) => {
-        //console.debug(`Segment intersections ${i}`);
-        i += 1;
-        if (item.existingIntersectionPoint) {
-          segmentGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
-          );
-        } else {
-          // Create the plottable label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.segment.initialLabelOffset,
-                SETTINGS.segment.initialLabelOffset,
-                0
-              )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+        this.normalVector,
+        this.arcLength,
+        this.endSEPoint
+      );
+      newSESegment.shallowUpdate();
+      // Create Plottable Label
+      const newLabel = new Label("segment");
+      const newSELabel = new SELabel(newLabel, newSESegment);
+      this.tmpVector
+        .addVectors(
+          this.startSEPoint.locationVector,
+          this.endSEPoint.locationVector
+        )
+        .normalize()
+        .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
+        .normalize();
+      if (this.arcLength > Math.PI) {
+        this.tmpVector.multiplyScalar(-1);
+      }
+      newSELabel.locationVector = this.tmpVector;
 
-          segmentGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-          newSELabel.showing = false;
-          if (item.createAntipodalPoint) {
-            SegmentHandler.addCreateAntipodeCommand(
-              item.SEIntersectionPoint,
-              segmentGroup
+      segmentGroup.addCommand(
+        new AddSegmentCommand(
+          newSESegment,
+          this.startSEPoint,
+          this.endSEPoint,
+          newSELabel
+        )
+      );
+
+      SegmentHandler.store
+        .createAllIntersectionsWithSegment(newSESegment, newlyCreatedSEPoints)
+        .forEach((item: SEIntersectionReturnType) => {
+          if (item.existingIntersectionPoint) {
+            segmentGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
+              )
             );
+          } else {
+            // Create the plottable label
+            const newLabel = new Label("point");
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.segment.initialLabelOffset,
+                  SETTINGS.segment.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
+            segmentGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              SegmentHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                segmentGroup
+              );
+            }
           }
-        }
-      });
-    segmentGroup.execute();
+        });
+      segmentGroup.execute();
+    }
     return true;
   }
 
@@ -990,112 +993,29 @@ export default class SegmentHandler extends Highlighter {
       const object2 = SegmentHandler.store.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
-        // Create a new plottable Line
-        const newSegment = new Segment();
-        // Set the display to the default values
-        newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
-        newSegment.adjustSize();
-
         this.tmpVector.crossVectors(
           object1.locationVector,
           object2.locationVector
         );
-        // Check to see if the points are antipodal
-        if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-          // They are antipodal, create an arbitrary normal vector
-          this.tmpVector.set(1, 0, 0);
-          this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
-          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-            this.tmpVector.set(0, 1, 0);
-            // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
-            this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
-          }
-        }
 
-        // Add the last command to the group and then execute it (i.e. add the potentially two points and the segment to the store.)
-        const newSESegment = new SESegment(
-          newSegment,
-          object1,
-          this.tmpVector.normalize(),
-          object1.locationVector.angleTo(object2.locationVector),
-          object2
-        );
-        // Update the newSESegment so the display is correct when the command group is executed
-        newSESegment.markKidsOutOfDate();
-        newSESegment.update();
-        // Create the plottable label
-        const newLabel = new Label("segment");
-        const newSELabel = new SELabel(newLabel, newSESegment);
-        this.tmpVector
-          .addVectors(object1.locationVector, object2.locationVector)
-          .normalize()
-          .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+        this.startSEPoint = object1;
+        this.startVector.copy(this.startSEPoint.locationVector);
+        this.endSEPoint = object2;
+        // set the normal vector
+        this.setArcLengthAndNormalVector(false, this.endSEPoint.locationVector);
 
-        const segmentCommandGroup = new CommandGroup();
-        segmentCommandGroup.addCommand(
-          new AddSegmentCommand(newSESegment, object1, object2, newSELabel)
-        );
-
-        // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the circle command so they can be undone.
-        SegmentHandler.store
-          .createAllIntersectionsWithSegment(newSESegment, [])
-          .forEach((item: SEIntersectionReturnType) => {
-            //console.debug(`Segment intersections ${i}`);
-            if (item.existingIntersectionPoint) {
-              segmentCommandGroup.addCommand(
-                new AddIntersectionPointOtherParent(
-                  item.SEIntersectionPoint,
-                  item.parent1
-                )
-              );
-            } else {
-              // Create the plottable label
-              const newLabel = new Label("point");
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.segment.initialLabelOffset,
-                    SETTINGS.segment.initialLabelOffset,
-                    0
-                  )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
-
-              segmentCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-              newSELabel.showing = false;
-
-              if (item.createAntipodalPoint) {
-                SegmentHandler.addCreateAntipodeCommand(
-                  item.SEIntersectionPoint,
-                  segmentCommandGroup
-                );
-              }
-            }
+        if (!this.makeSegment(false, true)) {
+          EventBus.fire("show-alert", {
+            key: `handlers.segmentCreationAttemptDuplicate`,
+            keyOptions: {},
+            type: "error"
           });
-
-        segmentCommandGroup.execute();
+        }
+        this.prepareForNextSegment();
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    // super.activate();
+    super.activate();
   }
   deactivate(): void {
     super.deactivate();
