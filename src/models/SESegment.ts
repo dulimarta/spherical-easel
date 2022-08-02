@@ -16,20 +16,22 @@ import {
   DEFAULT_SEGMENT_BACK_STYLE,
   DEFAULT_SEGMENT_FRONT_STYLE
 } from "@/types/Styles";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_BACK_STYLE)
 ]);
 
-export class SESegment extends SENodule
-  implements Visitable, OneDimensional, Labelable {
+export class SESegment
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Segment;
+  public declare ref: Segment;
   /**
    * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
    */
@@ -67,6 +69,7 @@ export class SESegment extends SENodule
   private tmpVector2 = new Vector3();
   private desiredZAxis = new Vector3();
   private toVector = new Vector3();
+  private store: SEStoreType;
 
   /**
    * Create a model SESegment using:
@@ -92,14 +95,15 @@ export class SESegment extends SENodule
 
     SENodule.SEGMENT_COUNT++;
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
+    this.store = useSEStore();
   }
 
   customStyles(): Set<string> {
     return styleSet;
   }
 
-  accept(v: Visitor): void {
-    v.actionOnSegment(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnSegment(this);
   }
 
   // Returns true if the points defining the segment are nearly antipodal.
@@ -171,18 +175,18 @@ export class SESegment extends SENodule
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
     // gives the direction in which the segment is drawn
-    this.toVector
-      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
-    this.tmpVector
-      .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this._arcLength / 2));
-    this.tmpVector.addScaledVector(
-      this.toVector,
-      Math.sin(this._arcLength / 2)
-    );
-
+    // this.toVector
+    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
+    // // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
+    // this.tmpVector
+    //   .copy(this._startSEPoint.locationVector)
+    //   .multiplyScalar(Math.cos(this._arcLength / 2));
+    // this.tmpVector.addScaledVector(
+    //   this.toVector,
+    //   Math.sin(this._arcLength / 2)
+    // );
+    this.tmpVector.copy(this.getMidPointVector());
     return (
       this.tmpVector.angleTo(unitIdealVector) < this._arcLength / 2
       // +
@@ -212,45 +216,45 @@ export class SESegment extends SENodule
       return true;
     }
 
-    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // this.tmpVector is the midPoint vector
+    // // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    // // this.tmpVector is the midPoint vector
 
-    // I think that this is the David Austin way, but I don't know why it is this way
-    // this.toVector
-    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
-    //   .normalize();
+    // // I think that this is the David Austin way, but I don't know why it is this way
+    // // this.toVector
+    // //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    // //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+    // //   .normalize();
 
-    this.toVector.crossVectors(
-      this._normalVector,
-      this._startSEPoint.locationVector
-    );
+    // this.toVector.crossVectors(
+    //   this._normalVector,
+    //   this._startSEPoint.locationVector
+    // );
 
-    // There are two cases depending on the arcLength
-    // Case 1 ArcLength < PI
-    //  In this case we want dot(toVector, end) > 0
-    // Case 2 ArcLength > PI
-    //  In this case we want dot(toVector, end) < 0
-    // Case 3 Arclength = Pi
+    // // There are two cases depending on the arcLength
+    // // Case 1 ArcLength < PI
+    // //  In this case we want dot(toVector, end) > 0
+    // // Case 2 ArcLength > PI
+    // //  In this case we want dot(toVector, end) < 0
+    // // Case 3 Arclength = Pi
 
-    if (this._arcLength > Math.PI) {
-      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
-        this.toVector.multiplyScalar(-1);
-      }
-    } else if (this._arcLength < Math.PI) {
-      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
-        this.toVector.multiplyScalar(-1);
-      }
-    }
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
-    this.tmpVector
-      .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this._arcLength / 2));
-    this.tmpVector.addScaledVector(
-      this.toVector,
-      Math.sin(this._arcLength / 2)
-    );
-
+    // if (this._arcLength > Math.PI) {
+    //   if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+    //     this.toVector.multiplyScalar(-1);
+    //   }
+    // } else if (this._arcLength < Math.PI) {
+    //   if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+    //     this.toVector.multiplyScalar(-1);
+    //   }
+    // }
+    // // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
+    // this.tmpVector
+    //   .copy(this._startSEPoint.locationVector)
+    //   .multiplyScalar(Math.cos(this._arcLength / 2));
+    // this.tmpVector.addScaledVector(
+    //   this.toVector,
+    //   Math.sin(this._arcLength / 2)
+    // );
+    this.tmpVector.copy(this.getMidPointVector());
     return this.tmpVector.angleTo(unitIdealVector) <= this._arcLength / 2;
   }
 
@@ -305,15 +309,7 @@ export class SESegment extends SENodule
     return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
 
     if (this._exists) {
@@ -423,7 +419,18 @@ export class SESegment extends SENodule
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
 
+    this.setOutOfDate(false);
+    // BEGIN CUT
+    this.shallowUpdate();
+    // END CUT
     // Segments are determined by more than their point parents so we store additional information
     // If the parent points of the segment are antipodal, the normal vector determines the
     // plane of the segment.  The points also don't determine the arcLength of the segments.
@@ -459,7 +466,7 @@ export class SESegment extends SENodule
 
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = this.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

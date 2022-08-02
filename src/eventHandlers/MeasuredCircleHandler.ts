@@ -1,19 +1,14 @@
-/** @format */
-
 import { Vector3, Matrix4 } from "three";
 import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { AddCircleCommand } from "@/commands/AddCircleCommand";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -25,8 +20,6 @@ import {
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-
-import { SEStore } from "@/store";
 import { SESegment } from "@/models/SESegment";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
@@ -42,7 +35,11 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
-import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class MeasuredCircleHandler extends Highlighter {
   /**
@@ -92,17 +89,38 @@ export default class MeasuredCircleHandler extends Highlighter {
     super(layers);
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryCircle);
+    MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryCenterMarker = new Point();
-    this.temporaryCenterMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    SEStore.addTemporaryNodule(this.temporaryCenterMarker);
+    MeasuredCircleHandler.store.addTemporaryNodule(this.temporaryCenterMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {
+      // next decide if this tool can be used
+      if (
+        MeasuredCircleHandler.store.seCircles.length === 0 &&
+        MeasuredCircleHandler.store.seSegments.length === 0 &&
+        MeasuredCircleHandler.store.expressions.length === 0
+      ) {
+        // warn the user
+        EventBus.fire("show-alert", {
+          key: "handlers.firstMustCreateMeasurable",
+          type: "error"
+        });
+        // switch to tools tab
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
+        // Change the tool
+        console.debug(
+          `set action mode from mouse pressed in measure circle handler`
+        );
+        MeasuredCircleHandler.store.setActionMode({
+          id: "segment",
+          name: "CreateLineSegmentDisplayedName"
+        });
+        return;
+      }
       // The user is making a circle
       this.centerLocationSelected = true;
       // Check to see if the current location is near any points
@@ -204,11 +222,22 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
       }
-      EventBus.fire("show-alert", {
-        key: `handlers.measuredCircleCenterSelected`,
-        keyOptions: {},
-        type: "info"
-      });
+
+      if (MeasuredCircleHandler.store.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+        EventBus.fire("show-alert", {
+          key: `handlers.measuredCircleCenterSelected`,
+          keyOptions: {},
+          type: "info"
+        });
+      } else {
+        EventBus.fire("show-alert", {
+          key: "handlers.measuredCircleSelect",
+          type: "info"
+        });
+      }
     }
   }
 
@@ -268,7 +297,9 @@ export default class MeasuredCircleHandler extends Highlighter {
         // glowing when the user select that location and then moves the mouse away - see line 115) we don't
         // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
         if (
-          this.snapTemporaryPointMarkerToPoint instanceof SEIntersectionPoint &&
+          (this.snapTemporaryPointMarkerToPoint instanceof
+            SEIntersectionPoint ||
+            this.snapTemporaryPointMarkerToPoint instanceof SEAntipodalPoint) &&
           !this.snapTemporaryPointMarkerToPoint.isUserCreated
         ) {
           this.temporaryCenterMarker.positionVector =
@@ -346,8 +377,10 @@ export default class MeasuredCircleHandler extends Highlighter {
         this.temporaryCircleAdded = false;
       }
     }
-    // Not on the sphere -- remove the temporary circle
+    // Not on the sphere -- remove the temporary circle and point
     else {
+      this.temporaryCenterMarker.removeFromLayers();
+      this.temporaryCenterMarkerAdded = false;
       this.temporaryCircle.removeFromLayers();
       this.temporaryCircleAdded = false;
     }
@@ -401,7 +434,7 @@ export default class MeasuredCircleHandler extends Highlighter {
 
     this.measurementSEParent = null;
     // call an unglow all command
-    SEStore.unglowAllSENodules();
+    MeasuredCircleHandler.store.unglowAllSENodules();
   }
 
   displayTemporaryCircle(flag: boolean, radius: number): void {
@@ -446,6 +479,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const circleCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
@@ -455,8 +489,6 @@ export default class MeasuredCircleHandler extends Highlighter {
       // Adjust the size of the point to the current zoom magnification factor
       newCenterPoint.adjustSize();
 
-      // Create the plottable label
-      const newLabel = new Label();
       let newSELabel: SELabel | null = null;
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
@@ -468,7 +500,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -481,10 +513,20 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newCenterPoint);
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
+
+      /////////////
+      // Create the antipode of the new point, vtx
+      const antipode = MeasuredCircleHandler.addCreateAntipodeCommand(
+        vtx,
+        circleCommandGroup
+      );
+      newlyCreatedSEPoints.push(vtx, antipode);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -499,12 +541,14 @@ export default class MeasuredCircleHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.centerSEPoint = vtx;
     } else if (
-      this.centerSEPoint instanceof SEIntersectionPoint &&
-      !this.centerSEPoint.isUserCreated
+      (this.centerSEPoint instanceof SEIntersectionPoint &&
+        !this.centerSEPoint.isUserCreated) ||
+      (this.centerSEPoint instanceof SEAntipodalPoint &&
+        !this.centerSEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.centerSEPoint)
+        new SetPointUserCreatedValueCommand(this.centerSEPoint, true)
       );
     }
 
@@ -514,7 +558,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !SEStore.expressions.some(exp => {
+        !MeasuredCircleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -570,7 +614,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !SEStore.expressions.some(exp => {
+        !MeasuredCircleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&
@@ -615,7 +659,7 @@ export default class MeasuredCircleHandler extends Highlighter {
 
     // check to make sure that this measured circle doesn't already exist
     if (
-      SEStore.seCircles.some(
+      MeasuredCircleHandler.store.seCircles.some(
         circ =>
           circ instanceof SEMeasuredCircle &&
           this.tmpVector
@@ -623,10 +667,11 @@ export default class MeasuredCircleHandler extends Highlighter {
               circ.centerSEPoint.locationVector,
               this.centerSEPoint
                 ? this.centerSEPoint.locationVector
-                : this.tmpVector
+                : this.tmpVector1
             )
             .isZero() &&
-          measurementSEExpression?.name ===
+          measurementSEExpression &&
+          measurementSEExpression.name ===
             circ.radiusMeasurementSEExpression.name
       )
     ) {
@@ -680,7 +725,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         measurementSEExpression
       );
       // Create the plottable and model label
-      const newLabel = new Label();
+      const newLabel = new Label("circle");
       const newSELabel = new SELabel(newLabel, newMeasuredSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
@@ -704,39 +749,63 @@ export default class MeasuredCircleHandler extends Highlighter {
       );
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
-      SEStore.createAllIntersectionsWithCircle(newMeasuredSECircle).forEach(
-        (item: SEIntersectionReturnType) => {
-          // Create the plottable and model label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+      MeasuredCircleHandler.store
+        .createAllIntersectionsWithCircle(
+          newMeasuredSECircle,
+          newlyCreatedSEPoints
+        )
+        .forEach((item: SEIntersectionReturnType) => {
+          if (item.existingIntersectionPoint) {
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+            );
+          } else {
+            // Create the plottable and model label
+            const newLabel = new Label("point");
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-          circleCommandGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
-          );
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-          newSELabel.showing = false;
-        }
-      );
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newSELabel
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+            newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              MeasuredCircleHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                circleCommandGroup
+              );
+            }
+          }
+        });
     }
     circleCommandGroup.execute();
+    //update the display so that any measured segment's label now displays the measurement
+    if (this.measurementSEParent) {
+      this.measurementSEParent.markKidsOutOfDate();
+      this.measurementSEParent.update();
+    }
+
     return true;
   }
 

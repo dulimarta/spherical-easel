@@ -3,15 +3,11 @@ import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import Circle from "@/plottables/Circle";
-import { Matrix4, Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { Vector3 } from "three";
 import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
-import { SEPencil } from "@/models/SEPencil";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
 import NonFreePoint from "@/plottables/NonFreePoint";
@@ -83,7 +79,7 @@ export class AddMeasuredCircleCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
@@ -166,7 +162,7 @@ export class AddMeasuredCircleCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("circle");
       const seLabel = new SELabel(label, seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

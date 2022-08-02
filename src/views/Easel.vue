@@ -1,91 +1,92 @@
 <template>
-  <Splitpanes class="default-theme"
-    @resize="dividerMoved"
-    :push-other-panes="false">
-    <!-- Use the left page for the toolbox -->
-    <Pane min-size="5"
-      max-size="35"
-      :size="toolboxMinified ? 5 : 25">
-      <v-container fill-height>
-        <div id="container">
-          <v-btn icon
-            @click="minifyToolbox">
-            <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-            <v-icon v-else>mdi-arrow-left</v-icon>
-          </v-btn>
-          <Toolbox id="toolbox"
-            ref="toolbox"
-            :minified="toolboxMinified"
-            v-on:toggle-tool-box-panel="minifyToolbox" />
+  <div>
+    <Splitpanes class="default-theme"
+      @resize="dividerMoved"
+      :push-other-panes="false">
+      <!-- Use the left page for the toolbox -->
+      <Pane min-size="5"
+        max-size="35"
+        :size="toolboxMinified ? 5 : 25">
+        <v-container fill-height>
+          <div id="container">
+            <v-btn icon
+              @click="minifyToolbox">
+              <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+              <v-icon v-else>mdi-arrow-left</v-icon>
+            </v-btn>
+            <Toolbox id="toolbox"
+              ref="toolbox"
+              :minified="toolboxMinified"
+              v-on:toggle-tool-box-panel="minifyToolbox" />
 
-        </div>
-      </v-container>
-    </Pane>
-    <Pane :size="centerWidth">
+          </div>
+        </v-container>
+      </Pane>
+      <Pane :size="centerWidth">
 
-      <!-- Use the right pane mainly for the canvas and style panel -->
-      <!--
+        <!-- Use the right pane mainly for the canvas and style panel -->
+        <!--
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-      <v-container fluid
-        ref="mainPanel">
-        <v-row>
-          <v-col cols="12">
-            <v-row justify="center"
-              class="pb-1">
-              <v-responsive :aspect-ratio="1"
-                :max-height="currentCanvasSize"
-                :max-width="currentCanvasSize"
-                ref="responsiveBox"
-                id="responsiveBox"
-                class="pa-0">
-                <SphereFrame :canvas-size="currentCanvasSize" />
-                <div class="anchored top left">
-                  <!-- <v-btn-toggle
+        <v-container fluid
+          ref="mainPanel">
+          <v-row>
+            <v-col cols="12">
+              <v-row justify="center"
+                class="pb-1">
+                <v-responsive :aspect-ratio="1"
+                  :max-height="currentCanvasSize"
+                  :max-width="currentCanvasSize"
+                  ref="responsiveBox"
+                  id="responsiveBox"
+                  class="pa-0">
+                  <SphereFrame :canvas-size="currentCanvasSize" />
+                  <div class="anchored top left">
+                    <!-- <v-btn-toggle
                     v-model="actionMode"
                     @change="switchActionMode"
                     class="mr-2 d-flex flex-wrap accent"
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <!-- TODO:
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <!-- TODO:
                         When not available they should be greyed out (i.e. disabled).-->
-                    <template v-slot:activator="{ on }">
-                      <v-btn
-                        :disabled="!stylePanelMinified || !undoEnabled"
-                        icon
-                        @click="undoEdit"
-                        v-on="on">
-                        <v-icon color="blue"
-                          :disabled="!stylePanelMinified || !undoEnabled">
-                          $undo</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{ $t("main.UndoLastAction") }}</span>
-                  </v-tooltip>
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <template v-slot:activator="{ on }">
-                      <v-btn
-                        :disabled="!stylePanelMinified || !redoEnabled"
-                        icon
-                        @click="redoAction"
-                        v-on="on">
-                        <v-icon color="blue"
-                          :disabled="!stylePanelMinified || !redoEnabled">
-                          $redo</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{ $t("main.RedoLastAction") }}</span>
-                  </v-tooltip>
-                </div>
-                <div class="anchored top right">
-                  <!--<v-tooltip bottom
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          :disabled="!stylePanelMinified || !undoEnabled"
+                          icon
+                          @click="undoEdit"
+                          v-on="on">
+                          <v-icon color="blue"
+                            :disabled="!stylePanelMinified || !undoEnabled">
+                            $undo</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $t("main.UndoLastAction") }}</span>
+                    </v-tooltip>
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          :disabled="!stylePanelMinified || !redoEnabled"
+                          icon
+                          @click="redoAction"
+                          v-on="on">
+                          <v-icon color="blue"
+                            :disabled="!stylePanelMinified || !redoEnabled">
+                            $redo</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $t("main.RedoLastAction") }}</span>
+                    </v-tooltip>
+                  </div>
+                  <div class="anchored top right">
+                    <!--<v-tooltip bottom
                     v-if="accountEnabled"
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
@@ -99,139 +100,140 @@
                     </template>
                     <span>Reset sphere</span>
                   </v-tooltip>-->
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <template v-slot:activator="{ on }">
-                      <v-btn icon
-                        tile
-                        @click="$refs.clearConstructionDialog.show()"
-                        v-on="on">
-                        <v-icon>$clearConstruction</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{$t('constructions.resetSphere')}}</span>
-                  </v-tooltip>
-                </div>
-                <div class="anchored bottom right">
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <template v-slot:activator="{ on }">
-                      <v-btn color="primary"
-                        icon
-                        tile
-                        @click="enableZoomIn"
-                        v-on="on">
-                        <v-icon>$zoomIn</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
-                  </v-tooltip>
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <template v-slot:activator="{ on }">
-                      <v-btn color="primary"
-                        icon
-                        tile
-                        @click="enableZoomOut"
-                        v-on="on">
-                        <v-icon>$zoomOut</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
-                  </v-tooltip>
-                  <v-tooltip bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
-                    <template v-slot:activator="{ on }">
-                      <v-btn color="primary"
-                        icon
-                        tile
-                        @click="enableZoomFit"
-                        v-on="on">
-                        <v-icon>$zoomFit </v-icon>
-                      </v-btn>
-                    </template>
-                    <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
-                  </v-tooltip>
-                </div>
-              </v-responsive>
-            </v-row>
-          </v-col>
-        </v-row>
-        <v-snackbar v-model="displayZoomInToolUseMessage"
-          bottom
-          left
-          :timeout="toolUseMessageDelay"
-          :value="displayToolUseMessage"
-          multi-line>
-          <span>
-            <strong class="warning--text"
-              v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
-            {{ $t("buttons.PanZoomInToolUseMessage") }}
-          </span>
-          <v-btn @click="displayToolUseMessage = false"
-            icon>
-            <v-icon color="success">mdi-close</v-icon>
-          </v-btn>
-        </v-snackbar>
-
-        <v-snackbar v-model="displayZoomFitToolUseMessage"
-          bottom
-          left
-          :timeout="toolUseMessageDelay"
-          :value="displayToolUseMessage"
-          multi-line>
-          <span>
-            <strong class="warning--text"
-              v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').slice(0,-6) + ': '"></strong>
-            {{ $t("buttons.ZoomFitToolUseMessage") }}
-          </span>
-          <v-btn @click="displayToolUseMessage = false"
-            icon>
-            <v-icon color="success">mdi-close</v-icon>
-          </v-btn>
-        </v-snackbar>
-
-        <v-snackbar v-model="displayZoomOutToolUseMessage"
-          bottom
-          left
-          :timeout="toolUseMessageDelay"
-          :value="displayToolUseMessage"
-          multi-line>
-          <span>
-            <strong class="warning--text"
-              v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
-            {{ $t("buttons.PanZoomOutToolUseMessage") }}
-          </span>
-          <v-btn @click="displayToolUseMessage = false"
-            icon>
-            <v-icon color="success">mdi-close</v-icon>
-          </v-btn>
-        </v-snackbar>
-      </v-container>
-    </Pane>
-
-    <Pane min-size="5"
-      max-size="25"
-      :size="stylePanelMinified ? 5 : 25">
-      <v-card>
-        <div ref="stylePanel"
-          id="styleContainer">
-          <div>
-            <v-btn icon
-              @click="minifyStylePanel">
-              <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-              <v-icon v-else>mdi-arrow-right</v-icon>
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <template v-slot:activator="{ on }">
+                        <v-btn icon
+                          tile
+                          @click="$refs.clearConstructionDialog.show()"
+                          v-on="on">
+                          <v-icon>$clearConstruction</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{$t('constructions.resetSphere')}}</span>
+                    </v-tooltip>
+                  </div>
+                  <div class="anchored bottom right">
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <template v-slot:activator="{ on }">
+                        <v-btn color="primary"
+                          icon
+                          tile
+                          @click="enableZoomIn"
+                          v-on="on">
+                          <v-icon>$zoomIn</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
+                    </v-tooltip>
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <template v-slot:activator="{ on }">
+                        <v-btn color="primary"
+                          icon
+                          tile
+                          @click="enableZoomOut"
+                          v-on="on">
+                          <v-icon>$zoomOut</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
+                    </v-tooltip>
+                    <v-tooltip bottom
+                      :open-delay="toolTipOpenDelay"
+                      :close-delay="toolTipCloseDelay">
+                      <template v-slot:activator="{ on }">
+                        <v-btn color="primary"
+                          icon
+                          tile
+                          @click="enableZoomFit"
+                          v-on="on">
+                          <v-icon>$zoomFit </v-icon>
+                        </v-btn>
+                      </template>
+                      <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
+                    </v-tooltip>
+                  </div>
+                </v-responsive>
+              </v-row>
+            </v-col>
+          </v-row>
+          <v-snackbar v-model="displayZoomInToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
+              {{ $t("buttons.PanZoomInToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
             </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayZoomFitToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').slice(0,-6) + ': '"></strong>
+              {{ $t("buttons.ZoomFitToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayZoomOutToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
+              {{ $t("buttons.PanZoomOutToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+        </v-container>
+      </Pane>
+
+      <Pane min-size="5"
+        max-size="25"
+        :size="stylePanelMinified ? 5 : 25">
+        <v-card>
+          <div ref="stylePanel"
+            id="styleContainer">
+            <div>
+              <v-btn icon
+                @click="minifyStylePanel">
+                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
+                <v-icon v-else>mdi-arrow-right</v-icon>
+              </v-btn>
+            </div>
+            <StylePanel :minified="stylePanelMinified"
+              v-on:toggle-style-panel="minifyStylePanel" />
           </div>
-          <StylePanel :minified="stylePanelMinified"
-            v-on:toggle-style-panel="minifyStylePanel" />
-        </div>
-      </v-card>
-    </Pane>
+        </v-card>
+      </Pane>
+    </Splitpanes>
     <Dialog ref="unsavedWorkDialog"
       max-width="40%"
       :title="$t('constructions.confirmation')"
@@ -248,7 +250,7 @@
       max-width="40%">
       <p> {{$t(`constructions.clearConstructionMsg`)}}</p>
     </Dialog>
-  </Splitpanes>
+  </div>
 </template>
 
 <script lang="ts">
@@ -273,9 +275,8 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
-import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
+import { ActionMode, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -283,14 +284,13 @@ import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { SEStore } from "@/store";
+import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
 import { Unsubscribe } from "@firebase/util";
 import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
-
-const SE = namespace("se");
+import { mapActions, mapState } from "pinia";
 
 /**
  * Split panel width distribution (percentages):
@@ -308,17 +308,25 @@ const SE = namespace("se");
     StylePanel,
     IconBase,
     Dialog
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers"])
+  },
+  computed: {
+    ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
   }
 })
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
 
-  @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];
-
-  @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
+  readonly hasObjects!: boolean;
+
+  readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
+  readonly removeAllFromLayers!: () => void;
+  readonly init!: () => void;
 
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -375,10 +383,6 @@ export default class Easel extends Vue {
       100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
     );
   }
-  get hasObjects(): boolean {
-    // Any objects must include at least one point
-    return SEStore.sePoints.length > 0;
-  }
 
   private setUndoEnabled(e: { value: boolean }): void {
     this.undoEnabled = e.value;
@@ -389,21 +393,21 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -423,8 +427,8 @@ export default class Easel extends Vue {
   }
 
   loadDocument(docId: string): void {
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     this.$appDB
@@ -518,14 +522,14 @@ export default class Easel extends Vue {
   }
 
   setActionModeToSelectTool(): void {
-    SEStore.setActionMode({
+    this.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
 
   switchActionMode(): void {
-    SEStore.setActionMode(this.actionMode);
+    this.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -541,8 +545,8 @@ export default class Easel extends Vue {
 
   resetSphere(): void {
     this.$refs.clearConstructionDialog.hide();
-    SEStore.removeAllFromLayers();
-    SEStore.init();
+    this.removeAllFromLayers();
+    this.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
@@ -590,12 +594,7 @@ export default class Easel extends Vue {
     Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
     Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
-    // console.debug(
-    //   "Nodules",
-    //   this.seNodules.length,
-    //   "temporary",
-    //   this.temporaryNodules.length
-    // );
+    //console.debug("Resize all nodules and the temporary ones");
     // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();

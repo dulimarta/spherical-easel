@@ -273,6 +273,20 @@ export const toolGroups: Array<ToolButtonGroup> = [
     ]
   },
   {
+    group: "ConicTools",
+    children: [
+      {
+        id: 0,
+        actionModeValue: "ellipse",
+        displayedName: "CreateEllipseDisplayedName",
+        icon: "$vuetify.icons.value.ellipse",
+        toolTipMessage: "CreateEllipseToolTipMessage",
+        toolUseMessage: "CreateEllipseToolUseMessage",
+        displayToolUseMessage: false
+      }
+    ]
+  },
+  {
     group: "AdvancedTools",
     children: [
       {
@@ -305,15 +319,60 @@ export const toolGroups: Array<ToolButtonGroup> = [
     ]
   },
   {
-    group: "ConicTools",
+    group: "TransformationTools",
     children: [
       {
         id: 0,
-        actionModeValue: "ellipse",
-        displayedName: "CreateEllipseDisplayedName",
-        icon: "$vuetify.icons.value.ellipse",
-        toolTipMessage: "CreateEllipseToolTipMessage",
-        toolUseMessage: "CreateEllipseToolUseMessage",
+        actionModeValue: "pointReflection",
+        displayedName: "CreatePointReflectionDisplayedName",
+        icon: "$vuetify.icons.value.pointReflection",
+        toolTipMessage: "CreatePointReflectionToolTipMessage",
+        toolUseMessage: "CreatePointReflectionToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 5,
+        actionModeValue: "reflection",
+        displayedName: "CreateReflectionDisplayedName",
+        icon: "$vuetify.icons.value.reflection",
+        toolTipMessage: "CreateReflectionToolTipMessage",
+        toolUseMessage: "CreateReflectionToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 10,
+        actionModeValue: "rotation",
+        displayedName: "CreateRotationDisplayedName",
+        icon: "$vuetify.icons.value.rotation",
+        toolTipMessage: "CreateRotationToolTipMessage",
+        toolUseMessage: "CreateRotationToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 15,
+        actionModeValue: "translation",
+        displayedName: "CreateTranslationDisplayedName",
+        icon: "$vuetify.icons.value.translation",
+        toolTipMessage: "CreateTranslationToolTipMessage",
+        toolUseMessage: "CreateTranslationToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 20,
+        actionModeValue: "inversion",
+        displayedName: "CreateInversionDisplayedName",
+        icon: "$vuetify.icons.value.inversion",
+        toolTipMessage: "CreateInversionToolTipMessage",
+        toolUseMessage: "CreateInversionToolUseMessage",
+        displayToolUseMessage: false
+      },
+      {
+        id: 25,
+        actionModeValue: "applyTransformation",
+        displayedName: "ApplyTransformationDisplayedName",
+        icon: "$vuetify.icons.value.applyTransformation",
+        toolTipMessage: "ApplyTransformationToolTipMessage",
+        toolUseMessage: "ApplyTransformationToolUseMessage",
         displayToolUseMessage: false
       }
     ]

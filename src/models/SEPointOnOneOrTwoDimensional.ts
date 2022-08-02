@@ -102,15 +102,7 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
     return this.oneDimensionalParent;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this.oneDimensionalParent.exists;
 
     if (this._exists) {
@@ -132,6 +124,18 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // These are free points on their parent and so we store additional information
     if (objectState && orderedSENoduleList) {

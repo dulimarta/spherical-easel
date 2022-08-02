@@ -1,9 +1,7 @@
 /** @format */
 
 import { Vector3 } from "three";
-import { SEStore } from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
@@ -16,6 +14,10 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEStoreType } from "@/stores/se";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
+// import { Vector } from "two.js/src/vector";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -59,6 +61,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEParametrics: SEParametric[] = [];
   protected hitSEPolygons: SEPolygon[] = [];
 
+  static store: SEStoreType;
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
    * This allow the created objects to be put in the correct layers
@@ -88,6 +91,9 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.previousScreenVector = new Two.Vector(0, 0);
     this.isOnSphere = false;
   }
+  static setGlobalStore(store: SEStoreType): void {
+    MouseHandler.store = store;
+  }
 
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
@@ -97,6 +103,12 @@ export default abstract class MouseHandler implements ToolStrategy {
    * @memberof MouseHandler
    */
   mouseMoved(event: MouseEvent): void {
+    this.trackMouseLocation(event);
+  }
+
+  // Provide this function to allow subclasses call directly without going through
+  // the inheritance hierarchy
+  trackMouseLocation(event: MouseEvent): void {
     // Using currentTarget is necessary. Otherwise, all the calculations
     // will be based on SVG elements whose bounding rectangle may spill
     // outside of the responsive viewport and produces inaccurate
@@ -106,12 +118,12 @@ export default abstract class MouseHandler implements ToolStrategy {
     // Don't rely on e.offsetX or e.offsetY, they may not be accurate
     const offsetX = event.clientX - boundingRect.left;
     const offsetY = event.clientY - boundingRect.top;
-    const mouseX = offsetX - this.canvas.translation.x;
-    const mouseY = -(offsetY - this.canvas.translation.y);
+    const mouseX = offsetX - boundingRect.width / 2;
+    const mouseY = boundingRect.height / 2 - offsetY;
 
     // Get the current zoom factor and vector
-    const mag = SEStore.zoomMagnificationFactor;
-    const zoomTransVec = SEStore.zoomTranslation;
+    const mag = MouseHandler.store.zoomMagnificationFactor;
+    const zoomTransVec = MouseHandler.store.zoomTranslation;
 
     // Transform the (mouseX, mouseY) pixel location to default screen
     // coordinates (i.e. to pre affine/css transformation)
@@ -141,6 +153,9 @@ export default abstract class MouseHandler implements ToolStrategy {
         Math.sqrt(R * R - (mx * mx + my * my)) * (event.shiftKey ? -1 : +1);
       this.previousSphereVector.copy(this.currentSphereVector);
       this.currentSphereVector.set(mx, my, zCoordinate).normalize();
+      // TODO: remove the following console.debug
+      if (event.ctrlKey)
+        console.debug("Mouse at", this.currentSphereVector.toFixed(4));
       this.isOnSphere = true;
     } else {
       // The mouse event was not on the orthographic projection of the default sphere

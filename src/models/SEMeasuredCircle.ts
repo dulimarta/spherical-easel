@@ -1,28 +1,12 @@
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
-import { Vector3, Matrix4 } from "three";
-import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
-import {
-  NormalVectorAndTValue,
-  ObjectState,
-  OneDimensional,
-  SEMeasurable
-} from "@/types";
-import SETTINGS from "@/global-settings";
-import {
-  DEFAULT_CIRCLE_BACK_STYLE,
-  DEFAULT_CIRCLE_FRONT_STYLE
-} from "@/types/Styles";
-import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
-import { intersectCircles } from "@/utils/intersections";
+import { Vector3 } from "three";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SEExpression } from "./SEExpression";
+import NonFreeCircle from "@/plottables/NonFreeCircle";
 
 export class SEMeasuredCircle extends SECircle {
   /**
@@ -41,7 +25,7 @@ export class SEMeasuredCircle extends SECircle {
    * @param radiusMeasurementSEExpression The model SEExpression that determines the radius
    */
   constructor(
-    circ: Circle,
+    circ: NonFreeCircle,
     centerPoint: SEPoint,
     hiddenCirclePoint: SEPoint,
     radiusMeasurementSEExpression: SEExpression
@@ -69,15 +53,7 @@ export class SEMeasuredCircle extends SECircle {
     return this._radiusMeasurementSEExpression;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists =
       this._centerSEPoint.exists && this._radiusMeasurementSEExpression.exists;
 
@@ -117,6 +93,17 @@ export class SEMeasuredCircle extends SECircle {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
@@ -133,6 +120,7 @@ export class SEMeasuredCircle extends SECircle {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
+
   public isNonFreeCirle(): boolean {
     return true;
   }

@@ -81,7 +81,9 @@ import { Component, Prop } from "vue-property-decorator";
 import ToolGroups from "@/components/ToolGroups.vue";
 
 import SETTINGS from "@/global-settings";
-import { SEStore } from "@/store";
+import { ActionMode } from "@/types";
+import { mapState, mapActions } from "pinia";
+import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 
 @Component({
@@ -90,6 +92,12 @@ import EventBus from "@/eventHandlers/EventBus";
     // Use dynamic import so subcomponents are loaded on demand
     ObjectTree: () => import("@/components/ObjectTree.vue"),
     ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
+  },
+  computed: {
+    ...mapState(useSEStore, ["actionMode"])
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setActionMode"])
   }
 })
 export default class Toolbox extends Vue {
@@ -97,7 +105,8 @@ export default class Toolbox extends Vue {
   readonly minified!: boolean;
 
   // ('layers')')
-  // private layers!: Two.Group[];
+  readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
+  readonly actionMode!: ActionMode;
 
   private leftDrawerMinified = false;
   /* Copy global setting to local variable */
@@ -118,8 +127,12 @@ export default class Toolbox extends Vue {
     if (this.activeLeftDrawerTab === 1) {
       // 1 is the index of the object tree tab
       // change to the move mode, but only if we are not using the measured circle tool
-      if (SEStore.actionMode !== "measuredCircle") {
-        SEStore.setActionMode({
+      if (
+        this.actionMode !== "measuredCircle" &&
+        this.actionMode !== "translation" &&
+        this.actionMode !== "rotation"
+      ) {
+        this.setActionMode({
           id: "move",
           name: "MoveDisplayedName"
         });

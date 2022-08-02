@@ -9,13 +9,11 @@
 <script lang="ts">
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -43,50 +41,89 @@ import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
+import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, AppState, plottableType } from "@/types";
+import { ActionMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { mapState, mapActions, mapWritableState } from "pinia";
+import { useSEStore } from "@/stores/se";
+import { Matrix4 } from "three";
+import Two from "two.js";
+// import { Circle } from "two.js/src/shapes/circle";
+// import { Group } from "two.js/src/group";
 import { SEExpression } from "@/models/SEExpression";
+import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
+import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
+import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
+import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
+import { SETransformation } from "@/models/SETransformation";
+import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
+import { SENodule } from "@/models/SENodule";
+import i18n from "@/i18n";
 
-const SE = namespace("se");
+@Component({
+  computed: {
+    ...mapState(useSEStore, [
+      "actionMode",
+      "zoomMagnificationFactor",
+      "zoomTranslation",
+      "seLabels",
+      "layers"
+    ]),
+    ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
+  },
 
-@Component({})
+  methods: {
+    ...mapActions(useSEStore, [
+      "init",
+      "setLayers",
+      "setCanvas",
+      "rotateSphere",
+      // "setSphereRadius",
+      "setCanvasWidth",
+      "setActionMode",
+      "revertActionMode",
+      "setZoomMagnificationFactor"
+    ])
+  }
+})
 export default class SphereFrame extends VueComponent {
   @Prop({ default: 240 })
   readonly canvasSize!: number;
 
-  @SE.State((s: AppState) => s.actionMode)
   readonly actionMode!: ActionMode;
-
-  @SE.State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
-
-  @SE.State((s: AppState) => s.zoomTranslation)
   readonly zoomTranslation!: number[];
-
-  @SE.State((s: AppState) => s.seLabels)
   readonly seLabels!: SELabel[];
 
-  // @SE.Mutation setCanvas!: (_: HTMLDivElement) => void;
+  readonly init!: () => void;
+  readonly setLayers!: (_: Array<Two.Group>) => void;
+  readonly setCanvas!: (_: HTMLDivElement | null) => void;
+  readonly setCanvasWidth!: (_: number) => void;
+  // readonly setSphereRadius!: (_: number) => void;
+  readonly setZoomMagnificationFactor!: (_: number) => void;
+  readonly rotateSphere!: (_: Matrix4) => void;
+  readonly revertActionMode!: () => void;
+  readonly getZoomMagnificationFactor!: () => number;
+  readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
 
   $refs!: {
     canvas: HTMLDivElement;
   };
   /**
-   * The main (the only one) TwoJS object that contains the layers (each a Two.Group) making up the screen graph
-   * First layers  (Two.Groups) are added to the twoInstance (index by the enum LAYER from
-   * global-settings.ts), then TwoJs objects (Two.Path, Two.Ellipse, etc..) are added to the
-   * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
+   * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
+   * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
+   * global-settings.ts), then TwoJs objects (Path, Ellipse, etc..) are added to the
+   * appropriate layer. This object is refreshed at 60 fps (in constructor -- autostart: true).
    */
   private twoInstance!: Two;
 
-  // private sphereCanvas!: Two.Group;
+  // private sphereCanvas!: Group;
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
@@ -97,53 +134,62 @@ export default class SphereFrame extends VueComponent {
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
-  private selectTool!: SelectionHandler;
-  private pointTool!: PointHandler;
-  private lineTool!: LineHandler;
-  private segmentTool!: SegmentHandler;
-  private circleTool!: CircleHandler;
-  private ellipseTool!: EllipseHandler;
-  private rotateTool!: RotateHandler;
-  private zoomTool!: PanZoomHandler;
-  private moveTool!: MoveHandler;
-  private pointOnOneDimensionalTool!: PointOnOneDimensionalHandler;
-  private antipodalPointTool!: AntipodalPointHandler;
-  private polarObjectTool!: PolarObjectHandler;
-  private intersectTool!: IntersectionPointHandler;
-  private deleteTool!: DeleteHandler;
-  private hideTool!: HideObjectHandler;
-  private segmentLengthTool!: SegmentLengthHandler;
-  private pointDistanceTool!: PointDistanceHandler;
-  private angleTool!: AngleHandler;
-  private coordinateTool!: CoordinateHandler;
-  private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
-  private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
-  private tangentLineThruPointTool!: TangentLineThruPointHandler;
-  private iconFactoryTool!: IconFactoryHandler;
-  private measureTriangleTool!: PolygonHandler;
-  private measurePolygonTool!: PolygonHandler;
-  private midpointTool!: NSectSegmentHandler;
-  private nSectSegmentTool!: NSectSegmentHandler;
-  private angleBisectorTool!: NSectAngleHandler;
-  private nSectAngleTool!: NSectAngleHandler;
-  private threePointCircleTool!: ThreePointCircleHandler;
-  private measuredCircleTool!: MeasuredCircleHandler;
+  private selectTool: SelectionHandler | null = null;
+  private pointTool: PointHandler | null = null;
+  private lineTool: LineHandler | null = null;
+  private segmentTool: SegmentHandler | null = null;
+  private circleTool: CircleHandler | null = null;
+  private ellipseTool: EllipseHandler | null = null;
+  private rotateTool: RotateHandler | null = null;
+  private zoomTool: PanZoomHandler | null = null;
+  private moveTool: MoveHandler | null = null;
+  private pointOnOneDimensionalTool: PointOnOneDimensionalHandler | null = null;
+  private antipodalPointTool: AntipodalPointHandler | null = null;
+  private polarObjectTool: PolarObjectHandler | null = null;
+  private intersectTool: IntersectionPointHandler | null = null;
+  private deleteTool: DeleteHandler | null = null;
+  private hideTool: HideObjectHandler | null = null;
+  private segmentLengthTool: SegmentLengthHandler | null = null;
+  private pointDistanceTool: PointDistanceHandler | null = null;
+  private angleTool: AngleHandler | null = null;
+  private coordinateTool: CoordinateHandler | null = null;
+  private toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
+  private perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
+    null;
+  private tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
+  private iconFactoryTool: IconFactoryHandler | null = null;
+  private measureTriangleTool: PolygonHandler | null = null;
+  private measurePolygonTool: PolygonHandler | null = null;
+  private midpointTool: NSectSegmentHandler | null = null;
+  private nSectSegmentTool: NSectSegmentHandler | null = null;
+  private angleBisectorTool: NSectAngleHandler | null = null;
+  private nSectAngleTool: NSectAngleHandler | null = null;
+  private threePointCircleTool: ThreePointCircleHandler | null = null;
+  private measuredCircleTool: MeasuredCircleHandler | null = null;
+  private translationTool: TranslationTransformationHandler | null = null;
+  private rotationTool: RotationTransformationHandler | null = null;
+  private reflectionTool: ReflectionTransformationHandler | null = null;
+  private pointReflectionTool: PointReflectionTransformationHandler | null =
+    null;
+  private inversionTool: InversionTransformationHandler | null = null;
+  private applyTransformationTool: ApplyTransformationHandler | null = null;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
    * background is not displayed over a line in the foreground
    */
-  private layers: Two.Group[] = [];
+  readonly layers!: Two.Group[];
 
   created(): void {
     this.twoInstance = new Two({
       width: this.canvasSize,
       height: this.canvasSize,
-      autostart: true,
-      ratio: window.devicePixelRatio
+      autostart: true
+      // ratio: window.devicePixelRatio
     });
+    // this.twoInstance.scene.matrix.manual = true;
     // Clear layer array
-    this.layers.splice(0, this.layers.length);
+    // this.layers.splice(0);
 
     //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
@@ -153,18 +199,30 @@ export default class SphereFrame extends VueComponent {
       LAYER.foregroundTextGlowing,
       LAYER.backgroundTextGlowing
     ].map(Number); // shortcut for .map(x => Number(x))
+
+    // Create a detached group to prevent duplicate group ID
+    // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
+    const dummy_group = new Two.Group();
+    let groups: Array<Two.Group> = [];
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
         // Create the layers
-        const newLayer = this.twoInstance.makeGroup();
-        this.layers.push(newLayer);
-
-        // Don't flip the y-coord of text layers
-        if (textLayers.indexOf(layerIdx) < 0) {
+        const newLayer = new Two.Group();
+        if (layerIdx === LAYER.background)
+          console.debug("Background layer is", newLayer.id);
+        if (layerIdx === LAYER.foreground)
+          console.debug("Foreground layer is", newLayer.id);
+        // newLayer.matrix.manual = true;
+        // Undo the y-flip on text layers
+        if (textLayers.indexOf(layerIdx) >= 0) {
           // Not in textLayers
           newLayer.scale = new Two.Vector(1, -1);
+          // newLayer.matrix.scale(1, -1);
         }
+
+        newLayer.addTo(this.twoInstance.scene);
+        groups.push(newLayer);
       }
     }
     //#endregion addlayers
@@ -173,15 +231,15 @@ export default class SphereFrame extends VueComponent {
     //this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
-    SEStore.init();
-    SEStore.setLayers(this.layers);
+    this.init();
+    this.setLayers(groups);
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
     this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    this.layers[LAYER.midground].add(this.boundaryCircle);
+    this.boundaryCircle.addTo(this.layers[Number(LAYER.midground)]);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
@@ -191,83 +249,25 @@ export default class SphereFrame extends VueComponent {
       part: ""
     });
 
-    // const box1 = new Two.Rectangle(-100, 150, 100, 150);
-    // box1.fill = "hsl(200,80%,50%)";
-    // const box2 = new Two.Rectangle(100, 150, 100, 150);
-    // box2.fill = "red";
-    // box1.addTo(this.layers[LAYER.background]);
-    // box2.addTo(this.layers[LAYER.foregroundText]);
-
-    // const t1 = new Two.Text(
-    //   "Text must &#13;&#10; be upright 2\u{1D7B9}",
-    //   50,
-    //   80,
-    //   {}
-    // );
-    // t1.size = 12;
-    // t1.noStroke();
-    // t1.fill = "#000";
-    // (t1 as any).leading = 50;
-    // // (t1 as any).linewidth = 30;
-    // (t1 as any).id = "mytext";
-    // (t1 as any).className = "myclass";
-    // t1.decoration = "strikethrough";
-
-    // this.layers[LAYER.foregroundText].add(t1);
-    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
-    // const hLine = new Two.Line(-R, 0, R, 0);
-    // const vLine = new Two.Line(0, -R, 0, R);
+    // const hLine = new Line(-R, 0, R, 0);
+    // const vLine = new Line(0, -R, 0, R);
     // hLine.stroke = "red";
     // vLine.stroke = "green";
     // this.sphereCanvas.add(
     //   hLine,
     //   vLine,
-    //   new Two.Line(100, -R, 100, R),
-    //   new Two.Line(-R, 100, R, 100)
+    //   new Line(100, -R, 100, R),
+    //   new Line(-R, 100, R, 100)
     // );
     //this.visitor = new RotationVisitor();
 
     // Create the tools/handlers
     this.selectTool = new SelectionHandler(this.layers);
     this.currentTool = this.selectTool;
-    this.pointTool = new PointHandler(this.layers);
-    this.lineTool = new LineHandler(this.layers);
-    this.segmentTool = new SegmentHandler(this.layers);
-    this.circleTool = new CircleHandler(this.layers);
-    this.ellipseTool = new EllipseHandler(this.layers);
-    this.rotateTool = new RotateHandler(this.layers);
-    this.zoomTool = new PanZoomHandler(this.$refs.canvas);
-    this.iconFactoryTool = new IconFactoryHandler();
-    this.moveTool = new MoveHandler(this.layers);
-    this.intersectTool = new IntersectionPointHandler(this.layers);
-    this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
-      this.layers
-    );
-    this.antipodalPointTool = new AntipodalPointHandler(this.layers);
-    this.polarObjectTool = new PolarObjectHandler(this.layers);
-    this.deleteTool = new DeleteHandler(this.layers);
-    this.hideTool = new HideObjectHandler(this.layers);
-    this.segmentLengthTool = new SegmentLengthHandler(this.layers);
-    this.pointDistanceTool = new PointDistanceHandler(this.layers);
-    this.angleTool = new AngleHandler(this.layers);
-    this.coordinateTool = new CoordinateHandler(this.layers);
-    this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
-    this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
-      this.layers
-    );
-    this.tangentLineThruPointTool = new TangentLineThruPointHandler(
-      this.layers
-    );
-    this.measureTriangleTool = new PolygonHandler(this.layers, true);
-    this.measurePolygonTool = new PolygonHandler(this.layers, false);
-    this.midpointTool = new NSectSegmentHandler(this.layers, true);
-    this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
-    this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
-    this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
-    this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
-    this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+    // Postpone the instantiation of the remaining tools to on-demand
+    // to avoid runtime error when the tools depend of Pinia initialization
 
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -278,18 +278,22 @@ export default class SphereFrame extends VueComponent {
       "measured-circle-set-temporary-radius",
       this.measuredCircleSetTemporaryRadius
     );
+    EventBus.listen("set-expression-for-tool", this.setExpressionForTool);
     EventBus.listen(
-      "measured-circle-set-expression",
-      this.measuredCircleSetExpression
+      "set-transformation-for-tool",
+      this.setTransformationForTool
     );
+    EventBus.listen("delete-node", this.deleteNode);
+    // EventBus.listen("dialog-box-is-active", this.dialogBoxIsActive);
+    // EventBus.listen(
+    //   "set-point-visibility-and-label",
+    //   this.setPointInitialVibilityAndLabel
+    // );
   }
 
   mounted(): void {
-    // Put the main Two.js instance into the canvas
+    // Put the main js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
-    // Set the main Two.js instance to refresh at 60 fps
-    this.twoInstance.play();
-
     // Set up the listeners
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
@@ -309,7 +313,8 @@ export default class SphereFrame extends VueComponent {
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    SEStore.setCanvas(this.$refs.canvas);
+    this.setCanvas(this.$refs.canvas);
+    this.updateView();
   }
 
   beforeDestroy(): void {
@@ -318,7 +323,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
-    // Does this remove the contect menu listener? I'm not sure.
+    // Does this remove the context menu listener? I'm not sure.
     this.$refs.canvas.removeEventListener("contextmenu", event =>
       event.preventDefault()
     );
@@ -328,29 +333,36 @@ export default class SphereFrame extends VueComponent {
     EventBus.unlisten("export-current-svg");
     EventBus.unlisten("construction-loaded");
     EventBus.unlisten("measured-circle-set-temporary-radius");
-    EventBus.unlisten("measured-circle-set-expression");
+    EventBus.unlisten("set-expression-for-tool");
+    EventBus.unlisten("set-transformation-for-tool");
+    EventBus.unlisten("delete-node");
+    // EventBus.unlisten("dialog-box-is-active");
   }
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    (this.twoInstance.renderer as any).setSize(size, size);
-    // Move the origin of all layers to the center of the viewport
-    this.layers.forEach(z => {
-      z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    });
+    this.twoInstance.width = size;
+    this.twoInstance.height = size;
+    // this.layers.forEach(z => {
+    //   z.translation.set(size / 2, size / 2);
+    // });
 
     const radius = size / 2 - 16; // 16-pixel gap
-    SEStore.setSphereRadius(radius);
+    // this.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    SEStore.setZoomMagnificationFactor(ratio);
+    //this.zoomMagnificationFactor = ratio;
+    //set the zoom magnification in the store so that all geometric/plottable objects are updated.
+    this.setZoomMagnificationFactor(ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
-    SEStore.setZoomTranslation([0, 0]);
+    this.zoomTranslation.splice(0);
+    // this.zoomTranslation.push(size / 2, size / 2);
+    this.zoomTranslation.push(0, 0);
 
     this.updateView();
     // record the canvas width for the SELabel so that the bounding box of the text can be computed correctly
-    SEStore.setCanvasWidth(size);
+    this.setCanvasWidth(size);
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -360,22 +372,21 @@ export default class SphereFrame extends VueComponent {
 
   //#region updateView
   private updateView() {
-    // Get the current maginiication factor and translation vector
-    const mag = SEStore.zoomMagnificationFactor;
-    const transVector = SEStore.zoomTranslation;
-
-    // Get the DOM element to apply the transform to
-    const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
-    // Set the transform
-    const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`;
-    // console.debug("CSS transform matrix: ", mat);
-    el.style.transform = mat;
-    // Set the origin of the transform
+    // Get the current maginification factor and translation vector
+    const mag = this.zoomMagnificationFactor;
+    const transVector = this.zoomTranslation;
     const origin = this.canvasSize / 2;
-    el.style.transformOrigin = `${origin}px ${origin}px`;
-    // What does this do?
-    el.style.overflow = "visible";
-    //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
+
+    this.twoInstance.scene.translation = new Two.Vector(
+      origin + transVector[0],
+      origin + transVector[1]
+    );
+    this.twoInstance.scene.scale = new Two.Vector(mag, -mag);
+    // this.twoInstance.scene.matrix
+    //   .identity()
+    //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
+    //   .scale(mag, -mag); // (translate & scale) is important
+    //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
       l.update();
     });
@@ -383,7 +394,6 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    // console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -399,7 +409,7 @@ export default class SphereFrame extends VueComponent {
       scrollFraction *= -1;
     }
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = SEStore.zoomMagnificationFactor;
+    const currentMagFactor = this.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
     // Set the next magnification factor. Positive scroll fraction means zoom out, negative zoom in.
     if (scrollFraction < 0) {
@@ -432,8 +442,8 @@ export default class SphereFrame extends VueComponent {
     }
     // Get the current translation vector to allow us to untransform the CSS transformation
     const currentTranslationVector = [
-      SEStore.zoomTranslation[0],
-      SEStore.zoomTranslation[1]
+      this.zoomTranslation[0],
+      this.zoomTranslation[1]
     ];
 
     // Compute (untransformedPixelX,untransformedPixelY) which is the location of the mouse
@@ -443,11 +453,11 @@ export default class SphereFrame extends VueComponent {
     const untransformedPixelY =
       (pixelY - currentTranslationVector[1]) / currentMagFactor;
     // Compute the new translation Vector. We want the untransformedPixel vector to be mapped
-    // to the pixel vector under the new maginification factor. That is, if
+    // to the pixel vector under the new magnification factor. That is, if
     //  Z(x,y)= newMagFactor*(x,y) + newTranslationVector
     // then we must have
     //  Z(untransformedPixel) = pixel Vector
-    // Solve for newTranlationVector yields
+    // Solve for newTranslationVector yields
 
     const newTranslationVector = [
       pixelX - untransformedPixelX * newMagFactor,
@@ -466,9 +476,11 @@ export default class SphereFrame extends VueComponent {
       }
     }
 
-    // Set the new magnifiction factor and the next translation vector in the store
-    SEStore.setZoomMagnificationFactor(newMagFactor);
-    SEStore.setZoomTranslation(newTranslationVector);
+    // Set the new magnification factor and the next translation vector in the store
+    // this.zoomMagnificationFactor = newMagFactor;
+    this.setZoomMagnificationFactor(newMagFactor); //must be set this way so that plottables resize correctly
+    this.zoomTranslation.splice(0);
+    this.zoomTranslation.push(...newTranslationVector);
     // Update the display
     this.updateView();
     // Query to see if the last command on the stack was also a zoom sphere command. If it was, simply update that command with the new
@@ -525,18 +537,6 @@ export default class SphereFrame extends VueComponent {
     if (e.button === 0) {
       // When currentTool is NULL, the following line does nothing
       this.currentTool?.mouseReleased(e);
-      // console.debug(
-      //   SEStore.sePoints.length,
-      //   "P  ",
-      //   SEStore.seLines.length,
-      //   "L   ",
-      //   SEStore.seSegments.length,
-      //   "S   ",
-      //   SEStore.seCircles.length,
-      //   "C   ",
-      //   SEStore.seEllipses.length,
-      //   "E"
-      // );
     }
   }
 
@@ -549,12 +549,12 @@ export default class SphereFrame extends VueComponent {
 
   //#region handleSphereRotation
   handleSphereRotation(e: unknown): void {
-    SEStore.rotateSphere((e as any).transform);
+    this.rotateSphere((e as any).transform);
   }
   //#endregion handleSphereRotation
 
   getCurrentSVGForIcon(): void {
-    const svgRoot = SEStore.svgCanvas?.querySelector("svg") as SVGElement;
+    const svgRoot = this.$refs.canvas?.querySelector("svg") as SVGElement;
     //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
     console.log(
       "Nodule.idPlottableDescriptionMap",
@@ -587,7 +587,7 @@ export default class SphereFrame extends VueComponent {
       }
     }
 
-    // remove all SVG goups with no children (they are are result of empty layers)
+    // remove all SVG groups with no children (they are are result of empty layers)
     const groups = svgElement.querySelectorAll("g");
     for (let i = 0; i < groups.length; i++) {
       const group = groups[i];
@@ -644,11 +644,83 @@ export default class SphereFrame extends VueComponent {
       this.currentTool.displayTemporaryCircle(e.display, e.radius);
     }
   }
-  measuredCircleSetExpression(e: { expression: SEExpression }): void {
-    if (this.currentTool instanceof MeasuredCircleHandler) {
+
+  setExpressionForTool(e: { expression: SEExpression }): void {
+    if (
+      this.currentTool instanceof MeasuredCircleHandler ||
+      this.currentTool instanceof RotationTransformationHandler ||
+      this.currentTool instanceof TranslationTransformationHandler
+    ) {
       this.currentTool.setExpression(e.expression);
     }
   }
+
+  setTransformationForTool(e: { transformation: SETransformation }): void {
+    if (this.currentTool instanceof ApplyTransformationHandler) {
+      this.currentTool.setTransformation(e.transformation);
+    } else {
+      // console.debug(`The current action mode ${this.actionMode}`);
+      this.setActionMode({
+        id: "applyTransformation",
+        name: "ApplyTransformationDisplayedName"
+      });
+      // console.debug(`The current action mode ${this.actionMode}`);
+      // this.currentTool?.deactivate();
+      if (!this.applyTransformationTool) {
+        this.applyTransformationTool = new ApplyTransformationHandler(
+          this.layers
+        );
+      }
+      this.applyTransformationTool.setTransformation(e.transformation);
+    }
+  }
+
+  deleteNode(e: {
+    victim: SENodule;
+    victimName: string;
+    victimType: string;
+  }): void {
+    if (!this.deleteTool) {
+      this.deleteTool = new DeleteHandler(this.layers);
+    }
+    const deletedNodeIds = this.deleteTool.delete(e.victim);
+    //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+    EventBus.fire("show-alert", {
+      key: `handlers.deletedNodes`,
+      keyOptions: {
+        type: e.victimType,
+        name: e.victimName,
+        number: deletedNodeIds.length - 1,
+        objects:
+          deletedNodeIds.length === 2
+            ? i18n.tc(`objects.objects`, 4)
+            : i18n.tc(`objects.objects`, 3)
+      },
+      type: "success"
+    });
+  }
+
+  // dialogBoxIsActive(e: { active: boolean }): void {
+  //   // console.debug(`dialog box is active is ${e.active}`);
+  //   if (this.hideTool) {
+  //     this.hideTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.nSectAngleTool) {
+  //     this.nSectAngleTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.nSectSegmentTool) {
+  //     this.nSectSegmentTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.rotateTool) {
+  //     this.rotateTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.selectTool) {
+  //     this.selectTool.disableKeyHandler = e.active;
+  //   }
+  //   if (this.toggleLabelDisplayTool) {
+  //     this.toggleLabelDisplayTool.disableKeyHandler = e.active;
+  //   }
+  // }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -656,135 +728,287 @@ export default class SphereFrame extends VueComponent {
    */
   @Watch("actionMode")
   switchActionMode(mode: ActionMode): void {
+    //console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     switch (mode) {
       case "select":
+        if (!this.selectTool) {
+          this.selectTool = new SelectionHandler(this.layers);
+        }
         this.currentTool = this.selectTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "delete":
+        if (!this.deleteTool) {
+          this.deleteTool = new DeleteHandler(this.layers);
+        }
         this.currentTool = this.deleteTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomIn":
-        this.currentTool = this.zoomTool;
+        if (!this.zoomTool) {
+          this.zoomTool = new PanZoomHandler(this.$refs.canvas);
+        }
         this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
+        this.currentTool = this.zoomTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomOut":
-        this.currentTool = this.zoomTool;
+        if (!this.zoomTool) {
+          this.zoomTool = new PanZoomHandler(this.$refs.canvas);
+        }
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
+        this.currentTool = this.zoomTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
+        if (!this.zoomTool) {
+          this.zoomTool = new PanZoomHandler(this.$refs.canvas);
+        }
         this.zoomTool.doZoomFit(this.canvasSize);
         this.zoomTool.activate(); // unglow any selected objects.
         this.zoomTool.deactivate(); // shut the tool down properly
-        SEStore.revertActionMode();
+        this.revertActionMode();
         break;
 
       case "iconFactory":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
+        if (!this.iconFactoryTool) {
+          this.iconFactoryTool = new IconFactoryHandler();
+        }
         this.iconFactoryTool.createIconPaths();
-        SEStore.revertActionMode();
+        this.revertActionMode();
         break;
 
       case "hide":
+        if (!this.hideTool) {
+          this.hideTool = new HideObjectHandler(this.layers);
+        }
         this.currentTool = this.hideTool;
         break;
       case "move":
+        if (!this.moveTool) {
+          this.moveTool = new MoveHandler(this.layers);
+        }
         this.currentTool = this.moveTool;
         EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
         break;
       case "rotate":
+        if (!this.rotateTool) {
+          this.rotateTool = new RotateHandler(this.layers);
+        }
         this.currentTool = this.rotateTool;
         break;
 
       case "point":
+        if (!this.pointTool) {
+          this.pointTool = new PointHandler(this.layers);
+        }
         this.currentTool = this.pointTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "line":
+        if (!this.lineTool) {
+          this.lineTool = new LineHandler(this.layers);
+        }
         this.currentTool = this.lineTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "segment":
+        if (!this.segmentTool) {
+          this.segmentTool = new SegmentHandler(this.layers);
+        }
         this.currentTool = this.segmentTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "circle":
+        if (!this.circleTool) {
+          this.circleTool = new CircleHandler(this.layers);
+        }
         this.currentTool = this.circleTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "ellipse":
+        if (!this.ellipseTool) {
+          this.ellipseTool = new EllipseHandler(this.layers);
+        }
         this.currentTool = this.ellipseTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "antipodalPoint":
+        if (!this.antipodalPointTool) {
+          this.antipodalPointTool = new AntipodalPointHandler(this.layers);
+        }
         this.currentTool = this.antipodalPointTool;
         break;
       case "polar":
+        if (!this.polarObjectTool) {
+          this.polarObjectTool = new PolarObjectHandler(this.layers);
+        }
         this.currentTool = this.polarObjectTool;
         break;
       case "intersect":
+        if (!this.intersectTool) {
+          this.intersectTool = new IntersectionPointHandler(this.layers);
+        }
         this.currentTool = this.intersectTool;
         break;
       case "pointOnObject":
+        if (!this.pointOnOneDimensionalTool) {
+          this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
+            this.layers
+          );
+        }
         this.currentTool = this.pointOnOneDimensionalTool;
         break;
 
       case "segmentLength":
+        if (!this.segmentLengthTool) {
+          this.segmentLengthTool = new SegmentLengthHandler(this.layers);
+        }
         this.currentTool = this.segmentLengthTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "pointDistance":
+        if (!this.pointDistanceTool) {
+          this.pointDistanceTool = new PointDistanceHandler(this.layers);
+        }
         this.currentTool = this.pointDistanceTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "angle":
+        if (!this.angleTool) {
+          this.angleTool = new AngleHandler(this.layers);
+        }
         this.currentTool = this.angleTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "coordinate":
+        if (!this.coordinateTool) {
+          this.coordinateTool = new CoordinateHandler(this.layers);
+        }
         this.currentTool = this.coordinateTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "toggleLabelDisplay":
+        if (!this.toggleLabelDisplayTool) {
+          this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(
+            this.layers
+          );
+        }
         this.currentTool = this.toggleLabelDisplayTool;
         break;
       case "perpendicular":
+        if (!this.perpendicularLineThruPointTool) {
+          this.perpendicularLineThruPointTool =
+            new PerpendicularLineThruPointHandler(this.layers);
+        }
+
         this.currentTool = this.perpendicularLineThruPointTool;
         break;
       case "tangent":
+        if (!this.tangentLineThruPointTool) {
+          this.tangentLineThruPointTool = new TangentLineThruPointHandler(
+            this.layers
+          );
+        }
         this.currentTool = this.tangentLineThruPointTool;
         break;
       case "measureTriangle":
+        if (!this.measureTriangleTool) {
+          this.measureTriangleTool = new PolygonHandler(this.layers, true);
+        }
         this.currentTool = this.measureTriangleTool;
         break;
       case "measurePolygon":
+        if (!this.measurePolygonTool) {
+          this.measurePolygonTool = new PolygonHandler(this.layers, false);
+        }
         this.currentTool = this.measurePolygonTool;
         break;
       case "midpoint":
+        if (!this.midpointTool) {
+          this.midpointTool = new NSectSegmentHandler(this.layers, true);
+        }
         this.currentTool = this.midpointTool;
         break;
       case "nSectPoint":
+        if (!this.nSectSegmentTool) {
+          this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
+        }
         this.currentTool = this.nSectSegmentTool;
         break;
       case "angleBisector":
+        if (!this.angleBisectorTool) {
+          this.angleBisectorTool = new NSectAngleHandler(this.layers, true);
+        }
         this.currentTool = this.angleBisectorTool;
         break;
       case "nSectLine":
+        if (!this.nSectAngleTool) {
+          this.nSectAngleTool = new NSectAngleHandler(this.layers, false);
+        }
         this.currentTool = this.nSectAngleTool;
         break;
       case "threePointCircle":
+        if (!this.threePointCircleTool) {
+          this.threePointCircleTool = new ThreePointCircleHandler(this.layers);
+        }
         this.currentTool = this.threePointCircleTool;
         break;
       case "measuredCircle":
+        if (!this.measuredCircleTool) {
+          this.measuredCircleTool = new MeasuredCircleHandler(this.layers);
+        }
         this.currentTool = this.measuredCircleTool;
+        break;
+      case "translation":
+        if (!this.translationTool) {
+          this.translationTool = new TranslationTransformationHandler(
+            this.layers
+          );
+        }
+        this.currentTool = this.translationTool;
+        break;
+      case "rotation":
+        if (!this.rotationTool) {
+          this.rotationTool = new RotationTransformationHandler(this.layers);
+        }
+        this.currentTool = this.rotationTool;
+        break;
+      case "reflection":
+        if (!this.reflectionTool) {
+          this.reflectionTool = new ReflectionTransformationHandler(
+            this.layers
+          );
+        }
+        this.currentTool = this.reflectionTool;
+        break;
+      case "pointReflection":
+        if (!this.pointReflectionTool) {
+          this.pointReflectionTool = new PointReflectionTransformationHandler(
+            this.layers
+          );
+        }
+        this.currentTool = this.pointReflectionTool;
+        break;
+      case "inversion":
+        if (!this.inversionTool) {
+          this.inversionTool = new InversionTransformationHandler(this.layers);
+        }
+        this.currentTool = this.inversionTool;
+        break;
+      case "applyTransformation":
+        if (!this.applyTransformationTool) {
+          this.applyTransformationTool = new ApplyTransformationHandler(
+            this.layers
+          );
+        }
+        this.currentTool = this.applyTransformationTool;
         break;
       default:
         this.currentTool = null;

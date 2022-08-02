@@ -40,6 +40,7 @@ screenshots/*
 *.fdb_latexmk
 *.log
 latex-notes/*.pdf
+latex-notes/_minted*
 
 # Generated files
 docs/.vuepress/dist

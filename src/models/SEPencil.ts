@@ -1,17 +1,18 @@
 import { DisplayStyle } from "@/plottables/Nodule";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import NonFreePoint from "@/plottables/NonFreePoint";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { ObjectState } from "@/types";
 import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
+import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
 import { SEParametric } from "./SEParametric";
 import { SEPerpendicularLineThruPoint } from "./SEPerpendicularLineThruPoint";
 import { SEPoint } from "./SEPoint";
-import { SEStore } from "@/store";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
@@ -22,6 +23,7 @@ export class SEPencil extends SENodule {
   private _commonParent: SEParametric;
   private _lines: Array<SEPerpendicularLineThruPoint> = [];
   private tempVector: Vector3 = new Vector3();
+  private store: SEStoreType;
   constructor(
     seParent: SEParametric,
     commontPoint: SEPoint,
@@ -31,15 +33,14 @@ export class SEPencil extends SENodule {
     this._commonPoint = commontPoint;
     this._commonParent = seParent;
     this._lines.push(...lines);
+    this.store = useSEStore();
   }
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // This doesn't follow the usual outline of an update method because SEPencil is not in the DAG
 
-    console.debug("Updating SEPencil");
+  public accept(v: Visitor): boolean {
+    return false;
+  }
 
+  public shallowUpdate(): void {
     const normals = this._commonParent.getNormalsToPerpendicularLinesThru(
       this._commonPoint.locationVector,
       this._lines[0].normalVector
@@ -47,7 +48,7 @@ export class SEPencil extends SENodule {
     const N = this._lines.length;
     if (normals.length > N) {
       const numMissing = normals.length - N;
-      console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
+      // console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
       for (let k = N; k < normals.length; k++) {
         const plottableEndPoint = new NonFreePoint();
         const endSEPoint = new SEPoint(plottableEndPoint);
@@ -77,9 +78,19 @@ export class SEPencil extends SENodule {
         this._commonPoint.registerChild(newPerpLine);
         this._commonParent.registerChild(newPerpLine);
         this._lines.push(newPerpLine);
-        SEStore.addLine(newPerpLine);
+        this.store.addLine(newPerpLine);
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // This doesn't follow the usual outline of an update method because SEPencil is not in the DAG
+
+    // console.debug("Updating SEPencil");
+
+    this.shallowUpdate();
     // SEPencil is not in the DAG so it has no kids and updateKids does not need to be called.
   }
 

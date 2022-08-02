@@ -2,14 +2,14 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType } from "@/types";
-import { Vector3, Matrix4 } from "three";
+import { IntersectionReturnType, ParametricIntersectionType } from "@/types";
+import { Vector3, Matrix4, Vector2 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
-import { SEStore } from "@/store";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { MinHeap } from "@datastructures-js/heap";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -41,6 +41,7 @@ const toVector = new Vector3();
 const tempVec = new Vector3();
 const tempVec1 = new Vector3();
 const tempVec2 = new Vector3();
+const tempVec3 = new Vector3();
 const tmpMatrix = new Matrix4();
 
 /**
@@ -63,9 +64,10 @@ function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
  */
 export function intersectLineWithLine(
   lineOne: SELine,
-  lineTwo: SELine
+  lineTwo: SELine,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -81,12 +83,18 @@ export function intersectLineWithLine(
   intersection1.vector.copy(tempVec);
   intersection2.vector.copy(tempVec.multiplyScalar(-1));
 
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the lines are being intersected,
+  // we conclude the lines will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the second line are points on the first line
+  // But notice that the two points on the first line are moved to (nearly) antipodal positions, the second line can have a different normal vector than the first, but the intersection
+  // points are the two antipodal points that define the first line so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT TWO LINES CAN START IDENTICAL AND THEN BE MOVED APART?)
   if (
     tempVec
       .crossVectors(lineOne.normalVector, lineTwo.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -102,9 +110,10 @@ export function intersectLineWithLine(
  */
 export function intersectLineWithSegment(
   line: SELine,
-  segment: SESegment
+  segment: SESegment,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -129,12 +138,19 @@ export function intersectLineWithSegment(
   if (!segment.onSegment(tempVec2)) {
     intersection2.exists = false;
   }
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the line/segment are being intersected,
+  // we conclude the line/segment will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the segment are points on the first line
+  // But notice that the two points on the segment are moved to (nearly) antipodal positions, the segment can have a different normal vector than the line, but the intersection
+  // points are the two antipodal points that are the endpoints of the segment so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT LINES/SEGMENT CAN START IDENTICAL AND THEN BE MOVED APART?)
+
   if (
     tempVec
       .crossVectors(line.normalVector, segment.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -152,7 +168,7 @@ export function intersectLineWithSegment(
 export function intersectLineWithCircle(
   line: SELine,
   circle: SECircle
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   if (
     line instanceof SETangentLineThruPoint &&
@@ -206,7 +222,7 @@ export function intersectLineWithCircle(
 export function intersectLineWithEllipse(
   line: SELine,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   if (
     line instanceof SETangentLineThruPoint &&
@@ -225,33 +241,40 @@ export function intersectLineWithEllipse(
       tmpVector.copy(line.normalVector);
 
       // Transform the normal into the standard coordinates of the ellipse.
-      tmpVector.applyMatrix4(tmpMatrix.getInverse(ellipse.ref.ellipseFrame));
+      tmpVector.applyMatrix4(tmpMatrix.copy(ellipse.ref.ellipseFrame).invert());
 
       if (tmpVector.dot(ellipse.ref.E(1.2312)) < 0) {
         // 1.2312 is a totally random number, it should not matter!
         tmpVector.multiplyScalar(-1);
       }
       // First form the objective function, this is the function whose minimum we want to find.
-      const d: (t: number) => number = function(t: number): number {
+      const d: (t: number) => number = function (t: number): number {
         return ellipse.ref.E(t).dot(tmpVector);
       };
 
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
 
-      const dp: (t: number) => number = function(t: number): number {
+      const dp: (t: number) => number = function (t: number): number {
         return ellipse.ref.Ep(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
 
-      const dpp = function(t: number): number {
+      const dpp = function (t: number): number {
         return ellipse.ref.Epp(t).dot(tmpVector);
       };
 
+      // FIXME
+      //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const zeros = SENodule.findZerosParametrically(
         dp,
-        ellipse.ref.tMin,
-        ellipse.ref.tMax,
+        tValues,
+        // ellipse.ref.tMin,
+        // ellipse.ref.tMax,
         [],
         dpp
       );
@@ -278,22 +301,28 @@ export function intersectLineWithEllipse(
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return ellipse.ref.E(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    tValues,
+    // FIXME
+    // ellipse.ref.tMin,
+    // ellipse.ref.tMax,
     [],
     dp
   );
@@ -308,18 +337,37 @@ export function intersectLineWithEllipse(
   };
   returnItems.push(intersection1);
   returnItems.push(intersection2);
-  // console.log("Line Ellipse Inter", zeros);
-  zeros.forEach((z, ind) => {
+
+  // remove duplicate zeros and those that correspond to the same point on the ellipse
+  const uniqueZeros: number[] = [];
+  zeros.forEach(z => {
+    if (
+      uniqueZeros.every((uniZ, ind) => {
+        tempVec.copy(ellipse.ref.E(uniZ));
+        tempVec1.copy(ellipse.ref.E(z));
+        return (
+          Math.abs(z - uniZ) > SETTINGS.tolerance &&
+          !tempVec2.subVectors(tempVec, tempVec1).isZero()
+        );
+      })
+    ) {
+      uniqueZeros.push(z);
+    }
+  });
+
+  uniqueZeros.forEach((z, ind) => {
     // console.log("ind", ind);
     if (ind > 1) {
       console.debug(
-        "Ellipse and Line Intersection resulted in more than 2 points.",
-        zeros
+        "Ellipse and Line Intersection still resulted in more than 2 points!",
+        zeros,
+        uniqueZeros
       );
     } else {
       returnItems[ind].vector.copy(
         ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
       );
+
       returnItems[ind].exists = true;
     }
   });
@@ -334,8 +382,9 @@ export function intersectLineWithEllipse(
  */
 export function intersectLineWithParametric(
   line: SELine,
-  parametric: SEParametric
-  // layer: Two.Group
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
+  // layer: Group
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
   const avoidTValues: number[] = [];
@@ -362,29 +411,25 @@ export function intersectLineWithParametric(
 
       // Transform the normal into the standard coordinates of the parametric.
       tmpVector.applyMatrix4(
-        tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+        tmpMatrix.copy(inverseTotalRotationMatrix).invert()
       );
       // First form the objective function, this is the function whose minimum we want to find.
-      const d: (t: number) => number = function(t: number): number {
-        return parametric.ref.P(t).dot(tmpVector);
+      const d: (t: number) => number = function (t: number): number {
+        return parametric.P(t).dot(tmpVector);
       };
 
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
-      const dp: (t: number) => number = function(t: number): number {
-        return parametric.ref.PPrime(t).dot(tmpVector);
+      const dp: (t: number) => number = function (t: number): number {
+        return parametric.PPrime(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
-      const dpp = function(t: number): number {
-        return parametric.ref.PPPrime(t).dot(tmpVector);
+      const dpp = function (t: number): number {
+        return parametric.PPrime(t).dot(tmpVector);
       };
 
-      const zeros = SENodule.findZerosParametrically(
-        dp,
-        parametric.tNumbers.min,
-        parametric.tNumbers.max,
-        [],
-        dpp
+      const zeros = parametric.tRanges.flatMap(tValues =>
+        SENodule.findZerosParametrically(dp, tValues, [], dpp)
       );
 
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
@@ -402,16 +447,10 @@ export function intersectLineWithParametric(
           minTVal.push(tVal);
         }
       });
-
+      tmpMatrix.copy(inverseTotalRotationMatrix).invert();
       minTVal.forEach(min => {
         const returnVec = new Vector3();
-        returnVec.copy(
-          parametric.ref
-            .P(min)
-            .applyMatrix4(
-              tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-            )
-        );
+        returnVec.copy(parametric.P(min).applyMatrix4(tmpMatrix));
         avoidTValues.push(min);
         returnItems.push({
           vector: returnVec,
@@ -425,38 +464,32 @@ export function intersectLineWithParametric(
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
-  const d: (t: number) => number = function(t: number): number {
-    return parametric.ref.P(t).dot(transformedToStandard);
+  const d: (t: number) => number = function (t: number): number {
+    return parametric.P(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
-    return parametric.ref.PPrime(t).dot(transformedToStandard);
+  const dp = function (t: number): number {
+    return parametric.PPrime(t).dot(transformedToStandard);
   };
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
-    avoidTValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(d, tValues, avoidTValues, dp)
   );
 
   // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
 
-  tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
-  return zeros.map(
-    (tValue: number): IntersectionReturnType => {
-      const vector = new Vector3();
-      vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
-      return {
-        vector,
-        exists: tracingTMin <= tValue && tValue <= tracingTMax
-      };
-    }
-  );
+  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
+  return zeros.map((tValue: number): IntersectionReturnType => {
+    const vector = new Vector3();
+    vector.copy(parametric.P(tValue)).applyMatrix4(tmpMatrix);
+    return {
+      vector,
+      exists: tracingTMin <= tValue && tValue <= tracingTMax
+    };
+  });
 }
 
 /**
@@ -467,9 +500,10 @@ export function intersectLineWithParametric(
  */
 export function intersectSegmentWithSegment(
   segment1: SESegment,
-  segment2: SESegment
+  segment2: SESegment,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -495,12 +529,19 @@ export function intersectSegmentWithSegment(
   if (!segment1.onSegment(tempVec2) || !segment2.onSegment(tempVec2)) {
     intersection2.exists = false;
   }
-  // If the normal vectors are on top of each other or antipodal, exists is false
+  // If the normal vectors are on top of each other or antipodal, exists is false or if this is the first time the lines are being intersected,
+  // we conclude the segments will *never* intersect (they are constrained to be on the same line forever -  like if the defining points of the second segment are points on the first segment
+  // But notice that the two enddpoints on the two segments are moved to (nearly) antipodal positions, the second segment can have a different normal vector than the first, but the intersection
+  // points are the two antipodal points that define endpoints of the segment so do not need to be returned as they already exist. IS THIS THE ONLY WAY THAT TWO segmentS CAN START IDENTICAL AND THEN BE MOVED APART?)
+
   if (
     tempVec
       .crossVectors(segment1.normalVector, segment2.normalVector)
       .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
+    if (firstTimeIntersection) {
+      return returnItems;
+    }
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -545,31 +586,36 @@ export function intersectSegmentWithCircle(
 export function intersectSegmentWithEllipse(
   segment: SESegment,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the segment into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(segment.normalVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   // The function to find the zeros of is the dot(normal to line, vector on ellipse)
   // because this indicates which side of the plane the point on the ellipse is
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return ellipse.ref.E(t).dot(transformedToStandard);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return ellipse.ref.Ep(t).dot(transformedToStandard);
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    // FIXME
+    tValues,
     [],
     dp
   );
+
   const returnItems: IntersectionReturnType[] = [];
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -582,11 +628,51 @@ export function intersectSegmentWithEllipse(
   returnItems.push(intersection1);
   returnItems.push(intersection2);
 
+  // remove duplicate zeros and those that correspond to the same point on the ellipse
+  const uniqueZeros: number[] = [];
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
-    );
+    if (
+      uniqueZeros.every(uniZ => {
+        tempVec.copy(ellipse.ref.E(uniZ));
+        tempVec1.copy(ellipse.ref.E(z));
+        return (
+          Math.abs(z - uniZ) > SETTINGS.tolerance &&
+          !tempVec2.subVectors(tempVec, tempVec1).isZero()
+        );
+      })
+    ) {
+      uniqueZeros.push(z);
+    }
   });
+
+  uniqueZeros.forEach((z, ind) => {
+    // console.log("ind", ind);
+    if (ind > 1) {
+      console.debug(
+        "Ellipse and Segment Intersection still resulted in more than 2 points!",
+        zeros,
+        uniqueZeros
+      );
+    } else {
+      returnItems[ind].vector.copy(
+        ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+      );
+    }
+  });
+
+  // zeros.forEach((z, ind) => {
+  //   // console.debug("return items", returnItems[ind].vector.toFixed(2));
+  //   // console.debug(
+  //   //   "ellipse.ref.E(z)",
+  //   //   z,
+  //   //   ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame).toFixed(2)
+  //   // );
+  //   returnItems[ind].vector.copy(
+  //     ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+  //   );
+  // });
+  // console.debug(returnItems[0].vector.toFixed(2));
+  // console.debug(returnItems[1].vector.toFixed(2));
   // If the segment and the ellipse don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
   returnItems.forEach(item => {
     if (item.vector.isZero()) {
@@ -606,62 +692,48 @@ export function intersectSegmentWithEllipse(
  */
 export function intersectSegmentWithParametric(
   segment: SESegment,
-  parametric: SEParametric
-  // layer: Two.Group
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
-  // Transform the line into the standard coordinates of the parametric.
-  const transformedToStandard = new Vector3();
-  transformedToStandard.copy(segment.normalVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
-
   // The function to find the zeros of is the dot(normal to line, vector on parametric)
   // because this indicates which side of the plane the point on the parametric is
-  const d: (t: number) => number = function(t: number): number {
-    return parametric.ref.P(t).dot(transformedToStandard);
+  const d: (t: number) => number = function (t: number): number {
+    return parametric.P(t).dot(segment.normalVector);
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
-  const dp = function(t: number): number {
-    return parametric.ref.PPrime(t).dot(transformedToStandard);
+  const dp = function (t: number): number {
+    return parametric.PPrime(t).dot(segment.normalVector);
   };
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
-    parametric.c1DiscontinuityParameterValues,
-    dp
-  );
+  const zeros = parametric.tRanges
+    // .map(tRange => [
+    //   Math.max(tRange[0], tracingTMin), // the lower bound of the interval must be the max of these numbers
+    //   Math.min(tRange[1], tracingTMax) // the upper bound of the interval must be the min of these numbers
+    // ])
+    .flatMap(tValues =>
+      SENodule.findZerosParametrically(
+        d,
+        tValues,
+        [], // FIXME
+        // parametric.c1DiscontinuityParameterValues,
+        dp
+      )
+    );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  console.log("Number of Para/seg Intersections:", zeros.length);
+  const returnItems: IntersectionReturnType[] = zeros.map((z, ind) => {
+    const intersectionPoint = new Vector3();
+    intersectionPoint.copy(parametric.P(z));
 
-  const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
+    // it must be on both the segment and the visible part of the parametric
+    return {
+      vector: intersectionPoint,
+      exists: segment.onSegment(intersectionPoint)
     };
-    returnItems.push(intersection);
-  }
+  });
 
-  // console.log("Number of Para/seg Intersections:", zeros.length);
-  if (returnItems.length >= zeros.length)
-    zeros.forEach((z, ind) => {
-      returnItems[ind].vector.copy(
-        parametric.ref
-          .P(z)
-          .applyMatrix4(
-            tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-          )
-      );
-      if (tracingTMin <= z && z <= tracingTMax) {
-        // it must be on both the segment and the visible part of the parametric
-        returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
-      } else {
-        returnItems[ind].exists = false;
-      }
-    });
   return returnItems;
 }
 
@@ -679,10 +751,11 @@ export function intersectCircles(
   n1: Vector3, // center
   arc1: number, // arc radius
   n2: Vector3,
-  arc2: number
+  arc2: number,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
   //Initialize the items and the return items
-  const returnItems = [];
+  const returnItems: IntersectionReturnType[] = [];
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
@@ -709,7 +782,14 @@ export function intersectCircles(
 
   // distance between the two centers
   const centerDistance = center1.angleTo(center2); // distance between the two centers
-
+  if (
+    firstTimeIntersection &&
+    (Math.abs(centerDistance) < SETTINGS.tolerance ||
+      Math.PI - SETTINGS.tolerance < Math.abs(centerDistance))
+  ) {
+    // the centers are either the same or antipodal so the circles will never intersect.
+    return returnItems;
+  }
   // The circles intersect if and only if the three lengths have the property that each is less than the sum of the other two (by the converse to the spherical triangle inequality)
   if (
     centerDistance < radius1 + radius2 &&
@@ -816,18 +896,18 @@ export function intersectCircles(
 export function intersectCircleWithEllipse(
   circle: SECircle,
   ellipse: SEEllipse
-  // layer: Two.Group
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the circle into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(circle.centerSEPoint.locationVector);
   transformedToStandard.applyMatrix4(
-    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+    tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the ellipse minus the radius of the circle
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(-1, Math.min(ellipse.ref.E(t).dot(transformedToStandard), 1))
@@ -835,7 +915,7 @@ export function intersectCircleWithEllipse(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * ellipse.ref.Ep(t).dot(transformedToStandard)) /
       Math.sqrt(
@@ -851,11 +931,17 @@ export function intersectCircleWithEllipse(
       )
     );
   };
-
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse.ref.tMin,
-    ellipse.ref.tMax,
+    // FIXME
+    tValues,
+    // ellipse.ref.tMin,
+    // ellipse.ref.tMax,
     [],
     dp
   );
@@ -897,40 +983,38 @@ export function intersectCircleWithEllipse(
  */
 export function intersectCircleWithParametric(
   circle: SECircle,
-  parametric: SEParametric
-  // layer: Two.Group
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
+  // layer: Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(circle.centerSEPoint.locationVector);
-  transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
 
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the parametric minus the radius of the circle
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
-        Math.max(
-          -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
-        )
+        Math.max(-1, Math.min(parametric.P(t).dot(transformedToStandard), 1))
       ) - radius
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandard)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandard)) /
       Math.sqrt(
         1 -
           Math.max(
             -1,
-            Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
+            Math.min(parametric.P(t).dot(transformedToStandard), 1)
           ) *
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandard), 1)
+              Math.min(parametric.P(t).dot(transformedToStandard), 1)
             )
       )
     );
@@ -939,15 +1023,17 @@ export function intersectCircleWithParametric(
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
-    parametric.c1DiscontinuityParameterValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(
+      d,
+      tValues,
+      [], // FIXME
+      // parametric.c1DiscontinuityParameterValues,
+      dp
+    )
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
@@ -959,12 +1045,9 @@ export function intersectCircleWithParametric(
   }
 
   // console.log("Number of Para/circ Intersections:", zeros.length);
+  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      parametric.ref
-        .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix))
-    );
+    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the circle (which by being a zero of d, it is!) and the visible part of the parametric
       returnItems[ind].exists = true;
@@ -983,23 +1066,93 @@ export function intersectCircleWithParametric(
  */
 export function intersectEllipseWithEllipse(
   ellipse1: SEEllipse,
-  ellipse2: SEEllipse
+  ellipse2: SEEllipse,
+  firstTimeIntersection = false
 ): IntersectionReturnType[] {
+  const returnItems: IntersectionReturnType[] = [];
+  // Is this the first time these ellipses have been intersected and are they confocal? (Or antipodal-lly confocal). If so, they will never intersect
+  if (
+    firstTimeIntersection &&
+    //E1 focus 1 is the same as E2 focus 1
+    //E1 focus 2 is the same as E2 focus 2
+    ((tempVec1
+      .subVectors(
+        ellipse1.focus1SEPoint.locationVector,
+        ellipse2.focus1SEPoint.locationVector
+      )
+      .isZero() &&
+      tempVec2
+        .subVectors(
+          ellipse1.focus2SEPoint.locationVector,
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero()) ||
+      //-(E1 focus 1) is the same as E2 focus 2
+      //-(E1 focus 2) is the same as E2 focus 1
+      (tempVec1
+        .subVectors(
+          tempVec
+            .copy(ellipse1.focus1SEPoint.locationVector)
+            .multiplyScalar(-1),
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            tempVec3
+              .copy(ellipse1.focus2SEPoint.locationVector)
+              .multiplyScalar(-1),
+            ellipse2.focus1SEPoint.locationVector
+          )
+          .isZero()) ||
+      //E1 focus 1 is the same as E2 focus 2
+      //E1 focus 2 is the same as E2 focus 1
+      (tempVec1
+        .subVectors(
+          ellipse1.focus1SEPoint.locationVector,
+          ellipse2.focus2SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            ellipse1.focus2SEPoint.locationVector,
+            ellipse2.focus1SEPoint.locationVector
+          )
+          .isZero()) ||
+      //-(E1 focus 1) is the same as E2 focus 1
+      //-(E1 focus 2) is the same as E2 focus 2
+      (tempVec1
+        .subVectors(
+          tempVec
+            .copy(ellipse1.focus1SEPoint.locationVector)
+            .multiplyScalar(-1),
+          ellipse2.focus1SEPoint.locationVector
+        )
+        .isZero() &&
+        tempVec2
+          .subVectors(
+            tempVec3
+              .copy(ellipse1.focus2SEPoint.locationVector)
+              .multiplyScalar(-1),
+            ellipse2.focus2SEPoint.locationVector
+          )
+          .isZero()))
+  ) {
+    return returnItems;
+  }
+
   // Transform ellipse1 into the standard coordinates of the ellipse2.
   const transformedToStandardFocus1 = new Vector3();
   const transformedToStandardFocus2 = new Vector3();
   transformedToStandardFocus1.copy(ellipse1.focus1SEPoint.locationVector);
   transformedToStandardFocus2.copy(ellipse1.focus2SEPoint.locationVector);
-  transformedToStandardFocus1.applyMatrix4(
-    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
-  );
-  transformedToStandardFocus2.applyMatrix4(
-    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
-  );
+  tmpMatrix.copy(ellipse2.ref.ellipseFrame).invert();
+  transformedToStandardFocus1.applyMatrix4(tmpMatrix);
+  transformedToStandardFocus2.applyMatrix4(tmpMatrix);
   const angleSum = ellipse1.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
   // point on ellipse2 to the transformed foci of ellipse1 minus the angleSum of ellipse1
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(
@@ -1017,7 +1170,7 @@ export function intersectEllipseWithEllipse(
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
       (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
@@ -1046,14 +1199,20 @@ export function intersectEllipseWithEllipse(
     );
   };
 
+  //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+  const tValues: number[] = [];
+  for (let i = 0; i <= 100; i++) {
+    tValues.push((i * 2 * Math.PI) / 100);
+  }
   const zeros = SENodule.findZerosParametrically(
     d,
-    ellipse2.ref.tMin,
-    ellipse2.ref.tMax,
+    tValues, // FIXME
+    // ellipse2.ref.tMin,
+    // ellipse2.ref.tMax,
     [],
     dp
   );
-  const returnItems: IntersectionReturnType[] = [];
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: false
@@ -1091,66 +1250,61 @@ export function intersectEllipseWithEllipse(
  */
 export function intersectEllipseWithParametric(
   ellipse: SEEllipse,
-  parametric: SEParametric
+  parametric: SEParametric,
+  inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
   // Transform ellipse into the standard coordinates of the ellipse.
   const transformedToStandardFocus1 = new Vector3();
   const transformedToStandardFocus2 = new Vector3();
   transformedToStandardFocus1.copy(ellipse.focus1SEPoint.locationVector);
   transformedToStandardFocus2.copy(ellipse.focus2SEPoint.locationVector);
-  transformedToStandardFocus1.applyMatrix4(SEStore.inverseTotalRotationMatrix);
-  transformedToStandardFocus2.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+  transformedToStandardFocus1.applyMatrix4(inverseTotalRotationMatrix);
+  transformedToStandardFocus2.applyMatrix4(inverseTotalRotationMatrix);
   const angleSum = ellipse.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
   // point on ellipse to the transformed foci of ellipse minus the angleSum of ellipse
-  const d: (t: number) => number = function(t: number): number {
+  const d: (t: number) => number = function (t: number): number {
     return (
       Math.acos(
         Math.max(
           -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandardFocus1), 1)
+          Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
         )
       ) +
       Math.acos(
         Math.max(
           -1,
-          Math.min(parametric.ref.P(t).dot(transformedToStandardFocus2), 1)
+          Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
         )
       ) -
       angleSum
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
-  const dp = function(t: number): number {
+  const dp = function (t: number): number {
     return (
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandardFocus1)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
           1 -
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandardFocus1), 1)
+              Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
             ) *
               Math.max(
                 -1,
-                Math.min(
-                  parametric.ref.P(t).dot(transformedToStandardFocus1),
-                  1
-                )
+                Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
               )
         ) +
-      (-1 * parametric.ref.PPrime(t).dot(transformedToStandardFocus2)) /
+      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus2)) /
         Math.sqrt(
           1 -
             Math.max(
               -1,
-              Math.min(parametric.ref.P(t).dot(transformedToStandardFocus2), 1)
+              Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
             ) *
               Math.max(
                 -1,
-                Math.min(
-                  parametric.ref.P(t).dot(transformedToStandardFocus2),
-                  1
-                )
+                Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
               )
         )
     );
@@ -1159,15 +1313,17 @@ export function intersectEllipseWithParametric(
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    parametric.tNumbers.min,
-    parametric.tNumbers.max,
-    parametric.c1DiscontinuityParameterValues,
-    dp
+  const zeros = parametric.tRanges.flatMap(tValues =>
+    SENodule.findZerosParametrically(
+      d,
+      tValues,
+      [], // FIXME
+      // parametric.c1DiscontinuityParameterValues,
+      dp
+    )
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
@@ -1179,12 +1335,9 @@ export function intersectEllipseWithParametric(
   }
 
   // console.log("Number of Para/ellsp Intersections:", zeros.length);
+  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      parametric.ref
-        .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix))
-    );
+    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
     if (tracingTMin <= z && z <= tracingTMax) {
       // it must be on both the ellipse (which by being a zero of d, it is!) and the visible part of the parametric
       returnItems[ind].exists = true;
@@ -1199,17 +1352,118 @@ export function intersectParametricWithParametric(
   parametric1: SEParametric,
   parametric2: SEParametric
 ): IntersectionReturnType[] {
-  // TODO: complete this function
-  const maxNumberOfIntersections = 0;
+  // Given two parametric curves P(s) and Q(t). Finding intersection points of both curves is akin to
+  // looking for s,t such that D(s,t) = P(s) - Q(t) = 0. Which can be solved by looking for
+  // the zeroes of the following function of two variables D(s,t) = P(s) - Q(t)
+
   //  parametric1.ref.numberOfParts + parametric2.ref.numberOfParts;
 
+  let sCurve: SEParametric;
+  let tCurve: SEParametric;
+  if (parametric1.tRanges.length < parametric2.tRanges.length) {
+    sCurve = parametric2;
+    tCurve = parametric1;
+  } else {
+    sCurve = parametric1;
+    tCurve = parametric2;
+  }
+  // parametric1.tRanges.forEach((tVals: number[], part: number) => {
+  //   console.debug(
+  //     `S-curve partition-${part} has ${tVals.length} sample points`
+  //   );
+  // });
+  // parametric2.tRanges.forEach((tVals: number[], part: number) => {
+  //   console.debug(
+  //     `T-curve partition-${part} has ${tVals.length} sample points`
+  //   );
+  // });
   const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
-    };
-    returnItems.push(intersection);
+  // let closestDistance = Number.MAX_VALUE;
+  /*
+  foreach (s in parametric1) {
+    Find T-values of Q(t) such that of Q(t) - P(s) = 0, t is variable, s is constant
+    // Return the result as a tuple (s, t1), (s, t2), ...
+  }
+  */
+  type STDistance = {
+    sPart: number;
+    tPart: number;
+    sIndex: number;
+    tIndex: number;
+    distance: number;
+  };
+  const distanceHeap: MinHeap<STDistance> = new MinHeap(
+    (z: STDistance) => z.distance
+  );
+
+  // Generate nearby (s,t) pairs
+  sCurve.tRanges.forEach((sValues: number[], sPart: number) => {
+    sValues.forEach((sVal: number, sIndex: number) => {
+      const sPoint = sCurve.P(sVal);
+      const fn = (tVal: number): number => {
+        const tPoint = tCurve.P(tVal);
+        const distance = tPoint.distanceToSquared(sPoint);
+        return distance;
+      };
+      tCurve.tRanges.forEach((tValues: number[], tPart: number) => {
+        tValues.forEach((tVal: number, tIndex: number) => {
+          const checkDistance = fn(tVal);
+          if (checkDistance < 0.01)
+            distanceHeap.push({
+              sPart,
+              sIndex,
+              tPart,
+              tIndex,
+              distance: fn(tVal)
+            });
+        });
+      });
+    });
+  });
+  console.debug("Par/Par possible intersection", distanceHeap.size());
+  const distanceOf = (s: number, t: number): number => {
+    return sCurve.P(s).distanceToSquared(tCurve.P(t));
+  };
+
+  const diffPQ = new Vector3();
+  const st = new Vector2();
+  const st_next = new Vector2();
+  while (distanceHeap.size() > 0) {
+    const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
+    const sVal = sCurve.tRanges[sPart][sIndex];
+    const sPoint = sCurve.P(sVal);
+    const tVal = tCurve.tRanges[tPart][tIndex];
+    const tPoint = tCurve.P(tVal);
+    // console.debug(
+    //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
+    //     4
+    //   )} T-value ${tVal} ${tPoint.toFixed(4)} with distance ${distance}`
+    // );
+
+    st.set(sVal, tVal);
+    let dist: number = Number.MAX_VALUE;
+    let delta_st: number;
+    let iter = 0;
+    do {
+      dist = distanceOf(st.x, st.y);
+      diffPQ.subVectors(sCurve.P(st.x), tCurve.P(st.y));
+      const dHds = 2 * diffPQ.dot(sCurve.PPrime(st.x));
+      const dHdt = -2 * diffPQ.dot(tCurve.PPrime(st.y));
+      st_next.set(st.x - dHds * dist, st.y - dHdt * dist);
+      // console.debug("Next evaluation at ", st_next.toFixed(6));
+      delta_st = st_next.distanceTo(st);
+      st.copy(st_next);
+      iter++;
+    } while (delta_st > 1e-5 && iter < 50);
+    if (delta_st <= 1e-5 && dist < distance) {
+      console.debug(
+        `Improved intersection at S-value ${st.x}  T-value ${st.y} with distance ${dist}`
+      );
+      returnItems.push({
+        /*s: st.x, t: st.y, */ exists: true,
+        vector: sCurve.P(st.x).clone()
+      });
+    }
   }
   return returnItems;
 }
@@ -1228,7 +1482,8 @@ export function intersectParametricWithParametric(
 
 export function intersectTwoObjects(
   one: SENodule,
-  two: SENodule
+  two: SENodule,
+  inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
   if (one instanceof SELine) {
     if (two instanceof SELine) return intersectLineWithLine(one, two);
@@ -1238,7 +1493,7 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectLineWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectLineWithParametric(one, two);
+      return intersectLineWithParametric(one, two, inverseTotalRotationMatrix);
   } else if (one instanceof SESegment) {
     if (two instanceof SESegment) return intersectSegmentWithSegment(one, two);
     else if (two instanceof SECircle)
@@ -1246,7 +1501,11 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectSegmentWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectSegmentWithParametric(one, two);
+      return intersectSegmentWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SECircle) {
     if (two instanceof SECircle)
       return intersectCircles(
@@ -1258,17 +1517,32 @@ export function intersectTwoObjects(
     else if (two instanceof SEEllipse)
       return intersectCircleWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectCircleWithParametric(one, two);
+      return intersectCircleWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SEEllipse) {
     if (two instanceof SEEllipse) return intersectEllipseWithEllipse(one, two);
     else if (two instanceof SEParametric)
-      return intersectEllipseWithParametric(one, two);
+      return intersectEllipseWithParametric(
+        one,
+        two,
+        inverseTotalRotationMatrix
+      );
   } else if (one instanceof SEParametric) {
-    if (two instanceof SEParametric)
-      intersectParametricWithParametric(one, two);
+    if (two instanceof SEParametric) {
+      const xcross = intersectParametricWithParametric(one, two);
+      xcross.forEach((z, ind) => {
+        console.debug(`Intersection #${ind} at ${z.vector.toFixed(4)}`);
+      });
+      return xcross;
+    }
   }
-  throw "Attempted to intersect non-one dimensional objects " +
+  throw (
+    "Attempted to intersect non-one dimensional objects " +
     `${one.name}` +
     " and " +
-    `${two.name}`;
+    `${two.name}`
+  );
 }

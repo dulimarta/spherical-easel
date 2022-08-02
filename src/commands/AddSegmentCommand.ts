@@ -75,11 +75,11 @@ export class AddSegmentCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "segmentNormalVector=" + this.seSegment.normalVector.toFixed(7),
+      "segmentNormalVector=" + this.seSegment.normalVector.toFixed(9),
       "segmentArcLength=" + this.seSegment.arcLength,
       "segmentStartPointName=" + this.startSEPoint.name,
       "segmentEndPointName=" + this.endSEPoint.name
@@ -141,7 +141,7 @@ export class AddSegmentCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("segment");
       const seLabel = new SELabel(label, seSegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

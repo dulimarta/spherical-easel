@@ -7,7 +7,22 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Vue at localhost",
+      "name": "Vue@localhost (Chrome)",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}",
+      "breakOnLoad": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "${webRoot}/*",
+        "webpack:///src/*": "${webRoot}/*",
+        "webpack:///*": "*",
+        "webpack:///./~/*": "${webRoot}/node_modules/*",
+        "meteor://💻app/*": "${webRoot}/*"
+      }
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Vue@localhost (Firefox)",
       "url": "http://localhost:8080",
       "webRoot": "${workspaceFolder}",
       "breakOnLoad": true,

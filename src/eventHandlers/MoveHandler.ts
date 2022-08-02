@@ -19,13 +19,13 @@ import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
-
-import { SEStore } from "@/store";
 import { SEPolygon } from "@/models/SEPolygon";
 import { ObjectNames, ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+// import { Group } from "two.js/src/group";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
@@ -111,6 +111,7 @@ export default class MoveHandler extends Highlighter {
         this.movingSomething = true;
         return;
       }
+
       const labels = this.hitSELabels.filter(
         n => n.isFreeToMove() && n.showing
       );
@@ -235,20 +236,22 @@ export default class MoveHandler extends Highlighter {
         this.currentSphereVector.y,
         -1 * this.currentSphereVector.z
       );
-      const hitSENodules = SEStore.findNearbySENodules(
-        sphereVec,
-        this.currentScreenVector
-      ).filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
-          if (!n.isUserCreated) {
-            return n.exists; //You always hit automatically created intersection points if it exists
+      const hitSENodules = MoveHandler.store
+        .findNearbySENodules(sphereVec, this.currentScreenVector)
+        .filter((n: SENodule) => {
+          if (
+            n instanceof SEIntersectionPoint ||
+            n instanceof SEAntipodalPoint
+          ) {
+            if (!n.isUserCreated) {
+              return n.exists; //You always hit automatically created intersection points if it exists
+            } else {
+              return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+            }
           } else {
             return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
           }
-        } else {
-          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-        }
-      });
+        });
       // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
       if (!event.shiftKey && hitSENodules.length > 0) {
         EventBus.fire("show-alert", {
@@ -355,7 +358,7 @@ export default class MoveHandler extends Highlighter {
       const rotationAngle = this.beforeMoveVector.angleTo(this.afterMoveVector);
       desiredZAxis.crossVectors(this.beforeMoveVector, this.afterMoveVector);
       if (desiredZAxis.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-        if (rotationAngle == 0) {
+        if (Math.abs(rotationAngle) < SETTINGS.tolerance) {
           // The vectors are identical
           this.changeInPositionRotationMatrix.identity();
         } else {
@@ -481,11 +484,13 @@ export default class MoveHandler extends Highlighter {
           // The after object was created during the move.
           // so we push a command on to the stack to undo this objects existence
           // so do to this command means the the object exists and is showing
-          // to undo this command meqns the the object doesn't exist and is not showing
+          // to undo this command means the the object doesn't exist and is not showing
           moveCommandGroup.addCommand(
             new SetNoduleExistCommand(seNoduleAfterState.object, true, true)
           );
-          console.log("new object was created from before to after");
+          console.debug(
+            `A new object ${seNoduleAfterState.object.name} was revealed from before to after during a move event`
+          );
         } else {
           switch (seNoduleAfterState.kind) {
             // For these three types of free objects the location vector was recorded

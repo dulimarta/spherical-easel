@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -11,10 +10,15 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
-import AppStore from "@/store";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
+import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
+// import { Group } from "two.js/src/group";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -54,7 +58,7 @@ export default class Polygon extends Nodule {
   /**
    * Vuex global state
    */
-  protected store = AppStore; //
+  // protected store = AppStore; //
 
   /**
    * The area of the polygon. This must be updated before the updateDisplay can be called
@@ -706,7 +710,7 @@ export default class Polygon extends Nodule {
         2 * Math.PI
       );
       // In this case set the frontFillVertices to the entire boundary circle which are boundary,
-      boundary.forEach((v, ind) => {
+      boundary.forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -719,7 +723,7 @@ export default class Polygon extends Nodule {
         }
       });
       // In this case the backFillVertices must trace out first the boundary circle  and then the polygon
-      boundary.reverse().forEach((v, ind) => {
+      boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -789,7 +793,7 @@ export default class Polygon extends Nodule {
       //   this.pool.length
       // );
       // In this case set the backFillVertices to the entire boundary circle which are boundary,
-      boundary.forEach((v, ind) => {
+      boundary.forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -803,7 +807,7 @@ export default class Polygon extends Nodule {
       });
       // console.log("1 pool size", this.pool.length);
       // In this case the frontFillVertices must trace out first the boundary circle and then the polygon
-      boundary.reverse().forEach((v, ind) => {
+      boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = v[0];
@@ -1009,10 +1013,10 @@ export default class Polygon extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the Polygon
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -1022,23 +1026,25 @@ export default class Polygon extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
 
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
-          this.frontFills.forEach(fill => (fill.fill = this.frontGradient));
+          this.frontFills.forEach(fill => {
+            fill.fill = this.frontGradient;
+          });
         }
 
         // BACK
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -1048,14 +1054,18 @@ export default class Polygon extends Nodule {
               frontStyle?.fillColor ?? "black"
             );
 
-            this.backFills.forEach(fill => (fill.fill = this.backGradient));
+            this.backFills.forEach(fill => {
+              fill.fill = this.backGradient;
+            });
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFills.forEach(fill => (fill.fill = this.backGradient));
+            this.backFills.forEach(fill => {
+              fill.fill = this.backGradient;
+            });
           }
         }
         break;

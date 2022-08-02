@@ -1,10 +1,10 @@
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
+
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
@@ -13,9 +13,21 @@ export class SESegmentLength extends SEExpression {
     this.seSegment = parent;
     this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get value(): number {
     return this.seSegment.arcLength;
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.seSegment.label) {
+      this.seSegment.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   public get noduleDescription(): string {
@@ -37,13 +49,7 @@ export class SESegmentLength extends SEExpression {
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (!this.canUpdateNow()) return;
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this.exists = this.seSegment.exists;
 
     if (this.exists) {
@@ -52,6 +58,15 @@ export class SESegmentLength extends SEExpression {
         this.seSegment.label.ref.value = [this.value];
       }
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (!this.canUpdateNow()) return;
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // These segment measurement is completely determined by its parent and an update on the parent
     // will cause this measurement update correctly. So we don't store any additional information
@@ -68,6 +83,4 @@ export class SESegmentLength extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

@@ -22,16 +22,18 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
   }
 
   // eslint-disable-next-line
-  actionOnPoint(p: SEPoint): void {
+  actionOnPoint(p: SEPoint): boolean {
     // p.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnLine(m: SELine): void {
+  actionOnLine(m: SELine): boolean {
     // m.update();
+    return false;
   }
 
-  actionOnSegment(s: SESegment): void {
+  actionOnSegment(s: SESegment): boolean {
     s.normalVector = this.normalVector; // Set the new normal vector
     s.arcLength = this.arcLength; // set the new arcLength
     //console.log("position mover on segment", s.name, s.normalVector.toFixed(2));
@@ -39,31 +41,38 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     // The undo and restore methods of command cause one update for display at the end of every command or
     // command group
     //s.update();
+    return true;
   }
 
   // eslint-disable-next-line
-  actionOnCircle(c: SECircle): void {
+  actionOnCircle(c: SECircle): boolean {
     // c.update();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnLabel(l: SELabel): void {
+  actionOnLabel(l: SELabel): boolean {
     // l.update();
+    return false;
   }
   // eslint-disable-next-line
-  actionOnEllipse(e: SEEllipse): void {
+  actionOnEllipse(e: SEEllipse): boolean {
     //Ellipses are completely determined by three points they depend on so no need to update them
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnAngleMarker(a: SEAngleMarker): void {
+  actionOnAngleMarker(a: SEAngleMarker): boolean {
     //AngleMarekrs are completely determined by their parents so no need to update them
+    return false;
   }
   // eslint-disable-next-line
-  actionOnParametric(p: SEParametric): void {
+  actionOnParametric(p: SEParametric): boolean {
     //Parametric curves are completely determined by their parents so no need to update them
+    return false;
   }
   // eslint-disable-next-line
-  actionOnPolygon(p: SEPolygon): void {
+  actionOnPolygon(p: SEPolygon): boolean {
     //Parametric curves are completely determined by their parents so no need to update them
+    return false;
   }
 }

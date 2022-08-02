@@ -1,7 +1,6 @@
 import { SENodule } from "@/models/SENodule";
 import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEStore } from "@/store";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 
@@ -14,9 +13,9 @@ export class AddPencilCommand extends Command {
   }
 
   do(): void {
-    SEStore.addPoint(this.pencil.commonPoint);
+    Command.store.addPoint(this.pencil.commonPoint);
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
-      SEStore.addLine(line);
+      Command.store.addLine(line);
       this.pencil.commonPoint.registerChild(line);
       this.pencil.commonParametric.registerChild(line);
     });
@@ -27,10 +26,6 @@ export class AddPencilCommand extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      "Undoing SEPencil, number of perp lines",
-      this.pencil.lines.length
-    );
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
       this.pencil.commonPoint.unregisterChild(line);
       this.pencil.commonParametric.unregisterChild(line);
@@ -40,7 +35,7 @@ export class AddPencilCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return null;
+    return null; // Exclude this command from interpretation
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {

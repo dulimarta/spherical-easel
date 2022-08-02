@@ -1,5 +1,4 @@
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -8,6 +7,10 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
+import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -308,16 +311,16 @@ export default class Line extends Nodule {
     dup.backHalf.rotation = this.backHalf.rotation;
     // dup.frontArcLen = this.frontArcLen;
     // dup.backArcLen = this.backArcLen;
-    dup.frontHalf.vertices.forEach((v, pos) => {
+    dup.frontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontHalf.vertices[pos]);
     });
-    dup.backHalf.vertices.forEach((v, pos) => {
+    dup.backHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backHalf.vertices[pos]);
     });
-    dup.glowingFrontHalf.vertices.forEach((v, pos) => {
+    dup.glowingFrontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingFrontHalf.vertices[pos]);
     });
-    dup.glowingBackHalf.vertices.forEach((v, pos) => {
+    dup.glowingBackHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingBackHalf.vertices[pos]);
     });
     return dup as this;
@@ -362,14 +365,13 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    //console.debug("FREEE line: adjustsize");
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =
       (Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100;
-    //console.debug("  linewidth", this.frontHalf.linewidth);
+
     this.backHalf.linewidth =
       (Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
@@ -390,20 +392,20 @@ export default class Line extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the line
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         // Front
         // no fillColor
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
         ) {
           this.frontHalf.noStroke();
         } else {
@@ -425,7 +427,7 @@ export default class Line extends Nodule {
         // Back
         // no fill color
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
         ) {
           this.backHalf.noStroke();
         } else {
@@ -452,16 +454,15 @@ export default class Line extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // Front
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = (frontStyle?.strokeColor ??
-            "black") as Two.Color;
+          this.frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -486,7 +487,7 @@ export default class Line extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -497,10 +498,10 @@ export default class Line extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backHalf.noStroke();
           } else {
-            this.backHalf.stroke = backStyle?.strokeColor as Two.Color;
+            this.backHalf.stroke = backStyle?.strokeColor ?? "black";
           }
         }
         // strokeWidthPercent applied by adjustSize()

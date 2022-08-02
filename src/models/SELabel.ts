@@ -6,7 +6,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
 import { Labelable, ObjectState } from "@/types";
-import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
@@ -15,6 +14,7 @@ import { SEAngleMarker } from "./SEAngleMarker";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
 import { SEPolygon } from "./SEPolygon";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -27,7 +27,7 @@ export class SELabel extends SENodule implements Visitable {
   // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
-  public ref: Label;
+  public declare ref: Label;
   /**
    * The  parent of this SELabel
    */
@@ -37,6 +37,7 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
+  private store: SEStoreType;
   private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
@@ -46,9 +47,10 @@ export class SELabel extends SENodule implements Visitable {
   constructor(label: Label, parent: SENodule) {
     super();
 
+    this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
-    label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
+
     (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
     this.name = "La" + SENodule.LABEL_COUNT;
@@ -60,14 +62,19 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
+      this.ref.defaultName = `Am${this.parent.angleMarkerNumber}`;
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
+      this.ref.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
-      label.shortUserName = parent.name;
+      if (!(this.parent instanceof SEPoint)) {
+        label.shortUserName = parent.name; // the short user name of a point's label is set else where via point visible count
+      }
+      this.ref.defaultName = this.parent.name;
     }
     // Set the size for zoom
     this.ref.adjustSize();
@@ -121,10 +128,39 @@ export class SELabel extends SENodule implements Visitable {
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
 
-  accept(v: Visitor): void {
-    v.actionOnLabel(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnLabel(this);
+  }
+
+  public shallowUpdate(): void {
+    //These labels don't exist when their parent doesn't exist
+    this._exists = this.parent.exists;
+    if (this._exists) {
+      this.tmpVector.copy(this._locationVector);
+      this._locationVector.copy(
+        (this.parent as unknown as Labelable).closestLabelLocationVector(
+          this.tmpVector,
+          this.store.zoomMagnificationFactor
+        )
+      );
+      //Update the location of the associate plottable Label
+      this.ref.positionVector = this._locationVector;
+      if (this.showing) {
+        this.ref.updateDisplay();
+      }
+    }
+
+    // Update visibility
+    if (this._showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
   }
 
   public update(
@@ -136,27 +172,7 @@ export class SELabel extends SENodule implements Visitable {
     if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
-
-    //These labels don't exist when their parent doesn't exist
-    this._exists = this.parent.exists;
-    if (this._exists) {
-      this.tmpVector.copy(this._locationVector);
-      this._locationVector.copy(
-        (this.parent as unknown as Labelable).closestLabelLocationVector(
-          this.tmpVector,
-          SEStore.zoomMagnificationFactor
-        )
-      );
-      //Update the location of the associate plottable Label (setter also updates the display)
-      this.ref.positionVector = this._locationVector;
-    }
-
-    // Update visibility
-    if (this._showing && this._exists) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
+    this.shallowUpdate();
 
     // Labels are NOT completely determined by their parents so we store additional information
     if (objectState && orderedSENoduleList) {
@@ -192,16 +208,18 @@ export class SELabel extends SENodule implements Visitable {
         .copy(
           (this.parent as unknown as Labelable).closestLabelLocationVector(
             pos,
-            SEStore.zoomMagnificationFactor
+            this.store.zoomMagnificationFactor
           )
         )
         .normalize();
     } else {
-      console.log("label parent out of date");
       this._locationVector.copy(pos);
     }
     // Set the position of the associated displayed plottable Label
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
   get locationVector(): Vector3 {
     return this._locationVector;
@@ -225,16 +243,29 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = SEStore.canvasWidth;
+    const canvasSize = this.store.canvasWidth;
+    const zoomTranslation = this.store.zoomTranslation;
 
     return (
       boundingBox.left - canvasSize / 2 <
-        unitIdealVector.x * SETTINGS.boundaryCircle.radius &&
-      unitIdealVector.x * SETTINGS.boundaryCircle.radius <
+        unitIdealVector.x *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[0] &&
+      unitIdealVector.x *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[0] <
         boundingBox.right - canvasSize / 2 &&
       boundingBox.top - canvasSize / 2 <
-        -unitIdealVector.y * SETTINGS.boundaryCircle.radius && // minus sign because text layers are not y flipped
-      -unitIdealVector.y * SETTINGS.boundaryCircle.radius < // minus sign because text layers are not y flipped
+        -unitIdealVector.y *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[1] && // minus sign because text layers are not y flipped
+      -unitIdealVector.y *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[1] < // minus sign because text layers are not y flipped
         boundingBox.bottom - canvasSize / 2
     );
   }

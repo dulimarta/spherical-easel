@@ -316,7 +316,7 @@ describe("SphereFrame: Delete Tool", () => {
       pointOn.y * R,
       pointOn.z < 0
     );
-    expect(SEStore.seCircles.length).toEqual(prevEllipseCount);
+    expect(SEStore.seEllipses.length).toEqual(prevEllipseCount);
   });
 
   it("delete ellipses when clicking one of its point", async () => {
@@ -340,7 +340,7 @@ describe("SphereFrame: Delete Tool", () => {
       pointOn.y * R,
       pointOn.z < 0
     );
-    expect(SEStore.seCircles.length).toEqual(prevEllipseCount);
+    expect(SEStore.seEllipses.length).toEqual(prevEllipseCount);
   });
 
   it("deletes antipodes when clicking on the antipode", async () => {
@@ -456,8 +456,8 @@ describe("SphereFrame: Delete Tool", () => {
         171.2592235729355,
         isPt1Foreground,
         198.6068262959697,
-         104.20274438609354,
-         isPt2Foreground,
+        104.20274438609354,
+        isPt2Foreground
       );
       await SEStore.setActionMode({
         id: "pointOnObject",

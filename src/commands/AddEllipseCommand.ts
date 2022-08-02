@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { SEEllipse } from "@/models/SEEllipse";
 import Ellipse from "@/plottables/Ellipse";
@@ -80,7 +80,7 @@ export class AddEllipseCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
@@ -139,7 +139,7 @@ export class AddEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("ellipse");
       const seLabel = new SELabel(label, seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

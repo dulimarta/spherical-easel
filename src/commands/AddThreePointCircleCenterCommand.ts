@@ -21,12 +21,14 @@ export class AddThreePointCircleCenterCommand extends Command {
   private secondSEPoint: SEPoint;
   private thirdSEPoint: SEPoint;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     seThreePointCircleCenter: SEThreePointCircleCenter,
     firstSEPoint: SEPoint,
     secondSEPoint: SEPoint,
     thirdSEPoint: SEPoint,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.seThreePointCircleCenter = seThreePointCircleCenter;
@@ -34,6 +36,11 @@ export class AddThreePointCircleCenterCommand extends Command {
     this.secondSEPoint = secondSEPoint;
     this.thirdSEPoint = thirdSEPoint;
     this.seLabel = seLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -42,6 +49,15 @@ export class AddThreePointCircleCenterCommand extends Command {
     this.thirdSEPoint.registerChild(this.seThreePointCircleCenter);
     Command.store.addPoint(this.seThreePointCircleCenter);
     Command.store.addLabel(this.seLabel);
+    // Set the label to display the name of the points in visible count order
+    this.seThreePointCircleCenter.pointVisibleBefore = true;
+    if (
+      this.seThreePointCircleCenter.label &&
+      this.useVisiblePointCountToRename
+    ) {
+      this.seThreePointCircleCenter.incrementVisiblePointCount();
+      this.seThreePointCircleCenter.label.ref.shortUserName = `P${this.seThreePointCircleCenter.visiblePointCount}`;
+    }
   }
 
   saveState(): void {
@@ -49,6 +65,14 @@ export class AddThreePointCircleCenterCommand extends Command {
   }
 
   restoreState(): void {
+    if (
+      this.seThreePointCircleCenter.label &&
+      this.useVisiblePointCountToRename
+    ) {
+      this.seThreePointCircleCenter.decrementVisiblePointCount();
+      this.seThreePointCircleCenter.label.ref.shortUserName = `P${this.seThreePointCircleCenter.visiblePointCount}`;
+    }
+    this.seThreePointCircleCenter.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.thirdSEPoint.unregisterChild(this.seThreePointCircleCenter);
@@ -89,7 +113,7 @@ export class AddThreePointCircleCenterCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
@@ -150,7 +174,7 @@ export class AddThreePointCircleCenterCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("point");
       const seLabel = new SELabel(label, seThreePointCircleCenter);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -188,7 +212,8 @@ export class AddThreePointCircleCenterCommand extends Command {
         sePoint1,
         sePoint2,
         sePoint3,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(
