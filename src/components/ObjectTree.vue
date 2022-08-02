@@ -167,6 +167,9 @@ export default class ObjectTree extends Vue {
   private displayExpressionSheetAgain = true;
 
   get zeroObjects(): boolean {
+    // console.debug(
+    //   `Object Tree: ZeroObjects -- number of objects ${this.seNodules.length}`
+    // );
     return (
       this.seNodules.filter(n => n.exists).length === 0 &&
       this.expressions.length === 0

@@ -112,6 +112,9 @@ export default class MeasuredCircleHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
+        console.debug(
+          `set action mode from mouse pressed in measure circle handler`
+        );
         MeasuredCircleHandler.store.setActionMode({
           id: "segment",
           name: "CreateLineSegmentDisplayedName"
@@ -797,6 +800,12 @@ export default class MeasuredCircleHandler extends Highlighter {
         });
     }
     circleCommandGroup.execute();
+    //update the display so that any measured segment's label now displays the measurement
+    if (this.measurementSEParent) {
+      this.measurementSEParent.markKidsOutOfDate();
+      this.measurementSEParent.update();
+    }
+
     return true;
   }
 

@@ -108,7 +108,7 @@ export default class SegmentLengthHandler extends Highlighter {
             StyleEditPanels.Label,
             [
               {
-                labelDisplayMode: LabelDisplayMode.NameAndValue
+                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
               }
             ],
             [

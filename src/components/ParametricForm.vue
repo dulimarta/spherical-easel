@@ -916,6 +916,7 @@ export default class ParametricForm extends Vue {
 
     newSEParametric.markKidsOutOfDate();
     newSEParametric.update();
+    console.log("parametric exist?", newSEParametric.exists);
     // }
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };
