@@ -91,7 +91,6 @@ export class SEParametricTracePoint extends SEPoint {
   public setLocationByTime(tVal: number): void {
     this.parametricTime = tVal;
     const pos = this.parametricParent.P(tVal);
-    console.log(`location by time at ${tVal} is ${pos.toFixed(4)}`);
     this.pointDirectLocationSetter(pos);
     this.markKidsOutOfDate();
     this.update();

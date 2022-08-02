@@ -2,13 +2,14 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType } from "@/types";
-import { Vector3, Matrix4 } from "three";
+import { IntersectionReturnType, ParametricIntersectionType } from "@/types";
+import { Vector3, Matrix4, Vector2 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { MinHeap } from "@datastructures-js/heap";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -1164,17 +1165,118 @@ export function intersectParametricWithParametric(
   parametric1: SEParametric,
   parametric2: SEParametric
 ): IntersectionReturnType[] {
-  // TODO: complete this function
-  const maxNumberOfIntersections = 0;
+  // Given two parametric curves P(s) and Q(t). Finding intersection points of both curves is akin to
+  // looking for s,t such that D(s,t) = P(s) - Q(t) = 0. Which can be solved by looking for
+  // the zeroes of the following function of two variables D(s,t) = P(s) - Q(t)
+
   //  parametric1.ref.numberOfParts + parametric2.ref.numberOfParts;
 
+  let sCurve: SEParametric;
+  let tCurve: SEParametric;
+  if (parametric1.tRanges.length < parametric2.tRanges.length) {
+    sCurve = parametric2;
+    tCurve = parametric1;
+  } else {
+    sCurve = parametric1;
+    tCurve = parametric2;
+  }
+  // parametric1.tRanges.forEach((tVals: number[], part: number) => {
+  //   console.debug(
+  //     `S-curve partition-${part} has ${tVals.length} sample points`
+  //   );
+  // });
+  // parametric2.tRanges.forEach((tVals: number[], part: number) => {
+  //   console.debug(
+  //     `T-curve partition-${part} has ${tVals.length} sample points`
+  //   );
+  // });
   const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
-    };
-    returnItems.push(intersection);
+  // let closestDistance = Number.MAX_VALUE;
+  /*
+  foreach (s in parametric1) {
+    Find T-values of Q(t) such that of Q(t) - P(s) = 0, t is variable, s is constant
+    // Return the result as a tuple (s, t1), (s, t2), ...
+  }
+  */
+  type STDistance = {
+    sPart: number;
+    tPart: number;
+    sIndex: number;
+    tIndex: number;
+    distance: number;
+  };
+  const distanceHeap: MinHeap<STDistance> = new MinHeap(
+    (z: STDistance) => z.distance
+  );
+
+  // Generate nearby (s,t) pairs
+  sCurve.tRanges.forEach((sValues: number[], sPart: number) => {
+    sValues.forEach((sVal: number, sIndex: number) => {
+      const sPoint = sCurve.P(sVal);
+      const fn = (tVal: number): number => {
+        const tPoint = tCurve.P(tVal);
+        const distance = tPoint.distanceToSquared(sPoint);
+        return distance;
+      };
+      tCurve.tRanges.forEach((tValues: number[], tPart: number) => {
+        tValues.forEach((tVal: number, tIndex: number) => {
+          const checkDistance = fn(tVal);
+          if (checkDistance < 0.01)
+            distanceHeap.push({
+              sPart,
+              sIndex,
+              tPart,
+              tIndex,
+              distance: fn(tVal)
+            });
+        });
+      });
+    });
+  });
+  console.debug("Par/Par possible intersection", distanceHeap.size());
+  const distanceOf = (s: number, t: number): number => {
+    return sCurve.P(s).distanceToSquared(tCurve.P(t));
+  };
+
+  const diffPQ = new Vector3();
+  const st = new Vector2();
+  const st_next = new Vector2();
+  while (distanceHeap.size() > 0) {
+    const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
+    const sVal = sCurve.tRanges[sPart][sIndex];
+    const sPoint = sCurve.P(sVal);
+    const tVal = tCurve.tRanges[tPart][tIndex];
+    const tPoint = tCurve.P(tVal);
+    // console.debug(
+    //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
+    //     4
+    //   )} T-value ${tVal} ${tPoint.toFixed(4)} with distance ${distance}`
+    // );
+
+    st.set(sVal, tVal);
+    let dist: number = Number.MAX_VALUE;
+    let delta_st: number;
+    let iter = 0;
+    do {
+      dist = distanceOf(st.x, st.y);
+      diffPQ.subVectors(sCurve.P(st.x), tCurve.P(st.y));
+      const dHds = 2 * diffPQ.dot(sCurve.PPrime(st.x));
+      const dHdt = -2 * diffPQ.dot(tCurve.PPrime(st.y));
+      st_next.set(st.x - dHds * dist, st.y - dHdt * dist);
+      // console.debug("Next evaluation at ", st_next.toFixed(6));
+      delta_st = st_next.distanceTo(st);
+      st.copy(st_next);
+      iter++;
+    } while (delta_st > 1e-5 && iter < 50);
+    if (delta_st <= 1e-5 && dist < distance) {
+      console.debug(
+        `Improved intersection at S-value ${st.x}  T-value ${st.y} with distance ${dist}`
+      );
+      returnItems.push({
+        /*s: st.x, t: st.y, */ exists: true,
+        vector: sCurve.P(st.x).clone()
+      });
+    }
   }
   return returnItems;
 }
@@ -1242,8 +1344,13 @@ export function intersectTwoObjects(
         inverseTotalRotationMatrix
       );
   } else if (one instanceof SEParametric) {
-    if (two instanceof SEParametric)
-      intersectParametricWithParametric(one, two);
+    if (two instanceof SEParametric) {
+      const xcross = intersectParametricWithParametric(one, two);
+      xcross.forEach((z, ind) => {
+        console.debug(`Intersection #${ind} at ${z.vector.toFixed(4)}`);
+      });
+      return xcross;
+    }
   }
   throw (
     "Attempted to intersect non-one dimensional objects " +

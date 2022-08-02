@@ -20,7 +20,7 @@ import Two from "two.js";
 // const desiredZAxis = new Vector3();
 // // const Z_AXIS = new Vector3(0, 0, 1);
 // const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
-const SUBDIVISIONS = SETTINGS.parametric.numPoints;
+// const SUBDIVISIONS = SETTINGS.parametric.numPoints;
 
 // WARNING: We can't use one "ptr" declared globally
 // Some functions may call each other, hence overriding the current
@@ -70,8 +70,11 @@ export default class Parametric extends Nodule {
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
-  private markers: Two.Group = new Two.Group();
 
+  // These two variables are used for debugging only for showing
+  // a small circle on each sample point along the curve
+  // To show these circles, modify
+  private markers: Two.Group = new Two.Group();
   private markerPool: Two.Circle[] = [];
   /**
    * The styling variables for the drawn curve. The user can modify these.
@@ -573,8 +576,8 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
-    // TODO: Remove the marker layers
-    this.markers.addTo(this.foregroundLayer);
+    // TODO: Uncomment the following line to show sample point makers
+    // this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -588,7 +591,8 @@ export default class Parametric extends Nodule {
 
   public removeFromLayers(/*layers: Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
-    this.markers.remove();
+    // TODO: Uncomment the following line when sample point markers are enabled
+    // this.markers.remove();
 
     this.glowingFrontParts.forEach(part => part.remove());
     this.backParts.forEach(part => part.remove());
