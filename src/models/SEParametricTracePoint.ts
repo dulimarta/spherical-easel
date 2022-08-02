@@ -5,7 +5,6 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
-import Parametric from "@/plottables/Parametric";
 const MIN = true;
 
 export class SEParametricTracePoint extends SEPoint {
@@ -82,7 +81,7 @@ export class SEParametricTracePoint extends SEPoint {
    * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
    * @param pos The new position of the point
    */
-  private pointDirectLocationSetter(pos: Vector3): void {
+  public pointDirectLocationSetter(pos: Vector3): void {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
@@ -91,7 +90,6 @@ export class SEParametricTracePoint extends SEPoint {
 
   public setLocationByTime(tVal: number): void {
     this.parametricTime = tVal;
-    // console.log("location by time");
     const pos = this.parametricParent.P(tVal);
     this.pointDirectLocationSetter(pos);
     this.markKidsOutOfDate();
@@ -108,8 +106,8 @@ export class SEParametricTracePoint extends SEPoint {
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
-      this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
-      this._locationVector.applyMatrix4(this.tmpMatrix);
+      // this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
+      // this._locationVector.applyMatrix4(this.tmpMatrix);
 
       // Set the position of the associated displayed plottable Point
       this.ref.positionVector = this._locationVector;

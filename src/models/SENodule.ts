@@ -721,6 +721,7 @@ export abstract class SENodule implements Visitable {
 
     for (let i = 0; i < filteredTValues.length; i++) {
       const tVal = filteredTValues[i];
+      // console.debug(`Checking for zero at T=${tVal}`);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
         // make sure that tVal is not on the avoid list
         zeros.push(tVal);

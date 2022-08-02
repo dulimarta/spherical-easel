@@ -9,7 +9,7 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import { useSEStore } from "@/stores/se";
+// import { useSEStore } from "@/stores/se";
 import Two from "two.js";
 // import { Path } from "two.js/src/path";
 // import { Anchor } from "two.js/src/anchor";
@@ -19,8 +19,8 @@ import Two from "two.js";
 // const desiredYAxis = new Vector3();
 // const desiredZAxis = new Vector3();
 // // const Z_AXIS = new Vector3(0, 0, 1);
-const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
-const SUBDIVISIONS = SETTINGS.parametric.numPoints;
+// const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
+// const SUBDIVISIONS = SETTINGS.parametric.numPoints;
 
 // WARNING: We can't use one "ptr" declared globally
 // Some functions may call each other, hence overriding the current
@@ -35,8 +35,8 @@ const SUBDIVISIONS = SETTINGS.parametric.numPoints;
  * may change: longer path will hold more subdivision points (while keeping the
  * total points 2N so we don't create/remove new points)
  */
+
 export default class Parametric extends Nodule {
-  public partId = 0; // just for debugging
   /**
    * The vector P(t) for tMin <= t <= tMax P(t)= parameterization traces out the curve
    * And the vector P'(t) = parameterizationPrime of the curve.
@@ -70,6 +70,12 @@ export default class Parametric extends Nodule {
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
+
+  // These two variables are used for debugging only for showing
+  // a small circle on each sample point along the curve
+  // To show these circles, modify
+  private markers: Two.Group = new Two.Group();
+  private markerPool: Two.Circle[] = [];
   /**
    * The styling variables for the drawn curve. The user can modify these.
    */
@@ -112,10 +118,9 @@ export default class Parametric extends Nodule {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
-  private inverseTotalRotationMatrix: Matrix4;
+  // private inverseTotalRotationMatrix: Matrix4;
   constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-    console.debug("Parametric constructor", tMin, tMax);
     this.tMin = tMin;
     this.tMax = tMax;
 
@@ -126,17 +131,20 @@ export default class Parametric extends Nodule {
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
-    const store = useSEStore();
-    this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
+    // const store = useSEStore();
+    // this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
+    console.debug(
+      "Parametric constructor",
+      tMin,
+      tMax,
+      "with rotation"
+      // this.inverseTotalRotationMatrix.elements
+    );
   }
 
   public setRangeAndFunctions(
     tValues: number[],
     fn: Vector3[],
-    // fnPrime: Vector3[],
-    // fnDoublePrime: Vector3[],
-    // tMinGlobal: number,
-    // tMaxGlobal: number,
     tMin: number,
     tMax: number
   ): void {
@@ -144,10 +152,12 @@ export default class Parametric extends Nodule {
     // this.tGlobalMax = tMaxGlobal;
     this.tMin = tMin;
     this.tMax = tMax;
-    this._tValues.splice(0);
-    this._tValues.push(...tValues);
-    this._coordValues.splice(0);
-    this._coordValues.push(...fn);
+    this._tValues = tValues;
+    this._coordValues = fn;
+    // this._tValues.splice(0);
+    // this._tValues.push(...tValues);
+    // this._coordValues.splice(0);
+    // this._coordValues.push(...fn);
     // this._pPrimeValues.splice(0);
     // this._pPrimeValues.push(...fnPrime);
     // this._ppPrimeValues.splice(0);
@@ -157,6 +167,7 @@ export default class Parametric extends Nodule {
 
   private buildCurve() {
     const numAnchors = this._coordValues.length;
+
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -167,6 +178,8 @@ export default class Parametric extends Nodule {
       for (let k = 0; k < numAnchors; k++) {
         // Create Vectors for the paths that will be cloned later
         frontVertices.push(new Two.Vector(0, 0));
+        // TODO: Remove the marker circles
+        this.markerPool.push(new Two.Circle(0, 0, 2));
       }
       this.frontParts.push(
         new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
@@ -203,7 +216,7 @@ export default class Parametric extends Nodule {
       this.glowingFrontParts[0].visible = false;
     } else {
       console.debug(
-        `Parametric::buildCurve(). a rebuild of part-${this.partId} with number of anchors`,
+        `Parametric::buildCurve(). a rebuild of with number of anchors`,
         numAnchors
       );
       // This is a rebuild, check if the number of anchors has changed
@@ -234,12 +247,6 @@ export default class Parametric extends Nodule {
     }
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
-    this.frontParts.forEach((z, pos) => {
-      console.debug(`Front part-${pos} has ${z.vertices.length} vertices`);
-    });
-    this.backParts.forEach((z, pos) => {
-      console.debug(`Back part-${pos} has ${z.vertices.length} vertices`);
-    });
   }
 
   /**
@@ -248,10 +255,10 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    // console.debug(
-    //   `Parametric::updateDisplay part-${this.partId} applying rotation`,
-    //   this.inverseTotalRotationMatrix.elements
-    // );
+    const frontCount = this.frontParts.map(z => z.vertices.length).join(",");
+    const backCount = this.backParts.map(z => z.vertices.length).join(",");
+    console.debug(`Front parts:  ${frontCount}     Back parts:${backCount}`);
+
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
 
@@ -259,13 +266,13 @@ export default class Parametric extends Nodule {
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
     // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
-    transformMatrix.copy(this.inverseTotalRotationMatrix).invert();
+    // transformMatrix.copy(this.inverseTotalRotationMatrix!).invert();
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius
     );
-    transformMatrix.multiply(this.tmpMatrix);
+    // transformMatrix.multiply(this.tmpMatrix);
     // console.log(transformMatrix);
     // transformMatrix now maps the un-rotated parametric to the target parametric
 
@@ -295,6 +302,13 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach((path: Two.Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
+    this.markers.children.forEach((m: Two.Object) => {
+      this.markerPool.push(m as Two.Circle);
+    });
+    this.markerPool.forEach(c => {
+      c.remove();
+    });
+    this.markers.children.clear();
 
     let lastPositiveIndex = -1;
     let lastNegativeIndex = -1;
@@ -313,7 +327,7 @@ export default class Parametric extends Nodule {
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
       this.tmpVector.copy(this._coordValues[index]);
       // Set tmpVector equal to location on the target Parametric in rotated position
-      this.tmpVector.applyMatrix4(transformMatrix);
+      this.tmpVector.applyMatrix4(this.tmpMatrix);
 
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere
@@ -327,9 +341,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentBackPartIndex >= this.backParts.length) {
-            console.info(
-              "Parametric update: Needs more back parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric update: Needs more back parts than were allocated initially"
+            // );
             const newPath = new Two.Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
@@ -373,6 +387,11 @@ export default class Parametric extends Nodule {
           );
         }
       } else {
+        // Show the sample point markers only on foreground points
+        // TODO: remove the markers
+        const aMarker = this.markerPool.pop();
+        aMarker?.translation.set(this.tmpVector.x, this.tmpVector.y);
+        aMarker?.addTo(this.markers);
         // Move to the next front part if necessary
         if (lastPositiveIndex !== index - 1 && !firstFrontPart) {
           currentFrontPartIndex++;
@@ -382,9 +401,9 @@ export default class Parametric extends Nodule {
           //   this.backParts.length
           // );
           if (currentFrontPartIndex >= this.frontParts.length) {
-            console.info(
-              "Parametric Update: Needs more front parts than were allocated initially"
-            );
+            // console.info(
+            //   "Parametric Update: Needs more front parts than were allocated initially"
+            // );
             const newPath = new Two.Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();
@@ -427,11 +446,11 @@ export default class Parametric extends Nodule {
         }
       }
     }
-    const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
-    const backCounts = this.backParts.map(p => p.vertices.length).join(",");
-    console.debug(
-      `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
-    );
+    // const frontCounts = this.frontParts.map(p => p.vertices.length).join(",");
+    // const backCounts = this.backParts.map(p => p.vertices.length).join(",");
+    // console.debug(
+    //   `${this.frontParts.length} front parts: ${frontCounts} and  ${this.backParts.length} back parts ${backCounts}`
+    // );
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
@@ -557,7 +576,8 @@ export default class Parametric extends Nodule {
     this.backgroundLayer = layers[LAYER.background];
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
-    console.debug("addToLayers() called");
+    // TODO: Uncomment the following line to show sample point makers
+    // this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -571,6 +591,8 @@ export default class Parametric extends Nodule {
 
   public removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
+    // TODO: Uncomment the following line when sample point markers are enabled
+    // this.markers.remove();
 
     this.glowingFrontParts.forEach(part => part.remove());
     this.backParts.forEach(part => part.remove());

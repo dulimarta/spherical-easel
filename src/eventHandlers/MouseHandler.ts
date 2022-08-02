@@ -153,6 +153,9 @@ export default abstract class MouseHandler implements ToolStrategy {
         Math.sqrt(R * R - (mx * mx + my * my)) * (event.shiftKey ? -1 : +1);
       this.previousSphereVector.copy(this.currentSphereVector);
       this.currentSphereVector.set(mx, my, zCoordinate).normalize();
+      // TODO: remove the following console.debug
+      if (event.ctrlKey)
+        console.debug("Mouse at", this.currentSphereVector.toFixed(4));
       this.isOnSphere = true;
     } else {
       // The mouse event was not on the orthographic projection of the default sphere

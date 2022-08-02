@@ -136,6 +136,34 @@ export class AddParametricEndPointsCommand extends Command {
     //   "Command.symbolToASCIIDec(this.seStartEndPoint.name)",
     //   Command.symbolToASCIIDec(this.seStartEndPoint.name)
     // );
+
+    // SEParametric generates its sample points in its neutral (unrotated) pose.
+    // Therefore, all its dependents must also be stored in their neutral pose.
+    const rotationMatrix = Command.store.inverseTotalRotationMatrix;
+
+    const neutralTracePointLocation =
+      this.parametricParent.tracePoint.locationVector
+        .clone()
+        .applyMatrix4(rotationMatrix);
+    const neutralTracePointLabelLocation = this.parametricParent.tracePoint
+      .label!.locationVector.clone()
+      .applyMatrix4(rotationMatrix);
+    const [minPoint, maxPoint] = this.parametricParent.endPoints;
+    const neutralMinPointLocation = minPoint.locationVector
+      .clone()
+      .applyMatrix4(rotationMatrix);
+    console.debug("Saved min point at", neutralMinPointLocation.toFixed(4));
+    const neutralMinLabelLocation = minPoint
+      .label!.locationVector.clone()
+      .applyMatrix4(rotationMatrix);
+    const neutralMaxPointLocation = maxPoint.locationVector
+      .clone()
+      .applyMatrix4(rotationMatrix);
+    console.debug("Saved max point at", neutralMaxPointLocation.toFixed(4));
+    const neutralMaxLabelLocation = maxPoint
+      .label!.locationVector.clone()
+      .applyMatrix4(rotationMatrix);
+
     return [
       "AddParametricEndPoints",
       //Parent Info
@@ -146,7 +174,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartEndPointName=" +
         Command.symbolToASCIIDec(this.seStartEndPoint.name),
       "parametricEndPointseStartEndPointLocationVector=" +
-        this.seStartEndPoint.locationVector.toFixed(9),
+        neutralMinPointLocation.toFixed(7),
       "parametricEndPointseStartEndPointShowing=" +
         this.seStartEndPoint.showing,
       "parametricEndPointseStartEndPointExists=" + this.seStartEndPoint.exists,
@@ -167,7 +195,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndEndPointName=" +
         Command.symbolToASCIIDec(this.seEndEndPoint.name),
       "parametricEndPointseEndEndPointLocationVector=" +
-        this.seEndEndPoint.locationVector.toFixed(9),
+        neutralMaxPointLocation.toFixed(7),
       "parametricEndPointseEndEndPointShowing=" + this.seEndEndPoint.showing,
       "parametricEndPointseEndEndPointExists=" + this.seEndEndPoint.exists,
       "parametricEndPointseEndEndPointFrontStyle=" +
@@ -187,7 +215,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTracePointName=" +
         Command.symbolToASCIIDec(this.seTracePoint.name),
       "parametricEndPointseTracePointLocationVector=" +
-        this.seTracePoint.locationVector.toFixed(9),
+        neutralTracePointLocation.toFixed(7),
       "parametricEndPointseTracePointShowing=" + this.seTracePoint.showing,
       "parametricEndPointseTracePointExists=" + this.seTracePoint.exists,
       "parametricEndPointseTracePointFrontStyle=" +
@@ -207,7 +235,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartLabelName=" +
         Command.symbolToASCIIDec(this.seStartLabel.name),
       "parametricEndPointseStartLabelLocationVector=" +
-        this.seStartLabel.locationVector.toFixed(9),
+        neutralMinLabelLocation.toFixed(7),
       "parametricEndPointseStartLabelShowing=" + this.seStartLabel.showing,
       "parametricEndPointseStartLabelExists=" + this.seStartLabel.exists,
       "parametricEndPointseStartLabelLabelStyle=" +
@@ -221,7 +249,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndLabelName=" +
         Command.symbolToASCIIDec(this.seEndLabel.name),
       "parametricEndPointseEndLabelLocationVector=" +
-        this.seEndLabel.locationVector.toFixed(9),
+        neutralMaxLabelLocation.toFixed(7),
       "parametricEndPointseEndLabelShowing=" + this.seEndLabel.showing,
       "parametricEndPointseEndLabelExists=" + this.seEndLabel.exists,
       "parametricEndPointseEndLabelLabelStyle=" +
@@ -235,7 +263,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTraceLabelName=" +
         Command.symbolToASCIIDec(this.seTraceLabel.name),
       "parametricEndPointseTraceLabelLocationVector=" +
-        this.seTraceLabel.locationVector.toFixed(9),
+        neutralTracePointLabelLocation.toFixed(7),
       "parametricEndPointseTraceLabelShowing=" + this.seTraceLabel.showing,
       "parametricEndPointseTraceLabelExists=" + this.seTraceLabel.exists,
       "parametricEndPointseTraceLabelLabelStyle=" +
@@ -272,6 +300,8 @@ export class AddParametricEndPointsCommand extends Command {
       seStartEndPointLocation.from(
         propMap.get("parametricEndPointseStartEndPointLocationVector")
       ); // convert to vector
+      console.debug("Loaded min point at", seStartEndPointLocation.toFixed(4));
+
       seStartEndPoint.locationVector.copy(seStartEndPointLocation);
       let pointFrontStyleString = propMap.get(
         "parametricEndPointseStartEndPointFrontStyle"
@@ -342,6 +372,7 @@ export class AddParametricEndPointsCommand extends Command {
           "AddParametricEndPoint: Start End Point Label Name doesn't exist"
         );
       }
+      seStartEndPoint.ref.updateDisplay();
 
       // make the End End Point
       const endEndPoint = new Point();
@@ -354,6 +385,7 @@ export class AddParametricEndPointsCommand extends Command {
       seEndEndPointLocation.from(
         propMap.get("parametricEndPointseEndEndPointLocationVector")
       ); // convert to vector
+      console.debug("Loaded max point at", seEndEndPointLocation.toFixed(4));
       seEndEndPoint.locationVector.copy(seEndEndPointLocation);
       pointFrontStyleString = propMap.get(
         "parametricEndPointseEndEndPointFrontStyle"
@@ -418,6 +450,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
       }
 
+      seEndEndPoint.ref.updateDisplay();
       // make the Trace Point
       const tracePoint = new Point();
       const seTracePoint = new SEParametricTracePoint(

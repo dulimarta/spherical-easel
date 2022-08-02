@@ -299,6 +299,11 @@ export interface IntersectionReturnType {
   exists: boolean;
 }
 
+export type ParametricIntersectionType = {
+  s: number;
+  t: number;
+  vector: Vector3;
+};
 /**
  * Intersection and if that intersection exists
  */

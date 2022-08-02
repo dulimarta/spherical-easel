@@ -69,6 +69,17 @@ export class AddParametricTracePointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
+    // SEParametric generates its sample points in its neutral (unrotated) pose.
+    // Therefore, all its dependents must also be stored in their neutral pose.
+    const rotationMatrix = Command.store.inverseTotalRotationMatrix;
+
+    const neutralTracePointLocation =
+      this.parametricParent.tracePoint.locationVector
+        .clone()
+        .applyMatrix4(rotationMatrix);
+    const neutralTracePointLabelLocation = this.parametricParent.tracePoint
+      .label!.locationVector.clone()
+      .applyMatrix4(rotationMatrix);
     return [
       "AddParametricTracePoint",
       //Parent Info
@@ -78,7 +89,7 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTracePointName=" +
         Command.symbolToASCIIDec(this.seTracePoint.name),
       "parametricEndPointseTracePointLocationVector=" +
-        this.seTracePoint.locationVector.toFixed(9),
+        neutralTracePointLocation.toFixed(7),
       "parametricEndPointseTracePointShowing=" + this.seTracePoint.showing,
       "parametricEndPointseTracePointExists=" + this.seTracePoint.exists,
       "parametricEndPointseTracePointFrontStyle=" +
@@ -98,7 +109,7 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTraceLabelName=" +
         Command.symbolToASCIIDec(this.seTraceLabel.name),
       "parametricEndPointseTraceLabelLocationVector=" +
-        this.seTraceLabel.locationVector.toFixed(9),
+        neutralTracePointLabelLocation.toFixed(7),
       "parametricEndPointseTraceLabelShowing=" + this.seTraceLabel.showing,
       "parametricEndPointseTraceLabelExists=" + this.seTraceLabel.exists,
       "parametricEndPointseTraceLabelLabelStyle=" +

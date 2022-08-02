@@ -164,6 +164,8 @@ export const useSEStore = defineStore({
       // initialStyleStates.splice(0);
       // defaultStyleStates.splice(0);
       this.hasUnsavedNodules = false;
+      temporaryNodules.splice(0);
+      inverseTotalRotationMatrix.identity();
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -180,6 +182,9 @@ export const useSEStore = defineStore({
     },
     setCanvasWidth(w: number): void {
       this.canvasWidth = w;
+    },
+    setRotationMatrix(mat: Matrix4): void {
+      inverseTotalRotationMatrix.copy(mat);
     },
     // setSphereRadius(r: number): void {
     //   // TODO
@@ -540,7 +545,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat).invert();
-      this.inverseTotalRotationMatrix.multiply(tmpMatrix);
+      inverseTotalRotationMatrix.multiply(tmpMatrix);
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
@@ -560,37 +565,35 @@ export const useSEStore = defineStore({
       }
 
       // Begin updating those objects with no parents
-      this.seNodules
-        .map(n => n as SENodule)
-        .filter((p: SENodule) => p.parents.length === 0)
-        .forEach((target: SENodule) => {
-          // console.debug("Seed update from ", target.name);
-          target.accept(rotationVisitor);
-          target.setOutOfDate(false);
-          target.markKidsOutOfDate();
-          addCandidatesFrom(target); // Expand the update tree
-        });
+      updateCandidates.push(
+        ...seNodules.filter((p: SENodule) => p.parents.length === 0)
+      );
+      // console.debug(
+      //   "Update candidates",
+      //   updateCandidates.map(z => z.name).join(", ")
+      // );
       while (updateCandidates.length > 0) {
-        const target = updateCandidates.shift();
-        if (target) {
-          if (!target.accept(rotationVisitor)) {
-            // console.debug(
-            //   target.name,
-            //   "does not accept rotation visitor, try its shallowUpdate"
-            // );
-            target.shallowUpdate();
-          }
-          target.setOutOfDate(false);
-          target.markKidsOutOfDate();
-
-          addCandidatesFrom(target);
+        const target = updateCandidates.shift()!;
+        const accepted = target.accept(rotationVisitor);
+        // console.debug(`What's going on with ${target.name}?`, accepted);
+        if (!accepted) {
+          console.debug(
+            target.name,
+            "does not accept rotation visitor, try its shallowUpdate"
+          );
+          target.shallowUpdate();
         }
+        target.setOutOfDate(false);
+        target.markKidsOutOfDate();
 
-        // console.debug(
-        //   `Update candidate has ${updateCandidates.length} items`,
-        //   updateCandidates.map((n: SENodule) => n.name).join(", ")
-        // );
+        addCandidatesFrom(target);
       }
+
+      // console.debug(
+      //   `Update candidate has ${updateCandidates.length} items`,
+      //   updateCandidates.map((n: SENodule) => n.name).join(", ")
+      // );
+      //}
       // console.debug("<<<<< End rotate sphere update");
     },
     //#endregion rotateSphere
@@ -785,6 +788,7 @@ export const useSEStore = defineStore({
     hasObjects(state): boolean {
       return state.sePointIds.length > 0;
     },
+    inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
     // hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
     //   return (testPoint: SEPoint): boolean => {
     //     // create the antipode location vector
@@ -799,12 +803,11 @@ export const useSEStore = defineStore({
     //       // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return true)
     //       return true;
     //     } else {
-    //       return state.sePoints.map(x => x as SEPoint)[ind]; // return the point at the antipode
-    //       //now realize that the intersection of two lines/segments creates two SEPoints (which are an antipodal pair A and B) and
-    //       // puts them on the sePoints array, but some of them may or may not be user created.
-    //       // if the user try to create the antipode of one of the intersections A, then -1*A appears on the list as B
-    //       // (1) if B is user created, then we should *not* create the antipode at -1*A so return  (not no antipode = antipode exists)
-    //       // (2) if B is not user created, then we we should still create the antipode at -1*A, so return true (these is no antipode)
+    //now realize that the intersection of two lines/segments creates two SEPoints (which are an antipodal pair A and B) and
+    // puts them on the sePoints array, but some of them may or may not be user created.
+    // if the user try to create the antipode of one of the intersections A, then -1*A appears on the list as B
+    // (1) if B is user created, then we should *not* create the antipode at -1*A so return false (not no antipode = antipode exists)
+    // (2) if B is not user created, then we we should still create the antipode at -1*A, so return true (these is no antipode)
 
     //       // In the case that (2) happens it is possible that there are two points in the array sePoint with *exactly* the
     //       // same location vector at -1*A, if that happens then the antipode is already created and we should return false (not no antipode = antipode exists)

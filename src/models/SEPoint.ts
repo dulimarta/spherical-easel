@@ -58,7 +58,6 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.ref = point;
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;
-    // console.debug("Creating a new point", this.name);
   }
   customStyles(): Set<string> {
     return styleSet;
@@ -164,7 +163,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
       if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
-        // Use the north pole because any point will do as long at the crossproduct with the _locationVector is not zero.
+        // Use the north pole because any point will do as long at the cross product with the _locationVector is not zero.
         this.tmpVector1.set(0, 0, 1);
 
         if (
