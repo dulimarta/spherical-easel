@@ -31,15 +31,14 @@ import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
 import { Component, Vue } from "vue-property-decorator";
-import { namespace } from "vuex-class";
 import { Route } from "vue-router";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import EventBus from "@/eventHandlers/EventBus";
-import { AccountState } from "@/types";
-import { ACStore } from "@/store";
-const UserAcct = namespace("acct");
+import { useAccountStore } from "@/stores/account";
+import { mapWritableState } from "pinia";
+
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -51,14 +50,19 @@ type CropDetails = {
     height: number;
   };
 };
-@Component({ components: { ImageCropper, CircleStencil } })
+@Component({
+  components: { ImageCropper, CircleStencil },
+  computed: {
+    ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
+  }
+})
 export default class PhotoCropper extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
 
-  @UserAcct.State((s: AccountState) => s.temporaryProfilePicture)
-  readonly temporaryProfilePicture!: string;
+  // @UserAcct.State((s: AccountState) => s.temporaryProfilePicture)
+  temporaryProfilePicture!: string;
 
   inputImageBinary: ImageBitmap | null = null;
   croppedImageBase64 = "";
@@ -138,7 +142,7 @@ export default class PhotoCropper extends Vue {
             key: "Profile picture is saved to Firebase",
             type: "info"
           });
-          ACStore.setTemporaryProfilePicture("");
+          this.temporaryProfilePicture = "";
         })
         .catch((err: any) => {
           EventBus.fire("show-alert", {
@@ -149,7 +153,7 @@ export default class PhotoCropper extends Vue {
     }
   }
   cancelCrop(): void {
-    ACStore.setTemporaryProfilePicture("");
+    this.temporaryProfilePicture = "";
     this.$emit("no-capture", {});
     this.$router.go(-this.goBackSteps);
   }

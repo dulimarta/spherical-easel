@@ -1,6 +1,5 @@
 /** @format */
 
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
@@ -10,6 +9,10 @@ import {
   DEFAULT_POINT_FRONT_STYLE,
   DEFAULT_POINT_BACK_STYLE
 } from "@/types/Styles";
+import Two from "two.js";
+// import { Vector } from "two.js/src/vector";
+// import { Circle } from "two.js/src/shapes/circle";
+// import { Group } from "two.js/src/group";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -98,7 +101,7 @@ export default class Point extends Nodule {
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
-    //  Two.Group that they are all members of. To translate the group is to translate all points
+    //  Group that they are all members of. To translate the group is to translate all points
 
     this.glowingFrontPoint.translation = this.defaultScreenVectorLocation;
     this.frontPoint.translation = this.defaultScreenVectorLocation;
@@ -307,18 +310,18 @@ export default class Point extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
         ) {
           this.frontPoint.noFill();
         } else {
@@ -329,7 +332,7 @@ export default class Point extends Nodule {
         // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
 
         // BACK
-        if (Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
           this.backPoint.noFill();
         } else {
           this.backPoint.fill = SETTINGS.point.temp.fillColor.back;
@@ -342,18 +345,20 @@ export default class Point extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
-          this.frontPoint.fill = frontStyle.fillColor as Two.Color;
+          this.frontPoint.fill =
+            frontStyle.fillColor ?? SETTINGS.point.drawn.fillColor.front;
         }
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
         } else {
-          this.frontPoint.stroke = frontStyle.strokeColor as Two.Color;
+          this.frontPoint.stroke =
+            frontStyle.strokeColor ?? SETTINGS.point.drawn.strokeColor.front;
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
@@ -362,7 +367,7 @@ export default class Point extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back)!;
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle.fillColor)
             )
           ) {
@@ -373,15 +378,16 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.fillColor)) {
             this.backPoint.noFill();
           } else {
-            this.backPoint.fill = backStyle.fillColor as Two.Color;
+            this.backPoint.fill =
+              backStyle.fillColor ?? SETTINGS.point.drawn.fillColor.back;
           }
         }
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle.strokeColor)
             )
           ) {
@@ -392,22 +398,23 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.strokeColor)) {
             this.backPoint.noStroke();
           } else {
-            this.backPoint.stroke = backStyle.strokeColor as Two.Color;
+            this.backPoint.stroke =
+              backStyle.strokeColor ?? SETTINGS.point.drawn.strokeColor.back;
           }
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
 
         // FRONT Glowing
-        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
           this.glowingFrontPoint.noFill();
         } else {
           this.glowingFrontPoint.fill = this.glowingFillColorFront;
         }
-        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingFrontPoint.noStroke();
         } else {
           this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
@@ -417,13 +424,13 @@ export default class Point extends Nodule {
 
         // Back Glowing
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
         ) {
           this.glowingBackPoint.noFill();
         } else {
           this.glowingBackPoint.fill = this.glowingFillColorBack;
         }
-        if (Nodule.hlsaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingBackPoint.noStroke();
         } else {
           this.glowingBackPoint.stroke = this.glowingStrokeColorBack;

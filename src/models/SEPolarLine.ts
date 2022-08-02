@@ -35,6 +35,10 @@ export class SEPolarLine
     this.polarPointParent = polarPointParent;
   }
 
+  get pointParent(): SEPoint {
+    return this.polarPointParent;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.polarLine`, {
@@ -46,15 +50,7 @@ export class SEPolarLine
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this.polarPointParent.exists;
 
     if (this._exists) {
@@ -91,6 +87,17 @@ export class SEPolarLine
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These polar lines are completely determined by their line/segment/point parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information

@@ -1,9 +1,23 @@
 <template>
   <div>
+
     <v-card raised
       outlined>
       <v-card-text>
         <v-container>
+          <v-row v-if="!inProductionMode">
+            Keyboard shortcuts:
+            <ul>
+              <li>Ctrl-Alt-C: Circle</li>
+              <li>Ctrl-Alt-S: Spiral</li>
+              <li>Ctrl-Alt-T: Trochoid</li>
+              <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
+              <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
+              <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+              <li>Ctrl-Alt-R: Cardioid (M1)</li>
+            </ul>
+
+          </v-row>
           <v-row>
             <v-col cols="12">
               <v-sheet rounded
@@ -80,7 +94,6 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import {
-  AppState,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
@@ -93,11 +106,8 @@ import ParametricTracingExpressions from "@/components/ParametricTracingExpressi
 import ParametricTNumber from "@/components/ParametricTNumber.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers/EventBus";
-import { namespace } from "vuex-class";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import Parametric from "@/plottables/Parametric";
-import { SEStore } from "@/store";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -110,8 +120,14 @@ import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
+import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { getAncestors } from "@/utils/helpingfunctions";
+import { SEPoint } from "@/models/SEPoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -130,25 +146,30 @@ interface ParametricDataType {
     ParametricTNumber,
     ParametricTracingExpressions,
     ParametricCuspParameterValues
-  }
+  },
+  computed: {
+    ...mapState(useSEStore, [
+      "expressions",
+      "seParametrics",
+      "createAllIntersectionsWithParametric"
+    ])
+  },
+  methods: {}
 })
 export default class ParametricForm extends Vue {
-  mounted(): void {
-    EventBus.listen("parametric-data-update", this.processParameticData);
-  }
-  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
-
-  @SE.State((s: AppState) => s.seParametrics)
-  readonly oldParametrics!: SEParametric[];
-
+  readonly seParametrics!: SEParametric[];
+  readonly createAllIntersectionsWithParametric!: (
+    _s: SEParametric,
+    _p: SEPoint[]
+  ) => SEIntersectionReturnType[];
   /**
    * These are string expressions that once set define the Parametric curve
    */
   private coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
   private tExpressions: MinMaxExpression = { min: "", max: "" };
   private tNumbers: MinMaxNumber = { min: NaN, max: NaN };
-  private c1DiscontunityParameterValues: number[] = [];
+  private c1DiscontinuityParameterValues: number[] = [];
 
   private parser = new ExpressionParser();
   readonly varMap = new Map<string, number>();
@@ -215,12 +236,19 @@ export default class ParametricForm extends Vue {
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
   }
+  mounted(): void {
+    EventBus.listen("parametric-data-update", this.processParameticData);
+  }
+
+  get inProductionMode(): boolean {
+    return process.env.NODE_ENV === "production";
+  }
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
 
-    this.c1DiscontunityParameterValues.splice(0);
+    this.c1DiscontinuityParameterValues.splice(0);
     if (ev.code === "KeyC") {
       this.setCircleExpressions();
       this.addParametricCurve();
@@ -231,7 +259,7 @@ export default class ParametricForm extends Vue {
       this.setCardioidExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyS") {
-      this.setSprialExpressions();
+      this.setSpiralExpressions();
       this.addParametricCurve();
     } else if (ev.code === "KeyL") {
       this.setLoxodromeExpressions();
@@ -273,14 +301,14 @@ export default class ParametricForm extends Vue {
       "sin(M1)+2*cos(M1)^2*sin(M1)*(cos(t)-cos(t)^2)";
     this.coordinateExpressions.y = "2*cos(M1)^2*sin(M1)*sin(t)*(1-cos(t))";
     this.coordinateExpressions.z = "cos(M1)-2*cos(M1)*sin(M1)^2*(1-cos(t))";
-    this.c1DiscontunityParameterValues.push(0, 2 * Math.PI);
+    this.c1DiscontinuityParameterValues.push(0, 2 * Math.PI);
     // this.primeCoordinateExpressions.x =
     //   "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
     // this.primeCoordinateExpressions.y =
     //   "2*cos(M1)^2*sin(M1)*cos(t)*(1-cos(t)) + 2*cos(M1)^2*sin(M1)*sin(t)*(sin(t))";
     // this.primeCoordinateExpressions.z = "-2*cos(M1)*sin(M1)^2*sin(t)";
   }
-  setSprialExpressions(): void {
+  setSpiralExpressions(): void {
     this.tNumbers.min = 0;
     this.tNumbers.max = 0.9;
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";
@@ -322,7 +350,7 @@ export default class ParametricForm extends Vue {
     // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
-    // this.c1DiscontunityParameterValues = [
+    // this.c1DiscontinuityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
     //   (4 * Math.PI) / 3,
@@ -334,7 +362,7 @@ export default class ParametricForm extends Vue {
     // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
-    // this.c1DiscontunityParameterValues = [
+    // this.c1DiscontinuityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
     //   (4 * Math.PI) / 3,
@@ -346,7 +374,7 @@ export default class ParametricForm extends Vue {
     const b = "0.75";
     this.tNumbers.min = 0;
     this.tNumbers.max = 8 * Math.PI;
-    this.c1DiscontunityParameterValues.push(
+    this.c1DiscontinuityParameterValues.push(
       0,
       ((1 * 8) / 6) * Math.PI,
       ((2 * 8) / 6) * Math.PI,
@@ -358,18 +386,21 @@ export default class ParametricForm extends Vue {
     // this.tExpressions.min = "0";
     // this.tExpressions.max = "M2";
 
-    this.coordinateExpressions.x = "(1/b)*((b-cos(w))*cos(t)+cos(w)*cos(t)*cos(b*t)+sin(t)*sin(b*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
-    this.coordinateExpressions.y = "(1/b)*((b-cos(w))*sin(t)+cos(w)*sin(t)*cos(b*t)-cos(t)*sin(b*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
-    this.coordinateExpressions.z = "(1/b)*sin(w)*(1-cos(b*t))*a-((a/b)-a*cos(w))/sin(w)"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`b`, b);
+    this.coordinateExpressions.x =
+      "(1/b)*((b-cos(w))*cos(t)+cos(w)*cos(t)*cos(b*t)+sin(t)*sin(b*t))*a"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
+    this.coordinateExpressions.y =
+      "(1/b)*((b-cos(w))*sin(t)+cos(w)*sin(t)*cos(b*t)-cos(t)*sin(b*t))*a"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
+    this.coordinateExpressions.z =
+      "(1/b)*sin(w)*(1-cos(b*t))*a-((a/b)-a*cos(w))/sin(w)"
+        .replaceAll(`a`, a)
+        .replaceAll(`w`, w)
+        .replaceAll(`b`, b);
     // this.primeCoordinateExpressions.x = "(1/b)*(2*(-b+cos(w))*sin(t)*sin((b*t)/2)^2+cos(t)*(1-b*cos(w))*sin(b*t))*a"
     //   .replaceAll(`a`, a)
     //   .replaceAll(`w`, w)
@@ -399,7 +430,7 @@ export default class ParametricForm extends Vue {
     const q = "3";
     this.tNumbers.min = 0;
     this.tNumbers.max = 2 * Math.PI;
-    this.c1DiscontunityParameterValues = [];
+    this.c1DiscontinuityParameterValues = [];
 
     // //curve 2 //this doesn't work at the moment, but it works in Mathematica, I don't know what the issue it, but it might have to do to with the parser?
     // const b = "1/2";
@@ -408,28 +439,31 @@ export default class ParametricForm extends Vue {
     // const q = "8/10";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 10 * Math.PI;
-    // this.c1DiscontunityParameterValues = [];
+    // this.c1DiscontinuityParameterValues = [];
     //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Cos[t]+d*Sin[t]*Sin[q*t]) Mathematica input
-    this.coordinateExpressions.x = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.x =
+      "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
     //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Sin[t]-d*Cos[t]*Sin[q*t]), Mathematica input
-    this.coordinateExpressions.y = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*sin(t)-d*cos(t)*sin(q*t))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.y =
+      "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*sin(t)-d*cos(t)*sin(q*t))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
     //                              e*(Sin[w]*(b-d*Cos[q*t])-(b-b*q*Cos[w])/Sin[w]) Mathematica input
-    this.coordinateExpressions.z = "e*(sin(w)*(b-d*cos(q*t))-(b-b*q*cos(w))/sin(w))"
-      .replaceAll(`e`, e)
-      .replaceAll(`b`, b)
-      .replaceAll(`d`, d)
-      .replaceAll(`q`, q)
-      .replaceAll(`w`, w);
+    this.coordinateExpressions.z =
+      "e*(sin(w)*(b-d*cos(q*t))-(b-b*q*cos(w))/sin(w))"
+        .replaceAll(`e`, e)
+        .replaceAll(`b`, b)
+        .replaceAll(`d`, d)
+        .replaceAll(`q`, q)
+        .replaceAll(`w`, w);
   }
 
   beforeDestroy(): void {
@@ -459,9 +493,9 @@ export default class ParametricForm extends Vue {
       this.coordinateExpressions.z = obj.zCoord;
     }
     if (obj.cuspParameterValues !== undefined) {
-      // this.c1DiscontunityParameterValues.splice(0);
-      this.c1DiscontunityParameterValues.push(...obj.cuspParameterValues);
-      console.log("cusp", this.c1DiscontunityParameterValues);
+      // this.c1DiscontinuityParameterValues.splice(0);
+      this.c1DiscontinuityParameterValues.push(...obj.cuspParameterValues);
+      console.log("cusp", this.c1DiscontinuityParameterValues);
     }
   }
 
@@ -477,7 +511,7 @@ export default class ParametricForm extends Vue {
   addParametricCurve(): void {
     // Do not allow adding the same parametric twice
     let duplicateCurve = false;
-    this.oldParametrics.forEach(para => {
+    this.seParametrics.forEach(para => {
       const coords = para.coordinateExpressions;
       if (
         this.coordinateExpressions.x === coords.x &&
@@ -494,6 +528,7 @@ export default class ParametricForm extends Vue {
       });
       return;
     }
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // If  tMaxNumber is less than tMinNumber -- error!
     if (this.tNumbers.min >= this.tNumbers.max) {
       EventBus.fire("show-alert", {
@@ -504,8 +539,8 @@ export default class ParametricForm extends Vue {
     }
     // the cusp parameter values must all be between tMinNumber and tMaxNumber
     if (
-      this.c1DiscontunityParameterValues.length > 0 &&
-      !this.c1DiscontunityParameterValues.every(
+      this.c1DiscontinuityParameterValues.length > 0 &&
+      !this.c1DiscontinuityParameterValues.every(
         num => this.tNumbers.min <= num && num <= this.tNumbers.max
       )
     ) {
@@ -627,16 +662,16 @@ export default class ParametricForm extends Vue {
     for (k in this.coordinateExpressions) {
       const exp = this.coordinateExpressions[k];
       for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-        const pos = SEStore.expressions.findIndex(z =>
+        const pos = this.expressions.findIndex(z =>
           z.name.startsWith(`${v[0]}`)
         );
         // add it to the calculationParents if it is not already added
         if (pos > -1) {
           const pos2 = calculationParents.findIndex(
-            parent => parent.name === SEStore.expressions[pos].name
+            parent => parent.name === this.expressions[pos].name
           );
           if (pos2 < 0) {
-            calculationParents.push(SEStore.expressions[pos]);
+            calculationParents.push(this.expressions[pos]);
           }
         }
       }
@@ -645,55 +680,44 @@ export default class ParametricForm extends Vue {
     let l: keyof MinMaxExpression;
     for (l in this.tExpressions) {
       const exp = this.tExpressions[l];
+      // Match all measurement variables Mxxx
       for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-        const pos = SEStore.expressions.findIndex(z =>
+        const pos = this.expressions.findIndex(z =>
           z.name.startsWith(`${v[0]}`)
         );
         // add it to the calculationParents if it is not already added
         if (pos > -1) {
           const pos2 = calculationParents.findIndex(
-            parent => parent.name === SEStore.expressions[pos].name
+            parent => parent.name === this.expressions[pos].name
           );
           if (pos2 < 0) {
-            calculationParents.push(SEStore.expressions[pos]);
+            calculationParents.push(this.expressions[pos]);
           }
         }
       }
     }
-
-    // TODO: Use multiple parametric if we have discontinuity
-    const parametric = new Parametric(
-      this.tNumbers.min, // global min-max
-      this.tNumbers.max,
-      this.tNumbers.min, // part min-max
-      this.tNumbers.max,
-      closed
-    );
-    // Set the display to the default values
-    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     // if (this.tExpressions.min === "")
     //   this.tExpressions.min = this.tNumbers.min.toString();
     // if (this.tExpressions.max === "")
     //   this.tExpressions.max = this.tNumbers.max.toString();
+    // Create the Parametric in the SEParametric constructor
+    // Not here!
     const newSEParametric = new SEParametric(
-      parametric,
       this.coordinateExpressions,
       this.tExpressions,
       this.tNumbers,
-      this.c1DiscontunityParameterValues,
+      this.c1DiscontinuityParameterValues,
       calculationParents
     );
-
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("parametric");
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
+    const startVector = newSEParametric.P(this.tNumbers.min);
     this.tempVector
-      .copy(parametric.P(this.tNumbers.min))
+      .copy(startVector)
       .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
       .normalize();
     newSELabel.locationVector = this.tempVector;
@@ -711,7 +735,8 @@ export default class ParametricForm extends Vue {
       tracePoint,
       newSEParametric
     );
-    const traceLabel = new Label();
+    traceSEPoint.locationVector = startVector;
+    const traceLabel = new Label("point");
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
     // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
@@ -742,8 +767,8 @@ export default class ParametricForm extends Vue {
       );
 
       // Create the plottable labels
-      const startLabel = new Label();
-      const endLabel = new Label();
+      const startLabel = new Label("point");
+      const endLabel = new Label("point");
       const startSELabel = new SELabel(startLabel, startSEEndPoint);
       const endSELabel = new SELabel(endLabel, endSEEndPoint);
 
@@ -770,12 +795,21 @@ export default class ParametricForm extends Vue {
     }
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the parametric command so they can be undone.
-    SEStore.createAllIntersectionsWithParametric(newSEParametric).forEach(
-      (item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
+    this.createAllIntersectionsWithParametric(
+      newSEParametric,
+      newlyCreatedSEPoints
+    ).forEach((item: SEIntersectionReturnType) => {
+      if (item.existingIntersectionPoint) {
+        parametricCommandGroup.addCommand(
+          new AddIntersectionPointOtherParent(
+            item.SEIntersectionPoint,
+            item.parent1
+          )
+        );
+      } else {
+        // Create the plottable label
+        const newLabel = new Label("point");
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
         // Set the initial label location
         this.tempVector
           .copy(item.SEIntersectionPoint.locationVector)
@@ -797,21 +831,98 @@ export default class ParametricForm extends Vue {
             newSELabel
           )
         );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
+        if (item.createAntipodalPoint) {
+          /////////////
+          // Create the antipode of the new point, vtx
+          ///// WARNING This is duplicate code from the method addCreateAntipodeCommand in Highlighter.ts
+          const newAntipodePoint = new NonFreePoint();
+          // Set the display to the default values
+          newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // Adjust the size of the point to the current zoom magnification factor
+          newAntipodePoint.adjustSize();
+
+          // Create the model object for the new point and link them
+          const antipodalVtx = new SEAntipodalPoint(
+            newAntipodePoint,
+            item.SEIntersectionPoint,
+            false
+          );
+
+          // Create a plottable label
+          // Create an SELabel and link it to the plottable object
+          const newSEAntipodalLabel = new SELabel(
+            new Label("point"),
+            antipodalVtx
+          );
+
+          antipodalVtx.locationVector = item.SEIntersectionPoint.locationVector;
+          antipodalVtx.locationVector.multiplyScalar(-1);
+          // Set the initial label location
+          const tmpVector = new Vector3();
+          tmpVector
+            .copy(antipodalVtx.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSEAntipodalLabel.locationVector = tmpVector;
+          parametricCommandGroup.addCommand(
+            new AddAntipodalPointCommand(
+              antipodalVtx,
+              item.SEIntersectionPoint,
+              newSEAntipodalLabel
+            )
+          );
+          newlyCreatedSEPoints.push(antipodalVtx, item.SEIntersectionPoint);
+          ///////////
+        }
       }
-    );
+      // // Create the plottable and model label
+      // const newLabel = new Label();
+      // const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+      // // Set the initial label location
+      // this.tempVector
+      //   .copy(item.SEIntersectionPoint.locationVector)
+      //   .add(
+      //     new Vector3(
+      //       2 * SETTINGS.point.initialLabelOffset,
+      //       SETTINGS.point.initialLabelOffset,
+      //       0
+      //     )
+      //   )
+      //   .normalize();
+      // newSELabel.locationVector = this.tempVector;
+
+      // parametricCommandGroup.addCommand(
+      //   new AddIntersectionPointCommand(
+      //     item.SEIntersectionPoint,
+      //     item.parent1,
+      //     item.parent2,
+      //     newSELabel
+      //   )
+      // );
+      // item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+      // newSELabel.showing = false;
+    });
 
     parametricCommandGroup.execute();
 
     newSEParametric.markKidsOutOfDate();
     newSEParametric.update();
-    console.log("add Parametric comands");
+    console.log("parametric exist?", newSEParametric.exists);
+    // }
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };
     this.tExpressions = { min: "", max: "" };
     this.tNumbers = { min: NaN, max: NaN };
-    this.c1DiscontunityParameterValues = [];
+    this.c1DiscontinuityParameterValues = [];
     // clear the entries in the components
     EventBus.fire("parametric-clear-data", {});
   }

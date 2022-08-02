@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -10,7 +9,10 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
-import AppStore, { SEStore } from "@/store";
+import Two from "two.js";
+// import { Two.Path } from "two.js/src/path";
+// import { Two.Vector } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -68,10 +70,6 @@ export default class AngleMarker extends Nodule {
    */
   // private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
   // private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the *circular* front/back start/tail single/double parts and their glowing counterparts.
@@ -145,29 +143,29 @@ export default class AngleMarker extends Nodule {
   /**
    * The stops and gradient for front/back fill shading (IF USED)
    */
-  // private frontGradientColorCenter = new Two.Stop(
+  // private frontGradientColorCenter = new Stop(
   //   0,
   //   SETTINGS.fill.frontWhite,
   //   1
   // );
-  // private frontGradientColor = new Two.Stop(
+  // private frontGradientColor = new Stop(
   //   2 * SETTINGS.boundaryCircle.radius,
   //   frontStyle?.fillColor,
   //   1
   // );
-  // private frontGradient = new Two.RadialGradient(
+  // private frontGradient = new RadialGradient(
   //   SETTINGS.fill.lightSource.x,
   //   SETTINGS.fill.lightSource.y,
   //   1 * SETTINGS.boundaryCircle.radius,
   //   [this.frontGradientColorCenter, this.frontGradientColor]
   // );
-  // private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  // private backGradientColor = new Two.Stop(
+  // private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  // private backGradientColor = new Stop(
   //   1 * SETTINGS.boundaryCircle.radius,
   //   backStyle?.fillColor,
   //   1
   // );
-  // private backGradient = new Two.RadialGradient(
+  // private backGradient = new RadialGradient(
   //   -SETTINGS.fill.lightSource.x,
   //   -SETTINGS.fill.lightSource.y,
   //   2 * SETTINGS.boundaryCircle.radius,
@@ -350,7 +348,7 @@ export default class AngleMarker extends Nodule {
     );
 
     // The clear() extension function works only on JS Array, but
-    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
+    // not on JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
 
     this.frontCirclePathTail.vertices.splice(0);
     this.frontCirclePathDoubleArcTail.vertices.splice(0);
@@ -505,7 +503,7 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    // Arrow Head Path Initialize
+    // Arrow Head Two.Path Initialize
     // Create the initial front and back vertices (front/back glowing/not)
 
     const arrowHeadVertices: Two.Vector[] = [];
@@ -1370,42 +1368,44 @@ export default class AngleMarker extends Nodule {
     // console.log("pool Fill #", poolFill.length);
     // The possible legs in an outline of an angle marker cut by the boundary circle
     const leg1F: number[][] = [];
-    this.frontStraightStart.vertices.forEach(node =>
+    this.frontStraightStart.vertices.forEach((node: Two.Anchor) =>
       leg1F.push([node.x, node.y])
     );
 
     const leg1B: number[][] = [];
-    this.backStraightStart.vertices.forEach(node =>
+    this.backStraightStart.vertices.forEach((node: Two.Anchor) =>
       leg1B.push([node.x, node.y])
     );
 
     const leg2F: number[][] = [];
-    this.frontCirclePathStart.vertices.forEach(node =>
+    this.frontCirclePathStart.vertices.forEach((node: Two.Anchor) =>
       leg2F.push([node.x, node.y])
     );
 
     const leg2B: number[][] = [];
-    this.backCirclePathStart.vertices.forEach(node =>
+    this.backCirclePathStart.vertices.forEach((node: Two.Anchor) =>
       leg2B.push([node.x, node.y])
     );
 
     const leg3F: number[][] = [];
-    this.frontCirclePathTail.vertices.forEach(node =>
+    this.frontCirclePathTail.vertices.forEach((node: Two.Anchor) =>
       leg3F.push([node.x, node.y])
     );
 
     const leg3B: number[][] = [];
-    this.backCirclePathTail.vertices.forEach(node =>
+    this.backCirclePathTail.vertices.forEach((node: Two.Anchor) =>
       leg3B.push([node.x, node.y])
     );
 
     const leg4F: number[][] = [];
-    this.frontStraightEnd.vertices.forEach(node =>
+    this.frontStraightEnd.vertices.forEach((node: Two.Anchor) =>
       leg4F.push([node.x, node.y])
     );
 
     const leg4B: number[][] = [];
-    this.backStraightEnd.vertices.forEach(node => leg4B.push([node.x, node.y]));
+    this.backStraightEnd.vertices.forEach((node: Two.Anchor) =>
+      leg4B.push([node.x, node.y])
+    );
 
     let boundaryVertices1: number[][] = []; // The new vertices on the boundary of the circle
     let boundaryVertices2: number[][] = []; // The new vertices on the boundary of the circle
@@ -3070,7 +3070,7 @@ export default class AngleMarker extends Nodule {
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
@@ -3303,19 +3303,19 @@ export default class AngleMarker extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the angle marker
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         //FRONT
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.front
           )
         ) {
@@ -3333,7 +3333,7 @@ export default class AngleMarker extends Nodule {
           this.frontFill2.fill = SETTINGS.angleMarker.temp.fillColor.front;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.front
           )
         ) {
@@ -3387,7 +3387,7 @@ export default class AngleMarker extends Nodule {
         }
         //BACK
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.back
           )
         ) {
@@ -3405,7 +3405,7 @@ export default class AngleMarker extends Nodule {
           this.backFill2.fill = SETTINGS.angleMarker.temp.fillColor.back;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(
+          Nodule.hslaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.back
           )
         ) {
@@ -3483,11 +3483,11 @@ export default class AngleMarker extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
         } else {
@@ -3497,11 +3497,13 @@ export default class AngleMarker extends Nodule {
           // this.frontFill2.fill = this.frontGradient;
 
           // If the angle markers are not shaded
-          this.frontFill1.fill = frontStyle?.fillColor ?? "black";
-          this.frontFill2.fill = frontStyle?.fillColor ?? "black";
+          this.frontFill1.fill =
+            frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
+          this.frontFill2.fill =
+            frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
         }
 
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontCirclePathStart.noStroke();
           this.frontStraightStart.noStroke();
           this.frontCirclePathDoubleArcStart.noStroke();
@@ -3565,7 +3567,7 @@ export default class AngleMarker extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -3588,7 +3590,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
@@ -3605,7 +3607,7 @@ export default class AngleMarker extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -3643,7 +3645,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
             this.backCirclePathDoubleArcStart.noStroke();

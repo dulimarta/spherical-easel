@@ -8,7 +8,7 @@ import {
   DEFAULT_POINT_BACK_STYLE,
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
-import { SEOneOrTwoDimensional, Labelable, ObjectState } from "@/types";
+import { Labelable, ObjectState } from "@/types";
 import { SELabel } from "./SELabel";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
@@ -24,8 +24,16 @@ const styleSet = new Set([
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
-  public ref: Point;
+  public declare ref: Point;
 
+  /**
+   * This determines if a point has been visible before so that the
+   * first time a point is visible, the label short name can be
+   * set to P# where # will make sense to the user. That is
+   * the user will have made or seen # many points before seeing the
+   * label P#. This should respect the undo/redo operations.
+   */
+  protected _pointVisibleBefore = false;
   /**
    * Pointer to the label of this point
    */
@@ -55,18 +63,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return styleSet;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     //These points always exist - they have no parents to depend on
-    this.ref.updateDisplay();
-
     //Update the location of the associate plottable Point (setter also updates the display)
     this.ref.positionVector = this._locationVector;
 
@@ -75,6 +73,17 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These are free points and are have no parents so we store additional information
     if (objectState && orderedSENoduleList) {
@@ -97,6 +106,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.updateKids(objectState, orderedSENoduleList);
   }
 
+  set pointVisibleBefore(b: boolean) {
+    this._pointVisibleBefore = b;
+  }
+  get pointVisibleBefore(): boolean {
+    return this._pointVisibleBefore;
+  }
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere
    */
@@ -118,8 +133,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SEPoint";
   }
 
-  accept(v: Visitor): void {
-    v.actionOnPoint(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnPoint(this);
   }
   /**
    * Return the vector near the SELine (within SETTINGS.point.maxLabelDistance) that is closest to the idealUnitSphereVector
@@ -148,7 +163,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
       if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
-        // Use the north pole because any point will do as long at the crossproduct with the _locationVector is not zero.
+        // Use the north pole because any point will do as long at the cross product with the _locationVector is not zero.
         this.tmpVector1.set(0, 0, 1);
 
         if (

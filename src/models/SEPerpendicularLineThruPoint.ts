@@ -59,23 +59,12 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // this._pencilSize = pencilSize;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    if (this.seParentPencil !== null) {
-      if (!this.canUpdateNow()) {
-        // If any one parent is not up to date, don't do anything
-        return;
-      }
-    }
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
 
     if (this._exists) {
+      this.seParentPencil?.markKidsOutOfDate();
       this.seParentPencil?.update(); // SEParentPencil isn't in the DAG, so it only serves to create new perpendiculars
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
@@ -126,6 +115,21 @@ export class SEPerpendicularLineThruPoint extends SELine {
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (this.seParentPencil !== null) {
+      if (!this.canUpdateNow()) {
+        // If any one parent is not up to date, don't do anything
+        return;
+      }
+    }
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
 
     // These perpendicular lines are completely determined by their parametric parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information

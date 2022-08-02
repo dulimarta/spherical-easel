@@ -115,7 +115,8 @@
                       hide-details
                       single-line
                       style="width: 120px"
-                      :rules="[exportDimensionsCheck]"></v-text-field>
+                      :rules="[exportDimensionsCheck]"
+                      @keypress.stop></v-text-field>
                   </template>
                 </v-slider>
               </v-col>
@@ -137,32 +138,30 @@
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
-      <transition name="pulse">
-        <div v-if="accountEnabled">
-          <span>{{whoami}}</span>
-
-          <v-img id="profilePic"
-            v-if="profilePicUrl"
-            class="mx-2"
-            contain
-            :src="profilePicUrl"
-            :aspect-ratio="1/1"
-            max-width="48"
-            @click="doLoginOrCheck"></v-img>
-          <v-icon v-else
-            class="mx-2"
-            @click="doLoginOrCheck">mdi-account</v-icon>
-          <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-          <v-icon v-show="showExport"
-            class="pr-3"
-            @click="$refs.shareConstructionDialog.show()">
-            mdi-application-export</v-icon>
-          <v-icon v-if="whoami !== ''"
-            :disabled="!hasObjects"
-            class="mr-2"
-            @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
-        </div>
-      </transition>
+      <template v-if="accountEnabled">
+        <span>{{whoami}}</span>
+        <v-img id="profilePic"
+          v-if="profilePicUrl"
+          class="mx-2"
+          contain
+          :src="profilePicUrl"
+          :aspect-ratio="1/1"
+          max-width="48"
+          @click="doLoginOrCheck"></v-img>
+        <v-icon v-else
+          class="mx-2"
+          @click="doLoginOrCheck">mdi-account</v-icon>
+        <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
+        <v-icon v-show="showExport"
+          class="pr-3"
+          @click="$refs.shareConstructionDialog.show()">
+          mdi-application-export</v-icon>
+        <v-icon v-if="whoami !== ''"
+          :disabled="!hasObjects"
+          class="mr-2"
+          @click="$refs.saveConstructionDialog.show()">$shareConstruction
+        </v-icon>
+      </template>
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
       </router-link>
@@ -183,9 +182,14 @@
       padless>
       <v-col class="text-center">
         <span
-          v-if="activeToolName==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
+          v-if="activeToolName ==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
           class="footer-text"
           v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
+        </span>
+        <span
+          v-else-if="activeToolName === 'ApplyTransformationDisplayedName'"
+          class="footer-text"
+          v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim() + ' <strong>' + applyTransformationText + '</strong>'">
         </span>
         <span v-else-if="activeToolName!== ''"
           class="footer-text"
@@ -224,7 +228,8 @@
         persistent-hint
         :label="$t('constructions.description')"
         required
-        v-model="description"></v-text-field>
+        v-model="description"
+        @keypress.stop></v-text-field>
       <v-switch v-model="publicConstruction"
         :disabled="uid.length === 0"
         :label="$t('constructions.makePublic')"></v-switch>
@@ -240,11 +245,10 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { AccountState, AppState, ConstructionInFirestore } from "./types";
+import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
@@ -256,17 +260,17 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
-import { SEStore, ACStore } from "./store";
+import { useAccountStore } from "@/stores/account";
+import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
+import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
+
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
+import i18n from "./i18n";
+import ConstructionListVue from "./components/ConstructionList.vue";
 // import { gzip } from "node-gzip";
-
-//#region vuex-module-namespace
-const SE = namespace("se");
-const AC = namespace("acct");
-//#endregion vuex-module-namespace
 
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
@@ -274,28 +278,41 @@ Component.registerHooks([
   "beforeRouteLeave",
   "beforeRouteUpdate"
 ]);
-/* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog } })
+
+@Component({
+  components: { MessageBox, Dialog },
+  methods: {
+    ...mapActions(useAccountStore, ["resetToolset"]),
+    ...mapActions(useSEStore, ["clearUnsavedFlag"])
+  },
+  computed: {
+    ...mapState(useAccountStore, ["includedTools"]),
+    ...mapState(useSEStore, [
+      "activeToolName",
+      "svgCanvas",
+      "inverseTotalRotationMatrix",
+      "hasObjects"
+    ]),
+    ...mapWritableState(useAccountStore, ["userRole"])
+    // ...mapGetters(useSEStore, ["hasObjects"])
+  }
+})
 export default class App extends Vue {
   //#region activeToolName
-  @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
   //#endregion activeToolName
 
-  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @AC.State((s: AccountState) => s.includedTools)
   readonly includedTools!: Array<string>;
+  readonly resetToolset!: () => void;
+  //readonly hasObjects!: boolean;
+  readonly hasObjects!: () => boolean;
+  readonly clearUnsavedFlag!: () => void;
 
-  // @SE.State((s: AppState) => s.sePoints)
-  // readonly sePoints!: SEPoint[];
-
-  // @SE.Mutation init!: () => void;
-  // @SE.Mutation clearUnsavedFlag!: () => void;
+  userRole!: string | undefined;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
@@ -319,11 +336,11 @@ export default class App extends Vue {
   svgRoot!: SVGElement;
   showExport = false;
   selectedFormat = "";
-  slider= 600;
-  sliderMin= 200;
-  sliderMax= 1200;
-  shareLink="--Placeholder for share link--";
-  disableButton=false;
+  slider = 600;
+  sliderMin = 200;
+  sliderMax = 1200;
+  shareLink = "--Placeholder for share link--";
+  disableButton = false;
   lastText = "";
   count = 0;
 
@@ -333,15 +350,14 @@ export default class App extends Vue {
   accountEnabled = false;
 
   // target formats for export window
-  formats = ['SVG', 'PNG', 'GIF']
+  //formats = ["SVG", "PNG", "GIF"];
+  formats = ["SVG", "PNG"];
+
+  // Text of the transformation being applied - only displayed when the tool is applyTransformation
+  applyTransformationText = i18n.t(`objects.selectTransformation`);
 
   get baseURL(): string {
     return process.env.BASE_URL ?? "";
-  }
-
-  get hasObjects(): boolean {
-    // Any objects must include at least one point
-    return SEStore.sePoints.length > 0;
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -373,7 +389,12 @@ export default class App extends Vue {
     });
     EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
-    ACStore.resetToolset();
+    this.resetToolset();
+    //ACStore.resetToolset();
+    EventBus.listen(
+      "set-apply-transformation-footer-text",
+      this.additionalFooterText
+    );
   }
 
   mounted(): void {
@@ -399,7 +420,7 @@ export default class App extends Vue {
                   this.profilePicUrl = profilePictureURL;
                 }
                 if (role) {
-                  ACStore.setUserRole(role.toLowerCase());
+                  this.userRole = role.toLowerCase();
                 }
               }
             });
@@ -419,6 +440,7 @@ export default class App extends Vue {
     this.uid = "";
     window.removeEventListener("keydown", this.keyHandler);
     EventBus.unlisten("secret-key-detected");
+    EventBus.unlisten("set-apply-transformation-footer-text");
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;
@@ -427,9 +449,14 @@ export default class App extends Vue {
   async doLogout(): Promise<void> {
     await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
-    ACStore.setUserRole(undefined);
+    this.userRole = undefined;
     this.uid = "";
     this.whoami = "";
+  }
+
+  additionalFooterText(e: { text: string }): void {
+    //console.debug("apply transform", e.text);
+    this.applyTransformationText = e.text;
   }
 
   doLoginOrCheck(): void {
@@ -450,165 +477,187 @@ export default class App extends Vue {
     svgElement.style.removeProperty("transform");
     const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
     const currentWidth = canvasReference.clientWidth;
-    svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+    svgElement.setAttribute(
+      "viewBox",
+      "0 0 " + currentWidth + " " + currentWidth
+    );
     svgElement.setAttribute("height", "400px");
     svgElement.setAttribute("width", "400px");
     const svgBlob = new Blob([svgElement.outerHTML], {
-        type: "image/svg+xml;charset=utf-8"
+      type: "image/svg+xml;charset=utf-8"
     });
     const svgURL = URL.createObjectURL(svgBlob);
 
     await Vue.nextTick();
 
-    var preview = document.getElementById('preview') as HTMLImageElement;
+    var preview = document.getElementById("preview") as HTMLImageElement;
     preview.src = svgURL;
   }
 
   async doExportButton(): Promise<void> {
     this.$refs.exportConstructionDialog.hide();
+    //Clone the SVG
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    //get the current width of canvas
+    const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+    const currentWidth = canvasReference.clientWidth;
 
+    //required line of code for svg elements
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Set dimensions of exported image based on slider values
+    svgElement.setAttribute("height", this.slider + "");
+    svgElement.setAttribute("width", this.slider + "");
+
+    svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgElement.setAttribute("transform", "matrix(1 0 0 -1 0 0)");
+    svgElement.setAttribute(
+      "viewBox",
+      "0 0 " + currentWidth + " " + currentWidth
+    );
+    svgElement.setAttribute("vector-effect", "non-scaling-stroke");
     // export construction to desired file format
     if (this.selectedFormat == "SVG") {
-      //Clone the SVG
-      const svgElement = this.svgRoot.cloneNode(true) as SVGElement
-      //required line of code for svg elements
-      svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-      // Set dimensions of exported image based on slider values
-      svgElement.setAttribute("height", this.slider+"px");
-      svgElement.setAttribute("width", this.slider+"px");
-
-      //get the current width of canvas
-      const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
-      const currentWidth = canvasReference.clientWidth;
-
-      //set the view of the image to be around the circle
-      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
-      svgElement.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
-
-      //remove the transform so the circle shows up
-      //DISCLAIMER: This code is only relevant for viewing the svg fully in browser. The exported svg works without removing css styling.
-      //svgElement.style.removeProperty("transform");
-
       //create blob and url, then call filesaver
       const svgBlob = new Blob([svgElement.outerHTML], {
-          type: "image/svg+xml;charset=utf-8"
+        type: "image/svg+xml;charset=utf-8"
       });
       const svgURL = URL.createObjectURL(svgBlob);
       FileSaver.saveAs(svgURL, "construction.svg");
 
       console.log("SVG exported");
     } else if (this.selectedFormat == "PNG") {
-        //Clone the SVG
-        const clone = this.svgRoot.cloneNode(true) as SVGElement
-        //required line of code for svg elements
-        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      //set the ID of the clone and append it to body
+      svgElement.id = "clonedSVG";
+      document.body.append(svgElement);
 
-        //set the ID of the clone and append it to body
-        clone.id="clonedSVG";
-        document.body.append(clone);
+      //to make this appear right side up remove the transform
+      svgElement.removeAttribute("transform");
 
-        // Set dimensions of exported image based on slider values
-        clone.setAttribute("height", this.slider+"px");
-        clone.setAttribute("width", this.slider+"px");
+      //export using module
+      var png = await d3ToPng("#clonedSVG", "PNGname");
 
-        //get the current width of canvas
-        const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
-        const currentWidth = canvasReference.clientWidth;
-
-        //set the view of the image to be around the circle
-        //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
-        clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
-
-        //since d3ToPng exports the png as it appears in browser, we must remove the transform
-        clone.style.removeProperty("transform");
-
-        //export using module
-        var png = await d3ToPng('#clonedSVG','name');
-
-        //clean up workspace and finish
-        clone.remove();
-        console.log("PNG exported");
+      //clean up workspace and finish
+      svgElement.remove();
+      console.log("PNG exported");
     } else if (this.selectedFormat == "GIF") {
-        // create GIF to add frames to
-        var gif = new GIF({
-          workers: 2,
-          quality: 10,
-          width: this.slider,
-          height: this.slider
-        });
+      // create GIF to add frames to
+      var gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: this.slider,
+        height: this.slider
+      });
 
-        //Clone the SVG
-        const clone = this.svgRoot.cloneNode(true) as SVGElement
-        //required line of code for svg elements
-        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      //Clone the SVG
+      const clone = this.svgRoot.cloneNode(true) as SVGElement;
+      //required line of code for svg elements
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-        //set the ID of the clone and append it to body
-        clone.id="clonedSVG";
-        document.body.append(clone);
+      //set the ID of the clone and append it to body
+      clone.id = "clonedSVG";
+      document.body.append(clone);
 
-        // Set dimensions of exported image based on slider values
-        clone.setAttribute("height", this.slider+"px");
-        clone.setAttribute("width", this.slider+"px");
+      // Set dimensions of exported image based on slider values
+      clone.setAttribute("height", this.slider + "px");
+      clone.setAttribute("width", this.slider + "px");
 
-        //get the current width of canvas
-        const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
-        const currentWidth = canvasReference.clientWidth;
+      //get the current width of canvas
+      const canvasReference = document.querySelector(
+        "#canvas"
+      ) as HTMLDivElement;
+      const currentWidth = canvasReference.clientWidth;
 
-        //set the view of the image to be around the circle
-        //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
-        clone.setAttribute("viewBox", (.476*(currentWidth)-348.57)+" "+(.476*(currentWidth)-348.57)+" 733 733");
+      //set the view of the image to be around the circle
+      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+      clone.setAttribute(
+        "viewBox",
+        0.476 * currentWidth -
+          348.57 +
+          " " +
+          (0.476 * currentWidth - 348.57) +
+          " 733 733"
+      );
 
-        //since d3ToPng exports the png as it appears in browser, we must remove the transform
-        clone.style.removeProperty("transform");
+      //since d3ToPng exports the png as it appears in browser, we must remove the transform
+      clone.style.removeProperty("transform");
 
-        //export PNG to the gif stream
-        var png3 = await d3ToPng('#clonedSVG','1', {
-          download: false,
-          format: 'png'
-          }).then(fileData => {
-            var img = new HTMLImageElement();
-            img.src = fileData; // fileData is base64
-            gif.addFrame(img);
-        });
+      //export PNG to the gif stream
+      var png3 = await d3ToPng("#clonedSVG", "1", {
+        download: false,
+        format: "png"
+      }).then(fileData => {
+        var img = new HTMLImageElement();
+        img.src = fileData; // fileData is base64
+        gif.addFrame(img);
+      });
 
-        // make some change
-        // clone.setAttribute("viewBox", "50 50 733 733");
+      // make some change
+      // clone.setAttribute("viewBox", "50 50 733 733");
 
-        // await Vue.nextTick();
+      // await Vue.nextTick();
 
-        // process final GIF
-        gif.on('finished', function(blob: any) {
-          //window.open(URL.createObjectURL(blob));
-          const gifURL = URL.createObjectURL(blob);
-          FileSaver.saveAs(gifURL, "mygif.gif");
-          clone.remove();
-        });
+      // process final GIF
+      gif.on("finished", function (blob: any) {
+        //window.open(URL.createObjectURL(blob));
+        const gifURL = URL.createObjectURL(blob);
+        FileSaver.saveAs(gifURL, "mygif.gif");
+        clone.remove();
+      });
 
-        gif.render();
+      gif.render();
 
-        console.log("GIF exported");
+      console.log("GIF exported");
+      // //set the ID of the clone and append it to body
+      // svgElement.id = "clonedSVG";
+      // document.body.append(svgElement);
+
+      // //export PNG to the gif stream
+      // var png3 = await d3ToPng("#clonedSVG", "1", {
+      //   download: false,
+      //   format: "png"
+      // }).then(fileData => {
+      //   var img = new HTMLImageElement();
+      //   img.src = fileData; // fileData is base64
+      //   gif.addFrame(img);
+      // });
+
+      // // process final GIF
+      // gif.on("finished", function (blob: any) {
+      //   //window.open(URL.createObjectURL(blob));
+      //   const gifURL = URL.createObjectURL(blob);
+      //   FileSaver.saveAs(gifURL, "mygif.gif");
+      //   svgElement.remove();
+      // });
+
+      // gif.render();
+
+      // console.log("GIF exported");
     }
   }
 
-  exportDimensionsCheck(txt: string | undefined): boolean{
+  exportDimensionsCheck(txt: string | undefined): boolean {
     //checking if first action is format selection
-    if(this. count > 2 && (txt == "SVG" || txt == "PNG" || txt == "GIF")){
+    if (this.count > 2 && (txt == "SVG" || txt == "PNG" || txt == "GIF")) {
       txt = this.lastText;
-    }else{
+    } else {
       this.lastText = txt + "";
     }
     this.count++;
 
     //Input validation
-    if ((!txt) || (parseInt(txt) < 200) || (parseInt(txt) > 1200) || (this.selectedFormat == "")) {
+    if (
+      !txt ||
+      parseInt(txt) < 200 ||
+      parseInt(txt) > 1200 ||
+      this.selectedFormat == ""
+    ) {
       this.disableButton = true;
       return false;
     } else {
       this.disableButton = false;
       return true;
     }
-
   }
 
   async doShare(): Promise<void> {
@@ -627,6 +676,11 @@ export default class App extends Vue {
 
     /* dump the command history */
     const scriptOut = Command.dumpOpcode();
+
+    // TODO: should we decouple the zoomFactor from the rotation matrix when
+    // saving a construction?. Possible issue: the construction
+    // was saved by a user working on a larger screen (large zoomFactor),
+    // but loaded by a user working on a smaller screen (small zoomFactor)
 
     const rotationMat = this.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
@@ -702,7 +756,7 @@ export default class App extends Vue {
           keyOptions: { docId },
           type: "info"
         });
-        SEStore.clearUnsavedFlag();
+        this.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.error("Can't save document", err.message);
@@ -717,9 +771,9 @@ export default class App extends Vue {
   }
 
   copyShareLink(): void {
-      this.$refs.shareLinkReference.focus();
-      document.execCommand('copy');
-    }
+    this.$refs.shareLinkReference.focus();
+    document.execCommand("copy");
+  }
 }
 </script>
 
@@ -762,11 +816,10 @@ export default class App extends Vue {
 }
 
 .shareConstructionClass {
-    width: 300px;
-    margin-top: 50px;
-    margin-bottom: auto;
-    margin-right: 30px;
-    margin-left: auto;
-  }
-
+  width: 300px;
+  margin-top: 50px;
+  margin-bottom: auto;
+  margin-right: 30px;
+  margin-left: auto;
+}
 </style>

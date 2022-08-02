@@ -1,4 +1,7 @@
 import Two from "two.js";
+// import { Group } from "two.js/src/group";
+// import { RoundedRectangle } from "two.js/src/shapes/rounded-rectangle";
+// import { Text } from "two.js/src/text";
 
 export class TextBox extends Two.Group {
   private box: Two.RoundedRectangle;
@@ -8,10 +11,12 @@ export class TextBox extends Two.Group {
   constructor(msg: string) {
     super();
     this._text = new Two.Text(msg, 0, 0);
-    const bbox = this._text.getBoundingClientRect() as Two.BoundingClientRect;
+    const bbox = this._text.getBoundingClientRect();
     this.box = new Two.RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
     this.box.fill = "hsl(20,50%,80%)";
     this.box.opacity = 0.7;
+    // this.box.addTo(this);
+    // this._text.addTo(this);
     this.add(this.box, this._text);
   }
 
@@ -22,7 +27,7 @@ export class TextBox extends Two.Group {
    */
   set text(msg: string) {
     this._text.value = msg;
-    const bbox = this._text.getBoundingClientRect() as Two.BoundingClientRect;
+    const bbox = this._text.getBoundingClientRect();
     (this.box as any).width = bbox.width;
   }
 

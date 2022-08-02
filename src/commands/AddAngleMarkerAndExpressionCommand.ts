@@ -8,7 +8,7 @@ import { SENodule } from "@/models/SENodule";
 import AngleMarker from "@/plottables/AngleMarker";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { AngleMode, SavedNames } from "@/types";
+import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddAngleMarkerCommand extends Command {
@@ -63,8 +63,8 @@ export class AddAngleMarkerCommand extends Command {
     this.seAngleMarker.registerChild(this.seLabel);
     Command.store.addAngleMarkerAndExpression(this.seAngleMarker);
     Command.store.addLabel(this.seLabel);
-    this.seAngleMarker.markKidsOutOfDate();
-    this.seAngleMarker.update();
+    // this.seAngleMarker.markKidsOutOfDate();
+    // this.seAngleMarker.update();
   }
 
   saveState(): void {
@@ -110,14 +110,15 @@ export class AddAngleMarkerCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "angleMarkerMode=" + this.mode,
       "angleMarkerFirstParentName=" + this._firstSEParent.name,
       "angleMarkerSecondParentName=" + this._secondSEParent.name,
-      "angleMarkerThirdParentName=" + this._thirdSEParent?.name // this can be undefined
+      "angleMarkerThirdParentName=" + this._thirdSEParent?.name, // this can be undefined
+      "valueDisplayMode=" + this.seAngleMarker.valueDisplayMode
     ].join("&");
   }
 
@@ -149,16 +150,22 @@ export class AddAngleMarkerCommand extends Command {
       | AngleMode
       | undefined;
 
-    if (firstParent && secondParent && mode) {
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
+
+    if (firstParent && secondParent && mode && valueDisplayMode) {
       //make the angleMarker
       const angleMarker = new AngleMarker();
       const seAngleMarker = new SEAngleMarker(
         angleMarker,
         mode,
+        AddAngleMarkerCommand.store.zoomMagnificationFactor,
         firstParent,
         secondParent,
         thirdParentPoint
       );
+
       //style the angle marker
       const angleMarkerFrontStyleString = propMap.get("objectFrontStyle");
       if (angleMarkerFrontStyleString !== undefined)
@@ -174,7 +181,7 @@ export class AddAngleMarkerCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("angleMarker");
       const seLabel = new SELabel(label, seAngleMarker);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -183,7 +190,8 @@ export class AddAngleMarkerCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
-
+      // Must be done after the SELabel is created and linked
+      seAngleMarker.valueDisplayMode = valueDisplayMode;
       //put the angleMarker in the object map
       if (propMap.get("objectName") !== undefined) {
         seAngleMarker.name = propMap.get("objectName") ?? "";

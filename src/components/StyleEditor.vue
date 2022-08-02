@@ -2,12 +2,9 @@
 <script lang="ts">
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
-import { AppState } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
-import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
@@ -19,14 +16,31 @@ import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+import { mapState, mapActions } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
   oldValue: string | number | Array<number> | undefined;
   newValue: string | number | Array<number> | undefined;
 };
-@Component
+@Component({
+  computed: {
+    ...mapState(useSEStore, [
+      "selectedSENodules",
+      "initialStyleStatesMap",
+      "defaultStyleStatesMap",
+      "oldStyleSelections"
+    ])
+  },
+  methods: {
+    ...mapActions(useSEStore, [
+      "setSelectedSENodules",
+      "setOldSelection",
+      "recordStyleState"
+    ])
+  }
+})
 export default class extends Vue {
   @Prop({ required: true }) readonly panel!: StyleEditPanels;
   // @Prop({ required: true }) readonly styleData!: StyleOptions | null;
@@ -39,24 +53,20 @@ export default class extends Vue {
   @Prop({ default: true }) automaticBackStyle!: boolean;
 
   // You are not allow to style labels directly so remove them from the selection and warn the user
-  @SE.State((s: AppState) => s.selectedSENodules)
-  readonly allSelectedSENodules!: SENodule[];
 
-  @SE.State((s: AppState) => s.initialStyleStatesMap)
-  readonly initialStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-
-  @SE.State((s: AppState) => s.defaultStyleStatesMap)
-  readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-
-  @SE.State((s: AppState) => s.oldSelections)
-  readonly oldSelections!: SENodule[];
-
-  // @SE.State((s: AppState) => s.initialBackStyleContrast)
-  // readonly initialBackStyleContrast!: number;
+  readonly selectedSENodules!: SENodule[];
+  readonly setSelectedSENodules!: (_: Array<SENodule>) => void;
+  readonly setOldSelection!: (_: Array<SENodule>) => void;
+  readonly recordStyleState!: (_: {
+    panel: StyleEditPanels;
+    selected: Nodule[];
+  }) => void;
+  readonly oldStyleSelections!: Array<SENodule>;
+  readonly initialStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
+  readonly defaultStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
-  selectedSENodules: Array<SENodule> = [];
   selectedNodules: Array<Nodule> = [];
   previousSelectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
@@ -178,7 +188,7 @@ export default class extends Vue {
     }
   }
   undo(ev: { selector: string; panel: StyleEditPanels }): void {
-    const styleData = this.initialStatesMap.get(this.panel);
+    const styleData = this.initialStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (ev.selector === "labelBackFillColor") {
@@ -197,7 +207,7 @@ export default class extends Vue {
   }
   restoreDefault(ev: { selector: string; panel: StyleEditPanels }): void {
     // console.log("ev selector", ev.selector);
-    const styleData = this.defaultStatesMap.get(this.panel);
+    const styleData = this.defaultStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (listOfProps.some(prop => prop === "labelBackFillColor")) {
@@ -228,9 +238,9 @@ export default class extends Vue {
     }
   }
 
-  @Watch("allSelectedSENodules", { immediate: true })
+  @Watch("selectedSENodules", { immediate: true })
   onSelectionChanged(newSelection: SENodule[]): void {
-    // console.debug("StyleEditor: object selection changed", newSelection.length);
+    console.debug("StyleEditor: object selection changed", newSelection.length);
 
     this.saveStyleState();
     this.commonStyleProperties.splice(0);
@@ -241,11 +251,11 @@ export default class extends Vue {
     this.activeStyleOptions = {};
 
     // console.debug("***********************");
-    this.selectedSENodules = newSelection.filter(this.noduleFilterFunction);
+    this.setSelectedSENodules(newSelection.filter(this.noduleFilterFunction));
     this.selectedNodules = this.selectedSENodules.map(this.noduleMapFunction);
     // console.debug("Selected SENodules", this.selectedSENodules);
     // console.debug("Selected plottables", this.selectedNodules);
-    SEStore.setOldSelection(this.selectedSENodules);
+    this.setOldSelection(this.selectedSENodules);
 
     // Save current state so we can reset to this state if needed to
     const styleOptionsOfSelected = this.selectedNodules.map((n: Nodule) => {
@@ -256,7 +266,7 @@ export default class extends Vue {
     //   "styleOptionsOfSelected",
     //   styleOptionsOfSelected[0]
     // );
-    SEStore.recordStyleState({
+    this.recordStyleState({
       panel: this.panel,
       selected: this.selectedNodules
     });
@@ -608,11 +618,11 @@ export default class extends Vue {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
-      // console.log(
-      //   this.previousBackstyleContrast,
-      //   "ISSUED COMMAND: The back style constant changed to ",
-      //   Nodule.getBackStyleContrast()
-      // );
+      console.log(
+        this.previousBackstyleContrast,
+        "ISSUED COMMAND: The back style constant changed to ",
+        Nodule.getBackStyleContrast()
+      );
       const constrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         this.previousBackstyleContrast
@@ -622,16 +632,16 @@ export default class extends Vue {
       cmdGroup.addCommand(constrastCommand);
       subCommandCount++;
     }
-    if (this.oldSelections.length > 0) {
-      // console.debug(
-      //   "Number of previously selected object? ",
-      //   this.previousSelectedNodules.length
-      // );
-      // console.debug(
-      //   "Number of currently selected object? ",
-      //   this.selectedNodules.length
-      // );
-      const prev = this.initialStatesMap.get(this.panel) ?? [];
+    if (this.oldStyleSelections.length > 0) {
+      console.debug(
+        "Number of previously selected object? ",
+        this.previousSelectedNodules.length
+      );
+      console.debug(
+        "Number of currently selected object? ",
+        this.selectedNodules.length
+      );
+      const prev = this.initialStyleStatesMap.get(this.panel) ?? [];
       const curr = this.selectedNodules.map((n: Nodule) =>
         n.currentStyleState(this.panel)
       );
@@ -647,11 +657,10 @@ export default class extends Vue {
         );
         cmdGroup.addCommand(styleCommand);
         subCommandCount++;
+      } else {
+        console.debug("Everything stayed unchanged");
       }
-      // else {
-      //   console.debug("Eveything stayed unchanged");
-      // }
-      SEStore.setOldSelection([]);
+      this.setOldSelection([]);
     }
     // else {
     //   // console.debug("No dirty selection");

@@ -24,7 +24,7 @@ export default {
     ConicTools: "Conic Tools",
     ConstructionTools: "Construction Tools",
     AdvancedTools: "Advanced Tools",
-    TransformationalTools: "Transformational Tools",
+    TransformationTools: "Transformational Tools",
     MeasurementTools: "Measurement Tools",
     MeasuredObjectTools: "Measured Objects Tools",
     DeveloperOnlyTools: "Developer Only Tools"
@@ -100,6 +100,35 @@ export default {
     CreateEllipseToolTipMessage: "Insert ellipse",
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
+
+    CreateTranslationDisplayedName: "Create<br>Translation",
+    CreateTranslationToolTipMessage: "Create a translation mapping.",
+    CreateTranslationToolUseMessage:
+      "Create a translation mapping object by selecting a line segment or line to translate along and then a measurement or measurable object to determine the length of translation.",
+
+    CreateRotationDisplayedName: "Create<br>Rotation",
+    CreateRotationToolTipMessage: "Create a rotation mapping.",
+    CreateRotationToolUseMessage:
+      "Create a rotation transformation object by selecting a point to rotate about and then a measurement or measurable object to determine the angle of rotation.",
+
+    CreatePointReflectionDisplayedName: "Create Point<br>Reflection",
+    CreatePointReflectionToolTipMessage: "Create a point reflection mapping.",
+    CreatePointReflectionToolUseMessage:
+      "Create a point reflection transformation object by selecting a point to reflect through.",
+
+    CreateReflectionDisplayedName: "Create<br>Reflection",
+    CreateReflectionToolTipMessage: "Create a reflection mapping.",
+    CreateReflectionToolUseMessage:
+      "Create a reflection transformation object by selecting a line or line segment to reflect through.",
+
+    CreateInversionDisplayedName: "Create<br>Inversion",
+    CreateInversionToolTipMessage: "Create a inversion mapping.",
+    CreateInversionToolUseMessage:
+      "Create a inversion transformation object by selecting a circle to invert over.",
+    ApplyTransformationDisplayedName: "Apply<br>Transformation",
+    ApplyTransformationToolTipMessage: "Apply a transformation.",
+    ApplyTransformationToolUseMessage:
+      "Apply a transformation by first selecting transformation object and then selecting geometric objects to apply it to.",
 
     CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
     CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
@@ -206,13 +235,28 @@ export default {
     title: "Preferences"
   },
   objects: {
-    points: "Points | Point | point",
-    lines: "Lines | Line | line",
-    circles: "Circles | Circle| circle",
-    segments: "Line Segments | Line Segment | line segment",
-    measurements: "Measurements | Measurement | measurement",
-    ellipses: "Ellipses | Ellipse |ellipse",
-    parametrics: "Parametrics | Parametric |parametric"
+    objects: "Objects | Object | object | objects",
+    points: "Points | Point | point | points",
+    lines: "Lines | Line | line | lines",
+    circles: "Circles | Circle| circle | circles",
+    segments: "Line Segments | Line Segment | line segment | line segments",
+    measurements: "Measurements | Measurement | measurement | measurements",
+    calculations: "Calculations | Calculation | calculation | calculations",
+    transformations:
+      "Transformations | Transformation | transformation | transformations",
+    ellipses: "Ellipses | Ellipse | ellipse | ellipses",
+    parametrics: "Parametrics | Parametric | parametric | parametrics",
+    triangles: "Triangles | Triangle | triangle | triangles",
+
+    polygons: "Polygons | Polygon | polygon | polygons",
+    angleMarkers: "Angle Markers | Angle Marker | angle marker |angle markers",
+    translations: "Translations | Translation | translation | translations",
+    rotations: "Rotations | Rotation | rotation | rotations",
+    reflections: "Reflections | Reflection | reflection | reflections",
+    pointReflections:
+      "Point Reflections | Point Reflection | point reflection | point reflections",
+    inversions: "Inversions | Inversion | inversion | inversions",
+    selectTransformation: "< Select A Transformation >"
   },
   style: {
     dashArrayReverse: "Switch Dash and Gap",
@@ -398,6 +442,20 @@ export default {
     angleMarkerArrowHeads: "Arrow Head"
   },
   handlers: {
+    transformCreatesSecondPoint:
+      "Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
+    pointDoesNotMoveUnderTransformation:
+      "Applying {type} {trans} to point {pt} will never move it to a different location.",
+    duplicateTransformedObject:
+      "The {object} {name} has already been transformed by {type} {trans} or transforming {object} {name} using {type} {trans} would create a second {object} on top of {name}.",
+    newIsometrySegmentAdded: "New isometry line segment {name} added.",
+    newIsometryLineAdded: "New isometry line {name} added.",
+    newInvertedLineOrCircleAdded: "New inverted circle {name} added.",
+    newIsometryCircleAdded: "New isometry circle {name} added.",
+    newIsometryEllipseAdded: "New isometry ellipse {name} added.",
+    newTransformedPointAdded: "New transformed point {name} added.",
+    applyTransformationSelectTransformation:
+      "You must select a transformation before you can use this tool.",
     nEqualOneAngleNSect:
       "You must choose to divide angles into more than 1 equal pieces.",
     nSetAngleNSect: "You are dividing angles into {number} equal pieces.",
@@ -435,18 +493,53 @@ export default {
       "The second point of the three point circle have been selected. Now select another.",
     measuredCircleCenterSelected:
       "Center of circle selected. Now select a measurement, measurable object, or measurement label.",
+    firstMustCreateMeasurable:
+      "To use this tool you must first create a measurement or measurable object.",
+    measuredCircleSelect:
+      "Select a circle or a line segment to create the measurement object to use to determine the radius.",
+
+    rotationPointSelected:
+      "Rotation point selected. Now select a measurement, measurable object, or measurement label.",
+    translationLineOrSegmentSelected:
+      "Axis of translation selected. Now select a measurement, measurable object, or measurement label.",
+
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
+    pointDistanceHandlerNoPoint:
+      "Before using this tool you must create at least two points.",
     duplicatePointDistanceMeasurement:
       "The distance between points {pt0Name} and {pt1Name} has already been measured. This distance is measurement {measurementName}.",
     newMeasurementAdded: "New measurement {name} added.",
+
     selectAnotherPoint: "Select the next point.",
+
+    newSegmentMeasurementAdded: "New measurement {name} added.",
+    newTranslationAdded: "New translation {name} added.",
+    newInversionAdded: "New inversion {name} added.",
+    newPointReflectionAdded: "New point reflection {name} added.",
+    newReflectionAdded: "New reflection {name} added.",
+    newRotationAdded: "New rotation {name} added.",
+
     duplicatePointCoordinateMeasurement:
       "The coordinates of point {ptName} have already been measured.",
-    newSegmentMeasurementAdded: "New measurement {name} added.",
+    duplicateInversion:
+      "The selected circle already defines the inversion {trans}.",
+    greatCircleInversion:
+      "Inversion over the line {name} is the same transformation as reflection. Use the reflection tool instead.",
+    duplicatePointReflection:
+      "The selected point already defines the point reflection {trans}.",
+    duplicateReflectionLine:
+      "The selected line already defines the reflection {trans}.",
+    duplicateReflectionSegment:
+      "The selected segment already defines the reflection {trans}.",
+    duplicateRotation:
+      "The selected point and rotation able already defines a rotation.",
+    duplicateTranslation:
+      "The selected axis and translation distance able already defines a translation.",
+
     duplicateSegmentMeasurement:
-      "The selected segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
+      "The selected line segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
     duplicateLineMessage: "Duplicate line. Select another.",
     duplicateLineAngleMeasurement:
       "The angle between lines {line0Name} and {line1Name} has already been measured. This angle is measurement {measurementName}.",
@@ -514,8 +607,8 @@ export default {
       "Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
     lineThruPointParametricSelected:
       "Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
-
-    antipodeDuplicate: "The antipode of this point has already been created.",
+    antipodeDuplicate:
+      "The antipode of the selected point is the point {pointName} and has already been created.",
     polarLineDuplicate:
       "The polar line of this point has already been created.",
     polarPointDuplicate:
@@ -529,7 +622,9 @@ export default {
     previouslyMeasuredPolygon:
       "This polygon was measured previously.  See measurement {token}.",
     newPolygonAdded: "A new polygon was created.",
-    deletedNodes: "Successfully deleted {number} objects.",
+    deletedNodes:
+      "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+    deletedNumberNodes: "Successfully deleted {number} {objects}.",
 
     rotationObjectUpdate: "Rotating about {type} {name}.",
     rotationNoObjectUpdate:
@@ -602,16 +697,24 @@ export default {
     distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
+    centerOfTransformedCircleUnderInversion:
+      "Point that is the center of the image of {circleOrLine} {circleOrLineName} under inversion {inversionName}.",
     centerOfThreePointCircle:
       "Center of circle through {pt1}, {pt2}, and {pt3}.",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",
+    inversionImageOfACircle:
+      "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
+    threePointCircleThrough:
+      "Circle through the points {pt1}, {pt2}, and {pt3}.",
     measuredCircle:
       "Circle with center {center} with radius {measurementToken}",
     ellipseThrough:
       "Ellipse with foci {focus1} and {focus2} through point {through}",
     intersectionPoint:
       "Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
+    transformationObject:
+      "The image of {object} {name} under {transType} {trans}.",
     lineThrough:
       "Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
     polarLine:
@@ -677,8 +780,26 @@ export default {
       "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
     createMeasurementForMeasuredCircle:
       "Create a measurement to use as the radius of a measured circle.",
+    createMeasurementForTranslation:
+      "Create a measurement to use as the translation distance.",
+    createMeasurementForRotation:
+      "Create a measurement to use as the angle of rotation.",
     selectAMeasurementForMeasuredCircle:
-      "An selecting a center point, select a measurement to use as the radius of a measured circle."
+      "After selecting a center point, select a measurement to use as the radius of a measured circle.",
+    selectATransformation: "Select a transformation to apply.",
+    selectAMeasurementForTranslation:
+      "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
+    selectAMeasurementForRotation:
+      "After selecting a rotation point, select a measurement to use as the angle of rotation.",
+    translationAlongLineSegment:
+      "Translation along axis (line or line segment) {along} by angle {angle}.",
+    transformedPoint: "Image of point {pt} under the transformation {trans}.",
+    rotationAboutPoint: "Rotation about point {pt} by angle {angle}.",
+    reflectionOverLine: "Reflection over the line {line}.",
+    reflectOverPoint: "Reflection over the point {pt}.",
+    invertOverCircle: "Inversion over the circle {circle}.",
+    createATransformation:
+      "To apply a transformation you must first create a transformation object."
   },
   constructions: {
     save: "Save",
@@ -701,24 +822,17 @@ export default {
       "You are about to logout, any unsaved constructions will be discarded.",
     saveConstructionDialog:
       "Please provide a short description for your construction.",
-    shareLinkReference:
-      "--placeholder shareeeee--",
-    shareConstructionDialog:
-      "Share your construction",
-    exportConstructionDialog:
-      "Export",
-    selectedSVGExport:
-      "SVG was selected.",
-    selectedPNGExport:
-      "PNG was selected.",
-    selectedGIFExport:
-      "GIF was selected.",
-    sliderFileDimensions:
-      "File dimensions in pixels:",
+    shareLinkReference: "--placeholder share--",
+    shareConstructionDialog: "Share your construction",
+    exportConstructionDialog: "Export",
+    selectedSVGExport: "SVG was selected.",
+    selectedPNGExport: "PNG was selected.",
+    selectedGIFExport: "GIF was selected.",
+    sliderFileDimensions: "File dimensions in pixels:",
+    displaySlider: "Slider???",
     exportDimensionsInvalidWarning:
       "Export dimensions must be between 200px and 1200px. Please try again.",
-    shareLinkDialog:
-      "Share your construction link here",
+    shareLinkDialog: "Share your construction link here",
     unsavedConstructionMsg:
       "You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
     unsavedObjectsMsg:

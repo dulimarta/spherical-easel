@@ -12,9 +12,12 @@ import {
 } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
+import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+import { SELine } from "./SELine";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
@@ -27,7 +30,7 @@ export class SECircle
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Circle;
+  public declare ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */
@@ -89,6 +92,40 @@ export class SECircle
   }
 
   public get noduleDescription(): string {
+    //change the description for three point circle
+    if (this._centerSEPoint instanceof SEThreePointCircleCenter) {
+      if (
+        Math.abs(
+          this._centerSEPoint.locationVector.angleTo(
+            this._centerSEPoint.seParentPoint1.locationVector
+          ) - this.circleRadius
+        ) < SETTINGS.tolerance
+      ) {
+        // this circle is a three point circle
+        return String(
+          i18n.t(`objectTree.threePointCircleThrough`, {
+            pt1: this._centerSEPoint.seParentPoint1.label?.ref.shortUserName,
+            pt2: this._centerSEPoint.seParentPoint2.label?.ref.shortUserName,
+            pt3: this._centerSEPoint.seParentPoint3.label?.ref.shortUserName
+          })
+        );
+      }
+    } else if (this._centerSEPoint instanceof SEInversionCircleCenter) {
+      // this circle is a circle of inversion
+      //   "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
+      const geometricParentType =
+        this._centerSEPoint.seParentCircleOrLine instanceof SELine
+          ? i18n.tc(`objects.lines`, 3)
+          : i18n.tc(`objects.circles`, 3);
+      return String(
+        i18n.t(`objectTree.inversionImageOfACircle`, {
+          circleOrLine: geometricParentType,
+          circleOrLineParentName:
+            this._centerSEPoint.seParentCircleOrLine.label?.ref.shortUserName,
+          inversionParentName: this._centerSEPoint.parentTransformation.name
+        })
+      );
+    }
     return String(
       i18n.t(`objectTree.circleThrough`, {
         center: this._centerSEPoint.label?.ref.shortUserName,
@@ -114,15 +151,7 @@ export class SECircle
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
 
     if (this._exists) {
@@ -141,6 +170,16 @@ export class SECircle
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
@@ -192,12 +231,15 @@ export class SECircle
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  public closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
     // First find the closest point on the circle to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -225,8 +267,8 @@ export class SECircle
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnCircle(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnCircle(this);
   }
 
   /**
@@ -264,6 +306,7 @@ export class SECircle
    */
   public getNormalsToTangentLinesThru(
     sePointVector: Vector3,
+    zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
     const distanceFromCenterToVector = sePointVector.angleTo(
@@ -277,9 +320,9 @@ export class SECircle
     // If the vector is on the circle or its antipode then there is one tangent
     if (
       Math.abs(distanceFromCenterToVector - this.circleRadius) <
-        0.005 / SEStore.zoomMagnificationFactor ||
+        0.005 / zoomMagnificationFactor ||
       Math.abs(distanceFromCenterToVector + this.circleRadius - Math.PI) <
-        0.005 / SEStore.zoomMagnificationFactor
+        0.005 / zoomMagnificationFactor
     ) {
       // tmpVector is not zero because we know that the center and sePointVector are not the same or antipodal
       const tmpVector = new Vector3();

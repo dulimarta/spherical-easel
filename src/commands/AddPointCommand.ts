@@ -12,20 +12,34 @@ import Point from "@/plottables/Point";
 export class AddPointCommand extends Command {
   private sePoint: SEPoint;
   private seLabel: SELabel;
-  constructor(sePoint: SEPoint, seLabel: SELabel) {
+  private useVisiblePointCountToRename: boolean;
+  constructor(
+    sePoint: SEPoint,
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
+  ) {
     super();
     this.sePoint = sePoint;
     this.seLabel = seLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
     Command.store.addLabel(this.seLabel);
     this.sePoint.registerChild(this.seLabel);
     Command.store.addPoint(this.sePoint);
-    // Thanks to Will for suggesting the following magic line
-    // that makes the objects show up correctly on the canvas
-    this.sePoint.markKidsOutOfDate();
-    this.sePoint.update();
+    // Set the label to display the name of the point in visible count order
+    this.sePoint.pointVisibleBefore = true;
+    this.sePoint.incrementVisiblePointCount();
+    if (this.sePoint.label && this.useVisiblePointCountToRename) {
+      this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
+    }
+    // this.sePoint.markKidsOutOfDate();
+    // this.sePoint.update();
   }
 
   saveState(): void {
@@ -33,6 +47,11 @@ export class AddPointCommand extends Command {
   }
 
   restoreState(): void {
+    this.sePoint.decrementVisiblePointCount();
+    if (this.sePoint.label && this.useVisiblePointCountToRename) {
+      this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
+    }
+    this.sePoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     this.sePoint.unregisterChild(this.seLabel);
     Command.store.removePoint(this.lastState);
@@ -66,11 +85,11 @@ export class AddPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "pointVector=" + this.sePoint.locationVector.toFixed(7)
+      "pointVector=" + this.sePoint.locationVector.toFixed(9)
     ].join("&");
   }
 
@@ -91,27 +110,35 @@ export class AddPointCommand extends Command {
     const point = new Point();
     const sePoint = new SEPoint(point);
     sePoint.locationVector.copy(sePointLocation);
-    if (pointFrontStyleString !== undefined)
+    // console.debug(`Point front style string ${pointFrontStyleString}`);
+    if (pointFrontStyleString !== undefined) {
       point.updateStyle(
         StyleEditPanels.Front,
         JSON.parse(pointFrontStyleString)
       );
-    if (pointBackStyleString !== undefined)
+    }
+    // console.debug(`Point back style string ${pointBackStyleString}`);
+    if (pointBackStyleString !== undefined) {
       point.updateStyle(StyleEditPanels.Back, JSON.parse(pointBackStyleString));
+    }
 
     //make the label
-    const label = new Label();
+    const label = new Label("point");
     const seLabel = new SELabel(label, sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number
     seLabel.locationVector.copy(seLabelLocation);
     const labelStyleString = propMap.get("labelStyle");
+    // console.debug(`Point label style string ${labelStyleString}`);
     if (labelStyleString !== undefined) {
       label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
     }
 
     //put the point in the object map
     if (propMap.get("objectName") !== undefined) {
+      // console.debug(
+      //   `old name ${sePoint.name}, new name ${propMap.get("objectName")}`
+      // );
       sePoint.name = propMap.get("objectName") ?? "";
       sePoint.showing = propMap.get("objectShowing") === "true";
       sePoint.exists = propMap.get("objectExists") === "true";
@@ -129,7 +156,11 @@ export class AddPointCommand extends Command {
     } else {
       throw new Error("AddPoint: Label Name doesn't exist");
     }
-    return new AddPointCommand(sePoint, seLabel);
+    return new AddPointCommand(
+      sePoint,
+      seLabel,
+      false //The name of this point is set by the saved value and not the visible count
+    );
   }
 }
 //#endregion addPointCommand

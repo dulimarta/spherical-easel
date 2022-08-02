@@ -38,15 +38,7 @@ export class SEPolarPoint extends SEPoint {
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this._polarLineOrSegmentParent.exists;
 
     if (this._exists) {
@@ -63,6 +55,18 @@ export class SEPolarPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
+    this.shallowUpdate();
     // These polar point are completely determined by their line/segment/point parents and an update on the parents
     // will cause this poin t to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {

@@ -96,8 +96,8 @@ describe("Construction List", () => {
     await el.trigger("mouseover");
     await wrapper.vm.$nextTick();
     const content1 = el.find("._test_constructionOverlay [style*=opacity]");
-    content1.element.style.setProperty("opacity", "1.0");
-    console.debug("After hover", content1.element, content1.element.style);
+    // content1.element.style.setProperty("opacity", "1.0");
+    // console.debug("After hover", content1.element, content1.element.style);
     await wrapper.vm.$nextTick();
     const opaqueContent = el.find("._test_constructionOverlay");
     console.debug("Opaque?", opaqueContent.html());

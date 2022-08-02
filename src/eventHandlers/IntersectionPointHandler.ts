@@ -1,25 +1,22 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { IntersectionReturnType, SEOneOrTwoDimensional } from "@/types";
+import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
-import { SEEllipse } from "@/models/SEEllipse";
-
-import { SEStore } from "@/store";
 import { intersectTwoObjects } from "@/utils/intersections";
-import { SEParametric } from "@/models/SEParametric";
+import Two from "two.js";
+//import { Group } from "two.js/src/group";
+import { rank_of_type } from "@/utils/helpingfunctions";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+
 export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
    */
-  private oneDimensional1: SEOneOrTwoDimensional | null = null;
-  private oneDimensional2: SEOneOrTwoDimensional | null = null;
+  private oneDimensional1: SEOneDimensional | null = null;
+  private oneDimensional2: SEOneDimensional | null = null;
   /**
    * An array to hold updated information about the intersection points so we can properly
    * convert the existing intersection points to isUserCreated = true
@@ -39,15 +36,18 @@ export default class IntersectionPointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select the objects to intersect
     if (this.isOnSphere) {
-      // If the user clicks on an intersection create that intersection point (i.e. convert to user created)
+      // If the user clicks on an intersection create that intersection or antipodal point (i.e. convert to user created)
       if (this.hitSEPoints.length > 0) {
         if (
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertInterPtToUserCreatedCommand(
-            this.hitSEPoints[0] as SEIntersectionPoint
+          new SetPointUserCreatedValueCommand(
+            this.hitSEPoints[0],
+            true
           ).execute();
           return;
         }
@@ -70,7 +70,9 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional1.selected = true;
           EventBus.fire("show-alert", {
             key: `handlers.intersectionOneDimensionalSelected`,
-            keyOptions: { name: `${this.oneDimensional1.name}` },
+            keyOptions: {
+              name: `${this.oneDimensional1.label?.ref.shortUserName}`
+            },
             type: "info"
           });
         }
@@ -122,42 +124,50 @@ export default class IntersectionPointHandler extends Highlighter {
     if (this.hitSEPoints.length > 0 && this.oneDimensional1 === null) {
       // never highlight user created intersection points
       const filtered = this.hitSEPoints.filter(
-        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
+        (p: SEPoint) =>
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
       );
       if (filtered.length > 0) filtered[0].glowing = true;
-    } else if (this.hitSESegments.length > 0) {
-      if (this.oneDimensional1 !== null) {
-        if (
-          SEStore.findIntersectionPointsByParent(
-            this.oneDimensional1.name,
-            this.hitSESegments[0].name
-          ).some(pt => pt.exists && !pt.isUserCreated)
-        ) {
-          this.hitSESegments[0].glowing = true;
-        }
-      } else {
-        this.hitSESegments[0].glowing = true;
-      }
     } else if (this.hitSELines.length > 0) {
       if (this.oneDimensional1 !== null) {
         if (
-          SEStore.findIntersectionPointsByParent(
-            this.oneDimensional1.name,
-            this.hitSELines[0].name
-          ).some(pt => pt.exists && !pt.isUserCreated)
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSELines[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
         ) {
           this.hitSELines[0].glowing = true;
         }
       } else {
         this.hitSELines[0].glowing = true;
       }
+    } else if (this.hitSESegments.length > 0) {
+      if (this.oneDimensional1 !== null) {
+        if (
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSESegments[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSESegments[0].glowing = true;
+        }
+      } else {
+        this.hitSESegments[0].glowing = true;
+      }
     } else if (this.hitSECircles.length > 0) {
       if (this.oneDimensional1 !== null) {
         if (
-          SEStore.findIntersectionPointsByParent(
-            this.oneDimensional1.name,
-            this.hitSECircles[0].name
-          ).some(pt => pt.exists && !pt.isUserCreated)
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSECircles[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
         ) {
           this.hitSECircles[0].glowing = true;
         }
@@ -167,10 +177,12 @@ export default class IntersectionPointHandler extends Highlighter {
     } else if (this.hitSEEllipses.length > 0) {
       if (this.oneDimensional1 !== null) {
         if (
-          SEStore.findIntersectionPointsByParent(
-            this.oneDimensional1.name,
-            this.hitSEEllipses[0].name
-          ).some(pt => pt.exists && !pt.isUserCreated)
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSEEllipses[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
         ) {
           this.hitSEEllipses[0].glowing = true;
         }
@@ -180,10 +192,12 @@ export default class IntersectionPointHandler extends Highlighter {
     } else if (this.hitSEParametrics.length > 0) {
       if (this.oneDimensional1 !== null) {
         if (
-          SEStore.findIntersectionPointsByParent(
-            this.oneDimensional1.name,
-            this.hitSEParametrics[0].name
-          ).some(pt => pt.exists && !pt.isUserCreated)
+          IntersectionPointHandler.store
+            .findIntersectionPointsByParent(
+              this.oneDimensional1.name,
+              this.hitSEParametrics[0].name
+            )
+            .some(pt => pt.exists && !pt.isUserCreated)
         ) {
           this.hitSEParametrics[0].glowing = true;
         }
@@ -210,8 +224,8 @@ export default class IntersectionPointHandler extends Highlighter {
     }
   }
   doIntersection(
-    oneDimensional1: SEOneOrTwoDimensional,
-    oneDimensional2: SEOneOrTwoDimensional
+    oneDimensional1: SEOneDimensional,
+    oneDimensional2: SEOneDimensional
   ): void {
     // Make sure the objects intersect on the screen and only convert those that are actual
     // intersection point showing on the default screen plane.
@@ -224,293 +238,27 @@ export default class IntersectionPointHandler extends Highlighter {
     //  (SELine,SELine), (SELine,SESegment),  (SELine,SECircle),(SELine,SEEllipse), (SESegment, SESegment),
     //      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle),(SECircle, SEEllipse)
     //  If they have the same type put them in alphabetical order.
-    if (oneDimensional1 instanceof SELine) {
-      // Line line intersection
-      if (oneDimensional2 instanceof SELine) {
-        if (oneDimensional1.name < oneDimensional2.name) {
-          intersectTwoObjects(
-            oneDimensional1,
-            oneDimensional2
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        } else {
-          intersectTwoObjects(
-            oneDimensional2,
-            oneDimensional1
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        }
-      }
-      // Line segment intersection
-      if (oneDimensional2 instanceof SESegment) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Line circle intersection
-      if (oneDimensional2 instanceof SECircle) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Line ellipse intersection
-      if (oneDimensional2 instanceof SEEllipse) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Line parametric intersection
-      if (oneDimensional2 instanceof SEParametric) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
+    const inverseTotalRotationMatrix =
+      IntersectionPointHandler.store.inverseTotalRotationMatrix;
+    const rank1 = rank_of_type(oneDimensional1);
+    const rank2 = rank_of_type(oneDimensional2);
+    // console.debug(`ranks ${rank1} and ${rank2}`);
+    if (
+      (rank1 === rank2 && oneDimensional2.name > oneDimensional1.name) ||
+      rank2 < rank1
+    ) {
+      // console.debug("switch");
+      const tmp = oneDimensional1;
+      oneDimensional1 = oneDimensional2;
+      oneDimensional2 = tmp;
     }
-
-    if (oneDimensional1 instanceof SESegment) {
-      // Segment line intersection
-      if (oneDimensional2 instanceof SELine) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Segment segment intersection
-      if (oneDimensional2 instanceof SESegment) {
-        if (oneDimensional1.name < oneDimensional2.name) {
-          intersectTwoObjects(
-            oneDimensional1,
-            oneDimensional2
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        } else {
-          intersectTwoObjects(
-            oneDimensional2,
-            oneDimensional1
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        }
-      }
-      // Segment circle intersection
-      if (oneDimensional2 instanceof SECircle) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Segment ellipse intersection
-      if (oneDimensional2 instanceof SEEllipse) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Segment parametric intersection
-      if (oneDimensional2 instanceof SEParametric) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-    }
-
-    if (oneDimensional1 instanceof SECircle) {
-      // Circle line intersection
-      if (oneDimensional2 instanceof SELine) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Circle segment intersection
-      if (oneDimensional2 instanceof SESegment) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Circle circle intersection
-      if (oneDimensional2 instanceof SECircle) {
-        if (oneDimensional1.name < oneDimensional2.name) {
-          intersectTwoObjects(
-            oneDimensional1,
-            oneDimensional2
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        } else {
-          intersectTwoObjects(
-            oneDimensional2,
-            oneDimensional1
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        }
-      }
-
-      // Circle ellipse intersection
-      if (oneDimensional2 instanceof SEEllipse) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Circle parametric intersection
-      if (oneDimensional2 instanceof SEParametric) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-    }
-
-    if (oneDimensional1 instanceof SEEllipse) {
-      // Ellipse line intersection
-      if (oneDimensional2 instanceof SELine) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Ellipse segment intersection
-      if (oneDimensional2 instanceof SESegment) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Ellipse circle intersection
-      if (oneDimensional2 instanceof SECircle) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-
-      // Ellipse ellipse intersection
-      if (oneDimensional2 instanceof SEEllipse) {
-        if (oneDimensional1.name < oneDimensional2.name) {
-          intersectTwoObjects(
-            oneDimensional1,
-            oneDimensional2
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        } else {
-          intersectTwoObjects(
-            oneDimensional2,
-            oneDimensional1
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        }
-      }
-      // Ellipse parametric intersection
-      if (oneDimensional2 instanceof SEParametric) {
-        intersectTwoObjects(
-          oneDimensional1,
-          oneDimensional2
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-    }
-
-    if (oneDimensional1 instanceof SEParametric) {
-      // Parametric line intersection
-      if (oneDimensional2 instanceof SELine) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Parametric segment intersection
-      if (oneDimensional2 instanceof SESegment) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Parametric circle intersection
-      if (oneDimensional2 instanceof SECircle) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-      // Parametric ellipse intersection
-      if (oneDimensional2 instanceof SEEllipse) {
-        intersectTwoObjects(
-          oneDimensional2,
-          oneDimensional1
-        ).forEach((element: IntersectionReturnType) =>
-          this.updatedIntersectionInfo.push(element)
-        );
-      }
-
-      // Parametric parametric intersection
-      if (oneDimensional2 instanceof SEParametric) {
-        if (oneDimensional1.name < oneDimensional2.name) {
-          intersectTwoObjects(
-            oneDimensional1,
-            oneDimensional2
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        } else {
-          intersectTwoObjects(
-            oneDimensional2,
-            oneDimensional1
-          ).forEach((element: IntersectionReturnType) =>
-            this.updatedIntersectionInfo.push(element)
-          );
-        }
-      }
-    }
+    intersectTwoObjects(
+      oneDimensional1,
+      oneDimensional2,
+      inverseTotalRotationMatrix
+    ).forEach((element: IntersectionReturnType) =>
+      this.updatedIntersectionInfo.push(element)
+    );
 
     // Find the intersection point(s) and convert them to created
     // Make sure parent names are in alpha order so we can find the already created intersection point
@@ -526,49 +274,52 @@ export default class IntersectionPointHandler extends Highlighter {
     // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points,
     // but only if the point exists on the screen as an actual intersection point.
     const intersectionConversionCommandGroup = new CommandGroup();
-    SEStore.findIntersectionPointsByParent(
-      oneDimensional1.name,
-      oneDimensional2.name
-    ).forEach((element: SEIntersectionPoint, index: number) => {
-      if (!element.isUserCreated) {
-        if (this.updatedIntersectionInfo[index].exists) {
-          intersectionConversionCommandGroup.addCommand(
-            new ConvertInterPtToUserCreatedCommand(element)
-          );
+    IntersectionPointHandler.store
+      .findIntersectionPointsByParent(
+        oneDimensional1.name,
+        oneDimensional2.name
+      )
+      .forEach((element: SEIntersectionPoint, index: number) => {
+        if (!element.isUserCreated) {
+          if (this.updatedIntersectionInfo[index].exists) {
+            intersectionConversionCommandGroup.addCommand(
+              new SetPointUserCreatedValueCommand(element, true)
+            );
+            EventBus.fire("show-alert", {
+              key: `handlers.intersectionOneDimensionalPointCreated`,
+              keyOptions: {},
+              type: "success"
+            });
+          } else if (index === 0) {
+            // only display the error once (for index 0)
+            // warn the user that the selected objects don't intersect
+            EventBus.fire("show-alert", {
+              key: `handlers.intersectionOneDimensionalNotIntersect`,
+              keyOptions: {},
+              type: "error"
+            });
+          }
+        } else {
+          // warn the user that the selected objects already exists
           EventBus.fire("show-alert", {
-            key: `handlers.intersectionOneDimensionalPointCreated`,
-            keyOptions: {},
-            type: "success"
-          });
-        } else if (index === 0) {
-          // only display the error once (for index 0)
-          // warn the user that the selected objects don't intersect
-          EventBus.fire("show-alert", {
-            key: `handlers.intersectionOneDimensionalNotIntersect`,
+            key: `handlers.intersectionOneDimensionalAlreadyExists`,
             keyOptions: {},
             type: "error"
           });
         }
-      } else {
-        // warn the user that the selected objects already exists
-        EventBus.fire("show-alert", {
-          key: `handlers.intersectionOneDimensionalAlreadyExists`,
-          keyOptions: {},
-          type: "error"
-        });
-      }
-    });
+      });
     intersectionConversionCommandGroup.execute();
   }
+
   activate(): void {
-    if (SEStore.selectedSENodules.length == 2) {
-      const object1 = SEStore.selectedSENodules[0];
-      const object2 = SEStore.selectedSENodules[1];
+    if (IntersectionPointHandler.store.selectedSENodules.length == 2) {
+      const object1 = IntersectionPointHandler.store.selectedSENodules[0];
+      const object2 = IntersectionPointHandler.store.selectedSENodules[1];
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
         this.doIntersection(
-          object1 as SEOneOrTwoDimensional,
-          object2 as SEOneOrTwoDimensional
+          object1 as SEOneDimensional,
+          object2 as SEOneDimensional
         );
       }
     }

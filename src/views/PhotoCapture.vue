@@ -53,8 +53,14 @@ import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { Route } from "vue-router";
 import EventBus from "@/eventHandlers/EventBus";
-import { ACStore } from "@/store";
-@Component
+import { useAccountStore } from "@/stores/account";
+import { mapWritableState } from "pinia";
+// const ACStore = useAccountStore()
+@Component({
+  computed: {
+    ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
+  }
+})
 export default class PhotoCapture extends Vue {
   $refs!: {
     video: HTMLVideoElement;
@@ -63,6 +69,7 @@ export default class PhotoCapture extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
+  temporaryProfilePicture!: string;
 
   hasCamera = false;
   stream: MediaStream | null = null;
@@ -141,7 +148,7 @@ export default class PhotoCapture extends Vue {
     const imageHex = this.$refs.canvas.toDataURL("image/png");
     this.imageData = imageHex;
     // this.stopCamera();
-    ACStore.setTemporaryProfilePicture(imageHex);
+    this.temporaryProfilePicture = imageHex;
     this.$router.push({
       name: "PhotoCropper"
     });

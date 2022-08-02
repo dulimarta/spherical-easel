@@ -1,8 +1,8 @@
 import { SEExpression } from "./SEExpression";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
+
 export class SESlider extends SEExpression /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
@@ -39,7 +39,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     this.markKidsOutOfDate();
     this.update();
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
     return String(i18n.t(`objectTree.slider`));
   }
@@ -53,8 +53,20 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     );
   }
 
-  public customStyles = (): Set<string> => emptySet;
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label, but SESliders have no SELabel or Label
+  }
 
+  shallowUpdate(): void {
+    console.error(
+      `*** INCOMPLETE ${this.name} *** or no update is necessary for sliders?`
+    );
+  }
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

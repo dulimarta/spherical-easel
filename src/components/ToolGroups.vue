@@ -2,7 +2,7 @@
   <div class="pa-1 accent"
     id="toolButtonContainer">
     <v-btn elevation="2"
-      v-if="userRole === 'instructor'"
+      v-if="userRole && userRole === 'instructor'"
       fab
       small
       color="primary"
@@ -35,7 +35,7 @@
                       opacity="0.25">
                       <v-icon color="white"
                         class="overlayicon"
-                        @click="excludeTool(button.actionModeValue)">
+                        @click="excludeToolName(button.actionModeValue)">
                         mdi-minus-circle</v-icon>
                     </v-overlay>
                     <v-overlay v-else
@@ -43,7 +43,7 @@
                       opacity="0.85">
                       <v-icon color="primary"
                         class="overlayicon"
-                        @click="includeTool(button.actionModeValue)">
+                        @click="includeToolName(button.actionModeValue)">
                         mdi-plus-circle</v-icon>
 
                     </v-overlay>
@@ -82,30 +82,32 @@ import Vue from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
-import {
-  AccountState,
-  ActionMode,
-  ToolButtonType,
-  ToolButtonGroup
-} from "@/types";
-import { ACStore, SEStore } from "@/store";
+import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
+import { useAccountStore } from "@/stores/account";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
-const AC = namespace("acct");
+import { mapActions, mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 /* Declare the components used in this component. */
 @Component({
-  components: { ToolButton }
+  components: { ToolButton },
+  computed: {
+    ...mapState(useAccountStore, ["userRole", "includedTools"])
+  },
+  methods: {
+    ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"]),
+    ...mapActions(useSEStore, ["setActionMode"])
+  }
 })
 export default class ToolGroups extends Vue {
-  @AC.State((s: AccountState) => s.userRole)
   readonly userRole!: string | undefined;
-
-  @AC.State((s: AccountState) => s.includedTools)
   readonly includedTools!: ActionMode[];
+  readonly includeToolName!: (s: ActionMode) => void;
+  readonly excludeToolName!: (s: ActionMode) => void;
+  readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
 
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
@@ -138,7 +140,7 @@ export default class ToolGroups extends Vue {
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
-    SEStore.setActionMode(this.actionMode);
+    this.setActionMode(this.actionMode);
   }
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */
@@ -181,15 +183,14 @@ export default class ToolGroups extends Vue {
     return this.includedTools.findIndex((s: string) => s === name) >= 0;
   }
 
-  includeTool(name: ActionMode): void {
-    ACStore.includeToolName(name);
-  }
-  excludeTool(name: ActionMode): void {
-    ACStore.excludeToolName(name);
-  }
-
   /* A list of all the buttons that are possible to display/use. Only those that the User has
   permission to use will be available. */
+  includeTool(name: ActionMode): void {
+    this.includeToolName(name);
+  }
+  excludeTool(name: ActionMode): void {
+    this.excludeToolName(name);
+  }
 
   private developerButtonList: ToolButtonType[] = [
     {

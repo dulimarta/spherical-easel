@@ -81,15 +81,15 @@ export class AddTangentLineThruPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "tangentLineThruPointParentPointName=" + this.parentSEPoint.name,
       "tangentLineThruPointNormalVector=" +
-        this.seTangentLineThruPoint.normalVector.toFixed(7),
+        this.seTangentLineThruPoint.normalVector.toFixed(9),
       "tangentLineThruPointEndSEPointLocationVector=" +
-        this.seTangentLineThruPoint.endSEPoint.locationVector.toFixed(7),
+        this.seTangentLineThruPoint.endSEPoint.locationVector.toFixed(9),
       "tangentLineThruPointParentOneDimensionalName=" +
         this.parentOneDimensional.name,
       "tangentLineThruPointIndex=" + this.seTangentLineThruPoint.index
@@ -170,7 +170,7 @@ export class AddTangentLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("line");
       const seLabel = new SELabel(label, tangentLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

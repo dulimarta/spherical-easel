@@ -3,6 +3,7 @@ import { ValueDisplayMode, LabelDisplayMode } from "./types";
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
+  intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
@@ -162,6 +163,7 @@ export const SETTINGS = {
   },
   // #endregion boundarycircle
   point: {
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the point distance
     showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point?
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
@@ -224,7 +226,7 @@ export const SETTINGS = {
       // No dashing for points
     },
     nonFree: {
-      scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
+      scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
         frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
@@ -287,6 +289,21 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dashing pattern is copied from the default drawn version
+    },
+    nonFree: {
+      // No fill for lines
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree line when drawn
+      scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   line: {
@@ -491,6 +508,26 @@ export const SETTINGS = {
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
+    },
+    nonFree: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+      },
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree circles when drawn
+      scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
+      dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        offset: { front: 0, back: 0 },
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
+      }
     }
   },
   parametric: {
@@ -559,6 +596,7 @@ export const SETTINGS = {
     minimumVertexToEdgeThickness: 0.004, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     numberOfTemporaryAngleMarkers: 15, // this is the maximum number of angle markers that will be displayed as the user creates a polygon, the user can create a polygon with more sides that then, but the temporary angle markers will not be display after this number
     //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -1050,216 +1088,216 @@ export const SETTINGS = {
     coordinate: {
       props: {
         mdiIcon: "mdi-axis-arrow-info",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     delete: {
       props: {
         mdiIcon: "mdi-delete",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     hide: {
       props: {
         mdiIcon: "mdi-file-hidden",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     iconFactory: {
       props: {
         mdiIcon: "mdi-plus",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     move: {
       props: {
         mdiIcon: "mdi-cursor-move",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     rotate: {
       props: {
         mdiIcon: "mdi-rotate-3d-variant",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     select: {
       props: {
         mdiIcon: "mdi-cursor-pointer",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toggleLabelDisplay: {
       props: {
         mdiIcon: "mdi-toggle-switch-off-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomFit: {
       props: {
         mdiIcon: "mdi-magnify-scan",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomIn: {
       props: {
         mdiIcon: "mdi-magnify-plus-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomOut: {
       props: {
         mdiIcon: "mdi-magnify-minus-outline",
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toolsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tools",
         filePath: ""
       }
     },
     objectsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-list-bulleted",
         filePath: ""
       }
     },
     constructionsTab: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-database",
         filePath: ""
       }
     },
     calculationObject: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-calculator-variant",
         filePath: ""
       }
     },
     measurementObject: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-math-compass",
         filePath: ""
       }
     },
     slider: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-slide",
         filePath: ""
       }
     },
     stylePanel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
         filePath: ""
       }
     },
     downloadConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-download",
         filePath: ""
       }
     },
     shareConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-share-variant",
         filePath: ""
       }
     },
     deleteConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can",
         filePath: ""
       }
     },
     cycleNodeValueDisplayMode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
         filePath: ""
       }
     },
     showNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye",
         filePath: ""
       }
     },
     hideNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
         filePath: ""
       }
     },
     showNodeLabel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-outline",
         filePath: ""
       }
     },
     hideNodeLabel: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-off-outline",
         filePath: ""
       }
     },
     deleteNode: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can-outline",
         filePath: ""
       }
     },
     appSettings: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-cog",
         filePath: ""
       }
     },
     clearConstruction: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-broom",
         filePath: ""
       }
     },
     undo: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-undo",
         filePath: ""
       }
     },
     redo: {
       props: {
-        emphasizeTypes: [[]],
+        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-redo",
         filePath: ""
       }
@@ -1268,6 +1306,83 @@ export const SETTINGS = {
       props: {
         emphasizeTypes: [[]],
         mdiIcon: "mdi-content-copy",
+        filePath: ""
+      }
+    },
+    translation: {
+      props: {
+        mdiIcon: "mdi-call-made",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    rotation: {
+      props: {
+        mdiIcon: "mdi-screen-rotation",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    pointReflection: {
+      props: {
+        mdiIcon: "mdi-ferris-wheel",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    inversion: {
+      props: {
+        mdiIcon: "mdi-yeast",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    reflection: {
+      props: {
+        mdiIcon: "mdi-mirror",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedPoint: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedCircle: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedLine: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedSegment: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    transformedEllipse: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    applyTransformation: {
+      props: {
+        mdiIcon: "mdi-movie-roll",
+        emphasizeTypes: [[]],
         filePath: ""
       }
     }
@@ -1291,20 +1406,7 @@ export const SETTINGS = {
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.0001 // If the change in arcLength is less than this, return the value
   },
-  /*A list of which buttons to display - adjusted by the users settings.
-  This does NOT belong here but I don't know where else to put it at the moment*/
-  userButtonDisplayList: [
-    "rotate",
-    "point",
-    "circle",
-    "move",
-    "line",
-    "segment",
-    "select",
-    "zoomIn",
-    "zoomOut",
-    "intersect"
-  ],
+
   supportedLanguages: [
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }

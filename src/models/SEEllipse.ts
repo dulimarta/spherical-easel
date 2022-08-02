@@ -12,7 +12,6 @@ import {
 } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
@@ -26,7 +25,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Ellipse;
+  public declare ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
@@ -134,6 +133,12 @@ export class SEEllipse
   get a(): number {
     return this._a;
   }
+  set a(a: number) {
+    this._a = a;
+  }
+  set b(b: number) {
+    this._b = b;
+  }
   get b(): number {
     return this._b;
   }
@@ -170,15 +175,7 @@ export class SEEllipse
     //   SETTINGS.ellipse.hitIdealDistance / currentMagnificationFactor;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists =
       // The three defining points must exist
       this._focus1SEPoint.exists &&
@@ -254,6 +251,17 @@ export class SEEllipse
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These ellipse are completely determined by their point parents and an update on the parents
     // will cause this ellipse to be put into the correct location.So we don't store any additional information
@@ -280,33 +288,45 @@ export class SEEllipse
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(idealUnitSphereVector);
     transformedToStandard.applyMatrix4(
-      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
+    //console.debug(`transformedToStandard ${transformedToStandard.toFixed(2)}`);
     const closestStandardVector = new Vector3();
+    //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+    const tValues: number[] = [];
+    for (let i = 0; i <= 100; i++) {
+      tValues.push((i * 2 * Math.PI) / 100);
+    }
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.Ep method is this.ref
         transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
+        tValues, //[0 - SETTINGS.tolerance, 2 * Math.PI + SETTINGS.tolerance], // FIXME
+        // this.ref.tMin,
+        // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
-    return closestStandardVector.applyMatrix4(this.ref.ellipseFrame);
+    return closestStandardVector
+      .applyMatrix4(this.ref.ellipseFrame)
+      .normalize();
   }
   /**
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  public closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
     // First find the closest point on the ellipse to the idealUnitSphereVector
     const closest = new Vector3();
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -332,8 +352,8 @@ export class SEEllipse
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnEllipse(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnEllipse(this);
   }
 
   /**
@@ -391,16 +411,20 @@ export class SEEllipse
       const transformedToStandard = new Vector3();
       transformedToStandard.copy(sePointVector);
       transformedToStandard.applyMatrix4(
-        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+        this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
-
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const normalList =
         SENodule.getNormalsToPerpendicularLinesThruParametrically(
           // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
-          this.ref.tMin,
-          this.ref.tMax,
+          tValues, // FIXME
+          // this.ref.tMin,
+          // this.ref.tMax,
           [], // Avoid these t values
           this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
         );
@@ -427,6 +451,7 @@ export class SEEllipse
    */
   public getNormalsToTangentLinesThru(
     sePointVector: Vector3,
+    zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
     const sumOfDistancesToFoci =
@@ -443,29 +468,34 @@ export class SEEllipse
     if (
       (this._a < Math.PI / 2 &&
         (Math.abs(sumOfDistancesToFoci - this.ellipseAngleSum) <
-          0.001 / SEStore.zoomMagnificationFactor ||
+          0.001 / zoomMagnificationFactor ||
           Math.abs(sumOfDistancesToAntipodesOfFoci - this.ellipseAngleSum) <
-            0.001 / SEStore.zoomMagnificationFactor)) ||
+            0.001 / zoomMagnificationFactor)) ||
       (this._a > Math.PI / 2 &&
         (Math.abs(
           sumOfDistancesToAntipodesOfFoci - 2 * Math.PI + this.ellipseAngleSum
         ) <
-          0.001 / SEStore.zoomMagnificationFactor ||
+          0.001 / zoomMagnificationFactor ||
           Math.abs(sumOfDistancesToFoci - 2 * Math.PI + this.ellipseAngleSum) <
-            0.001 / SEStore.zoomMagnificationFactor))
+            0.001 / zoomMagnificationFactor))
     ) {
       // console.log("here");
       const transformedToStandard = new Vector3();
       transformedToStandard.copy(sePointVector);
       transformedToStandard.applyMatrix4(
-        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+        this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
-        this.ref.tMin,
-        this.ref.tMax,
+        tValues, // FIXME
+        // this.ref.tMin,
+        // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).tVal;
       // console.log("coord t val", coorespondingTVal);
@@ -492,15 +522,19 @@ export class SEEllipse
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
     transformedToStandard.applyMatrix4(
-      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
-
+    const tValues: number[] = [];
+    for (let i = 0; i <= 100; i++) {
+      tValues.push((i * 2 * Math.PI) / 100);
+    }
     const normalList = SENodule.getNormalsToTangentLinesThruParametrically(
       this.ref.E.bind(this.ref),
       this.ref.Ep.bind(this.ref),
       transformedToStandard,
-      this.ref.tMin,
-      this.ref.tMax,
+      tValues, // FIXME
+      // this.ref.tMin,
+      // this.ref.tMax,
       [], // Avoid these t values
       this.ref.Epp.bind(this.ref)
     );

@@ -4,7 +4,7 @@ title: Adding A Tool
 
 # Adding A Tool
 
-There are two different types of tools in Sphere Easel: those that create new geometric on dimensional objects based on user mouse input and those that use existing geometric and measurement objects to control the location of an existing kind of object object (i.e. point, line segment, line, circle, or ellipse). The former tools are called New Object Tools and the later are called Control Tools
+There are two different types of tools in Sphere Easel: those that create new geometric on dimensional objects based on user mouse input and those that use existing geometric and measurement objects to control the location of an existing kind of object object (i.e. point, line segment, line, circle, or ellipse). The former tools are called [New Object Tools](/design/addingatooloutline.html#adding-a-new-object-tool) and the later are called [Control Tools](/design/addingatooloutline.html#adding-a-control-tool)
 
 ## Adding a Control Tool
 
@@ -14,7 +14,7 @@ This section is an outline of the steps need to add a tool that takes a collecti
 
     - <span class="variable">id</span>: This is a number that controls the order that the tools within this group are listed.
     - <span class="variable">actionModeValue</span>: This is a unique string (the actionMode) that is used to activate the correct event handler when this button is pressed.
-    - Add the <span class="variable">actionMode</span> string to the list in <span  class="file">types/index.ts</span>
+    - Add the <span class="variable">actionMode</span> string to the list in <span  class="file">src/types/index.ts</span>
     - <span class="variable">icon</span>: Create a temporary icon from the [Material Design Icons](https://cdn.materialdesignicons.com/5.0.45/) then record the icon information in <span class="file">scr/plugins/veuitfy.ts</span> and <span class="file">global-settings.ts</span>.
     - Use the language feature to set up the following messages. Each of the variables below is a string pointer to an object in a file in the <span class="directory">languages</span> directory. English speakers will probably add to the <span class="file">en.json</span> file.
       - <span class="variable">displayedName</span> A short name for the tool displayed in footer. If this contains a non-breaking space, to make sure the tool tip is displayed correctly, add it to the list of displayNames that have this removed in <span class="file">ToolButton.vue</span>
@@ -68,7 +68,7 @@ This section is an outline of the steps needed to add a tool that takes user mou
 1.  Create new <span class="class">SEAaa</span> (extending <span class="class">SENodule</span>) and <span class="class">Aaa</span> (extending <span class="class">Nodule</span>) classes. This means
 
     - Adding new <span class="variable">AAA_COUNT</span> variables to <span class="class">SENodule</span> and <span class="class">Nodule</span>
-    - Adding a new <span class="interface">AaaState</span> interface and <span class="method">isAaaState</span> method to <span class="file">index.ts</span> and updating the <span class="type">ObjectState</span> type.
+    - Adding a new <span class="interface">AaaState</span> interface and <span class="method">isAaaState</span> method to <span class="file">src/types/index.ts</span> and updating the <span class="type">ObjectState</span> type.
     - Adding a new method <span class="method">actionOnAaa</span> in all the <span class="folder">Vistor</span> classes in the <span class="folder">visitor</span> folder and updating the <span class="interface">Visitor</span> interface in <span class="file">visitor.ts</span>.
     - Creating the static (in class <span class="class">Aaa</span>) method <span class="method">updateCurrentStrokeWidthForZoom</span> and calling it from <span class="file">Easel.vue</span> file to adjust the linewidth for zoom.
     - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the static method <span class="method">Nodule.idPlottableDescriptionMap</span> of all the <span class="package">Two.js</span> using the <span class="filed">id</span>
@@ -78,14 +78,15 @@ This section is an outline of the steps needed to add a tool that takes user mou
 2.  Create a new <span class="class">AaaHandler</span> class (extending <span class="class">Highlighter</span>). This means
 
     - Modifying <span class="class">Highlighter</span> and <span class="class">MouseHandler</span> classes to record "hits" on `Aaa` objects to be returned in <span class="field">hitSEAaas</span> array.
-    - Modifying the <span class="type">SEOneDimensional</span> type and adding <span class="class">SEAaa</span> class in the <span class="file">index.ts</span> file.
+    - Modifying the <span class="type">SEOneDimensional</span> type and adding <span class="class">SEAaa</span> class in the <span class="file">src/types/index.ts</span> file.
 
 3.  Creating an new <span class="class">AddAaaCommand</span> class (extending <span class="class">Command</span>). This means
 
     - Modifying <span class="field">initialState</span> constant to include the <span class="field">SEAaas</span> array and modifying the <span class="method">init</span> method in <span class="file">mutations.ts</span> to clear it.
-    - Modifying the <span class="interface">Appstate</span> interface in the <span class="file">index.ts</span> file to include the <span class="field">SEAaas</span> array
+    - Modifying the <span class="interface">Appstate</span> interface in the <span class="file">src/types/index.ts</span> file to include the <span class="field">SEAaas</span> array
     - Adding the <span class="method">AddAaa</span> and <span class="method">RemoveAaa</span> methods <span class="file">mutations.ts</span> to clear it.
     - Update <span class="file">CommandInterpreter.ts</span> to allow the sharing and saving of `Aaa` objects.
+    - Modifying <span class="command">DeleteNoduleCommand</span> to remove the new
 
 4.  Handle all the intersection of this object with itself and all other one-dimensional objects
 
