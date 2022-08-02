@@ -241,6 +241,7 @@ export const useSEStore = defineStore({
           // console.log("name", obj.name, "show", obj.showing, "exist", obj.exists);
         });
     },
+    //#region magnificationUpdate
     setZoomMagnificationFactor(mag: number): void {
       //console.debug(`setZoomMagFactor ${mag}`);
       EventBus.fire("magnification-updated", {
