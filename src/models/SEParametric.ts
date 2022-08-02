@@ -255,53 +255,11 @@ export class SEParametric
       this.varMap.set(m.name, m.value);
     });
 
-    const tSamples = this.createSamplingPoints();
-    this._tValues.push(...tSamples.map(x => x.t));
-    this._fnValues.push(...tSamples.map(x => x.value));
-    const numDiscontinuity = c1DiscontinuityParameterValues.length;
-    // console.debug("Creating a new parametric", this.name);
+    this.createSamplingPointsAndRecalculateFunctions();
 
-    // Create partitioned T-values from the T-values of the sample points
-    if (numDiscontinuity === 0) {
-      // Only a single range of T values
-      // Partition-0: t0, t1, t2, ..., tN
-      this.partitionedTValues.push(this._tValues);
-    } else {
-      // Multiple ranges of (partitioned) T values from Cusp points C1, C2, ..., Ck
-      const breakPoints = c1DiscontinuityParameterValues.slice(0);
-      // Take the smaller of the two upper bounds
-      if (tNumbers.max > c1DiscontinuityParameterValues[numDiscontinuity - 1])
-        breakPoints.push(currentTValues[1]);
-
-      // Partition the T-values t0, t1, t2, ..., tN using
-      // the cusp points C1, C2, C3, ..., Ck, tMax as delimiters
-
-      // Partition-1: t0, t1, ..., ti  (all values <= C1)
-      // Partition-2: ti+1, ..., tj (all values <= C2)
-      // And so on
-      // Partition-M: tm, tm+1, ... , tN (all values <= Ck or values <= tMax)
-      let partIndex = 0;
-      let sampleIndex = 0;
-      for (const upperBound of breakPoints) {
-        const tVals = [];
-        while (
-          sampleIndex < this._tValues.length &&
-          this._tValues[sampleIndex] < upperBound
-        ) {
-          // Loop to create a single partiti
-          tVals.push(this._tValues[sampleIndex]);
-          sampleIndex++;
-        }
-        partIndex++; // next partition
-        if (tVals.length > 0)
-          // skip empty partition
-          this.partitionedTValues.push(tVals.slice(0));
-      }
-      // this.partitionedTValues.forEach((p, pos) => {
-      //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
-      // });
-    }
-    this.calculateDerivatives(tSamples);
+    // this.partitionedTValues.forEach((p, pos) => {
+    //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
+    // });
   }
 
   // Return the array of T-vals partitions.
@@ -321,7 +279,7 @@ export class SEParametric
   /** Generate  sampling points based of "local curvatures"
    * when the ideal sphere is in its neutral (unrotated) position
    */
-  private createSamplingPoints(): Array<TSample> {
+  private createSamplingPointsAndRecalculateFunctions(): void {
     // Area of a triangle formed by three consecutive sample points
     // This also measures the local curvature
     const computeArea = (a: TSample, b: TSample, c: TSample): number => {
@@ -341,12 +299,13 @@ export class SEParametric
     //   .copy(this.store.inverseTotalRotationMatrix)
     //   .invert();
     const N = 5; // initial number of sample points
-    const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
+    const [tMin, tMax] = this.tMinMaxExpressionValues();
+    const RANGE = tMax - tMin;
     let vecValue: Vector3;
     const fnValues: Array<TSample> = [];
     // To initialize, place equally spaced (in time) sample points on the curve
     for (let i = 0; i < N; i++) {
-      const tValue = this._tNumbersHardLimit.min + (i * RANGE) / (N - 1);
+      const tValue = tMin + (i * RANGE) / (N - 1);
       this.varMap.set("t", tValue);
       vecValue = new Vector3(
         ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
@@ -512,15 +471,59 @@ export class SEParametric
     }
     // Now sort the sample points by their T-value
     fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
-    return fnValues;
-  }
+    this._tValues.splice(0);
+    this._fnValues.splice(0);
+    this._tValues.push(...fnValues.map(x => x.t));
+    this._fnValues.push(...fnValues.map(x => x.value));
 
-  private calculateDerivatives(samples: TSample[]): void {
+    // Create partitioned T-values based on cusp breakpoints
+    const numDiscontinuity = this._c1DiscontinuityParameterValues.length;
+    // console.debug("Creating a new parametric", this.name);
+
+    // Create partitioned T-values from the T-values of the sample points
+    if (numDiscontinuity === 0) {
+      // Only a single range of T values
+      // Partition-0: t0, t1, t2, ..., tN
+      this.partitionedTValues.push(this._tValues);
+    } else {
+      // Multiple ranges of (partitioned) T values from Cusp points C1, C2, ..., Ck
+      const breakPoints = this._c1DiscontinuityParameterValues.slice(0);
+      // Take the smaller of the two upper bounds
+      if (
+        this._tNumbers.max >
+        this._c1DiscontinuityParameterValues[numDiscontinuity - 1]
+      )
+        breakPoints.push(this._tNumbers.max);
+
+      // Partition the T-values t0, t1, t2, ..., tN using
+      // the cusp points C1, C2, C3, ..., Ck, tMax as delimiters
+
+      // Partition-1: t0, t1, ..., ti  (all values <= C1)
+      // Partition-2: ti+1, ..., tj (all values <= C2)
+      // And so on
+      // Partition-M: tm, tm+1, ... , tN (all values <= Ck or values <= tMax)
+      let partIndex = 0;
+      let sampleIndex = 0;
+      for (const upperBound of breakPoints) {
+        const tVals = [];
+        while (
+          sampleIndex < this._tValues.length &&
+          this._tValues[sampleIndex] < upperBound
+        ) {
+          // Loop to create a single partiti
+          tVals.push(this._tValues[sampleIndex]);
+          sampleIndex++;
+        }
+        partIndex++; // next partition
+        if (tVals.length > 0)
+          // skip empty partition
+          this.partitionedTValues.push(tVals.slice(0));
+      }
+    }
     // We have to rebuild when either this call is the FIRST build
     // OR some variables have changed their value
     // console.debug("(Re)building function and its derivatives");
     // const fnValues: Vector3[] = [];
-    const tSamples = samples.map(z => z.t);
     if (this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED) {
       const minValue = ExpressionParser.evaluate(
         this.tSyntaxTrees.min,
@@ -538,12 +541,12 @@ export class SEParametric
     } else this._tNumbers.max = this._tNumbersHardLimit.max;
     // this.evaluateFunctionAndCache(this.coordinateSyntaxTrees);
     this.evaluateFunctionAndCache(
-      tSamples,
+      this._tValues,
       this.primeCoordinateSyntaxTrees,
       this.fnPrimeValues
     );
     this.evaluateFunctionAndCache(
-      tSamples,
+      this._tValues,
       this.primeX2CoordinateSyntaxTrees,
       this.fnPPrimeValues
     );
@@ -646,15 +649,21 @@ export class SEParametric
       return [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max];
     // first update the map with the current values of the measurements
     this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
+      console.debug(`Measurement ${m.name} with value ${m.value}`);
+      this.varMap.set(m.name, m.value);
     });
     let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
     let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
+    console.debug(
+      `T-min: current=${tMin} hard limit=${this._tNumbersHardLimit.min}`
+    );
+    console.debug(
+      `T-max: current=${tMax} hard limit=${this._tNumbersHardLimit.max}`
+    );
     // restrict to the parameter interval of tNumber.min to tNumber.max
-    if (tMin < this._tNumbersHardLimit.min) tMin = this._tNumbersHardLimit.min;
-    if (tMax > this._tNumbersHardLimit.max) tMax = this._tNumbersHardLimit.max;
+    tMin = Math.max(tMin, this._tNumbersHardLimit.min);
+    tMax = Math.min(tMax, this._tNumbersHardLimit.max);
+    console.debug(`Effective T-range [${tMin},${tMax}]`);
 
     return [tMin, tMax];
   }
@@ -743,12 +752,7 @@ export class SEParametric
       }
       if (updatedCount > 0) {
         console.debug("Recreating sample points due to measurement changes");
-        const tSamples = this.createSamplingPoints();
-        this._tValues.splice(0);
-        this.fnValues.splice(0);
-        this._tValues.push(...tSamples.map(x => x.t));
-        this.fnValues.push(...tSamples.map(x => x.value));
-        this.calculateDerivatives(tSamples);
+        this.createSamplingPointsAndRecalculateFunctions();
       }
       this.ref?.updateDisplay();
     }
