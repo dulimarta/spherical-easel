@@ -251,6 +251,10 @@ export class SEParametric
 
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      this.varMap.set(m.name, m.value);
+    });
+
     const tSamples = this.createSamplingPoints();
     this._tValues.push(...tSamples.map(x => x.t));
     this._fnValues.push(...tSamples.map(x => x.value));
@@ -512,21 +516,6 @@ export class SEParametric
   }
 
   private calculateDerivatives(samples: TSample[]): void {
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      this.varMap.set(m.name, m.value);
-    });
-    let updatedCount = 0;
-    for (const [key, val] of this.varMap) {
-      const prevValue = this.prevVarMap.get(key);
-      if (!prevValue || Math.abs(val - prevValue) > 1e-6) {
-        updatedCount++;
-        this.prevVarMap.set(key, val);
-      }
-    }
-    if (updatedCount === 0) {
-      // console.debug("No rebuilding function and its derivatives required");
-      return;
-    }
     // We have to rebuild when either this call is the FIRST build
     // OR some variables have changed their value
     // console.debug("(Re)building function and its derivatives");
@@ -734,14 +723,33 @@ export class SEParametric
     if (this._exists) {
       // TODO: when is it necessary to recreate the sample points?
       // TODO: check if measurement parents are updated
-      // console.debug("Recreating sample points");
-      // this.createSamplingPoints();
-      // const tSamples = this.createSamplingPoints();
-      // this._tValues.splice(0);
-      // this.fnValues.splice(0);
-      // this._tValues.push(...tSamples.map(x => x.t));
-      // this.fnValues.push(...tSamples.map(x => x.value));
-      // this.calculateDerivatives(tSamples);
+      this._seParentExpressions.forEach((m: SEExpression) => {
+        this.varMap.set(m.name, m.value);
+      });
+      let updatedCount = 0;
+      for (const [key, val] of this.varMap) {
+        const prevValue = this.prevVarMap.get(key);
+        // console.debug(
+        //   `Measurement ${key} old value ${prevValue} new value ${val}`
+        // );
+        if (!prevValue || Math.abs(val - prevValue) > 1e-6) {
+          updatedCount++;
+          this.prevVarMap.set(key, val);
+        }
+      }
+      if (updatedCount === 0) {
+        console.debug("No rebuilding function and its derivatives required");
+        return;
+      }
+      if (updatedCount > 0) {
+        console.debug("Recreating sample points due to measurement changes");
+        const tSamples = this.createSamplingPoints();
+        this._tValues.splice(0);
+        this.fnValues.splice(0);
+        this._tValues.push(...tSamples.map(x => x.t));
+        this.fnValues.push(...tSamples.map(x => x.value));
+        this.calculateDerivatives(tSamples);
+      }
       this.ref?.updateDisplay();
     }
 

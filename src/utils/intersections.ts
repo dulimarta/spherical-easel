@@ -1221,7 +1221,7 @@ export function intersectParametricWithParametric(
       tCurve.tRanges.forEach((tValues: number[], tPart: number) => {
         tValues.forEach((tVal: number, tIndex: number) => {
           const checkDistance = fn(tVal);
-          if (checkDistance < 0.01)
+          if (checkDistance < 1e-3)
             distanceHeap.push({
               sPart,
               sIndex,
