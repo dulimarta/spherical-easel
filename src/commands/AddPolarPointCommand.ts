@@ -16,17 +16,24 @@ export class AddPolarPointCommand extends Command {
   private index: number;
   private parent: SELine | SESegment;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     sePolarPoint: SEPolarPoint,
     index: number,
     parent: SELine | SESegment,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.sePolarPoint = sePolarPoint;
     this.parent = parent;
     this.seLabel = seLabel;
     this.index = index;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -39,8 +46,14 @@ export class AddPolarPointCommand extends Command {
     }
     Command.store.addPoint(this.sePolarPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePolarPoint.markKidsOutOfDate();
-    this.sePolarPoint.update();
+    // Set the label to display the name of the point in visible count order
+    this.sePolarPoint.pointVisibleBefore = true;
+    this.sePolarPoint.incrementVisiblePointCount();
+    if (this.sePolarPoint.label && this.useVisiblePointCountToRename) {
+      this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
+    }
+    // this.sePolarPoint.markKidsOutOfDate();
+    // this.sePolarPoint.update();
   }
 
   saveState(): void {
@@ -48,6 +61,11 @@ export class AddPolarPointCommand extends Command {
   }
 
   restoreState(): void {
+    this.sePolarPoint.decrementVisiblePointCount();
+    if (this.sePolarPoint.label && this.useVisiblePointCountToRename) {
+      this.sePolarPoint.label.ref.shortUserName = `P${this.sePolarPoint.visiblePointCount}`;
+    }
+    this.sePolarPoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.sePolarPoint.unregisterChild(this.seLabel);
@@ -82,11 +100,11 @@ export class AddPolarPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "polarPointVector=" + this.sePolarPoint.locationVector.toFixed(7),
+      "polarPointVector=" + this.sePolarPoint.locationVector.toFixed(9),
       "polarPointParentName=" + this.parent.name,
       "polarPointIndex=" + this.index
     ].join("&");
@@ -140,7 +158,7 @@ export class AddPolarPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("point");
       const seLabel = new SELabel(label, sePolarPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -173,7 +191,8 @@ export class AddPolarPointCommand extends Command {
         sePolarPoint,
         sePolarPointIndex,
         sePolarPointParent,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

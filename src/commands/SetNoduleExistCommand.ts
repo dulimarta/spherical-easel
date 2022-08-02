@@ -16,8 +16,9 @@ export class SetNoduleExistCommand extends Command {
     this.existing = existing;
     this.showing = showing;
     if (this.seNodule.isLabelable()) {
-      this.initialLabelShowingValue = ((this
-        .seNodule as unknown) as Labelable).label?.showing;
+      this.initialLabelShowingValue = (
+        this.seNodule as unknown as Labelable
+      ).label?.showing;
     }
   }
 
@@ -28,7 +29,7 @@ export class SetNoduleExistCommand extends Command {
     // Notice that checking if the this.initialLabelShowingValue is true, means that the object is labelable
     if (SETTINGS.hideObjectHidesLabel) {
       if (this.existing === false && this.initialLabelShowingValue === true) {
-        ((this.seNodule as unknown) as Labelable).label!.showing = false;
+        (this.seNodule as unknown as Labelable).label!.showing = false;
       }
     }
     if (SETTINGS.showObjectShowsLabel) {
@@ -36,7 +37,7 @@ export class SetNoduleExistCommand extends Command {
         this.existing === true &&
         this.initialLabelShowingValue !== undefined
       ) {
-        ((this.seNodule as unknown) as Labelable).label!.showing = true;
+        (this.seNodule as unknown as Labelable).label!.showing = true;
       }
     }
   }
@@ -50,8 +51,8 @@ export class SetNoduleExistCommand extends Command {
     this.seNodule.showing = !this.showing;
     // Restore the original state
     if (this.initialLabelShowingValue !== undefined) {
-      ((this
-        .seNodule as unknown) as Labelable).label!.showing = this.initialLabelShowingValue;
+      (this.seNodule as unknown as Labelable).label!.showing =
+        this.initialLabelShowingValue;
     }
   }
 

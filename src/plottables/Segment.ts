@@ -48,14 +48,14 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Two.Path;
-  private _frontExtra: Two.Path;
-  private _backPart: Two.Path;
-  private _backExtra: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingFrontExtra: Two.Path;
-  private glowingBackPart: Two.Path;
-  private glowingBackExtra: Two.Path;
+  protected _frontPart: Two.Path;
+  protected _frontExtra: Two.Path;
+  protected _backPart: Two.Path;
+  protected _backExtra: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingFrontExtra: Two.Path;
+  protected glowingBackPart: Two.Path;
+  protected glowingBackExtra: Two.Path;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -100,7 +100,7 @@ export default class Segment extends Nodule {
    * NOTE: normal x start gives the direction in which the segment is drawn
    */
   constructor() {
-    // Initialize the Two.Group
+    // Initialize the Group
     super();
 
     // Create the vertices for the segment
@@ -124,7 +124,7 @@ export default class Segment extends Nodule {
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
     // The clear() extension function works only on JS Array, but
-    // not on Two.JS Collection class. Use splice() instead.
+    // not on JS Collection class. Use splice() instead.
     this._frontExtra.vertices.splice(0);
     this.glowingFrontExtra.vertices.splice(0);
     this._backExtra.vertices.splice(0);
@@ -340,6 +340,18 @@ export default class Segment extends Nodule {
         negIndex++;
       }
     }
+    // console.debug(
+    //   `Front part visible? ${this._frontPart.visible} vertices ${this._frontPart.vertices.length}, linewidth ${this._frontPart.linewidth}`
+    // );
+    // console.debug(
+    //   `Back part visible? ${this._backPart.visible} vertices ${this._backPart.vertices.length}, linewidth ${this._backPart.linewidth}`
+    // );
+    // console.debug(
+    //   `Front extra part visible? ${this._frontExtra.visible} extra vertices ${this._frontExtra.vertices.length}, linewidth ${this._frontExtra.linewidth}`
+    // );
+    // console.debug(
+    //   `Back extra part visible? ${this._backExtra.visible} extra vertices ${this._backExtra.vertices.length}, linewidth ${this._backExtra.linewidth}`
+    // );
   }
 
   /**
@@ -478,7 +490,7 @@ export default class Segment extends Nodule {
       if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this.glowingBackExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
@@ -573,15 +585,15 @@ export default class Segment extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the segment
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         // FRONT PART
         // no fillColor
@@ -658,15 +670,16 @@ export default class Segment extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT PART
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
-          this._frontPart.stroke = frontStyle?.strokeColor as Two.Color;
+          this._frontPart.stroke =
+            frontStyle?.strokeColor ?? SETTINGS.segment.drawn.strokeColor.front;
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -687,10 +700,11 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontExtra.noStroke();
         } else {
-          this._frontExtra.stroke = frontStyle?.strokeColor as Two.Color;
+          this._frontExtra.stroke =
+            frontStyle?.strokeColor ?? SETTINGS.segment.drawn.strokeColor.front;
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -716,7 +730,7 @@ export default class Segment extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -727,10 +741,11 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
-            this._backPart.stroke = backStyle?.strokeColor as Two.Color;
+            this._backPart.stroke =
+              backStyle?.strokeColor ?? SETTINGS.segment.drawn.strokeColor.back;
           }
         }
         // strokeWidthPercent applied by adjustSize()
@@ -754,7 +769,7 @@ export default class Segment extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -765,10 +780,11 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backExtra.noStroke();
           } else {
-            this._backExtra.stroke = backStyle?.strokeColor as Two.Color;
+            this._backExtra.stroke =
+              backStyle?.strokeColor ?? SETTINGS.segment.drawn.strokeColor.back;
           }
         }
         // strokeWidthPercent applied by adjustSize()

@@ -115,21 +115,26 @@ import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
-import { hslaColorType, AppState, Labelable } from "@/types";
+import { Labelable } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { namespace } from "vuex-class";
 import i18n from "../i18n";
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEPolygon } from "@/models/SEPolygon";
 
-const SE = namespace("se");
-
-@Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
+@Component({
+  components: { BasicFrontBackStyle, OverlayWithFixButton },
+  computed: {
+    ...mapState(useSEStore, ["selectedSENodules"])
+  }
+})
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -155,7 +160,6 @@ export default class Style extends Vue {
       this.toggleLabelsShowing.bind(this)
     );
   }
-
   buttonListItems(): string[] {
     if (navigator.userAgent.indexOf("Mac OS X") === -1) {
       // the user is on a PC
@@ -184,11 +188,10 @@ export default class Style extends Vue {
 
   @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
-    // console.log("Style All Labels: onSelectionChanged");
-
+    console.log("Style All Labels: onSelectionChanged");
     this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.showing;
+        return (node as unknown as Labelable).label!.showing;
       } else {
         return true;
       }
@@ -205,12 +208,18 @@ export default class Style extends Vue {
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selectedSENodules")
   private updateSelectedItemArray(): void {
-    // console.log("Style update selected item array: onSelectionChanged");
+    console.log("Style update selected item array: onSelectionChanged");
 
     const tempArray: string[] = [];
-    const alreadyCounted: boolean[] = []; // records if the tempArray item has already been counted (helps avoid one tempArray item being counted multiple times -- make sure the order of the search dicated by firstPartialList is correct)
+    const alreadyCounted: boolean[] = []; // records if the tempArray item has already been counted (helps avoid one tempArray item being counted multiple times -- make sure the order of the search dictated by firstPartialList is correct)
     this.selectedSENodules.forEach(node => {
-      tempArray.push(node.name);
+      if (node instanceof SEAngleMarker) {
+        tempArray.push("Am");
+      } else if (node instanceof SEPolygon) {
+        tempArray.push("Po");
+      } else {
+        tempArray.push(node.name);
+      }
       alreadyCounted.push(false);
     });
     const elementListi18nKeys = [
@@ -224,7 +233,7 @@ export default class Style extends Vue {
       "style.angleMarker",
       "style.ellipse"
     ];
-    const firstPartList = ["Pa", "Po", "P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
+    const firstPartList = ["Pa", "Po", "P", "Li", "Ls", "C", "La", "Am", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the singular/plural i18n keys)
     const countList: number[] = [];
     firstPartList.forEach(str => {
       let count = 0;
@@ -307,7 +316,7 @@ export default class Style extends Vue {
       if (node.isLabelable()) {
         toggleLabelDisplayCommandGroup.addCommand(
           new SetNoduleDisplayCommand(
-            ((node as unknown) as Labelable).label!,
+            (node as unknown as Labelable).label!,
             this.allLabelsShowing
           )
         );

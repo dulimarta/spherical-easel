@@ -3,7 +3,10 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header"
       class="accent">
-      <span class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
+      <span v-if="children.length===1"
+        class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
+      <span v-else
+        class="text-subtitle-1">{{$tc(i18LabelKey,0)}}</span>
       <v-btn small
         v-show="hasExistingChildren"
         @click="expanded = !expanded">
@@ -42,8 +45,18 @@ import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
+import { ActionMode, Labelable } from "@/types";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+//@Component({ components: { SENoduleItem, SESliderItem } })
 
-@Component({ components: { SENoduleItem, SESliderItem } })
+@Component({
+  components: { SENoduleItem, SESliderItem },
+  computed: {
+    ...mapState(useSEStore, ["actionMode"])
+  }
+})
 export default class SENoduleTree extends Vue {
   @Prop()
   readonly children!: SENodule[];
@@ -51,12 +64,20 @@ export default class SENoduleTree extends Vue {
   @Prop()
   readonly i18LabelKey!: string; /** When defined, label takes over the node name */
 
+  readonly actionMode!: ActionMode;
+
   private expanded = false;
   created(): void {
     EventBus.listen("expand-measurement-sheet", this.expandMeasurementSheet);
+    EventBus.listen(
+      "expand-transformation-sheet",
+      this.expandTransformationSheet
+    );
   }
 
   get hasExistingChildren(): boolean {
+    // console.debug(" length", this.existingChildren.length);
+    //this.existingChildren.forEach(node => console.debug(node.name));
     return this.existingChildren.length > 0;
   }
 
@@ -65,10 +86,31 @@ export default class SENoduleTree extends Vue {
   // }
 
   get existingChildren(): SENodule[] {
-    return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint) return n.isUserCreated && n.exists;
-      else return n.exists;
-    });
+    return this.children
+      .filter((n: SENodule) => {
+        if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint)
+          return n.isUserCreated && n.exists;
+        else return n.exists;
+      })
+      .sort((a, b) => {
+        let aLabelString = a.name;
+        let bLabelString = b.name;
+        if (a.isLabelable() && b.isLabelable()) {
+          aLabelString = (a as any).label.ref.shortUserName;
+          bLabelString = (b as any).label.ref.shortUserName;
+        }
+        if (aLabelString.length < bLabelString.length) {
+          return -1;
+        } else if (aLabelString.length > bLabelString.length) {
+          return 1;
+        } else {
+          if (aLabelString < bLabelString) {
+            return -1;
+          } else {
+            return 1;
+          }
+        }
+      });
   }
   //When the user activates the measured circle tool
   // the object tool tab is open and the existing measurements sheet is expanded and the others are closed
@@ -77,10 +119,47 @@ export default class SENoduleTree extends Vue {
     if (this.i18LabelKey === "objects.measurements") {
       if (this.hasExistingChildren) {
         this.expanded = true;
-        EventBus.fire("show-alert", {
-          key: `objectTree.selectAMeasurementForMeasuredCircle`,
-          type: "info"
-        });
+        switch (this.actionMode) {
+          case "measuredCircle":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForMeasuredCircle",
+              type: "info"
+            });
+            break;
+          case "translation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForTranslation",
+              type: "info"
+            });
+            break;
+          case "rotation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectAMeasurementForRotation",
+              type: "info"
+            });
+            break;
+        }
+      }
+    } else {
+      this.expanded = false;
+    }
+    // console.log("------------");
+  }
+
+  // When the user activates the apply transformation tool, the transformation sheet is expanded and the others are closed
+  expandTransformationSheet(): void {
+    // console.log("here1");
+    if (this.i18LabelKey === "objects.transformations") {
+      if (this.hasExistingChildren) {
+        this.expanded = true;
+        switch (this.actionMode) {
+          case "applyTransformation":
+            EventBus.fire("show-alert", {
+              key: "objectTree.selectATransformation",
+              type: "info"
+            });
+            break;
+        }
       }
     } else {
       this.expanded = false;
@@ -100,6 +179,7 @@ export default class SENoduleTree extends Vue {
   }
   beforeDestroy(): void {
     EventBus.unlisten("expand-measurement-sheet");
+    EventBus.unlisten("expand-transformation-sheet");
   }
 }
 </script>

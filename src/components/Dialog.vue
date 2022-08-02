@@ -12,7 +12,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn id="_test_posButton"
-          :disabled = "disableButton"
+          :disabled="disableButton"
           v-if="yesAction"
           color="primary"
           @click="yesAction()">{{yesLabel}}</v-btn>
@@ -34,6 +34,7 @@
 </template>
 
 <script lang="ts">
+import EventBus from "@/eventHandlers/EventBus";
 import { Component, Prop, Vue } from "vue-property-decorator";
 export interface DialogAction {
   hide: () => void;
@@ -65,9 +66,12 @@ export default class Dialog extends Vue implements DialogAction {
 
   show(): void {
     this.visible = true;
+    // console.debug(`Dialog ${this.title} is active`);
+    // EventBus.fire("dialog-box-is-active", { active: true });
   }
   hide(): void {
     this.visible = false;
+    // EventBus.fire("dialog-box-is-active", { active: false });
   }
 }
 </script>

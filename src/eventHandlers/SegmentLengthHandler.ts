@@ -8,16 +8,13 @@ import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode } from "@/types";
-import { SEStore } from "@/store";
-import { SEExpression } from "@/models/SEExpression";
+import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-export default class SegmentLengthHandler extends Highlighter {
-  /**
-   * Segment to measure
-   */
-  private targetSegment: SESegment | null = null;
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
+import { DisplayStyle } from "@/plottables/Nodule";
+// import { Group } from "two.js/src/group";
 
+export default class SegmentLengthHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
   }
@@ -26,77 +23,7 @@ export default class SegmentLengthHandler extends Highlighter {
     //Select an object to measure
     if (this.isOnSphere) {
       if (this.hitSESegments.length > 0) {
-        this.targetSegment = this.hitSESegments[0];
-      }
-      let measurementName = "";
-      if (
-        SEStore.expressions.some(exp => {
-          if (
-            exp instanceof SESegmentLength &&
-            this.targetSegment !== null &&
-            exp.seSegment.name === this.targetSegment.name
-          ) {
-            measurementName = exp.name;
-            return true;
-          } else {
-            return false;
-          }
-        })
-      ) {
-        EventBus.fire("show-alert", {
-          key: `handlers.duplicateSegmentMeasurement`,
-          keyOptions: {
-            segName: `${this.targetSegment?.name}`,
-            measurementName: `${measurementName}`
-          },
-          type: "error"
-        });
-        return;
-      }
-
-      if (
-        this.targetSegment !== null &&
-        this.targetSegment.label !== undefined
-      ) {
-        const lenMeasure = new SESegmentLength(this.targetSegment);
-        EventBus.fire("show-alert", {
-          key: `handlers.newSegmentMeasurementAdded`,
-          keyOptions: { name: `${lenMeasure.name}` },
-          type: "success"
-        });
-        const segmentCommandGroup = new CommandGroup();
-        segmentCommandGroup.addCommand(
-          new AddLengthMeasurementCommand(lenMeasure, this.targetSegment)
-        );
-        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
-        segmentCommandGroup.addCommand(
-          new StyleNoduleCommand(
-            [this.targetSegment.label.ref],
-            StyleEditPanels.Label,
-            [
-              {
-                // panel: StyleEditPanels.Front,
-                // labelVisibility: true,
-                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
-              }
-            ],
-            [
-              {
-                // panel: StyleEditPanels.Front,
-                // labelVisibility: this.targetSegment.label!.showing,
-                labelDisplayMode: this.targetSegment.label.ref.labelDisplayMode
-              }
-            ]
-          )
-        );
-        segmentCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(this.targetSegment.label, true)
-        );
-        segmentCommandGroup.execute();
-        // Update the display so the changes become apparent
-        this.targetSegment.markKidsOutOfDate();
-        this.targetSegment.update();
-        this.targetSegment = null;
+        this.addSegmentLengthMeasure(this.hitSESegments[0]);
       }
     }
   }
@@ -107,16 +34,10 @@ export default class SegmentLengthHandler extends Highlighter {
 
     const segmentList = this.hitSESegments.filter(seg => {
       if (
-        SEStore.expressions.some(exp => {
-          if (
-            exp instanceof SESegmentLength &&
-            exp.seSegment.name === seg.name
-          ) {
-            return true;
-          } else {
-            return false;
-          }
-        })
+        SegmentLengthHandler.store.expressions.some(
+          exp =>
+            exp instanceof SESegmentLength && exp.seSegment.name === seg.name
+        )
       ) {
         return false;
       } else {
@@ -126,8 +47,7 @@ export default class SegmentLengthHandler extends Highlighter {
     if (segmentList.length > 0) {
       // Glow the first SESegment that hasn't been measured
       segmentList[0].glowing = true;
-      this.targetSegment = segmentList[0];
-      const len = this.targetSegment.arcLength;
+      const len = segmentList[0].arcLength;
       this.infoText.text = `Arc length ${(len / Math.PI).toFixed(
         SETTINGS.decimalPrecision
       )}\u{1D7B9}`;
@@ -139,74 +59,77 @@ export default class SegmentLengthHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // Reset the targetSegment in preparation for another deletion.
-    this.targetSegment = null;
+  }
+
+  addSegmentLengthMeasure(targetSegment: SESegment): void {
+    let measurementName = "";
+    if (
+      SegmentLengthHandler.store.expressions.some(exp => {
+        if (
+          exp instanceof SESegmentLength &&
+          exp.seSegment.name === targetSegment.name
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      EventBus.fire("show-alert", {
+        key: `handlers.duplicateSegmentMeasurement`,
+        keyOptions: {
+          segName: `${targetSegment.label?.ref.shortUserName}`,
+          measurementName: `${measurementName}`
+        },
+        type: "error"
+      });
+    } else {
+      const lenMeasure = new SESegmentLength(targetSegment);
+      EventBus.fire("show-alert", {
+        key: `handlers.newSegmentMeasurementAdded`,
+        keyOptions: { name: `${lenMeasure.name}` },
+        type: "success"
+      });
+      //lenMeasure.shallowUpdate();
+
+      const segmentCommandGroup = new CommandGroup();
+      segmentCommandGroup.addCommand(
+        new AddLengthMeasurementCommand(lenMeasure, targetSegment)
+      );
+      // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+      if (targetSegment.label) {
+        segmentCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(targetSegment.label, true)
+        );
+        segmentCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [targetSegment.label.ref],
+            StyleEditPanels.Label,
+            [
+              {
+                labelDisplayMode: LabelDisplayMode.NameAndValue
+              }
+            ],
+            [
+              {
+                labelDisplayMode: targetSegment.label.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+      }
+      segmentCommandGroup.execute();
+      // make the change show up in the sphere
+      targetSegment.markKidsOutOfDate();
+      targetSegment.update();
+    }
   }
   activate(): void {
-    if (SEStore.selectedSENodules.length == 1) {
-      const object1 = SEStore.selectedSENodules[0];
-
+    if (SegmentLengthHandler.store.selectedSENodules.length == 1) {
+      const object1 = SegmentLengthHandler.store.selectedSENodules[0];
       if (object1 instanceof SESegment) {
-        let measurementName = "";
-        if (
-          SEStore.expressions.some(exp => {
-            if (
-              exp instanceof SESegmentLength &&
-              exp.seSegment.name === object1.name
-            ) {
-              measurementName = exp.name;
-              return true;
-            } else {
-              return false;
-            }
-          })
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.duplicateSegmentMeasurement`,
-            keyOptions: {
-              segName: `${object1.name}`,
-              measurementName: `${measurementName}`
-            },
-            type: "error"
-          });
-        } else {
-          const lenMeasure = new SESegmentLength(object1);
-          EventBus.fire("show-alert", {
-            key: `handlers.newSegmentMeasurementAdded`,
-            keyOptions: { name: `${lenMeasure.name}` },
-            type: "success"
-          });
-
-          const segmentCommandGroup = new CommandGroup();
-          segmentCommandGroup.addCommand(
-            new AddLengthMeasurementCommand(lenMeasure, object1)
-          );
-          // Set the selected segment's Label to display and to show NameAndValue in an undoable way
-          segmentCommandGroup.addCommand(
-            new StyleNoduleCommand(
-              [object1.label!.ref],
-              StyleEditPanels.Front,
-              [
-                {
-                  // panel: StyleEditPanels.Front,
-                  // labelVisibility: true,
-                  labelDisplayMode: LabelDisplayMode.NameAndValue
-                }
-              ],
-              [
-                {
-                  // panel: StyleEditPanels.Front,
-                  // labelVisibility: object1.label!.showing,
-                  labelDisplayMode: object1.label!.ref.labelDisplayMode
-                }
-              ]
-            )
-          );
-          segmentCommandGroup.execute();
-          // make the change show up in the sphere
-          object1.markKidsOutOfDate();
-          object1.update();
-        }
+        this.addSegmentLengthMeasure(object1);
       }
     }
     // Unselect the selected objects and clear the selectedObject array

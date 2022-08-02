@@ -161,5 +161,5 @@ describe("SphereFrame: Point On Object Tool", () => {
       }
   });
 
-  xit("adds points on an ellipse", async () => {});
+  // xit("adds points on an ellipse", async () => {});
 });

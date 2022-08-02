@@ -18,52 +18,61 @@ export class LabelMoverVisitor implements Visitor {
     this.locationVector.copy(vec);
   }
 
-  actionOnLabel(l: SELabel): void {
+  actionOnLabel(l: SELabel): boolean {
     // Don't use the usual location setter because that will move the label to the location on a possibly out of date parent.
     // if (!(p instanceof SEPointOnOneDimensional)) {
     //   p.locationVector = this.locationVector; // Set the new position vector
     // } else {
     l.labelDirectLocationSetter(this.locationVector);
+    return true;
     // }
   }
 
   // eslint-disable-next-line
-  actionOnPoint(p: SEPoint): void {
+  actionOnPoint(p: SEPoint): boolean {
     //p.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnLine(m: SELine): void {
+  actionOnLine(m: SELine): boolean {
     //m.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnSegment(s: SESegment): void {
+  actionOnSegment(s: SESegment): boolean {
     // s.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnCircle(c: SECircle): void {
+  actionOnCircle(c: SECircle): boolean {
     // c.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnEllipse(e: SEEllipse): void {
+  actionOnEllipse(e: SEEllipse): boolean {
     // e.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnAngleMarker(a: SEAngleMarker): void {
+  actionOnAngleMarker(a: SEAngleMarker): boolean {
     //a.update()
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnParametric(p: SEParametric): void {
+  actionOnParametric(p: SEParametric): boolean {
     // e.update();
+    return false;
   }
 
   // eslint-disable-next-line
-  actionOnPolygon(p: SEPolygon): void {
+  actionOnPolygon(p: SEPolygon): boolean {
     // e.update();
+    return false;
   }
 }

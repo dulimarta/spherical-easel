@@ -53,7 +53,7 @@ Measure the angle created by two lines, two line segments with a common endpoint
   - If a triple of points is selected (or created) then the order in which the points were selected matters. The second point selected is the vertex of the angle. The angle measure is determined using the right hand rule as above assuming that there is a line segment (not necessarily shown or created but with length less than $\pi$) from the first selected point to the second point and a line segment (not necessarily shown or created but with length less than $\pi$) from the second selected point to the third selected point.
 - An angle marker is displayed indicating the angle that was measured. The vertex of the angle marker is the intersection point of the lines on the front of the sphere initially (unless the lines have common point defining them and then the common point is the vertex even if that common point is on the back side of the sphere when the angle marker is created), the common endpoint of the line segments, the endpoint of the line segment on the line, or the second point selected.
 - When an angle measurement is created, a row describing some of its properties (including its value and Measurement Token) will appear in the [Measurement Section of the Objects List](/userguide/toolsobjectspanel.html#objects-list).
-- If this tool is activated with two lines, two line segments with a common endpoint, a line and a line segment with an endpoing on the line, or a triple of points selected, the above action is performed automatically.
+- If this tool is activated with any objects selected, they are all unselected and ignored.
 
 ::: details Geometry Tip: Angles are tricky!
 When two line segments with a common endpoint form an angle (a geometric object) there are two possible angle measures associated with the angle (one is bigger than or equal to $\pi$!).
@@ -91,7 +91,7 @@ Measure all aspects of a triangle.
   - The length of each of the three line segments.
   - The measure of each of the three angles in the triangle.
   - The area of the triangle.
-- If this tool is activated with a cycle of line segments or a collection of three points selected, the above action is performed automatically.
+- If this tool is activated with any objects selected, they are all unselected and ignored.
 
 :::
 
@@ -111,5 +111,5 @@ Measure all aspects of a polygon
   - The length of each line segment.
   - The measure of each of the angles in the polygon.
   - The area of the polygon.
-- If this tool is activated with a cycle of line segments or a collection of points selected, the above action is performed automatically.
+- If this tool is activated with any objects selected, they are all unselected and ignored.
   :::

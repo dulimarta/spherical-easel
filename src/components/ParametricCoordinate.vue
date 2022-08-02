@@ -37,26 +37,24 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import { namespace } from "vuex-class";
 import SETTINGS from "@/global-settings";
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
 interface TestTValueType {
   val: number;
 }
 
-@Component({})
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["expressions"])
+  }
+})
 export default class ParametricCoordinate extends Vue {
-  //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
-
-  @SE.State((s: AppState) => s.expressions)
-  readonly expressions!: SEExpression[];
-
   @Prop()
   readonly i18nToolTip!: string;
 
@@ -69,6 +67,8 @@ export default class ParametricCoordinate extends Vue {
   @Prop()
   readonly name!: string;
 
+  //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
+  readonly expressions!: SEExpression[];
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
@@ -80,7 +80,7 @@ export default class ParametricCoordinate extends Vue {
   private testTValue = 0;
 
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -128,7 +128,7 @@ export default class ParametricCoordinate extends Vue {
           [this.name]: this.coordinateExpression
         });
         // console.debug("Calculation result is", this.calcResult);
-      } catch (err) {
+      } catch (err: any) {
         // no code
         // console.debug("Got an error", err);
         this.parsingError = err.message;

@@ -1,7 +1,3 @@
-/** @format */
-
-// import SETTINGS from "@/global-settings";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
@@ -9,21 +5,15 @@ import {
   StyleOptions,
   StyleEditPanels,
   DEFAULT_LABEL_TEXT_STYLE
-  // DEFAULT_LABEL_FRONT_STYLE,
-  // DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
-import { LabelDisplayMode } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SESegmentLength } from "@/models/SESegmentLength";
+import { LabelDisplayMode, LabelParentTypes } from "@/types";
 import { ValueDisplayMode } from "@/types";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SEParametric } from "@/models/SEParametric";
-import { SEEllipse } from "@/models/SEEllipse";
+
+import Two from "two.js";
+// import { Vector } from "two.js/src/vector";
+// import { Text } from "two.js/src/text";
+// import { Group } from "two.js/src/group";
+// import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -35,7 +25,7 @@ export default class Label extends Nodule {
   /**
    * This Label's corresponding SELabel, used so that this Label class can turn off and on the visibility of the object it is labeling and control other things about the object it is labeling
    */
-  public seLabel?: SELabel;
+  //public seLabel?: SELabel; // I shouldn't reference this model object in a plottable object 0 verboten!
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
@@ -49,21 +39,25 @@ export default class Label extends Nodule {
    * The TwoJS objects that are used to display the label.
    * One is for the front, the other for the back. Only one is displayed at a time
    */
-  protected frontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected frontText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected backText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected backText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingFrontText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingFrontText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingBackText: Two.Text = new Two.Text("Test", 1, 0, {
+  protected glowingBackText = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
   private glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
 
+  private seLabelParentType: LabelParentTypes = "point";
+  // private _seLabelParentID = -1;
+  private _valueDisplayMode = ValueDisplayMode.Number;
+  private _defaultName = "";
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
    * shortUser
@@ -165,12 +159,14 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
-  constructor() {
+  constructor(parentType: LabelParentTypes) {
     super();
+
+    this.seLabelParentType = parentType;
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
-    //  Two.Group that they are all members of. To translate the group is to translate all points
+    //  Group that they are all members of. To translate the group is to translate all points
 
     this.glowingFrontText.translation = this.defaultScreenVectorLocation;
     this.frontText.translation = this.defaultScreenVectorLocation;
@@ -195,6 +191,15 @@ export default class Label extends Nodule {
     // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
     // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
+
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  set defaultName(name: string) {
+    this._defaultName = name;
+  }
   /**
    * Set and get the shortUserName
    */
@@ -206,7 +211,6 @@ export default class Label extends Nodule {
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
   get shortUserName(): string {
     return this._shortUserName;
   }
@@ -250,9 +254,6 @@ export default class Label extends Nodule {
       this._locationVector.x,
       -this._locationVector.y // the minus sign because the up/down coordinate are *not* reversed on text layers
     );
-    if (this.seLabel?.showing) {
-      this.updateDisplay();
-    }
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -281,7 +282,7 @@ export default class Label extends Nodule {
     top: number;
     width: number;
   } {
-    const rect = this.frontText.getBoundingClientRect() as Two.BoundingClientRect;
+    const rect = this.frontText.getBoundingClientRect();
     return {
       bottom: rect.bottom,
       height: rect.height,
@@ -340,6 +341,10 @@ export default class Label extends Nodule {
     layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
     layers[LAYER.backgroundText].add(this.backText);
     layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+    // this.frontText.addTo(layers[LAYER.foregroundText]);
+    // this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
+    // this.backText.addTo(layers[LAYER.backgroundText]);
+    // this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
   }
 
   removeFromLayers(layers: Two.Group[]): void {
@@ -347,6 +352,10 @@ export default class Label extends Nodule {
     layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
     layers[LAYER.backgroundText].remove(this.backText);
     layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+    // this.frontText.remove();
+    // this.glowingFrontText.remove();
+    // this.backText.remove();
+    // this.glowingBackText.remove();
   }
 
   updateDisplay(): void {
@@ -379,11 +388,12 @@ export default class Label extends Nodule {
 
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     super.updateStyle(mode, options);
+
     if (options.labelDisplayText) {
       this._shortUserName = options.labelDisplayText.slice(
         0,
@@ -391,18 +401,26 @@ export default class Label extends Nodule {
       );
     }
 
-    if (options.labelDisplayCaption)
+    if (options.labelDisplayCaption) {
       this._caption = options.labelDisplayCaption.slice(
         0,
         SETTINGS.label.maxLabelDisplayCaptionLength
       );
-    if (this.seLabel?.parent instanceof SEAngleMarker) {
-      const angleMarker = this.seLabel.parent;
-      this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
-    } else if (this.seLabel?.parent instanceof SEPolygon) {
-      const polygon = this.seLabel.parent;
-      this._shortUserName = `Po${polygon.polygonNumber}`;
     }
+
+    // if (this.seLabel?.parent instanceof SEAngleMarker) {
+    //   const angleMarker = this.seLabel.parent;
+    //   this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
+    // } else if (this.seLabel?.parent instanceof SEPolygon) {
+    //   const polygon = this.seLabel.parent;
+    //   this._shortUserName = `Po${polygon.polygonNumber}`;
+    // }
+    // overide any update to the names of the angleMarkers and polygons. why?
+    // if (this.seLabelParentType === "angleMarker") {
+    //   this._shortUserName = this._defaultName; //`Am${this._seLabelParentID}`;
+    // } else if (this.seLabelParentType === "polygon") {
+    //   this._shortUserName = this._defaultName; // `Po${this._seLabelParentID}`;
+    // }
   }
 
   /**
@@ -411,38 +429,43 @@ export default class Label extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Label) {
       let labelDisplayMode = LabelDisplayMode.NameOnly;
-      if (this.seLabel !== undefined) {
-        if (this.seLabel.parent instanceof SEPoint) {
+
+      switch (this.seLabelParentType) {
+        case "point":
           labelDisplayMode = SETTINGS.point.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SELine) {
+          break;
+        case "line":
           labelDisplayMode = SETTINGS.line.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SESegment) {
+          break;
+        case "segment":
           labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SECircle) {
+          break;
+        case "circle":
           labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEAngleMarker) {
+          break;
+        case "angleMarker":
           labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEParametric) {
+          break;
+        case "parametric":
           labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
-        } else if (this.seLabel.parent instanceof SEEllipse) {
+          break;
+        case "ellipse":
           labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
-        }
+          break;
+        case "polygon":
+          labelDisplayMode = SETTINGS.polygon.defaultLabelMode;
+          break;
+        default:
+          labelDisplayMode = LabelDisplayMode.NameOnly;
       }
       // Angle Markers and polygons are exceptions which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use this
       // and the (angleMarker|polygon)Number.
-      let defaultName = "";
-      if (this.seLabel?.parent instanceof SEAngleMarker) {
-        defaultName = `Am${this.seLabel.parent.angleMarkerNumber}`;
-      } else if (this.seLabel?.parent instanceof SEPolygon) {
-        defaultName = `Po${this.seLabel.parent.polygonNumber}`;
-      } else if (this.seLabel) {
-        defaultName = this.seLabel.parent.name;
-      }
+      // The default name is set in the constructor for all objects
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
-        labelDisplayText: defaultName,
+        labelDisplayText: this._defaultName,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
@@ -473,10 +496,10 @@ export default class Label extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -486,13 +509,13 @@ export default class Label extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
-        if (this.value.length > 0 && this.seLabel !== undefined) {
-          if (this.seLabel.parent instanceof SEPoint) {
+        if (this.value.length > 0) {
+          if (this.seLabelParentType === "point") {
             labelText =
               "(" +
               `${this._value
@@ -500,22 +523,7 @@ export default class Label extends Nodule {
                 .join(",")}` +
               ")";
           } else {
-            let valueDisplayMode;
-            if (this.seLabel.parent instanceof SEAngleMarker) {
-              valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
-                .valueDisplayMode;
-            }
-            if (this.seLabel.parent instanceof SEPolygon) {
-              valueDisplayMode = (this.seLabel.parent as SEPolygon)
-                .valueDisplayMode;
-            } else if (this.seLabel.parent instanceof SESegment) {
-              const seSegLength = this.seLabel.parent.kids.find(
-                node => node instanceof SESegmentLength
-              );
-              valueDisplayMode = (seSegLength as SESegmentLength)
-                .valueDisplayMode;
-            }
-            switch (valueDisplayMode) {
+            switch (this._valueDisplayMode) {
               case ValueDisplayMode.Number:
                 labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
                 break;
@@ -537,7 +545,7 @@ export default class Label extends Nodule {
 
         switch (labelStyle?.labelDisplayMode) {
           case LabelDisplayMode.NameOnly: {
-            labelText = labelStyle?.labelDisplayText ?? "No Label";
+            labelText = labelStyle?.labelDisplayText ?? "No Label Text1";
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
@@ -547,21 +555,33 @@ export default class Label extends Nodule {
           case LabelDisplayMode.ValueOnly: {
             if (this._value.length === 0) {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortUserName;
+              //labelText = this.shortUserName;
+              labelText = labelStyle?.labelDisplayText ?? "No Label Text2";
             }
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
             labelText =
-              this.shortUserName + ": " + labelStyle?.labelDisplayCaption;
+              labelStyle?.labelDisplayText +
+              ": " +
+              labelStyle?.labelDisplayCaption;
+            //this.shortUserName + ": " + labelStyle?.labelDisplayCaption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              labelText = this.shortUserName + ": " + labelText;
+              // if (
+              //   this.seLabelParentType === "angleMarker" ||
+              //   this.seLabelParentType === "polygon"
+              // ) {
+              //   labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              // } else {
+
+              labelText = labelStyle?.labelDisplayText + ": " + labelText;
+              // }
             } else {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortUserName;
+              labelText = labelStyle?.labelDisplayText ?? "No Label Text3"; //this.shortUserName;
             }
             break;
           }
@@ -579,15 +599,15 @@ export default class Label extends Nodule {
             labelStyle?.labelTextStyle ?? SETTINGS.label.style;
           this.glowingBackText.style =
             labelStyle?.labelTextStyle ?? SETTINGS.label.style;
-          this.frontText.weight = "normal";
-          this.backText.weight = "normal";
-          this.glowingFrontText.weight = "normal";
-          this.glowingBackText.weight = "normal";
+          this.frontText.weight = 500;
+          this.backText.weight = 500;
+          this.glowingFrontText.weight = 500;
+          this.glowingBackText.weight = 500;
         } else if (labelStyle?.labelTextStyle === "bold") {
-          this.frontText.weight = "bold";
-          this.backText.weight = "bold";
-          this.glowingFrontText.weight = "bold";
-          this.glowingBackText.weight = "bold";
+          this.frontText.weight = 1000;
+          this.backText.weight = 1000;
+          this.glowingFrontText.weight = 1000;
+          this.glowingBackText.weight = 1000;
         }
 
         this.frontText.family =
@@ -620,7 +640,7 @@ export default class Label extends Nodule {
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
         // console.log("front fill label", frontFillColor);
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontFillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {
           this.frontText.fill = frontFillColor;
@@ -633,7 +653,7 @@ export default class Label extends Nodule {
           labelStyle?.labelDynamicBackStyle === true
         ) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontFillColor)
             )
           ) {
@@ -642,7 +662,7 @@ export default class Label extends Nodule {
             this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backFillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backFillColor)) {
             this.backText.noFill();
           } else {
             this.backText.fill = backFillColor;

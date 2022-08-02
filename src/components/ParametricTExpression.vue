@@ -35,22 +35,24 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
 import i18n from "@/i18n";
-const SE = namespace("se");
+import { mapState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-@Component({})
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["expressions"])
+  }
+})
 export default class ParametricTExpression extends Vue {
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
 
   @Prop()
@@ -70,7 +72,7 @@ export default class ParametricTExpression extends Vue {
   private tValueResult = 0;
   private currentValueString = "";
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -126,7 +128,7 @@ export default class ParametricTExpression extends Vue {
         });
 
         // console.debug("Calculation result is", this.calcResult);
-      } catch (err) {
+      } catch (err: any) {
         // no code
         console.debug("Got an error", err);
         this.parsingError = err.message;

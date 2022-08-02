@@ -77,15 +77,19 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { AppState, SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
 import axios, { AxiosResponse } from "axios";
-import { namespace } from "vuex-class";
-import { SEStore } from "@/store";
-const SE = namespace("se");
+import { mapState, mapWritableState } from "pinia";
+import { useSEStore } from "@/stores/se";
 
-@Component
+@Component({
+  computed: {
+    ...mapState(useSEStore, ["svgCanvas"]),
+    ...mapWritableState(useSEStore, ["inverseTotalRotationMatrix"])
+  }
+})
 export default class extends Vue {
   @Prop()
   readonly items!: Array<SphericalConstruction>;
@@ -93,11 +97,9 @@ export default class extends Vue {
   @Prop({ type: Boolean })
   readonly allowSharing!: boolean;
 
-  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
-  readonly inverseTotalRotationMatrix!: Matrix4;
+  inverseTotalRotationMatrix!: Matrix4;
 
   readonly $appAuth!: FirebaseAuth;
 
@@ -139,24 +141,40 @@ export default class extends Vue {
   // or when the mouse moves while a new construction is being loaded
   async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
-    this.lastDocId = s.id;
-    const newSvg = await axios
-      .get(s.previewData)
-      .then((r: AxiosResponse) => r.data)
-      .then((svgString: string) => {
-        const newDoc = this.domParser.parseFromString(
-          svgString,
-          "image/svg+xml"
-        );
-        return newDoc.querySelector("svg") as SVGElement;
-      });
 
-    // If we are previewing a construction replace that with the new one
-    // Otherwise replace the current top-level SVG with the new one
-    if (this.previewSVG !== null) this.previewSVG.replaceWith(newSvg);
-    else this.svgRoot.replaceWith(newSvg);
-    // console.debug("onItemHover:", this.previewSVG);
-    this.previewSVG = newSvg;
+    this.lastDocId = s.id;
+    let aDoc: Document | undefined = undefined;
+
+    if (s.previewData.startsWith("data:")) {
+      const regex = /^data:.+\/(.+);base64,(.*)$/;
+      const parts = s.previewData.match(regex);
+      if (parts) {
+        const buff = Buffer.from(parts[2], "base64");
+        aDoc = this.domParser.parseFromString(buff.toString(), "image/svg+xml");
+      }
+    } else {
+      aDoc = await axios
+        .get(s.previewData, { responseType: "text" })
+        .then((r: AxiosResponse) => r.data)
+        .then((svgString: string) => {
+          const newDoc = this.domParser.parseFromString(
+            svgString,
+            "image/svg+xml"
+          );
+          return newDoc; // .querySelector("svg") as SVGElement;
+        });
+    }
+    if (aDoc) {
+      const newSvg = aDoc.querySelector("svg") as SVGElement;
+
+      // If we are previewing a construction replace that with the new one
+      // Otherwise replace the current top-level SVG with the new one
+
+      if (this.previewSVG !== null) this.previewSVG.replaceWith(newSvg);
+      else this.svgRoot.replaceWith(newSvg);
+      // console.debug("onItemHover:", this.previewSVG);
+      this.previewSVG = newSvg;
+    }
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
@@ -166,7 +184,7 @@ export default class extends Vue {
       this.svgParent.firstChild as SVGElement
     );
     // Restore the rotation matrix
-    SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
+    this.inverseTotalRotationMatrix = this.originalSphereMatrix;
     /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
     //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
     // setTimeout(() => {

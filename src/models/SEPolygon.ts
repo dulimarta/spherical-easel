@@ -7,15 +7,15 @@ import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE
 } from "@/types/Styles";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
 import { SEExpression } from "./SEExpression";
+import { SEStoreType, useSEStore } from "@/stores/se";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
@@ -25,7 +25,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Polygon;
+  public declare ref: Polygon;
   /**
    * Pointer to the label of this SEPolygon
    */
@@ -66,6 +66,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
 
   //** The number of edges in this polygon */
   private _n: number;
+  private store: SEStoreType;
 
   /** The area of the polygon */
   private _area = 0;
@@ -99,9 +100,10 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // The M### name is defined in the SEExpression constructor
     SENodule.POLYGON_COUNT++;
     this._polygonNumber = SENodule.POLYGON_COUNT;
+    this.store = useSEStore();
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -150,6 +152,18 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.label?.ref.shortUserName +
       `: ${this.prettyValue}`
     );
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.label) {
+      this.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   /**
@@ -341,7 +355,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -374,7 +388,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -386,15 +400,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     return totalNumberOfCrossings % 2 === 0;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     // All parent segments must exist (This is equivalent to checking that all the angle markers exist)
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
@@ -445,10 +451,12 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             j !== (((i - 1) % this._n) + this._n) % this._n
           ) {
             if (
-              SEStore.findIntersectionPointsByParent(
-                this._seEdgeSegments[i].name,
-                this._seEdgeSegments[j].name
-              ).some(pt => pt.exists)
+              this.store
+                .findIntersectionPointsByParent(
+                  this._seEdgeSegments[i].name,
+                  this._seEdgeSegments[j].name
+                )
+                .some(pt => pt.exists)
             ) {
               // console.log(
               //   "intersection",
@@ -490,15 +498,29 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     }
 
     if (this.showing && this._exists) {
+      // When this updates send its value to the label of the polygon
+      if (this.label) {
+        this.label.ref.value = [this.value];
+      }
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These polygons are completely determined by their line/segment/point parents and an update on the parents
     // will cause this polygon to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
-      orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
         console.log(
           `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
@@ -518,7 +540,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // check to see if the idealUnitSphereVector is inside of the polygon
-    if (this.isHitAt(idealUnitSphereVector, SEStore.zoomMagnificationFactor)) {
+    if (
+      this.isHitAt(idealUnitSphereVector, this.store.zoomMagnificationFactor)
+    ) {
       // console.log("heree");
       return idealUnitSphereVector;
     }
@@ -554,7 +578,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = this.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -582,8 +606,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
         .normalize();
     }
   }
-  accept(v: Visitor): void {
-    v.actionOnPolygon(this);
+  accept(v: Visitor): boolean {
+    return v.actionOnPolygon(this);
   }
 
   public isLabelable(): boolean {

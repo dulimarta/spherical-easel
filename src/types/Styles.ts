@@ -105,6 +105,21 @@ export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
 };
 
+export const DEFAULT_NONFREE_SEGMENT_FRONT_STYLE: StyleOptions = {
+  strokeColor: SETTINGS.segment.nonFree.strokeColor.front,
+  dashArray: SETTINGS.segment.nonFree.dashArray.front,
+  reverseDashArray: SETTINGS.segment.nonFree.dashArray.reverse.front,
+  strokeWidthPercent: SETTINGS.segment.nonFree.scalePercent
+};
+
+export const DEFAULT_NONFREE_SEGMENT_BACK_STYLE: StyleOptions = {
+  strokeColor: SETTINGS.segment.nonFree.strokeColor.back,
+  strokeWidthPercent: SETTINGS.segment.nonFree.scalePercent,
+  dashArray: SETTINGS.segment.nonFree.dashArray.back,
+  reverseDashArray: SETTINGS.segment.nonFree.dashArray.reverse.back,
+  dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
+};
+
 export const DEFAULT_CIRCLE_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.circle.drawn.fillColor.front,
   strokeColor: SETTINGS.circle.drawn.strokeColor.front,
@@ -152,7 +167,22 @@ export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
   dashArray: SETTINGS.ellipse.drawn.dashArray.back,
   reverseDashArray: SETTINGS.ellipse.drawn.dashArray.reverse.back
 };
+export const DEFAULT_NONFREE_ELLIPSE_FRONT_STYLE: StyleOptions = {
+  strokeColor: SETTINGS.ellipse.nonFree.strokeColor.front,
+  fillColor: SETTINGS.ellipse.nonFree.fillColor.front,
+  dashArray: SETTINGS.ellipse.nonFree.dashArray.front,
+  reverseDashArray: SETTINGS.ellipse.nonFree.dashArray.reverse.front,
+  strokeWidthPercent: SETTINGS.ellipse.nonFree.scalePercent
+};
 
+export const DEFAULT_NONFREE_ELLIPSE_BACK_STYLE: StyleOptions = {
+  strokeColor: SETTINGS.ellipse.nonFree.strokeColor.back,
+  fillColor: SETTINGS.ellipse.nonFree.fillColor.back,
+  strokeWidthPercent: SETTINGS.ellipse.nonFree.scalePercent,
+  dashArray: SETTINGS.ellipse.nonFree.dashArray.back,
+  reverseDashArray: SETTINGS.ellipse.nonFree.dashArray.reverse.back,
+  dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle
+};
 export const DEFAULT_POLYGON_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.polygon.drawn.fillColor.front
 };

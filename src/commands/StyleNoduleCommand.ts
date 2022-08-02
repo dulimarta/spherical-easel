@@ -32,14 +32,12 @@ export class StyleNoduleCommand extends Command {
 
   do(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      console.debug(
-        "Do effect of StyleNoduleCommand on ",
-        this.nodules[i],
-        "with payload old",
-        this.pastStyles[i],
-        "new",
-        this.currentStyles[i]
-      );
+      // console.debug(
+      //   "Do effect of StyleNoduleCommand on ",
+      //   this.nodules[i],
+      //   "with payload old",
+      //   this.pastStyles[i]
+      // );
       Command.store.changeStyle({
         selected: [this.nodules[i]],
         panel: this.panel,
@@ -47,6 +45,8 @@ export class StyleNoduleCommand extends Command {
           ...this.currentStyles[i]
         }
       });
+
+      // console.debug("new", this.currentStyles[i]);
     }
   }
 

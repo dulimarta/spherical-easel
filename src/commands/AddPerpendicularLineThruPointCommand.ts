@@ -83,15 +83,15 @@ export class AddPerpendicularLineThruPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "perpendicularLineThruPointParentPointName=" + this.parentSEPoint.name,
       "perpendicularLineThruPointNormalVector=" +
-        this.sePerpendicularLineThruPoint.normalVector.toFixed(7),
+        this.sePerpendicularLineThruPoint.normalVector.toFixed(9),
       "perpendicularLineThruPointEndSEPointLocationVector=" +
-        this.sePerpendicularLineThruPoint.endSEPoint.locationVector.toFixed(7),
+        this.sePerpendicularLineThruPoint.endSEPoint.locationVector.toFixed(9),
       "perpendicularLineThruPointParentOneDimensionalName=" +
         this.parentOneDimensional.name,
       "perpendicularLineThruPointIndex=" +
@@ -173,7 +173,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("line");
       const seLabel = new SELabel(label, perpendicularLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

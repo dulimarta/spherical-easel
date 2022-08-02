@@ -13,15 +13,22 @@ export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
   private parent: SEOneOrTwoDimensional;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     sePointOnOneDimensional: SEPointOnOneOrTwoDimensional,
     parent: SEOneOrTwoDimensional,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.sePointOnOneOrTwoDimensional = sePointOnOneDimensional;
     this.parent = parent;
     this.seLabel = seLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -34,8 +41,17 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
     Command.store.addPoint(this.sePointOnOneOrTwoDimensional);
     Command.store.addLabel(this.seLabel);
-    this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
-    this.sePointOnOneOrTwoDimensional.update();
+    // Set the label to display the name of the point in visible count order
+    this.sePointOnOneOrTwoDimensional.pointVisibleBefore = true;
+    if (
+      this.sePointOnOneOrTwoDimensional.label &&
+      this.useVisiblePointCountToRename
+    ) {
+      this.sePointOnOneOrTwoDimensional.incrementVisiblePointCount();
+      this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
+    }
+    // this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
+    // this.sePointOnOneOrTwoDimensional.update();
   }
 
   saveState(): void {
@@ -43,6 +59,14 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   restoreState(): void {
+    if (
+      this.sePointOnOneOrTwoDimensional.label &&
+      this.useVisiblePointCountToRename
+    ) {
+      this.sePointOnOneOrTwoDimensional.decrementVisiblePointCount();
+      this.sePointOnOneOrTwoDimensional.label.ref.shortUserName = `P${this.sePointOnOneOrTwoDimensional.visiblePointCount}`;
+    }
+    this.sePointOnOneOrTwoDimensional.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.sePointOnOneOrTwoDimensional.unregisterChild(this.seLabel);
@@ -82,13 +106,13 @@ export class AddPointOnOneDimensionalCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "pointOnOneOrTwoDimensionalParentName=" + this.parent.name,
       "pointOnOneOrTwoDimensionalVector=" +
-        this.sePointOnOneOrTwoDimensional.locationVector.toFixed(7)
+        this.sePointOnOneOrTwoDimensional.locationVector.toFixed(9)
     ].join("&");
   }
 
@@ -110,12 +134,9 @@ export class AddPointOnOneDimensionalCommand extends Command {
 
     const positionVector = new Vector3();
     positionVector.from(propMap.get("pointOnOneOrTwoDimensionalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
-    // console.log(
-    //   objMap,
-    //   "pointOnOneOrTwoDimensionalParent",
-    //   pointOnOneOrTwoDimensionalParent,
-    //   propMap.get("pointOnOneOrTwoDimensionalParentName")
-    // );
+    console.debug(
+      `point on one or two dim vector ${positionVector.toFixed(2)}`
+    );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
       const point = new Point();
@@ -123,7 +144,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
         point,
         pointOnOneOrTwoDimensionalParent
       );
-      sePointOnOneOrTwoDimensional.locationVector = positionVector;
+      // use the direct setter because the parent may be out of date
+      sePointOnOneOrTwoDimensional.pointDirectLocationSetter(positionVector);
       //style the point on object
       const pointOnOneOrTwoDimensionalFrontStyleString =
         propMap.get("objectFrontStyle");
@@ -141,7 +163,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("point");
       const seLabel = new SELabel(label, sePointOnOneOrTwoDimensional);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -182,7 +204,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
       return new AddPointOnOneDimensionalCommand(
         sePointOnOneOrTwoDimensional,
         pointOnOneOrTwoDimensionalParent,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

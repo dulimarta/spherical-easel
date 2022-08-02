@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3, Vector2, Matrix4 } from "three";
-import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -10,7 +9,12 @@ import {
   DEFAULT_CIRCLE_FRONT_STYLE,
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
+import Two from "two.js";
+// import { Two.Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
+// import { Two.Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -51,11 +55,6 @@ export default class Circle extends Nodule {
   private projectedRadius = 0;
 
   /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
-
-  /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
   protected frontPart: Two.Path;
@@ -68,8 +67,8 @@ export default class Circle extends Nodule {
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  private frontFill: Two.Path;
-  private backFill: Two.Path;
+  protected frontFill: Two.Path;
+  protected backFill: Two.Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
   private fillStorageAnchors: Two.Anchor[] = [];
@@ -162,7 +161,7 @@ export default class Circle extends Nodule {
     // Similar for the back vertices. Initially the length of back/front FillVertices must be SUBDIVISIONS.
     const frontVertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
-      // Create Two.Vectors for the paths that will be cloned later
+      // Create Vectors for the paths that will be cloned later
       frontVertices.push(new Two.Vector(0, 0));
 
       //create the original vertices (the ones that are on the boundary of the circle) and will be transformed to the target circle
@@ -387,6 +386,10 @@ export default class Circle extends Nodule {
     this.backPart.closed = frontLen === 0;
     this.glowingFrontPart.closed = backLen === 0;
     this.glowingBackPart.closed = frontLen === 0;
+    // this.frontPart["_closed"] = backLen === 0;
+    // this.backPart["_closed"] = frontLen === 0;
+    // this.glowingFrontPart["_closed"] = backLen === 0;
+    // this.glowingBackPart["_closed"] = frontLen === 0;
 
     //Now build the front/back fill objects based on the front/back parts
 
@@ -410,7 +413,7 @@ export default class Circle extends Nodule {
     // The circle interior is only on the front of the sphere
     if (backLen === 0 && this._circleRadius < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
-      this.frontPart.vertices.forEach((v: Two.Anchor, index: number) => {
+      this.frontPart.vertices.forEach((v: Two.Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -477,7 +480,7 @@ export default class Circle extends Nodule {
       );
 
       // Build the frontFill- first add the frontPart.vertices
-      this.frontPart.vertices.forEach(node => {
+      this.frontPart.vertices.forEach((node: Two.Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -499,7 +502,7 @@ export default class Circle extends Nodule {
       // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
       // console.log("pool size", pool.length);
       // Build the backFill- first add the backPart.vertices
-      this.backPart.vertices.forEach(node => {
+      this.backPart.vertices.forEach((node: Two.Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -813,17 +816,21 @@ export default class Circle extends Nodule {
 
     // Duplicate the non-glowing parts
     dup.frontPart.closed = this.frontPart.closed;
+    //dup.frontPart["_closed"] = this.frontPart["_closed"];
     dup.frontPart.rotation = this.frontPart.rotation;
     dup.frontPart.translation.copy(this.frontPart.translation);
     dup.backPart.closed = this.backPart.closed;
+    //dup.backPart["_closed"] = this.backPart["_closed"];
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
+    //dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
     dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
     dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
     dup.glowingBackPart.closed = this.glowingBackPart.closed;
+    //dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
     dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
     dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
 
@@ -897,7 +904,7 @@ export default class Circle extends Nodule {
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeFromLayers(/*layers: Group[]*/): void {
     this.frontPart.remove();
     this.frontFill.remove();
     this.glowingFrontPart.remove();
@@ -960,19 +967,19 @@ export default class Circle extends Nodule {
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the circle
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
-   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual js objects
    *
-   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // Use the SETTINGS temporary options to directly modify the Two.js objects.
+        // Use the SETTINGS temporary options to directly modify the js objects.
 
         //FRONT
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
         ) {
           this.frontFill.noFill();
         } else {
@@ -980,7 +987,7 @@ export default class Circle extends Nodule {
           this.frontFill.fill = this.frontGradient;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
         ) {
           this.frontPart.noStroke();
         } else {
@@ -1000,7 +1007,7 @@ export default class Circle extends Nodule {
         }
         //BACK
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
         ) {
           this.backFill.noFill();
         } else {
@@ -1008,7 +1015,7 @@ export default class Circle extends Nodule {
           this.backFill.fill = this.backGradient;
         }
         if (
-          Nodule.hlsaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
+          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
         ) {
           this.backPart.noStroke();
         } else {
@@ -1034,21 +1041,23 @@ export default class Circle extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // Use the current variables to directly modify the Two.js objects.
+        // Use the current variables to directly modify the js objects.
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
-          this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
+          this.frontGradientColor.color =
+            frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
           this.frontFill.fill = this.frontGradient;
         }
 
-        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
-          this.frontPart.stroke = frontStyle?.strokeColor as Two.Color;
+          this.frontPart.stroke =
+            frontStyle?.strokeColor ?? SETTINGS.circle.drawn.strokeColor.front;
         }
         // strokeWidthPercent is applied by adjustSize()
 
@@ -1064,45 +1073,46 @@ export default class Circle extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? "black"
+              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
             );
 
             this.backFill.fill = this.backGradient;
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
-            this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            console.log("here 2");
+            this.backGradientColor.color =
+              backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
             this.backFill.fill = this.backGradient;
           }
         }
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hlsaIsNoFillOrNoStroke(
+            Nodule.hslaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
+              frontStyle?.strokeColor ?? SETTINGS.circle.drawn.strokeColor.front
             );
           }
         } else {
-          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backPart.noStroke();
           } else {
-            this.backPart.stroke = backStyle?.strokeColor ?? "black";
+            this.backPart.stroke =
+              backStyle?.strokeColor ?? SETTINGS.circle.drawn.strokeColor.back;
           }
         }
 

@@ -20,7 +20,6 @@
 
 
 <script lang="ts">
-import SE from "@/store/se-module";
 import axios from "axios";
 import { Prop, Component, Vue } from "vue-property-decorator";
 //import SETTINGS from "@/global-settings";
@@ -53,7 +52,6 @@ export default class IconBase extends Vue {
     this.filePath = SETTINGS.icons[this.iconName].props.filePath;
     this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
     this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;
-
     if (typeof this.mdiIcon !== "string") {
       this.doneFetching = false;
       // By default, axios assumes a JSON response and the input will be parsed as JSON.
@@ -470,6 +468,7 @@ export default class IconBase extends Vue {
     if (yTranslate !== undefined) {
       vals[5] = yTranslate;
     }
+
     return (
       "matrix(" +
       newScale * Math.sign(vals[0]) +

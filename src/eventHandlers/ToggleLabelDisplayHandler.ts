@@ -2,12 +2,12 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { SEStore } from "@/store";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+// import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -20,17 +20,20 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   }
 
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     //if (keyEvent.repeat) return; // Ignore repeated events on the same key
 
     // Show all labels of all visible objects (whose labels are not already showing) lower case s
     if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules
+      ToggleLabelDisplayHandler.store.seNodules
+        .map(n => n as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            (!(object instanceof SEIntersectionPoint) ||
+              object.isUserCreated) &&
+            (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
         )
         .filter(
           // no hidden objects
@@ -40,7 +43,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already showing
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return !((object as unknown) as Labelable).label!.showing;
+              return !(object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -51,7 +54,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 true
               )
             );
@@ -63,12 +66,15 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Hide all labels of all visible objects (whose labels are not already hiding) lower case h
     if (keyEvent.code === "KeyH" && !keyEvent.shiftKey) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.seNodules
+      ToggleLabelDisplayHandler.store.seNodules
+        .map(n => n as SENodule)
         .filter(
           // no non-user created points
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            !(
+              object instanceof SEIntersectionPoint ||
+              object instanceof SEAntipodalPoint
+            ) || object.isUserCreated
         )
         .filter(
           // no hidden objects
@@ -78,7 +84,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           // no objects whose labels are already hidden
           (object: SENodule) => {
             if (object.isLabelable()) {
-              return ((object as unknown) as Labelable).label!.showing;
+              return (object as unknown as Labelable).label!.showing;
             } else {
               return false;
             }
@@ -89,7 +95,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
+                (object as unknown as Labelable).label!,
                 false
               )
             );
@@ -105,8 +111,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
       if (
         this.hitSEPoints.length > 0 &&
         !(
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         )
       ) {
         if (this.hitSEPoints[0].label != null) {
@@ -161,8 +169,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     if (
       this.hitSEPoints.length > 0 &&
       !(
-        this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-        !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+          !this.hitSEPoints[0].isUserCreated) ||
+        (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+          !this.hitSEPoints[0].isUserCreated)
       )
     ) {
       // never highlight non user created intersection points
@@ -195,21 +205,23 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   activate(): void {
     window.addEventListener("keydown", this.keyPressHandler);
     // Toggle the display of all selected objects
-    if (SEStore.selectedSENodules.length !== 0) {
+    if (ToggleLabelDisplayHandler.store.selectedSENodules.length !== 0) {
       const labelToggleDisplayCommandGroup = new CommandGroup();
-      SEStore.selectedSENodules
+      ToggleLabelDisplayHandler.store.selectedSENodules
+        .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
-            !(object instanceof SEIntersectionPoint) ||
-            (object as SEIntersectionPoint).isUserCreated
+            (!(object instanceof SEIntersectionPoint) ||
+              object.isUserCreated) &&
+            (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
           if (object.isLabelable()) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(
-                ((object as unknown) as Labelable).label!,
-                !((object as unknown) as Labelable).label!.showing
+                (object as unknown as Labelable).label!,
+                !(object as unknown as Labelable).label!.showing
               )
             );
           }

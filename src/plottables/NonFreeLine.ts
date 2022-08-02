@@ -42,7 +42,9 @@ export default class NonFreeLine extends Line {
         if (SETTINGS.line.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_LINE_BACK_STYLE,
-            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(
+              this.nonFreeLineScalePercent
+            ),
             strokeColor: Nodule.contrastStrokeColor(
               SETTINGS.line.nonFree.strokeColor.front
             )

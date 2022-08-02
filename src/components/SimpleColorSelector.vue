@@ -184,6 +184,8 @@ export default class SimpleColorSelector extends Vue {
   @Watch("hslaColor")
   calculateInternalColorFrom(hslaString: string): void {
     // console.debug("HSLA string changed", hslaString);
+    if (hslaString === undefined) return;
+
     const parts = hslaString
       .trim()
       .replace(/hsla *\(/, "")

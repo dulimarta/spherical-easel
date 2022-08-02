@@ -14,15 +14,22 @@ export class AddNSectPointCommand extends Command {
   private seNSectPoint: SENSectPoint;
   private parentSegment: SESegment;
   private seLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     seNSectPoint: SENSectPoint,
     parentSegment: SESegment,
-    seLabel: SELabel
+    seLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.seNSectPoint = seNSectPoint;
     this.parentSegment = parentSegment;
     this.seLabel = seLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -35,8 +42,14 @@ export class AddNSectPointCommand extends Command {
     }
     Command.store.addPoint(this.seNSectPoint);
     Command.store.addLabel(this.seLabel);
-    this.seNSectPoint.markKidsOutOfDate();
-    this.seNSectPoint.update();
+    this.seNSectPoint.pointVisibleBefore = true;
+    // Set the label to display the name of the point in visible count order
+    this.seNSectPoint.incrementVisiblePointCount();
+    if (this.seNSectPoint.label && this.useVisiblePointCountToRename) {
+      this.seNSectPoint.label.ref.shortUserName = `P${this.seNSectPoint.visiblePointCount}`;
+    }
+    // this.seNSectPoint.markKidsOutOfDate();
+    // this.seNSectPoint.update();
   }
 
   saveState(): void {
@@ -44,6 +57,11 @@ export class AddNSectPointCommand extends Command {
   }
 
   restoreState(): void {
+    this.seNSectPoint.decrementVisiblePointCount();
+    if (this.seNSectPoint.label && this.useVisiblePointCountToRename) {
+      this.seNSectPoint.label.ref.shortUserName = `P${this.seNSectPoint.visiblePointCount}`;
+    }
+    this.seNSectPoint.pointVisibleBefore = false;
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.seNSectPoint.unregisterChild(this.seLabel);
@@ -78,11 +96,11 @@ export class AddNSectPointCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "seNSectPointVector=" + this.seNSectPoint.locationVector.toFixed(7),
+      "seNSectPointVector=" + this.seNSectPoint.locationVector.toFixed(9),
       "seNSectPointParentSegmentName=" + this.parentSegment.name,
       "seNSectPointIndex=" + this.seNSectPoint.index,
       "seNSectPointN=" + this.seNSectPoint.N
@@ -140,7 +158,7 @@ export class AddNSectPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("point");
       const seLabel = new SELabel(label, seNSectPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -172,7 +190,8 @@ export class AddNSectPointCommand extends Command {
       return new AddNSectPointCommand(
         seNSectPoint,
         seNSectPointParentSegment,
-        seLabel
+        seLabel,
+        false //The name of this point is set by the saved value and not the visible count
       );
     }
     throw new Error(

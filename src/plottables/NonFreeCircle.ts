@@ -42,7 +42,9 @@ export default class NonFreeCircle extends Circle {
         if (SETTINGS.circle.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_CIRCLE_BACK_STYLE,
-            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(
+              this.nonFreeCircleScalePercent
+            ),
             strokeColor: Nodule.contrastStrokeColor(
               SETTINGS.circle.nonFree.strokeColor.front
             )
@@ -65,17 +67,7 @@ export default class NonFreeCircle extends Circle {
     this.frontPart.linewidth =
       ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeCircleScalePercent / 100);
-    // console.debug(
-    //   "  currrentCirleStr5okeWidth",
-    //   Circle.currentCircleStrokeWidthBack
-    // );
-    // console.debug("  frontStrokeWidthPercent", frontStrokeWidthPercent);
-    // console.debug(
-    //   "  linewidth",
-    //   this.frontPart.linewidth,
-    //   ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
-    //     (this.nonFreeCircleScalePercent / 100)
-    // );
+
     this.backPart.linewidth =
       ((Circle.currentCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle

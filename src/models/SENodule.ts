@@ -7,10 +7,12 @@ import {
 } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
 let NODE_COUNT = 0;
 
-export abstract class SENodule {
+export abstract class SENodule implements Visitable {
   public static POINT_COUNT = 0;
   public static SEGMENT_COUNT = 0;
   public static LINE_COUNT = 0;
@@ -21,6 +23,13 @@ export abstract class SENodule {
   public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
   public static POLYGON_COUNT = 0;
+  public static TRANSFORMATION_COUNT = 0;
+  public static TRANSLATION_COUNT = 0;
+  public static ROTATION_COUNT = 0;
+  public static REFLECTION_COUNT = 0;
+  public static INVERSION_COUNT = 0;
+  public static POINT_REFLECTION_COUNT = 0;
+  public static VISIBLE_POINT_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -34,6 +43,13 @@ export abstract class SENodule {
     SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
     SENodule.POLYGON_COUNT = 0;
+    SENodule.TRANSFORMATION_COUNT = 0;
+    SENodule.TRANSLATION_COUNT = 0;
+    SENodule.ROTATION_COUNT = 0;
+    SENodule.REFLECTION_COUNT = 0;
+    SENodule.INVERSION_COUNT = 0;
+    SENodule.POINT_REFLECTION_COUNT = 0;
+    SENodule.VISIBLE_POINT_COUNT = 0;
   }
 
   /**
@@ -93,6 +109,11 @@ export abstract class SENodule {
   ): void;
 
   /**
+   * The method to update the current SENodule without propagating the update to its kids
+   */
+  public abstract shallowUpdate(): void;
+
+  /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
@@ -108,6 +129,8 @@ export abstract class SENodule {
    * But Typescript does not support it (yet?)
    */
   public abstract customStyles(): Set<string>;
+
+  public abstract accept(v: Visitor): boolean;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {
@@ -297,7 +320,13 @@ export abstract class SENodule {
       this.isLineWithAntipodalPoints()
     )
       return true;
-    if (this.isNonFreeLine() || this.isNonFreePoint()) {
+    if (
+      this.isNonFreeLine() ||
+      this.isNonFreePoint() ||
+      this.isNonFreeCirle() ||
+      this.isNonFreeSegment() ||
+      this.isNonFreeEllipse()
+    ) {
       // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
     }
@@ -318,6 +347,17 @@ export abstract class SENodule {
     return false;
   }
 
+  public isNonFreeSegment(): boolean {
+    return false;
+  }
+
+  public isNonFreeEllipse(): boolean {
+    return false;
+  }
+
+  public isTransformation(): boolean {
+    return false;
+  }
   //Getters and Setters
 
   public abstract get noduleItemText(): string;
@@ -396,8 +436,7 @@ export abstract class SENodule {
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     PPPrime?: (t: number) => Vector3
   ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
@@ -405,7 +444,6 @@ export abstract class SENodule {
     const d: (t: number) => number = function (t: number): number {
       return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
-
     // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
     //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
     // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
@@ -424,7 +462,8 @@ export abstract class SENodule {
       dpp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
+    const zeros = this.findZerosParametrically(dp, tValues, [], dpp);
+
     if (zeros.length > 0) {
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
       let minTVal: number = zeros[0]; // The t value that minimizes d
@@ -440,6 +479,8 @@ export abstract class SENodule {
 
       return returnPair;
     } else {
+      const tMin = tValues[0];
+      const tMax = tValues[tValues.length - 1];
       const d1 = d(tMin);
       const d2 = d(tMax);
       if (d1 < d2) {
@@ -455,6 +496,21 @@ export abstract class SENodule {
     }
   }
 
+  /**
+   * Increment the VISIBLE_POINT_COUNT by one and returns the number
+   */
+  get visiblePointCount(): number {
+    return SENodule.VISIBLE_POINT_COUNT;
+  }
+  public decrementVisiblePointCount(): void {
+    SENodule.VISIBLE_POINT_COUNT--;
+    // console.debug(`Minus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+  }
+
+  public incrementVisiblePointCount(): void {
+    SENodule.VISIBLE_POINT_COUNT++;
+    // console.debug(`Plus VISIBLE COUNT ${SENodule.VISIBLE_POINT_COUNT}`);
+  }
   /**
    * A recursive method to implement the bisection method
    * @param f The continuous function whose zero we want to compute
@@ -500,8 +556,7 @@ export abstract class SENodule {
     // P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): NormalVectorAndTValue[] {
@@ -524,8 +579,7 @@ export abstract class SENodule {
 
     const zeros = this.findZerosParametrically(
       d,
-      tMin,
-      tMax,
+      tValues,
       avoidTheseTValues,
       dp
     );
@@ -590,8 +644,7 @@ export abstract class SENodule {
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): Vector3[] {
@@ -618,8 +671,7 @@ export abstract class SENodule {
 
     const zeros = this.findZerosParametrically(
       d,
-      tMin,
-      tMax,
+      tValues,
       avoidTheseTValues,
       dp
     );
@@ -636,8 +688,7 @@ export abstract class SENodule {
 
   public static findZerosParametrically(
     f: (t: number) => number,
-    tMin: number,
-    tMax: number,
+    tValues: Array<number>,
     avoidTheseTValues: number[],
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
@@ -645,47 +696,45 @@ export abstract class SENodule {
     const signChanges = [];
     const zeros: number[] = [];
 
-    let tVal: number;
-    let lastTVal = tMin;
-    if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
-      // make sure that tMin is not on the avoid list
-      if (
-        avoidTheseTValues.every(
-          num => Math.abs(num - tMin) > SETTINGS.tolerance
-        )
-      ) {
-        zeros.push(tMin);
-      }
-      // else {
-      //   console.log("Excluded value", tMin);
-      // }
-      // console.log("Actual zero! tMin", tMin, f(tMin));
-    }
+    // const tMin = tValues[0];
+    // const tMax = tValues[tLen - 1];
 
-    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
-      tVal =
-        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (tVal < tMin || tVal > tMax)
-        console.debug("Evaluating at t", tVal, "out of range", tMin, tMax);
+    // if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
+    //   // make sure that tMin is not on the avoid list
+    //   if (
+    //     avoidTheseTValues.every(
+    //       num => Math.abs(num - tMin) > SETTINGS.tolerance
+    //     )
+    //   ) {
+    //     zeros.push(tMin);
+    //   }
+    //   // else {
+    //   //   console.log("Excluded value", tMin);
+    //   // }
+    //   // console.log("Actual zero! tMin", tMin, f(tMin));
+    // }
+    const filteredTValues = tValues.filter(t =>
+      avoidTheseTValues.every(num => Math.abs(num - t) > SETTINGS.tolerance)
+    );
+    const tLen = filteredTValues.length;
+    let lastTVal = filteredTValues[tLen - 1];
+
+    for (let i = 0; i < filteredTValues.length; i++) {
+      const tVal = filteredTValues[i];
+      // console.debug(`Checking for zero at T=${tVal}`);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
         // make sure that tVal is not on the avoid list
-        if (
-          avoidTheseTValues.every(
-            num => Math.abs(num - tVal) > SETTINGS.tolerance
-          )
-        ) {
-          zeros.push(tVal);
-        }
+        zeros.push(tVal);
         // else {
         //   console.log("Excluded value", tVal);
         // }
         // console.log("Actual zero!", tVal, f(tVal));
       } else if (f(tVal) * f(lastTVal) < 0) {
         // make sure that tMin is not on the avoid list
-        if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
-          // console.log("sign Change", tVal, f(tVal));
-          signChanges.push([lastTVal, tVal]);
-        }
+        // if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
+        // console.log("sign Change", tVal, f(tVal));
+        signChanges.push([lastTVal, tVal]);
+        // }
         // else {
         //   console.log("Excluded Interval", lastTVal, tVal);
         // }

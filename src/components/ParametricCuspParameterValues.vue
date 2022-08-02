@@ -21,20 +21,13 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import { namespace } from "vuex-class";
-import i18n from "@/i18n";
-const SE = namespace("se");
 
 @Component({})
 export default class ParametricCuspParameterValues extends Vue {
-  // @SE.State((s: AppState) => s.expressions)
-  // readonly expressions!: SEExpression[];
-
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
@@ -51,7 +44,7 @@ export default class ParametricCuspParameterValues extends Vue {
   private tValueExpression = "";
   private tValueResults: number[] = [];
   private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
+  private timerInstance: ReturnType<typeof setTimeout> | null = null;
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
@@ -90,7 +83,7 @@ export default class ParametricCuspParameterValues extends Vue {
         EventBus.fire("parametric-data-update", {
           [this.name]: this.tValueResults
         });
-      } catch (err) {
+      } catch (err: any) {
         // no code
         console.debug("Got an error", err);
         this.parsingError = err.message;
