@@ -125,7 +125,7 @@ export default class ToolButton extends Vue {
   private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
       // console.log("set elevation 1", this.button.actionModeValue);
-      this.elev = 10;
+      this.elev = 5;
       this.weight = "bold";
     } else {
       // console.log("set elevation 0", this.button.actionModeValue);
