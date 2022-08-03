@@ -794,14 +794,14 @@ export class SEParametric
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
-    // console.debug(
-    //   "Looking for closest point to parametric",
-    //   this.id,
-    //   "with",
-    //   this.tValues.length,
-    //   "sample points from",
-    //   idealUnitSphereVector.toFixed(3)
-    // );
+    console.debug(
+      "Looking for closest point to parametric",
+      this.name,
+      "with",
+      this._tValues.length,
+      "sample points from",
+      idealUnitSphereVector.toFixed(3)
+    );
     if (this._tValues.length > 0) {
       //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
       const transformedToStandard = new Vector3();

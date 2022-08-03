@@ -10,6 +10,11 @@ import {
   DEFAULT_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
 import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -150,18 +155,18 @@ export default class Ellipse extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontPart: Two.Path;
-  private backPart: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingBackPart: Two.Path;
+  protected frontPart: Two.Path;
+  protected backPart: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingBackPart: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  private frontFill: Two.Path;
-  private backFill: Two.Path;
+  protected frontFill: Two.Path;
+  protected backFill: Two.Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
   private fillStorageAnchors: Two.Anchor[] = [];
@@ -443,7 +448,7 @@ export default class Ellipse extends Nodule {
       this.tmpVector.copy(this.E(tVal));
       // Set tmpVector equal to location on the target ellipse
       this.tmpVector.applyMatrix4(transformMatrix);
-
+      // console.debug(`tempvec ${this.tmpVector.toFixed(2)}`);
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere
       if (this.tmpVector.z > 0) {
@@ -858,6 +863,7 @@ export default class Ellipse extends Nodule {
     return this._focus2Vector;
   }
   get ellipseFrame(): Matrix4 {
+    //console.debug(`EllipseFrame ${this._ellipseFrame.toArray()}`);
     return this._ellipseFrame;
   }
   /**
@@ -1043,7 +1049,7 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
 
-  removeFromLayers(/*layers: Group[]*/): void {
+  removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontPart.remove();
     this.frontFill.remove();
     this.glowingFrontPart.remove();

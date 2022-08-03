@@ -1,16 +1,16 @@
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { Matrix4, Vector3 } from "three";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const emptySet = new Set<string>();
 
 export enum CoordinateSelection {
   X_VALUE,
   Y_VALUE,
   Z_VALUE
 }
-const emptySet = new Set<string>();
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   readonly point: SEPoint;
@@ -28,7 +28,7 @@ export class SEPointCoordinate extends SEExpression {
     this.point = point;
     this.store = useSEStore();
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get value(): number {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
@@ -46,7 +46,15 @@ export class SEPointCoordinate extends SEExpression {
   get sePoint(): SEPoint {
     return this.point;
   }
-  public customStyles = (): Set<string> => emptySet;
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label, but SEPointCoordinate are not effected by the value of vdm
+  }
 
   public get noduleDescription(): string {
     switch (this.selector) {
@@ -133,6 +141,7 @@ export class SEPointCoordinate extends SEExpression {
       }
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

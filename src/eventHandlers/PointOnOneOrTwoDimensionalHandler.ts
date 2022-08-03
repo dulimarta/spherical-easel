@@ -10,6 +10,8 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
+// import { Group } from "two.js/src/group";
+import { CommandGroup } from "@/commands/CommandGroup";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -35,7 +37,6 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     super(layers);
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PointOnOneDimensionalHandler.store.addTemporaryNodule(this.startMarker);
   }
 
@@ -62,12 +63,11 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         }
       }
       if (this.oneDimensional !== null) {
+        const pointOnOneDimensionalCommandGroup = new CommandGroup();
         const newPoint = new Point();
         // Set the display to the default values
         newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
-        // Create plottable for the Label
-        const newLabel = new Label();
 
         // Create the model object for the new point and link them
         const vtx = new SEPointOnOneOrTwoDimensional(
@@ -77,7 +77,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
-        const newSELabel = new SELabel(newLabel, vtx);
+        const newSELabel = new SELabel(new Label("point"), vtx);
         // Set the initial label location
         this.tmpVector
           .copy(vtx.locationVector)
@@ -90,13 +90,23 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
-        // Create and execute the command to create a new point for undo/redo
-        //new AddPointCommand(vtx, newSELabel).execute();
-        new AddPointOnOneDimensionalCommand(
-          vtx as SEPointOnOneOrTwoDimensional,
-          this.oneDimensional,
-          newSELabel
-        ).execute();
+        // Create the command to create a new point for undo/redo
+
+        pointOnOneDimensionalCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.oneDimensional,
+            newSELabel
+          )
+        );
+
+        /////////////
+        // Create the antipode of the new point, vtx
+        PointOnOneDimensionalHandler.addCreateAntipodeCommand(
+          vtx,
+          pointOnOneDimensionalCommandGroup
+        );
+        pointOnOneDimensionalCommandGroup.execute();
         //run the mouse moved event so that the temporary marker is immediately removed
         this.mouseMoved(event);
         this.oneDimensional = null;

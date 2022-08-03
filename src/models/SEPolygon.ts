@@ -7,7 +7,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE
 } from "@/types/Styles";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
@@ -103,7 +103,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this.store = useSEStore();
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -152,6 +152,18 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.label?.ref.shortUserName +
       `: ${this.prettyValue}`
     );
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.label) {
+      this.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   /**
@@ -343,7 +355,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -376,7 +388,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             )
             .isZero(SETTINGS.tolerance)
         ) {
-          throw new Error(
+          console.warn(
             "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
           );
         } else {
@@ -486,11 +498,16 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     }
 
     if (this.showing && this._exists) {
+      // When this updates send its value to the label of the polygon
+      if (this.label) {
+        this.label.ref.value = [this.value];
+      }
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -504,7 +521,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // These polygons are completely determined by their line/segment/point parents and an update on the parents
     // will cause this polygon to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
-      orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
         console.log(
           `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`

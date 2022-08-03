@@ -48,14 +48,14 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Two.Path;
-  private _frontExtra: Two.Path;
-  private _backPart: Two.Path;
-  private _backExtra: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingFrontExtra: Two.Path;
-  private glowingBackPart: Two.Path;
-  private glowingBackExtra: Two.Path;
+  protected _frontPart: Two.Path;
+  protected _frontExtra: Two.Path;
+  protected _backPart: Two.Path;
+  protected _backExtra: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingFrontExtra: Two.Path;
+  protected glowingBackPart: Two.Path;
+  protected glowingBackExtra: Two.Path;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -340,6 +340,18 @@ export default class Segment extends Nodule {
         negIndex++;
       }
     }
+    // console.debug(
+    //   `Front part visible? ${this._frontPart.visible} vertices ${this._frontPart.vertices.length}, linewidth ${this._frontPart.linewidth}`
+    // );
+    // console.debug(
+    //   `Back part visible? ${this._backPart.visible} vertices ${this._backPart.vertices.length}, linewidth ${this._backPart.linewidth}`
+    // );
+    // console.debug(
+    //   `Front extra part visible? ${this._frontExtra.visible} extra vertices ${this._frontExtra.vertices.length}, linewidth ${this._frontExtra.linewidth}`
+    // );
+    // console.debug(
+    //   `Back extra part visible? ${this._backExtra.visible} extra vertices ${this._backExtra.vertices.length}, linewidth ${this._backExtra.linewidth}`
+    // );
   }
 
   /**
@@ -478,7 +490,7 @@ export default class Segment extends Nodule {
       if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this.glowingBackExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);

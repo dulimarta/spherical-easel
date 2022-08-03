@@ -12,6 +12,9 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETransformation } from "@/models/SETransformation";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SavedNames } from "@/types";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -27,7 +30,7 @@ export class DeleteNoduleCommand extends Command {
 
   do(): void {
     // Remove from the Data Structure (DAG)
-    // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
+    // Notice that this makes the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
     // this.seNodule.parents.forEach (obj => obj.unregister(this.seNodule))
     // because unregister modifies the parent array and you never want to modify the parent array while in a forEach
@@ -87,6 +90,8 @@ export class DeleteNoduleCommand extends Command {
           this.seNodule.point.label.ref.value = [];
         }
       }
+    } else if (this.seNodule instanceof SETransformation) {
+      Command.store.removeTransformation(this.seNodule.id);
     }
   }
 
@@ -96,12 +101,14 @@ export class DeleteNoduleCommand extends Command {
 
   restoreState(): void {
     // Add the object to the store and turn on display
-    if (this.seNodule instanceof SEExpression) {
-      Command.store.addExpression(this.seNodule);
+    if (this.seNodule instanceof SETransformation) {
+      Command.store.addTransformation(this.seNodule);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.addPolygonAndExpression(this.seNodule);
     } else if (this.seNodule instanceof SEAngleMarker) {
       Command.store.addAngleMarkerAndExpression(this.seNodule);
+    } else if (this.seNodule instanceof SEExpression) {
+      Command.store.addExpression(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {
       Command.store.addLabel(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
@@ -135,6 +142,30 @@ export class DeleteNoduleCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return null; // Exclude this command from interpretation
+    return [
+      "DeleteNodule",
+      // Any attribute that could possibly have a "=", "@", "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seNodule.name)
+    ].join("&");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const nodule = objMap.get(propMap.get("objectName") ?? "");
+
+    if (nodule) {
+      return new DeleteNoduleCommand(nodule);
+    }
+    throw new Error(`DeleteNoduleCommand: nodule is undefined`);
   }
 }

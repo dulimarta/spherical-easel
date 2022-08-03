@@ -10,6 +10,9 @@ import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
 import Two from "two.js";
+// import { Two.Path } from "two.js/src/path";
+// import { Two.Vector } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -500,7 +503,7 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    // Arrow Head Path Initialize
+    // Arrow Head Two.Path Initialize
     // Create the initial front and back vertices (front/back glowing/not)
 
     const arrowHeadVertices: Two.Vector[] = [];

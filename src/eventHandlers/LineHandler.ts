@@ -1,18 +1,14 @@
-/** @format */
-
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddLineCommand } from "@/commands/AddLineCommand";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -21,6 +17,11 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
+import Two from "two.js";
+//import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -85,19 +86,16 @@ export default class LineHandler extends Highlighter {
     super(layers);
     // Create and style the temporary line
     this.temporaryLine = new Line();
-    this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryLine);
     this.isTemporaryLineAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
-    this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
-    this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     LineHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
-  //eslint-disable-next-line
+
   mousePressed(event: MouseEvent): void {
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
@@ -458,7 +456,10 @@ export default class LineHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.prepareForNextLine();
+  }
 
+  prepareForNextLine(): void {
     this.temporaryLine.removeFromLayers();
     this.temporaryStartMarker.removeFromLayers();
     this.temporaryEndMarker.removeFromLayers();
@@ -486,11 +487,11 @@ export default class LineHandler extends Highlighter {
     // call an unglow all command
     LineHandler.store.unglowAllSENodules();
   }
-
   // Create a new line from the mouse event information
-  private makeLine(): boolean {
+  private makeLine(fromActivate = false): boolean {
     //Create a command group so this can be undone
     const lineGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
 
     if (this.startSEPoint === null) {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
@@ -498,8 +499,6 @@ export default class LineHandler extends Highlighter {
       // Set the display and size to the default values
       newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newStartPoint.adjustSize();
-      // Create the plottable label
-      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -510,7 +509,7 @@ export default class LineHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -522,11 +521,17 @@ export default class LineHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         vtx = new SEPoint(newStartPoint);
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.startVector;
+      /////////////
+      // Create the antipode of the new point, vtx
+      const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
+      newlyCreatedSEPoints.push(vtx, antipode);
+      ///////////
+
       // Set the initial label location
       this.tmpVector
         .copy(vtx.locationVector)
@@ -541,35 +546,37 @@ export default class LineHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.startSEPoint = vtx;
     } else if (
-      this.startSEPoint instanceof SEIntersectionPoint &&
-      !this.startSEPoint.isUserCreated
+      (this.startSEPoint instanceof SEIntersectionPoint &&
+        !this.startSEPoint.isUserCreated) ||
+      (this.startSEPoint instanceof SEAntipodalPoint &&
+        !this.startSEPoint.isUserCreated)
     ) {
-      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
-        new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
+        new SetPointUserCreatedValueCommand(this.startSEPoint, true)
       );
     }
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0) {
+    if (this.hitSEPoints.length > 0 && !fromActivate) {
       this.endSEPoint = this.hitSEPoints[0];
       if (
-        this.endSEPoint instanceof SEIntersectionPoint &&
-        !this.endSEPoint.isUserCreated
+        (this.endSEPoint instanceof SEIntersectionPoint &&
+          !this.endSEPoint.isUserCreated) ||
+        (this.endSEPoint instanceof SEAntipodalPoint &&
+          !this.endSEPoint.isUserCreated)
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
+          new SetPointUserCreatedValueCommand(this.endSEPoint, true)
         );
       }
-    } else {
+    } else if (!fromActivate) {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display and size to the default values
       newEndPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newEndPoint.adjustSize();
-      // Create the plottable label
-      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -584,7 +591,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -601,7 +608,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -620,7 +627,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -639,7 +646,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -658,7 +665,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -677,7 +684,7 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -691,10 +698,15 @@ export default class LineHandler extends Highlighter {
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        newSELabel = new SELabel(newLabel, vtx);
+        newSELabel = new SELabel(new Label("point"), vtx);
 
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
+      /////////////
+      // Create the antipode of the new point, vtx
+      const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
+      newlyCreatedSEPoints.push(antipode, vtx);
+      ///////////
       this.endSEPoint = vtx;
       // Set the initial label location
       this.tmpVector
@@ -710,178 +722,103 @@ export default class LineHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
     }
 
-    // Compute a temporary normal from the two points' vectors
-    this.tmpVector.crossVectors(
-      this.startSEPoint.locationVector,
-      this.endSEPoint.locationVector
-    );
-    // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
-    // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-      // The start and end vectors align, compute the next normal vector from the old normal and the start vector
+    if (this.endSEPoint) {
+      // Compute a temporary normal from the two points' vectors
       this.tmpVector.crossVectors(
-        this.startSEPoint.locationVector,
-        this.normalVector
-      );
-      this.tmpVector.crossVectors(
-        this.tmpVector,
-        this.startSEPoint.locationVector
-      );
-    }
-    this.normalVector.copy(this.tmpVector).normalize();
-
-    // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
-    this.temporaryLine.normalVector = this.normalVector;
-
-    // check to make sure that this line doesn't already exist
-    if (
-      LineHandler.store.seLines.some(line =>
-        this.tmpVector.subVectors(line.normalVector, this.normalVector).isZero()
-      )
-    ) {
-      return false;
-    }
-
-    this.tmpVector1.copy(this.normalVector).multiplyScalar(-1); // copy the normal vector and multiply by -1 (avoid changing the normal vector which caused problems for Angle marker)
-    if (
-      LineHandler.store.seLines.some(line =>
-        this.tmpVector.subVectors(line.normalVector, this.tmpVector1).isZero()
-      )
-    ) {
-      return false;
-    }
-
-    // Create the new line after the normalVector is set
-    const newLine = this.temporaryLine.clone();
-    // Stylize the new Line
-    newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-    newLine.adjustSize();
-
-    const newSELine = new SELine(
-      newLine,
-      this.startSEPoint,
-      this.normalVector,
-      this.endSEPoint
-    );
-    // Create the plottable label
-    const newLabel = new Label();
-    const newSELabel = new SELabel(newLabel, newSELine);
-    this.tmpVector
-      .addVectors(
         this.startSEPoint.locationVector,
         this.endSEPoint.locationVector
-      )
-      .normalize()
-      .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
-
-    lineGroup.addCommand(
-      new AddLineCommand(
-        newSELine,
-        this.startSEPoint,
-        this.endSEPoint,
-        newSELabel
-      )
-    );
-
-    // Determine all new intersection points and add their creation to the command so it can be undone
-    LineHandler.store
-      .createAllIntersectionsWithLine(newSELine)
-      .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
-
-        lineGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
-      });
-    lineGroup.execute();
-    return true;
-  }
-
-  activate(): void {
-    // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
-    // create a line with the two points
-    if (LineHandler.store.selectedSENodules.length == 2) {
-      const object1 = LineHandler.store.selectedSENodules[0];
-      const object2 = LineHandler.store.selectedSENodules[1];
-
-      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
-        // Create a new plottable Line
-        const newLine = new Line();
-        // Set the display to the default values
-        newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-        newLine.adjustSize();
-        const newLabel = new Label();
-
+      );
+      // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
+      // nearly antipodal or in the same direction)
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        // The start and end vectors align, compute the next normal vector from the old normal and the start vector
         this.tmpVector.crossVectors(
-          object1.locationVector,
-          object2.locationVector
+          this.startSEPoint.locationVector,
+          this.normalVector
         );
-        // Check to see if the points are antipodal
-        if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-          // They are antipodal, create an arbitrary normal vector
-          this.tmpVector.set(1, 0, 0);
-          this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
-          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-            this.tmpVector.set(0, 1, 0);
-            // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
-            this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
-          }
-        }
-
-        // Add the last command to the group and then execute it (i.e. add the potentially two points and the line to the store.)
-        const newSELine = new SELine(
-          newLine,
-          object1,
-          this.tmpVector.normalize(),
-          object2
+        this.tmpVector.crossVectors(
+          this.tmpVector,
+          this.startSEPoint.locationVector
         );
-        // Update the newSELine so the display is correct when the command group is executed
-        newSELine.markKidsOutOfDate();
-        newSELine.update();
+      }
+      this.normalVector.copy(this.tmpVector).normalize();
 
-        const newSELabel = new SELabel(newLabel, newSELine);
-        this.tmpVector
-          .addVectors(object1.locationVector, object2.locationVector)
-          .normalize()
-          .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+      // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+      this.temporaryLine.normalVector = this.normalVector;
 
-        const lineCommandGroup = new CommandGroup();
-        lineCommandGroup.addCommand(
-          new AddLineCommand(newSELine, object1, object2, newSELabel)
-        );
+      // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
+      if (
+        LineHandler.store.seLines.some(line =>
+          this.tmpVector
+            .subVectors(line.normalVector, this.normalVector)
+            .isZero()
+        )
+      ) {
+        return false;
+      }
 
-        // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the circle command so they can be undone.
-        LineHandler.store
-          .createAllIntersectionsWithLine(newSELine)
-          .forEach((item: SEIntersectionReturnType) => {
+      this.tmpVector1.copy(this.normalVector).multiplyScalar(-1); // copy the normal vector and multiply by -1 (avoid changing the normal vector which caused problems for Angle marker)
+      if (
+        LineHandler.store.seLines.some(line =>
+          this.tmpVector.subVectors(line.normalVector, this.tmpVector1).isZero()
+        )
+      ) {
+        return false;
+      }
+
+      // Create the new line after the normalVector is set
+      const newLine = this.temporaryLine.clone();
+      // Stylize the new Line
+      newLine.stylize(DisplayStyle.ApplyCurrentVariables);
+      newLine.adjustSize();
+
+      const newSELine = new SELine(
+        newLine,
+        this.startSEPoint,
+        this.normalVector,
+        this.endSEPoint
+      );
+      // Create the plottable label
+      const newLabel = new Label("line");
+      const newSELabel = new SELabel(newLabel, newSELine);
+      this.tmpVector
+        .addVectors(
+          this.startSEPoint.locationVector,
+          this.endSEPoint.locationVector
+        )
+        .normalize()
+        .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
+
+      lineGroup.addCommand(
+        new AddLineCommand(
+          newSELine,
+          this.startSEPoint,
+          this.endSEPoint,
+          newSELabel
+        )
+      );
+
+      // Determine all new intersection points and add their creation to the command so it can be undone
+      // let i = 1;
+      LineHandler.store
+        .createAllIntersectionsWithLine(newSELine, newlyCreatedSEPoints)
+        .forEach((item: SEIntersectionReturnType) => {
+          // console.debug(
+          //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
+          // );
+          // i += 1;
+          if (item.existingIntersectionPoint) {
+            lineGroup.addCommand(
+              new AddIntersectionPointOtherParent(
+                item.SEIntersectionPoint,
+                item.parent1
+              )
+            );
+          } else {
             // Create the plottable label
-            const newLabel = new Label();
+            const newLabel = new Label("point");
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
             // Set the initial label location
             this.tmpVector
@@ -896,7 +833,7 @@ export default class LineHandler extends Highlighter {
               .normalize();
             newSELabel.locationVector = this.tmpVector;
 
-            lineCommandGroup.addCommand(
+            lineGroup.addCommand(
               new AddIntersectionPointCommand(
                 item.SEIntersectionPoint,
                 item.parent1,
@@ -906,13 +843,64 @@ export default class LineHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          });
 
-        lineCommandGroup.execute();
-      }
+            if (item.createAntipodalPoint) {
+              LineHandler.addCreateAntipodeCommand(
+                item.SEIntersectionPoint,
+                lineGroup
+              );
+            }
+          }
+        });
+      lineGroup.execute();
     }
-    // Unselect the selected objects and clear the selectedObject array
-    super.activate();
+    return true;
+  }
+
+  activate(): void {
+    // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
+    // create a line with the two points
+    if (LineHandler.store.selectedSENodules.length == 2) {
+      const object1 = LineHandler.store.selectedSENodules[0];
+      const object2 = LineHandler.store.selectedSENodules[1];
+
+      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+        this.tmpVector.crossVectors(
+          object1.locationVector,
+          object2.locationVector
+        );
+        // Check to see if the points are antipodal
+        if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+          // They are antipodal, create an arbitrary normal vector
+          this.tmpVector.set(1, 0, 0);
+          this.normalVector.crossVectors(
+            object1.locationVector,
+            this.tmpVector
+          );
+          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+            this.tmpVector.set(0, 1, 0);
+            // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
+            this.normalVector.crossVectors(
+              object1.locationVector,
+              this.tmpVector
+            );
+          }
+          this.normalVector.normalize();
+        }
+        this.startSEPoint = object1;
+        this.endSEPoint = object2;
+        if (!this.makeLine(true)) {
+          EventBus.fire("show-alert", {
+            key: `handlers.lineCreationAttemptDuplicate`,
+            keyOptions: {},
+            type: "error"
+          });
+        }
+        this.prepareForNextLine();
+      }
+      // Unselect the selected objects and clear the selectedObject array
+      super.activate();
+    }
   }
   deactivate(): void {
     super.deactivate();

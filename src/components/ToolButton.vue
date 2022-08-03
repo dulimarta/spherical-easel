@@ -1,7 +1,8 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
   <div class="pa-0"
-    :id="button.id">
+    :id="button.actionModeValue"
+    :ref="button.actionModeValue">
     <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
     <v-tooltip bottom
@@ -13,6 +14,7 @@
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
+           possibleToolAction();
             if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
@@ -74,15 +76,18 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { ToolButtonType } from "@/types";
+import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "@/models/SEExpression";
+import { SETransformation } from "@/models/SETransformation";
 
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component({
   computed: {
-    ...mapState(useSEStore, ["actionMode"])
+    ...mapState(useSEStore, ["actionMode", "expressions", "seTransformations"])
   }
 })
 export default class ToolButton extends Vue {
@@ -102,10 +107,6 @@ export default class ToolButton extends Vue {
   snackbar/toolUseMessage  */
   private displayToolUseMessage = false;
 
-  /* This is a variable that does NOT belong in the global settings but I don't know where else to
-  put it. This is the list of tools that should be displayed*/
-  private buttonDisplayList = SETTINGS.userButtonDisplayList;
-
   /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
   child */
   @Prop({ default: null })
@@ -116,17 +117,73 @@ export default class ToolButton extends Vue {
 
   private color = "red";
 
-  readonly actionMode!: string;
+  readonly actionMode!: ActionMode;
+  readonly expressions!: SEExpression[];
+  readonly seTransformations!: SETransformation[];
 
   @Watch("actionMode")
   private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
-      // console.log("set elevation in");
-      this.elev = 1;
+      // console.log("set elevation 1", this.button.actionModeValue);
+      this.elev = 5;
       this.weight = "bold";
     } else {
+      // console.log("set elevation 0", this.button.actionModeValue);
       this.elev = 0;
       this.weight = "normal";
+    }
+  }
+
+  //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
+  possibleToolAction(): void {
+    if (this.button.actionModeValue === "measuredCircle") {
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForMeasuredCircle",
+          type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "translation") {
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForTranslation",
+          type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "rotation") {
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForRotation",
+          type: "info"
+        });
+      }
+    } else if (this.button.actionModeValue === "applyTransformation") {
+      //...open the measurement panel and close the others or tell the user to create a measurement
+      if (this.seTransformations.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-transformation-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createATransformation",
+          type: "error"
+        });
+      }
     }
   }
   // @Prop({ default: 0 }) readonly elev?: number;

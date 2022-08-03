@@ -16,6 +16,8 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEStoreType } from "@/stores/se";
 import Two from "two.js";
+// import { Group } from "two.js/src/group";
+// import { Vector } from "two.js/src/vector";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);

@@ -8,7 +8,7 @@ import {
   DEFAULT_POINT_BACK_STYLE,
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
-import { SEOneOrTwoDimensional, Labelable, ObjectState } from "@/types";
+import { Labelable, ObjectState } from "@/types";
 import { SELabel } from "./SELabel";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
@@ -26,6 +26,14 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public declare ref: Point;
 
+  /**
+   * This determines if a point has been visible before so that the
+   * first time a point is visible, the label short name can be
+   * set to P# where # will make sense to the user. That is
+   * the user will have made or seen # many points before seeing the
+   * label P#. This should respect the undo/redo operations.
+   */
+  protected _pointVisibleBefore = false;
   /**
    * Pointer to the label of this point
    */
@@ -57,8 +65,6 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
   public shallowUpdate(): void {
     //These points always exist - they have no parents to depend on
-    this.ref.updateDisplay();
-
     //Update the location of the associate plottable Point (setter also updates the display)
     this.ref.positionVector = this._locationVector;
 
@@ -100,6 +106,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.updateKids(objectState, orderedSENoduleList);
   }
 
+  set pointVisibleBefore(b: boolean) {
+    this._pointVisibleBefore = b;
+  }
+  get pointVisibleBefore(): boolean {
+    return this._pointVisibleBefore;
+  }
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere
    */
@@ -151,7 +163,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
       if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
-        // Use the north pole because any point will do as long at the crossproduct with the _locationVector is not zero.
+        // Use the north pole because any point will do as long at the cross product with the _locationVector is not zero.
         this.tmpVector1.set(0, 0, 1);
 
         if (

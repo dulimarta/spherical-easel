@@ -37,8 +37,8 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    this.seNSectLine.markKidsOutOfDate();
-    this.seNSectLine.update();
+    // this.seNSectLine.markKidsOutOfDate();
+    // this.seNSectLine.update();
   }
 
   saveState(): void {
@@ -80,14 +80,14 @@ export class AddNSectLineCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "seNSectLineStartSEPointName=" + this.seNSectLine.startSEPoint.name,
       "seNSectLineEndSEPointLocationVector=" +
-        this.seNSectLine.endSEPoint.locationVector.toFixed(7),
-      "seNSectLineNormalVector=" + this.seNSectLine.normalVector.toFixed(7),
+        this.seNSectLine.endSEPoint.locationVector.toFixed(9),
+      "seNSectLineNormalVector=" + this.seNSectLine.normalVector.toFixed(9),
       "seNSectLineParentAngleName=" + this.parentAngle.name,
       "seNSectLineIndex=" + this.seNSectLine.index,
       "seNSectLineN=" + this.seNSectLine.N
@@ -165,7 +165,7 @@ export class AddNSectLineCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("line");
       const seLabel = new SELabel(label, seNSectLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

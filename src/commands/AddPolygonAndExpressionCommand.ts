@@ -5,7 +5,7 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import Polygon from "@/plottables/Polygon";
 import { StyleEditPanels } from "@/types/Styles";
@@ -54,8 +54,8 @@ export class AddPolygonCommand extends Command {
     this.sePolygon.registerChild(this.seLabel);
     Command.store.addPolygonAndExpression(this.sePolygon);
     Command.store.addLabel(this.seLabel);
-    this.sePolygon.markKidsOutOfDate();
-    this.sePolygon.update();
+    // this.sePolygon.markKidsOutOfDate();
+    // this.sePolygon.update();
   }
 
   saveState(): void {
@@ -99,7 +99,7 @@ export class AddPolygonCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
@@ -112,7 +112,8 @@ export class AddPolygonCommand extends Command {
           .map((n: SESegment) => Command.symbolToASCIIDec(n.name))
           .join("@"),
       "polygonSegmentFlippedList=" +
-        this.segmentIsFlipped.map(bool => bool.toString()).join("@")
+        this.segmentIsFlipped.map(bool => bool.toString()).join("@"),
+      "valueDisplayMode=" + this.sePolygon.valueDisplayMode
     ].join("&");
   }
 
@@ -165,11 +166,16 @@ export class AddPolygonCommand extends Command {
         );
     }
 
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
+
     if (
       polygonAngleMarkerParents.every(
         angleMarker => angleMarker !== undefined
       ) &&
-      polygonSegmentParents.every(segment => segment !== undefined)
+      polygonSegmentParents.every(segment => segment !== undefined) &&
+      valueDisplayMode
     ) {
       //make the polygon
       const polygon = new Polygon(
@@ -198,7 +204,7 @@ export class AddPolygonCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("polygon");
       const seLabel = new SELabel(label, sePolygon);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
@@ -207,6 +213,8 @@ export class AddPolygonCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+      // Must be done after the SELabel is created and linked
+      sePolygon.valueDisplayMode = valueDisplayMode;
 
       //put the Polygon in the object map
       if (propMap.get("objectName") !== undefined) {

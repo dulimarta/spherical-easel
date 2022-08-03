@@ -122,6 +122,12 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { getAncestors } from "@/utils/helpingfunctions";
+import { SEPoint } from "@/models/SEPoint";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 interface ParametricDataType {
   tMinNumber?: number;
@@ -154,7 +160,8 @@ export default class ParametricForm extends Vue {
   readonly expressions!: SEExpression[];
   readonly seParametrics!: SEParametric[];
   readonly createAllIntersectionsWithParametric!: (
-    _: SEParametric
+    _s: SEParametric,
+    _p: SEPoint[]
   ) => SEIntersectionReturnType[];
   /**
    * These are string expressions that once set define the Parametric curve
@@ -521,6 +528,7 @@ export default class ParametricForm extends Vue {
       });
       return;
     }
+    const newlyCreatedSEPoints: SEPoint[] = [];
     // If  tMaxNumber is less than tMinNumber -- error!
     if (this.tNumbers.min >= this.tNumbers.max) {
       EventBus.fire("show-alert", {
@@ -704,8 +712,7 @@ export default class ParametricForm extends Vue {
       calculationParents
     );
     // Create the plottable and model label
-
-    const newLabel = new Label();
+    const newLabel = new Label("parametric");
     const newSELabel = new SELabel(newLabel, newSEParametric);
     // Set the initial label location at the start of the curve
     const startVector = newSEParametric.P(this.tNumbers.min);
@@ -728,9 +735,8 @@ export default class ParametricForm extends Vue {
       tracePoint,
       newSEParametric
     );
-
     traceSEPoint.locationVector = startVector;
-    const traceLabel = new Label();
+    const traceLabel = new Label("point");
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
     // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
@@ -761,8 +767,8 @@ export default class ParametricForm extends Vue {
       );
 
       // Create the plottable labels
-      const startLabel = new Label();
-      const endLabel = new Label();
+      const startLabel = new Label("point");
+      const endLabel = new Label("point");
       const startSELabel = new SELabel(startLabel, startSEEndPoint);
       const endSELabel = new SELabel(endLabel, endSEEndPoint);
 
@@ -787,15 +793,23 @@ export default class ParametricForm extends Vue {
         )
       );
     }
-
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the parametric command so they can be undone.
-    this.createAllIntersectionsWithParametric(newSEParametric).forEach(
-      (item: SEIntersectionReturnType) => {
-        // Create the plottable and model label
-        const newLabel = new Label();
+    this.createAllIntersectionsWithParametric(
+      newSEParametric,
+      newlyCreatedSEPoints
+    ).forEach((item: SEIntersectionReturnType) => {
+      if (item.existingIntersectionPoint) {
+        parametricCommandGroup.addCommand(
+          new AddIntersectionPointOtherParent(
+            item.SEIntersectionPoint,
+            item.parent1
+          )
+        );
+      } else {
+        // Create the plottable label
+        const newLabel = new Label("point");
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
         // Set the initial label location
         this.tempVector
           .copy(item.SEIntersectionPoint.locationVector)
@@ -817,15 +831,92 @@ export default class ParametricForm extends Vue {
             newSELabel
           )
         );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
+        if (item.createAntipodalPoint) {
+          /////////////
+          // Create the antipode of the new point, vtx
+          ///// WARNING This is duplicate code from the method addCreateAntipodeCommand in Highlighter.ts
+          const newAntipodePoint = new NonFreePoint();
+          // Set the display to the default values
+          newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // Adjust the size of the point to the current zoom magnification factor
+          newAntipodePoint.adjustSize();
+
+          // Create the model object for the new point and link them
+          const antipodalVtx = new SEAntipodalPoint(
+            newAntipodePoint,
+            item.SEIntersectionPoint,
+            false
+          );
+
+          // Create a plottable label
+          // Create an SELabel and link it to the plottable object
+          const newSEAntipodalLabel = new SELabel(
+            new Label("point"),
+            antipodalVtx
+          );
+
+          antipodalVtx.locationVector = item.SEIntersectionPoint.locationVector;
+          antipodalVtx.locationVector.multiplyScalar(-1);
+          // Set the initial label location
+          const tmpVector = new Vector3();
+          tmpVector
+            .copy(antipodalVtx.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSEAntipodalLabel.locationVector = tmpVector;
+          parametricCommandGroup.addCommand(
+            new AddAntipodalPointCommand(
+              antipodalVtx,
+              item.SEIntersectionPoint,
+              newSEAntipodalLabel
+            )
+          );
+          newlyCreatedSEPoints.push(antipodalVtx, item.SEIntersectionPoint);
+          ///////////
+        }
       }
-    );
+      // // Create the plottable and model label
+      // const newLabel = new Label();
+      // const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+      // // Set the initial label location
+      // this.tempVector
+      //   .copy(item.SEIntersectionPoint.locationVector)
+      //   .add(
+      //     new Vector3(
+      //       2 * SETTINGS.point.initialLabelOffset,
+      //       SETTINGS.point.initialLabelOffset,
+      //       0
+      //     )
+      //   )
+      //   .normalize();
+      // newSELabel.locationVector = this.tempVector;
+
+      // parametricCommandGroup.addCommand(
+      //   new AddIntersectionPointCommand(
+      //     item.SEIntersectionPoint,
+      //     item.parent1,
+      //     item.parent2,
+      //     newSELabel
+      //   )
+      // );
+      // item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+      // newSELabel.showing = false;
+    });
 
     parametricCommandGroup.execute();
 
     newSEParametric.markKidsOutOfDate();
     newSEParametric.update();
+    console.log("parametric exist?", newSEParametric.exists);
     // }
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };

@@ -1,6 +1,6 @@
 import MouseHandler from "./MouseHandler";
 import { SEPoint } from "@/models/SEPoint";
-import { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
@@ -11,6 +11,15 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { CommandGroup } from "@/commands/CommandGroup";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { DisplayStyle } from "@/plottables/Nodule";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import Label from "@/plottables/Label";
+import { Vector3 } from "three";
+import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+
+const tmpVector = new Vector3();
 
 export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
@@ -56,7 +65,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSENodules = Highlighter.store
       .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
+        if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
           if (!n.isUserCreated) {
             return n.exists; //You always hit automatically created intersection points if it exists
           } else {
@@ -118,10 +127,11 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSEParametrics,
       ...this.hitSEPolygons
     ]
-      .map(n => n.name)
+      .map(n => n.label?.ref.shortUserName)
       .join(", ");
 
     if (text.length > 0) {
+      this.infoText.hide(); // hide the old box
       // Show the names temporarily
       this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
       // Textbox is set to handle a ???? How does this work????
@@ -134,14 +144,63 @@ export default abstract class Highlighter extends MouseHandler {
   }
 
   activate(): void {
-    Highlighter.store.selectedSENodules.forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
+    Highlighter.store.selectedSENodules
+      .map(x => x as SENodule)
+      .forEach((obj: SENodule) => {
+        obj.selected = false;
+      });
     // Clear the selected objects array
     Highlighter.store.setSelectedSENodules([]);
 
     // call an unglow all command
     Highlighter.store.unglowAllSENodules();
     this.infoText.hide();
+  }
+
+  ///// WARNING The code in this method is duplicated in ParametricForm.vue after CreateAllIntersectionWithParametric because I (Will) couldn't figure out how to access this from there
+  static addCreateAntipodeCommand(
+    parentPoint: SEPoint,
+    commandGroup: CommandGroup
+  ): SEAntipodalPoint {
+    // Create the antipode of the new parent point
+    const newAntipodePoint = new NonFreePoint();
+    // Set the display to the default values
+    newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // Adjust the size of the point to the current zoom magnification factor
+    newAntipodePoint.adjustSize();
+
+    // Create the model object for the new point and link them
+    const antipodalVtx = new SEAntipodalPoint(
+      newAntipodePoint,
+      parentPoint,
+      false
+    );
+
+    // Create a plottable label
+    // Create an SELabel and link it to the plottable object
+    const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
+
+    antipodalVtx.locationVector = parentPoint.locationVector;
+    antipodalVtx.locationVector.multiplyScalar(-1);
+    // Set the initial label location
+    tmpVector
+      .copy(antipodalVtx.locationVector)
+      .add(
+        new Vector3(
+          2 * SETTINGS.point.initialLabelOffset,
+          SETTINGS.point.initialLabelOffset,
+          0
+        )
+      )
+      .normalize();
+    newSEAntipodalLabel.locationVector = tmpVector;
+    commandGroup.addCommand(
+      new AddAntipodalPointCommand(
+        antipodalVtx,
+        parentPoint,
+        newSEAntipodalLabel
+      )
+    );
+    return antipodalVtx;
   }
 }

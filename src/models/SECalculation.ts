@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
@@ -33,7 +33,7 @@ export class SECalculation extends SEExpression {
           parent => parent.name === store.expressions[pos].name
         );
         if (pos2 < 0) {
-          this._calculationParents.push(store.expressions[pos]);
+          this._calculationParents.push(store.expressions[pos] as SEExpression);
         }
       }
 
@@ -66,7 +66,7 @@ export class SECalculation extends SEExpression {
   get calculationParents(): SENodule[] {
     return this._calculationParents;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   // public get prettyValue(): string {
   //   if (this._valueDisplayMode) {
   //     return (
@@ -118,6 +118,15 @@ export class SECalculation extends SEExpression {
     );
   }
 
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label, but SECalculations have no SELabel or Label
+  }
+
   public shallowUpdate(): void {
     this.exists = this._calculationParents.every(parent => parent.exists);
     if (this.exists) {
@@ -148,6 +157,4 @@ export class SECalculation extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

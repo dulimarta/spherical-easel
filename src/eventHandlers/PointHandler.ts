@@ -1,11 +1,9 @@
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import Label from "@/plottables/Label";
@@ -14,6 +12,11 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -33,7 +36,6 @@ export default class PointHandler extends Highlighter {
     super(layers);
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PointHandler.store.addTemporaryNodule(this.startMarker);
   }
 
@@ -45,16 +47,24 @@ export default class PointHandler extends Highlighter {
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
-      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection point
+      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection or antipodeal point
       if (this.hitSEPoints.length > 0) {
         if (
-          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+            !this.hitSEPoints[0].isUserCreated) ||
+          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
+            !this.hitSEPoints[0].isUserCreated)
         ) {
           //Make it user created and turn on the display
-          new ConvertInterPtToUserCreatedCommand(
-            this.hitSEPoints[0] as SEIntersectionPoint
-          ).execute();
+          // set the display to visible order
+          const antipodalCommandGroup = new CommandGroup();
+          antipodalCommandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.hitSEPoints[0] as SEIntersectionPoint,
+              true
+            )
+          );
+          antipodalCommandGroup.execute();
           return;
         }
         EventBus.fire("show-alert", {
@@ -65,15 +75,13 @@ export default class PointHandler extends Highlighter {
         return;
       } else {
         //#region linkNoduleSENodule
+        const pointCommandGroup = new CommandGroup();
         // create a new Point
         const newPoint = new Point();
         // Set the display to the default values
         newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
         let vtx: SEPointOnOneOrTwoDimensional | SEPoint | null = null;
-
-        // Create plottable for the Label
-        const newLabel = new Label();
         let newSELabel: SELabel | null = null;
 
         if (this.hitSESegments.length > 0) {
@@ -84,28 +92,32 @@ export default class PointHandler extends Highlighter {
             this.hitSESegments[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSESegments[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSESegments[0],
+              newSELabel
+            )
+          );
           //#endregion linkNoduleSENodule
         } else if (this.hitSELines.length > 0) {
           // The new point will be a point on a line
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(newPoint, this.hitSELines[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSELines[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSELines[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSECircles.length > 0) {
           // The new point will be a point on a circle
           // Create the model object for the new point and link them
@@ -114,14 +126,16 @@ export default class PointHandler extends Highlighter {
             this.hitSECircles[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSECircles[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSECircles[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEEllipses.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -130,14 +144,16 @@ export default class PointHandler extends Highlighter {
             this.hitSEEllipses[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEEllipses[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEEllipses[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEParametrics.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -146,14 +162,16 @@ export default class PointHandler extends Highlighter {
             this.hitSEParametrics[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEParametrics[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEParametrics[0],
+              newSELabel
+            )
+          );
         } else if (this.hitSEPolygons.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
@@ -162,24 +180,32 @@ export default class PointHandler extends Highlighter {
             this.hitSEPolygons[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.hitSEPolygons[0],
-            newSELabel
-          ).execute();
+          pointCommandGroup.addCommand(
+            new AddPointOnOneDimensionalCommand(
+              vtx as SEPointOnOneOrTwoDimensional,
+              this.hitSEPolygons[0],
+              newSELabel
+            )
+          );
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
           vtx = new SEPoint(newPoint);
           vtx.locationVector = this.currentSphereVector;
-          newSELabel = new SELabel(newLabel, vtx);
+          newSELabel = new SELabel(new Label("point"), vtx);
 
           // Create and execute the command to create a new point for undo/redo
-          new AddPointCommand(vtx, newSELabel).execute();
+          pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
         }
+
+        /////////////
+        // Create the antipode of the new point, vtx
+        PointHandler.addCreateAntipodeCommand(vtx, pointCommandGroup);
+        ///////////
+
         // Set the initial label location
         this.tmpVector
           .copy(vtx.locationVector)
@@ -192,6 +218,7 @@ export default class PointHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
+        pointCommandGroup.execute();
       }
     } else if (this.isTemporaryPointAdded) {
       // Remove the temporary object
@@ -209,7 +236,9 @@ export default class PointHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
       const filteredIntersections = this.hitSEPoints.filter(
-        p => p instanceof SEIntersectionPoint && !p.isUserCreated
+        p =>
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
       );
       if (filteredIntersections.length > 0) {
         filteredIntersections[0].glowing = true;

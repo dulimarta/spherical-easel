@@ -7,8 +7,10 @@ import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 
-export class SEPolarLine extends SELine
-  implements Visitable, OneDimensional, Labelable {
+export class SEPolarLine
+  extends SELine
+  implements Visitable, OneDimensional, Labelable
+{
   private polarPointParent: SEPoint;
   private tempVector = new Vector3();
   /**
@@ -33,6 +35,10 @@ export class SEPolarLine extends SELine
     this.polarPointParent = polarPointParent;
   }
 
+  get pointParent(): SEPoint {
+    return this.polarPointParent;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.polarLine`, {
@@ -44,15 +50,7 @@ export class SEPolarLine extends SELine
     );
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
+  public shallowUpdate(): void {
     this._exists = this.polarPointParent.exists;
 
     if (this._exists) {
@@ -64,7 +62,7 @@ export class SEPolarLine extends SELine
         0
       );
       // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
-      if (this.tempVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+      if (this.tempVector.isZero()) {
         this.tempVector.set(
           0,
           -this.polarPointParent.locationVector.z,
@@ -89,6 +87,17 @@ export class SEPolarLine extends SELine
     } else {
       this.ref.setVisible(false);
     }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
 
     // These polar lines are completely determined by their line/segment/point parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information

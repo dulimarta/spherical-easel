@@ -1,4 +1,8 @@
 import Two from "two.js";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
+// import { Path } from "two.js/src/path";
+// import { Vector } from "two.js/src/vector";
 
 export class SelectionRectangle extends Two.Group {
   private path: Two.Path;
@@ -23,7 +27,8 @@ export class SelectionRectangle extends Two.Group {
     this.path.linewidth = 1;
     this.path.dashes.push(...[1, 5]);
     this.path.addTo(this);
-    this.addTo(this.layer);
+    // this.addTo(this.layer);
+    // this.hide();
   }
 
   /**

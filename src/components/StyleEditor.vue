@@ -34,7 +34,11 @@ type StyleOptionDiff = {
     ])
   },
   methods: {
-    ...mapActions(useSEStore, ["setSelectedSENodules", "setOldSelection"])
+    ...mapActions(useSEStore, [
+      "setSelectedSENodules",
+      "setOldSelection",
+      "recordStyleState"
+    ])
   }
 })
 export default class extends Vue {
@@ -58,8 +62,8 @@ export default class extends Vue {
     selected: Nodule[];
   }) => void;
   readonly oldStyleSelections!: Array<SENodule>;
-  readonly initialStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-  readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
+  readonly initialStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
+  readonly defaultStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
@@ -184,7 +188,7 @@ export default class extends Vue {
     }
   }
   undo(ev: { selector: string; panel: StyleEditPanels }): void {
-    const styleData = this.initialStatesMap.get(this.panel);
+    const styleData = this.initialStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (ev.selector === "labelBackFillColor") {
@@ -203,7 +207,7 @@ export default class extends Vue {
   }
   restoreDefault(ev: { selector: string; panel: StyleEditPanels }): void {
     // console.log("ev selector", ev.selector);
-    const styleData = this.defaultStatesMap.get(this.panel);
+    const styleData = this.defaultStyleStatesMap.get(this.panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
       if (listOfProps.some(prop => prop === "labelBackFillColor")) {
@@ -234,9 +238,9 @@ export default class extends Vue {
     }
   }
 
-  @Watch("allSelectedSENodules", { immediate: true })
+  @Watch("selectedSENodules", { immediate: true })
   onSelectionChanged(newSelection: SENodule[]): void {
-    // console.debug("StyleEditor: object selection changed", newSelection.length);
+    console.debug("StyleEditor: object selection changed", newSelection.length);
 
     this.saveStyleState();
     this.commonStyleProperties.splice(0);
@@ -614,11 +618,11 @@ export default class extends Vue {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
-      // console.log(
-      //   this.previousBackstyleContrast,
-      //   "ISSUED COMMAND: The back style constant changed to ",
-      //   Nodule.getBackStyleContrast()
-      // );
+      console.log(
+        this.previousBackstyleContrast,
+        "ISSUED COMMAND: The back style constant changed to ",
+        Nodule.getBackStyleContrast()
+      );
       const constrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         this.previousBackstyleContrast
@@ -629,15 +633,15 @@ export default class extends Vue {
       subCommandCount++;
     }
     if (this.oldStyleSelections.length > 0) {
-      // console.debug(
-      //   "Number of previously selected object? ",
-      //   this.previousSelectedNodules.length
-      // );
-      // console.debug(
-      //   "Number of currently selected object? ",
-      //   this.selectedNodules.length
-      // );
-      const prev = this.initialStatesMap.get(this.panel) ?? [];
+      console.debug(
+        "Number of previously selected object? ",
+        this.previousSelectedNodules.length
+      );
+      console.debug(
+        "Number of currently selected object? ",
+        this.selectedNodules.length
+      );
+      const prev = this.initialStyleStatesMap.get(this.panel) ?? [];
       const curr = this.selectedNodules.map((n: Nodule) =>
         n.currentStyleState(this.panel)
       );
@@ -653,10 +657,9 @@ export default class extends Vue {
         );
         cmdGroup.addCommand(styleCommand);
         subCommandCount++;
+      } else {
+        console.debug("Everything stayed unchanged");
       }
-      // else {
-      //   console.debug("Eveything stayed unchanged");
-      // }
       this.setOldSelection([]);
     }
     // else {

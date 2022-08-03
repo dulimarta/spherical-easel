@@ -979,7 +979,7 @@ export default class Polygon extends Nodule {
     this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
   }
 
-  removeFromLayers(/*layers: Group[]*/): void {
+  removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontFills.forEach(part => part.remove());
     this.backFills.forEach(part => part.remove());
   }

@@ -179,7 +179,7 @@ Whenever a new magnification factor is computed the value is written to the [Sto
 
 The <span class="string">"setZoomMagnificationFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
-<<< @/src/store/index.ts#magnificationUpdate
+<<< @/src/stores/se.ts#magnificationUpdate
 
 As the constructor for <span class="file">Easel.vue</span> contains a listener for the <span class="string">"magnification-updated"</span> [EventBus](/design/#event-bus) action.
 
@@ -310,7 +310,7 @@ For example, to add a point to the state of the application, the [PointHandler](
 
 The <span class="method">do()</span> and <span class="method">restoreState()</span> methods uses the <span class="string">"addPoint"</span> and <span class="string">"removePoint"</span> mutations of the application state found in the [Store](/design/#store). The <span class="string">"addPoint"</span> mutation is implemented in the [Store](/design/#store) as follows.
 
-<<< @/src/store/se-module.ts#addPoint
+<<< @/src/stores/se.ts#addPoint
 
 This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
 
@@ -434,7 +434,7 @@ The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) l
 
 The <span class="string">"rotateSphere"</span> mutation of the application state is as follows
 
-<<< @/src/store/se-module.ts#rotateSphere
+<<< @/src/stores/se.ts#rotateSphere
 
 Notice that this creates a <span class="class">RotationVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">RotationVisitor.ts</span>:
 

@@ -274,9 +274,11 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   activate(): void {
-    MouseHandler.store.selectedSENodules.forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
+    MouseHandler.store.selectedSENodules
+      .map(x => x as SENodule)
+      .forEach((obj: SENodule) => {
+        obj.selected = false;
+      });
     // Clear the selected objects array
     MouseHandler.store.setSelectedSENodules([]);
 

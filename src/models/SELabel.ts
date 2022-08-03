@@ -50,7 +50,7 @@ export class SELabel extends SENodule implements Visitable {
     this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
-    label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
+
     (this.parent as unknown as Labelable).label = this;
     SENodule.LABEL_COUNT++;
     this.name = "La" + SENodule.LABEL_COUNT;
@@ -62,14 +62,19 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
+      this.ref.defaultName = `Am${this.parent.angleMarkerNumber}`;
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
+      this.ref.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
-      label.shortUserName = parent.name;
+      if (!(this.parent instanceof SEPoint)) {
+        label.shortUserName = parent.name; // the short user name of a point's label is set else where via point visible count
+      }
+      this.ref.defaultName = this.parent.name;
     }
     // Set the size for zoom
     this.ref.adjustSize();
@@ -123,6 +128,9 @@ export class SELabel extends SENodule implements Visitable {
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
 
   accept(v: Visitor): boolean {
@@ -140,8 +148,11 @@ export class SELabel extends SENodule implements Visitable {
           this.store.zoomMagnificationFactor
         )
       );
-      //Update the location of the associate plottable Label (setter also updates the display)
+      //Update the location of the associate plottable Label
       this.ref.positionVector = this._locationVector;
+      if (this.showing) {
+        this.ref.updateDisplay();
+      }
     }
 
     // Update visibility
@@ -202,11 +213,13 @@ export class SELabel extends SENodule implements Visitable {
         )
         .normalize();
     } else {
-      console.log("label parent out of date");
       this._locationVector.copy(pos);
     }
     // Set the position of the associated displayed plottable Label
     this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
   }
   get locationVector(): Vector3 {
     return this._locationVector;
@@ -231,15 +244,28 @@ export class SELabel extends SENodule implements Visitable {
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
     const canvasSize = this.store.canvasWidth;
+    const zoomTranslation = this.store.zoomTranslation;
 
     return (
       boundingBox.left - canvasSize / 2 <
-        unitIdealVector.x * SETTINGS.boundaryCircle.radius &&
-      unitIdealVector.x * SETTINGS.boundaryCircle.radius <
+        unitIdealVector.x *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[0] &&
+      unitIdealVector.x *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[0] <
         boundingBox.right - canvasSize / 2 &&
       boundingBox.top - canvasSize / 2 <
-        -unitIdealVector.y * SETTINGS.boundaryCircle.radius && // minus sign because text layers are not y flipped
-      -unitIdealVector.y * SETTINGS.boundaryCircle.radius < // minus sign because text layers are not y flipped
+        -unitIdealVector.y *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[1] && // minus sign because text layers are not y flipped
+      -unitIdealVector.y *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[1] < // minus sign because text layers are not y flipped
         boundingBox.bottom - canvasSize / 2
     );
   }

@@ -80,13 +80,14 @@ export class AddEllipseCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "ellipseFocus1Name=" + this.focus1SEPoint.name,
-      "ellipseFocus2Name=" + this.focus2SEPoint.name,
-      "ellipsePointOnEllipseName=" + this.ellipseSEPoint.name
+      "ellipseFocus1Name=" + Command.symbolToASCIIDec(this.focus1SEPoint.name),
+      "ellipseFocus2Name=" + Command.symbolToASCIIDec(this.focus2SEPoint.name),
+      "ellipsePointOnEllipseName=" +
+        Command.symbolToASCIIDec(this.ellipseSEPoint.name)
     ].join("&");
   }
 
@@ -138,7 +139,7 @@ export class AddEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("ellipse");
       const seLabel = new SELabel(label, seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

@@ -31,6 +31,7 @@ export class PointMoverVisitor implements Visitor {
     } else {
       p.pointDirectLocationSetter(this.locationVector);
     }
+    p.shallowUpdate();
     return true;
   }
   //#endregion actionOnPoint

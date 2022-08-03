@@ -5,6 +5,7 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
+//import { Group } from "two.js/src/group";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,

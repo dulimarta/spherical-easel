@@ -1,9 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
@@ -74,7 +72,6 @@ export default class PolygonHandler extends Highlighter {
     // Create and style the temporary angle markers
     for (let i = 0; i < SETTINGS.polygon.numberOfTemporaryAngleMarkers; i++) {
       const tmpAm = new AngleMarker();
-      tmpAm.stylize(DisplayStyle.ApplyTemporaryVariables);
       PolygonHandler.store.addTemporaryNodule(tmpAm);
       this.temporaryAngleMarkers.push(tmpAm);
       this.temporaryAngleMarkersAdded.push(false);
@@ -320,7 +317,7 @@ export default class PolygonHandler extends Highlighter {
                 }
               });
               if (measuredBefore) {
-                token = poly.name;
+                token = poly.label?.ref.shortUserName ?? "";
               }
             }
           }
@@ -361,35 +358,56 @@ export default class PolygonHandler extends Highlighter {
         );
 
         // Create the plottable label
-        const newLabel = new Label();
+        const newLabel = new Label("polygon");
         const newSELabel = new SELabel(newLabel, vtx);
+        vtx.valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
 
-        if (this.startSEPoint) {
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.startSEPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.polygon.initialLabelOffset,
-                SETTINGS.polygon.initialLabelOffset,
-                0
-              )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
-        }
-        // Create and execute the command to create a new point for undo/redo
-        polygonCommandGroup
-          .addCommand(
-            new AddPolygonCommand(
-              vtx,
-              this.seEdgeSegments,
-              this.segmentIsFlipped,
-              seAngleMarkerList,
-              newSELabel
-            )
+        // Set the initial label location as the average of all the vertices
+        this.tmpVector.set(0, 0, 0);
+        this.seEdgeSegments.forEach((seSegment, index) => {
+          if (index === this.seEdgeSegments.length) return; // ignore the last segment because that would add the start point in again
+          if (this.segmentIsFlipped[index]) {
+            this.tmpVector.add(seSegment.endSEPoint.locationVector);
+          } else {
+            this.tmpVector.add(seSegment.startSEPoint.locationVector);
+          }
+        });
+        this.tmpVector.normalize();
+        newSELabel.locationVector = this.tmpVector;
+
+        polygonCommandGroup.addCommand(
+          new AddPolygonCommand(
+            vtx,
+            this.seEdgeSegments,
+            this.segmentIsFlipped,
+            seAngleMarkerList,
+            newSELabel
           )
-          .execute();
+        );
+
+        // set the label to display the label and the number that is the area
+        polygonCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(newSELabel, true)
+        );
+
+        polygonCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [newLabel],
+            StyleEditPanels.Label,
+            [
+              {
+                labelDisplayMode: SETTINGS.polygon.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                labelDisplayMode: SETTINGS.polygon.defaultLabelMode
+              }
+            ]
+          )
+        );
+        // Create and execute the command to create a new point for undo/redo
+        polygonCommandGroup.execute();
         // Update the display
         vtx.markKidsOutOfDate();
         vtx.update();
@@ -605,23 +623,7 @@ export default class PolygonHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // console.log("mouse leave");
-    // call an unglow all command
-    PolygonHandler.store.unglowAllSENodules();
-    this.infoText.hide();
-    // unselect segments
-    this.seEdgeSegments.forEach(l => (l.selected = false));
-    this.seEdgeSegments.splice(0);
-    this.segmentIsFlipped.splice(0);
-    this.chainClosed = false;
-    this.startSEPoint = null;
-    this.endSEPoint = null;
-
-    // remove all temporary angle markers
-    this.temporaryAngleMarkers.forEach((am, ind) => {
-      am.removeFromLayers();
-      this.temporaryAngleMarkersAdded[ind] = false;
-    });
+    this.deactivate();
   }
 
   activate(): void {
@@ -639,6 +641,11 @@ export default class PolygonHandler extends Highlighter {
     this.chainClosed = false;
     this.startSEPoint = null;
     this.endSEPoint = null;
+    // remove all temporary angle markers
+    this.temporaryAngleMarkers.forEach((am, ind) => {
+      am.removeFromLayers();
+      this.temporaryAngleMarkersAdded[ind] = false;
+    });
   }
 
   /**
@@ -789,8 +796,8 @@ export default class PolygonHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateSegmentAngleMeasurement`,
           keyOptions: {
-            seg0Name: `${seg0?.name}`,
-            seg1Name: `${seg1?.name}`,
+            seg0Name: `${seg0?.label?.ref.shortUserName}`,
+            seg1Name: `${seg1?.label?.ref.shortUserName}`,
             measurementName: `${oldAngleMarker.name}`
           },
           type: "warning"
@@ -816,8 +823,10 @@ export default class PolygonHandler extends Highlighter {
       );
 
       // Create the plottable and model label
-      const newLabel = new Label();
+      const newLabel = new Label("angleMarker");
       const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+      newSEAngleMarker.valueDisplayMode =
+        SETTINGS.angleMarker.initialValueDisplayMode;
 
       // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
       newSEAngleMarker.markKidsOutOfDate();
@@ -895,7 +904,7 @@ export default class PolygonHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateSegmentMeasurement`,
           keyOptions: {
-            segName: `${seg.name}`,
+            segName: `${seg.label?.ref.shortUserName}`,
             measurementName: `${oldSegmentLength.name}`
           },
           type: "warning"
@@ -905,6 +914,7 @@ export default class PolygonHandler extends Highlighter {
       }
 
       const lenMeasure = new SESegmentLength(seg);
+      lenMeasure.valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
 
       polygonCommandGroup.addCommand(
         new AddLengthMeasurementCommand(lenMeasure, seg)

@@ -8,6 +8,9 @@ import {
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
 import Two from "two.js";
+// import { Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -362,12 +365,13 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =
       (Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100;
+
     this.backHalf.linewidth =
       (Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle

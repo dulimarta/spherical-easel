@@ -53,7 +53,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
-    this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
@@ -65,6 +64,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
 
     if (this._exists) {
+      this.seParentPencil?.markKidsOutOfDate();
       this.seParentPencil?.update(); // SEParentPencil isn't in the DAG, so it only serves to create new perpendiculars
       const tVec = new Vector3();
       tVec.copy(this._normalVector);

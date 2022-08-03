@@ -36,9 +36,7 @@ export class StyleNoduleCommand extends Command {
       //   "Do effect of StyleNoduleCommand on ",
       //   this.nodules[i],
       //   "with payload old",
-      //   this.pastStyles[i],
-      //   "new",
-      //   this.currentStyles[i]
+      //   this.pastStyles[i]
       // );
       Command.store.changeStyle({
         selected: [this.nodules[i]],
@@ -47,6 +45,8 @@ export class StyleNoduleCommand extends Command {
           ...this.currentStyles[i]
         }
       });
+
+      // console.debug("new", this.currentStyles[i]);
     }
   }
 

@@ -1,10 +1,10 @@
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-
 const emptySet = new Set<string>();
+
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
@@ -13,9 +13,21 @@ export class SESegmentLength extends SEExpression {
     this.seSegment = parent;
     this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
-
+  public customStyles = (): Set<string> => emptySet;
   public get value(): number {
     return this.seSegment.arcLength;
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.seSegment.label) {
+      this.seSegment.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   public get noduleDescription(): string {
@@ -71,6 +83,4 @@ export class SESegmentLength extends SEExpression {
 
     this.updateKids(objectState, orderedSENoduleList);
   }
-
-  public customStyles = (): Set<string> => emptySet;
 }

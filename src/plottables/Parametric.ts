@@ -577,7 +577,7 @@ export default class Parametric extends Nodule {
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
     // TODO: Uncomment the following line to show sample point makers
-    // this.markers.addTo(this.foregroundLayer);
+    //this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -589,7 +589,7 @@ export default class Parametric extends Nodule {
     );
   }
 
-  public removeFromLayers(/*layers: Group[]*/): void {
+  public removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
     // TODO: Uncomment the following line when sample point markers are enabled
     // this.markers.remove();

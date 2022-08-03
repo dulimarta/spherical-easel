@@ -6,6 +6,8 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+//import { Group } from "two.js/src/group";
 
 export default class HideObjectHandler extends Highlighter {
   /**
@@ -19,7 +21,12 @@ export default class HideObjectHandler extends Highlighter {
     super(layers);
   }
 
+  // set disableKeyHandler(b: boolean) {
+  //   this._disableKeyHandler = b;
+  // }
+
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     // See if the S key was pressed, if so show *all* hidden objects
     if (keyEvent.key.match("S")) {
       const setNoduleDisplayCommandGroup = new CommandGroup();
@@ -28,16 +35,19 @@ export default class HideObjectHandler extends Highlighter {
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (
-            seNodule instanceof SEIntersectionPoint &&
-            !(seNodule as SEIntersectionPoint).isUserCreated
+            (seNodule instanceof SEIntersectionPoint &&
+              !seNodule.isUserCreated) ||
+            (seNodule instanceof SEAntipodalPoint && !seNodule.isUserCreated)
           ) {
             return;
           }
-          // don't show labels of intersection points that are not user created
+          // don't show labels of intersection or antipodal points that are not user created
           if (
             seNodule instanceof SELabel &&
-            seNodule.parent instanceof SEIntersectionPoint &&
-            !seNodule.parent.isUserCreated
+            ((seNodule.parent instanceof SEIntersectionPoint &&
+              !seNodule.parent.isUserCreated) ||
+              (seNodule.parent instanceof SEAntipodalPoint &&
+                !seNodule.parent.isUserCreated))
           ) {
             return;
           }
@@ -56,8 +66,9 @@ export default class HideObjectHandler extends Highlighter {
         .forEach(seNodule => {
           // don't do anything to the intersection points that are not user created
           if (
-            seNodule instanceof SEIntersectionPoint &&
-            !(seNodule as SEIntersectionPoint).isUserCreated
+            (seNodule instanceof SEIntersectionPoint &&
+              !seNodule.isUserCreated) ||
+            (seNodule instanceof SEAntipodalPoint && !seNodule.isUserCreated)
           ) {
             return;
           }
@@ -85,8 +96,10 @@ export default class HideObjectHandler extends Highlighter {
       if (this.hitSEPoints.length > 0) {
         // you can't hide non-user created intersection points
         if (
-          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+            this.hitSEPoints[0].isUserCreated) &&
+          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+            this.hitSEPoints[0].isUserCreated)
         ) {
           this.victim = this.hitSEPoints[0];
         }
@@ -120,11 +133,11 @@ export default class HideObjectHandler extends Highlighter {
     // Highlight only one object, the one that will be hidden if the user mouse presses
     super.mouseMoved(event);
     if (this.hitSEPoints.length > 0) {
-      // never highlight non user created intersection points
+      // never highlight non user created intersection or antipodal points
       const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
         if (
-          p instanceof SEIntersectionPoint &&
-          !(p as SEIntersectionPoint).isUserCreated
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          (p instanceof SEAntipodalPoint && !p.isUserCreated)
         ) {
           return false;
         } else {
@@ -169,11 +182,12 @@ export default class HideObjectHandler extends Highlighter {
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
     HideObjectHandler.store.selectedSENodules
+      .map(x => x as SENodule)
       .filter(
         // remove the intersection points that are not user created
         (object: SENodule) =>
-          !(object instanceof SEIntersectionPoint) ||
-          (object as SEIntersectionPoint).isUserCreated
+          (!(object instanceof SEIntersectionPoint) || object.isUserCreated) &&
+          (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
       )
       .forEach((object: SENodule) =>
         hideCommandGroup.addCommand(new SetNoduleDisplayCommand(object, false))

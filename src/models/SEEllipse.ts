@@ -133,6 +133,12 @@ export class SEEllipse
   get a(): number {
     return this._a;
   }
+  set a(a: number) {
+    this._a = a;
+  }
+  set b(b: number) {
+    this._b = b;
+  }
   get b(): number {
     return this._b;
   }
@@ -284,20 +290,28 @@ export class SEEllipse
     transformedToStandard.applyMatrix4(
       this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
+    //console.debug(`transformedToStandard ${transformedToStandard.toFixed(2)}`);
     const closestStandardVector = new Vector3();
+    //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
+    const tValues: number[] = [];
+    for (let i = 0; i <= 100; i++) {
+      tValues.push((i * 2 * Math.PI) / 100);
+    }
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.Ep method is this.ref
         transformedToStandard,
-        [], // FIXME
+        tValues, //[0 - SETTINGS.tolerance, 2 * Math.PI + SETTINGS.tolerance], // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
-    return closestStandardVector.applyMatrix4(this.ref.ellipseFrame);
+    return closestStandardVector
+      .applyMatrix4(this.ref.ellipseFrame)
+      .normalize();
   }
   /**
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
@@ -399,13 +413,16 @@ export class SEEllipse
       transformedToStandard.applyMatrix4(
         this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
-
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const normalList =
         SENodule.getNormalsToPerpendicularLinesThruParametrically(
           // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
-          [], // FIXME
+          tValues, // FIXME
           // this.ref.tMin,
           // this.ref.tMax,
           [], // Avoid these t values
@@ -468,11 +485,15 @@ export class SEEllipse
       transformedToStandard.applyMatrix4(
         this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
       );
+      const tValues: number[] = [];
+      for (let i = 0; i <= 100; i++) {
+        tValues.push((i * 2 * Math.PI) / 100);
+      }
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
-        [], // FIXME
+        tValues, // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
@@ -503,12 +524,15 @@ export class SEEllipse
     transformedToStandard.applyMatrix4(
       this.tmpMatrix.copy(this.ref.ellipseFrame).invert()
     );
-
+    const tValues: number[] = [];
+    for (let i = 0; i <= 100; i++) {
+      tValues.push((i * 2 * Math.PI) / 100);
+    }
     const normalList = SENodule.getNormalsToTangentLinesThruParametrically(
       this.ref.E.bind(this.ref),
       this.ref.Ep.bind(this.ref),
       transformedToStandard,
-      [], // FIXME
+      tValues, // FIXME
       // this.ref.tMin,
       // this.ref.tMax,
       [], // Avoid these t values

@@ -21,20 +21,17 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { AngleMode } from "@/types";
 import { SEParametric } from "@/models/SEParametric";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
-import MouseHandler from "./MouseHandler";
 import Two from "two.js";
+//import { Group } from "two.js/src/group";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+
 enum HighlightMode {
   NONE,
   ONLYPOINTS,
   ONLYLINESANDSEGMENTS
 }
-type SEOneDimensionalPlusSEPoint =
-  | SELine
-  | SESegment
-  | SECircle
-  | SEEllipse
-  | SEParametric
-  | SEPoint;
 
 export default class AngleHandler extends Highlighter {
   /**
@@ -127,25 +124,21 @@ export default class AngleHandler extends Highlighter {
 
   constructor(layers: Two.Group[]) {
     super(layers);
-    console.log("AngleHandler ctor");
+    // console.log("AngleHandler ctor");
 
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();
-    this.temporaryAngleMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryAngleMarker);
+    AngleHandler.store.addTemporaryNodule(this.temporaryAngleMarker);
 
     // Create and style the temporary points marking the points in the angle (if appropriate)
     this.temporaryFirstPoint = new Point();
-    this.temporaryFirstPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryFirstPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporaryFirstPoint);
 
     this.temporarySecondPoint = new Point();
-    this.temporarySecondPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporarySecondPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporarySecondPoint);
 
     this.temporaryThirdPoint = new Point();
-    this.temporaryThirdPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    MouseHandler.store.addTemporaryNodule(this.temporaryThirdPoint);
+    AngleHandler.store.addTemporaryNodule(this.temporaryThirdPoint);
   }
 
   private allowPointLocation(candidate: Vector3): boolean {
@@ -767,14 +760,29 @@ export default class AngleHandler extends Highlighter {
             //Update its location to the mouse
             this.temporaryFirstPoint.positionVector = this.currentSphereVector;
 
-            //If there is a nearby point, line or segment turn off the temporary point marker, but leave in for circles and ellipses
-            if (
-              this.hitSENodules.filter(
-                p =>
-                  p instanceof SEPoint ||
-                  p instanceof SELine ||
-                  p instanceof SESegment
-              ).length > 0
+            //If there is a nearby *visible* point, line or segment turn off the temporary point marker, but leave in for circles and ellipses because the user can create a point on circles or ellipses
+            if (this.hitSEPoints[0] instanceof SEPoint) {
+              if (
+                this.hitSEPoints[0] instanceof SEIntersectionPoint ||
+                this.hitSEPoints[0] instanceof SEAntipodalPoint
+              ) {
+                if (this.hitSEPoints[0].isUserCreated) {
+                  // remove the temporary point
+                  this.temporaryFirstPoint.removeFromLayers();
+                  this.isTemporaryFirstPointAdded = false;
+                } else {
+                  // snap the temporary point to the uncreated location
+                  this.temporaryFirstPoint.positionVector =
+                    this.hitSEPoints[0].locationVector;
+                }
+              } else {
+                // remove the temporary point
+                this.temporaryFirstPoint.removeFromLayers();
+                this.isTemporaryFirstPointAdded = false;
+              }
+            } else if (
+              this.hitSELines.length > 0 ||
+              this.hitSESegments.length > 0
             ) {
               this.temporaryFirstPoint.removeFromLayers();
               this.isTemporaryFirstPointAdded = false;
@@ -787,8 +795,14 @@ export default class AngleHandler extends Highlighter {
               this.isTemporarySecondPointAdded = true;
               this.temporarySecondPoint.addToLayers(this.layers);
             }
-            //Remove the second marker if there is a nearby point
-            if (this.snapPoint !== null) {
+            //Remove the second marker if there is a nearby *visible* point
+            if (
+              this.snapPoint !== null &&
+              ((this.snapPoint instanceof SEIntersectionPoint &&
+                this.snapPoint.isUserCreated) ||
+                (this.snapPoint instanceof SEAntipodalPoint &&
+                  this.snapPoint.isUserCreated))
+            ) {
               this.temporarySecondPoint.removeFromLayers();
               this.isTemporarySecondPointAdded = false;
             }
@@ -891,6 +905,14 @@ export default class AngleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.deactivate();
+  }
+
+  activate(): void {
+    super.activate();
+  }
+  deactivate(): void {
+    super.deactivate();
     // unselect all points, lines, segments (unglow happens in super.mouseLeave(event))
     this.targetLines.forEach(l => (l.selected = false));
     this.targetSegments.forEach(l => (l.selected = false));
@@ -922,52 +944,13 @@ export default class AngleHandler extends Highlighter {
     this.snapPoint = null;
   }
 
-  activate(): void {
-    super.activate();
-  }
-  deactivate(): void {
-    super.deactivate();
-    // call an unglow all command
-    MouseHandler.store.unglowAllSENodules();
-    this.infoText.hide();
-    // unselect all points, lines, segments
-    this.targetLines.forEach(l => (l.selected = false));
-    this.targetSegments.forEach(l => (l.selected = false));
-    this.targetPoints.forEach(l => {
-      if (l !== null) {
-        l.selected = false;
-      }
-    });
-    //clear the arrays and prepare for the next angle
-    this.targetPoints.clear();
-    this.targetLines.clear();
-    this.lineClickLocation1.set(0, 0, 0);
-    this.lineClickLocation2.set(0, 0, 0);
-    this.targetSegments.clear();
-    this.pointLocations.clear();
-    this.sePointOneDimensionalParents.clear();
-    this.makingAnAngleMarker = false;
-    this.angleMode = AngleMode.NONE;
-    // Remove temporary objects
-    this.temporaryFirstPoint.removeFromLayers();
-    this.isTemporaryFirstPointAdded = false;
-    this.temporarySecondPoint.removeFromLayers();
-    this.isTemporarySecondPointAdded = false;
-    this.temporaryThirdPoint.removeFromLayers();
-    this.isTemporaryThirdPointAdded = false;
-    this.temporaryAngleMarker.removeFromLayers();
-    this.isTemporaryAngleMarkerAdded = false;
-    this.snapOneDimensional = null;
-    this.snapPoint = null;
-  }
-
   private makeAngleMarkerFromThreePoints(): boolean {
     // make sure that this triple of points has not been measured already
     // this is only possible if all three points are existing points
     if (this.targetPoints.every(entry => entry !== null)) {
       let measurementName = "";
       if (
-        MouseHandler.store.expressions.some(exp => {
+        AngleHandler.store.expressions.some(exp => {
           if (
             exp instanceof SEAngleMarker &&
             exp.parents[0].name === this.targetPoints[0]?.name && // order matters in angles angle 0 1 2 is different than 2 1 0
@@ -984,9 +967,9 @@ export default class AngleHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicateThreePointAngleMeasurement`,
           keyOptions: {
-            pt0Name: `${this.targetPoints[0]?.name}`,
-            pt1Name: `${this.targetPoints[1]?.name}`,
-            pt2Name: `${this.targetPoints[2]?.name}`,
+            pt0Name: `${this.targetPoints[0]?.label?.ref.shortUserName}`,
+            pt1Name: `${this.targetPoints[1]?.label?.ref.shortUserName}`,
+            pt2Name: `${this.targetPoints[2]?.label?.ref.shortUserName}`,
             measurementName: `${measurementName}`
           },
           type: "error"
@@ -1020,17 +1003,10 @@ export default class AngleHandler extends Highlighter {
         );
 
         // Create a plottable label
-        const newLabel = new Label();
+        const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel(newLabel, vtx);
 
-        angleMarkerCommandGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
-            this.sePointOneDimensionalParents[i]!,
-            newSELabel
-          )
-        );
         vtx.locationVector = this.pointLocations[i];
         // Set the initial label location
         this.tmpVector
@@ -1044,8 +1020,17 @@ export default class AngleHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
+        angleMarkerCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.sePointOneDimensionalParents[i]!,
+            newSELabel
+          )
+        );
 
-        //Add the newly created point to the targetPoint array
+        // Create the antipode of the new point, vtx
+        AngleHandler.addCreateAntipodeCommand(vtx, angleMarkerCommandGroup);
+
         this.targetPoints[i] = vtx;
       } else if (
         this.sePointOneDimensionalParents[i] === null &&
@@ -1063,7 +1048,7 @@ export default class AngleHandler extends Highlighter {
         const vtx = new SEPoint(newPoint);
 
         // Create a plottable label
-        const newLabel = new Label();
+        const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel(newLabel, vtx);
 
@@ -1083,8 +1068,27 @@ export default class AngleHandler extends Highlighter {
           )
           .normalize();
         newSELabel.locationVector = this.tmpVector;
+
+        // Create the antipode of the new point, vtx
+        AngleHandler.addCreateAntipodeCommand(vtx, angleMarkerCommandGroup);
+
         //Add the newly created point to the targetPoint array
         this.targetPoints[i] = vtx;
+      } else {
+        // check if the points selected are uncreated intersection point or antipodal points
+        if (
+          (this.targetPoints[i] instanceof SEIntersectionPoint &&
+            !(this.targetPoints[i] as SEIntersectionPoint).isUserCreated) ||
+          (this.targetPoints[i] instanceof SEAntipodalPoint &&
+            !(this.targetPoints[i] as SEAntipodalPoint).isUserCreated)
+        ) {
+          angleMarkerCommandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.targetPoints[i] as SEIntersectionPoint | SEAntipodalPoint,
+              true
+            )
+          );
+        }
       }
     }
 
@@ -1105,8 +1109,10 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1156,7 +1162,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetLines[0]?.name && // order matters in angles angle from L1 to L2 is different than from L2 to L1
@@ -1207,8 +1213,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateLineAngleMeasurement`,
         keyOptions: {
-          line0Name: `${this.targetLines[0]?.name}`,
-          line1Name: `${this.targetLines[1]?.name}`,
+          line0Name: `${this.targetLines[0]?.label?.ref.shortUserName}`,
+          line1Name: `${this.targetLines[1]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"
@@ -1235,8 +1241,10 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1279,7 +1287,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of segments has not been measured already
     let measurementName = "";
     if (
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetSegments[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
@@ -1295,8 +1303,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateSegmentAngleMeasurement`,
         keyOptions: {
-          seg0Name: `${this.targetSegments[0]?.name}`,
-          seg1Name: `${this.targetSegments[1]?.name}`,
+          seg0Name: `${this.targetSegments[0]?.label?.ref.shortUserName}`,
+          seg1Name: `${this.targetSegments[1]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"
@@ -1320,8 +1328,10 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();
@@ -1406,7 +1416,7 @@ export default class AngleHandler extends Highlighter {
         }
       });
     } else {
-      MouseHandler.store.expressions.some(exp => {
+      AngleHandler.store.expressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.firstSEParent.name === this.targetSegments[0]?.name &&
@@ -1423,8 +1433,8 @@ export default class AngleHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.duplicateSegmentLineAngleMeasurement`,
         keyOptions: {
-          lineName: `${this.targetLines[0]?.name}`,
-          segName: `${this.targetSegments[0]?.name}`,
+          lineName: `${this.targetLines[0]?.label?.ref.shortUserName}`,
+          segName: `${this.targetSegments[0]?.label?.ref.shortUserName}`,
           measurementName: `${measurementName}`
         },
         type: "error"
@@ -1459,8 +1469,10 @@ export default class AngleHandler extends Highlighter {
       );
     }
     // Create the plottable and model label
-    const newLabel = new Label();
+    const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    newSEAngleMarker.valueDisplayMode =
+      SETTINGS.angleMarker.initialValueDisplayMode;
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
     newSEAngleMarker.markKidsOutOfDate();

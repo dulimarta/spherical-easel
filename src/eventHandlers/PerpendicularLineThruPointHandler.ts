@@ -25,16 +25,17 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
-
-// const MAXNUMBEROFPERPENDICULARS = 10; // maximum number of perpendiculars to a one dimensional through a point across all objects
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
 import Two from "two.js";
+// import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 type TemporaryLine = {
   line: Line;
@@ -99,7 +100,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       exist: false,
       tmpNormal: new Vector3()
     });
-    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
     );
@@ -108,7 +108,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
-    this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.temporaryPointMarker
     );
@@ -138,7 +137,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
           if (
-            this.sePoint instanceof SEIntersectionPoint &&
+            (this.sePoint instanceof SEIntersectionPoint ||
+              this.sePoint instanceof SEAntipodalPoint) &&
             !this.sePoint.isUserCreated
           ) {
             this.temporaryPointMarker.positionVector = this.sePointVector;
@@ -513,7 +513,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             exist: false,
             tmpNormal: new Vector3()
           });
-          newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
           PerpendicularLineThruPointHandler.store.addTemporaryNodule(newLine);
           // this.temporaryLinesAdded.push(false);
           // this.temporaryNormals.push(new Vector3());
@@ -577,6 +576,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   ): void {
     // Create a command group to create a new perpendicular line, possibly new point, and to record all the new intersections for undo/redo
     const addPerpendicularLineGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
@@ -585,8 +585,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // Set the display to the default values
       newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
-      // Create plottable for the Label
-      const newLabel = new Label();
+
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
@@ -596,7 +595,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel(newLabel, this.sePoint);
+        const newSELabel = new SELabel(new Label("point"), this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -621,7 +620,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint(newPoint);
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel(newLabel, this.sePoint);
+        const newSELabel = new SELabel(new Label("point"), this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -639,16 +638,29 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           new AddPointCommand(this.sePoint, newSELabel)
         );
       }
+      /////////////
+      // Create the antipode of the new point, vtx
+      const antipode =
+        PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
+          this.sePoint,
+          addPerpendicularLineGroup
+        );
+      newlyCreatedSEPoints.push(antipode, this.sePoint);
+      ///////////
     } else {
       // sePoint is not null so either sePoint is an existing point (in which case nothing needs to be created)
       // or an intersection point that need to be converted to isUserCreated
       if (
-        sePoint instanceof SEIntersectionPoint &&
-        !(sePoint as SEIntersectionPoint).isUserCreated
+        (sePoint instanceof SEIntersectionPoint ||
+          sePoint instanceof SEAntipodalPoint) &&
+        !sePoint.isUserCreated
       ) {
         //Make it user created and turn on the display
         addPerpendicularLineGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(sePoint as SEIntersectionPoint)
+          new SetPointUserCreatedValueCommand(
+            sePoint as SEIntersectionPoint,
+            true
+          )
         );
       }
       this.sePoint = sePoint;
@@ -734,14 +746,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
         newPerpLine.exists = false;
-        // console.log("normal doesn't exist 1", vec.x, vec.y, vec.z);
       }
       // Update the display of the perpendicular line
       newPerpLine.markKidsOutOfDate();
       newPerpLine.update();
 
       // Create the plottable label
-      const newLabel = new Label();
+      const newLabel = new Label("line");
       const newSELabel = new SELabel(newLabel, newPerpLine);
 
       // Set the initial label location
@@ -770,40 +781,62 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       PerpendicularLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine)
+        .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
-          console.debug(
-            "Got intersection point at",
-            item.SEIntersectionPoint.locationVector.toFixed(4)
-          );
-          // Create the plottable label
-          const newLabel = new Label();
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
+          if (item.existingIntersectionPoint) {
+            const addIntersectionCmd = new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              item.parent1
+            );
+            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+          } else {
+            // console.debug(
+            //   "Got intersection point at",
+            //   item.SEIntersectionPoint.locationVector.toFixed(4)
+            // );
+            // Create the plottable label
+            const newLabel = new Label("point");
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
               )
-            )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
 
-          const addIntersectionCmd = new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          );
+            const addIntersectionCmd = new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            );
 
-          if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
-          else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
 
-          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-          newSELabel.showing = false;
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
+            if (item.createAntipodalPoint) {
+              if (usePencil) {
+                PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  addPencilGroup
+                );
+              } else {
+                PerpendicularLineThruPointHandler.addCreateAntipodeCommand(
+                  item.SEIntersectionPoint,
+                  addPerpendicularLineGroup
+                );
+              }
+            }
+          }
         });
       // console.log("after create intersections");
       // console.log(vec.x, vec.y, vec.z);
@@ -837,8 +870,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (
-          !(object2 instanceof SEIntersectionPoint) ||
-          (object2 as SEIntersectionPoint).isUserCreated
+          ((!(object2 instanceof SEIntersectionPoint) ||
+            object2.isUserCreated) &&
+            !(object2 instanceof SEAntipodalPoint)) ||
+          object2.isUserCreated
         ) {
           this.createPerpendicular(
             object1 as SEOneDimensional,
@@ -851,8 +886,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       if (object2.isOneDimensional() && object1.isPoint()) {
         if (
-          !(object1 instanceof SEIntersectionPoint) ||
-          (object1 as SEIntersectionPoint).isUserCreated
+          (!(object1 instanceof SEIntersectionPoint) ||
+            object1.isUserCreated) &&
+          (!(object1 instanceof SEAntipodalPoint) || object1.isUserCreated)
         ) {
           this.createPerpendicular(
             object2 as SEOneDimensional,

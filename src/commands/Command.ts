@@ -9,17 +9,19 @@
  * the actual action of the command.
  */
 
-import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleEditPanels } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 export abstract class Command {
   protected static store: SEStoreType;
+  // protected static store = SEStore;
+  protected static tmpVector = new Vector3();
+  protected static tmpVector1 = new Vector3();
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -144,7 +146,7 @@ export abstract class Command {
         JSON.parse(pointBackStyleString)
       );
 
-    const newLabel = new Label();
+    const newLabel = new Label("point");
     const label = new SELabel(newLabel, point);
     label.locationVector.copy(labelLocation);
     if (labelStyleString !== undefined)
@@ -188,7 +190,10 @@ export abstract class Command {
   abstract toOpcode(): null | string | Array<string>;
 
   // remove the &, / and & from a string and replace with hex equivalent / -> %47, = -> , and & -> %38
-  static symbolToASCIIDec(inputString: string): string {
+  static symbolToASCIIDec(inputString: string | undefined): string {
+    if (inputString === undefined) {
+      return "";
+    }
     if (inputString.match(/%61|%47|%38|%64/)) {
       console.error(
         `Save Command: Forbidden pattern %61, %47, %38, or %64 found in string ${inputString}`

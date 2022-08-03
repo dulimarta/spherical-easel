@@ -12,7 +12,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -31,6 +30,9 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+//import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 enum Create {
   NONE,
@@ -91,25 +93,19 @@ export default class PolarObjectHandler extends Highlighter {
     super(layers);
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryPolarLineMarker = new NonFreeLine();
-    this.temporaryPolarLineMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPolarLineMarker);
+
     this.temporaryPolarPointMarker1 = new NonFreePoint();
-    this.temporaryPolarPointMarker1.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker1
     );
+
     this.temporaryPolarPointMarker2 = new NonFreePoint();
-    this.temporaryPolarPointMarker2.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
     PolarObjectHandler.store.addTemporaryNodule(
       this.temporaryPolarPointMarker2
     );
 
     this.temporaryPoint = new Point();
-    this.temporaryPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
     PolarObjectHandler.store.addTemporaryNodule(this.temporaryPoint);
   }
 
@@ -333,8 +329,10 @@ export default class PolarObjectHandler extends Highlighter {
           // ????glowing when the user select that location and then moves the mouse away ) we don't
           // remove the temporary point from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
-            !this.snapToTemporaryPoint.isUserCreated
+            (this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
+              !this.snapToTemporaryPoint.isUserCreated) ||
+            (this.snapToTemporaryPoint instanceof SEAntipodalPoint &&
+              !this.snapToTemporaryPoint.isUserCreated)
           ) {
             this.temporaryPoint.positionVector =
               this.snapToTemporaryPoint.locationVector;
@@ -483,7 +481,7 @@ export default class PolarObjectHandler extends Highlighter {
     polarPoint1.locationVector = parentLineOrSegment.normalVector;
 
     // Create plottable for the Label
-    const newLabel1 = new Label();
+    const newLabel1 = new Label("point");
     const newSELabel1 = new SELabel(newLabel1, polarPoint1);
     // Set the initial label location
     this.tmpVector
@@ -514,7 +512,7 @@ export default class PolarObjectHandler extends Highlighter {
       parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
-    const newLabel2 = new Label();
+    const newLabel2 = new Label("point");
     const newSELabel2 = new SELabel(newLabel2, polarPoint2);
     // Set the initial label location
     this.tmpVector
@@ -532,91 +530,104 @@ export default class PolarObjectHandler extends Highlighter {
     polarPointsCommandGroup.addCommand(
       new AddPolarPointCommand(polarPoint2, 1, parentLineOrSegment, newSELabel2)
     );
+
     polarPointsCommandGroup.execute();
     polarPoint1.markKidsOutOfDate();
     polarPoint1.update();
     polarPoint2.markKidsOutOfDate();
     polarPoint2.update();
+
+    //no need to add the anitpodes because polarPoint1 and polarPoint2 are antipodal already
   }
   createPolarLine(): void {
     const polarLineCommandGroup = new CommandGroup();
+    const newlyCreatedSEPoints: SEPoint[] = [];
     if (this.parentPoint !== null) {
       if (
-        this.parentPoint instanceof SEIntersectionPoint &&
-        !(this.parentPoint as SEIntersectionPoint).isUserCreated
+        (this.parentPoint instanceof SEIntersectionPoint &&
+          !this.parentPoint.isUserCreated) ||
+        (this.parentPoint instanceof SEAntipodalPoint &&
+          !this.parentPoint.isUserCreated)
       ) {
         //Make it user created and turn on the display
         polarLineCommandGroup.addCommand(
-          new ConvertInterPtToUserCreatedCommand(
-            this.parentPoint as SEIntersectionPoint
+          new SetPointUserCreatedValueCommand(
+            this.parentPoint as SEIntersectionPoint,
+            true
           )
         );
       }
-    } else if (this.oneDimensionalContainingParentPoint !== null) {
-      // create a new point on the object that the user clicked on
-      const newPoint = new Point();
-      // Set the display to the default values
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      // Create plottable for the Label
-      const newLabel = new Label();
-
-      // Create the model object for the new point and link them
-      this.parentPoint = new SEPointOnOneOrTwoDimensional(
-        newPoint,
-        this.oneDimensionalContainingParentPoint
-      );
-      this.parentPoint.locationVector = this.parentPointVector;
-      const newSELabel = new SELabel(newLabel, this.parentPoint);
-      // Set the initial label location
-      this.tmpVector
-        .copy(this.parentPoint.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      newSELabel.locationVector = this.tmpVector;
-      // Create the command to create a new point for undo/redo
-      //new AddPointCommand(vtx, newSELabel).execute();
-      polarLineCommandGroup.addCommand(
-        new AddPointOnOneDimensionalCommand(
-          this.parentPoint as SEPointOnOneOrTwoDimensional,
-          this.oneDimensionalContainingParentPoint,
-          newSELabel
-        )
-      );
     } else {
-      // Create a new point at the blank place where the user clicked
-      const newPoint = new Point();
-      // Set the display to the default values
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      // Create plottable for the Label
-      const newLabel = new Label();
+      if (this.oneDimensionalContainingParentPoint !== null) {
+        // create a new point on the object that the user clicked on
+        const newPoint = new Point();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        newPoint.adjustSize();
 
-      this.parentPoint = new SEPoint(newPoint);
-      this.parentPoint.locationVector = this.parentPointVector;
-      const newSELabel = new SELabel(newLabel, this.parentPoint);
-      // Set the initial label location
-      this.tmpVector
-        .copy(this.parentPoint.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
+        // Create the model object for the new point and link them
+        this.parentPoint = new SEPointOnOneOrTwoDimensional(
+          newPoint,
+          this.oneDimensionalContainingParentPoint
+        );
+        this.parentPoint.locationVector = this.parentPointVector;
+        const newSELabel = new SELabel(new Label("point"), this.parentPoint);
+        // Set the initial label location
+        this.tmpVector
+          .copy(this.parentPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
           )
-        )
-        .normalize();
-      newSELabel.locationVector = this.tmpVector;
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+        // Create the command to create a new point for undo/redo
+        polarLineCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            this.parentPoint as SEPointOnOneOrTwoDimensional,
+            this.oneDimensionalContainingParentPoint,
+            newSELabel
+          )
+        );
+      } else {
+        // Create a new point at the blank place where the user clicked
+        const newPoint = new Point();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        newPoint.adjustSize();
 
-      polarLineCommandGroup.addCommand(
-        new AddPointCommand(this.parentPoint, newSELabel)
+        this.parentPoint = new SEPoint(newPoint);
+        this.parentPoint.locationVector = this.parentPointVector;
+        const newSELabel = new SELabel(new Label("point"), this.parentPoint);
+        // Set the initial label location
+        this.tmpVector
+          .copy(this.parentPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
+        polarLineCommandGroup.addCommand(
+          new AddPointCommand(this.parentPoint, newSELabel)
+        );
+      }
+
+      /////////////
+      // Create the antipode of the new point, this.parentPoint
+      const antipode = PolarObjectHandler.addCreateAntipodeCommand(
+        this.parentPoint,
+        polarLineCommandGroup
       );
+      newlyCreatedSEPoints.push(antipode, this.parentPoint);
+      ///////////
     }
 
     const newLine = this.temporaryPolarLineMarker.clone();
@@ -652,7 +663,7 @@ export default class PolarObjectHandler extends Highlighter {
     );
 
     // Create the plottable label
-    const newLabel = new Label();
+    const newLabel = new Label("line");
     const newSELabel = new SELabel(newLabel, newPolarLine);
 
     // Set the initial label location
@@ -678,34 +689,49 @@ export default class PolarObjectHandler extends Highlighter {
 
     // Determine all new intersection points and add their creation to the command so it can be undone
     PolarObjectHandler.store
-      .createAllIntersectionsWithLine(newPolarLine)
+      .createAllIntersectionsWithLine(newPolarLine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
-        // Create the plottable label
-        const newLabel = new Label();
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(item.SEIntersectionPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+        if (item.existingIntersectionPoint) {
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointOtherParent(
+              item.SEIntersectionPoint,
+              newPolarLine
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+          );
+        } else {
+          // Create the plottable label
+          const newLabel = new Label("point");
+          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // Set the initial label location
+          this.tmpVector
+            .copy(item.SEIntersectionPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
+            )
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
 
-        polarLineCommandGroup.addCommand(
-          new AddIntersectionPointCommand(
-            item.SEIntersectionPoint,
-            item.parent1,
-            item.parent2,
-            newSELabel
-          )
-        );
-        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-        newSELabel.showing = false;
+          polarLineCommandGroup.addCommand(
+            new AddIntersectionPointCommand(
+              item.SEIntersectionPoint,
+              item.parent1,
+              item.parent2,
+              newSELabel
+            )
+          );
+          item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+          newSELabel.showing = false;
+          if (item.createAntipodalPoint) {
+            PolarObjectHandler.addCreateAntipodeCommand(
+              item.SEIntersectionPoint,
+              polarLineCommandGroup
+            );
+          }
+        }
       });
     polarLineCommandGroup.execute();
   }

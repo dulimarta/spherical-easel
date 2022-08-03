@@ -19,6 +19,7 @@ export class AddParametricEndPointsCommand extends Command {
   private seStartLabel: SELabel;
   private seEndLabel: SELabel;
   private seTraceLabel: SELabel;
+  private useVisiblePointCountToRename: boolean;
   constructor(
     parametricParent: SEParametric,
     startEndPoint: SEParametricEndPoint,
@@ -26,7 +27,8 @@ export class AddParametricEndPointsCommand extends Command {
     endEndPoint: SEParametricEndPoint,
     endLabel: SELabel,
     tracePoint: SEParametricTracePoint,
-    traceLabel: SELabel
+    traceLabel: SELabel,
+    useVisiblePointCountToRename?: boolean
   ) {
     super();
     this.seStartEndPoint = startEndPoint;
@@ -36,6 +38,11 @@ export class AddParametricEndPointsCommand extends Command {
     this.seEndLabel = endLabel;
     this.seTracePoint = tracePoint;
     this.seTraceLabel = traceLabel;
+    if (useVisiblePointCountToRename !== undefined) {
+      this.useVisiblePointCountToRename = useVisiblePointCountToRename;
+    } else {
+      this.useVisiblePointCountToRename = true;
+    }
   }
 
   do(): void {
@@ -60,12 +67,31 @@ export class AddParametricEndPointsCommand extends Command {
     Command.store.addLabel(this.seStartLabel);
     Command.store.addLabel(this.seEndLabel);
     Command.store.addLabel(this.seTraceLabel);
-    this.seStartEndPoint.markKidsOutOfDate();
-    this.seStartEndPoint.update();
-    this.seEndEndPoint.markKidsOutOfDate();
-    this.seEndEndPoint.update();
-    this.seTracePoint.markKidsOutOfDate();
-    this.seTracePoint.update();
+    // Set the label to display the name of the points in visible count order
+    this.seStartEndPoint.pointVisibleBefore = true;
+    this.seStartEndPoint.incrementVisiblePointCount();
+    if (this.seStartEndPoint.label && this.useVisiblePointCountToRename) {
+      this.seStartEndPoint.label.ref.shortUserName = `P${this.seStartEndPoint.visiblePointCount}`;
+    }
+
+    this.seTracePoint.pointVisibleBefore = true;
+    this.seTracePoint.incrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
+      this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
+    }
+
+    this.seEndEndPoint.pointVisibleBefore = true;
+    this.seEndEndPoint.incrementVisiblePointCount();
+    if (this.seEndEndPoint.label && this.useVisiblePointCountToRename) {
+      this.seEndEndPoint.label.ref.shortUserName = `P${this.seEndEndPoint.visiblePointCount}`;
+    }
+
+    // this.seStartEndPoint.markKidsOutOfDate();
+    // this.seStartEndPoint.update();
+    // this.seEndEndPoint.markKidsOutOfDate();
+    // this.seEndEndPoint.update();
+    // this.seTracePoint.markKidsOutOfDate();
+    // this.seTracePoint.update();
   }
 
   saveState(): void {
@@ -73,6 +99,24 @@ export class AddParametricEndPointsCommand extends Command {
   }
 
   restoreState(): void {
+    this.seStartEndPoint.decrementVisiblePointCount();
+    if (this.seStartEndPoint.label && this.useVisiblePointCountToRename) {
+      this.seStartEndPoint.label.ref.shortUserName = `P${this.seStartEndPoint.visiblePointCount}`;
+    }
+    this.seStartEndPoint.pointVisibleBefore = false;
+
+    this.seTracePoint.decrementVisiblePointCount();
+    if (this.seTracePoint.label && this.useVisiblePointCountToRename) {
+      this.seTracePoint.label.ref.shortUserName = `P${this.seTracePoint.visiblePointCount}`;
+    }
+    this.seTracePoint.pointVisibleBefore = false;
+
+    this.seEndEndPoint.decrementVisiblePointCount();
+    if (this.seEndEndPoint.label && this.useVisiblePointCountToRename) {
+      this.seEndEndPoint.label.ref.shortUserName = `P${this.seEndEndPoint.visiblePointCount}`;
+    }
+    this.seEndEndPoint.pointVisibleBefore = false;
+
     Command.store.removeLabel(this.seEndLabel.id);
     Command.store.removeLabel(this.seStartLabel.id);
     Command.store.removeLabel(this.seTraceLabel.id);
@@ -86,40 +130,6 @@ export class AddParametricEndPointsCommand extends Command {
     this.parametricParent.unregisterChild(this.seStartEndPoint);
     this.parametricParent.unregisterChild(this.seTracePoint);
   }
-
-  // toOpcode(): null | string | Array<string> {
-  //   return [
-  //     "AddParametricEndPoints",
-  //     /* arg-1 */ this.parametricParent.name,
-
-  //     /* arg-2 */ this.seStartEndPoint.name,
-  //     /* arg-3 */ this.seStartEndPoint.locationVector.toFixed(7),
-  //     /* arg-4 */ this.seStartEndPoint.showing,
-  //     /* arg-5 */ this.seStartEndPoint.exists,
-
-  //     /* arg-6 */ this.seEndEndPoint.name,
-  //     /* arg-7 */ this.seEndEndPoint.locationVector.toFixed(7),
-  //     /* arg-8 */ this.seEndEndPoint.showing,
-  //     /* arg-9 */ this.seEndEndPoint.exists,
-
-  //     /* arg-10 */ this.seTracePoint.name,
-  //     /* arg-11 */ this.seTracePoint.locationVector.toFixed(7),
-  //     /* arg-12 */ this.seTracePoint.showing,
-  //     /* arg-13 */ this.seTracePoint.exists,
-
-  //     /* arg-14 */ this.seStartLabel.name,
-  //     /* arg-15 */ this.seStartLabel.showing,
-  //     /* arg-16 */ this.seStartLabel.exists,
-
-  //     /* arg-17 */ this.seEndLabel.name,
-  //     /* arg-18 */ this.seEndLabel.showing,
-  //     /* arg-19 */ this.seEndLabel.exists,
-
-  //     /* arg-20 */ this.seTraceLabel.name,
-  //     /* arg-21 */ this.seTraceLabel.showing,
-  //     /* arg-22 */ this.seTraceLabel.exists
-  //   ].join("/");
-  // }
 
   toOpcode(): null | string | Array<string> {
     // console.log(
@@ -311,7 +321,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Start End Point Label
-      const startEndPointLabel = new Label();
+      const startEndPointLabel = new Label("point");
       const seStartEndPointLabel = new SELabel(
         startEndPointLabel,
         seStartEndPoint
@@ -395,7 +405,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the End End Point Label
-      const endEndPointLabel = new Label();
+      const endEndPointLabel = new Label("point");
       const seEndEndPointLabel = new SELabel(endEndPointLabel, seEndEndPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(
@@ -470,7 +480,7 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label();
+      const tracePointLabel = new Label("point");
       const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seLabelLocation.from(
@@ -524,7 +534,8 @@ export class AddParametricEndPointsCommand extends Command {
         seEndEndPoint,
         seEndEndPointLabel,
         seTracePoint,
-        seTracePointLabel
+        seTracePointLabel,
+        false //The name of these points are set by the saved value and not the visible count
       );
     } else {
       throw new Error(

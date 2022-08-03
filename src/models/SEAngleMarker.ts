@@ -3,10 +3,10 @@ import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import AngleMarker from "@/plottables/AngleMarker";
-import { Vector3, Matrix4, LineBasicMaterial } from "three";
+import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { ObjectState } from "@/types";
+import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
@@ -151,8 +151,21 @@ export class SEAngleMarker
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
-  customStyles(): Set<string> {
+  public customStyles(): Set<string> {
     return styleSet;
+  }
+
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
+  }
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    console.debug(`set the vdm in SEAngleMarker`);
+    this._valueDisplayMode = vdm;
+    // move the vdm to the plottable label
+    if (this.label) {
+      this.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   get angleMarkerNumber(): number {
@@ -481,7 +494,7 @@ export class SEAngleMarker
               this._firstSEParent.closestVector(this._lineClickLocation1)
             ) < 0
           ) {
-            console.log("first point reverse! -1");
+            // console.log("first point reverse! -1");
             this._firstPointDirectionScalar = -1;
           } else {
             this._firstPointDirectionScalar = 1;
@@ -1331,6 +1344,9 @@ export class SEAngleMarker
 
   // Override the isLabelable method in SEExpression
   public isLabelable(): boolean {
+    return true;
+  }
+  public isMeasurable(): boolean {
     return true;
   }
 }

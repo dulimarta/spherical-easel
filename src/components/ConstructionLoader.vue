@@ -1,13 +1,14 @@
 <template>
   <div>
-    <div class="text-h6"
-      v-if="firebaseUid.length > 0">
-      {{$t(`constructions.privateConstructions`)}}</div>
-    <!--- WARNING: the "id" attribs below are needed for testing -->
-    <ConstructionList id="privateList"
-      :items="privateConstructions"
-      v-on:load-requested="shouldLoadConstruction"
-      v-on:delete-requested="shouldDeleteConstruction" />
+    <template v-if="uid.length > 0">
+      <div class="text-h6">
+        {{$t(`constructions.privateConstructions`)}}</div>
+      <!--- WARNING: the "id" attribs below are needed for testing -->
+      <ConstructionList id="privateList"
+        :items="privateConstructions"
+        v-on:load-requested="shouldLoadConstruction"
+        v-on:delete-requested="shouldDeleteConstruction" />
+    </template>
     <div class="text-h6">{{$t(`constructions.publicConstructions`)}}</div>
     <ConstructionList id="publicList"
       :items="publicConstructions"
@@ -20,8 +21,9 @@
       id="_test_constructionShareDialog"
       class="dialog"
       title="Share Construction"
-      :yes-text="`Copy URL`"
+      yes-text="Copy URL"
       :yes-action="doCopyURL"
+      no-text="OK"
       max-width="50%">
       <p>Share this URL</p>
       <textarea :cols="shareURL.length"
@@ -61,7 +63,7 @@
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import {
   FirebaseFirestore,
   QuerySnapshot,
@@ -77,7 +79,7 @@ import {
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
-import { FirebaseAuth } from "@firebase/auth-types";
+import { FirebaseAuth, User } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
@@ -127,7 +129,7 @@ export default class ConstructionLoader extends Vue {
   privateConstructions: Array<SphericalConstruction> = [];
   shareURL = "";
   selectedDocId = "";
-
+  uid = "";
   $refs!: {
     constructionShareDialog: VueComponent & DialogAction;
     constructionLoadDialog: VueComponent & DialogAction;
@@ -135,23 +137,31 @@ export default class ConstructionLoader extends Vue {
     docURL: HTMLSpanElement;
   };
 
-  get firebaseUid(): string {
-    return this.$appAuth.currentUser?.uid ?? "";
+  mounted(): void {
+    this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
+      this.populateData(qs, this.publicConstructions);
+    });
+    this.$appAuth.onAuthStateChanged((u: User | null) => {
+      this.uid = u?.uid ?? "";
+    });
   }
 
-  mounted(): void {
-    if (this.firebaseUid) {
+  @Watch("uid")
+  onUidChanged(newVal: string, _oldVal: string): void {
+    if (newVal.length > 0) {
       this.snapshotUnsubscribe = this.$appDB
         .collection("users")
-        .doc(this.firebaseUid)
+        .doc(newVal)
         .collection("constructions")
         .onSnapshot((qs: QuerySnapshot) => {
           this.populateData(qs, this.privateConstructions);
         });
+    } else {
+      if (this.snapshotUnsubscribe) {
+        this.snapshotUnsubscribe();
+        this.snapshotUnsubscribe = null;
+      }
     }
-    this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
-      this.populateData(qs, this.publicConstructions);
-    });
   }
 
   beforeDestroy(): void {
@@ -163,6 +173,7 @@ export default class ConstructionLoader extends Vue {
     qs: QuerySnapshot,
     targetArr: Array<SphericalConstruction>
   ): void {
+    console.debug(`Here in populateData in Construction Loader .vue`);
     targetArr.splice(0);
     qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
@@ -304,7 +315,6 @@ export default class ConstructionLoader extends Vue {
   doCopyURL(): void {
     (this.$refs.docURL as HTMLTextAreaElement).select();
     document.execCommand("copy");
-    this.$refs.constructionShareDialog.hide();
   }
 
   shouldDeleteConstruction(event: { docId: string }): void {
@@ -319,7 +329,7 @@ export default class ConstructionLoader extends Vue {
       .doc(this.selectedDocId)
       .delete();
     const task2 = this.$appDB
-      .collection(`users/${this.firebaseUid}/constructions`)
+      .collection(`users/${this.uid}/constructions`)
       .doc(this.selectedDocId)
       .delete();
     Promise.any([task1, task2])

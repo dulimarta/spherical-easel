@@ -14,7 +14,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+// import { Group } from "two.js/src/group";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
@@ -29,9 +30,16 @@ export default class PointCoordinateHandler extends Highlighter {
     //Select a point to examine its coordinates
     if (this.isOnSphere) {
       // only select non-user created points and not measured point coordinates
-      const userCreatedPoints = this.hitSEPoints.filter(
-        p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-      );
+      const userCreatedPoints = this.hitSEPoints.filter(p => {
+        if (
+          (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
+          (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      });
       if (userCreatedPoints.length > 0) {
         this.targetPoint = userCreatedPoints[0];
       }
@@ -51,7 +59,7 @@ export default class PointCoordinateHandler extends Highlighter {
         EventBus.fire("show-alert", {
           key: `handlers.duplicatePointCoordinateMeasurement`,
           keyOptions: {
-            ptName: `${this.targetPoint?.name}`
+            ptName: `${this.targetPoint?.label?.ref.shortUserName}`
           },
           type: "error"
         });
@@ -138,9 +146,16 @@ export default class PointCoordinateHandler extends Highlighter {
     super.mouseMoved(event);
 
     // Do highlight only  SEPoint that are not non-user created intersection points
-    const hitPoints = this.hitSEPoints.filter(
-      p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-    );
+    const hitPoints = this.hitSEPoints.filter(p => {
+      if (
+        (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
+        (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     if (hitPoints.length > 0) hitPoints[0].glowing = true;
   }
 
@@ -158,10 +173,8 @@ export default class PointCoordinateHandler extends Highlighter {
       PointCoordinateHandler.store.selectedSENodules.every(
         object =>
           object instanceof SEPoint &&
-          !(
-            object instanceof SEIntersectionPoint &&
-            !(object as SEIntersectionPoint).isUserCreated
-          )
+          !(object instanceof SEIntersectionPoint && !object.isUserCreated) &&
+          !(object instanceof SEAntipodalPoint && !object.isUserCreated)
       );
 
     if (
@@ -170,13 +183,12 @@ export default class PointCoordinateHandler extends Highlighter {
     ) {
       const coordinatizeCommandGroup = new CommandGroup();
       PointCoordinateHandler.store.selectedSENodules
+        .map(x => x as SENodule)
         .filter(
           (object: SENodule) =>
             object instanceof SEPoint &&
-            !(
-              object instanceof SEIntersectionPoint &&
-              !(object as SEIntersectionPoint).isUserCreated
-            )
+            !(object instanceof SEIntersectionPoint && !object.isUserCreated) &&
+            !(object instanceof SEAntipodalPoint && !object.isUserCreated)
         )
         .forEach((p: SENodule) => {
           const xMeasure = new SEPointCoordinate(

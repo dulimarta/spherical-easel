@@ -10,6 +10,8 @@ import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+// import { Group } from "two.js/src/group";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -88,6 +90,7 @@ export default class RotateHandler extends Highlighter {
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
   private store: SEStoreType;
+  // private _disableKeyHandler = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -95,6 +98,7 @@ export default class RotateHandler extends Highlighter {
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     if (keyEvent.repeat) return; // Ignore repeated events on the same key
     if (keyEvent.altKey) {
       this.momentumMode = false;
@@ -117,6 +121,7 @@ export default class RotateHandler extends Highlighter {
   };
 
   keyUp = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     if (this.altKeyDown) {
       this.momentumMode = false;
       EventBus.fire("show-alert", {
@@ -154,8 +159,8 @@ export default class RotateHandler extends Highlighter {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !(p as SEIntersectionPoint).isUserCreated
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            (p instanceof SEAntipodalPoint && !p.isUserCreated)
           ) {
             return false;
           } else {
@@ -345,8 +350,8 @@ export default class RotateHandler extends Highlighter {
         // never highlight non user created intersection points
         const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
           if (
-            p instanceof SEIntersectionPoint &&
-            !(p as SEIntersectionPoint).isUserCreated
+            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+            (p instanceof SEAntipodalPoint && !p.isUserCreated)
           ) {
             return false;
           } else {

@@ -15,7 +15,9 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
-
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+// import { Group } from "two.js/src/group";
+// import { Vector } from "two.js/src/vector";
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
 const screenVector = new Two.Vector(0, 0);
@@ -46,12 +48,14 @@ export default class SelectionHandler extends Highlighter {
    * An array to store the object selected by the key press handler
    */
   private keyPressSelection: SENodule[] = [];
+  // private _disableKeyHandler = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]
     );
+    // this.selectionRectangle.hide();
   }
   /**
    * This handles the keyboard events and when multiple objects are under
@@ -59,6 +63,7 @@ export default class SelectionHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     //if (keyEvent.repeat) return; // Ignore repeated events on the same key
     // Clear the keyPressSelection
     this.keyPressSelection.clear();
@@ -68,7 +73,11 @@ export default class SelectionHandler extends Highlighter {
         .map(n => n as SEPoint)
         .filter(
           (n: SEPoint) =>
-            !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
+            !(
+              (n instanceof SEIntersectionPoint ||
+                n instanceof SEAntipodalPoint) &&
+              !n.isUserCreated
+            ) && n.showing
         ) // no unUserCreated intersection points allowed and no hidden points allowed
         .forEach((n: SEPoint) => {
           this.keyPressSelection.push(n);
@@ -78,6 +87,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SECircles lower case c
     else if (keyEvent.code === "KeyC" && !keyEvent.shiftKey) {
       SelectionHandler.store.seCircles
+        .map(x => x as SECircle)
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
@@ -87,6 +97,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEEllipses lower case e
     else if (keyEvent.code === "KeyE" && !keyEvent.shiftKey) {
       SelectionHandler.store.seEllipses
+        .map(x => x as SEEllipse)
         .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
         .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);
@@ -96,6 +107,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SELines lower case l
     else if (keyEvent.code === "KeyL" && !keyEvent.shiftKey) {
       SelectionHandler.store.seLines
+        .map(x => x as SELine)
         .filter((n: SELine) => n.showing) //no hidden lines allowed
         .forEach((n: SELine) => {
           this.keyPressSelection.push(n);
@@ -105,6 +117,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SESegments lower case s
     else if (keyEvent.code === "KeyS" && !keyEvent.shiftKey) {
       SelectionHandler.store.seSegments
+        .map(s => s as SESegment)
         .filter((n: SESegment) => n.showing) //no hidden segments allowed
         .forEach((n: SESegment) => {
           this.keyPressSelection.push(n);
@@ -114,6 +127,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEAngleMarkers upper case A
     else if (keyEvent.code === "KeyA" && keyEvent.shiftKey) {
       SelectionHandler.store.seAngleMarkers
+        .map(s => s as SEAngleMarker)
         .filter((n: SEAngleMarker) => n.showing) //no hidden angle markers allowed
         .forEach((n: SEAngleMarker) => {
           this.keyPressSelection.push(n);
@@ -123,6 +137,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEParametrics upper case P
     else if (keyEvent.code === "KeyP" && keyEvent.shiftKey) {
       SelectionHandler.store.seParametrics
+        .map(s => s as SEParametric)
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
@@ -137,6 +152,7 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPolygons upper case O
     else if (keyEvent.code === "KeyO" && keyEvent.shiftKey) {
       SelectionHandler.store.sePolygons
+        .map(s => s as SEPolygon)
         .filter((n: SEPolygon) => n.showing) //no hidden Polygons allowed
         .forEach((n: SEPolygon) => {
           this.keyPressSelection.push(n);
@@ -186,7 +202,11 @@ export default class SelectionHandler extends Highlighter {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
       this.hitSENodules
-        .filter(n => !(n instanceof SEIntersectionPoint && !n.isUserCreated)) // no uncreated intersection points allowed
+        .filter(
+          n =>
+            !(n instanceof SEIntersectionPoint && !n.isUserCreated) &&
+            !(n instanceof SEAntipodalPoint && !n.isUserCreated)
+        ) // no uncreated intersection points allowed
         .forEach((n, pos) => {
           if (pos === val) {
             // add the item to the list
@@ -212,7 +232,7 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangleSelection.splice(0);
 
     // If the user clicks on a label warn them about labels not being selectable.
-    if (this.hitSENodules[0] && this.hitSENodules[0].isLabel()) {
+    if (this.hitSELabels[0]) {
       EventBus.fire("show-alert", {
         key: `style.cannotSelectLabels`,
         keyOptions: {},
@@ -258,24 +278,50 @@ export default class SelectionHandler extends Highlighter {
       );
     } else {
       // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
-      this.hitSENodules
-        .filter((p: SENodule) => {
-          if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
-          ) {
-            return false;
-          } else {
-            return true;
-          }
-        })
-        .forEach((n: SENodule, index) => {
-          if (index === 0 || n.selected) {
-            n.glowing = true;
-          } else {
-            n.glowing = false;
-          }
-        });
+      // Glow one object, first a point, then lines, then segments, then circles, then ellipses, then parametrics
+      if (this.hitSEPoints.length > 0) {
+        if (
+          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+            this.hitSEPoints[0].isUserCreated) &&
+          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+            this.hitSEPoints[0].isUserCreated)
+        ) {
+          this.hitSEPoints[0].glowing = true;
+        }
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+      } else if (this.hitSEEllipses.length > 0) {
+        this.hitSEEllipses[0].glowing = true;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+      } else if (this.hitSEAngleMarkers.length > 0) {
+        this.hitSEAngleMarkers[0].glowing = true;
+      } else if (this.hitSEPolygons.length > 0) {
+        this.hitSEPolygons[0].glowing = true;
+      }
+      // this.hitSENodules
+      //   .filter((p: SENodule) => {
+      //     if (
+      //       (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
+      //       (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+      //       p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
+      //     ) {
+      //       return false;
+      //     } else {
+      //       return true;
+      //     }
+      //   })
+      //   .forEach((n: SENodule, index) => {
+      //     if (index === 0 || n.selected) {
+      //       n.glowing = true;
+      //     } else {
+      //       n.glowing = false;
+      //     }
+      //   });
     }
   }
 
@@ -302,17 +348,44 @@ export default class SelectionHandler extends Highlighter {
         this.currentSelection.push(...newKeyPressSelections);
         this.keyPressSelection.splice(0);
       } else {
-        // Remove non-selectable intersection points
-        const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        // Remove non-selectable intersection and antipodal points
+        // const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        //   if (
+        //     (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
+        //     (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+        //     p.isLabel() // no labels can be selected
+        //   ) {
+        //     return false;
+        //   } else {
+        //     return true;
+        //   }
+        // });
+        const possibleAdditions: SENodule[] = [];
+        if (this.hitSEPoints.length > 0) {
           if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            p.isLabel() // no labels can be selected
+            (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+              this.hitSEPoints[0].isUserCreated) &&
+            (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+              this.hitSEPoints[0].isUserCreated)
           ) {
-            return false;
-          } else {
-            return true;
+            possibleAdditions.push(this.hitSEPoints[0]);
           }
-        });
+        } else if (this.hitSELines.length > 0) {
+          possibleAdditions.push(this.hitSELines[0]);
+        } else if (this.hitSESegments.length > 0) {
+          possibleAdditions.push(this.hitSESegments[0]);
+        } else if (this.hitSECircles.length > 0) {
+          possibleAdditions.push(this.hitSECircles[0]);
+        } else if (this.hitSEEllipses.length > 0) {
+          possibleAdditions.push(this.hitSEEllipses[0]);
+        } else if (this.hitSEParametrics.length > 0) {
+          possibleAdditions.push(this.hitSEParametrics[0]);
+        } else if (this.hitSEAngleMarkers.length > 0) {
+          possibleAdditions.push(this.hitSEAngleMarkers[0]);
+        } else if (this.hitSEPolygons.length > 0) {
+          possibleAdditions.push(this.hitSEPolygons[0]);
+        }
+
         if (event.altKey) {
           // Add current hit object list to the current selection
           possibleAdditions[0].selected = !possibleAdditions[0].selected;
@@ -347,7 +420,10 @@ export default class SelectionHandler extends Highlighter {
               .findNearbySENodules(sphereVec, this.currentScreenVector)
               .filter((n: SENodule) => !n.isLabel()) // remove all labels from the selection
               .filter((n: SENodule) => {
-                if (n instanceof SEIntersectionPoint) {
+                if (
+                  n instanceof SEIntersectionPoint ||
+                  n instanceof SEAntipodalPoint
+                ) {
                   if (!n.isUserCreated) {
                     return n.exists; //You always hit automatically created intersection points if it exists
                   } else {
@@ -561,7 +637,10 @@ export default class SelectionHandler extends Highlighter {
             .findNearbySENodules(sphereVector, screenVector)
             .filter((n: SENodule) => !n.isLabel()) // remove any labels
             .filter((n: SENodule) => {
-              if (n instanceof SEIntersectionPoint) {
+              if (
+                n instanceof SEIntersectionPoint ||
+                n instanceof SEAntipodalPoint
+              ) {
                 if (!n.isUserCreated) {
                   return false; // you can't select non-user created points
                 } else {

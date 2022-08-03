@@ -79,7 +79,7 @@ export class AddParametricCommand extends Command {
             this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
           )
         ),
-      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
@@ -218,7 +218,7 @@ export class AddParametricCommand extends Command {
       //   );
 
       //make the label and set its location
-      const label = new Label();
+      const label = new Label("parametric");
       const seLabel = new SELabel(label, seParametric);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

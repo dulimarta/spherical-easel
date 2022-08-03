@@ -3,7 +3,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { SavedNames } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 
 export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
@@ -36,7 +36,8 @@ export class AddCalculationCommand extends AddExpressionCommand {
       "calculationExpressionString=" +
         Command.symbolToASCIIDec(this.arithmeticExpression),
       "calculationParentsNames=" +
-        this.parents.map(n => Command.symbolToASCIIDec(n.name)).join("@")
+        this.parents.map(n => Command.symbolToASCIIDec(n.name)).join("@"),
+      "valueDisplayMode=" + this.seExpression.valueDisplayMode
     ].join("&");
   }
 
@@ -53,6 +54,11 @@ export class AddCalculationCommand extends AddExpressionCommand {
     // get the object specific attributes
     const tempCalculationParentsNames = propMap.get("calculationParentsNames");
     const calculationParents: (SEExpression | undefined)[] = [];
+
+    const valueDisplayMode = Number(propMap.get("valueDisplayMode")) as
+      | ValueDisplayMode
+      | undefined;
+
     if (tempCalculationParentsNames) {
       tempCalculationParentsNames
         .split("@")
@@ -65,10 +71,11 @@ export class AddCalculationCommand extends AddExpressionCommand {
 
     if (
       calculationParents.every(exp => exp !== undefined) &&
-      calculationExpression
+      calculationExpression &&
+      valueDisplayMode
     ) {
       const calculation = new SECalculation(calculationExpression);
-
+      calculation.valueDisplayMode = valueDisplayMode;
       //put the length measure in the object map
       if (propMap.get("objectName") !== undefined) {
         calculation.name = propMap.get("objectName") ?? "";

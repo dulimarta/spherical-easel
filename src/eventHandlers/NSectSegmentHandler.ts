@@ -5,13 +5,14 @@ import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
-import Two from "two.js";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
+import Two from "two.js";
+// import { Group } from "two.js/src/group";
 
 export default class NSectSegmentHandler extends Highlighter {
   private selectedNValue = 2;
@@ -24,6 +25,7 @@ export default class NSectSegmentHandler extends Highlighter {
   private temporarilySelectedSegment: SESegment | null = null;
 
   private tmpVector = new Vector3();
+  // private _disableKeyHandler = false;
 
   constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
@@ -31,7 +33,6 @@ export default class NSectSegmentHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     for (let i = 0; i < 9; i++) {
       this.temporaryPoints.push(new Point());
-      this.temporaryPoints[i].stylize(DisplayStyle.ApplyTemporaryVariables);
       NSectSegmentHandler.store.addTemporaryNodule(this.temporaryPoints[i]);
       this.temporaryPointsAdded.push(false);
     }
@@ -49,6 +50,7 @@ export default class NSectSegmentHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     // This is the only place the selectedNValue can be changed so disable it if bisection is the only thing allowed
     if (this.bisectionOnly) return;
     // console.log(keyEvent.key);
@@ -146,7 +148,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.bisectedSegmentAlready`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "error"
@@ -155,7 +157,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.nSectedSegmentAlready`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "error"
@@ -170,7 +172,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.segmentSuccessfullyBisected`,
             keyOptions: {
-              segment: candidateSegment.name
+              segment: candidateSegment.label?.ref.shortUserName
             },
             type: "success"
           });
@@ -178,7 +180,7 @@ export default class NSectSegmentHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.segmentSuccessfullyNSected`,
             keyOptions: {
-              segment: candidateSegment.name,
+              segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
             },
             type: "success"
@@ -292,7 +294,7 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        const newLabel2 = new Label();
+        const newLabel2 = new Label("point");
         const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
         // Set the initial label location
         this.tmpVector
@@ -309,6 +311,13 @@ export default class NSectSegmentHandler extends Highlighter {
 
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
+        );
+
+        /////////////
+        // Create the antipode of the new point, nSectingPoint
+        NSectSegmentHandler.addCreateAntipodeCommand(
+          nSectingPoint,
+          nSectingPointsCommandGroup
         );
       } else {
         console.log("An n-secting point already exists", i);

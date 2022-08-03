@@ -10,6 +10,11 @@ import {
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import Two from "two.js";
+// import { Two.Path } from "two.js/src/path";
+// import { Anchor } from "two.js/src/anchor";
+// import { Group } from "two.js/src/group";
+// import { Two.Stop } from "two.js/src/effects/stop";
+// import { RadialGradient } from "two.js/src/effects/radial-gradient";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -52,18 +57,18 @@ export default class Circle extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontPart: Two.Path;
-  private backPart: Two.Path;
-  private glowingFrontPart: Two.Path;
-  private glowingBackPart: Two.Path;
+  protected frontPart: Two.Path;
+  protected backPart: Two.Path;
+  protected glowingFrontPart: Two.Path;
+  protected glowingBackPart: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  private frontFill: Two.Path;
-  private backFill: Two.Path;
+  protected frontFill: Two.Path;
+  protected backFill: Two.Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
   private fillStorageAnchors: Two.Anchor[] = [];
@@ -110,7 +115,7 @@ export default class Circle extends Nodule {
     [this.backGradientColorCenter, this.backGradientColor]
   );
 
-  /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
+  /** Initialize the current circle width that is adjust by the zoom level and the user widthPercent */
   static currentCircleStrokeWidthFront =
     SETTINGS.circle.drawn.strokeWidth.front;
   static currentCircleStrokeWidthBack = SETTINGS.circle.drawn.strokeWidth.back;
@@ -799,8 +804,8 @@ export default class Circle extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
+   * This method is used to copy the temporary circle created with the Circle Tool  into a
+   * permanent one in the scene .
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the

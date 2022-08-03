@@ -16,6 +16,9 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
+// import { Group } from "two.js/src/group";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+
 export default class NSectAngleHandler extends Highlighter {
   private selectedNValue = 2;
 
@@ -27,6 +30,7 @@ export default class NSectAngleHandler extends Highlighter {
   private temporarilySelectedAngle: SEAngleMarker | null = null;
 
   private tmpVector = new Vector3();
+  // private _disableKeyHandler = false;
 
   constructor(layers: Two.Group[], bisectOnly?: boolean) {
     super(layers);
@@ -34,7 +38,6 @@ export default class NSectAngleHandler extends Highlighter {
     // Create and style the temporary lines
     for (let i = 0; i < 9; i++) {
       this.temporaryLines.push(new Line());
-      this.temporaryLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
       NSectAngleHandler.store.addTemporaryNodule(this.temporaryLines[i]);
       this.temporaryLinesAdded.push(false);
     }
@@ -52,6 +55,7 @@ export default class NSectAngleHandler extends Highlighter {
    * @param keyEvent A keyboard event -- only the digits are interpreted
    */
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
     // This is the only place the selectedNValue can be changed so disable it if bisection is the only thing allowed
     if (this.bisectionOnly) return;
     // console.log(keyEvent.key);
@@ -340,7 +344,7 @@ export default class NSectAngleHandler extends Highlighter {
           );
 
           // Create plottable for the Label
-          const newLabel2 = new Label();
+          const newLabel2 = new Label("line");
           const newSELabel2 = new SELabel(newLabel2, nSectingLine);
           // Set the initial label location
           this.tmpVector
@@ -364,37 +368,52 @@ export default class NSectAngleHandler extends Highlighter {
 
           // Determine all new intersection points and add their creation to the command so it can be undone
           NSectAngleHandler.store
-            .createAllIntersectionsWithLine(nSectingLine)
+            .createAllIntersectionsWithLine(nSectingLine, [])
             .forEach((item: SEIntersectionReturnType) => {
-              // Create the plottable label
-              const newLabel = new Label();
-              const newSELabel = new SELabel(
-                newLabel,
-                item.SEIntersectionPoint
-              );
-              // Set the initial label location
-              this.tmpVector
-                .copy(item.SEIntersectionPoint.locationVector)
-                .add(
-                  new Vector3(
-                    2 * SETTINGS.point.initialLabelOffset,
-                    SETTINGS.point.initialLabelOffset,
-                    0
+              if (item.existingIntersectionPoint) {
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParent(
+                    item.SEIntersectionPoint,
+                    item.parent1
                   )
-                )
-                .normalize();
-              newSELabel.locationVector = this.tmpVector;
+                );
+              } else {
+                // Create the plottable label
+                const newLabel = new Label("point");
+                const newSELabel = new SELabel(
+                  newLabel,
+                  item.SEIntersectionPoint
+                );
+                // Set the initial label location
+                this.tmpVector
+                  .copy(item.SEIntersectionPoint.locationVector)
+                  .add(
+                    new Vector3(
+                      2 * SETTINGS.point.initialLabelOffset,
+                      SETTINGS.point.initialLabelOffset,
+                      0
+                    )
+                  )
+                  .normalize();
+                newSELabel.locationVector = this.tmpVector;
 
-              nSectingLinesCommandGroup.addCommand(
-                new AddIntersectionPointCommand(
-                  item.SEIntersectionPoint,
-                  item.parent1,
-                  item.parent2,
-                  newSELabel
-                )
-              );
-              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-              newSELabel.showing = false;
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointCommand(
+                    item.SEIntersectionPoint,
+                    item.parent1,
+                    item.parent2,
+                    newSELabel
+                  )
+                );
+                item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+                newSELabel.showing = false;
+                if (item.createAntipodalPoint) {
+                  NSectAngleHandler.addCreateAntipodeCommand(
+                    item.SEIntersectionPoint,
+                    nSectingLinesCommandGroup
+                  );
+                }
+              }
             });
         } else {
           console.log("An n-secting line already exists", i);

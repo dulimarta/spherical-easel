@@ -185,6 +185,12 @@ export default class ToolGroups extends Vue {
 
   /* A list of all the buttons that are possible to display/use. Only those that the User has
   permission to use will be available. */
+  includeTool(name: ActionMode): void {
+    this.includeToolName(name);
+  }
+  excludeTool(name: ActionMode): void {
+    this.excludeToolName(name);
+  }
 
   private developerButtonList: ToolButtonType[] = [
     {
@@ -196,6 +202,27 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateIconToolUseMessage",
       displayToolUseMessage: false
     }
+    // Disable the icon factory for deployment - this for developers only
+    // {
+    //   id: 0,
+    //   actionModeValue: "iconFactory",
+    //   displayedName: "CreateIconDisplayedName",
+    //   icon: "mdi-plus",
+    //   toolTipMessage: "CreateIconToolTipMessage",
+    //   toolUseMessage: "CreateIconToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "developerOnly"
+    // }
+    // {
+    //   id: 75,
+    //   actionModeValue: "slider",
+    //   displayedName: "CreateSliderDisplayedName",
+    //   icon: "mdi-arrow-left-right-bold",
+    //   toolTipMessage: "CreateSliderToolTipMessage",
+    //   toolUseMessage: "CreateSliderToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "construction"
+    // }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ];

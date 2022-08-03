@@ -16,26 +16,8 @@ export default class NonFreeLine extends Line {
 
   constructor() {
     super();
-    /**
-     * The styling variables for the drawn non-free line. The user can modify these.
-     */
-    // Front
-    // const dashArrayFront: Array<number> = [];
-    // if (SETTINGS.line.nonFree.dashArray.front.length > 0) {
-    //   dashArrayFront.push(...SETTINGS.line.nonFree.dashArray.front);
-    // }
 
-    // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-    // this.dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-    // this.strokeColorBack = SETTINGS.line.nonFree.strokeColor.back;
-    // if (SETTINGS.line.nonFree.dashArray.back.length > 0) {
-    //   SETTINGS.line.nonFree.dashArray.back.forEach(v =>
-    //     this.dashArrayBack.push(v)
-    //   );
-    // }
-    // this.strokeWidthPercentBack = 100;
-
-    // Now apply the new style and size
+    // Apply the new style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
     this.styleOptions.set(
@@ -60,7 +42,9 @@ export default class NonFreeLine extends Line {
         if (SETTINGS.line.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_LINE_BACK_STYLE,
-            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(
+              this.nonFreeLineScalePercent
+            ),
             strokeColor: Nodule.contrastStrokeColor(
               SETTINGS.line.nonFree.strokeColor.front
             )
@@ -75,6 +59,7 @@ export default class NonFreeLine extends Line {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    //console.debug("Non free line");
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -82,7 +67,7 @@ export default class NonFreeLine extends Line {
     this.frontHalf.linewidth =
       ((Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeLineScalePercent / 100);
-
+    //console.debug("  linewidth", this.frontHalf.linewidth);
     this.backHalf.linewidth =
       ((Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
