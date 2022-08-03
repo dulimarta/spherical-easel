@@ -284,7 +284,7 @@ export default class ConstructionLoader extends Vue {
     // before running the script
     // this.setRotationMatrix(rotationMatrix);
     run(script);
-    this.rotateSphere(rotationMatrix.invert());
+    // this.rotateSphere(rotationMatrix.invert());
     this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all
