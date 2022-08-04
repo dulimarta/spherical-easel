@@ -1,0 +1,50 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amsfonts}
+\begin{document}
+Finding the intersection between two parametric curves $P(s)$ and $Q(t)$ requires solving
+the following function of two variables:
+$$f(s,t) = P(s) - Q(t)$$
+a function from $\mathbb{R}^2$ to $\mathbb{R}^3$.
+
+
+However, since in our app parametric curves are discretized into sample points connected by poly lines, evaluating the curves
+on the sample points may fail to find the actual zeroes of $f(s,t)$. As an alternative, calculating the intersection
+points is implemented as a 2-step process:
+
+\begin{enumerate}
+  \item Find all pairs of discretized $(s,t)$ such that the distance between $P(s)$ and $Q(t)$ is very close (below some threshold)
+  \item Refine the discretized pairs using bivariate Newton's iteration.
+\end{enumerate}
+
+Both steps rely on a distance function
+$$d(s,t) = \sqrt{(P(s) - Q(t)) \cdot (P(s)-Q(t))}$$
+a function from $\mathbb{R}^2$ to $\mathbb{R}$.
+
+In order to have an easier function to work with, we can use the squared distance instead
+
+$$D(s,t) = (P(s) - Q(t)) \cdot (P(s)-Q(t))$$
+
+The first partial derivatives of the above function are:
+
+\begin{align}
+  \frac{\partial D}{\partial s} = 2(P(s) - Q(t)) \cdot P'(s) \\
+  \frac{\partial D}{\partial t} = -2(P(s) - Q(t)) \cdot Q'(t)
+\end{align}
+
+and the Newton's method iteration to update $(s,t)$ is given by
+$$
+  \begin{bmatrix}
+    s_{k+1} \\t_{k+1}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    s_{k} \\t_{k}
+  \end{bmatrix}
+  -
+  \begin{bmatrix}
+    \partial D/\partial s \\
+    \partial D/\partial t
+  \end{bmatrix}
+  D(s_k,t_k)
+$$
+\end{document}

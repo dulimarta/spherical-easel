@@ -127,6 +127,7 @@ export class SEParametric
   private _fnValues: Vector3[] = [];
   private fnPrimeValues: Vector3[] = [];
   private fnPPrimeValues: Vector3[] = [];
+  private largestGap = 0; // largest gap between two successive sample points
 
   private _c1DiscontinuityParameterValues: number[] = [];
 
@@ -475,6 +476,15 @@ export class SEParametric
     this._fnValues.splice(0);
     this._tValues.push(...fnValues.map(x => x.t));
     this._fnValues.push(...fnValues.map(x => x.value));
+    // Determine the largest get  between two successive sample points
+    this.largestGap = this._fnValues.reduce(
+      (prevGap: number, currPoint: Vector3, pos: number, arr: Vector3[]) => {
+        const nextGap =
+          pos + 1 < arr.length ? currPoint.distanceTo(arr[pos + 1]) : 0;
+        return prevGap < nextGap ? nextGap : prevGap;
+      },
+      0
+    );
 
     // Create partitioned T-values based on cusp breakpoints
     const numDiscontinuity = this._c1DiscontinuityParameterValues.length;
@@ -510,7 +520,7 @@ export class SEParametric
           sampleIndex < this._tValues.length &&
           this._tValues[sampleIndex] < upperBound
         ) {
-          // Loop to create a single partiti
+          // Loop to create a single partition
           tVals.push(this._tValues[sampleIndex]);
           sampleIndex++;
         }
@@ -589,19 +599,24 @@ export class SEParametric
     const N = arr.length;
     if (N >= 2) {
       let sIndex = 0;
-      while (sIndex < N && t > this._tValues[sIndex]) sIndex++;
-      if (sIndex < N - 1) {
-        // the amount of deviation from the ideal location
-        const fraction =
-          (t - this._tValues[sIndex]) /
-          (this._tValues[sIndex + 1] - this._tValues[sIndex]);
-        /* Use linear interpolation of two neighboring values in the array */
+      while (sIndex < N && t >= this._tValues[sIndex]) sIndex++;
+      // We know t >= tVal[0] then after the while-loop sIndex >= 1
+      sIndex--;
+      // the amount of deviation from the ideal location
+      const fraction =
+        (t - this._tValues[sIndex]) /
+        (this._tValues[sIndex + 1] - this._tValues[sIndex]);
+      // console.debug(
+      //   `Interpolating between ${arr[sIndex].toFixed(4)} and ${arr[
+      //     sIndex + 1
+      //   ].toFixed(4)} with fraction ${fraction.toFixed(3)}`
+      // );
+      /* Use linear interpolation of two neighboring values in the array */
 
-        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-        this.tmpVector.set(0, 0, 0);
-        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
-        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-      } else this.tmpVector.copy(arr[N - 1]);
+      // compute weighted average (1-f)*arr[k] + f*arr[k+1]
+      this.tmpVector.set(0, 0, 0);
+      this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
+      this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
     } else {
       console.error(
         `Attempt to evaluate function value at t=${t} for SEParametric ${this.id} with ${N} fn samples`
@@ -617,7 +632,8 @@ export class SEParametric
    * @returns vector containing the location
    */
   public P(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._fnValues);
+    // Interpolated position must be on the sphere, so we have to call normalize()
+    return this.lookupFunctionValueAt(t, this._fnValues).normalize();
   }
 
   /**
@@ -709,13 +725,18 @@ export class SEParametric
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
   ): boolean {
-    const distance = this.tmpVector
-      .subVectors(unitIdealVector, this.closestVector(unitIdealVector))
-      .length();
-    const isHit =
+    const closestPoint = this.closestVector(unitIdealVector);
+    const distance = closestPoint.distanceTo(unitIdealVector);
+    console.debug(
+      `Closest hit from ${unitIdealVector.toFixed(4)} is at`,
+      closestPoint.toFixed(4),
+      "with distance",
+      distance
+    );
+    return (
       distance <
-      SETTINGS.parametric.hitIdealDistance / currentMagnificationFactor;
-    return isHit;
+      SETTINGS.parametric.hitIdealDistance / currentMagnificationFactor
+    );
   }
 
   public shallowUpdate(): void {
@@ -794,48 +815,88 @@ export class SEParametric
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
-    console.debug(
-      "Looking for closest point to parametric",
-      this.name,
-      "with",
-      this._tValues.length,
-      "sample points from",
-      idealUnitSphereVector.toFixed(3)
-    );
-    if (this._tValues.length > 0) {
-      //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the parametric (P(t)) in standard position
-      const transformedToStandard = new Vector3();
-      transformedToStandard.copy(idealUnitSphereVector);
-      transformedToStandard.applyMatrix4(this.store.inverseTotalRotationMatrix);
+    let closestIndex = 0;
+    let minDistance = Number.MAX_VALUE;
+    this.fnValues.forEach((p: Vector3, tIndex: number) => {
+      const distance = idealUnitSphereVector.distanceTo(p);
 
-      // find the tracing tMin and tMax
-      // const [tMin, tMax] = this.tMinMaxExpressionValues();
-      // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = tIndex;
+      }
+    });
+    // console.debug(
+    //   `Closed sample point `,
+    //   this.fnValues[closestIndex].toFixed(3),
+    //   `with distance ${minDistance.toFixed(4)}`
+    // );
 
-      const closestStandardVector = new Vector3();
-      closestStandardVector.copy(
-        SENodule.closestVectorParametrically(
-          this.P.bind(this), // bind the this so that this in the this.P method is this.ref
-          this.PPrime.bind(this), // bind the this so that this in the this.PPrime method is this
-          transformedToStandard,
-          this._tValues,
-          this.PPPrime.bind(this) // bind the this so that this in the this.PPPrime method is this
-        ).vector
-      );
-      // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
-      // console.debug(
-      //   "Closest point to parametric",
-      //   this.id,
-      //   "at",
-      //   closestStandardVector.toFixed(3)
-      // );
-      return closestStandardVector.applyMatrix4(
-        this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert()
-      );
-    } else return idealUnitSphereVector;
+    // So far we identify the closest SAMPLE point (M)
+    // Can we improve by looking for a TRUE point in between two successive sample points?
+    // Given C is the cursor point
+    // L is left neighbor of M and R is the right neighbor of M
+    // Use vectors MC, ML, MR to improve closest point
+    const N = this._tValues.length;
+
+    // First construct vector MC
+    const toCursor = this.tmpVector1
+      .copy(idealUnitSphereVector)
+      .sub(this.fnValues[closestIndex]);
+    let nextIndex: number | undefined = undefined;
+    let prevIndex: number | undefined = undefined;
+    if (this._isClosed) {
+      // Is it closer to the next neighbor?
+      nextIndex = (closestIndex + 1) % N;
+      prevIndex = (closestIndex - 1 + N) % N;
+    } else {
+      if (closestIndex + 1 < N) nextIndex = closestIndex + 1;
+      if (closestIndex > 0) prevIndex = closestIndex - 1;
+    }
+    let fraction: number;
+    let closestPoint: Vector3;
+    // Check between this one and the next sample point
+    if (nextIndex) {
+      // Construct vector MR
+      const toNext = this.tmpVector2
+        .copy(this.fnValues[nextIndex])
+        .sub(this.fnValues[closestIndex]);
+      // Compute the dot product (MC, MR)
+      const nextDot = toCursor.dot(toNext);
+      if (nextDot >= 0) {
+        // acute angle between MC and MR
+        // The true closest point is between M and R
+        fraction = nextDot / toNext.lengthSq();
+        const tClosest =
+          (1 - fraction) * this._tValues[closestIndex] +
+          fraction * this._tValues[nextIndex];
+        return this.P(tClosest);
+      }
+    }
+
+    // Check between this one and the previous sample point
+    if (prevIndex) {
+      // Or is it closer to the previous neighbor?
+      // Construct vector ML
+      const toPrev = this.tmpVector2
+        .copy(this.fnValues[prevIndex])
+        .sub(this.fnValues[closestIndex]);
+      // Compute the dot product (MC, ML)
+      const prevDot = toCursor.dot(toPrev);
+      if (prevDot > 0) {
+        // acute angle between MC and ML
+        // The true closest point is between M and L
+        // How much to move backward in time?
+        fraction = prevDot / toPrev.lengthSq();
+        const tClosest =
+          (1 - fraction) * this._tValues[closestIndex] +
+          fraction * this._tValues[prevIndex];
+        return this.P(tClosest);
+      }
+    }
+    return this.fnValues[closestIndex];
   }
   /**
-   * Return the vector near the SEParameteric (within SETTINGS.parametric.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * Return the vector near the SEParametric (within SETTINGS.parametric.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
@@ -982,7 +1043,7 @@ export class SEParametric
       this.closestVector(sePointVector).angleTo(sePointVector) <
       0.01 / this.store.zoomMagnificationFactor
     ) {
-      const coorespondingTVal = this.partitionedTValues
+      const correspondingTVal = this.partitionedTValues
         .map(tVals =>
           SENodule.closestVectorParametrically(
             this.P.bind(this), // bind the this so that this in the this.E method is this
@@ -1004,9 +1065,9 @@ export class SEParametric
           }
         ).tVal;
       const tangentVector = new Vector3();
-      tangentVector.copy(this.PPrime(coorespondingTVal));
+      tangentVector.copy(this.PPrime(correspondingTVal));
       tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
-      tangentVector.cross(this.P(coorespondingTVal));
+      tangentVector.cross(this.P(correspondingTVal));
       // avoidTValues.push(coorespondingTVal);
       normalList.push(tangentVector.normalize());
     }
