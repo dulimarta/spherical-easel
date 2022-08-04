@@ -425,7 +425,6 @@ export class SEEllipse
           tValues, // FIXME
           // this.ref.tMin,
           // this.ref.tMax,
-          [], // Avoid these t values
           this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
         );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
@@ -535,7 +534,6 @@ export class SEEllipse
       tValues, // FIXME
       // this.ref.tMin,
       // this.ref.tMax,
-      [], // Avoid these t values
       this.ref.Epp.bind(this.ref)
     );
 

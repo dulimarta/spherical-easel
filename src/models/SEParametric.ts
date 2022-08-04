@@ -602,21 +602,25 @@ export class SEParametric
       while (sIndex < N && t >= this._tValues[sIndex]) sIndex++;
       // We know t >= tVal[0] then after the while-loop sIndex >= 1
       sIndex--;
-      // the amount of deviation from the ideal location
-      const fraction =
-        (t - this._tValues[sIndex]) /
-        (this._tValues[sIndex + 1] - this._tValues[sIndex]);
-      // console.debug(
-      //   `Interpolating between ${arr[sIndex].toFixed(4)} and ${arr[
-      //     sIndex + 1
-      //   ].toFixed(4)} with fraction ${fraction.toFixed(3)}`
-      // );
-      /* Use linear interpolation of two neighboring values in the array */
+      if (sIndex + 1 < N) {
+        // the amount of deviation from the ideal location
+        const fraction =
+          (t - this._tValues[sIndex]) /
+          (this._tValues[sIndex + 1] - this._tValues[sIndex]);
+        // console.debug(
+        //   `Interpolating between ${arr[sIndex].toFixed(4)} and ${arr[
+        //     sIndex + 1
+        //   ].toFixed(4)} with fraction ${fraction.toFixed(3)}`
+        // );
+        /* Use linear interpolation of two neighboring values in the array */
 
-      // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-      this.tmpVector.set(0, 0, 0);
-      this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
-      this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
+        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
+        this.tmpVector.set(0, 0, 0);
+        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
+        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
+      } else {
+        this.tmpVector.copy(arr[N - 1]);
+      }
     } else {
       console.error(
         `Attempt to evaluate function value at t=${t} for SEParametric ${this.id} with ${N} fn samples`
@@ -727,12 +731,12 @@ export class SEParametric
   ): boolean {
     const closestPoint = this.closestVector(unitIdealVector);
     const distance = closestPoint.distanceTo(unitIdealVector);
-    console.debug(
-      `Closest hit from ${unitIdealVector.toFixed(4)} is at`,
-      closestPoint.toFixed(4),
-      "with distance",
-      distance
-    );
+    // console.debug(
+    //   `Closest hit from ${unitIdealVector.toFixed(4)} is at`,
+    //   closestPoint.toFixed(4),
+    //   "with distance",
+    //   distance
+    // );
     return (
       distance <
       SETTINGS.parametric.hitIdealDistance / currentMagnificationFactor
@@ -863,8 +867,8 @@ export class SEParametric
       // Compute the dot product (MC, MR)
       const nextDot = toCursor.dot(toNext);
       if (nextDot >= 0) {
-        // acute angle between MC and MR
-        // The true closest point is between M and R
+        // acute angle between MC and MR implies the true closest point is between M and R.
+        // Project MC to MR and calculate the percentage of its length w.r.t MR
         fraction = nextDot / toNext.lengthSq();
         const tClosest =
           (1 - fraction) * this._tValues[closestIndex] +
@@ -883,9 +887,8 @@ export class SEParametric
       // Compute the dot product (MC, ML)
       const prevDot = toCursor.dot(toPrev);
       if (prevDot > 0) {
-        // acute angle between MC and ML
-        // The true closest point is between M and L
-        // How much to move backward in time?
+        // acute angle between MC and ML implies the true closest point is between M and L.
+        // Project MC to ML and calculate the percentage of its length w.r.t to ML
         fraction = prevDot / toPrev.lengthSq();
         const tClosest =
           (1 - fraction) * this._tValues[closestIndex] +
@@ -957,18 +960,18 @@ export class SEParametric
    * Return the normal vector(s) to the plane containing a line that is perpendicular to this parametric through the
    * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
    * use the oldNormal to help compute a new normal (which is returned)
-   * @param sePoint A point on the line normal to this parametric
+   * @param sePointVector A point on the line normal to this parametric
    */
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     // useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
   ): Array<NormalVectorAndTValue> {
-    const transformedToStandard = new Vector3();
-    transformedToStandard.copy(sePointVector);
-    transformedToStandard
-      .applyMatrix4(this.store.inverseTotalRotationMatrix)
-      .normalize();
+    // const transformedToStandard = new Vector3();
+    // transformedToStandard.copy(sePointVector);
+    // transformedToStandard
+    //   .applyMatrix4(this.store.inverseTotalRotationMatrix)
+    //   .normalize();
 
     // find the tracing tMin and tMax
     // const [tMin, tMax] = useFullTInterval
@@ -984,9 +987,9 @@ export class SEParametric
       SENodule.getNormalsToPerpendicularLinesThruParametrically(
         // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
-        transformedToStandard,
+        sePointVector,
         tVals,
-        [], // this._c1DiscontinuityParameterValues,
+        // [], // this._c1DiscontinuityParameterValues,
         this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
@@ -1081,7 +1084,6 @@ export class SEParametric
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         transformedToStandard,
         tVals,
-        [],
         this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );

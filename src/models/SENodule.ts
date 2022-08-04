@@ -384,6 +384,7 @@ export abstract class SENodule implements Visitable {
     // Set the showing variable
     this._showing = b;
 
+    console.debug("Setting plottable visibility of", this.ref);
     // Set the display for the corresponding plottable object
     this.ref?.setVisible(b);
   }
@@ -462,7 +463,7 @@ export abstract class SENodule implements Visitable {
       dpp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(dp, tValues, [], dpp);
+    const zeros = this.findZerosParametrically(dp, tValues, dpp);
 
     if (zeros.length > 0) {
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
@@ -523,24 +524,33 @@ export abstract class SENodule implements Visitable {
     f: (t: number) => number,
     t1: number,
     t2: number
-  ): number {
-    if (Math.abs(f(t1)) < SETTINGS.tolerance / 1000) {
-      return t1;
-    }
-    if (Math.abs(f(t2)) < SETTINGS.tolerance / 1000) {
-      return t2;
-    }
-    const mid = (t1 + t2) / 2;
-    if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
-      return mid;
-    } else {
-      if (f(t1) * f(mid) < 0) {
-        return SENodule.bisection(f, t1, mid);
+  ): number | undefined {
+    let f1 = f(t1);
+    let f2 = f(t2);
+    let mid;
+    // console.debug("Start bisection");
+    while (Math.abs(t2 - t1) >= SETTINGS.parameterization.bisectionMinSize) {
+      mid = (t1 + t2) / 2;
+      const fmid = f(mid);
+      if (Math.abs(fmid) < SETTINGS.tolerance / 1000) {
+        return mid;
+      }
+      // console.debug(
+      //   `Bisection Zero crossing updated to f(${t1.toFixed(6)})=${f1.toFixed(
+      //     6
+      //   )}` + ` and f(${t2.toFixed(6)})=${f2.toFixed(6)}`
+      // );
+      if (f1 * fmid < 0) {
+        t2 = mid;
+        f2 = fmid;
       } else {
-        return SENodule.bisection(f, mid, t2);
+        t1 = mid;
+        f1 = fmid;
       }
     }
+    return (t1 + t2) / 2;
   }
+
   /**
    * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
    * pass though unitVec
@@ -557,7 +567,6 @@ export abstract class SENodule implements Visitable {
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): NormalVectorAndTValue[] {
     // First form the objective function, this is the function that we want to find the zeros.
@@ -580,7 +589,7 @@ export abstract class SENodule implements Visitable {
     const zeros = this.findZerosParametrically(
       d,
       tValues,
-      avoidTheseTValues,
+      // avoidTheseTValues,
       dp
     );
 
@@ -645,7 +654,7 @@ export abstract class SENodule implements Visitable {
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
+    // avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): Vector3[] {
     // First form the objective function, this is the function that we want to find the zeros.
@@ -672,7 +681,7 @@ export abstract class SENodule implements Visitable {
     const zeros = this.findZerosParametrically(
       d,
       tValues,
-      avoidTheseTValues,
+      // avoidTheseTValues,
       dp
     );
 
@@ -686,67 +695,37 @@ export abstract class SENodule implements Visitable {
     return returnVectors;
   }
 
+  // Assumption: along the provided T-values, the curve is C1-continuous.
+  // TODO: do we need to check for open or close curves?
   public static findZerosParametrically(
     f: (t: number) => number,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
-    const signChanges = [];
-    const zeros: number[] = [];
+    const signChangeIndices = [];
+    const tZeroes: number[] = [];
 
-    // const tMin = tValues[0];
-    // const tMax = tValues[tLen - 1];
+    // Locate the zeros and zero-crossings
+    if (Math.abs(f(tValues[0])) < SETTINGS.tolerance / 1000)
+      tZeroes.push(tValues[0]);
 
-    // if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
-    //   // make sure that tMin is not on the avoid list
-    //   if (
-    //     avoidTheseTValues.every(
-    //       num => Math.abs(num - tMin) > SETTINGS.tolerance
-    //     )
-    //   ) {
-    //     zeros.push(tMin);
-    //   }
-    //   // else {
-    //   //   console.log("Excluded value", tMin);
-    //   // }
-    //   // console.log("Actual zero! tMin", tMin, f(tMin));
-    // }
-    const filteredTValues = tValues.filter(t =>
-      avoidTheseTValues.every(num => Math.abs(num - t) > SETTINGS.tolerance)
-    );
-    const tLen = filteredTValues.length;
-    let lastTVal = filteredTValues[tLen - 1];
-
-    for (let i = 0; i < filteredTValues.length; i++) {
-      const tVal = filteredTValues[i];
-      // console.debug(`Checking for zero at T=${tVal}`);
-      if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
-        // make sure that tVal is not on the avoid list
-        zeros.push(tVal);
-        // else {
-        //   console.log("Excluded value", tVal);
-        // }
-        // console.log("Actual zero!", tVal, f(tVal));
-      } else if (f(tVal) * f(lastTVal) < 0) {
-        // make sure that tMin is not on the avoid list
-        // if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
-        // console.log("sign Change", tVal, f(tVal));
-        signChanges.push([lastTVal, tVal]);
-        // }
-        // else {
-        //   console.log("Excluded Interval", lastTVal, tVal);
-        // }
+    // If a sample point itself is not a zero of the function
+    // all the zero-crossings must occur between two successive sample points
+    for (let i = 1; i < tValues.length; i++) {
+      if (Math.abs(f(tValues[i])) < SETTINGS.tolerance / 1000) {
+        tZeroes.push(tValues[i]);
+        // console.log("Actual zero!", tValues[i], f(tValues[i]));
+      } else if (f(tValues[i - 1]) * f(tValues[i]) < 0) {
+        signChangeIndices.push(i - 1);
       }
-
-      lastTVal = tVal;
     }
-    if (signChanges.length === 0 && zeros.length === 0) {
+    // If nothing found so far, returns an empty array
+    if (signChangeIndices.length === 0 && tZeroes.length === 0) {
       return [];
     }
 
-    signChanges.forEach(interval => {
+    signChangeIndices.forEach(index => {
       try {
         if (
           SETTINGS.parameterization.useNewtonsMethod &&
@@ -756,33 +735,38 @@ export abstract class SENodule implements Visitable {
           const zeroTVal: number | boolean = newton(
             f,
             fPrime,
-            (interval[0] + interval[1]) / 2
+            (tValues[index] + tValues[index + 1]) / 2
             // { verbose: true }
           );
 
           if (
             zeroTVal !== false &&
-            interval[0] - SETTINGS.tolerance <= zeroTVal &&
-            zeroTVal <= interval[1] + SETTINGS.tolerance
+            tValues[index] - SETTINGS.tolerance <= zeroTVal &&
+            zeroTVal <= tValues[index + 1] + SETTINGS.tolerance
           ) {
-            zeros.push(zeroTVal as number);
+            tZeroes.push(zeroTVal as number);
           } else {
             console.log(
               "Newton's method failed to converge in interval",
-              interval[0],
-              interval[1],
+              tValues[index],
+              tValues[index + 1],
               zeroTVal
             );
           }
         } else {
           // Bisection Method
-          const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
-          zeros.push(zeroTVal as number);
+          const zeroTVal = SENodule.bisection(
+            f,
+            tValues[index],
+            tValues[index + 1]
+          );
+          if (typeof zeroTVal === "number") tZeroes.push(zeroTVal);
         }
       } catch (err) {
         console.debug("Newton's method error", err);
       }
     });
-    return zeros;
+    // console.log("Possible zeroes", tZeroes.length);
+    return tZeroes;
   }
 }

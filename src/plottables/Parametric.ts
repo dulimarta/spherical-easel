@@ -525,8 +525,13 @@ export default class Parametric extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontParts.forEach(part => (part.visible = true));
-    this.glowingFrontParts.forEach(part => (part.visible = false));
+    console.debug(`Parametric::frontNormalDisplay`);
+    this.frontParts.forEach(part => {
+      part.visible = true;
+    });
+    this.glowingFrontParts.forEach(part => {
+      part.visible = false;
+    });
   }
   backNormalDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
@@ -538,12 +543,21 @@ export default class Parametric extends Nodule {
   }
 
   public setVisible(flag: boolean): void {
+    console.debug(`Parametric::setVisible ${flag}`);
     if (!flag) {
-      this.frontParts.forEach(part => (part.visible = false));
-      this.backParts.forEach(part => (part.visible = false));
+      this.frontParts.forEach(part => {
+        part.visible = false;
+      });
+      this.backParts.forEach(part => {
+        part.visible = false;
+      });
 
-      this.glowingBackParts.forEach(part => (part.visible = false));
-      this.glowingFrontParts.forEach(part => (part.visible = false));
+      this.glowingBackParts.forEach(part => {
+        part.visible = false;
+      });
+      this.glowingFrontParts.forEach(part => {
+        part.visible = false;
+      });
     } else {
       this.normalDisplay();
     }

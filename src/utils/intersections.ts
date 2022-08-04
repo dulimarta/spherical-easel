@@ -275,7 +275,6 @@ export function intersectLineWithEllipse(
         tValues,
         // ellipse.ref.tMin,
         // ellipse.ref.tMax,
-        [],
         dpp
       );
 
@@ -323,7 +322,6 @@ export function intersectLineWithEllipse(
     // FIXME
     // ellipse.ref.tMin,
     // ellipse.ref.tMax,
-    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -342,7 +340,7 @@ export function intersectLineWithEllipse(
   const uniqueZeros: number[] = [];
   zeros.forEach(z => {
     if (
-      uniqueZeros.every((uniZ, ind) => {
+      uniqueZeros.every(uniZ => {
         tempVec.copy(ellipse.ref.E(uniZ));
         tempVec1.copy(ellipse.ref.E(z));
         return (
@@ -387,7 +385,7 @@ export function intersectLineWithParametric(
   // layer: Group
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
-  const avoidTValues: number[] = [];
+  // const avoidTValues: number[] = [];
   // find the tracing tMin and tMax
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
@@ -429,7 +427,7 @@ export function intersectLineWithParametric(
       };
 
       const zeros = parametric.tRanges.flatMap(tValues =>
-        SENodule.findZerosParametrically(dp, tValues, [], dpp)
+        SENodule.findZerosParametrically(dp, tValues, dpp)
       );
 
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
@@ -451,7 +449,7 @@ export function intersectLineWithParametric(
       minTVal.forEach(min => {
         const returnVec = new Vector3();
         returnVec.copy(parametric.P(min).applyMatrix4(tmpMatrix));
-        avoidTValues.push(min);
+        // avoidTValues.push(min);
         returnItems.push({
           vector: returnVec,
           exists: true
@@ -476,7 +474,7 @@ export function intersectLineWithParametric(
   };
 
   const zeros = parametric.tRanges.flatMap(tValues =>
-    SENodule.findZerosParametrically(d, tValues, avoidTValues, dp)
+    SENodule.findZerosParametrically(d, tValues, /*avoidTValues,*/ dp)
   );
 
   // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
@@ -608,13 +606,7 @@ export function intersectSegmentWithEllipse(
   for (let i = 0; i <= 100; i++) {
     tValues.push((i * 2 * Math.PI) / 100);
   }
-  const zeros = SENodule.findZerosParametrically(
-    d,
-    // FIXME
-    tValues,
-    [],
-    dp
-  );
+  const zeros = SENodule.findZerosParametrically(d, tValues, dp);
 
   const returnItems: IntersectionReturnType[] = [];
   const intersection1: IntersectionReturnType = {
@@ -630,7 +622,7 @@ export function intersectSegmentWithEllipse(
 
   // remove duplicate zeros and those that correspond to the same point on the ellipse
   const uniqueZeros: number[] = [];
-  zeros.forEach((z, ind) => {
+  zeros.forEach(z => {
     if (
       uniqueZeros.every(uniZ => {
         tempVec.copy(ellipse.ref.E(uniZ));
@@ -716,14 +708,13 @@ export function intersectSegmentWithParametric(
       SENodule.findZerosParametrically(
         d,
         tValues,
-        [], // FIXME
         // parametric.c1DiscontinuityParameterValues,
         dp
       )
     );
 
   console.log("Number of Para/seg Intersections:", zeros.length);
-  const returnItems: IntersectionReturnType[] = zeros.map((z, ind) => {
+  const returnItems: IntersectionReturnType[] = zeros.map(z => {
     const intersectionPoint = new Vector3();
     intersectionPoint.copy(parametric.P(z));
 
@@ -942,7 +933,6 @@ export function intersectCircleWithEllipse(
     tValues,
     // ellipse.ref.tMin,
     // ellipse.ref.tMax,
-    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -1027,7 +1017,6 @@ export function intersectCircleWithParametric(
     SENodule.findZerosParametrically(
       d,
       tValues,
-      [], // FIXME
       // parametric.c1DiscontinuityParameterValues,
       dp
     )
@@ -1206,10 +1195,9 @@ export function intersectEllipseWithEllipse(
   }
   const zeros = SENodule.findZerosParametrically(
     d,
-    tValues, // FIXME
+    tValues,
     // ellipse2.ref.tMin,
     // ellipse2.ref.tMax,
-    [],
     dp
   );
 
@@ -1317,7 +1305,6 @@ export function intersectEllipseWithParametric(
     SENodule.findZerosParametrically(
       d,
       tValues,
-      [], // FIXME
       // parametric.c1DiscontinuityParameterValues,
       dp
     )
@@ -1431,9 +1418,9 @@ export function intersectParametricWithParametric(
   while (distanceHeap.size() > 0) {
     const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
     const sVal = sCurve.tRanges[sPart][sIndex];
-    const sPoint = sCurve.P(sVal);
+    // const sPoint = sCurve.P(sVal);
     const tVal = tCurve.tRanges[tPart][tIndex];
-    const tPoint = tCurve.P(tVal);
+    // const tPoint = tCurve.P(tVal);
     // console.debug(
     //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
     //     4
