@@ -525,7 +525,6 @@ export default class Parametric extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    console.debug(`Parametric::frontNormalDisplay`);
     this.frontParts.forEach(part => {
       part.visible = true;
     });
@@ -543,7 +542,6 @@ export default class Parametric extends Nodule {
   }
 
   public setVisible(flag: boolean): void {
-    console.debug(`Parametric::setVisible ${flag}`);
     if (!flag) {
       this.frontParts.forEach(part => {
         part.visible = false;
@@ -591,7 +589,7 @@ export default class Parametric extends Nodule {
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
     // TODO: Uncomment the following line to show sample point makers
-    this.markers.addTo(this.foregroundLayer);
+    // this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])
@@ -606,7 +604,7 @@ export default class Parametric extends Nodule {
   public removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
     // TODO: Uncomment the following line when sample point markers are enabled
-    this.markers.remove();
+    // this.markers.remove();
 
     this.glowingFrontParts.forEach(part => part.remove());
     this.backParts.forEach(part => part.remove());

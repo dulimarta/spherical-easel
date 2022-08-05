@@ -788,6 +788,7 @@ export class SEParametric
       this.ref?.setVisible(false);
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -1153,21 +1154,5 @@ export class SEParametric
 
   public isLabelable(): boolean {
     return true;
-  }
-
-  // Factor out specialized glowing setter from SENodule
-  // to SEParametric to remove dependency from SENodule to Parametric
-  set glowing(b: boolean) {
-    // let ptr: Parametric | null = this.ref;
-    if (b) this.ref?.glowingDisplay();
-    // while (ptr !== null) {
-    //   ptr.glowingDisplay();
-    //   ptr = ptr.next;
-    // }
-    else this.ref?.normalDisplay();
-    // while (ptr !== null) {
-    //   ptr.normalDisplay();
-    //   ptr = ptr.next;
-    // }
   }
 }

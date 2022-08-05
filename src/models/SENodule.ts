@@ -384,7 +384,6 @@ export abstract class SENodule implements Visitable {
     // Set the showing variable
     this._showing = b;
 
-    console.debug("Setting plottable visibility of", this.ref);
     // Set the display for the corresponding plottable object
     this.ref?.setVisible(b);
   }
@@ -407,6 +406,7 @@ export abstract class SENodule implements Visitable {
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
+    console.debug("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
     if (!this._showing) return;
     this._selected = b;
