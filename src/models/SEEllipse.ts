@@ -61,6 +61,12 @@ export class SEEllipse
   private tmpMatrix = new Matrix4();
 
   /**
+   * The vector E'(t) and E''(t), tMin and tMax for tMin <= t <= tMax E(t)= first and second derivatives of the ellipse
+   */
+  private parameterizationPrime = new Vector3();
+  private parameterizationDoublePrime = new Vector3();
+
+  /**
    * Create a model SEEllipse using:
    * @param ellipse The plottable TwoJS Object associated to this object
    * @param focus1Point The model SEPoint object that is one of the foci of the ellipse
@@ -154,6 +160,71 @@ export class SEEllipse
 
   public get noduleItemText(): string {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SEEllipse";
+  }
+
+  /**
+   * The parameterization of the derivative of the ellipse on the sphere in standard position.
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Ep(t: number): Vector3 {
+    return this.parameterizationPrime.set(
+      -Math.sin(this._a) * Math.sin(t),
+      Math.sin(this._b) * Math.cos(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        (2 *
+          Math.sqrt(
+            Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)
+          ))) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        Math.sin(2 * t)
+    );
+  }
+
+  /**
+   * The parameterization of the second derivative of the ellipse on the sphere.
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Epp(t: number): Vector3 {
+    return this.parameterizationDoublePrime.set(
+      -Math.sin(this._a) * Math.cos(t),
+      -Math.sin(this._b) * Math.sin(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        Math.sqrt(
+          (Math.cos(this._a) * Math.cos(this._a) +
+            Math.sin(this._a - this._b) *
+              Math.sin(this._a + this._b) *
+              Math.sin(t) *
+              Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t))
+        )) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        (Math.cos(this._a) * Math.cos(this._a) * Math.cos(2 * t) -
+          Math.sin(this._a - this._b) *
+            Math.sin(this._a + this._b) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t))
+    );
   }
 
   public isHitAt(
@@ -300,12 +371,12 @@ export class SEEllipse
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.Ep method is this.ref
+        this.Ep.bind(this), // bind the this.ref so that this in the this.ref.Ep method is this.ref
         transformedToStandard,
         tValues, //[0 - SETTINGS.tolerance, 2 * Math.PI + SETTINGS.tolerance], // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
@@ -420,12 +491,12 @@ export class SEEllipse
       const normalList =
         SENodule.getNormalsToPerpendicularLinesThruParametrically(
           // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-          this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
           tValues, // FIXME
           // this.ref.tMin,
           // this.ref.tMax,
-          this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
         );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
       // const minAngle = Math.min(
@@ -490,16 +561,16 @@ export class SEEllipse
       }
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
         tValues, // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).tVal;
       // console.log("coord t val", coorespondingTVal);
       const tangentVector = new Vector3();
-      tangentVector.copy(this.ref.Ep(coorespondingTVal));
+      tangentVector.copy(this.Ep(coorespondingTVal));
       tangentVector.applyMatrix4(this.ref.ellipseFrame);
       tangentVector.cross(sePointVector);
       // console.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
@@ -529,12 +600,12 @@ export class SEEllipse
     }
     const normalList = SENodule.getNormalsToTangentLinesThruParametrically(
       this.ref.E.bind(this.ref),
-      this.ref.Ep.bind(this.ref),
+      this.Ep.bind(this),
       transformedToStandard,
       tValues, // FIXME
       // this.ref.tMin,
       // this.ref.tMax,
-      this.ref.Epp.bind(this.ref)
+      this.Epp.bind(this)
     );
 
     return normalList.map(vec =>

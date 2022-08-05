@@ -55,10 +55,9 @@ export default class Ellipse extends Nodule {
 
   /**
    * The vector E(t), tMin and tMax for tMin <= t <= tMax E(t)= parameterization traces out the ellipse
-   * And the vector E'(t) = parameterizationPrime of the ellipse.
    */
   private parameterization = new Vector3();
-  private parameterizationPrime = new Vector3();
+
   private _tMin: number;
   private _tMax: number;
   private _closed: boolean; // true if E(tMin)=E(tMax)
@@ -68,7 +67,6 @@ export default class Ellipse extends Nodule {
    * A matrix that transforms the ellipse from standard position to the ellipse being plotted just before scaled to the radius of the plotting sphere (i.e. on the unit sphere)
    */
   private _ellipseFrame: Matrix4 = new Matrix4();
-
   /**
    * The parameterization of the ellipse on the sphere in standard position.
    * @param t the parameter between 0 and 2 PI
@@ -88,70 +86,6 @@ export default class Ellipse extends Nodule {
         )
     );
   }
-  /**
-   * The parameterization of the derivative of the ellipse on the sphere in standard position.
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter between 0 and 2 PI
-   * @returns
-   */
-  public Ep(t: number): Vector3 {
-    return this.parameterizationPrime.set(
-      -Math.sin(this._a) * Math.sin(t),
-      Math.sin(this._b) * Math.cos(t),
-      ((this._a > Math.PI / 2 ? -1 : 1) /
-        (2 *
-          Math.sqrt(
-            Math.cos(this._a) * Math.cos(this._a) +
-              Math.sin(this._a - this._b) *
-                Math.sin(this._a + this._b) *
-                Math.sin(t) *
-                Math.sin(t)
-          ))) *
-        Math.sin(this._a - this._b) *
-        Math.sin(this._a + this._b) *
-        Math.sin(2 * t)
-    );
-  }
-  /**
-   * The parameterization of the second derivative of the ellipse on the sphere.
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter between 0 and 2 PI
-   * @returns
-   */
-  public Epp(t: number): Vector3 {
-    return this.parameterizationPrime.set(
-      -Math.sin(this._a) * Math.cos(t),
-      -Math.sin(this._b) * Math.sin(t),
-      ((this._a > Math.PI / 2 ? -1 : 1) /
-        Math.sqrt(
-          (Math.cos(this._a) * Math.cos(this._a) +
-            Math.sin(this._a - this._b) *
-              Math.sin(this._a + this._b) *
-              Math.sin(t) *
-              Math.sin(t)) *
-            (Math.cos(this._a) * Math.cos(this._a) +
-              Math.sin(this._a - this._b) *
-                Math.sin(this._a + this._b) *
-                Math.sin(t) *
-                Math.sin(t)) *
-            (Math.cos(this._a) * Math.cos(this._a) +
-              Math.sin(this._a - this._b) *
-                Math.sin(this._a + this._b) *
-                Math.sin(t) *
-                Math.sin(t))
-        )) *
-        Math.sin(this._a - this._b) *
-        Math.sin(this._a + this._b) *
-        (Math.cos(this._a) * Math.cos(this._a) * Math.cos(2 * t) -
-          Math.sin(this._a - this._b) *
-            Math.sin(this._a + this._b) *
-            Math.sin(t) *
-            Math.sin(t) *
-            Math.sin(t) *
-            Math.sin(t))
-    );
-  }
-
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */

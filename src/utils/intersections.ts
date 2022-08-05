@@ -255,13 +255,13 @@ export function intersectLineWithEllipse(
       // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
 
       const dp: (t: number) => number = function (t: number): number {
-        return ellipse.ref.Ep(t).dot(tmpVector);
+        return ellipse.Ep(t).dot(tmpVector);
       };
 
       // use (P''(t) /dot unitVec) as the second derivative
 
       const dpp = function (t: number): number {
-        return ellipse.ref.Epp(t).dot(tmpVector);
+        return ellipse.Epp(t).dot(tmpVector);
       };
 
       // FIXME
@@ -309,7 +309,7 @@ export function intersectLineWithEllipse(
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
   const dp = function (t: number): number {
-    return ellipse.ref.Ep(t).dot(transformedToStandard);
+    return ellipse.Ep(t).dot(transformedToStandard);
   };
   //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
   const tValues: number[] = [];
@@ -599,7 +599,7 @@ export function intersectSegmentWithEllipse(
   };
   // use (P''(t) /dot unitVec) as the second derivative if necessary
   const dp = function (t: number): number {
-    return ellipse.ref.Ep(t).dot(transformedToStandard);
+    return ellipse.Ep(t).dot(transformedToStandard);
   };
   //form collection of t values that trace the ellipse and create a fairly small grid to search for the zeros
   const tValues: number[] = [];
@@ -655,12 +655,12 @@ export function intersectSegmentWithEllipse(
   // zeros.forEach((z, ind) => {
   //   // console.debug("return items", returnItems[ind].vector.toFixed(2));
   //   // console.debug(
-  //   //   "ellipse.ref.E(z)",
+  //   //   "ellipse.E(z)",
   //   //   z,
-  //   //   ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame).toFixed(2)
+  //   //   ellipse.E(z).applyMatrix4(ellipse.ref.ellipseFrame).toFixed(2)
   //   // );
   //   returnItems[ind].vector.copy(
-  //     ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+  //     ellipse.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
   //   );
   // });
   // console.debug(returnItems[0].vector.toFixed(2));
@@ -908,7 +908,7 @@ export function intersectCircleWithEllipse(
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
   const dp = function (t: number): number {
     return (
-      (-1 * ellipse.ref.Ep(t).dot(transformedToStandard)) /
+      (-1 * ellipse.Ep(t).dot(transformedToStandard)) /
       Math.sqrt(
         1 -
           Math.max(
@@ -1161,7 +1161,7 @@ export function intersectEllipseWithEllipse(
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
   const dp = function (t: number): number {
     return (
-      (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus1)) /
+      (-1 * ellipse2.Ep(t).dot(transformedToStandardFocus1)) /
         Math.sqrt(
           1 -
             Math.max(
@@ -1173,7 +1173,7 @@ export function intersectEllipseWithEllipse(
                 Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus1), 1)
               )
         ) +
-      (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus2)) /
+      (-1 * ellipse2.Ep(t).dot(transformedToStandardFocus2)) /
         Math.sqrt(
           1 -
             Math.max(
@@ -1354,18 +1354,6 @@ export function intersectParametricWithParametric(
     sCurve = parametric1;
     tCurve = parametric2;
   }
-  // parametric1.tRanges.forEach((tVals: number[], part: number) => {
-  //   console.debug(
-  //     `S-curve partition-${part} has ${tVals.length} sample points`
-  //   );
-  // });
-  // parametric2.tRanges.forEach((tVals: number[], part: number) => {
-  //   console.debug(
-  //     `T-curve partition-${part} has ${tVals.length} sample points`
-  //   );
-  // });
-  // const returnItems: IntersectionReturnType[] = [];
-  // let closestDistance = Number.MAX_VALUE;
   /*
   foreach (s in parametric1) {
     Find T-values of Q(t) such that of Q(t) - P(s) = 0, t is variable, s is constant
@@ -1449,13 +1437,15 @@ export function intersectParametricWithParametric(
     } while (delta_st > 1e-5 && iter < 50);
     if (delta_st <= 1e-5 && dist < distance) {
       console.debug(
-        `Improved intersection at S-value ${st.x}  T-value ${st.y} with distance ${dist}`
+        `Nearby (${sVal}, ${tVal}) converges to intersection at (S,T) = (${st.x}, ${st.y})`
       );
       sIntersects.push(st.x);
       // returnItems.push({
       //   /*s: st.x, t: st.y, */ exists: true,
       //   vector: sCurve.P(st.x).clone()
       // });
+    } else {
+      console.debug(`Nearby (${sVal}, ${tVal}) does not converge`);
     }
   }
   sIntersects.sort((s1, s2) => s1 - s2);
