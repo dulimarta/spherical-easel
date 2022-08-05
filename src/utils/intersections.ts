@@ -1364,7 +1364,7 @@ export function intersectParametricWithParametric(
   //     `T-curve partition-${part} has ${tVals.length} sample points`
   //   );
   // });
-  const returnItems: IntersectionReturnType[] = [];
+  // const returnItems: IntersectionReturnType[] = [];
   // let closestDistance = Number.MAX_VALUE;
   /*
   foreach (s in parametric1) {
@@ -1407,7 +1407,12 @@ export function intersectParametricWithParametric(
       });
     });
   });
-  console.debug("Par/Par possible intersection", distanceHeap.size());
+  console.debug(
+    `${parametric1.name}/${parametric2.name} possible intersection`,
+    distanceHeap.size()
+  );
+
+  // Compute the distance of two points given their T-values on respective curves
   const distanceOf = (s: number, t: number): number => {
     return sCurve.P(s).distanceToSquared(tCurve.P(t));
   };
@@ -1415,12 +1420,11 @@ export function intersectParametricWithParametric(
   const diffPQ = new Vector3();
   const st = new Vector2();
   const st_next = new Vector2();
+  const sIntersects: Array<number> = [];
   while (distanceHeap.size() > 0) {
     const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
     const sVal = sCurve.tRanges[sPart][sIndex];
-    // const sPoint = sCurve.P(sVal);
     const tVal = tCurve.tRanges[tPart][tIndex];
-    // const tPoint = tCurve.P(tVal);
     // console.debug(
     //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
     //     4
@@ -1431,6 +1435,7 @@ export function intersectParametricWithParametric(
     let dist: number = Number.MAX_VALUE;
     let delta_st: number;
     let iter = 0;
+    // Newton's iteration See latex-notes/parametric-intersection.tex for more details
     do {
       dist = distanceOf(st.x, st.y);
       diffPQ.subVectors(sCurve.P(st.x), tCurve.P(st.y));
@@ -1446,13 +1451,23 @@ export function intersectParametricWithParametric(
       console.debug(
         `Improved intersection at S-value ${st.x}  T-value ${st.y} with distance ${dist}`
       );
-      returnItems.push({
-        /*s: st.x, t: st.y, */ exists: true,
-        vector: sCurve.P(st.x).clone()
-      });
+      sIntersects.push(st.x);
+      // returnItems.push({
+      //   /*s: st.x, t: st.y, */ exists: true,
+      //   vector: sCurve.P(st.x).clone()
+      // });
     }
   }
-  return returnItems;
+  sIntersects.sort((s1, s2) => s1 - s2);
+  let lastS = Number.POSITIVE_INFINITY;
+  return sIntersects
+    .filter(s => {
+      if (Math.abs(s - lastS) > 1e-5) {
+        lastS = s;
+        return true;
+      } else return false;
+    })
+    .map(s => ({ exists: true, vector: sCurve.P(s).clone() }));
 }
 /**
  * Create the intersection of two one-dimensional objects
