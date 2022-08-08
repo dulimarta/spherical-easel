@@ -978,34 +978,26 @@ export function intersectCircleWithParametric(
   // layer: Group
 ): IntersectionReturnType[] {
   // Transform the line into the standard coordinates of the parametric.
-  const transformedToStandard = new Vector3();
-  transformedToStandard.copy(circle.centerSEPoint.locationVector);
-  transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
+  const circleCenter = circle.centerSEPoint.locationVector;
+  // transformedToStandard.applyMatrix4(inverseTotalRotationMatrix);
 
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the parametric minus the radius of the circle
-  const d: (t: number) => number = function (t: number): number {
+  const d = (t: number): number => {
     return (
-      Math.acos(
-        Math.max(-1, Math.min(parametric.P(t).dot(transformedToStandard), 1))
-      ) - radius
+      Math.acos(Math.max(-1, Math.min(parametric.P(t).dot(circleCenter), 1))) -
+      radius
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
-  const dp = function (t: number): number {
+  const dp = (t: number): number => {
     return (
-      (-1 * parametric.PPrime(t).dot(transformedToStandard)) /
+      (-1 * parametric.PPrime(t).dot(circleCenter)) /
       Math.sqrt(
         1 -
-          Math.max(
-            -1,
-            Math.min(parametric.P(t).dot(transformedToStandard), 1)
-          ) *
-            Math.max(
-              -1,
-              Math.min(parametric.P(t).dot(transformedToStandard), 1)
-            )
+          Math.max(-1, Math.min(parametric.P(t).dot(circleCenter), 1)) *
+            Math.max(-1, Math.min(parametric.P(t).dot(circleCenter), 1))
       )
     );
   };
@@ -1022,29 +1014,12 @@ export function intersectCircleWithParametric(
     )
   );
 
-  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
-
-  const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
-    };
-    returnItems.push(intersection);
-  }
-
-  // console.log("Number of Para/circ Intersections:", zeros.length);
-  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
-  zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
-    if (tracingTMin <= z && z <= tracingTMax) {
-      // it must be on both the circle (which by being a zero of d, it is!) and the visible part of the parametric
-      returnItems[ind].exists = true;
-    } else {
-      returnItems[ind].exists = false;
-    }
-  });
-  return returnItems;
+  return zeros
+    .filter(t => tracingTMin <= t && t <= tracingTMax)
+    .map(t => ({
+      vector: parametric.P(t).clone(),
+      exists: true
+    }));
 }
 
 /**
@@ -1242,58 +1217,32 @@ export function intersectEllipseWithParametric(
   inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
   // Transform ellipse into the standard coordinates of the ellipse.
-  const transformedToStandardFocus1 = new Vector3();
-  const transformedToStandardFocus2 = new Vector3();
-  transformedToStandardFocus1.copy(ellipse.focus1SEPoint.locationVector);
-  transformedToStandardFocus2.copy(ellipse.focus2SEPoint.locationVector);
-  transformedToStandardFocus1.applyMatrix4(inverseTotalRotationMatrix);
-  transformedToStandardFocus2.applyMatrix4(inverseTotalRotationMatrix);
+  const focus1 = ellipse.focus1SEPoint.locationVector;
+  const focus2 = ellipse.focus2SEPoint.locationVector;
   const angleSum = ellipse.ellipseAngleSum;
   // The function to find the zeros of is the sum of the distance from a
   // point on ellipse to the transformed foci of ellipse minus the angleSum of ellipse
   const d: (t: number) => number = function (t: number): number {
     return (
-      Math.acos(
-        Math.max(
-          -1,
-          Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
-        )
-      ) +
-      Math.acos(
-        Math.max(
-          -1,
-          Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
-        )
-      ) -
+      Math.acos(Math.max(-1, Math.min(parametric.P(t).dot(focus1), 1))) +
+      Math.acos(Math.max(-1, Math.min(parametric.P(t).dot(focus2), 1))) -
       angleSum
     );
   };
   // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
   const dp = function (t: number): number {
     return (
-      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus1)) /
+      (-1 * parametric.PPrime(t).dot(focus1)) /
         Math.sqrt(
           1 -
-            Math.max(
-              -1,
-              Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
-            ) *
-              Math.max(
-                -1,
-                Math.min(parametric.P(t).dot(transformedToStandardFocus1), 1)
-              )
+            Math.max(-1, Math.min(parametric.P(t).dot(focus1), 1)) *
+              Math.max(-1, Math.min(parametric.P(t).dot(focus1), 1))
         ) +
-      (-1 * parametric.PPrime(t).dot(transformedToStandardFocus2)) /
+      (-1 * parametric.PPrime(t).dot(focus2)) /
         Math.sqrt(
           1 -
-            Math.max(
-              -1,
-              Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
-            ) *
-              Math.max(
-                -1,
-                Math.min(parametric.P(t).dot(transformedToStandardFocus2), 1)
-              )
+            Math.max(-1, Math.min(parametric.P(t).dot(focus2), 1)) *
+              Math.max(-1, Math.min(parametric.P(t).dot(focus2), 1))
         )
     );
   };
@@ -1302,37 +1251,16 @@ export function intersectEllipseWithParametric(
   const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   const zeros = parametric.tRanges.flatMap(tValues =>
-    SENodule.findZerosParametrically(
-      d,
-      tValues,
-      // parametric.c1DiscontinuityParameterValues,
-      dp
-    )
+    SENodule.findZerosParametrically(d, tValues, dp)
   );
 
-  const maxNumberOfIntersections = 2; // FIXME * parametric.ref.numberOfParts;
-
-  const returnItems: IntersectionReturnType[] = [];
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
-    };
-    returnItems.push(intersection);
-  }
-
   // console.log("Number of Para/ellsp Intersections:", zeros.length);
-  tmpMatrix.copy(inverseTotalRotationMatrix).invert();
-  zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(parametric.P(z).applyMatrix4(tmpMatrix));
-    if (tracingTMin <= z && z <= tracingTMax) {
-      // it must be on both the ellipse (which by being a zero of d, it is!) and the visible part of the parametric
-      returnItems[ind].exists = true;
-    } else {
-      returnItems[ind].exists = false;
-    }
-  });
-  return returnItems;
+  return zeros
+    .filter(z => tracingTMin <= z && z <= tracingTMax)
+    .map(z => ({
+      vector: parametric.P(z).clone(),
+      exists: true
+    }));
 }
 
 export function intersectParametricWithParametric(
