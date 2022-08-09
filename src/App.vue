@@ -699,7 +699,7 @@ export default class App extends Vue {
       type: "image/svg+xml;charset=utf-8"
     });
     const svgPreviewData = await toBase64(svgBlob);
-    console.log(svgPreviewData); // TODO delete
+    console.log(svgPreviewData.substring(0, 30)); // TODO delete
 
     // const svgURL = URL.createObjectURL(svgBlob);
     // FileSaver.saveAs(svgURL, "hans.svg");

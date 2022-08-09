@@ -10,7 +10,6 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
-import Parametric from "@/plottables/Parametric";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -111,6 +110,13 @@ export class RotationVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnParametric(e: SEParametric): boolean {
     e.fnValues.forEach((pt: Vector3) => pt.applyMatrix4(this.transformMatrix));
+    e.fnPrimeValues.forEach((tangent: Vector3) =>
+      // tangent.applyNormalMatrix(this.normalMatrix)
+      tangent.applyMatrix4(this.transformMatrix)
+    );
+    e.fnPPrimeValues.forEach((pp: Vector3) =>
+      pp.applyMatrix4(this.transformMatrix)
+    );
     // console.debug(
     //   "??????? SEParametric accepting rotation",
     //   e.name,

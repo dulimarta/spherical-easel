@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { SEParametric } from "@/models/SEParametric";
 import { SEExpression } from "@/models/SEExpression";
@@ -103,7 +103,9 @@ export class AddParametricCommand extends Command {
       "parametricCuspParameterValues=" +
         this.seParametric.c1DiscontinuityParameterValues
           .map(num => Command.symbolToASCIIDec(num.toString()))
-          .join("@")
+          .join("@"),
+      "inverseRotationMatrix=" +
+        Command.store.inverseTotalRotationMatrix.elements.join(",")
     ].join("&");
   }
 
@@ -202,6 +204,20 @@ export class AddParametricCommand extends Command {
         parametricExpressionParents.map(par => par as SEExpression),
         parametricCurveClosed === "true"
       );
+
+      // If the construction includes an (inverse) rotation matrix. Apply it.
+      const inverseRotationMatrixValues = propMap.get("inverseRotationMatrix");
+      if (inverseRotationMatrixValues) {
+        const rotationMatrix: Matrix4 = new Matrix4();
+        const elements = inverseRotationMatrixValues.split(",").map(Number);
+        rotationMatrix.elements.splice(0);
+        rotationMatrix.elements.push(...elements);
+        rotationMatrix.invert();
+        seParametric.fnValues.forEach(p => p.applyMatrix4(rotationMatrix));
+        seParametric.fnPrimeValues.forEach(t => t.applyMatrix4(rotationMatrix));
+        seParametric.fnPrimeValues.forEach(n => n.applyMatrix4(rotationMatrix));
+        seParametric.ref.updateDisplay();
+      }
 
       //style the parametric
       // const parametricFrontStyleString = propMap.get("objectFrontStyle");

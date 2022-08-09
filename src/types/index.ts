@@ -98,6 +98,7 @@ export type SavedNames =
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
+  | "inverseRotationMatrix"
   | "pointOnOneOrTwoDimensionalParentName"
   | "pointOnOneOrTwoDimensionalVector"
   | "parametricXCoordinateExpression"

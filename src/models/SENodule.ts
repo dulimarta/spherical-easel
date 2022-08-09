@@ -596,46 +596,11 @@ export abstract class SENodule implements Visitable {
     // console.debug("Zeros for perpendicular lines", zeros);
 
     const returnVectors: Array<NormalVectorAndTValue> = zeros
-      .map(tVal => {
-        const tempNormal = new Vector3();
-        tempNormal.copy(PPrime(tVal));
-        tempNormal.normalize();
-        // const tempLocation = new Vector3();
-        // tempLocation.copy(P(tVal));
-        // console.debug("At t=", tVal, "normal is", temp.toFixed(3));
-        // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
-        // also check that that vec is perpendicular to the given unitVector
-        // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
-        //   console.log("through point in SENodule");
-        // } else {
-        //   console.log("not through point in SENodule");
-        // }
-        return {
-          normal: tempNormal,
-          tVal
-        };
-
-        // }
-      })
+      .map(tVal => ({
+        normal: PPrime(tVal).clone().normalize(),
+        tVal
+      }))
       .filter((pair: NormalVectorAndTValue) => !pair.normal.isZero());
-    // remove duplicates from the list
-    // const uniqueNormals: Vector3[] = [];
-    // returnVectors.forEach(vec => {
-    //   if (
-    //     uniqueNormals.every(
-    //       nor => !nor.cross(vec).isZero(SETTINGS.nearlyAntipodalIdeal)
-    //     )
-    //   ) {
-    //     uniqueNormals.push(vec);
-    //   }
-    // });
-    // console.log(
-    //   "returnVectors list 0",
-    //   returnVectors.length,
-    //   returnVectors[1].x,
-    //   returnVectors[1].y,
-    //   returnVectors[1].z
-    // );
 
     return returnVectors;
   }

@@ -173,7 +173,6 @@ export default class ConstructionLoader extends Vue {
     qs: QuerySnapshot,
     targetArr: Array<SphericalConstruction>
   ): void {
-    console.debug(`Here in populateData in Construction Loader .vue`);
     targetArr.splice(0);
     qs.forEach(async (qd: QueryDocumentSnapshot) => {
       const doc = qd.data() as ConstructionInFirestore;
@@ -294,7 +293,7 @@ export default class ConstructionLoader extends Vue {
     // before running the script
     // this.setRotationMatrix(rotationMatrix);
     run(script);
-    this.rotateSphere(rotationMatrix.invert());
+    // this.rotateSphere(rotationMatrix.invert());
     this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all

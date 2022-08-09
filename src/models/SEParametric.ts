@@ -125,8 +125,8 @@ export class SEParametric
   private partitionedTValues: Array<Array<number>> = [];
   private _isClosed: boolean;
   private _fnValues: Vector3[] = [];
-  private fnPrimeValues: Vector3[] = [];
-  private fnPPrimeValues: Vector3[] = [];
+  private _fnPrimeValues: Vector3[] = [];
+  private _fnPPrimeValues: Vector3[] = [];
   private largestGap = 0; // largest gap between two successive sample points
 
   private _c1DiscontinuityParameterValues: number[] = [];
@@ -257,6 +257,7 @@ export class SEParametric
     });
 
     this.createSamplingPointsAndRecalculateFunctions();
+    this.ref?.updateDisplay();
 
     // this.partitionedTValues.forEach((p, pos) => {
     //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
@@ -273,6 +274,14 @@ export class SEParametric
     return this._fnValues;
   }
 
+  get fnPrimeValues(): Array<Vector3> {
+    return this._fnPrimeValues;
+  }
+
+  get fnPPrimeValues(): Array<Vector3> {
+    return this._fnPPrimeValues;
+  }
+
   get isClosedCurve(): boolean {
     return this._isClosed;
   }
@@ -281,6 +290,7 @@ export class SEParametric
    * when the ideal sphere is in its neutral (unrotated) position
    */
   private createSamplingPointsAndRecalculateFunctions(): void {
+    console.debug("SEParametric: createSamplingPointsAnd......");
     // Area of a triangle formed by three consecutive sample points
     // This also measures the local curvature
     const computeArea = (a: TSample, b: TSample, c: TSample): number => {
@@ -553,12 +563,12 @@ export class SEParametric
     this.evaluateFunctionAndCache(
       this._tValues,
       this.primeCoordinateSyntaxTrees,
-      this.fnPrimeValues
+      this._fnPrimeValues
     );
     this.evaluateFunctionAndCache(
       this._tValues,
       this.primeX2CoordinateSyntaxTrees,
-      this.fnPPrimeValues
+      this._fnPPrimeValues
     );
     this.ref.setRangeAndFunctions(
       this._tValues,
@@ -568,6 +578,7 @@ export class SEParametric
     );
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
+    this.varMap.delete("t");
   }
 
   private evaluateFunctionAndCache(
@@ -591,6 +602,7 @@ export class SEParametric
       );
       cache.push(vecValue);
     }
+    this.varMap.delete("t");
   }
 
   private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
@@ -646,7 +658,7 @@ export class SEParametric
    * @param t the parameter
    */
   public PPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this.fnPrimeValues);
+    return this.lookupFunctionValueAt(t, this._fnPrimeValues);
   }
 
   /**
@@ -655,7 +667,7 @@ export class SEParametric
    * @param t the parameter
    */
   public PPPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this.fnPPrimeValues);
+    return this.lookupFunctionValueAt(t, this._fnPPrimeValues);
   }
 
   /**
@@ -772,7 +784,7 @@ export class SEParametric
         }
       }
       if (updatedCount === 0) {
-        console.debug("No rebuilding function and its derivatives required");
+        console.debug("No rebuild of function and its derivatives required");
         return;
       }
       if (updatedCount > 0) {
