@@ -980,29 +980,20 @@ export class SEParametric
     oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     // useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
   ): Array<NormalVectorAndTValue> {
-    // const transformedToStandard = new Vector3();
-    // transformedToStandard.copy(sePointVector);
-    // transformedToStandard
-    //   .applyMatrix4(this.store.inverseTotalRotationMatrix)
-    //   .normalize();
-
     // find the tracing tMin and tMax
     // const [tMin, tMax] = useFullTInterval
     //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
     //   : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
-    // console.log("normal search");
     let normalList: Array<NormalVectorAndTValue> = [];
 
-    // TODO: Replace with a loop here
     normalList = this.partitionedTValues.flatMap(tVals =>
       SENodule.getNormalsToPerpendicularLinesThruParametrically(
         // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         sePointVector,
         tVals,
-        // [], // this._c1DiscontinuityParameterValues,
         this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
@@ -1014,16 +1005,6 @@ export class SEParametric
 
     // remove duplicates from the list
     this.removeDuplicateVectors(normalList);
-    // console.log("Unique normals", normalList.length);
-    // normalList.forEach((n: NormalVectorAndTValue, k: number) => {
-    //   console.debug(`Normal-${k}`, n.normal.toFixed(3));
-    // });
-    this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
-    normalList.forEach((pair: NormalVectorAndTValue) => {
-      pair.normal.applyMatrix4(this.tmpMatrix).normalize();
-      this.tmpVector1.copy(this.P(pair.tVal));
-      this.tmpVector1.applyMatrix4(this.tmpMatrix).normalize();
-    });
     return normalList;
   }
 
@@ -1038,11 +1019,6 @@ export class SEParametric
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
   ): Vector3[] {
-    const transformedToStandard = new Vector3();
-    transformedToStandard.copy(sePointVector);
-    transformedToStandard
-      .applyMatrix4(this.store.inverseTotalRotationMatrix)
-      .normalize();
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     // find the tracing tMin and tMax
@@ -1051,8 +1027,6 @@ export class SEParametric
       : this.tMinMaxExpressionValues();
     if (tMax < tMin) return [];
 
-    // const avoidTValues: number[] = [];
-    // avoidTValues.push(...this._c1DiscontinuityParameterValues);
     const normalList: Vector3[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
     if (
@@ -1064,7 +1038,7 @@ export class SEParametric
           SENodule.closestVectorParametrically(
             this.P.bind(this), // bind the this so that this in the this.E method is this
             this.PPrime.bind(this), // bind the this so that this in the this.E method is this
-            transformedToStandard,
+            sePointVector,
             tVals,
             this.PPPrime.bind(this) // bind the this so that this in the this.E method is this
           )
@@ -1075,14 +1049,14 @@ export class SEParametric
             curr: ParametricVectorAndTValue
           ) => {
             // If we have several partitions, find the closest among all of them
-            const d1 = prev.vector.distanceTo(transformedToStandard);
-            const d2 = curr.vector.distanceTo(transformedToStandard);
+            const d1 = prev.vector.distanceTo(sePointVector);
+            const d2 = curr.vector.distanceTo(sePointVector);
             return d1 < d2 ? prev : curr;
           }
         ).tVal;
       const tangentVector = new Vector3();
       tangentVector.copy(this.PPrime(correspondingTVal));
-      tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
+      // tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
       tangentVector.cross(this.P(correspondingTVal));
       // avoidTValues.push(coorespondingTVal);
       normalList.push(tangentVector.normalize());
@@ -1091,57 +1065,30 @@ export class SEParametric
     if (normalList.length > 0)
       console.log("normals to tangent so far", normalList);
 
-    const out = this.partitionedTValues.flatMap(tVals =>
-      SENodule.getNormalsToTangentLinesThruParametrically(
-        this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
-        this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
-        transformedToStandard,
-        tVals,
-        this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+    const out = this.partitionedTValues
+      .flatMap(tVals =>
+        SENodule.getNormalsToTangentLinesThruParametrically(
+          this.P.bind(this), // bind the this.ref so that this in the this.ref.P method is this.ref
+          this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+          sePointVector,
+          tVals,
+          this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+        )
       )
-    );
+      .filter((vec: Vector3) => !vec.isZero(SETTINGS.tolerance / 1000));
     if (out.length > 0) {
       normalList.push(...out);
       console.log("normals to tangent updated", normalList);
     }
 
-    const taggedList: Array<NormalVectorAndTValue> = normalList.map(
-      (vec: Vector3) => {
-        return {
-          normal: vec,
-          tVal: NaN
-        };
-      }
-    );
-
     normalList.forEach((vec, ind) => {
-      if (
-        Math.abs(vec.dot(transformedToStandard)) >
-        SETTINGS.tolerance / 1000
-      ) {
+      if (Math.abs(vec.dot(sePointVector)) > SETTINGS.tolerance / 1000) {
         console.log(ind, "NOT through point");
       }
-      if (vec.isZero(SETTINGS.tolerance / 1000)) {
-        console.log(ind, " Vector is ZERO");
-      }
     });
-
-    // remove duplicates from the list
-    // console.log("perpendiculars", normalList);
-    this.removeDuplicateVectors(taggedList);
 
     if (normalList.length > 0) console.log("unique perpendicular", normalList);
-
-    // if (uniqueNormals.length > this._maxNumberOfTangents) {
-    //   console.debug(
-    //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
-    //   );
-    // }
-    this.tmpMatrix.copy(this.store.inverseTotalRotationMatrix).invert();
-    return taggedList.map((z: NormalVectorAndTValue) => {
-      z.normal.applyMatrix4(this.tmpMatrix).normalize();
-      return z.normal;
-    });
+    return normalList;
   }
 
   get coordinateExpressions(): CoordExpression {
