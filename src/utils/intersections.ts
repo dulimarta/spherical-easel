@@ -1263,6 +1263,173 @@ export function intersectEllipseWithParametric(
     }));
 }
 
+type ST_pair = {
+  s: number;
+  t: number;
+  pointDistance: number;
+};
+
+function find_zero(
+  sCurve: SEParametric,
+  tCurve: SEParametric,
+  s_guess: number,
+  t_guess: number,
+  initial_distance: number
+): ST_pair | undefined {
+  const DESCENT_RATE = 0.0001;
+  const st = new Vector2();
+  const st_next = new Vector2();
+  const f_st = new Vector3();
+  st.set(s_guess, t_guess);
+  // let dist: number = Number.MAX_VALUE;
+  let delta_st: number;
+  let iter = 0;
+  // Newton's iteration See latex-notes/parametric-intersection.tex for more details
+  console.debug("Initial guest (s,t) at ", st.toFixed(6));
+  do {
+    // calculate P'(s) and Q'(t)
+    const PPrime = sCurve.PPrime(st.x);
+    const QPrime = tCurve.PPrime(st.y);
+    // calculate f(s,t)
+    console.debug("P(s) at", sCurve.P(st.x).toFixed(6));
+    console.debug("Q(t) at", tCurve.P(st.y).toFixed(6));
+    f_st.subVectors(sCurve.P(st.x), tCurve.P(st.y));
+    console.debug("Function value", f_st.toFixed(6));
+    // Calculate the transpose(Jacobian) * Jacobian
+    const jacobian_ss = PPrime.dot(PPrime);
+    const jacobian_tt = QPrime.dot(QPrime);
+    const jacobian_st = PPrime.dot(QPrime);
+    // Calculate transpose(Jacobian) * f(s,t)
+    const jacobian_transpose_s = PPrime.dot(f_st);
+    const jacobian_transpose_t = QPrime.dot(f_st);
+    const jacobian_determinant =
+      jacobian_ss * jacobian_tt - jacobian_st * jacobian_st;
+    const update_s =
+      (jacobian_tt * jacobian_transpose_s -
+        jacobian_st * jacobian_transpose_t) /
+      jacobian_determinant;
+    const update_t =
+      (jacobian_ss * jacobian_transpose_t -
+        jacobian_st * jacobian_transpose_s) /
+      jacobian_determinant;
+    // dist = distanceOf(st.x, st.y);
+    st_next.set(st.x - update_s * DESCENT_RATE, st.y - update_t * DESCENT_RATE);
+    console.debug("Next (s,t) at ", st_next.toFixed(6));
+    // delta_st = st_next.distanceTo(st);
+    st.copy(st_next);
+    iter++;
+  } while (!f_st.isZero(1e-4) && iter < 50);
+  if (iter < 50) {
+    console.debug(
+      `Nearby (${s_guess}, ${t_guess}) converges to intersection at (S,T) = (${st.x}, ${st.y})`
+    );
+    return {
+      s: st.x,
+      t: st.y,
+      pointDistance: f_st.length()
+    };
+    // sIntersects.push(st.x);
+    // returnItems.push({
+    //   /*s: st.x, t: st.y, */ exists: true,
+    //   vector: sCurve.P(st.x).clone()
+    // });
+  } else {
+    console.debug(`Nearby (${s_guess}, ${t_guess}) does not converge`);
+    return undefined;
+  }
+}
+
+function minimize_distance(
+  sCurve: SEParametric,
+  tCurve: SEParametric,
+  s_guess: number,
+  t_guess: number,
+  initial_distance: number
+): ST_pair | undefined {
+  const DESCENT_RATE = 0.0001;
+  const p_minus_q = new Vector3();
+  let s_curr: number = s_guess;
+  let t_curr: number = t_guess;
+  let s_next: number;
+  let t_next: number;
+  let iter = 0;
+  let st_distance: number;
+  let lowest_distance = Number.MAX_VALUE;
+  let lowest_s = s_guess;
+  let lowest_t = t_guess;
+  // Newton's iteration See latex-notes/parametric-intersection.tex for more details
+  console.debug(
+    "Initial guess (s,t) at ",
+    s_guess.toFixed(6),
+    t_guess.toFixed(6)
+  );
+  do {
+    // calculate P'(s) and Q'(t)
+    const PPrime = sCurve.PPrime(s_curr);
+    const PPrimePrime = sCurve.PPPrime(s_curr);
+    const QPrime = tCurve.PPrime(t_curr);
+    const QPrimePrime = tCurve.PPPrime(t_curr);
+    p_minus_q.subVectors(sCurve.P(s_curr), tCurve.P(t_curr));
+    // calculate gradient
+    const grad_s = 2 * p_minus_q.dot(PPrime);
+    const grad_t = -2 * p_minus_q.dot(QPrime);
+    // calculate Hessian
+    const hess_ss = 2 * (PPrime.dot(PPrime) + p_minus_q.dot(PPrimePrime));
+    const hess_tt = 2 * (QPrime.dot(QPrime) - p_minus_q.dot(QPrimePrime));
+    const hess_st = -2 * PPrime.dot(QPrime);
+    const hess_determinant = hess_ss * hess_tt - hess_st * hess_st;
+    const update_s = (hess_tt * grad_s - hess_st * grad_t) / hess_determinant;
+    const update_t = (hess_ss * grad_t - hess_st * grad_s) / hess_determinant;
+    s_next = s_curr - update_s * DESCENT_RATE;
+    t_next = t_curr - update_t * DESCENT_RATE;
+    st_distance = sCurve.P(s_next).distanceTo(tCurve.P(t_next));
+    if (st_distance < lowest_distance) {
+      lowest_distance = st_distance;
+      lowest_s = s_next;
+      lowest_t = t_next;
+    }
+    console.debug(
+      "Next (s,t) at iteration",
+      iter,
+      s_next.toFixed(6),
+      t_next.toFixed(6),
+      "current distance to minimize",
+      st_distance.toFixed(6)
+    );
+    s_curr = s_next;
+    t_curr = t_next;
+
+    iter++;
+  } while (st_distance > 1e-4 && iter < 50);
+  if (iter < 50) {
+    console.debug(
+      `Nearby (${s_guess}, ${t_guess}) converges to intersection at (S,T) = (${s_curr}, ${t_curr})`
+    );
+    return { s: s_curr, t: t_curr, pointDistance: st_distance };
+    // sIntersects.push(s_curr);
+    // returnItems.push({
+    //   /*s: st.x, t: st.y, */ exists: true,
+    //   vector: sCurve.P(st.x).clone()
+    // });
+  } else {
+    console.debug(
+      `Nearby (${s_guess}, ${t_guess}) does NOT converge. The best (s,t) estimate (${lowest_s.toFixed(
+        6
+      )}, ${lowest_t.toFixed(6)}) and lowest distance ${lowest_distance.toFixed(
+        6
+      )}`
+    );
+    if (lowest_distance < initial_distance) {
+      return {
+        s: lowest_s,
+        t: lowest_t,
+        pointDistance: lowest_distance
+      };
+    }
+  }
+  return undefined;
+}
+
 export function intersectParametricWithParametric(
   parametric1: SEParametric,
   parametric2: SEParametric
@@ -1288,15 +1455,15 @@ export function intersectParametricWithParametric(
     // Return the result as a tuple (s, t1), (s, t2), ...
   }
   */
-  type STDistance = {
+  type STHeapItem = {
     sPart: number;
     tPart: number;
     sIndex: number;
     tIndex: number;
     distance: number;
   };
-  const distanceHeap: MinHeap<STDistance> = new MinHeap(
-    (z: STDistance) => z.distance
+  const distanceHeap: MinHeap<STHeapItem> = new MinHeap(
+    (z: STHeapItem) => z.distance
   );
 
   // Generate nearby (s,t) pairs
@@ -1305,13 +1472,14 @@ export function intersectParametricWithParametric(
       const sPoint = sCurve.P(sVal);
       const fn = (tVal: number): number => {
         const tPoint = tCurve.P(tVal);
-        const distance = tPoint.distanceToSquared(sPoint);
+        const distance = tPoint.distanceTo(sPoint);
         return distance;
       };
       tCurve.tRanges.forEach((tValues: number[], tPart: number) => {
         tValues.forEach((tVal: number, tIndex: number) => {
           const checkDistance = fn(tVal);
-          if (checkDistance < 1e-3)
+          if (checkDistance < 1e-2)
+            // Make it generous
             distanceHeap.push({
               sPart,
               sIndex,
@@ -1333,48 +1501,19 @@ export function intersectParametricWithParametric(
     return sCurve.P(s).distanceToSquared(tCurve.P(t));
   };
 
-  const diffPQ = new Vector3();
-  const st = new Vector2();
-  const st_next = new Vector2();
   const sIntersects: Array<number> = [];
   while (distanceHeap.size() > 0) {
     const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
     const sVal = sCurve.tRanges[sPart][sIndex];
     const tVal = tCurve.tRanges[tPart][tIndex];
+    const out = find_zero(sCurve, tCurve, sVal, tVal, distance);
+    // const out = minimize_distance(sCurve, tCurve, sVal, tVal, distance);
+    if (typeof out !== "undefined") sIntersects.push(out.s);
     // console.debug(
     //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
     //     4
     //   )} T-value ${tVal} ${tPoint.toFixed(4)} with distance ${distance}`
     // );
-
-    st.set(sVal, tVal);
-    let dist: number = Number.MAX_VALUE;
-    let delta_st: number;
-    let iter = 0;
-    // Newton's iteration See latex-notes/parametric-intersection.tex for more details
-    do {
-      dist = distanceOf(st.x, st.y);
-      diffPQ.subVectors(sCurve.P(st.x), tCurve.P(st.y));
-      const dHds = 2 * diffPQ.dot(sCurve.PPrime(st.x));
-      const dHdt = -2 * diffPQ.dot(tCurve.PPrime(st.y));
-      st_next.set(st.x - dHds * dist, st.y - dHdt * dist);
-      // console.debug("Next evaluation at ", st_next.toFixed(6));
-      delta_st = st_next.distanceTo(st);
-      st.copy(st_next);
-      iter++;
-    } while (delta_st > 1e-5 && iter < 50);
-    if (delta_st <= 1e-5 && dist < distance) {
-      console.debug(
-        `Nearby (${sVal}, ${tVal}) converges to intersection at (S,T) = (${st.x}, ${st.y})`
-      );
-      sIntersects.push(st.x);
-      // returnItems.push({
-      //   /*s: st.x, t: st.y, */ exists: true,
-      //   vector: sCurve.P(st.x).clone()
-      // });
-    } else {
-      console.debug(`Nearby (${sVal}, ${tVal}) does not converge`);
-    }
   }
   sIntersects.sort((s1, s2) => s1 - s2);
   let lastS = Number.POSITIVE_INFINITY;

@@ -614,7 +614,7 @@ export class SEParametric
       while (sIndex < N && t >= this._tValues[sIndex]) sIndex++;
       // We know t >= tVal[0] then after the while-loop sIndex >= 1
       sIndex--;
-      if (sIndex + 1 < N) {
+      if (0 <= sIndex && sIndex + 1 < N) {
         // the amount of deviation from the ideal location
         const fraction =
           (t - this._tValues[sIndex]) /
@@ -630,9 +630,8 @@ export class SEParametric
         this.tmpVector.set(0, 0, 0);
         this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
         this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-      } else {
-        this.tmpVector.copy(arr[N - 1]);
-      }
+      } else if (sIndex < 0) this.tmpVector.copy(arr[0]);
+      else this.tmpVector.copy(arr[N - 1]);
     } else {
       console.error(
         `Attempt to evaluate function value at t=${t} for SEParametric ${this.id} with ${N} fn samples`
