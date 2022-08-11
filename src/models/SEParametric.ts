@@ -68,6 +68,9 @@ export class SEParametric
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
+  private pOut = new Vector3();
+  private pPrimeOut = new Vector3();
+  private pPrime2Out = new Vector3();
   private tmpMatrix = new Matrix4();
 
   /**
@@ -284,6 +287,10 @@ export class SEParametric
 
   get isClosedCurve(): boolean {
     return this._isClosed;
+  }
+
+  get largestSampleGap(): number {
+    return this.largestGap;
   }
 
   /** Generate  sampling points based of "local curvatures"
@@ -605,7 +612,11 @@ export class SEParametric
     this.varMap.delete("t");
   }
 
-  private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
+  private lookupFunctionValueAt(
+    t: number,
+    arr: Array<Vector3>,
+    result: Vector3
+  ) {
     if (arr === undefined)
       console.debug("I am called by", this.lookupFunctionValueAt.caller.name);
     const N = arr.length;
@@ -627,17 +638,17 @@ export class SEParametric
         /* Use linear interpolation of two neighboring values in the array */
 
         // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-        this.tmpVector.set(0, 0, 0);
-        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
-        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-      } else if (sIndex < 0) this.tmpVector.copy(arr[0]);
-      else this.tmpVector.copy(arr[N - 1]);
+        result.set(0, 0, 0);
+        result.addScaledVector(arr[sIndex], 1 - fraction);
+        result.addScaledVector(arr[sIndex + 1], fraction);
+      } else if (sIndex < 0) result.copy(arr[0]);
+      else result.copy(arr[N - 1]);
     } else {
       console.error(
         `Attempt to evaluate function value at t=${t} for SEParametric ${this.id} with ${N} fn samples`
       );
       // throw new Error(`Attempt to evaluate function value at t=${t}`);
-      this.tmpVector.set(0, 0, 0);
+      // result.set(0, 0, 0);
     }
     return this.tmpVector;
   }
@@ -648,7 +659,8 @@ export class SEParametric
    */
   public P(t: number): Vector3 {
     // Interpolated position must be on the sphere, so we have to call normalize()
-    return this.lookupFunctionValueAt(t, this._fnValues).normalize();
+    this.lookupFunctionValueAt(t, this._fnValues, this.pOut).normalize();
+    return this.pOut;
   }
 
   /**
@@ -657,7 +669,8 @@ export class SEParametric
    * @param t the parameter
    */
   public PPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._fnPrimeValues);
+    this.lookupFunctionValueAt(t, this._fnPrimeValues, this.pPrimeOut);
+    return this.pPrimeOut;
   }
 
   /**
@@ -666,7 +679,8 @@ export class SEParametric
    * @param t the parameter
    */
   public PPPrime(t: number): Vector3 {
-    return this.lookupFunctionValueAt(t, this._fnPPrimeValues);
+    this.lookupFunctionValueAt(t, this._fnPPrimeValues, this.pPrime2Out);
+    return this.pPrime2Out;
   }
 
   /**

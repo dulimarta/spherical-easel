@@ -1276,7 +1276,6 @@ function find_zero(
   t_guess: number,
   initial_distance: number
 ): ST_pair | undefined {
-  const DESCENT_RATE = 0.0001;
   const st = new Vector2();
   const st_next = new Vector2();
   const f_st = new Vector3();
@@ -1285,49 +1284,50 @@ function find_zero(
   let delta_st: number;
   let iter = 0;
   // Newton's iteration See latex-notes/parametric-intersection.tex for more details
-  console.debug("Initial guest (s,t) at ", st.toFixed(6));
   do {
     // calculate P'(s) and Q'(t)
     const PPrime = sCurve.PPrime(st.x);
     const QPrime = tCurve.PPrime(st.y);
+    // console.debug(
+    //   "P(s) at",
+    //   sCurve.P(st.x).toFixed(6),
+    //   "Q(t) at",
+    //   tCurve.P(st.y).toFixed(6)
+    // );
+    // console.debug("P'(s) at", PPrime.toFixed(6), "Q'(t) at", QPrime.toFixed(6));
     // calculate f(s,t)
-    console.debug("P(s) at", sCurve.P(st.x).toFixed(6));
-    console.debug("Q(t) at", tCurve.P(st.y).toFixed(6));
     f_st.subVectors(sCurve.P(st.x), tCurve.P(st.y));
-    console.debug("Function value", f_st.toFixed(6));
     // Calculate the transpose(Jacobian) * Jacobian
-    const jacobian_ss = PPrime.dot(PPrime);
-    const jacobian_tt = QPrime.dot(QPrime);
-    const jacobian_st = PPrime.dot(QPrime);
-    // Calculate transpose(Jacobian) * f(s,t)
-    const jacobian_transpose_s = PPrime.dot(f_st);
-    const jacobian_transpose_t = QPrime.dot(f_st);
-    const jacobian_determinant =
-      jacobian_ss * jacobian_tt - jacobian_st * jacobian_st;
+    const jacobian_determinant = PPrime.y * QPrime.x - PPrime.x * QPrime.y;
     const update_s =
-      (jacobian_tt * jacobian_transpose_s -
-        jacobian_st * jacobian_transpose_t) /
-      jacobian_determinant;
+      (-QPrime.y * f_st.x + QPrime.x * f_st.y) / jacobian_determinant;
     const update_t =
-      (jacobian_ss * jacobian_transpose_t -
-        jacobian_st * jacobian_transpose_s) /
-      jacobian_determinant;
+      (-PPrime.y * f_st.x + PPrime.x * f_st.y) / jacobian_determinant;
     // dist = distanceOf(st.x, st.y);
-    st_next.set(st.x - update_s * DESCENT_RATE, st.y - update_t * DESCENT_RATE);
-    console.debug("Next (s,t) at ", st_next.toFixed(6));
-    // delta_st = st_next.distanceTo(st);
+    st_next.set(st.x - update_s, st.y - update_t);
+    // console.debug("Next (s,t) at ", st_next.toFixed(6));
+    delta_st = st_next.distanceTo(st);
     st.copy(st_next);
     iter++;
-  } while (!f_st.isZero(1e-4) && iter < 50);
+  } while (delta_st > 1e-5 && iter < 50);
   if (iter < 50) {
+    // Verify that the z-coordinate of both points agree
+    const z_on_S = sCurve.P(st.x).z;
+    const z_on_T = tCurve.P(st.y).z;
     console.debug(
-      `Nearby (${s_guess}, ${t_guess}) converges to intersection at (S,T) = (${st.x}, ${st.y})`
+      `Nearby (${s_guess}, ${t_guess}) converges to intersection at (S,T) = (${st.x}, ${st.y})`,
+      "Z-check",
+      z_on_S,
+      z_on_T
     );
-    return {
-      s: st.x,
-      t: st.y,
-      pointDistance: f_st.length()
-    };
+    if (z_on_S * z_on_T > 0)
+      // Same side of the sphere?
+      return {
+        s: st.x,
+        t: st.y,
+        pointDistance: f_st.length()
+      };
+    else return undefined;
     // sIntersects.push(st.x);
     // returnItems.push({
     //   /*s: st.x, t: st.y, */ exists: true,
@@ -1371,11 +1371,11 @@ function minimize_distance(
     const QPrimePrime = tCurve.PPPrime(t_curr);
     p_minus_q.subVectors(sCurve.P(s_curr), tCurve.P(t_curr));
     // calculate gradient
-    const grad_s = 2 * p_minus_q.dot(PPrime);
-    const grad_t = -2 * p_minus_q.dot(QPrime);
+    const grad_s = -2 * PPrime.dot(tCurve.P(t_curr));
+    const grad_t = -2 * sCurve.P(s_curr).dot(QPrime);
     // calculate Hessian
-    const hess_ss = 2 * (PPrime.dot(PPrime) + p_minus_q.dot(PPrimePrime));
-    const hess_tt = 2 * (QPrime.dot(QPrime) - p_minus_q.dot(QPrimePrime));
+    const hess_ss = -2 * PPrimePrime.dot(tCurve.P(t_curr));
+    const hess_tt = -2 * sCurve.P(s_curr).dot(QPrimePrime);
     const hess_st = -2 * PPrime.dot(QPrime);
     const hess_determinant = hess_ss * hess_tt - hess_st * hess_st;
     const update_s = (hess_tt * grad_s - hess_st * grad_t) / hess_determinant;
@@ -1442,13 +1442,16 @@ export function intersectParametricWithParametric(
 
   let sCurve: SEParametric;
   let tCurve: SEParametric;
-  if (parametric1.tRanges.length < parametric2.tRanges.length) {
+  if (parametric1.tRanges.length > parametric2.tRanges.length) {
     sCurve = parametric2;
     tCurve = parametric1;
   } else {
     sCurve = parametric1;
     tCurve = parametric2;
   }
+  const s_gap = sCurve.largestSampleGap / 2;
+  const t_gap = tCurve.largestSampleGap / 2;
+  const distance_threhold = Math.sqrt(s_gap * s_gap + t_gap * t_gap);
   /*
   foreach (s in parametric1) {
     Find T-values of Q(t) such that of Q(t) - P(s) = 0, t is variable, s is constant
@@ -1478,7 +1481,7 @@ export function intersectParametricWithParametric(
       tCurve.tRanges.forEach((tValues: number[], tPart: number) => {
         tValues.forEach((tVal: number, tIndex: number) => {
           const checkDistance = fn(tVal);
-          if (checkDistance < 1e-2)
+          if (checkDistance < distance_threhold)
             // Make it generous
             distanceHeap.push({
               sPart,
@@ -1506,18 +1509,18 @@ export function intersectParametricWithParametric(
     const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
     const sVal = sCurve.tRanges[sPart][sIndex];
     const tVal = tCurve.tRanges[tPart][tIndex];
+    console.debug(
+      `Possible intersection at S-value ${sVal} and T-value ${tVal} with distance ${distance}`
+    );
     const out = find_zero(sCurve, tCurve, sVal, tVal, distance);
     // const out = minimize_distance(sCurve, tCurve, sVal, tVal, distance);
     if (typeof out !== "undefined") sIntersects.push(out.s);
-    // console.debug(
-    //   `Possible intersection at S-value ${sVal} ${sPoint.toFixed(
-    //     4
-    //   )} T-value ${tVal} ${tPoint.toFixed(4)} with distance ${distance}`
-    // );
   }
   sIntersects.sort((s1, s2) => s1 - s2);
   let lastS = Number.POSITIVE_INFINITY;
-  return sIntersects
+
+  // Filter out possible duplicates
+  const cleanedUp = sIntersects
     .filter(s => {
       if (Math.abs(s - lastS) > 1e-5) {
         lastS = s;
@@ -1525,6 +1528,8 @@ export function intersectParametricWithParametric(
       } else return false;
     })
     .map(s => ({ exists: true, vector: sCurve.P(s).clone() }));
+  console.debug("Computed intersection", cleanedUp.length);
+  return cleanedUp;
 }
 /**
  * Create the intersection of two one-dimensional objects
