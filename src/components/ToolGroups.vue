@@ -113,9 +113,9 @@ export default class ToolGroups extends Vue {
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
   // readonly disabledTools!: ActionMode[];
 
-  /* Controls the selection of the actionMode using the buttons. The default is segment. */
+  /* Controls the selection of the actionMode using the buttons. */
   private actionMode: { id: ActionMode; name: string } = {
-    id: "rotate",
+    id: "segment",
     name: ""
   };
 
