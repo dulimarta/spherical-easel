@@ -11,6 +11,7 @@
       <v-icon v-else>mdi-pencil</v-icon>
     </v-btn>
 
+    <!--g.children.filter(button => !disabledTools.some(mode => mode===button.actionModeValue)) -->
     <div v-for="(g,gpos) in buttonGroup"
       :key="gpos">
       <template v-if="g.children.length > 0">
@@ -27,6 +28,7 @@
                 :key="bpos">
                 <ToolButton :disabled="inEditMode"
                   :button="button"
+                  :editMode="inEditMode"
                   v-on:display-only-this-tool-use-message="displayOnlyThisToolUseMessageFunc">
                   <template #overlay
                     v-if="inEditMode">
@@ -62,8 +64,8 @@
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
       <v-btn-toggle v-model="actionMode"
-        @change="switchActionMode"
-        class="mr-2 d-flex flex-wrap accent">
+        class="mr-2 d-flex flex-wrap accent"
+        @change="switchActionMode">
 
         <ToolButton v-for="(button, pos) in developerButtonList"
           :key="pos"
@@ -96,6 +98,7 @@ import { useSEStore } from "@/stores/se";
   components: { ToolButton },
   computed: {
     ...mapState(useAccountStore, ["userRole", "includedTools"])
+    // ...mapState(useSEStore, ["disabledTools"])
   },
   methods: {
     ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"]),
@@ -108,6 +111,7 @@ export default class ToolGroups extends Vue {
   readonly includeToolName!: (s: ActionMode) => void;
   readonly excludeToolName!: (s: ActionMode) => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
+  // readonly disabledTools!: ActionMode[];
 
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
@@ -140,6 +144,7 @@ export default class ToolGroups extends Vue {
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
+    console.debug(`Tool Group action mode ${this.actionMode.id}`);
     this.setActionMode(this.actionMode);
   }
 
@@ -200,7 +205,8 @@ export default class ToolGroups extends Vue {
       icon: "$vuetify.icons.value.iconFactory",
       toolTipMessage: "CreateIconToolTipMessage",
       toolUseMessage: "CreateIconToolUseMessage",
-      displayToolUseMessage: false
+      displayToolUseMessage: false,
+      disabledIcon: "$vuetify.icons.value.delete"
     }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button

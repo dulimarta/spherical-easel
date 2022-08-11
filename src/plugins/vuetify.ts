@@ -14,6 +14,12 @@ const vuetify = new Vuetify({
   iconfont: "mdiSvg",
   icons: {
     values: {
+      blank: {
+        component: IconBase,
+        props: {
+          iconName: "blank" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
       point: {
         component: IconBase,
         props: {

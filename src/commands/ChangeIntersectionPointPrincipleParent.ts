@@ -18,15 +18,15 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
   }
 
   do(): void {
-    console.debug(
-      `ChangeIntersectionPointPrinciplePointCommand: do ${this.seIntersectionPoint.name}, old principle: ${this.oldPrincipleParent.name}`
-    );
-    console.debug(
-      `Current principle parents ${this.seIntersectionPoint.principleParent1.name} and ${this.seIntersectionPoint.principleParent2.name}`
-    );
-    console.debug(
-      `Current other parents ${this.seIntersectionPoint.otherParentArray[0].name}`
-    );
+    // console.debug(
+    //   `ChangeIntersectionPointPrinciplePointCommand: do ${this.seIntersectionPoint.name}, old principle: ${this.oldPrincipleParent.name}`
+    // );
+    // console.debug(
+    //   `Current principle parents ${this.seIntersectionPoint.principleParent1.name} and ${this.seIntersectionPoint.principleParent2.name}`
+    // );
+    // console.debug(
+    //   `Current other parents ${this.seIntersectionPoint.otherParentArray[0].name}`
+    // );
     this.newPrincipleParent = this.seIntersectionPoint.removePrincipleParent(
       this.oldPrincipleParent
     );
@@ -45,13 +45,13 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      `ChangeIntersectionPointPrinciplePointCommand: restoreState ${
-        this.seIntersectionPoint.name
-      }, old principle: ${this.oldPrincipleParent.name}, new principle ${
-        this.newPrincipleParent ? this.newPrincipleParent.name : "NULL!"
-      }`
-    );
+    // console.debug(
+    //   `ChangeIntersectionPointPrinciplePointCommand: restoreState ${
+    //     this.seIntersectionPoint.name
+    //   }, old principle: ${this.oldPrincipleParent.name}, new principle ${
+    //     this.newPrincipleParent ? this.newPrincipleParent.name : "NULL!"
+    //   }`
+    // );
 
     if (this.newPrincipleParent) {
       // Add the parent to the list of parents in the SEIntersectionPoint

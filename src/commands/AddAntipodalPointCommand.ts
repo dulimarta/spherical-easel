@@ -25,9 +25,9 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   do(): void {
-    console.debug(
-      `AddAntipodalPoint: DO added the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
-    );
+    // console.debug(
+    //   `AddAntipodalPoint: DO added the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
+    // );
     this.parentSEPoint.registerChild(this.seAntipodalPoint);
     this.seAntipodalPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seAntipodalPoint);
@@ -41,9 +41,9 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      `AddAntipodalPoint: RESTORE removed the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
-    );
+    // console.debug(
+    //   `AddAntipodalPoint: RESTORE removed the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
+    // );
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
     this.seAntipodalPoint.unregisterChild(this.seLabel);
