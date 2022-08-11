@@ -42,11 +42,18 @@ type TemporaryLine = {
   exist: boolean;
   tmpNormal: Vector3;
 };
+
+type TemporaryPoint = {
+  point: Point;
+  exist: boolean;
+  tmpPosition: Vector3;
+};
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
   private tempLines: TemporaryLine[] = [];
+  private tempPoints: TemporaryPoint[] = [];
   // private temporaryLinesAdded: boolean[] = [];
   // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
@@ -99,6 +106,11 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       line: new Line(),
       exist: false,
       tmpNormal: new Vector3()
+    });
+    this.tempPoints.push({
+      point: new Point(),
+      exist: false,
+      tmpPosition: new Vector3()
     });
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
@@ -357,6 +369,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           z.line.removeFromLayers();
           z.exist = false; //.temporaryLinesAdded.push(false);
         });
+        this.tempPoints.forEach((z: TemporaryPoint) => {
+          z.point.removeFromLayers();
+          z.exist = false; //.temporaryLinesAdded.push(false);
+        });
 
         this.sePointVector.set(0, 0, 0);
       }
@@ -500,7 +516,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
           );
 
-        // Add new temporary lines as needed
+        // Add new temporary lines and points as needed
         while (this.tempLines.length < normalList.length) {
           console.debug(
             "Adding new temporary line to match normalList",
@@ -514,24 +530,45 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             tmpNormal: new Vector3()
           });
           PerpendicularLineThruPointHandler.store.addTemporaryNodule(newLine);
+
+          const newPoint = new Point();
+          this.tempPoints.push({
+            point: newPoint,
+            exist: false,
+            tmpPosition: new Vector3()
+          });
+          PerpendicularLineThruPointHandler.store.addTemporaryNodule(newPoint);
           // this.temporaryLinesAdded.push(false);
           // this.temporaryNormals.push(new Vector3());
         }
 
-        //set the display of the normals and the vectors
-        this.tempLines.forEach((z: TemporaryLine, ind: number) => {
-          // console.log("index", ind, normalList[ind]);
+        normalList.forEach((z: NormalVectorAndTValue, ind: number) => {
+          const tmpLine = this.tempLines[ind];
+          tmpLine.exist = true;
+          tmpLine.tmpNormal.copy(z.normal);
+          tmpLine.line.normalVector = z.normal;
+          tmpLine.line.addToLayers(this.layers);
 
-          if (ind < normalList.length) {
-            z.exist = true;
-            z.tmpNormal.copy(normalList[ind].normal);
-            z.line.normalVector = z.tmpNormal;
-            z.line.addToLayers(this.layers);
-          } else {
-            z.exist = false;
-            z.line.removeFromLayers();
+          const tmpPoint = this.tempPoints[ind];
+          tmpPoint.exist = true;
+          tmpPoint.point.addToLayers(this.layers);
+          if (this.oneDimensional instanceof SEParametric) {
+            tmpPoint.point.positionVector = this.oneDimensional.P(z.tVal);
+            tmpPoint.tmpPosition = this.oneDimensional.P(z.tVal);
           }
+
+          // TODO: update point location?
+          // tmpPoint.tmpPosition.copy(z);
         });
+        //set the display of the normals and the vectors
+        for (let k = normalList.length; k < this.tempLines.length; k++) {
+          this.tempLines[k].exist = false;
+          this.tempLines[k].line.removeFromLayers();
+        }
+        for (let k = normalList.length; k < this.tempPoints.length; k++) {
+          this.tempPoints[k].exist = false;
+          this.tempPoints[k].point.removeFromLayers();
+        }
       }
     }
   }
@@ -562,6 +599,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       ln.line.removeFromLayers();
     });
 
+    this.tempPoints.forEach((pt: TemporaryPoint) => {
+      pt.exist = false;
+      pt.point.removeFromLayers();
+    });
     this.sePointVector.set(0, 0, 0);
 
     this.snapToTemporaryOneDimensional = null;
@@ -784,6 +825,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            console.debug(
+              "PerpendicularHandler: new command AddIntersectionPointOtherParent"
+            );
             const addIntersectionCmd = new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
               item.parent1
@@ -816,6 +860,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               item.parent1,
               item.parent2,
               newSELabel
+            );
+            console.debug(
+              "PerpendicularHandler: new command AddIntersectionPointCommand"
             );
 
             if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
