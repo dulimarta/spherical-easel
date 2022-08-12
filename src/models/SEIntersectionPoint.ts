@@ -495,56 +495,60 @@ export class SEIntersectionPoint extends SEPoint {
       this.sePrincipleParent2,
       ...this.otherSEParents
     ];
-    // check all pairs of parents for existence
-    // for (let i = 0; i < parentList.length; i++) {
-    //   for (let j = i + 1; j < parentList.length; j++) {
-    //     let object1 = parentList[i];
-    //     let object2 = parentList[j];
-    //     const rank1 = rank_of_type(object1);
-    //     const rank2 = rank_of_type(object2);
-    //     if ((rank1 === rank2 && object2.name > object1.name) || rank2 < rank1) {
-    //       const temp = object1;
-    //       object1 = object2;
-    //       object2 = temp;
-    //     }
-    //     const updatedIntersectionInfo: IntersectionReturnType[] =
-    //       intersectTwoObjects(
-    //         object1,
-    //         object2,
-    //         useSEStore().inverseTotalRotationMatrix
-    //       );
-    //     if (updatedIntersectionInfo[this.order] !== undefined) {
-    //       console.debug(
-    //         `Check existence ${
-    //           updatedIntersectionInfo[this.order].exists
-    //         }, z component of intersection ${
-    //           updatedIntersectionInfo[this.order].vector.z
-    //         }`
-    //       );
-    //       this._exists = updatedIntersectionInfo[this.order].exists;
-    //       if (this._exists) {
-    //         //As soon as this exists, exit all the loops checking the existence
-    //         return;
-    //       }
-    //     }
-    //   }
-    // }
-
-    let sum = 0;
-    parentList.forEach(parent => {
-      if (
-        parent.exists &&
-        parent.isHitAt(
-          this.locationVector, // this is the current location
-          useSEStore().zoomMagnificationFactor,
-          100000
-        )
-      ) {
-        sum += 1;
+    //check all pairs of parents for existence
+    for (let i = 0; i < parentList.length; i++) {
+      for (let j = i + 1; j < parentList.length; j++) {
+        let object1 = parentList[i];
+        let object2 = parentList[j];
+        const rank1 = rank_of_type(object1);
+        const rank2 = rank_of_type(object2);
+        if ((rank1 === rank2 && object2.name > object1.name) || rank2 < rank1) {
+          const temp = object1;
+          object1 = object2;
+          object2 = temp;
+        }
+        const updatedIntersectionInfo: IntersectionReturnType[] =
+          intersectTwoObjects(
+            object1,
+            object2,
+            useSEStore().inverseTotalRotationMatrix
+          );
+        if (updatedIntersectionInfo[this.order] !== undefined) {
+          console.debug(
+            `Check existence ${
+              updatedIntersectionInfo[this.order].exists
+            }, z component of intersection ${
+              updatedIntersectionInfo[this.order].vector.z
+            }`
+          );
+          this._exists = updatedIntersectionInfo[this.order].exists;
+          if (this._exists) {
+            //As soon as this exists, exit all the loops checking the existence
+            return;
+          }
+        }
       }
-    });
-    //console.debug("intersection point sum", sum);
-    this._exists = sum > 1; // you must be on at least two existing parents
+    }
+
+    // This doesn't work because if you create a line AB and then create two segments CD and EF on the line so that
+    //  C A E D B F is the order when seen from the front and then create a segment GH so that initially GH intersects
+    //  ED, create a point at the intersection and then shrink GH so that it doesn't visually intersect the line but if
+    // continued would intersect between E and D, it will continue to exist
+    // let sum = 0;
+    // parentList.forEach(parent => {
+    //   if (
+    //     parent.exists &&
+    //     parent.isHitAt(
+    //       this.locationVector, // this is the current location
+    //       useSEStore().zoomMagnificationFactor,
+    //       100000
+    //     )
+    //   ) {
+    //     sum += 1;
+    //   }
+    // });
+    // //console.debug("intersection point sum", sum);
+    // this._exists = sum > 1; // you must be on at least two existing parents
   }
 
   public shallowUpdate(): void {
