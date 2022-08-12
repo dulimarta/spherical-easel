@@ -476,6 +476,7 @@ export class SEEllipse
       // ) {
       //   return [this.tmpVector];
       // } else {
+      // TODO: Compute the perpendicular intersection point
       return [
         { normal: this.tmpVector1, normalAt: this.tmpVector3 },
         { normal: this.tmpVector0, normalAt: this.tmpVector2 }
@@ -509,8 +510,9 @@ export class SEEllipse
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
       // console.log("normal list length", normalList.length);
-      normalList.map((pair: NormalAndIntersection) => {
+      normalList.forEach((pair: NormalAndIntersection) => {
         pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
+        pair.normalAt.applyMatrix4(this.ref.ellipseFrame).normalize();
       });
       return normalList;
     }
