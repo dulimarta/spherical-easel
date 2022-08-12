@@ -323,9 +323,10 @@ export type ParametricVectorAndTValue = {
   vector: Vector3;
   tVal: number;
 };
-export type NormalVectorAndTValue = {
-  normal: Vector3;
-  tVal: number;
+// The following type is used for calculating perpendicular lines from a point
+export type NormalAndIntersection = {
+  normal: Vector3; // The normal vector of the perpendicular line
+  normalAt: Vector3; // The intersection between the perpendicular line and the target
 };
 
 export interface OneDimensional {
@@ -345,7 +346,7 @@ export interface OneDimensional {
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalVectorAndTValue>;
+  ): Array<NormalAndIntersection>;
 }
 
 export interface Labelable {

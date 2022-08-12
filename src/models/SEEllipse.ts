@@ -4,7 +4,7 @@ import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
+import { NormalAndIntersection, ObjectState, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
@@ -55,9 +55,10 @@ export class SEEllipse
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
   /** Use in the rotation matrix during a move event */
   private desiredZAxis = new Vector3();
-  private tmpVector = new Vector3();
+  private tmpVector0 = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
   private tmpMatrix = new Matrix4();
 
   /**
@@ -436,26 +437,28 @@ export class SEEllipse
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
-  ): NormalVectorAndTValue[] {
+  ): NormalAndIntersection[] {
     // first check to see if the sePointVector is antipodal or the same as the center of the ellipse
     // First set tmpVector to the center of the ellipse
-    this.tmpVector
+    this.tmpVector0
       .addVectors(
         this._focus1SEPoint.locationVector,
         this._focus2SEPoint.locationVector
       )
       .normalize();
     // Cross the center with the ideanUnitSphereVector
-    this.tmpVector.crossVectors(this.tmpVector, sePointVector);
+    this.tmpVector0.crossVectors(this.tmpVector0, sePointVector);
 
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+    if (this.tmpVector0.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case there are two lines containing the sePoint will be perpendicular to the ellipse,
-      this.tmpVector1.crossVectors(
-        this._focus1SEPoint.locationVector,
-        this._focus2SEPoint.locationVector
-      ).normalize; // one possible normal vector
+      this.tmpVector1
+        .crossVectors(
+          this._focus1SEPoint.locationVector,
+          this._focus2SEPoint.locationVector
+        )
+        .normalize(); // one possible normal vector
 
       // First set tmpVector1 to the center of the ellipse
       this.tmpVector2
@@ -465,7 +468,7 @@ export class SEEllipse
         )
         .normalize();
 
-      this.tmpVector.crossVectors(this.tmpVector1, this.tmpVector2);
+      this.tmpVector0.crossVectors(this.tmpVector1, this.tmpVector2);
       // // now set tmpVector1 to the other possible normal vector
       // this.tmpVector1.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // if (
@@ -474,8 +477,8 @@ export class SEEllipse
       //   return [this.tmpVector];
       // } else {
       return [
-        { normal: this.tmpVector1, tVal: NaN },
-        { normal: this.tmpVector, tVal: NaN }
+        { normal: this.tmpVector1, normalAt: this.tmpVector3 },
+        { normal: this.tmpVector0, normalAt: this.tmpVector2 }
       ];
       // }
     } else {
@@ -490,7 +493,7 @@ export class SEEllipse
       }
       const normalList =
         SENodule.getNormalsToPerpendicularLinesThruParametrically(
-          // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
           this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
           tValues, // FIXME
@@ -506,7 +509,7 @@ export class SEEllipse
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
       // console.log("normal list length", normalList.length);
-      normalList.map((pair: NormalVectorAndTValue) => {
+      normalList.map((pair: NormalAndIntersection) => {
         pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
       });
       return normalList;
@@ -528,10 +531,10 @@ export class SEEllipse
       sePointVector.angleTo(this._focus1SEPoint.locationVector) +
       sePointVector.angleTo(this._focus2SEPoint.locationVector);
 
-    this.tmpVector.copy(this._focus1SEPoint.locationVector);
+    this.tmpVector0.copy(this._focus1SEPoint.locationVector);
     this.tmpVector1.copy(this._focus2SEPoint.locationVector);
     const sumOfDistancesToAntipodesOfFoci =
-      sePointVector.angleTo(this.tmpVector.multiplyScalar(-1)) +
+      sePointVector.angleTo(this.tmpVector0.multiplyScalar(-1)) +
       sePointVector.angleTo(this.tmpVector1.multiplyScalar(-1));
 
     // If the vector is on the Ellipse or its antipode then there is one tangent
@@ -645,10 +648,10 @@ export class SEEllipse
         .copy(this.focus2SEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.focus2SEPoint.locationVector = this.tmpVector1;
-      this.tmpVector
+      this.tmpVector0
         .copy(this.ellipseSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.ellipseSEPoint.locationVector = this.tmpVector;
+      this.ellipseSEPoint.locationVector = this.tmpVector0;
       // Update all points, because we might need to update their kids!
       // First mark the kids out of date so that the update method does a topological sort
       this.ellipseSEPoint.markKidsOutOfDate();

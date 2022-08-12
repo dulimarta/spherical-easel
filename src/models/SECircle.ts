@@ -4,7 +4,7 @@ import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
+import { NormalAndIntersection, ObjectState, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_CIRCLE_BACK_STYLE,
@@ -14,7 +14,6 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 import { SELine } from "./SELine";
@@ -280,11 +279,16 @@ export class SECircle
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalVectorAndTValue[] {
-    this.tmpVector.crossVectors(
-      sePointVector,
-      this._centerSEPoint.locationVector
-    );
+  ): NormalAndIntersection[] {
+    this.tmpVector
+      .crossVectors(sePointVector, this._centerSEPoint.locationVector)
+      .normalize();
+    // To obtain the two intersection points, rotate (CW and CCW) the circle center
+    // on the plane whose normal just computed
+    this.tmpVector1.copy(this._centerSEPoint.locationVector);
+    this.tmpVector1.applyAxisAngle(this.tmpVector, this.circleRadius);
+    this.tmpVector2.copy(this._centerSEPoint.locationVector);
+    this.tmpVector2.applyAxisAngle(this.tmpVector, -this.circleRadius);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
     if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
@@ -295,7 +299,16 @@ export class SECircle
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
+    return [
+      {
+        normal: this.tmpVector,
+        normalAt: this.tmpVector1.normalize()
+      },
+      {
+        normal: this.tmpVector,
+        normalAt: this.tmpVector2.normalize()
+      }
+    ];
   }
 
   /**

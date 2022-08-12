@@ -1,7 +1,7 @@
 import { Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
 import {
-  NormalVectorAndTValue,
+  NormalAndIntersection,
   ObjectState,
   ParametricVectorAndTValue
 } from "@/types";
@@ -563,12 +563,12 @@ export abstract class SENodule implements Visitable {
    * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
    */
   protected static getNormalsToPerpendicularLinesThruParametrically(
-    // P: (t: number) => Vector3,
+    P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tValues: Array<number>,
     PPPrime?: (t: number) => Vector3
-  ): NormalVectorAndTValue[] {
+  ): NormalAndIntersection[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
@@ -595,12 +595,12 @@ export abstract class SENodule implements Visitable {
 
     // console.debug("Zeros for perpendicular lines", zeros);
 
-    const returnVectors: Array<NormalVectorAndTValue> = zeros
+    const returnVectors: Array<NormalAndIntersection> = zeros
       .map(tVal => ({
         normal: PPrime(tVal).clone().normalize(),
-        tVal
+        normalAt: P(tVal).clone().normalize()
       }))
-      .filter((pair: NormalVectorAndTValue) => !pair.normal.isZero());
+      .filter((pair: NormalAndIntersection) => !pair.normal.isZero());
 
     return returnVectors;
   }

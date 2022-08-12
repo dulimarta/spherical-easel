@@ -9,7 +9,7 @@ import {
   MinMaxNumber,
   MinMaxExpression,
   MinMaxSyntaxTrees,
-  NormalVectorAndTValue,
+  NormalAndIntersection,
   ObjectState,
   ParametricVectorAndTValue
 } from "@/types";
@@ -965,7 +965,7 @@ export class SEParametric
     return v.actionOnParametric(this);
   }
 
-  private removeDuplicateVectors(arr: Array<NormalVectorAndTValue>): void {
+  private removeDuplicateVectors(arr: Array<NormalAndIntersection>): void {
     let N = arr.length;
     const duplicatePos: Array<number> = [];
     for (let k = 0; k < N; k++) {
@@ -992,18 +992,18 @@ export class SEParametric
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     // useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalVectorAndTValue> {
+  ): Array<NormalAndIntersection> {
     // find the tracing tMin and tMax
     // const [tMin, tMax] = useFullTInterval
     //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
     //   : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
-    let normalList: Array<NormalVectorAndTValue> = [];
+    let normalList: Array<NormalAndIntersection> = [];
 
     normalList = this.partitionedTValues.flatMap(tVals =>
       SENodule.getNormalsToPerpendicularLinesThruParametrically(
-        // this.ref.P.bind(this), // bind the this so that this in the this.P method is this
+        this.P.bind(this), // bind the this so that this in the this.P method is this
         this.PPrime.bind(this), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         sePointVector,
         tVals,

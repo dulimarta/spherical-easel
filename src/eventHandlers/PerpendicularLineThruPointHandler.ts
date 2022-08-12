@@ -9,7 +9,7 @@ import {
   SEOneDimensional,
   SEOneOrTwoDimensional,
   SEIntersectionReturnType,
-  NormalVectorAndTValue
+  NormalAndIntersection
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
@@ -46,7 +46,6 @@ type TemporaryLine = {
 type TemporaryPoint = {
   point: Point;
   exist: boolean;
-  tmpPosition: Vector3;
 };
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -109,8 +108,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     });
     this.tempPoints.push({
       point: new Point(),
-      exist: false,
-      tmpPosition: new Vector3()
+      exist: false
     });
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
       this.tempLines[0].line
@@ -367,11 +365,11 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // this.temporaryLinesAdded = [];
         this.tempLines.forEach((z: TemporaryLine) => {
           z.line.removeFromLayers();
-          z.exist = false; //.temporaryLinesAdded.push(false);
+          z.exist = false;
         });
         this.tempPoints.forEach((z: TemporaryPoint) => {
           z.point.removeFromLayers();
-          z.exist = false; //.temporaryLinesAdded.push(false);
+          z.exist = false;
         });
 
         this.sePointVector.set(0, 0, 0);
@@ -518,11 +516,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
         // Add new temporary lines and points as needed
         while (this.tempLines.length < normalList.length) {
-          console.debug(
-            "Adding new temporary line to match normalList",
-            this.tempLines.length,
-            normalList.length
-          );
           const newLine = new Line();
           this.tempLines.push({
             line: newLine,
@@ -534,15 +527,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           const newPoint = new Point();
           this.tempPoints.push({
             point: newPoint,
-            exist: false,
-            tmpPosition: new Vector3()
+            exist: false
           });
           PerpendicularLineThruPointHandler.store.addTemporaryNodule(newPoint);
           // this.temporaryLinesAdded.push(false);
           // this.temporaryNormals.push(new Vector3());
         }
 
-        normalList.forEach((z: NormalVectorAndTValue, ind: number) => {
+        normalList.forEach((z: NormalAndIntersection, ind: number) => {
           const tmpLine = this.tempLines[ind];
           tmpLine.exist = true;
           tmpLine.tmpNormal.copy(z.normal);
@@ -552,13 +544,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           const tmpPoint = this.tempPoints[ind];
           tmpPoint.exist = true;
           tmpPoint.point.addToLayers(this.layers);
-          if (this.oneDimensional instanceof SEParametric) {
-            tmpPoint.point.positionVector = this.oneDimensional.P(z.tVal);
-            tmpPoint.tmpPosition = this.oneDimensional.P(z.tVal);
-          }
+
+          tmpPoint.point.positionVector = z.normalAt;
 
           // TODO: update point location?
-          // tmpPoint.tmpPosition.copy(z);
         });
         //set the display of the normals and the vectors
         for (let k = normalList.length; k < this.tempLines.length; k++) {
@@ -738,7 +727,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         sePointVector,
         this.tempLines[0].tmpNormal // ignored in the case of SEEllipse
       )
-      .map((pair: NormalVectorAndTValue) => pair.normal.normalize());
+      .map((pair: NormalAndIntersection) => pair.normal.normalize());
     // console.log("number of normals in handler", normalVectors.length);
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
     // create a number of such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
