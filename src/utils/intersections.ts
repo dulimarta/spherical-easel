@@ -1485,6 +1485,11 @@ export function intersectTwoObjects(
   two: SENodule,
   inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
+  console.debug(
+    `Intersect two objects ${one.name} and ${two.name}. order ${
+      one.name < two.name
+    }`
+  );
   if (one instanceof SELine) {
     if (two instanceof SELine) return intersectLineWithLine(one, two);
     else if (two instanceof SESegment)

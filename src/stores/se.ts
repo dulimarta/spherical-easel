@@ -1401,7 +1401,7 @@ export const useSEStore = defineStore({
      *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipse), (SESegment, SESegment),
      *      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle), (SECircle, SEEllipse)
      *      (SEEllipse, SEEllipse)
-     * If they have the same type put them in alphabetical order.
+     * If they have the same type put them in alphabetical order. (old then new)
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
     createAllIntersectionsWithLine(
@@ -2144,8 +2144,8 @@ export const useSEStore = defineStore({
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newSegment,
                 oldSegment,
+                newSegment,
                 index,
                 false
               );
@@ -4087,8 +4087,8 @@ export const useSEStore = defineStore({
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newParametric,
                 oldParametric,
+                newParametric,
                 index,
                 false
               );

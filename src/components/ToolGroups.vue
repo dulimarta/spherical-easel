@@ -144,7 +144,7 @@ export default class ToolGroups extends Vue {
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
-    console.debug(`Tool Group action mode ${this.actionMode.id}`);
+    //console.debug(`Tool Group action mode ${this.actionMode.id}`);
     this.setActionMode(this.actionMode);
   }
 

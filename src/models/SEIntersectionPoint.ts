@@ -205,7 +205,7 @@ export class SEIntersectionPoint extends SEPoint {
 
     //adding a parent can make the intersection point exist
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     //console.debug(this.name + " intersection point other parents");
     //this.otherSEParents.forEach(par => console.debug(par.name + " "));
   }
@@ -227,7 +227,7 @@ export class SEIntersectionPoint extends SEPoint {
     }
     //removing a parent can make the intersection point exist or not
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     //console.debug(this.name + " intersection point other parents");
     //this.otherSEParents.forEach(par => console.debug(par.name + " "));
   }
@@ -334,7 +334,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
 
       //update the existence as the parents have changed
-      this.setExistence();
+      this.updateExistenceWithParentChange();
       // console.debug(
       //   `Removed principle parent ${n.name} from intersection point ${this.name}`
       // );
@@ -478,7 +478,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     });
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     // console.debug(
     //   `Added principle parent ${newPrincipleParent.name} to intersection point ${this.name}`
     // );
@@ -489,7 +489,7 @@ export class SEIntersectionPoint extends SEPoint {
     }
   }
   //check to see if the new location is on two existing parents (principle or other)
-  private setExistence(): void {
+  private updateExistenceWithParentChange(): void {
     const parentList = [
       this.sePrincipleParent1,
       this.sePrincipleParent2,
@@ -519,7 +519,7 @@ export class SEIntersectionPoint extends SEPoint {
               updatedIntersectionInfo[this.order].exists
             }, z component of intersection ${
               updatedIntersectionInfo[this.order].vector.z
-            }`
+            } order ${this.order}`
           );
           this._exists = updatedIntersectionInfo[this.order].exists;
           if (this._exists) {
@@ -547,7 +547,7 @@ export class SEIntersectionPoint extends SEPoint {
     //     sum += 1;
     //   }
     // });
-    // //console.debug("intersection point sum", sum);
+    //console.debug("intersection point sum", sum);
     // this._exists = sum > 1; // you must be on at least two existing parents
   }
 
@@ -564,6 +564,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
+      console.debug(`shallow update intersection`);
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
           this.sePrincipleParent1,
@@ -580,8 +581,9 @@ export class SEIntersectionPoint extends SEPoint {
         ) {
           // if the new angle is less than Pi/2 from the old, accept the new angle
           this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+          this._exists = updatedIntersectionInfo[this.order].exists;
         } else {
-          // if the new angle is more than Pi/2 from the old, search the intersection info for a closer one
+          // if the new angle is more than Pi/2 from the old, search the intersections info for a closer one
           let minIndex = -1;
           let minAngle = Math.PI;
           updatedIntersectionInfo.forEach((item, index) => {
@@ -593,9 +595,10 @@ export class SEIntersectionPoint extends SEPoint {
           });
           this.order = minIndex;
           this.locationVector = updatedIntersectionInfo[this.order].vector;
+          this._exists = updatedIntersectionInfo[this.order].exists;
         }
         //check to see if the new location is on two existing parents (principle or other)
-        this.setExistence();
+        //this.setExistence();
       } else {
         this._exists = false;
       }
