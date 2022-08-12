@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
   Labelable,
-  NormalAndIntersection,
+  NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -298,7 +298,7 @@ export class SESegment
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalAndIntersection[] {
+  ): NormalAndPerpendicularPoint[] {
     this.tmpVector1.crossVectors(sePointVector, this._normalVector);
     // The intersection point is the cross product between the plane containing
     // the line and the plane containing the segment
@@ -311,7 +311,7 @@ export class SESegment
       //  we want to choose one line whose normal is near the oldNormal
       this.tmpVector1.copy(oldNormal);
     }
-    const normalOut: Array<NormalAndIntersection> = [];
+    const normalOut: Array<NormalAndPerpendicularPoint> = [];
     // CAUTION: Calling onSegment will destroy this.tmpVector
     if (this.onSegment(this.tmpVector2)) {
       normalOut.push({

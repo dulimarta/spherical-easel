@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
   Labelable,
-  NormalAndIntersection,
+  NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -206,7 +206,7 @@ export class SELine
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalAndIntersection[] {
+  ): NormalAndPerpendicularPoint[] {
     this.tmpVector3.crossVectors(sePointVector, this._normalVector);
 
     // The perpendicular point is the intersection between the plain containing the (new) line and

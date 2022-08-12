@@ -9,9 +9,10 @@ import {
   MinMaxNumber,
   MinMaxExpression,
   MinMaxSyntaxTrees,
-  NormalAndIntersection,
+  NormalAndPerpendicularPoint,
   ObjectState,
-  ParametricVectorAndTValue
+  ParametricVectorAndTValue,
+  NormalAndTangentPoint
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
@@ -965,7 +966,9 @@ export class SEParametric
     return v.actionOnParametric(this);
   }
 
-  private removeDuplicateVectors(arr: Array<NormalAndIntersection>): void {
+  private removeDuplicateVectors(
+    arr: Array<NormalAndPerpendicularPoint>
+  ): void {
     let N = arr.length;
     const duplicatePos: Array<number> = [];
     for (let k = 0; k < N; k++) {
@@ -992,14 +995,14 @@ export class SEParametric
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     // useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalAndIntersection> {
+  ): Array<NormalAndPerpendicularPoint> {
     // find the tracing tMin and tMax
     // const [tMin, tMax] = useFullTInterval
     //   ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
     //   : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
-    let normalList: Array<NormalAndIntersection> = [];
+    let normalList: Array<NormalAndPerpendicularPoint> = [];
 
     normalList = this.partitionedTValues.flatMap(tVals =>
       SENodule.getNormalsToPerpendicularLinesThruParametrically(
@@ -1031,7 +1034,7 @@ export class SEParametric
     sePointVector: Vector3,
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     // find the tracing tMin and tMax
@@ -1040,7 +1043,7 @@ export class SEParametric
       : this.tMinMaxExpressionValues();
     if (tMax < tMin) return [];
 
-    const normalList: Vector3[] = [];
+    const normalList: NormalAndTangentPoint[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
     if (
       this.closestVector(sePointVector).angleTo(sePointVector) <
@@ -1072,7 +1075,10 @@ export class SEParametric
       // tangentVector.applyMatrix4(this.store.inverseTotalRotationMatrix);
       tangentVector.cross(this.P(correspondingTVal));
       // avoidTValues.push(coorespondingTVal);
-      normalList.push(tangentVector.normalize());
+      normalList.push({
+        normal: tangentVector.normalize(),
+        tangentAt: this.PPrime(correspondingTVal)
+      });
     }
 
     if (normalList.length > 0)
@@ -1088,14 +1094,17 @@ export class SEParametric
           this.PPPrime.bind(this) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
         )
       )
-      .filter((vec: Vector3) => !vec.isZero(SETTINGS.tolerance / 1000));
+      .filter(
+        (pair: NormalAndTangentPoint) =>
+          !pair.normal.isZero(SETTINGS.tolerance / 1000)
+      );
     if (out.length > 0) {
       normalList.push(...out);
       console.log("normals to tangent updated", normalList);
     }
 
     normalList.forEach((vec, ind) => {
-      if (Math.abs(vec.dot(sePointVector)) > SETTINGS.tolerance / 1000) {
+      if (Math.abs(vec.normal.dot(sePointVector)) > SETTINGS.tolerance / 1000) {
         console.log(ind, "NOT through point");
       }
     });

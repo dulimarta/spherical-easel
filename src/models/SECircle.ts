@@ -4,7 +4,12 @@ import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalAndIntersection, ObjectState, OneDimensional } from "@/types";
+import {
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
+  ObjectState,
+  OneDimensional
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_CIRCLE_BACK_STYLE,
@@ -279,7 +284,7 @@ export class SECircle
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalAndIntersection[] {
+  ): NormalAndPerpendicularPoint[] {
     this.tmpVector
       .crossVectors(sePointVector, this._centerSEPoint.locationVector)
       .normalize();
@@ -321,7 +326,7 @@ export class SECircle
     sePointVector: Vector3,
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     const distanceFromCenterToVector = sePointVector.angleTo(
       this._centerSEPoint.locationVector
     );
@@ -342,7 +347,7 @@ export class SECircle
       tmpVector.crossVectors(sePointVector, this._centerSEPoint.locationVector);
       tmpVector.cross(sePointVector);
       // console.log("SECircle here 1", tmpVector.x, tmpVector.y, tmpVector.z);
-      return [tmpVector.normalize()];
+      return [{ normal: tmpVector.normalize(), tangentAt: sePointVector }];
     }
 
     // If the vector is inside the circle or the antipode of the circle there is no tangent or if the circle has radius PI/2
@@ -386,8 +391,14 @@ export class SECircle
       this._centerSEPoint.locationVector
     );
     return [
-      this.tmpVector.cross(intersections[0].vector).normalize(),
-      this.tmpVector1.cross(intersections[1].vector).normalize()
+      {
+        normal: this.tmpVector.cross(intersections[0].vector).normalize(),
+        tangentAt: intersections[0].vector
+      },
+      {
+        normal: this.tmpVector1.cross(intersections[1].vector).normalize(),
+        tangentAt: intersections[1].vector
+      }
     ];
   }
 

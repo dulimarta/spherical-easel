@@ -4,7 +4,12 @@ import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalAndIntersection, ObjectState, OneDimensional } from "@/types";
+import {
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
+  ObjectState,
+  OneDimensional
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
@@ -437,7 +442,7 @@ export class SEEllipse
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
-  ): NormalAndIntersection[] {
+  ): NormalAndPerpendicularPoint[] {
     // first check to see if the sePointVector is antipodal or the same as the center of the ellipse
     // First set tmpVector to the center of the ellipse
     this.tmpVector0
@@ -510,7 +515,7 @@ export class SEEllipse
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
       // console.log("normal list length", normalList.length);
-      normalList.forEach((pair: NormalAndIntersection) => {
+      normalList.forEach((pair: NormalAndPerpendicularPoint) => {
         pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
         pair.normalAt.applyMatrix4(this.ref.ellipseFrame).normalize();
       });
@@ -528,7 +533,7 @@ export class SEEllipse
     sePointVector: Vector3,
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     const sumOfDistancesToFoci =
       sePointVector.angleTo(this._focus1SEPoint.locationVector) +
       sePointVector.angleTo(this._focus2SEPoint.locationVector);
@@ -564,7 +569,7 @@ export class SEEllipse
       for (let i = 0; i <= 100; i++) {
         tValues.push((i * 2 * Math.PI) / 100);
       }
-      const coorespondingTVal = SENodule.closestVectorParametrically(
+      const closest = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
@@ -572,14 +577,14 @@ export class SEEllipse
         // this.ref.tMin,
         // this.ref.tMax,
         this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
-      ).tVal;
+      );
       // console.log("coord t val", coorespondingTVal);
       const tangentVector = new Vector3();
-      tangentVector.copy(this.Ep(coorespondingTVal));
+      tangentVector.copy(this.Ep(closest.tVal));
       tangentVector.applyMatrix4(this.ref.ellipseFrame);
       tangentVector.cross(sePointVector);
-      // console.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
-      return [tangentVector.normalize()];
+      // conso{le.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
+      return [{ normal: tangentVector.normalize(), tangentAt: closest.vector }];
     }
     // If the vector is inside the Ellipse or the antipode of the Ellipse there is no tangent or the ellipse is a great circle (a=Pi/2)
     if (
@@ -612,10 +617,12 @@ export class SEEllipse
       // this.ref.tMax,
       this.Epp.bind(this)
     );
+    normalList.forEach(pair => {
+      pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
+      pair.tangentAt.applyMatrix4(this.ref.ellipseFrame).normalize();
+    });
 
-    return normalList.map(vec =>
-      vec.applyMatrix4(this.ref.ellipseFrame).normalize()
-    );
+    return normalList;
   }
 
   /**

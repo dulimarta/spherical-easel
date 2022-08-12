@@ -1,7 +1,8 @@
 import { Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
 import {
-  NormalAndIntersection,
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
   ObjectState,
   ParametricVectorAndTValue
 } from "@/types";
@@ -568,7 +569,7 @@ export abstract class SENodule implements Visitable {
     unitVec: Vector3,
     tValues: Array<number>,
     PPPrime?: (t: number) => Vector3
-  ): NormalAndIntersection[] {
+  ): NormalAndPerpendicularPoint[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
@@ -595,12 +596,12 @@ export abstract class SENodule implements Visitable {
 
     // console.debug("Zeros for perpendicular lines", zeros);
 
-    const returnVectors: Array<NormalAndIntersection> = zeros
+    const returnVectors: Array<NormalAndPerpendicularPoint> = zeros
       .map(tVal => ({
         normal: PPrime(tVal).clone().normalize(),
         normalAt: P(tVal).clone().normalize()
       }))
-      .filter((pair: NormalAndIntersection) => !pair.normal.isZero());
+      .filter((pair: NormalAndPerpendicularPoint) => !pair.normal.isZero());
 
     return returnVectors;
   }
@@ -621,7 +622,7 @@ export abstract class SENodule implements Visitable {
     tValues: Array<number>,
     // avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
 
@@ -650,14 +651,12 @@ export abstract class SENodule implements Visitable {
       dp
     );
 
-    const returnVectors: Vector3[] = [];
-    zeros.forEach(tVal => {
-      const temp = new Vector3();
+    return zeros.map(tVal => {
+      const vec = new Vector3();
 
-      temp.copy(P(tVal).cross(unitVec));
-      returnVectors.push(temp.normalize());
+      vec.copy(P(tVal).cross(unitVec));
+      return { normal: vec, tangentAt: P(tVal).clone() };
     });
-    return returnVectors;
   }
 
   // Assumption: along the provided T-values, the curve is C1-continuous.
