@@ -223,6 +223,7 @@ export default class IntersectionPointHandler extends Highlighter {
       this.oneDimensional2 = null;
     }
   }
+
   doIntersection(
     oneDimensional1: SEOneDimensional,
     oneDimensional2: SEOneDimensional

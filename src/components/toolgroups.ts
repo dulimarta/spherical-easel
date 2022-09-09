@@ -13,7 +13,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.select",
         toolTipMessage: "SelectToolTipMessage",
         toolUseMessage: "SelectToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 5,
@@ -22,34 +23,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.delete",
         toolTipMessage: "DeleteToolTipMessage",
         toolUseMessage: "DeleteToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 25,
-        actionModeValue: "zoomIn",
-        displayedName: "PanZoomInDisplayedName",
-        icon: "$vuetify.icons.value.zoomIn",
-        toolTipMessage: "PanZoomInToolTipMessage",
-        toolUseMessage: "PanZoomInToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 30,
-        actionModeValue: "zoomOut",
-        displayedName: "PanZoomOutDisplayedName",
-        icon: "$vuetify.icons.value.zoomOut",
-        toolTipMessage: "PanZoomOutToolTipMessage",
-        toolUseMessage: "PanZoomOutToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 35,
-        actionModeValue: "zoomFit",
-        displayedName: "ZoomFitDisplayedName",
-        icon: "$vuetify.icons.value.zoomFit",
-        toolTipMessage: "ZoomFitToolTipMessage",
-        toolUseMessage: "ZoomFitToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -63,7 +38,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.hide",
         toolTipMessage: "HideObjectToolTipMessage",
         toolUseMessage: "HideObjectToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 5,
@@ -72,7 +48,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.toggleLabelDisplay",
         toolTipMessage: "ToggleLabelToolTipMessage",
         toolUseMessage: "ToggleLabelToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
 
       {
@@ -82,7 +59,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.move",
         toolTipMessage: "MoveObjectToolTipMessage",
         toolUseMessage: "MoveObjectToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 20,
@@ -91,7 +69,38 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.rotate",
         toolTipMessage: "RotateSphereToolTipMessage",
         toolUseMessage: "RotateSphereToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+      {
+        id: 25,
+        actionModeValue: "zoomIn",
+        displayedName: "PanZoomInDisplayedName",
+        icon: "$vuetify.icons.value.zoomIn",
+        toolTipMessage: "PanZoomInToolTipMessage",
+        toolUseMessage: "PanZoomInToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+      {
+        id: 30,
+        actionModeValue: "zoomOut",
+        displayedName: "PanZoomOutDisplayedName",
+        icon: "$vuetify.icons.value.zoomOut",
+        toolTipMessage: "PanZoomOutToolTipMessage",
+        toolUseMessage: "PanZoomOutToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+      {
+        id: 35,
+        actionModeValue: "zoomFit",
+        displayedName: "ZoomFitDisplayedName",
+        icon: "$vuetify.icons.value.zoomFit",
+        toolTipMessage: "ZoomFitToolTipMessage",
+        toolUseMessage: "ZoomFitToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -105,7 +114,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.point",
         toolTipMessage: "CreatePointToolTipMessage",
         toolUseMessage: "CreatePointToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 5,
@@ -114,7 +124,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.line",
         toolTipMessage: "CreateLineToolTipMessage",
         toolUseMessage: "CreateLineToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 10,
@@ -123,7 +134,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.segment",
         toolTipMessage: "CreateLineSegmentToolTipMessage",
         toolUseMessage: "CreateLineSegmentToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 20,
@@ -132,7 +144,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.circle",
         toolTipMessage: "CreateCircleToolTipMessage",
         toolUseMessage: "CreateCircleToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -141,75 +154,84 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "midpoint",
-        displayedName: "CreateMidpointDisplayedName",
-        icon: "$vuetify.icons.value.midpoint",
-        toolTipMessage: "CreateMidpointToolTipMessage",
-        toolUseMessage: "CreateMidpointToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 5,
-        actionModeValue: "angleBisector",
-        displayedName: "CreateAngleBisectorDisplayedName",
-        icon: "$vuetify.icons.value.angleBisector",
-        toolTipMessage: "CreateAngleBisectorToolTipMessage",
-        toolUseMessage: "CreateAngleBisectorToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 15,
         actionModeValue: "antipodalPoint",
         displayedName: "CreateAntipodalPointDisplayedName",
         icon: "$vuetify.icons.value.antipodalPoint",
         toolTipMessage: "CreateAntipodalPointToolTipMessage",
         toolUseMessage: "CreateAntipodalPointToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
-        id: 20,
+        id: 5,
         actionModeValue: "polar",
         displayedName: "CreatePolarDisplayedName",
         icon: "$vuetify.icons.value.polar",
         toolTipMessage: "CreatePolarToolTipMessage",
         toolUseMessage: "CreatePolarToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
-        id: 25,
+        id: 10,
+        actionModeValue: "midpoint",
+        displayedName: "CreateMidpointDisplayedName",
+        icon: "$vuetify.icons.value.midpoint",
+        toolTipMessage: "CreateMidpointToolTipMessage",
+        toolUseMessage: "CreateMidpointToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+      {
+        id: 15,
+        actionModeValue: "angleBisector",
+        displayedName: "CreateAngleBisectorDisplayedName",
+        icon: "$vuetify.icons.value.angleBisector",
+        toolTipMessage: "CreateAngleBisectorToolTipMessage",
+        toolUseMessage: "CreateAngleBisectorToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+
+      {
+        id: 20,
         actionModeValue: "tangent",
         displayedName: "CreateTangentDisplayedName",
         icon: "$vuetify.icons.value.tangent",
         toolTipMessage: "CreateTangentToolTipMessage",
         toolUseMessage: "CreateTangentToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
-        id: 30,
+        id: 25,
         actionModeValue: "perpendicular",
         displayedName: "CreatePerpendicularDisplayedName",
         icon: "$vuetify.icons.value.perpendicular",
         toolTipMessage: "CreatePerpendicularToolTipMessage",
         toolUseMessage: "CreatePerpendicularToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
-        id: 50,
+        id: 30,
         actionModeValue: "intersect",
         displayedName: "CreateIntersectionDisplayedName",
         icon: "$vuetify.icons.value.intersect",
         toolTipMessage: "CreateIntersectionToolTipMessage",
         toolUseMessage: "CreateIntersectionToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
-        id: 45,
+        id: 55,
         actionModeValue: "pointOnObject",
         displayedName: "CreatePointOnOneDimDisplayedName",
         icon: "$vuetify.icons.value.pointOnObject",
         toolTipMessage: "CreatePointOnOneDimToolTipMessage",
         toolUseMessage: "CreatePointOnOneDimToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -218,12 +240,13 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "segmentLength",
-        displayedName: "CreateSegmentLengthDisplayedName",
-        icon: "$vuetify.icons.value.segmentLength",
-        toolTipMessage: "CreateSegmentLengthToolTipMessage",
-        toolUseMessage: "CreateSegmentLengthToolUseMessage",
-        displayToolUseMessage: false
+        actionModeValue: "angle",
+        displayedName: "CreateAngleDisplayedName",
+        icon: "$vuetify.icons.value.angle",
+        toolTipMessage: "CreateAngleToolTipMessage",
+        toolUseMessage: "CreateAngleToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 5,
@@ -232,16 +255,18 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.pointDistance",
         toolTipMessage: "CreatePointDistanceToolTipMessage",
         toolUseMessage: "CreatePointDistanceToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 10,
-        actionModeValue: "angle",
-        displayedName: "CreateAngleDisplayedName",
-        icon: "$vuetify.icons.value.angle",
-        toolTipMessage: "CreateAngleToolTipMessage",
-        toolUseMessage: "CreateAngleToolUseMessage",
-        displayToolUseMessage: false
+        actionModeValue: "segmentLength",
+        displayedName: "CreateSegmentLengthDisplayedName",
+        icon: "$vuetify.icons.value.segmentLength",
+        toolTipMessage: "CreateSegmentLengthToolTipMessage",
+        toolUseMessage: "CreateSegmentLengthToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 15,
@@ -250,7 +275,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.coordinate",
         toolTipMessage: "CreateCoordinateToolTipMessage",
         toolUseMessage: "CreateCoordinateToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 20,
@@ -259,7 +285,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.measureTriangle",
         toolTipMessage: "MeasureTriangleToolTipMessage",
         toolUseMessage: "MeasureTriangleToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 25,
@@ -268,7 +295,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.measurePolygon",
         toolTipMessage: "MeasurePolygonToolTipMessage",
         toolUseMessage: "MeasurePolygonToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -282,7 +310,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.ellipse",
         toolTipMessage: "CreateEllipseToolTipMessage",
         toolUseMessage: "CreateEllipseToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -290,13 +319,24 @@ export const toolGroups: Array<ToolButtonGroup> = [
     group: "AdvancedTools",
     children: [
       {
+        id: 0,
+        actionModeValue: "threePointCircle",
+        displayedName: "CreateThreePointCircleDisplayedName",
+        icon: "$vuetify.icons.value.threePointCircle",
+        toolTipMessage: "CreateThreePointCircleToolTipMessage",
+        toolUseMessage: "CreateThreePointCircleToolUseMessage",
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+      },
+      {
         id: 10,
         actionModeValue: "nSectPoint",
         displayedName: "CreateNSectSegmentDisplayedName",
         icon: "$vuetify.icons.value.nSectPoint",
         toolTipMessage: "CreateNSectSegmentToolTipMessage",
         toolUseMessage: "CreateNSectSegmentToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 15,
@@ -305,16 +345,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.nSectLine",
         toolTipMessage: "CreateNSectAngleToolTipMessage",
         toolUseMessage: "CreateNSectAngleToolUseMessage",
-        displayToolUseMessage: false
-      },
-      {
-        id: 20,
-        actionModeValue: "threePointCircle",
-        displayedName: "CreateThreePointCircleDisplayedName",
-        icon: "$vuetify.icons.value.threePointCircle",
-        toolTipMessage: "CreateThreePointCircleToolTipMessage",
-        toolUseMessage: "CreateThreePointCircleToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -328,7 +360,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.pointReflection",
         toolTipMessage: "CreatePointReflectionToolTipMessage",
         toolUseMessage: "CreatePointReflectionToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 5,
@@ -337,7 +370,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.reflection",
         toolTipMessage: "CreateReflectionToolTipMessage",
         toolUseMessage: "CreateReflectionToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 10,
@@ -346,7 +380,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.rotation",
         toolTipMessage: "CreateRotationToolTipMessage",
         toolUseMessage: "CreateRotationToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 15,
@@ -355,7 +390,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.translation",
         toolTipMessage: "CreateTranslationToolTipMessage",
         toolUseMessage: "CreateTranslationToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 20,
@@ -364,7 +400,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.inversion",
         toolTipMessage: "CreateInversionToolTipMessage",
         toolUseMessage: "CreateInversionToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       },
       {
         id: 25,
@@ -373,7 +410,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.applyTransformation",
         toolTipMessage: "ApplyTransformationToolTipMessage",
         toolUseMessage: "ApplyTransformationToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   },
@@ -387,7 +425,8 @@ export const toolGroups: Array<ToolButtonGroup> = [
         icon: "$vuetify.icons.value.measuredCircle",
         toolTipMessage: "CreateMeasuredCircleToolTipMessage",
         toolUseMessage: "CreateMeasuredCircleToolUseMessage",
-        displayToolUseMessage: false
+        displayToolUseMessage: false,
+        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
       }
     ]
   }

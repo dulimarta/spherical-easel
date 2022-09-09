@@ -5,12 +5,16 @@
     :ref="button.actionModeValue">
     <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
+    <!-- -->
     <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       :disabled="displayToolTips || $attrs.disabled">
       <template v-slot:activator="{ on }">
         <v-btn icon
+          id="btnA"
+          :disabled="disabledTools.some(mode => mode===button.actionModeValue) &&
+          !editMode"
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
@@ -23,11 +27,31 @@
           x-large
           :elevation="elev">
           <v-flex xs12>
-            <v-icon x-large>{{ button.icon }}</v-icon>
+            <!-- <div
+              v-if="disabledTools.some(mode => mode===button.actionModeValue)">
+              <v-icon x-large>
+                {{ button.disabledIcon }}
+              </v-icon>
+            </div>-->
+            <!--- I wish the alternate disabled button icon would work
+             but they don't you either get only the normal icon or the disabled (blank) icon, but not both-->
+            <!-- so I used the remove disabled css trick found here:
+              https://stackoverflow.com/questions/54009721/how-to-disable-vuetify-button-without-changing-colors
+             -->
+            <v-icon x-large>
+              {{ button.icon }}
+            </v-icon>
+
+            <!-- v-if="!disabledTools.some(mode => mode===button.actionModeValue)" -->
             <p class="button-text"
               :style="'--user-font-weight: ' + weight"
               v-html="$t('buttons.' + button.displayedName )">
             </p>
+            <!--  <p v-else
+              class="button-text"
+              :style="'--user-font-weight: ' + 200"
+              v-html="$t('buttons.' + button.displayedName )">
+            </p>-->
           </v-flex>
           <slot name="overlay"></slot>
         </v-btn>
@@ -87,7 +111,12 @@ import { SETransformation } from "@/models/SETransformation";
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component({
   computed: {
-    ...mapState(useSEStore, ["actionMode", "expressions", "seTransformations"])
+    ...mapState(useSEStore, [
+      "actionMode",
+      "expressions",
+      "seTransformations",
+      "disabledTools"
+    ])
   }
 })
 export default class ToolButton extends Vue {
@@ -112,25 +141,39 @@ export default class ToolButton extends Vue {
   @Prop({ default: null })
   button!: ToolButtonType;
 
+  @Prop({ default: false })
+  editMode!: boolean;
+
   private elev = 0;
-  private weight = "normal";
+  private weight = 400;
 
   private color = "red";
 
   readonly actionMode!: ActionMode;
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
+  readonly disabledTools!: ActionMode[];
+
+  created() {
+    // Trick to remove class after initializing form
+    this.$nextTick(() => {
+      const blah = document.getElementById("btnA");
+      if (blah !== null) {
+        blah.classList.remove("v-btn--disabled");
+      }
+    });
+  }
 
   @Watch("actionMode")
   private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
       // console.log("set elevation 1", this.button.actionModeValue);
       this.elev = 5;
-      this.weight = "bold";
+      this.weight = 700;
     } else {
       // console.log("set elevation 0", this.button.actionModeValue);
       this.elev = 0;
-      this.weight = "normal";
+      this.weight = 400;
     }
   }
 
@@ -215,5 +258,8 @@ export default class ToolButton extends Vue {
 }
 .btn-round-border-radius {
   size: 60%;
+}
+button.v-btn[disabled] {
+  opacity: 0.4;
 }
 </style>

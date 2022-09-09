@@ -18,9 +18,9 @@ export class AddIntersectionPointOtherParent extends Command {
 
   do(): void {
     // Add the parent to the list of parents in the SEIntersectionPoint
-    console.debug(
-      `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.seIntersectionPoint.name}, add ${this.seOtherParent.name}`
-    );
+    // console.debug(
+    //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.seIntersectionPoint.name}, add ${this.seOtherParent.name}`
+    // );
     this.seIntersectionPoint.addIntersectionOtherParent(this.seOtherParent);
   }
 
@@ -29,9 +29,9 @@ export class AddIntersectionPointOtherParent extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.seIntersectionPoint.name}, remove ${this.seOtherParent.name}`
-    );
+    // console.debug(
+    //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.seIntersectionPoint.name}, remove ${this.seOtherParent.name}`
+    // );
     this.seIntersectionPoint.removeIntersectionOtherParent(this.seOtherParent);
   }
 

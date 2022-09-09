@@ -885,6 +885,13 @@ export const SETTINGS = {
     },
     // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
     // and not in vuetify.ts because these must be accessible to both the src code and VuePress.
+    blank: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: false,
+        filePath: "../../icons/iconBlankPaths.svg"
+      }
+    },
     point: {
       props: {
         emphasizeTypes: [["point", "front", "back"]],
