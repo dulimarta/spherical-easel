@@ -310,7 +310,7 @@ import { mapActions, mapState } from "pinia";
     Dialog
   },
   methods: {
-    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers"])
+    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers", "updateDisplay"])
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
@@ -327,6 +327,7 @@ export default class Easel extends Vue {
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
   readonly removeAllFromLayers!: () => void;
   readonly init!: () => void;
+  readonly updateDisplay!: () => void;
 
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -438,7 +439,9 @@ export default class Easel extends Vue {
       .then(async (doc: DocumentSnapshot) => {
         if (doc.exists) {
           const { script } = doc.data() as ConstructionInFirestore;
+          // Check whether the script is inline or stored in Firebase storage
           if (script.startsWith("https:")) {
+            // The script must be fetched from Firebase storage
             const scriptText = await this.$appStorage
               .refFromURL(script)
               .getDownloadURL()
@@ -446,8 +449,10 @@ export default class Easel extends Vue {
               .then((r: AxiosResponse) => r.data);
             run(JSON.parse(scriptText) as ConstructionScript);
           } else {
+            // The script is inline
             run(JSON.parse(script) as ConstructionScript);
           }
+          this.updateDisplay()
         } else {
           EventBus.fire("show-alert", {
             key: "constructions.constructionNotFound",
