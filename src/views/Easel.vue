@@ -42,7 +42,8 @@
                   id="responsiveBox"
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
-                  <div class="anchored top left">
+                  <div class="anchored top left" v-for="(shortcut, index) in topLeftShortcuts" :key="index">
+                   
                     <!-- <v-btn-toggle
                     v-model="actionMode"
                     @change="switchActionMode"
@@ -50,6 +51,7 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
+                    
                     <v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
                       :close-delay="toolTipCloseDelay">
@@ -291,6 +293,7 @@ import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
+import ShortcutIcon from "../components/ShortcutIcon.vue";
 
 /**
  * Split panel width distribution (percentages):
@@ -360,6 +363,56 @@ export default class Easel extends Vue {
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
+
+  topLeftShortcuts = [
+    {
+      labelMsg: "main.UndoLastAction",
+      icon: SETTINGS.icons.undo,
+      clickFunc: this.undoEdit,
+      iconColor: "blue",
+      btnColor: null,
+      disableBtn: !this.stylePanelMinified || !this.undoEnabled
+    },
+    {
+      labelMsg: "main.RedoLastAction",
+      icon: SETTINGS.icons.redo,
+      clickFunc: this.redoAction,
+      iconColor: "blue",
+      btnColor: null,
+      disableBtn: !this.stylePanelMinified || !this.undoEnabled
+    }
+  ];
+  private topRightShortcuts = [
+    {
+      labelMsg: "constructions.resetSphere",
+      icon: SETTINGS.icons.clearConstruction,
+      clickFunc: this.$refs.clearConstructionDialog.show(),
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: null
+    }
+  ];
+  private bottomRightShortcuts = [
+    {
+      labelMsg: "buttons.PanZoomInToolTipMessage",
+      icon: SETTINGS.icons.zoomOut,
+      clickFunc: this.enableZoomOut,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    },
+
+    {
+      labelMsg: "buttons.ZoomFitToolTipMessage",
+      icon: SETTINGS.icons.zoomFit,
+      clickFunc: this.enableZoomOut,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    }
+  ];
+
+
 
   $refs!: {
     responsiveBox: VueComponent;
