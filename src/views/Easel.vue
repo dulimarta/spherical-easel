@@ -42,8 +42,10 @@
                   id="responsiveBox"
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
-                  <div class="anchored top left" v-for="(shortcut, index) in topLeftShortcuts" :key="index">
-                   
+                  <div class="anchored top left">
+                    <div v-for="shortcut, index in topLeftShortcuts" :key="index">
+                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    </div>
                     <!-- <v-btn-toggle
                     v-model="actionMode"
                     @change="switchActionMode"
@@ -52,41 +54,7 @@
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
                     
-                    <v-tooltip bottom
-                      :open-delay="toolTipOpenDelay"
-                      :close-delay="toolTipCloseDelay">
-                      <!-- TODO:
-                        When not available they should be greyed out (i.e. disabled).-->
-                      <template v-slot:activator="{ on }">
-                        <v-btn
-                          :disabled="!stylePanelMinified || !undoEnabled"
-                          icon
-                          @click="undoEdit"
-                          v-on="on">
-                          <v-icon color="blue"
-                            :disabled="!stylePanelMinified || !undoEnabled">
-                            $undo</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>{{ $t("main.UndoLastAction") }}</span>
-                    </v-tooltip>
-                    <v-tooltip bottom
-                      :open-delay="toolTipOpenDelay"
-                      :close-delay="toolTipCloseDelay">
-                      <template v-slot:activator="{ on }">
-                        <v-btn
-                          :disabled="!stylePanelMinified || !redoEnabled"
-                          icon
-                          @click="redoAction"
-                          v-on="on">
-                          <v-icon color="blue"
-                            :disabled="!stylePanelMinified || !redoEnabled">
-                            $redo</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>{{ $t("main.RedoLastAction") }}</span>
-                    </v-tooltip>
-                  </div>
+                    </div>
                   <div class="anchored top right">
                     <!--<v-tooltip bottom
                     v-if="accountEnabled"
@@ -102,7 +70,13 @@
                     </template>
                     <span>Reset sphere</span>
                   </v-tooltip>-->
-                    <v-tooltip bottom
+
+                  <div v-for="shortcut, index in topRightShortcuts" :key="index">
+                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    </div>
+
+                 
+                    <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
                       :close-delay="toolTipCloseDelay">
                       <template v-slot:activator="{ on }">
@@ -114,10 +88,13 @@
                         </v-btn>
                       </template>
                       <span>{{$t('constructions.resetSphere')}}</span>
-                    </v-tooltip>
+                    </v-tooltip>-->
                   </div>
                   <div class="anchored bottom right">
-                    <v-tooltip bottom
+                    <div v-for="shortcut, index in bottomRightShortcuts" :key="index">
+                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    </div>
+                    <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
                       :close-delay="toolTipCloseDelay">
                       <template v-slot:activator="{ on }">
@@ -158,7 +135,8 @@
                         </v-btn>
                       </template>
                       <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
-                    </v-tooltip>
+                    </v-tooltip>-->
+
                   </div>
                 </v-responsive>
               </v-row>
@@ -293,7 +271,9 @@ import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
-import ShortcutIcon from "../components/ShortcutIcon.vue";
+import ShortcutIcon from "@/components/ShortcutIcon.vue";
+
+
 
 /**
  * Split panel width distribution (percentages):
@@ -310,7 +290,8 @@ import ShortcutIcon from "../components/ShortcutIcon.vue";
     ToolButton,
     StylePanel,
     IconBase,
-    Dialog
+    Dialog,
+    ShortcutIcon
   },
   methods: {
     ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers", "updateDisplay"])
@@ -364,55 +345,6 @@ export default class Easel extends Vue {
   private uid = "";
   private authSubscription!: Unsubscribe;
 
-  topLeftShortcuts = [
-    {
-      labelMsg: "main.UndoLastAction",
-      icon: SETTINGS.icons.undo,
-      clickFunc: this.undoEdit,
-      iconColor: "blue",
-      btnColor: null,
-      disableBtn: !this.stylePanelMinified || !this.undoEnabled
-    },
-    {
-      labelMsg: "main.RedoLastAction",
-      icon: SETTINGS.icons.redo,
-      clickFunc: this.redoAction,
-      iconColor: "blue",
-      btnColor: null,
-      disableBtn: !this.stylePanelMinified || !this.undoEnabled
-    }
-  ];
-  private topRightShortcuts = [
-    {
-      labelMsg: "constructions.resetSphere",
-      icon: SETTINGS.icons.clearConstruction,
-      clickFunc: this.$refs.clearConstructionDialog.show(),
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: null
-    }
-  ];
-  private bottomRightShortcuts = [
-    {
-      labelMsg: "buttons.PanZoomInToolTipMessage",
-      icon: SETTINGS.icons.zoomOut,
-      clickFunc: this.enableZoomOut,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    },
-
-    {
-      labelMsg: "buttons.ZoomFitToolTipMessage",
-      icon: SETTINGS.icons.zoomFit,
-      clickFunc: this.enableZoomOut,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    }
-  ];
-
-
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -423,12 +355,80 @@ export default class Easel extends Vue {
     clearConstructionDialog: VueComponent & DialogAction;
   };
 
+  get topLeftShortcuts() { 
+    return [
+    { 
+      labelMsg: "main.UndoLastAction",
+      icon: SETTINGS.icons.undo.props.mdiIcon,
+      clickFunc: this.undoEdit,
+      iconColor: "blue",
+      btnColor: null,
+      disableBtn: !this.stylePanelMinified || !this.undoEnabled
+    },
+    {
+      labelMsg: "main.RedoLastAction",
+      icon: SETTINGS.icons.redo.props.mdiIcon,
+      clickFunc: this.redoAction,
+      iconColor: "blue",
+      btnColor: null,
+      disableBtn: !this.stylePanelMinified || !this.undoEnabled
+    }
+  ];
+
+  
+  }
+  get topRightShortcuts() { 
+    return [
+    {
+      labelMsg: 'constructions.resetSphere',
+      icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
+      clickFunc: () => {this.$refs.clearConstructionDialog.show()},
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    }
+  ];
+  }
+
+  get bottomRightShortcuts() {
+    return [
+    {
+      labelMsg: "buttons.PanZoomInToolTipMessage",
+      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
+      clickFunc: this.enableZoomIn,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    },
+
+    {
+      labelMsg: "buttons.PanZoomOutToolTipMessage",
+      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
+      clickFunc: this.enableZoomOut,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    },
+
+    {
+      labelMsg: "buttons.ZoomFitToolTipMessage",
+      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
+      clickFunc: this.enableZoomOut,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false
+    }
+  ];
+  }
+
   //#region magnificationUpdate
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
     EventBus.listen("undo-enabled", this.setUndoEnabled);
     EventBus.listen("redo-enabled", this.setRedoEnabled);
+
+
   }
   //#endregion magnificationUpdate
 
@@ -439,6 +439,7 @@ export default class Easel extends Vue {
   }
 
   private setUndoEnabled(e: { value: boolean }): void {
+    console.log("I was enabled");
     this.undoEnabled = e.value;
   }
   private setRedoEnabled(e: { value: boolean }): void {
