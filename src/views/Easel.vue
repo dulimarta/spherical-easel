@@ -43,8 +43,14 @@
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
-                    <div v-for="shortcut, index in topLeftShortcuts" :key="index">
-                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    <div v-for="shortcut, index in topLeftShortcuts"
+                      :key="index">
+                      <ShortcutIcon @click="shortcut.clickFunc"
+                        :labelMsg="shortcut.labelMsg"
+                        :icon="shortcut.icon"
+                        :iconColor="shortcut.iconColor"
+                        :btnColor="shortcut.btnColor"
+                        :disableBtn="shortcut.disableBtn" />
                     </div>
                     <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -53,8 +59,27 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
-                    
+
+                  </div>
+                  <div class="anchored bottom left">
+                    <div v-for="shortcut, index in bottomLeftShortcuts"
+                      :key="index">
+                      <ShortcutIcon @click="shortcut.clickFunc"
+                        :labelMsg="shortcut.labelMsg"
+                        :icon="shortcut.icon"
+                        :iconColor="shortcut.iconColor"
+                        :btnColor="shortcut.btnColor"
+                        :disableBtn="shortcut.disableBtn" />
                     </div>
+                    <!-- <v-btn-toggle
+                    v-model="actionMode"
+                    @change="switchActionMode"
+                    class="mr-2 d-flex flex-wrap accent"
+                  >
+                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
+                      </v-btn-toggle>-->
+
+                  </div>
                   <div class="anchored top right">
                     <!--<v-tooltip bottom
                     v-if="accountEnabled"
@@ -71,11 +96,16 @@
                     <span>Reset sphere</span>
                   </v-tooltip>-->
 
-                  <div v-for="shortcut, index in topRightShortcuts" :key="index">
-                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    <div v-for="shortcut, index in topRightShortcuts"
+                      :key="index">
+                      <ShortcutIcon @click="shortcut.clickFunc"
+                        :labelMsg="shortcut.labelMsg"
+                        :icon="shortcut.icon"
+                        :iconColor="shortcut.iconColor"
+                        :btnColor="shortcut.btnColor"
+                        :disableBtn="shortcut.disableBtn" />
                     </div>
 
-                 
                     <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
                       :close-delay="toolTipCloseDelay">
@@ -91,8 +121,14 @@
                     </v-tooltip>-->
                   </div>
                   <div class="anchored bottom right">
-                    <div v-for="shortcut, index in bottomRightShortcuts" :key="index">
-                   <ShortcutIcon @click="shortcut.clickFunc" :labelMsg="shortcut.labelMsg" :icon="shortcut.icon" :iconColor="shortcut.iconColor" :btnColor="shortcut.btnColor" :disableBtn="shortcut.disableBtn" />
+                    <div v-for="shortcut, index in bottomRightShortcuts"
+                      :key="index">
+                      <ShortcutIcon @click="shortcut.clickFunc"
+                        :labelMsg="shortcut.labelMsg"
+                        :icon="shortcut.icon"
+                        :iconColor="shortcut.iconColor"
+                        :btnColor="shortcut.btnColor"
+                        :disableBtn="shortcut.disableBtn" />
                     </div>
                     <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
@@ -169,6 +205,74 @@
               <strong class="warning--text"
                 v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').slice(0,-6) + ': '"></strong>
               {{ $t("buttons.ZoomFitToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayCreateCircleToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.CreateCircleDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+              {{ $t("buttons.CreateCircleToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayCreatePointToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.CreatePointDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+              {{ $t("buttons.CreatePointToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayCreateSegmentToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.CreateSegmentDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+              {{ $t("buttons.CreateSegmentToolUseMessage") }}
+            </span>
+            <v-btn @click="displayToolUseMessage = false"
+              icon>
+              <v-icon color="success">mdi-close</v-icon>
+            </v-btn>
+          </v-snackbar>
+
+          <v-snackbar v-model="displayCreateLineToolUseMessage"
+            bottom
+            left
+            :timeout="toolUseMessageDelay"
+            :value="displayToolUseMessage"
+            multi-line>
+            <span>
+              <strong class="warning--text"
+                v-html="$t('buttons.CreateLineDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+              {{ $t("buttons.CreateLineToolUseMessage") }}
             </span>
             <v-btn @click="displayToolUseMessage = false"
               icon>
@@ -273,8 +377,6 @@ import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 
-
-
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -294,7 +396,12 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
     ShortcutIcon
   },
   methods: {
-    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers", "updateDisplay"])
+    ...mapActions(useSEStore, [
+      "setActionMode",
+      "init",
+      "removeAllFromLayers",
+      "updateDisplay"
+    ])
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
@@ -335,6 +442,11 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
+  private displayCreateCircleToolUseMessage = false;
+  private displayCreatePointToolUseMessage = false;
+  private displayCreateSegmentToolUseMessage = false;
+  private displayCreateLineToolUseMessage = false;
+
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
     name: ""
@@ -345,7 +457,6 @@ export default class Easel extends Vue {
   private uid = "";
   private authSubscription!: Unsubscribe;
 
-
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
@@ -355,70 +466,110 @@ export default class Easel extends Vue {
     clearConstructionDialog: VueComponent & DialogAction;
   };
 
-  get topLeftShortcuts() { 
+  get topLeftShortcuts() {
     return [
-    { 
-      labelMsg: "main.UndoLastAction",
-      icon: SETTINGS.icons.undo.props.mdiIcon,
-      clickFunc: this.undoEdit,
-      iconColor: "blue",
-      btnColor: null,
-      disableBtn: !this.stylePanelMinified || !this.undoEnabled
-    },
-    {
-      labelMsg: "main.RedoLastAction",
-      icon: SETTINGS.icons.redo.props.mdiIcon,
-      clickFunc: this.redoAction,
-      iconColor: "blue",
-      btnColor: null,
-      disableBtn: !this.stylePanelMinified || !this.undoEnabled
-    }
-  ];
-
-  
+      {
+        labelMsg: "main.UndoLastAction",
+        icon: SETTINGS.icons.undo.props.mdiIcon,
+        clickFunc: this.undoEdit,
+        iconColor: "blue",
+        btnColor: null,
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+      },
+      {
+        labelMsg: "main.RedoLastAction",
+        icon: SETTINGS.icons.redo.props.mdiIcon,
+        clickFunc: this.redoAction,
+        iconColor: "blue",
+        btnColor: null,
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+      }
+    ];
   }
-  get topRightShortcuts() { 
+  get topRightShortcuts() {
     return [
-    {
-      labelMsg: 'constructions.resetSphere',
-      icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
-      clickFunc: () => {this.$refs.clearConstructionDialog.show()},
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    }
-  ];
+      {
+        labelMsg: "constructions.resetSphere",
+        icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
+        clickFunc: () => {
+          this.$refs.clearConstructionDialog.show();
+        },
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      }
+    ];
   }
 
   get bottomRightShortcuts() {
     return [
-    {
-      labelMsg: "buttons.PanZoomInToolTipMessage",
-      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-      clickFunc: this.enableZoomIn,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    },
+      {
+        labelMsg: "buttons.PanZoomInToolTipMessage",
+        icon: SETTINGS.icons.zoomIn.props.mdiIcon,
+        clickFunc: this.enableZoomIn,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
 
-    {
-      labelMsg: "buttons.PanZoomOutToolTipMessage",
-      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-      clickFunc: this.enableZoomOut,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    },
+      {
+        labelMsg: "buttons.PanZoomOutToolTipMessage",
+        icon: SETTINGS.icons.zoomOut.props.mdiIcon,
+        clickFunc: this.enableZoomOut,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
 
-    {
-      labelMsg: "buttons.ZoomFitToolTipMessage",
-      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-      clickFunc: this.enableZoomOut,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: false
-    }
-  ];
+      {
+        labelMsg: "buttons.ZoomFitToolTipMessage",
+        icon: SETTINGS.icons.zoomFit.props.mdiIcon,
+        clickFunc: this.enableZoomFit,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      }
+    ];
+  }
+
+  get bottomLeftShortcuts() {
+    return [
+      {
+        labelMsg: "buttons.CreatePointToolTipMessage",
+        icon: "$vuetify.icons.value.point",
+        clickFunc: this.createPoint,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
+
+      {
+        labelMsg: "buttons.CreateLineToolTipMessage",
+        icon: "$vuetify.icons.value.line",
+        clickFunc: this.createLine,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
+
+      {
+        labelMsg: "buttons.CreateSegmentToolTipMessage",
+        icon: "$vuetify.icons.value.segment",
+        clickFunc: this.createSegment,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
+
+      {
+        labelMsg: "buttons.CreateCircleToolTipMessage",
+        icon: "$vuetify.icons.value.circle",
+        clickFunc: this.createCircle,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      }
+    ];
   }
 
   //#region magnificationUpdate
@@ -427,8 +578,6 @@ export default class Easel extends Vue {
     EventBus.listen("magnification-updated", this.resizePlottables);
     EventBus.listen("undo-enabled", this.setUndoEnabled);
     EventBus.listen("redo-enabled", this.setRedoEnabled);
-
-
   }
   //#endregion magnificationUpdate
 
@@ -467,6 +616,38 @@ export default class Easel extends Vue {
       name: "ZoomFitDisplayedName"
     });
   }
+
+  private createPoint(): void {
+    this.displayCreatePointToolUseMessage = true;
+    this.setActionMode({
+      id: "point",
+      name: "CreatePointDisplayedName"
+    });
+  }
+
+  private createLine(): void {
+    this.displayCreateLineToolUseMessage = true;
+    this.setActionMode({
+      id: "line",
+      name: "CreateLineDisplayedName"
+    });
+  }
+  private createSegment(): void {
+    this.displayCreateSegmentToolUseMessage = true;
+    this.setActionMode({
+      id: "segment",
+      name: "CreateSegmentDisplayedName"
+    });
+  }
+
+  private createCircle(): void {
+    this.displayCreateCircleToolUseMessage = true;
+    this.setActionMode({
+      id: "circle",
+      name: "CreateCircleDisplayedName"
+    });
+  }
+
   private adjustSize(): void {
     this.availHeight =
       window.innerHeight -
@@ -506,7 +687,7 @@ export default class Easel extends Vue {
             // The script is inline
             run(JSON.parse(script) as ConstructionScript);
           }
-          this.updateDisplay()
+          this.updateDisplay();
         } else {
           EventBus.fire("show-alert", {
             key: "constructions.constructionNotFound",
