@@ -532,8 +532,7 @@ export default class Easel extends Vue {
     ];
   }
 
-  get bottomLeftShortcuts() {
-    return [
+  get bottomLeftShortcuts() {return [
       {
         labelMsg: "buttons.CreatePointToolTipMessage",
         icon: "$vuetify.icons.value.point",
@@ -553,7 +552,7 @@ export default class Easel extends Vue {
       },
 
       {
-        labelMsg: "buttons.CreateSegmentToolTipMessage",
+        labelMsg: "buttons.CreateLineSegmentToolTipMessage",
         icon: "$vuetify.icons.value.segment",
         clickFunc: this.createSegment,
         iconColor: null,
@@ -571,6 +570,7 @@ export default class Easel extends Vue {
       }
     ];
   }
+  
 
   //#region magnificationUpdate
   constructor() {
