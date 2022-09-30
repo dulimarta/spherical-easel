@@ -246,7 +246,7 @@
             </v-btn>
           </v-snackbar>
 
-          <v-snackbar v-model="displayCreateSegmentToolUseMessage"
+          <v-snackbar v-model="displayCreateLineSegmentToolUseMessage"
             bottom
             left
             :timeout="toolUseMessageDelay"
@@ -254,8 +254,8 @@
             multi-line>
             <span>
               <strong class="warning--text"
-                v-html="$t('buttons.CreateSegmentDisplayedName').split('<br>').join('').trim() + ': '"></strong>
-              {{ $t("buttons.CreateSegmentToolUseMessage") }}
+                v-html="$t('buttons.CreateLineSegmentDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+              {{ $t("buttons.CreateLineSegmentToolUseMessage") }}
             </span>
             <v-btn @click="displayToolUseMessage = false"
               icon>
@@ -444,7 +444,7 @@ export default class Easel extends Vue {
   private displayZoomFitToolUseMessage = false;
   private displayCreateCircleToolUseMessage = false;
   private displayCreatePointToolUseMessage = false;
-  private displayCreateSegmentToolUseMessage = false;
+  private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
 
   private actionMode: { id: ActionMode; name: string } = {
@@ -588,7 +588,6 @@ export default class Easel extends Vue {
   }
 
   private setUndoEnabled(e: { value: boolean }): void {
-    console.log("I was enabled");
     this.undoEnabled = e.value;
   }
   private setRedoEnabled(e: { value: boolean }): void {
@@ -633,10 +632,10 @@ export default class Easel extends Vue {
     });
   }
   private createSegment(): void {
-    this.displayCreateSegmentToolUseMessage = true;
+    this.displayCreateLineSegmentToolUseMessage = true;
     this.setActionMode({
       id: "segment",
-      name: "CreateSegmentDisplayedName"
+      name: "CreateLineSegmentDisplayedName"
     });
   }
 
