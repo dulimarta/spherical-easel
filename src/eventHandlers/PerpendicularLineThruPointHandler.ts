@@ -345,28 +345,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePoint
         );
         // Reset the oneDimensional and point in preparation for another perpendicular.
-        this.oneDimensional.selected = false;
-        this.oneDimensional = null;
-        this.sePointOneDimensionalParent = null;
-        if (this.sePoint !== null) {
-          this.sePoint.selected = false;
-        }
-        this.sePoint = null;
-        if (this.temporaryPointAdded) {
-          this.temporaryPointMarker.removeFromLayers();
-          this.temporaryPointAdded = false;
-        }
-        this.temporaryPointMarker.removeFromLayers();
-        this.temporaryPointAdded = false;
-
-        // this.temporaryLinesAdded = [];
-        this.tempPlots.forEach((z: TemporaryPlottable) => {
-          z.line.removeFromLayers();
-          z.point.removeFromLayers();
-          z.exist = false;
-        });
-
-        this.sePointVector.set(0, 0, 0);
+        this.cleanup();
       }
     }
   }
@@ -548,10 +527,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}
 
-  // eslint-disable-next-line
-  mouseLeave(event: MouseEvent): void {
-    super.mouseLeave(event);
-    // Reset all the variables in preparation for another perpendicular
+  private cleanup() {
     if (this.oneDimensional !== null) {
       this.oneDimensional.selected = false;
       this.oneDimensional = null;
@@ -576,6 +552,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     this.snapToTemporaryOneDimensional = null;
     this.snapToTemporaryPoint = null;
+  }
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
+    // Reset all the variables in preparation for another perpendicular
+    this.cleanup();
   }
 
   createPerpendicular(

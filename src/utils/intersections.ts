@@ -1451,7 +1451,10 @@ export function intersectParametricWithParametric(
   }
   const s_gap = sCurve.largestSampleGap / 2;
   const t_gap = tCurve.largestSampleGap / 2;
-  const distance_threhold = Math.sqrt(s_gap * s_gap + t_gap * t_gap);
+  const distance_threhold = Math.min(
+    Math.sqrt(s_gap * s_gap + t_gap * t_gap),
+    1e-2 // Keep the threshold not to exceed 0.001
+  );
   /*
   foreach (s in parametric1) {
     Find T-values of Q(t) such that of Q(t) - P(s) = 0, t is variable, s is constant
