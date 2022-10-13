@@ -7,6 +7,7 @@
       :color="msgColor"
       :timeout="timeoutValue"
       :value="true"
+      class="mt-10"
     >
       <v-row justify="center">
         <v-col cols="10">
@@ -23,8 +24,17 @@
           <span v-if="secondaryMessageText">: {{ secondaryMessageText }}</span>
         </v-col>
         <v-col cols="2">
-          <v-btn class="" @click="() => {}" icon>
-            <v-icon color="success">mdi-close</v-icon>
+          <v-btn
+            class="float-end"
+            @click="
+              () => {
+                showMe = false;
+                dismissed = true;
+              }
+            "
+            icon
+          >
+            <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-col>
       </v-row>
@@ -47,6 +57,7 @@ interface MessageType {
   secondaryMsg: string | null;
   secondaryMsgKeyOptions: string | null;
   type: "success" | "info" | "error" | "warning" | "directive";
+  dismissed: false;
 }
 @Component({})
 export default class MessageBox extends Vue {
@@ -56,15 +67,15 @@ export default class MessageBox extends Vue {
   private secondaryMessageText: string | null = null;
   private messageType: string | null = null;
   private messageTimer: any | null = null;
-  private dismissable = true;
+  private dismissed: boolean | null = false;
   private msgColor: string | null = null;
-  private timeoutValue: number | null; // TODO: compute timeout value
+  private timeoutValue: number | null;
+
   // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
   // private messageTimer: NodeJS.Timer | null = null;
   private displayToolUseMessages = SETTINGS.toolUse.display; // Is this needed?
- private toolUseMessageDelay = SETTINGS.toolUse.delay;
-  
-  
+  private toolUseMessageDelay = SETTINGS.toolUse.delay;
+
   mounted(): void {
     EventBus.listen("show-alert", this.addMessage);
   }
@@ -103,26 +114,38 @@ export default class MessageBox extends Vue {
       this.messageText = translation;
       this.secondaryMessageText = secondTranslation;
       this.messageType = m.type;
+      this.dismissed = m.dismissed;
       this.showMe = true;
       this.messageTimer = setInterval(this.swapMessages, 2000);
       this.getMsgColor();
     }
+
+    console.log(this.messages);
   }
 
   async swapMessages(): Promise<void> {
     this.showMe = false;
     await Vue.nextTick();
     if (this.messages.length > 0) {
-      const next = this.messages.shift() as MessageType;
-      const translation = i18n.t(next.key, next.keyOptions).toString();
-      this.messageText = translation;
-      this.messageType = next.type;
-      this.showMe = true;
+      const first: MessageType = this.messages[0];
+    
+        const next = this.messages.shift() as MessageType;
+        const translation = i18n.t(next.key, next.keyOptions).toString();
+        this.messageText = translation;
+        this.messageType = next.type;
+        this.secondaryMessageText = next.secondaryMsg;
+        this.dismissed = next.dismissed;
+        this.dismissed = next.dismissed;
+        this.getMsgColor();
+        this.showMe = true;
+    
     } else {
       // console.debug("Message queue is empty");
       if (this.messageTimer) clearInterval(this.messageTimer);
       this.messageTimer = null;
       this.messageText = null;
+      this.secondaryMessageText = null;
+      this.msgColor = null;
       this.messageType = null;
     }
   }
