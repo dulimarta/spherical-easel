@@ -638,6 +638,13 @@ export default class Easel extends Vue {
   }
 
   private createPoint(): void {
+    EventBus.fire("show-alert", {
+            key: "buttons.CreatePointDisplayedName",
+            secondaryMsg: "buttons.CreatePointToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreatePointToolUseMessage = true;
     this.setActionMode({
       id: "point",
@@ -646,6 +653,13 @@ export default class Easel extends Vue {
   }
 
   private createLine(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateLineDisplayedName",
+            secondaryMsg: "buttons.CreateLineToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateLineToolUseMessage = true;
     this.setActionMode({
       id: "line",
@@ -653,6 +667,13 @@ export default class Easel extends Vue {
     });
   }
   private createSegment(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateLineSegmentDisplayedName",
+            secondaryMsg: "buttons.CreateLineSegmentToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateLineSegmentToolUseMessage = true;
     this.setActionMode({
       id: "segment",
@@ -661,6 +682,13 @@ export default class Easel extends Vue {
   }
 
   private createCircle(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateCircleDisplayedName",
+            secondaryMsg: "buttons.CreateCircleToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateCircleToolUseMessage = true;
     this.setActionMode({
       id: "circle",

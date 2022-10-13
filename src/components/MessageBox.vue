@@ -1,25 +1,44 @@
 <template>
   <div>
-    <v-snackbar v-model="showMe"
+    <v-snackbar
+      v-model="showMe"
       top
       right
       :color="msgColor"
       :timeout="timeoutValue"
       :value="true"
-      :multi-line="messageType == 'directive'">
-       <span v-if="messageText"><strong>{{messageText}}</strong></span>
-       <span v-if="secondaryMessageText">: {{secondaryMessageText}}</span>
+    >
+      <v-row justify="center">
+        <v-col cols="10">
+          <span
+            :class="[
+              messageType == 'directive'
+                ? 'font-weight-bold'
+                : 'font-weight-regular'
+            ]"
+            v-if="messageText"
+          >
+            {{ messageText }}</span
+          >
+          <span v-if="secondaryMessageText">: {{ secondaryMessageText }}</span>
+        </v-col>
+        <v-col cols="2">
+          <v-btn class="" @click="() => {}" icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-snackbar>
   </div>
 </template>
-
+//
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import i18n from "../i18n";
-
+//  :multi-line="messageType == 'directive'"
 // import { TranslateResult } from "vue-i18n";
 
 interface MessageType {
@@ -43,37 +62,33 @@ export default class MessageBox extends Vue {
   // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
   // private messageTimer: NodeJS.Timer | null = null;
   private displayToolUseMessages = SETTINGS.toolUse.display; // Is this needed?
-
+ private toolUseMessageDelay = SETTINGS.toolUse.delay;
+  
+  
   mounted(): void {
     EventBus.listen("show-alert", this.addMessage);
-    this.timeoutValue = 1000;
-   
-
   }
-  
-  getMsgColor():void {
+
+  getMsgColor(): void {
     console.log(this.messageType);
-    switch(this.messageType) {
-        case "directive":
-          this.msgColor = "null";
-          break;
-        case "info":
-          this.msgColor = this.messageType;
-          break;
-        case "warning":
-          this.msgColor = this.messageType;
-          break;
-        case "error":
-          this.msgColor = this.messageType;
-          console.log(this.msgColor);
-          break;
-        default:
-          this.msgColor = this.messageType;
-          break;
+    switch (this.messageType) {
+      case "directive":
+        this.timeoutValue = this.toolUseMessageDelay;
+        this.msgColor = "null";
+        break;
+      case "info":
+        this.msgColor = this.messageType;
+        break;
+      case "warning":
+        this.msgColor = this.messageType;
+        break;
+      case "error":
+        this.msgColor = this.messageType;
+        break;
+      default:
+        this.msgColor = this.messageType;
+        break;
     }
-
-    console.log(this.msgColor);
-
   }
   addMessage(m: MessageType): void {
     if (this.messageTimer) {
@@ -82,7 +97,9 @@ export default class MessageBox extends Vue {
       this.messages.push(m);
     } else {
       const translation = i18n.t(m.key, m.keyOptions).toString();
-      const secondTranslation = i18n.t(m.secondaryMsg, m.secondaryMsgKeyOptions).toString()
+      const secondTranslation = i18n
+        .t(m.secondaryMsg, m.secondaryMsgKeyOptions)
+        .toString();
       this.messageText = translation;
       this.secondaryMessageText = secondTranslation;
       this.messageType = m.type;
@@ -90,7 +107,6 @@ export default class MessageBox extends Vue {
       this.messageTimer = setInterval(this.swapMessages, 2000);
       this.getMsgColor();
     }
-
   }
 
   async swapMessages(): Promise<void> {
@@ -113,5 +129,4 @@ export default class MessageBox extends Vue {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
