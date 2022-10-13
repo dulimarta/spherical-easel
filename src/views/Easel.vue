@@ -162,7 +162,7 @@
               </v-row>
             </v-col>
           </v-row>
-          <v-snackbar v-model="displayZoomInToolUseMessage"
+         <!-- <v-snackbar v-model="displayZoomInToolUseMessage"
             bottom
             left
             :timeout="toolUseMessageDelay"
@@ -211,7 +211,7 @@
               icon>
               <v-icon color="success">mdi-close</v-icon>
             </v-btn>
-          </v-snackbar>
+          </v-snackbar>-->
         </v-container>
       </Pane>
 
@@ -393,6 +393,13 @@ export default class Easel extends Vue {
   }
 
   private enableZoomIn(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.PanZoomInDisplayedName",
+            secondaryMsg: "buttons.PanZoomInToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomInToolUseMessage = true;
     this.setActionMode({
       id: "zoomIn",
@@ -400,6 +407,13 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomOut(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.PanZoomOutDisplayedName",
+            secondaryMsg: "buttons.PanZoomOutToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomOutToolUseMessage = true;
     this.setActionMode({
       id: "zoomOut",
@@ -407,6 +421,13 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomFit(): void {
+    EventBus.fire("show-alert", {
+            key: "buttons.ZoomFitDisplayedName",
+            secondaryMsg: "buttons.ZoomFitToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomFitToolUseMessage = true;
     this.setActionMode({
       id: "zoomFit",
