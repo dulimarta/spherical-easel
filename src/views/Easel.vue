@@ -756,6 +756,8 @@ export default class Easel extends Vue {
     // }
   }
 
+
+  minifyNotificationsPanel(): void {
     this.notificationsPanelMinified = !this.notificationsPanelMinified;
 
   }
