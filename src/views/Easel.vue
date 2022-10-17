@@ -44,7 +44,8 @@
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
                     <div v-for="shortcut, index in topLeftShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'left', 'top')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
@@ -63,7 +64,8 @@
                   </div>
                   <div class="anchored bottom left">
                     <div v-for="shortcut, index in bottomLeftShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'left', 'bottom')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
@@ -97,7 +99,8 @@
                   </v-tooltip>-->
 
                     <div v-for="shortcut, index in topRightShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'right', 'top')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
@@ -122,7 +125,8 @@
                   </div>
                   <div class="anchored bottom right">
                     <div v-for="shortcut, index in bottomRightShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'right', 'bottom')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
@@ -401,7 +405,38 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
       "init",
       "removeAllFromLayers",
       "updateDisplay"
-    ])
+    ]),
+    listItemStyle: function(i, xLoc, yLoc) { //xLoc determines left or right, yLoc determines top or bottom
+      const style = {};
+
+      if (i !== 0) {
+        style.position = "absolute";
+      }
+
+      switch(i) {
+        case 1:
+          style[yLoc] = "0px";
+          style[xLoc] = "36px";
+          break;
+        case 2:
+          style[yLoc] = "36px";
+          style[xLoc] = "0px";
+          break;
+        case 3:
+          style[yLoc] = "0px";
+          style[xLoc] = "72px";
+          break;
+        case 4:
+          style[yLoc] = "36px";
+          style[xLoc] = "36px";
+          break;
+        case 5:
+          style[yLoc] = "72px";
+          style[xLoc] = "0px";
+          break;
+      }
+      return style;
+    }
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
@@ -570,7 +605,7 @@ export default class Easel extends Vue {
       }
     ];
   }
-  
+
 
   //#region magnificationUpdate
   constructor() {
