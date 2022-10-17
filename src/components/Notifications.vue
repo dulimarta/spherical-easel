@@ -17,35 +17,7 @@
         <v-card-text class="ma-0 pa-0">
           <v-container fluid
             class="ma-0 pa-0">
-            <v-row no-gutters
-              justify="center">
-              <v-col cols="12"
-                sm="4"
-                md="4"
-                class="ma-0 pl-0 pb-0 pt-0 pr-0">
-                <v-switch v-model="allLabelsShowing"
-                  @change="toggleLabelsShowing"
-                  :label="$t('style.showLabels')"
-                  color="primary"
-                  hide-details
-                  class="ma-0 pl-0 pb-0 pt-0 pr-0"
-                  :disabled="!(this.selectedSENodules.length > 0) || !allObjectsShowing">
-                </v-switch>
-              </v-col>
-              <v-col cols="12"
-                sm="4"
-                md="4"
-                class="ma-0 pl-0 pb-0 pt-0 pr-0">
-                <v-switch v-model="allObjectsShowing"
-                  @change="toggleObjectsShowing"
-                  :label="$t('style.showObjects')"
-                  color="primary"
-                  hide-details
-                  class="ma-0 pl-0 pb-0 pt-0 pr-0"
-                  :disabled="!(this.selectedSENodules.length > 0)">
-                </v-switch>
-              </v-col>
-            </v-row>
+
           </v-container>
         </v-card-text>
       </v-card>
@@ -63,47 +35,21 @@
       </div>
 
       <!-- Nothing Selected Overlay-->
-      <OverlayWithFixButton v-if="!(this.selectedSENodules.length > 0)"
-        z-index="100"
-        i18n-title-line="style.selectAnObject"
-        i18n-subtitle-line="style.closeOrSelect"
-        i18n-list-title="style.toSelectObjects"
-        :i18n-list-items="buttonListItems()"
-        i18n-button-label="style.closeStylingPanel"
-        i18n-button-tool-tip="style.noSelectionToolTip"
-        @click="$emit('toggle-style-panel')">
-      </OverlayWithFixButton>
 
       <v-expansion-panels v-model="activePanel">
-        <v-expansion-panel v-for="(p, idx) in panels"
-          :key="idx">
-          <v-expansion-panel-header color="blue lighten-3"
-            :key="`header${idx}`"
-            class="body-1 text-h6 ps-6 pe-0 pt-n4 pb-n4 pm-0">
 
-            {{ $t(p.i18n_key) }}
-
-          </v-expansion-panel-header>
-          <v-expansion-panel-content :color="panelBackgroundColor(idx)"
-            :key="`content${idx}`">
-            <component :is="p.component"
-              :panel="p.panel"
-              :active-panel="activePanel">
-            </component>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
       </v-expansion-panels>
 
     </div>
    <v-btn v-else
-      v-on:click="$emit('toggle-style-panel')"
+      v-on:click="$emit('toggle-notifications-panel')"
       key="partial"
 
       plain
       depressed
       class="pa-0 mx-0"
       >
-      <v-icon>$vuetify.icons.value.stylePanel
+      <v-icon>$vuetify.icons.value.notifications
       </v-icon>
 
     </v-btn>
@@ -154,61 +100,17 @@ export default class Style extends Vue {
   private selectedItemArray: string[] = [];
 
   mounted(): void {
-    EventBus.listen("update-all-labels-showing", this.allLabelsShowingCheck);
-    EventBus.listen("update-all-objects-showing", this.allObjectsShowingCheck);
-    EventBus.listen(
-      "toggle-object-visibility",
-      this.toggleObjectsShowing.bind(this)
-    );
-    EventBus.listen(
-      "toggle-label-visibility",
-      this.toggleLabelsShowing.bind(this)
-    );
+   //
   }
-  buttonListItems(): string[] {
-    if (navigator.userAgent.indexOf("Mac OS X") === -1) {
-      // the user is on a PC
-      return [
-        "style.selectionDirection1",
-        "style.selectionDirection2",
-        "style.selectionDirection3",
-        "style.selectionDirection4PC"
-      ];
-    } else {
-      // the user is on a Mac
-      return [
-        "style.selectionDirection1",
-        "style.selectionDirection2",
-        "style.selectionDirection3",
-        "style.selectionDirection4Mac"
-      ];
-    }
-  }
+
   @Watch("minified")
   closeAllPanels(): void {
     this.activePanel = undefined;
     // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
-    EventBus.fire("save-style-state", {});
+
   }
 
-  @Watch("selectedSENodules")
-  private allLabelsShowingCheck(): void {
-    console.log("Style All Labels: onSelectionChanged");
-    this.allLabelsShowing = this.selectedSENodules.every(node => {
-      if (node.isLabelable()) {
-        return (node as unknown as Labelable).label!.showing;
-      } else {
-        return true;
-      }
-    });
-  }
-  @Watch("selectedSENodules")
-  private allObjectsShowingCheck(): void {
-    // console.log("Style All Objects: onSelectionChanged");
-    this.allObjectsShowing = this.selectedSENodules.every(node => {
-      return node.showing === true;
-    });
-  }
+
 
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selectedSENodules")
@@ -293,12 +195,12 @@ export default class Style extends Vue {
   //When ever the mouse enters the style panel, set the active tool to select because it is likely that the
   // user is going to style objects.
   private setSelectTool(): void {
-    EventBus.fire("set-action-mode-to-select-tool", {});
+//
   }
 
   //When ever the mouse leaves the style panel, save the state because it is likely that the user is done styling
   private saveStyleState(): void {
-    EventBus.fire("save-style-state", {});
+//
   }
 
   panelBackgroundColor(idx: number): string {

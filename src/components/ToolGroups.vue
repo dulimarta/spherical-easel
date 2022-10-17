@@ -90,12 +90,18 @@ import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { SEExpression } from "@/models/SEExpression";
+import { SETransformation } from "@/models/SETransformation";
+import EventBus from "@/eventHandlers/EventBus";
+
+
 
 /* Declare the components used in this component. */
 @Component({
   components: { ToolButton },
   computed: {
-    ...mapState(useAccountStore, ["userRole", "includedTools"])
+    ...mapState(useAccountStore, ["userRole", "includedTools"]),
+    ...mapState(useSEStore, ["expressions", "seTransformations"])
   },
   methods: {
     ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"]),
@@ -108,6 +114,9 @@ export default class ToolGroups extends Vue {
   readonly includeToolName!: (s: ActionMode) => void;
   readonly excludeToolName!: (s: ActionMode) => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
+
+  readonly expressions!: SEExpression[];
+  readonly seTransformations!: SETransformation[];
 
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode: { id: ActionMode; name: string } = {
@@ -140,6 +149,60 @@ export default class ToolGroups extends Vue {
 
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
+    switch(this.actionMode.id) {
+      case 'measuredCircle':
+         if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForMeasuredCircle",
+          type: "info"
+        });
+      }
+      break;
+      case 'translation':
+        if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForTranslation",
+          type: "info"
+        });
+      }
+        break;
+
+      case 'rotation':
+        if (this.expressions.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-measurement-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createMeasurementForRotation",
+          type: "info"
+        });
+      }
+        break;
+
+      case 'applyTransformation':
+        if (this.seTransformations.length > 0) {
+        //...open the object tree tab,
+        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("expand-transformation-sheet", {});
+      } else {
+        EventBus.fire("show-alert", {
+          key: "objectTree.createATransformation",
+          type: "error"
+        });
+      }
+      break;
+      default:
+        break;
+    }
     this.setActionMode(this.actionMode);
   }
 

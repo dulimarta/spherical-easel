@@ -1385,6 +1385,13 @@ export const SETTINGS = {
         emphasizeTypes: [[]],
         filePath: ""
       }
+    },
+    notifications: {
+      props: {
+        mdiIcon: "mdi-bell",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

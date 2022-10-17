@@ -39,20 +39,20 @@
 
     <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
     automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar v-model="displayToolUseMessage"
+   <!-- <v-snackbar v-model="displayToolUseMessage"
       bottom
       left
       :timeout="toolUseMessageDelay"
       :value="displayToolUseMessages"
       multi-line>
-      <!---If the displayed name is zoom in or out add a slash before the word pan --->
+      If the displayed name is zoom in or out add a slash before the word pan
       <span
         v-if="button.displayedName==='PanZoomInDisplayedName' || button.displayedName==='PanZoomOutDisplayedName'">
         <strong class="warning--text"
           v-html="$t('buttons.' +button.displayedName).split('<br>').join('/').trim() + ': '"></strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
-      <!---If the displayed name is only one line delete the non-breaking space --->
+
       <span
         v-else-if="button.displayedName==='CreateCoordinateDisplayedName'|| button.displayedName==='ZoomFitDisplayedName'|| button.displayedName==='CreateTangentDisplayedName'|| button.displayedName==='CreateMidpointDisplayedName'|| button.displayedName==='CreatePolarDisplayedName'  || button.displayedName==='CreateEllipseDisplayedName'  || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
         <strong class="warning--text"
@@ -68,7 +68,7 @@
         icon>
         <v-icon color="success">mdi-close</v-icon>
       </v-btn>
-    </v-snackbar>
+    </v-snackbar>-->
   </div>
 </template>
 

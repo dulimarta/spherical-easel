@@ -301,21 +301,25 @@
 
       <Pane min-size="5"
         max-size="25"
-        :size="stylePanelMinified ? 5 : 25">
+        :size="stylePanelMinified && notificationsPanelMinified ? 5 : 25">
         <v-card>
-          <div ref="stylePanel"
-            id="styleContainer">
-            <div>
-              <v-btn icon
-                @click="minifyStylePanel">
-                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-                <v-icon v-else>mdi-arrow-right</v-icon>
+          <div id="styleContainer"
+            >
+              <v-btn icon v-if="!stylePanelMinified || !notificationsPanelMinified"
+                @click="() => {stylePanelMinified = true; notificationsPanelMinified = true;}">
+                <v-icon>mdi-arrow-right</v-icon>
               </v-btn>
-            </div>
+
             <StylePanel :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" />
-          </div>
+                     <Notifications :minified="notificationsPanelMinified"
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+
+            </div>
+
         </v-card>
+
+
       </Pane>
     </Splitpanes>
     <Dialog ref="unsavedWorkDialog"
@@ -376,6 +380,7 @@ import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import Notifications from "@/components/Notifications.vue";
 
 /**
  * Split panel width distribution (percentages):
@@ -385,6 +390,7 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
  */
 @Component({
   components: {
+    Notifications,
     Splitpanes,
     Pane,
     Toolbox,
@@ -393,7 +399,8 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
     StylePanel,
     IconBase,
     Dialog,
-    ShortcutIcon
+    ShortcutIcon,
+
   },
   methods: {
     ...mapActions(useSEStore, [
@@ -430,6 +437,7 @@ export default class Easel extends Vue {
   private buttonList = buttonList;
   private toolboxMinified = false;
   private stylePanelMinified = true;
+  private notificationsPanelMinified = true;
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -570,7 +578,7 @@ export default class Easel extends Vue {
       }
     ];
   }
-  
+
 
   //#region magnificationUpdate
   constructor() {
@@ -595,13 +603,6 @@ export default class Easel extends Vue {
   }
 
   private enableZoomIn(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.PanZoomInDisplayedName",
-            secondaryMsg: "buttons.PanZoomInToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomInToolUseMessage = true;
     this.setActionMode({
       id: "zoomIn",
@@ -609,13 +610,6 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomOut(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.PanZoomOutDisplayedName",
-            secondaryMsg: "buttons.PanZoomOutToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomOutToolUseMessage = true;
     this.setActionMode({
       id: "zoomOut",
@@ -623,13 +617,6 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomFit(): void {
-    EventBus.fire("show-alert", {
-            key: "buttons.ZoomFitDisplayedName",
-            secondaryMsg: "buttons.ZoomFitToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomFitToolUseMessage = true;
     this.setActionMode({
       id: "zoomFit",
@@ -638,13 +625,6 @@ export default class Easel extends Vue {
   }
 
   private createPoint(): void {
-    EventBus.fire("show-alert", {
-            key: "buttons.CreatePointDisplayedName",
-            secondaryMsg: "buttons.CreatePointToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreatePointToolUseMessage = true;
     this.setActionMode({
       id: "point",
@@ -653,13 +633,6 @@ export default class Easel extends Vue {
   }
 
   private createLine(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateLineDisplayedName",
-            secondaryMsg: "buttons.CreateLineToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateLineToolUseMessage = true;
     this.setActionMode({
       id: "line",
@@ -667,13 +640,6 @@ export default class Easel extends Vue {
     });
   }
   private createSegment(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateLineSegmentDisplayedName",
-            secondaryMsg: "buttons.CreateLineSegmentToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateLineSegmentToolUseMessage = true;
     this.setActionMode({
       id: "segment",
@@ -682,13 +648,6 @@ export default class Easel extends Vue {
   }
 
   private createCircle(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateCircleDisplayedName",
-            secondaryMsg: "buttons.CreateCircleToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateCircleToolUseMessage = true;
     this.setActionMode({
       id: "circle",
@@ -797,6 +756,9 @@ export default class Easel extends Vue {
     // }
   }
 
+    this.notificationsPanelMinified = !this.notificationsPanelMinified;
+
+  }
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
     // Minify the other panel when this one is expanded
@@ -804,9 +766,9 @@ export default class Easel extends Vue {
     //   this.toolboxMinified = true;
     // }
     // Set the selection tool to be active when opening the style panel.
-    if (!this.stylePanelMinified) {
+   /*if (!this.stylePanelMinified) {
       this.setActionModeToSelectTool();
-    }
+    }*/
   }
 
   setActionModeToSelectTool(): void {

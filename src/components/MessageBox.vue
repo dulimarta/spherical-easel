@@ -54,8 +54,8 @@ import i18n from "../i18n";
 interface MessageType {
   key: string;
   keyOptions?: any;
-  secondaryMsg: string | null;
-  secondaryMsgKeyOptions: string | null;
+  secondaryMsg: string;
+  secondaryMsgKeyOptions: string;
   type: "success" | "info" | "error" | "warning" | "directive";
   dismissed: false;
 }
@@ -69,7 +69,7 @@ export default class MessageBox extends Vue {
   private messageTimer: any | null = null;
   private dismissed: boolean | null = false;
   private msgColor: string | null = null;
-  private timeoutValue: number | null;
+  private timeoutValue: number | null = 2000;
 
   // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
   // private messageTimer: NodeJS.Timer | null = null;
@@ -81,7 +81,6 @@ export default class MessageBox extends Vue {
   }
 
   getMsgColor(): void {
-    console.log(this.messageType);
     switch (this.messageType) {
       case "directive":
         this.timeoutValue = this.toolUseMessageDelay;
@@ -128,7 +127,7 @@ export default class MessageBox extends Vue {
     await Vue.nextTick();
     if (this.messages.length > 0) {
       const first: MessageType = this.messages[0];
-    
+
         const next = this.messages.shift() as MessageType;
         const translation = i18n.t(next.key, next.keyOptions).toString();
         this.messageText = translation;
@@ -138,7 +137,7 @@ export default class MessageBox extends Vue {
         this.dismissed = next.dismissed;
         this.getMsgColor();
         this.showMe = true;
-    
+
     } else {
       // console.debug("Message queue is empty");
       if (this.messageTimer) clearInterval(this.messageTimer);
