@@ -602,6 +602,30 @@ export default class Easel extends Vue {
         iconColor: null,
         btnColor: "primary",
         disableBtn: false
+      },
+      {
+        labelMsg: "buttons.CreateCircleToolTipMessage",
+        icon: "$vuetify.icons.value.circle",
+        clickFunc: this.createCircle,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
+      {
+        labelMsg: "buttons.CreateCircleToolTipMessage",
+        icon: "$vuetify.icons.value.circle",
+        clickFunc: this.createCircle,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
+      },
+      {
+        labelMsg: "buttons.CreateCircleToolTipMessage",
+        icon: "$vuetify.icons.value.circle",
+        clickFunc: this.createCircle,
+        iconColor: null,
+        btnColor: "primary",
+        disableBtn: false
       }
     ];
   }
