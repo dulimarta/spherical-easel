@@ -312,7 +312,7 @@
 
             <StylePanel :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" />
-                     <Notifications :minified="notificationsPanelMinified"
+                     <MessageBox :minified="notificationsPanelMinified"
               v-on:toggle-notifications-panel="minifyNotificationsPanel" />
 
             </div>
@@ -380,7 +380,7 @@ import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
-import Notifications from "@/components/Notifications.vue";
+import MessageBox from "@/components/MessageBox.vue";
 
 /**
  * Split panel width distribution (percentages):
@@ -390,7 +390,6 @@ import Notifications from "@/components/Notifications.vue";
  */
 @Component({
   components: {
-    Notifications,
     Splitpanes,
     Pane,
     Toolbox,
@@ -400,6 +399,7 @@ import Notifications from "@/components/Notifications.vue";
     IconBase,
     Dialog,
     ShortcutIcon,
+    MessageBox
 
   },
   methods: {
