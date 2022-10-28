@@ -45,7 +45,7 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode } from "@/types";
+import { ActionMode, ToolButtonType } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -75,7 +75,8 @@ import i18n from "@/i18n";
       "zoomTranslation",
       "seLabels",
       "layers",
-      "expressions"
+      "expressions",
+      "buttonSelection"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
@@ -99,6 +100,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   readonly actionMode!: ActionMode;
+  readonly buttonSelection!: ToolButtonType;
   readonly zoomMagnificationFactor!: number;
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
@@ -737,6 +739,13 @@ export default class SphereFrame extends VueComponent {
     this.currentTool = null;
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
+    const directiveMsg = {key: "buttons." + this.buttonSelection.displayedName,
+            secondaryMsg: "buttons." + this.buttonSelection.toolUseMessage,
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          };
+
     switch (mode) {
       case "select":
         if (!this.selectTool) {
@@ -758,14 +767,6 @@ export default class SphereFrame extends VueComponent {
         }
         this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
         this.currentTool = this.zoomTool;
-        EventBus.fire("show-alert", {
-            key: "buttons.PanZoomInDisplayedName",
-            secondaryMsg: "buttons.PanZoomInToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomOut":
         if (!this.zoomTool) {
@@ -773,27 +774,13 @@ export default class SphereFrame extends VueComponent {
         }
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
         this.currentTool = this.zoomTool;
-        EventBus.fire("show-alert", {
-            key: "buttons.PanZoomOutDisplayedName",
-            secondaryMsg: "buttons.PanZoomOutToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         if (!this.zoomTool) {
           this.zoomTool = new PanZoomHandler(this.$refs.canvas);
         }
-        EventBus.fire("show-alert", {
-            key: "buttons.ZoomFitDisplayedName",
-            secondaryMsg: "buttons.ZoomFitToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
+
         this.zoomTool.doZoomFit(this.canvasSize);
         this.zoomTool.activate(); // unglow any selected objects.
         this.zoomTool.deactivate(); // shut the tool down properly
@@ -834,13 +821,6 @@ export default class SphereFrame extends VueComponent {
           this.pointTool = new PointHandler(this.layers);
         }
         this.currentTool = this.pointTool;
-        EventBus.fire("show-alert", {
-            key: "buttons.CreatePointDisplayedName",
-            secondaryMsg: "buttons.CreatePointToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "line":
@@ -848,13 +828,6 @@ export default class SphereFrame extends VueComponent {
           this.lineTool = new LineHandler(this.layers);
         }
         this.currentTool = this.lineTool;
-        EventBus.fire("show-alert", {
-            key: "buttons.CreateLineDisplayedName",
-            secondaryMsg: "buttons.CreateLineToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "segment":
@@ -862,13 +835,6 @@ export default class SphereFrame extends VueComponent {
           this.segmentTool = new SegmentHandler(this.layers);
         }
         this.currentTool = this.segmentTool;
-        EventBus.fire("show-alert", {
-            key: "buttons.CreateLineSegmentDisplayedName",
-            secondaryMsg: "buttons.CreateLineSegmentToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "circle":
@@ -876,13 +842,6 @@ export default class SphereFrame extends VueComponent {
           this.circleTool = new CircleHandler(this.layers);
         }
         this.currentTool = this.circleTool;
-         EventBus.fire("show-alert", {
-            key: "buttons.CreateCircleDisplayedName",
-            secondaryMsg: "buttons.CreateCircleToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "ellipse":
@@ -1065,6 +1024,9 @@ export default class SphereFrame extends VueComponent {
         break;
       default:
         this.currentTool = null;
+    }
+    if (this.currentTool) {
+      EventBus.fire("show-alert", directiveMsg);
     }
     this.currentTool?.activate();
   }

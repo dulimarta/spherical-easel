@@ -17,7 +17,8 @@
         <h3 class="body-1 font-weight-bold">{{$t(`toolGroups.${g.group}`)}}
         </h3>
         <v-btn-toggle v-model="actionMode"
-          @change="switchActionMode">
+          @change="
+            switchActionMode">
           <v-container>
             <v-row justify="start"
               align="stretch"
@@ -105,7 +106,7 @@ import EventBus from "@/eventHandlers/EventBus";
   },
   methods: {
     ...mapActions(useAccountStore, ["includeToolName", "excludeToolName"]),
-    ...mapActions(useSEStore, ["setActionMode"])
+    ...mapActions(useSEStore, ["setActionMode"]),
   }
 })
 export default class ToolGroups extends Vue {
@@ -114,7 +115,6 @@ export default class ToolGroups extends Vue {
   readonly includeToolName!: (s: ActionMode) => void;
   readonly excludeToolName!: (s: ActionMode) => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
-
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
 
@@ -203,8 +203,10 @@ export default class ToolGroups extends Vue {
       default:
         break;
     }
+
     this.setActionMode(this.actionMode);
   }
+
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */
   // nonEmptyGroup(groupName: string): boolean {

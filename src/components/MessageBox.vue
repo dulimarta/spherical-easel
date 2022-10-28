@@ -22,7 +22,7 @@
               <v-list-tile-title @click="getItemText(data.item.name)"
                 v-html="data.item.name"></v-list-tile-title>
             </v-list-tile-content>
-            
+
           </template>
         </v-row>
         <v-row cols="12"
@@ -33,7 +33,38 @@
               small>Delete {{selectedMessageType}} messages</v-btn>
           </v-col>
         </v-row>
-
+        <v-layout
+          column
+          style="height: 50vh">
+          <v-card dark class="my-1" v-for="(notif, index) in messages.filter((m) => { if (selectedMessageType == 'All') { return m } else return m.type == selectedMessageType})"
+            :key="index"
+            :color="`${notif.msgColor}`">
+            <v-row class="pa-2">
+              <v-col >
+              <span :class="[
+              notif.type == 'directive'
+                ? 'font-weight-bold'
+                : 'font-weight-regular'
+            ]"
+              v-if="notif.translatedKey">
+              {{ notif.translatedKey }}</span>
+            <span v-if="notif.translationSecondKey">:
+              {{ notif.translationSecondKey }}</span>
+              </v-col>
+               <v-col cols="2">
+            <v-btn class="float-end"
+              @click="
+              () => {
+                messages.splice(index, 1); // Remove element from notifications list
+              }
+            "
+              icon>
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+            </v-col>
+            </v-row>
+          </v-card>
+        </v-layout>
       </v-container>
     </div>
     <div v-else>
@@ -69,7 +100,8 @@
               @click="
               () => {
                 showMe = false;
-                dismissed = true;
+                const index = messages.findIndex((m) => m.timestamp == currentMsg.timestamp)
+                messages.splice(index, 1);
               }
             "
               icon>
@@ -89,8 +121,6 @@ import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import i18n from "../i18n";
 import { Prop, Watch } from "vue-property-decorator";
-//  :multi-line="messageType == 'directive'"
-// import { TranslateResult } from "vue-i18n";
 
 export interface MessageType {
   key: string;
@@ -98,12 +128,13 @@ export interface MessageType {
   secondaryMsg: string;
   secondaryMsgKeyOptions: string;
   type: "success" | "info" | "error" | "warning" | "directive";
-
   translatedKey: string | null;
   translationSecondKey: string | undefined;
+
   msgColor: string | null;
-  dismissed: false;
-  timestamp: number;
+  index: number | null;
+  timestamp: number | null;
+
 }
 @Component({})
 export default class MessageBox extends Vue {
@@ -149,11 +180,11 @@ export default class MessageBox extends Vue {
       .toString();
     const msgColor = this.getMsgColor(m);
     m.msgColor = msgColor;
+    m.timestamp = Date.now();
 
     this.messages.unshift(m);
     if (this.messageTimer) {
       // We have an active message on display
-      // console.debug("Queue incoming msgDisplayQueue", m);
       this.msgDisplayQueue.push(m);
     } else {
       this.currentMsg = m;
