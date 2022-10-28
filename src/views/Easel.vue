@@ -784,7 +784,7 @@ export default class Easel extends Vue {
 
   getPanelSize(): number {
     if (!this.stylePanelMinified || !this.notificationsPanelMinified) {
-      return 25;
+      return 30;
     }
     return 5;
   }
