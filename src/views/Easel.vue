@@ -7,13 +7,39 @@
       <Pane min-size="5"
         max-size="35"
         :size="toolboxMinified ? 5 : 25">
+
         <v-container fill-height>
           <div id="container">
-            <v-btn icon
-              @click="minifyToolbox">
-              <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-              <v-icon v-else>mdi-arrow-left</v-icon>
-            </v-btn>
+            <div id="currentTool">
+              <div id="icon">
+                <ShortcutIcon :icon=actionMode />
+                <!--"$vuetify.value."-->
+              </div>
+              <!-- Displays the current tool in the left pannel by the collapsible arorw -->
+              <div v-if="toolboxMinified" />
+              <div v-else>
+                <span id="tool"
+                  v-if="activeToolName ==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
+                  v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
+                </span>
+                <span id="tool"
+                  v-else-if="activeToolName === 'ApplyTransformationDisplayedName'"
+                  v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim() + ' <strong>' + applyTransformationText + '</strong>'">
+                </span>
+                <span id="tool"
+                  v-else-if="activeToolName!== ''"
+                  v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
+                </span>
+                <span id="tool"
+                  v-else>{{ $t(`buttons.NoToolSelected`) }}</span>
+              </div>
+
+              <v-btn icon
+                @click="minifyToolbox">
+                <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+                <v-icon v-else>mdi-arrow-left</v-icon>
+              </v-btn>
+            </div>
             <Toolbox id="toolbox"
               ref="toolbox"
               :minified="toolboxMinified"
@@ -71,13 +97,12 @@
                         :btnColor="shortcut.btnColor"
                         :disableBtn="shortcut.disableBtn" />
                     </div>
-                    <!-- <v-btn-toggle
-                    v-model="actionMode"
-                    @change="switchActionMode"
-                    class="mr-2 d-flex flex-wrap accent"
-                  >
-                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
-                      </v-btn-toggle>-->
+                    <!-- <v-btn-toggle v-model="actionMode"
+                      @change="switchActionMode"
+                      class="mr-2 d-flex flex-wrap accent">
+                      <ToolButton :key="80"
+                        :button="buttonList[8]"></ToolButton>
+                    </v-btn-toggle> -->
 
                   </div>
                   <div class="anchored top right">
@@ -178,7 +203,7 @@
               </v-row>
             </v-col>
           </v-row>
-         <!-- <v-snackbar v-model="displayZoomInToolUseMessage"
+          <v-snackbar v-model="displayZoomInToolUseMessage"
             bottom
             left
             :timeout="toolUseMessageDelay"
@@ -295,7 +320,7 @@
               icon>
               <v-icon color="success">mdi-close</v-icon>
             </v-btn>
-          </v-snackbar>-->
+          </v-snackbar>
         </v-container>
       </Pane>
 
@@ -404,7 +429,13 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
     ])
   },
   computed: {
-    ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
+    ...mapState(useSEStore, [
+      "seNodules",
+      "temporaryNodules",
+      "hasObjects",
+      "activeToolName",
+      "actionMode"
+    ])
   }
 })
 export default class Easel extends Vue {
@@ -414,6 +445,7 @@ export default class Easel extends Vue {
   readonly seNodules!: SENodule[];
   readonly temporaryNodules!: Nodule[];
   readonly hasObjects!: boolean;
+  readonly actionMode!: ActionMode;
 
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
   readonly removeAllFromLayers!: () => void;
@@ -447,16 +479,16 @@ export default class Easel extends Vue {
   private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
 
-  private actionMode: { id: ActionMode; name: string } = {
-    id: "rotate",
-    name: ""
-  };
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
 
+  //  private actionMode: { id: ActionMode; name: string } = {
+  //     id: "rotate",
+  //     name: ""
+  //   };
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
@@ -532,7 +564,8 @@ export default class Easel extends Vue {
     ];
   }
 
-  get bottomLeftShortcuts() {return [
+  get bottomLeftShortcuts() {
+    return [
       {
         labelMsg: "buttons.CreatePointToolTipMessage",
         icon: "$vuetify.icons.value.point",
@@ -570,7 +603,6 @@ export default class Easel extends Vue {
       }
     ];
   }
-  
 
   //#region magnificationUpdate
   constructor() {
@@ -595,13 +627,6 @@ export default class Easel extends Vue {
   }
 
   private enableZoomIn(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.PanZoomInDisplayedName",
-            secondaryMsg: "buttons.PanZoomInToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomInToolUseMessage = true;
     this.setActionMode({
       id: "zoomIn",
@@ -609,13 +634,6 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomOut(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.PanZoomOutDisplayedName",
-            secondaryMsg: "buttons.PanZoomOutToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomOutToolUseMessage = true;
     this.setActionMode({
       id: "zoomOut",
@@ -623,13 +641,6 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomFit(): void {
-    EventBus.fire("show-alert", {
-            key: "buttons.ZoomFitDisplayedName",
-            secondaryMsg: "buttons.ZoomFitToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayZoomFitToolUseMessage = true;
     this.setActionMode({
       id: "zoomFit",
@@ -638,13 +649,6 @@ export default class Easel extends Vue {
   }
 
   private createPoint(): void {
-    EventBus.fire("show-alert", {
-            key: "buttons.CreatePointDisplayedName",
-            secondaryMsg: "buttons.CreatePointToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreatePointToolUseMessage = true;
     this.setActionMode({
       id: "point",
@@ -653,13 +657,6 @@ export default class Easel extends Vue {
   }
 
   private createLine(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateLineDisplayedName",
-            secondaryMsg: "buttons.CreateLineToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateLineToolUseMessage = true;
     this.setActionMode({
       id: "line",
@@ -667,13 +664,6 @@ export default class Easel extends Vue {
     });
   }
   private createSegment(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateLineSegmentDisplayedName",
-            secondaryMsg: "buttons.CreateLineSegmentToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateLineSegmentToolUseMessage = true;
     this.setActionMode({
       id: "segment",
@@ -682,13 +672,6 @@ export default class Easel extends Vue {
   }
 
   private createCircle(): void {
-     EventBus.fire("show-alert", {
-            key: "buttons.CreateCircleDisplayedName",
-            secondaryMsg: "buttons.CreateCircleToolUseMessage",
-            keyOptions: {},
-            secondaryMsgKeyOptions: {},
-            type: "directive",
-          });
     this.displayCreateCircleToolUseMessage = true;
     this.setActionMode({
       id: "circle",
@@ -818,6 +801,7 @@ export default class Easel extends Vue {
 
   switchActionMode(): void {
     this.setActionMode(this.actionMode);
+    console.log(this.actionMode.id);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -928,6 +912,21 @@ export default class Easel extends Vue {
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
     sans-serif;
+}
+
+#currentTool {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start; /* Pull contents vertically to the top */
+  align-items: flex-end; /* Align contents horizontally to the right */
+  height: 100%;
+  color: #000;
+  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
+    sans-serif;
+}
+
+#tool {
+  font-size: 20px;
 }
 
 #toolbox {
