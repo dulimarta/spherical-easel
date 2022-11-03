@@ -290,6 +290,12 @@ const vuetify = new Vuetify({
           iconName: "stylePanel" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
       },
+      notifications: {
+        component: IconBase,
+        props: {
+          iconName: "notifications" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
       downloadConstruction: {
         component: IconBase,
         props: {
@@ -409,7 +415,8 @@ const vuetify = new Vuetify({
         props: {
           iconName: "transformedEllipse"
         }
-      }
+      },
+
     }
   },
   theme: {

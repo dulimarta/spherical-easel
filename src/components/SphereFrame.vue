@@ -45,7 +45,7 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode } from "@/types";
+import { ActionMode, ToolButtonType } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -64,6 +64,7 @@ import InversionTransformationHandler from "@/eventHandlers/InversionTransformat
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
+
 import i18n from "@/i18n";
 
 @Component({
@@ -73,7 +74,9 @@ import i18n from "@/i18n";
       "zoomMagnificationFactor",
       "zoomTranslation",
       "seLabels",
-      "layers"
+      "layers",
+      "expressions",
+      "buttonSelection"
     ]),
     ...mapWritableState(useSEStore, ["zoomMagnificationFactor"])
   },
@@ -97,6 +100,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   readonly actionMode!: ActionMode;
+  readonly buttonSelection!: ToolButtonType;
   readonly zoomMagnificationFactor!: number;
   readonly zoomTranslation!: number[];
   readonly seLabels!: SELabel[];
@@ -111,6 +115,8 @@ export default class SphereFrame extends VueComponent {
   readonly revertActionMode!: () => void;
   readonly getZoomMagnificationFactor!: () => number;
   readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
+  readonly expressions!: SEExpression[];
+  readonly seTransformations!: SETransformation[];
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -727,12 +733,19 @@ export default class SphereFrame extends VueComponent {
    * we would not be able to do this (at least not directly).
    */
   @Watch("actionMode")
-  switchActionMode(mode: ActionMode): void {
+  switchActionMode(mode: ActionMode): void { //TODO: potentially move functionality from toolbutton to here
     //console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
+    const directiveMsg = {key: "buttons." + this.buttonSelection.displayedName,
+            secondaryMsg: "buttons." + this.buttonSelection.toolUseMessage,
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          };
+
     switch (mode) {
       case "select":
         if (!this.selectTool) {
@@ -754,7 +767,6 @@ export default class SphereFrame extends VueComponent {
         }
         this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
         this.currentTool = this.zoomTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomOut":
         if (!this.zoomTool) {
@@ -762,13 +774,13 @@ export default class SphereFrame extends VueComponent {
         }
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
         this.currentTool = this.zoomTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         if (!this.zoomTool) {
           this.zoomTool = new PanZoomHandler(this.$refs.canvas);
         }
+
         this.zoomTool.doZoomFit(this.canvasSize);
         this.zoomTool.activate(); // unglow any selected objects.
         this.zoomTool.deactivate(); // shut the tool down properly
@@ -1012,6 +1024,9 @@ export default class SphereFrame extends VueComponent {
         break;
       default:
         this.currentTool = null;
+    }
+    if (this.currentTool) {
+      EventBus.fire("show-alert", directiveMsg);
     }
     this.currentTool?.activate();
   }

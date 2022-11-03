@@ -285,7 +285,8 @@ export type IconNames =
   | "clearConstruction"
   | "undo"
   | "redo"
-  | "copyToClipboard";
+  | "copyToClipboard"
+  | "notifications";
 
 export interface AntipodalPointPair {
   newPoint: SEPoint;
