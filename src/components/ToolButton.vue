@@ -138,7 +138,7 @@ export default class ToolButton extends Vue {
     }
   }
 
-  switchButton(button: ToolButtonType): void {
+  switchButton(button: ToolButtonType): void { // Set the button selected so it can be tracked
     this.setButton(button);
   }
 

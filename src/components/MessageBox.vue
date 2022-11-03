@@ -1,5 +1,6 @@
 <template>
   <transition>
+    <!-- If the notifications panel is open, then display the messages from the messages array, not the queue.-->
     <div v-if="!minified"
       key="full"
       style="height: 100%; overflow:auto"
@@ -28,11 +29,13 @@
           justify="end">
           <v-col md="12">
             <v-btn color="error" @click="() => {
-
-              if (selectedMessageType == messageTypes[0]) {messages = [];} else {
-              messages = messages.filter((m) => {
-      b
-                return m.type != selectedMessageType})}}"
+              if (selectedMessageType == messageTypes[0]) // If the user has the default filter option selected which should be the first one (all messages)
+              {
+                messages = []; //Delete all messages
+              } else {
+                messages = messages.filter((m) => {
+                return m.type != selectedMessageType  //Set messages to everything but the deleted type
+                })}}"
               small>{{$t(`notifications.deleteMsg`, {msgType: $t(`notifications.${selectedMessageType}`).toString()})}}</v-btn>
           </v-col>
         </v-row>
@@ -58,7 +61,7 @@
             <v-btn class="float-end"
               @click="
               () => {
-                messages.splice(index, 1); // Remove element from notifications list
+                messages.splice(index, 1); // Remove individual message from notifications list
               }
             "
               icon>
@@ -70,6 +73,7 @@
         </v-layout>
       </v-container>
     </div>
+    <!-- If the notifications panel is minimized, then display the messages queue.-->
     <div v-else>
       <v-btn v-on:click="$emit('toggle-notifications-panel')"
         key="partial"
@@ -103,7 +107,7 @@
               @click="
               () => {
                 showMe = false;
-                const index = messages.findIndex((m) => m.timestamp == currentMsg.timestamp)
+                const index = messages.findIndex((m) => m.timestamp == currentMsg.timestamp) //Delete the message at the corresponding timestamp.
                 messages.splice(index, 1);
               }
             "
@@ -144,8 +148,8 @@ export default class MessageBox extends Vue {
   @Prop() readonly minified!: boolean;
   private showMe = false;
   private currentMsg: MessageType | null = null;
-  private msgDisplayQueue: MessageType[] = [];
-  private messages: MessageType[] = [];
+  private msgDisplayQueue: MessageType[] = []; // Queue of messages that are displayed when notifications panel is minified
+  private messages: MessageType[] = []; // Actual messages that will be displayed in the notifications panel
   private messageTimer: any | null = null;
   private timeoutValue: number | null = 2000;
   private activePanel: number | undefined = 0; // Default selection is the Label panel
@@ -167,7 +171,7 @@ export default class MessageBox extends Vue {
     // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
   }
 
-  getMsgColor(m: MessageType) {
+  getMsgColor(m: MessageType) { // If the message type is directive, the color should be "null." Otherwise make the color the message type.
     switch (m.type) {
       case "directive":
         this.timeoutValue = this.toolUseMessageDelay;
@@ -176,20 +180,21 @@ export default class MessageBox extends Vue {
         return m.type;
     }
   }
+
   addMessage(m: MessageType): void {
     m.translatedKey = i18n.t(m.key, m.keyOptions).toString(); // Place translation in the messages
     m.translationSecondKey = i18n
-      .t(m.secondaryMsg, m.secondaryMsgKeyOptions)
+      .t(m.secondaryMsg, m.secondaryMsgKeyOptions) // Translate the secondary message (this is the informational message)
       .toString();
     const msgColor = this.getMsgColor(m);
     m.msgColor = msgColor;
-    m.timestamp = Date.now();
+    m.timestamp = Date.now(); // Get the timestamp that the message occurred at so it can be deleted if needed.
 
-    this.messages.unshift(m);
+    this.messages.unshift(m); // Add the new message to the beginning of the array
     if (this.messageTimer) {
-      // We have an active message on display
-      this.msgDisplayQueue.push(m);
-    } else {
+
+      this.msgDisplayQueue.push(m); // We have an active message on display, push it to the queue
+    } else { // Display the current message
       this.currentMsg = m;
       this.showMe = true;
       this.messageTimer = setInterval(this.swapMessages, 2000);
