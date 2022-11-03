@@ -50,7 +50,7 @@ export default class ShortcutIcon extends Vue {
   toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  switchButton(button: ToolButtonType | null): void {
+  switchButton(button: ToolButtonType | null): void { //Set the button selected so it can be tracked
     if (this.button) {
       this.setButton(button!);
     }
