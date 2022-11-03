@@ -14,29 +14,32 @@
           <v-select dense
             v-model="selectedMessageType"
             :items="messageTypes"
-            item-text="Hi">
-          </v-select>
-          <template slot="item"
-            slot-scope="data">
-            <v-list-tile-content>
-              <v-list-tile-title @click="getItemText(data.item.name)"
-                v-html="data.item.name"></v-list-tile-title>
-            </v-list-tile-content>
+            >
+            <template v-slot:selection="{ item }">
+      {{ $t(`notifications.${item}`)}}
+    </template>
+    <template v-slot:item="{ item }">
+      {{ $t(`notifications.${item}`) }}
+    </template>
 
-          </template>
+          </v-select>
         </v-row>
         <v-row cols="12"
           justify="end">
           <v-col md="12">
-            <v-btn color="error" @click="() => {if (selectedMessageType == 'All') {messages = [];} else {
-              messages = messages.filter((m) => {return m.type != selectedMessageType}) }}"
-              small>Delete {{selectedMessageType}} messages</v-btn>
+            <v-btn color="error" @click="() => {
+
+              if (selectedMessageType == messageTypes[0]) {messages = [];} else {
+              messages = messages.filter((m) => {
+      b
+                return m.type != selectedMessageType})}}"
+              small>{{$t(`notifications.deleteMsg`, {msgType: $t(`notifications.${selectedMessageType}`).toString()})}}</v-btn>
           </v-col>
         </v-row>
         <v-layout
           column
           style="height: 50vh">
-          <v-card dark class="my-1" v-for="(notif, index) in messages.filter((m) => { if (selectedMessageType == 'All') { return m } else return m.type == selectedMessageType})"
+         <v-card dark class="my-1" v-for="(notif, index) in messages.filter((m) => { if (selectedMessageType == messageTypes[0]) { return m } else return m.type == selectedMessageType})"
             :key="index"
             :color="`${notif.msgColor}`">
             <v-row class="pa-2">
@@ -127,7 +130,7 @@ export interface MessageType {
   keyOptions?: any;
   secondaryMsg: string;
   secondaryMsgKeyOptions: string;
-  type: "success" | "info" | "error" | "warning" | "directive";
+  type: string;
   translatedKey: string | null;
   translationSecondKey: string | undefined;
 
@@ -146,8 +149,8 @@ export default class MessageBox extends Vue {
   private messageTimer: any | null = null;
   private timeoutValue: number | null = 2000;
   private activePanel: number | undefined = 0; // Default selection is the Label panel
-  private messageTypes = ["All", ...SETTINGS.messageTypes];
-  private selectedMessageType: any = this.messageTypes[0];
+  private messageTypes = ["all", ...SETTINGS.messageTypes];
+  private selectedMessageType = this.messageTypes[0];
 
   // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
   // private messageTimer: NodeJS.Timer | null = null;
