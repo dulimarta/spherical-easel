@@ -19,7 +19,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { ActionMode, SEIntersectionReturnType } from "@/types";
+import { ActionMode, SEIntersectionReturnType, ToolButtonType } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
@@ -51,6 +51,7 @@ type PiniaAppState = {
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   activeToolName: string;
+  buttonSelection: any;
   previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
@@ -105,6 +106,7 @@ export const useSEStore = defineStore({
     actionMode: "rotate",
     previousActionMode: "rotate",
     activeToolName: "rotate",
+    buttonSelection: {},
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
@@ -189,6 +191,11 @@ export const useSEStore = defineStore({
     // setSphereRadius(r: number): void {
     //   // TODO
     // },
+
+    setButton(buttonSelection: ToolButtonType): void {
+      this.buttonSelection = buttonSelection;
+    },
+
     setActionMode(mode: { id: ActionMode; name: string }): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (

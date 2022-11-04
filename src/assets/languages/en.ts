@@ -842,5 +842,17 @@ export default {
     firestoreConstructionDeleted: "Construction {docId} successfully deleted.",
     firestoreSaveError: "Construction was not saved.",
     constructionNotFound: "Construction {docId} not found."
+  },
+
+  notifications: {
+    directive: "directive",
+    info: "info",
+    warning: "warning",
+    error: "error",
+    success: "success",
+    all: "all",
+
+    deleteMsg: "Delete {msgType} messages"
+
   }
 } as LocaleMessages;

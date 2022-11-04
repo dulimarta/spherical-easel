@@ -95,13 +95,18 @@
       </v-expansion-panels>
 
     </div>
-    <div v-else
+   <v-btn v-else
       v-on:click="$emit('toggle-style-panel')"
-      id="mini-icons"
-      key="partial">
+      key="partial"
+
+      plain
+      depressed
+      class="pa-0 mx-0"
+      >
       <v-icon>$vuetify.icons.value.stylePanel
       </v-icon>
-    </div>
+
+    </v-btn>
   </transition>
 
 </template>

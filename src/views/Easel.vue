@@ -52,7 +52,8 @@
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
                     <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -71,7 +72,8 @@
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
                     <!-- <v-btn-toggle v-model="actionMode"
                       @change="switchActionMode"
@@ -104,7 +106,8 @@
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
 
                     <!--<v-tooltip bottom
@@ -129,7 +132,8 @@
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
                     <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
@@ -301,22 +305,28 @@
       </Pane>
 
       <Pane min-size="5"
-        max-size="25"
-        :size="stylePanelMinified ? 5 : 25">
-        <v-card>
-          <div ref="stylePanel"
-            id="styleContainer">
-            <div>
-              <v-btn icon
-                @click="minifyStylePanel">
-                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-                <v-icon v-else>mdi-arrow-right</v-icon>
+        :max-size="25"
+        :size="getPanelSize()">
+        <v-card class="pt-2">
+          <div id="styleContainer"
+            >
+              <v-btn icon v-if="!stylePanelMinified || !notificationsPanelMinified"
+                @click="() => {stylePanelMinified = true; notificationsPanelMinified = true;}">
+                <v-icon>mdi-arrow-right</v-icon>
               </v-btn>
-            </div>
+
+
             <StylePanel :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" />
-          </div>
+
+                     <MessageBox :minified="notificationsPanelMinified"
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+
+            </div>
+
         </v-card>
+
+
       </Pane>
     </Splitpanes>
     <Dialog ref="unsavedWorkDialog"
@@ -378,6 +388,9 @@ import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
+import MessageBox from "@/components/MessageBox.vue";
+import {toolGroups} from "@/components/toolgroups";
+
 
 /**
  * Split panel width distribution (percentages):
@@ -396,7 +409,8 @@ import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
     IconBase,
     Dialog,
     ShortcutIcon,
-    CurrentToolSelection
+    CurrentToolSelection,
+    MessageBox
   },
   methods: {
     ...mapActions(useSEStore, [
@@ -412,7 +426,6 @@ import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
       "temporaryNodules",
       "hasObjects",
       "activeToolName",
-      "actionMode"
     ])
   }
 })
@@ -439,6 +452,7 @@ export default class Easel extends Vue {
   private buttonList = buttonList;
   private toolboxMinified = false;
   private stylePanelMinified = true;
+  private notificationsPanelMinified = true;
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -485,7 +499,8 @@ export default class Easel extends Vue {
         clickFunc: this.undoEdit,
         iconColor: "blue",
         btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+        button: null,
       },
       {
         labelMsg: "main.RedoLastAction",
@@ -493,7 +508,8 @@ export default class Easel extends Vue {
         clickFunc: this.redoAction,
         iconColor: "blue",
         btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+        button: null,
       }
     ];
   }
@@ -507,7 +523,8 @@ export default class Easel extends Vue {
         },
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: null,
       }
     ];
   }
@@ -520,7 +537,8 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomIn,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomIn"),
       },
 
       {
@@ -529,7 +547,8 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomOut,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomOut"),
       },
 
       {
@@ -538,20 +557,22 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomFit,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomFit"),
+
       }
     ];
   }
 
-  get bottomLeftShortcuts() {
-    return [
+  get bottomLeftShortcuts() {return [
       {
         labelMsg: "buttons.CreatePointToolTipMessage",
         icon: "$vuetify.icons.value.point",
         clickFunc: this.createPoint,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "point"),
       },
 
       {
@@ -560,7 +581,8 @@ export default class Easel extends Vue {
         clickFunc: this.createLine,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "line"),
       },
 
       {
@@ -569,7 +591,8 @@ export default class Easel extends Vue {
         clickFunc: this.createSegment,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "segment"),
       },
 
       {
@@ -578,10 +601,12 @@ export default class Easel extends Vue {
         clickFunc: this.createCircle,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "circle"),
       }
     ];
   }
+
 
   //#region magnificationUpdate
   constructor() {
@@ -606,6 +631,13 @@ export default class Easel extends Vue {
   }
 
   private enableZoomIn(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.PanZoomInDisplayedName",
+            secondaryMsg: "buttons.PanZoomInToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomInToolUseMessage = true;
     this.setActionMode({
       id: "zoomIn",
@@ -613,6 +645,13 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomOut(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.PanZoomOutDisplayedName",
+            secondaryMsg: "buttons.PanZoomOutToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomOutToolUseMessage = true;
     this.setActionMode({
       id: "zoomOut",
@@ -620,6 +659,13 @@ export default class Easel extends Vue {
     });
   }
   private enableZoomFit(): void {
+    EventBus.fire("show-alert", {
+            key: "buttons.ZoomFitDisplayedName",
+            secondaryMsg: "buttons.ZoomFitToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayZoomFitToolUseMessage = true;
     this.setActionMode({
       id: "zoomFit",
@@ -628,6 +674,13 @@ export default class Easel extends Vue {
   }
 
   private createPoint(): void {
+    EventBus.fire("show-alert", {
+            key: "buttons.CreatePointDisplayedName",
+            secondaryMsg: "buttons.CreatePointToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreatePointToolUseMessage = true;
     this.setActionMode({
       id: "point",
@@ -636,6 +689,13 @@ export default class Easel extends Vue {
   }
 
   private createLine(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateLineDisplayedName",
+            secondaryMsg: "buttons.CreateLineToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateLineToolUseMessage = true;
     this.setActionMode({
       id: "line",
@@ -643,6 +703,13 @@ export default class Easel extends Vue {
     });
   }
   private createSegment(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateLineSegmentDisplayedName",
+            secondaryMsg: "buttons.CreateLineSegmentToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateLineSegmentToolUseMessage = true;
     this.setActionMode({
       id: "segment",
@@ -651,6 +718,13 @@ export default class Easel extends Vue {
   }
 
   private createCircle(): void {
+     EventBus.fire("show-alert", {
+            key: "buttons.CreateCircleDisplayedName",
+            secondaryMsg: "buttons.CreateCircleToolUseMessage",
+            keyOptions: {},
+            secondaryMsgKeyOptions: {},
+            type: "directive",
+          });
     this.displayCreateCircleToolUseMessage = true;
     this.setActionMode({
       id: "circle",
@@ -753,22 +827,21 @@ export default class Easel extends Vue {
 
   minifyToolbox(): void {
     this.toolboxMinified = !this.toolboxMinified;
-    // Minify the other panel when this one is expanded
-    // if (!this.toolboxMinified && !this.stylePanelMinified) {
-    //   this.stylePanelMinified = true;
-    // }
   }
 
+  minifyNotificationsPanel(): void {
+    this.notificationsPanelMinified = !this.notificationsPanelMinified;
+
+  }
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
-    // Minify the other panel when this one is expanded
-    // if (!this.toolboxMinified && !this.stylePanelMinified) {
-    //   this.toolboxMinified = true;
-    // }
-    // Set the selection tool to be active when opening the style panel.
-    if (!this.stylePanelMinified) {
-      this.setActionModeToSelectTool();
+  }
+
+  getPanelSize(): number {
+    if (!this.stylePanelMinified || !this.notificationsPanelMinified) {
+      return 30;
     }
+    return 5;
   }
 
   setActionModeToSelectTool(): void {
