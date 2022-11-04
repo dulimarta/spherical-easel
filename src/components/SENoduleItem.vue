@@ -10,7 +10,7 @@
         <v-col cols="auto">
           <v-icon v-if="isAntipode"
             medium>
-            $vuetify.icons.value.antipodalPoint</v-icon>
+            .icons.value.antipodalPoint</v-icon>
           <v-icon v-else-if="isPointOnObject"
             medium>
             $vuetify.icons.value.pointOnObject

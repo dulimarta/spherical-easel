@@ -7,46 +7,22 @@
       <Pane min-size="5"
         max-size="35"
         :size="toolboxMinified ? 5 : 25">
-
-        <v-container fill-height>
-          <div id="container">
-            <div id="currentTool">
-              <div id="icon">
-                <ShortcutIcon :icon=actionMode />
-                <!--"$vuetify.value."-->
-              </div>
-              <!-- Displays the current tool in the left pannel by the collapsible arorw -->
-              <div v-if="toolboxMinified" />
-              <div v-else>
-                <span id="tool"
-                  v-if="activeToolName ==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
-                  v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
-                </span>
-                <span id="tool"
-                  v-else-if="activeToolName === 'ApplyTransformationDisplayedName'"
-                  v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim() + ' <strong>' + applyTransformationText + '</strong>'">
-                </span>
-                <span id="tool"
-                  v-else-if="activeToolName!== ''"
-                  v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
-                </span>
-                <span id="tool"
-                  v-else>{{ $t(`buttons.NoToolSelected`) }}</span>
-              </div>
-
-              <v-btn icon
+      <v-container style="background-color: white">
+      <v-row>
+          <v-btn icon
                 @click="minifyToolbox">
                 <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
                 <v-icon v-else>mdi-arrow-left</v-icon>
               </v-btn>
-            </div>
+        <CurrentToolSelection :actionMode="actionMode" :toolboxMinified="this.toolboxMinified"/>
+
+    </v-row>
+      </v-container>
             <Toolbox id="toolbox"
               ref="toolbox"
               :minified="toolboxMinified"
               v-on:toggle-tool-box-panel="minifyToolbox" />
 
-          </div>
-        </v-container>
       </Pane>
       <Pane :size="centerWidth">
 
@@ -401,6 +377,7 @@ import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 
 /**
  * Split panel width distribution (percentages):
@@ -418,7 +395,8 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
     StylePanel,
     IconBase,
     Dialog,
-    ShortcutIcon
+    ShortcutIcon,
+    CurrentToolSelection
   },
   methods: {
     ...mapActions(useSEStore, [
@@ -445,7 +423,6 @@ export default class Easel extends Vue {
   readonly seNodules!: SENodule[];
   readonly temporaryNodules!: Nodule[];
   readonly hasObjects!: boolean;
-  readonly actionMode!: ActionMode;
 
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
   readonly removeAllFromLayers!: () => void;
@@ -485,10 +462,12 @@ export default class Easel extends Vue {
   private uid = "";
   private authSubscription!: Unsubscribe;
 
-  //  private actionMode: { id: ActionMode; name: string } = {
-  //     id: "rotate",
-  //     name: ""
-  //   };
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
+
+
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
@@ -801,7 +780,6 @@ export default class Easel extends Vue {
 
   switchActionMode(): void {
     this.setActionMode(this.actionMode);
-    console.log(this.actionMode.id);
   }
   onWindowResized(): void {
     this.adjustSize();
