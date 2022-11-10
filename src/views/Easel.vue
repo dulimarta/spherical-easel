@@ -407,7 +407,7 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
       "updateDisplay"
     ]),
     listItemStyle: function(i, xLoc, yLoc) { //xLoc determines left or right, yLoc determines top or bottom
-      const style = {};
+      const style:any = {};
 
       if (i !== 0) {
         style.position = "absolute";
@@ -595,30 +595,6 @@ export default class Easel extends Vue {
         disableBtn: false
       },
 
-      {
-        labelMsg: "buttons.CreateCircleToolTipMessage",
-        icon: "$vuetify.icons.value.circle",
-        clickFunc: this.createCircle,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false
-      },
-      {
-        labelMsg: "buttons.CreateCircleToolTipMessage",
-        icon: "$vuetify.icons.value.circle",
-        clickFunc: this.createCircle,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false
-      },
-      {
-        labelMsg: "buttons.CreateCircleToolTipMessage",
-        icon: "$vuetify.icons.value.circle",
-        clickFunc: this.createCircle,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false
-      },
       {
         labelMsg: "buttons.CreateCircleToolTipMessage",
         icon: "$vuetify.icons.value.circle",
