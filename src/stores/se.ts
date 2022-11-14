@@ -44,7 +44,6 @@ import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { max } from "moment";
 import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
 import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
