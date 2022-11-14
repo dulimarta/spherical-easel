@@ -43,13 +43,6 @@
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
-                    <!-- <v-btn-toggle
-                    v-model="actionMode"
-                    @change="switchActionMode"
-                    class="mr-2 d-flex flex-wrap accent"
-                  >
-                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
-                      </v-btn-toggle>-->
                     <v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
                       :close-delay="toolTipCloseDelay">
@@ -310,7 +303,12 @@ import { mapActions, mapState } from "pinia";
     Dialog
   },
   methods: {
-    ...mapActions(useSEStore, ["setActionMode", "init", "removeAllFromLayers", "updateDisplay"])
+    ...mapActions(useSEStore, [
+      "setActionMode",
+      "init",
+      "removeAllFromLayers",
+      "updateDisplay"
+    ])
   },
   computed: {
     ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
@@ -351,10 +349,6 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
-  private actionMode: { id: ActionMode; name: string } = {
-    id: "rotate",
-    name: ""
-  };
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
@@ -452,7 +446,7 @@ export default class Easel extends Vue {
             // The script is inline
             run(JSON.parse(script) as ConstructionScript);
           }
-          this.updateDisplay()
+          this.updateDisplay();
         } else {
           EventBus.fire("show-alert", {
             key: "constructions.constructionNotFound",
@@ -533,9 +527,6 @@ export default class Easel extends Vue {
     });
   }
 
-  switchActionMode(): void {
-    this.setActionMode(this.actionMode);
-  }
   onWindowResized(): void {
     this.adjustSize();
   }
