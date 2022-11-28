@@ -733,7 +733,7 @@ export default class SphereFrame extends VueComponent {
    * we would not be able to do this (at least not directly).
    */
   @Watch("actionMode")
-  switchActionMode(mode: ActionMode): void { //TODO: potentially move functionality from toolbutton to here
+  switchActionMode(mode: ActionMode): void {
     //console.debug("Switch tool /action mode");
     this.currentTool?.deactivate();
     this.currentTool = null;
