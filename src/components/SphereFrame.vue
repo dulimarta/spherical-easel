@@ -270,8 +270,8 @@ export default class SphereFrame extends VueComponent {
     //this.visitor = new RotationVisitor();
 
     // Create the tools/handlers
-    this.selectTool = new SelectionHandler(this.layers);
-    this.currentTool = this.selectTool;
+    this.rotateTool = new RotateHandler(this.layers);
+    this.currentTool = this.rotateTool;
     // Postpone the instantiation of the remaining tools to on-demand
     // to avoid runtime error when the tools depend of Pinia initialization
 
