@@ -14,11 +14,11 @@
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
-           possibleToolAction();
             if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
             setElevation()
+            switchButton(button);
           }"
           x-large
           :elevation="elev">
@@ -39,20 +39,20 @@
 
     <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
     automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar v-model="displayToolUseMessage"
+   <!-- <v-snackbar v-model="displayToolUseMessage"
       bottom
       left
       :timeout="toolUseMessageDelay"
       :value="displayToolUseMessages"
       multi-line>
-      <!---If the displayed name is zoom in or out add a slash before the word pan --->
+      If the displayed name is zoom in or out add a slash before the word pan
       <span
         v-if="button.displayedName==='PanZoomInDisplayedName' || button.displayedName==='PanZoomOutDisplayedName'">
         <strong class="warning--text"
           v-html="$t('buttons.' +button.displayedName).split('<br>').join('/').trim() + ': '"></strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
-      <!---If the displayed name is only one line delete the non-breaking space --->
+
       <span
         v-else-if="button.displayedName==='CreateCoordinateDisplayedName'|| button.displayedName==='ZoomFitDisplayedName'|| button.displayedName==='CreateTangentDisplayedName'|| button.displayedName==='CreateMidpointDisplayedName'|| button.displayedName==='CreatePolarDisplayedName'  || button.displayedName==='CreateEllipseDisplayedName'  || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
         <strong class="warning--text"
@@ -68,7 +68,7 @@
         icon>
         <v-icon color="success">mdi-close</v-icon>
       </v-btn>
-    </v-snackbar>
+    </v-snackbar>-->
   </div>
 </template>
 
@@ -78,7 +78,7 @@ import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-import { mapState } from "pinia";
+import { mapState, mapActions} from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "@/models/SEExpression";
@@ -87,7 +87,10 @@ import { SETransformation } from "@/models/SETransformation";
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component({
   computed: {
-    ...mapState(useSEStore, ["actionMode", "expressions", "seTransformations"])
+    ...mapState(useSEStore, ["actionMode", "buttonSelection", "expressions", "seTransformations"])
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setButton"]),
   }
 })
 export default class ToolButton extends Vue {
@@ -120,6 +123,7 @@ export default class ToolButton extends Vue {
   readonly actionMode!: ActionMode;
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
+  readonly setButton!: (_: ToolButtonType) => void;
 
   @Watch("actionMode")
   private setElevation(): void {
@@ -134,9 +138,13 @@ export default class ToolButton extends Vue {
     }
   }
 
+  switchButton(button: ToolButtonType): void { // Set the button selected so it can be tracked
+    this.setButton(button);
+  }
+
   //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
   possibleToolAction(): void {
-    if (this.button.actionModeValue === "measuredCircle") {
+    /*if (this.button.actionModeValue === "measuredCircle") {
       //...open the measurement panel and close the others or tell the user to create a measurement
       if (this.expressions.length > 0) {
         //...open the object tree tab,
@@ -184,7 +192,7 @@ export default class ToolButton extends Vue {
           type: "error"
         });
       }
-    }
+    }*/
   }
   // @Prop({ default: 0 }) readonly elev?: number;
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so

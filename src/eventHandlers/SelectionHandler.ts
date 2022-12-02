@@ -223,6 +223,59 @@ export default class SelectionHandler extends Highlighter {
 
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
+
+    if (SelectionHandler.store.actionMode === "select") {
+      SelectionHandler.store.setSelectedSENodules(this.currentSelection);
+
+      if (SelectionHandler.store.selectedSENodules.length === 0) {
+        EventBus.fire("show-alert", {
+          key: `handlers.selectionUpdateNothingSelected`,
+          keyOptions: {},
+          type: "error"
+        });
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.selectionUpdate`,
+          keyOptions: {
+            number: `${SelectionHandler.store.selectedSENodules.length}`
+          },
+          type: "success"
+        });
+      }
+
+      if (this.currentSelection.length > 0 && this.highlightTimer === null) {
+        // We have selections and interval timer is not running, then start timer and offset timer
+        this.highlightTimer = setInterval(
+          this.blinkSelections.bind(this),
+          1500
+        );
+        this.delayedStart = setTimeout(() => {
+          this.highlightTimer2 = setInterval(
+            this.blinkSelections.bind(this),
+            1500
+          );
+        }, 300);
+      } else if (
+        this.currentSelection.length === 0 &&
+        this.highlightTimer !== null
+      ) {
+        // interval timer is running and we have no selections, then stop timer
+        clearInterval(this.highlightTimer);
+        if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+        if (this.delayedStart) clearInterval(this.delayedStart);
+        this.delayedStart = null;
+        this.highlightTimer = null;
+        this.highlightTimer2 = null;
+      }
+      this.mouseDownLocation.splice(0);
+      this.dragging = false;
+      // remove the selection rectangle from the layers
+      if (this.selectionRectangleAdded) {
+        this.selectionRectangle.hide();
+      }
+      this.selectionRectangleAdded = false;
+      this.selectionRectangleSelection.splice(0);
+    }
     // The user moused down so record the location
     this.mouseDownLocation = [
       this.currentScreenVector.x,
@@ -448,22 +501,6 @@ export default class SelectionHandler extends Highlighter {
 
     SelectionHandler.store.setSelectedSENodules(this.currentSelection);
 
-    if (SelectionHandler.store.selectedSENodules.length === 0) {
-      EventBus.fire("show-alert", {
-        key: `handlers.selectionUpdateNothingSelected`,
-        keyOptions: {},
-        type: "error"
-      });
-    } else {
-      EventBus.fire("show-alert", {
-        key: `handlers.selectionUpdate`,
-        keyOptions: {
-          number: `${SelectionHandler.store.selectedSENodules.length}`
-        },
-        type: "success"
-      });
-    }
-
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer
       this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
@@ -496,60 +533,6 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangleSelection.splice(0);
   }
 
-  mouseLeave(event: MouseEvent): void {
-    if (SelectionHandler.store.actionMode === "select") {
-      SelectionHandler.store.setSelectedSENodules(this.currentSelection);
-
-      if (SelectionHandler.store.selectedSENodules.length === 0) {
-        EventBus.fire("show-alert", {
-          key: `handlers.selectionUpdateNothingSelected`,
-          keyOptions: {},
-          type: "error"
-        });
-      } else {
-        EventBus.fire("show-alert", {
-          key: `handlers.selectionUpdate`,
-          keyOptions: {
-            number: `${SelectionHandler.store.selectedSENodules.length}`
-          },
-          type: "success"
-        });
-      }
-
-      if (this.currentSelection.length > 0 && this.highlightTimer === null) {
-        // We have selections and interval timer is not running, then start timer and offset timer
-        this.highlightTimer = setInterval(
-          this.blinkSelections.bind(this),
-          1500
-        );
-        this.delayedStart = setTimeout(() => {
-          this.highlightTimer2 = setInterval(
-            this.blinkSelections.bind(this),
-            1500
-          );
-        }, 300);
-      } else if (
-        this.currentSelection.length === 0 &&
-        this.highlightTimer !== null
-      ) {
-        // interval timer is running and we have no selections, then stop timer
-        clearInterval(this.highlightTimer);
-        if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-        if (this.delayedStart) clearInterval(this.delayedStart);
-        this.delayedStart = null;
-        this.highlightTimer = null;
-        this.highlightTimer2 = null;
-      }
-      this.mouseDownLocation.splice(0);
-      this.dragging = false;
-      // remove the selection rectangle from the layers
-      if (this.selectionRectangleAdded) {
-        this.selectionRectangle.hide();
-      }
-      this.selectionRectangleAdded = false;
-      this.selectionRectangleSelection.splice(0);
-    }
-  }
 
   activate(): void {
     window.addEventListener("keydown", this.keyPressHandler);

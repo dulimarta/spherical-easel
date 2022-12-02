@@ -33,200 +33,200 @@ export default {
     CurrentTool: "Current Tool",
     NoToolSelected: "No Tool Selected",
 
-    MeasureTriangleDisplayedName: "Measure<br>Triangle",
+    MeasureTriangleDisplayedName: "Measure Triangle",
     MeasureTriangleToolTipMessage:
       "Measure the angles and sides of a triangle.",
     MeasureTriangleToolUseMessage:
       "Select three line segments that make a triangle.",
 
-    MeasurePolygonDisplayedName: "Measure<br>Polygon",
+    MeasurePolygonDisplayedName: "Measure Polygon",
     MeasurePolygonToolTipMessage: "Measure the angles and sides of a polygon.",
     MeasurePolygonToolUseMessage:
       "Select three or more line segments that make a polygon with out crossing.",
 
-    CreateAngleDisplayedName: "Measure<br>Angle",
+    CreateAngleDisplayedName: "Measure Angle",
     CreateAngleToolTipMessage: "Calculate Angle",
     CreateAngleToolUseMessage:
       "Select two lines/segments or three points to calculate an angle.",
 
-    CreateAntipodalPointDisplayedName: "Antipodal<br>Point",
+    CreateAntipodalPointDisplayedName: "Antipodal Point",
     CreateAntipodalPointToolTipMessage: "Create Antipode",
     CreateAntipodalPointToolUseMessage:
       "Select a location to create a point (if necessary) and its antipode",
 
-    CreatePolarDisplayedName: "Polar<br>&nbsp;",
+    CreatePolarDisplayedName: "Polar",
     CreatePolarToolTipMessage: "Create polar line or polar points",
     CreatePolarToolUseMessage:
       "Select a location to create a point (if necessary) and its polar line or select a line segment or line to create both polar points",
 
-    CreateMidpointDisplayedName: "Midpoint<br>&nbsp;",
+    CreateMidpointDisplayedName: "Midpoint",
     CreateMidpointToolTipMessage: "Create the midpoint of a line segment.",
     CreateMidpointToolUseMessage:
       "Select a line segment to create its midpoint.",
 
-    CreateAngleBisectorDisplayedName: "Angle<br>Bisector",
+    CreateAngleBisectorDisplayedName: "Angle Bisector",
     CreateAngleBisectorToolTipMessage:
       "Create the angle bisector of a measured angle.",
     CreateAngleBisectorToolUseMessage:
       "You must first measure an angle with the Measure Angle tool and then select it to create its bisector.",
 
-    CreateNSectAngleDisplayedName: "N-Sect<br>Angle",
+    CreateNSectAngleDisplayedName: "N-Sect Angle",
     CreateNSectAngleToolTipMessage: "Divide an angle into N equal pieces.",
     CreateNSectAngleToolUseMessage:
       "Use a number key to select a number then select an angle to divide into that many equal pieces.",
 
-    CreateNSectSegmentDisplayedName: "N-Sect<br>Segment",
+    CreateNSectSegmentDisplayedName: "N-Sect Segment",
     CreateNSectSegmentToolTipMessage:
       "Divide a line segment into N equal pieces.",
     CreateNSectSegmentToolUseMessage:
       "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
 
-    CreateThreePointCircleDisplayedName: "Three Point<br>Circle",
+    CreateThreePointCircleDisplayedName: "Three Point Circle",
     CreateThreePointCircleToolTipMessage: "Create a circle from three points.",
     CreateThreePointCircleToolUseMessage:
       "Select three points (not all the same or antipodal) to create the circle through them.",
 
-    CreateCircleDisplayedName: "Create<br>Circle",
+    CreateCircleDisplayedName: "Create Circle",
     CreateCircleToolTipMessage: "Insert circle",
     CreateCircleToolUseMessage:
       "Click to insert a circle with a given center point and through a second point.",
 
-    CreateCoordinateDisplayedName: "Coordinates<br>&nbsp;",
+    CreateCoordinateDisplayedName: "Coordinates",
     CreateCoordinateToolTipMessage: "Measure x,y,z coordinates",
     CreateCoordinateToolUseMessage:
       "Select a point to measure its x,y,z coordinates on the sphere",
 
-    CreateEllipseDisplayedName: "Ellipse<br>&nbsp;",
+    CreateEllipseDisplayedName: "Ellipse",
     CreateEllipseToolTipMessage: "Insert ellipse",
     CreateEllipseToolUseMessage:
       "Select two distinct non-antipodal points and another point on the ellipse",
 
-    CreateTranslationDisplayedName: "Create<br>Translation",
+    CreateTranslationDisplayedName: "Create Translation",
     CreateTranslationToolTipMessage: "Create a translation mapping.",
     CreateTranslationToolUseMessage:
       "Create a translation mapping object by selecting a line segment or line to translate along and then a measurement or measurable object to determine the length of translation.",
 
-    CreateRotationDisplayedName: "Create<br>Rotation",
+    CreateRotationDisplayedName: "Create Rotation",
     CreateRotationToolTipMessage: "Create a rotation mapping.",
     CreateRotationToolUseMessage:
       "Create a rotation transformation object by selecting a point to rotate about and then a measurement or measurable object to determine the angle of rotation.",
 
-    CreatePointReflectionDisplayedName: "Create Point<br>Reflection",
+    CreatePointReflectionDisplayedName: "Create Point Reflection",
     CreatePointReflectionToolTipMessage: "Create a point reflection mapping.",
     CreatePointReflectionToolUseMessage:
       "Create a point reflection transformation object by selecting a point to reflect through.",
 
-    CreateReflectionDisplayedName: "Create<br>Reflection",
+    CreateReflectionDisplayedName: "Create Reflection",
     CreateReflectionToolTipMessage: "Create a reflection mapping.",
     CreateReflectionToolUseMessage:
       "Create a reflection transformation object by selecting a line or line segment to reflect through.",
 
-    CreateInversionDisplayedName: "Create<br>Inversion",
+    CreateInversionDisplayedName: "Create Inversion",
     CreateInversionToolTipMessage: "Create a inversion mapping.",
     CreateInversionToolUseMessage:
       "Create a inversion transformation object by selecting a circle to invert over.",
-    ApplyTransformationDisplayedName: "Apply<br>Transformation",
+    ApplyTransformationDisplayedName: "Apply Transformation",
     ApplyTransformationToolTipMessage: "Apply a transformation.",
     ApplyTransformationToolUseMessage:
       "Apply a transformation by first selecting transformation object and then selecting geometric objects to apply it to.",
 
-    CreateMeasuredCircleDisplayedName: "Measured<br>Circle",
+    CreateMeasuredCircleDisplayedName: "Measured Circle",
     CreateMeasuredCircleToolTipMessage: "Insert Measured Circle",
     CreateMeasuredCircleToolUseMessage:
       "Select a center point and a measurement or measurable object to determine the radius.",
 
-    CreateIntersectionDisplayedName: "Intersection<br>Point(s)",
+    CreateIntersectionDisplayedName: "Intersection Point(s)",
     CreateIntersectionToolTipMessage: "Intersect two one-dimensional objects",
     CreateIntersectionToolUseMessage:
       "Select two one-dimensional objects to create their intersection point(s).",
 
-    CreateLineSegmentDisplayedName: "Create Line<br>Segment",
+    CreateLineSegmentDisplayedName: "Create Line Segment",
     CreateLineSegmentToolTipMessage: "Insert line segment",
     CreateLineSegmentToolUseMessage:
       "Click to insert line segment defined by two points.",
 
-    CreateLineDisplayedName: "Create<br>Line",
+    CreateLineDisplayedName: "Create Line",
     CreateLineToolTipMessage: "Insert line",
     CreateLineToolUseMessage: "Click to insert a line defined by two points.",
 
-    CreatePointDistanceDisplayedName: "Point<br>Distance",
+    CreatePointDistanceDisplayedName: "Point Distance",
     CreatePointDistanceToolTipMessage: "Distance of Two Points",
     CreatePointDistanceToolUseMessage:
       "Select two points to measure the distance between them",
 
-    CreatePointOnOneDimDisplayedName: "Point On<br>Object",
+    CreatePointOnOneDimDisplayedName: "Point On Object",
     CreatePointOnOneDimToolTipMessage:
       "Select a one-dimensional object to place a point on",
     CreatePointOnOneDimToolUseMessage:
       "Select a one-dimensional object to add a point to.",
 
-    CreatePointDisplayedName: "Create<br>Point",
+    CreatePointDisplayedName: "Create Point",
     CreatePointToolTipMessage: "Insert point",
     CreatePointToolUseMessage: "Click to insert a free point.",
 
-    CreateSegmentLengthDisplayedName: "Line Segment<br>Length",
+    CreateSegmentLengthDisplayedName: "Line Segment Length",
     CreateSegmentLengthToolTipMessage: "Length of Line Segment",
     CreateSegmentLengthToolUseMessage:
       "Click this button to compute the length of Line Segment",
 
-    CreateSliderDisplayedName: "Measurement<br>Slider",
+    CreateSliderDisplayedName: "Measurement Slider",
     CreateSliderToolTipMessage: "User Controlled Value",
     CreateSliderToolUseMessage: "Click this button to create a value slider ",
 
-    CreateTangentDisplayedName: "Tangents<br>&nbsp;",
+    CreateTangentDisplayedName: "Tangents",
     CreateTangentToolTipMessage: "Tangents through a point",
     CreateTangentToolUseMessage:
       "Create the tangent lines to a selected non-straight one-dimensional object and selected location.",
 
-    CreatePerpendicularDisplayedName: "Perpendicular<br>&nbsp;",
+    CreatePerpendicularDisplayedName: "Perpendicular",
     CreatePerpendicularToolTipMessage: "Perpendicular(s) through a point",
     CreatePerpendicularToolUseMessage:
       "Create the perpendicular line(s) to a selected one-dimensional object and selected location.",
 
-    DeleteDisplayedName: "Delete<br>&nbsp;",
+    DeleteDisplayedName: "Delete",
     DeleteToolTipMessage: "Delete Objects",
     DeleteToolUseMessage:
       "Select objects to delete. Hold the SHIFT key to select from the back of the sphere.",
 
-    HideDisplayedName: "Hide<br>Objects",
+    HideDisplayedName: "Hide Objects",
     HideObjectToolTipMessage: "Hide objects",
     HideObjectToolUseMessage:
       "Select objects to hide. Hold the SHIFT key to select from the back of the sphere.",
 
-    MoveDisplayedName: "Move<br>Objects",
+    MoveDisplayedName: "Move Objects",
     MoveObjectToolTipMessage: "Move object",
     MoveObjectToolUseMessage:
       "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
 
-    PanZoomInDisplayedName: "Zoom In<br>Pan",
+    PanZoomInDisplayedName: "Zoom In/Pan",
     PanZoomInToolTipMessage: "Pan or Zoom In",
     PanZoomInToolUseMessage:
       "Click to zoom in at the location of the mouse. Click and drag to pan the current view.",
 
-    PanZoomOutDisplayedName: "Zoom Out<br>Pan",
+    PanZoomOutDisplayedName: "Zoom Out/Pan",
     PanZoomOutToolTipMessage: "Pan or Zoom Out",
     PanZoomOutToolUseMessage:
       "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
 
-    ZoomFitDisplayedName: "Zoom Fit<br>&nbsp;",
+    ZoomFitDisplayedName: "Zoom Fit",
     ZoomFitToolTipMessage: "Zoom Fit",
     ZoomFitToolUseMessage: "Fits the sphere in the available space.",
 
-    RotateDisplayedName: "Rotate<br>Sphere",
+    RotateDisplayedName: "Rotate Sphere",
     RotateSphereToolTipMessage: "Rotate Sphere",
     RotateSphereToolUseMessage: "Click and drag to rotate the sphere.",
 
-    SelectDisplayedName: "Select<br>Objects",
+    SelectDisplayedName: "Select Objects",
     SelectToolTipMessage: "Select Objects",
     SelectToolUseMessage:
       "Click on objects to select them, hold the Alt key to add to your selection.",
 
-    ToggleLabelDisplayedName: "Toggle Label<br>Display",
+    ToggleLabelDisplayedName: "Toggle Label Display",
     ToggleLabelToolTipMessage: "Toggle Display Of Labels",
     ToggleLabelToolUseMessage:
       "Click on objects to toggle the display of their labels.",
 
-    CreateIconDisplayedName: "Create<br>Icon",
+    CreateIconDisplayedName: "Create Icon",
     CreateIconToolTipMessage: "Create Icon SVG Paths",
     CreateIconToolUseMessage:
       "Click to create an the SVG paths for an icon from current view."
@@ -842,5 +842,17 @@ export default {
     firestoreConstructionDeleted: "Construction {docId} successfully deleted.",
     firestoreSaveError: "Construction was not saved.",
     constructionNotFound: "Construction {docId} not found."
+  },
+
+  notifications: {
+    directive: "directive",
+    info: "info",
+    warning: "warning",
+    error: "error",
+    success: "success",
+    all: "all",
+
+    deleteMsg: "Delete {msgType} messages"
+
   }
 } as LocaleMessages;

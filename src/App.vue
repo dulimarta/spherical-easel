@@ -175,9 +175,9 @@
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
-      <MessageBox></MessageBox>
+      <!-- <MessageBox></MessageBox>-->
     </v-main>
-    <v-footer app
+    <!-- <v-footer app
       :color="footerColor"
       padless>
       <v-col class="text-center">
@@ -198,7 +198,7 @@
         <span v-else
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
-    </v-footer>
+    </v-footer> -->
     <Dialog ref="logoutDialog"
       :title="$t('constructions.confirmLogout')"
       :yes-text="$t('constructions.proceed')"

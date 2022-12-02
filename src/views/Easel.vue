@@ -7,20 +7,22 @@
       <Pane min-size="5"
         max-size="35"
         :size="toolboxMinified ? 5 : 25">
-        <v-container fill-height>
-          <div id="container">
-            <v-btn icon
-              @click="minifyToolbox">
-              <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-              <v-icon v-else>mdi-arrow-left</v-icon>
-            </v-btn>
+      <v-container style="background-color: white">
+      <v-row>
+          <v-btn icon
+                @click="minifyToolbox">
+                <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+                <v-icon v-else>mdi-arrow-left</v-icon>
+              </v-btn>
+        <CurrentToolSelection :actionMode="actionMode" :toolboxMinified="this.toolboxMinified"/>
+
+    </v-row>
+      </v-container>
             <Toolbox id="toolbox"
               ref="toolbox"
               :minified="toolboxMinified"
               v-on:toggle-tool-box-panel="minifyToolbox" />
 
-          </div>
-        </v-container>
       </Pane>
       <Pane :size="centerWidth">
 
@@ -44,13 +46,15 @@
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
                     <div v-for="shortcut, index in topLeftShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'left', 'top')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
                     <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -59,24 +63,26 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
+
                   </div>
                   <div class="anchored bottom left">
                     <div v-for="shortcut, index in bottomLeftShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'left', 'bottom')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
-                    <!-- <v-btn-toggle
-                    v-model="actionMode"
-                    @change="switchActionMode"
-                    class="mr-2 d-flex flex-wrap accent"
-                  >
-                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
-                      </v-btn-toggle>-->
+                    <!-- <v-btn-toggle v-model="actionMode"
+                      @change="switchActionMode"
+                      class="mr-2 d-flex flex-wrap accent">
+                      <ToolButton :key="80"
+                        :button="buttonList[8]"></ToolButton>
+                    </v-btn-toggle> -->
 
                   </div>
                   <div class="anchored top right">
@@ -96,13 +102,15 @@
                   </v-tooltip>-->
 
                     <div v-for="shortcut, index in topRightShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'right', 'top')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
 
                     <!--<v-tooltip bottom
@@ -121,13 +129,15 @@
                   </div>
                   <div class="anchored bottom right">
                     <div v-for="shortcut, index in bottomRightShortcuts"
-                      :key="index">
+                      :key="index"
+                      :style="listItemStyle(index, 'right', 'bottom')">
                       <ShortcutIcon @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn" />
+                        :disableBtn="shortcut.disableBtn"
+                        :button="shortcut.button" />
                     </div>
                     <!--<v-tooltip bottom
                       :open-delay="toolTipOpenDelay"
@@ -177,7 +187,7 @@
               </v-row>
             </v-col>
           </v-row>
-          <v-snackbar v-model="displayZoomInToolUseMessage"
+         <!-- <v-snackbar v-model="displayZoomInToolUseMessage"
             bottom
             left
             :timeout="toolUseMessageDelay"
@@ -294,27 +304,33 @@
               icon>
               <v-icon color="success">mdi-close</v-icon>
             </v-btn>
-          </v-snackbar>
+          </v-snackbar>-->
         </v-container>
       </Pane>
 
       <Pane min-size="5"
-        max-size="25"
-        :size="stylePanelMinified ? 5 : 25">
-        <v-card>
-          <div ref="stylePanel"
-            id="styleContainer">
-            <div>
-              <v-btn icon
-                @click="minifyStylePanel">
-                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-                <v-icon v-else>mdi-arrow-right</v-icon>
+        :max-size="25"
+        :size="getPanelSize()">
+        <v-card class="pt-2">
+          <div id="styleContainer"
+            >
+              <v-btn icon v-if="!stylePanelMinified || !notificationsPanelMinified"
+                @click="() => {stylePanelMinified = true; notificationsPanelMinified = true;}">
+                <v-icon>mdi-arrow-right</v-icon>
               </v-btn>
-            </div>
+
+
             <StylePanel :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" />
-          </div>
+
+                     <MessageBox :minified="notificationsPanelMinified"
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+
+            </div>
+
         </v-card>
+
+
       </Pane>
     </Splitpanes>
     <Dialog ref="unsavedWorkDialog"
@@ -375,6 +391,10 @@ import { FirebaseStorage } from "@firebase/storage-types";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
+import MessageBox from "@/components/MessageBox.vue";
+import {toolGroups} from "@/components/toolgroups";
+
 
 /**
  * Split panel width distribution (percentages):
@@ -392,7 +412,9 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
     StylePanel,
     IconBase,
     Dialog,
-    ShortcutIcon
+    ShortcutIcon,
+    CurrentToolSelection,
+    MessageBox
   },
   methods: {
     ...mapActions(useSEStore, [
@@ -400,10 +422,46 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
       "init",
       "removeAllFromLayers",
       "updateDisplay"
-    ])
+    ]),
+    listItemStyle: function(i, xLoc, yLoc) { //xLoc determines left or right, yLoc determines top or bottom
+      const style:any = {};
+
+      if (i !== 0) {
+        style.position = "absolute";
+      }
+
+      switch(i) {
+        case 1:
+          style[yLoc] = "0px";
+          style[xLoc] = "36px";
+          break;
+        case 2:
+          style[yLoc] = "36px";
+          style[xLoc] = "0px";
+          break;
+        case 3:
+          style[yLoc] = "0px";
+          style[xLoc] = "72px";
+          break;
+        case 4:
+          style[yLoc] = "36px";
+          style[xLoc] = "36px";
+          break;
+        case 5:
+          style[yLoc] = "72px";
+          style[xLoc] = "0px";
+          break;
+      }
+      return style;
+    }
   },
   computed: {
-    ...mapState(useSEStore, ["seNodules", "temporaryNodules", "hasObjects"])
+    ...mapState(useSEStore, [
+      "seNodules",
+      "temporaryNodules",
+      "hasObjects",
+      "activeToolName",
+    ])
   }
 })
 export default class Easel extends Vue {
@@ -429,6 +487,7 @@ export default class Easel extends Vue {
   private buttonList = buttonList;
   private toolboxMinified = false;
   private stylePanelMinified = true;
+  private notificationsPanelMinified = true;
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -446,15 +505,17 @@ export default class Easel extends Vue {
   private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
 
-  private actionMode: { id: ActionMode; name: string } = {
-    id: "rotate",
-    name: ""
-  };
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
+
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
+
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -473,7 +534,8 @@ export default class Easel extends Vue {
         clickFunc: this.undoEdit,
         iconColor: "blue",
         btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+        button: null,
       },
       {
         labelMsg: "main.RedoLastAction",
@@ -481,7 +543,8 @@ export default class Easel extends Vue {
         clickFunc: this.redoAction,
         iconColor: "blue",
         btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+        button: null,
       }
     ];
   }
@@ -495,7 +558,8 @@ export default class Easel extends Vue {
         },
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: null,
       }
     ];
   }
@@ -508,7 +572,8 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomIn,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomIn"),
       },
 
       {
@@ -517,7 +582,8 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomOut,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomOut"),
       },
 
       {
@@ -526,7 +592,9 @@ export default class Easel extends Vue {
         clickFunc: this.enableZoomFit,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[0].children.find((e) => e.actionModeValue == "zoomFit"),
+
       }
     ];
   }
@@ -538,7 +606,8 @@ export default class Easel extends Vue {
         clickFunc: this.createPoint,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "point"),
       },
 
       {
@@ -547,7 +616,8 @@ export default class Easel extends Vue {
         clickFunc: this.createLine,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "line"),
       },
 
       {
@@ -556,7 +626,8 @@ export default class Easel extends Vue {
         clickFunc: this.createSegment,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "segment"),
       },
 
       {
@@ -565,11 +636,12 @@ export default class Easel extends Vue {
         clickFunc: this.createCircle,
         iconColor: null,
         btnColor: "primary",
-        disableBtn: false
+        disableBtn: false,
+        button: toolGroups[2].children.find((e) => e.actionModeValue == "circle"),
       }
     ];
   }
-  
+
 
   //#region magnificationUpdate
   constructor() {
@@ -741,22 +813,21 @@ export default class Easel extends Vue {
 
   minifyToolbox(): void {
     this.toolboxMinified = !this.toolboxMinified;
-    // Minify the other panel when this one is expanded
-    // if (!this.toolboxMinified && !this.stylePanelMinified) {
-    //   this.stylePanelMinified = true;
-    // }
   }
 
+  minifyNotificationsPanel(): void {
+    this.notificationsPanelMinified = !this.notificationsPanelMinified;
+
+  }
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
-    // Minify the other panel when this one is expanded
-    // if (!this.toolboxMinified && !this.stylePanelMinified) {
-    //   this.toolboxMinified = true;
-    // }
-    // Set the selection tool to be active when opening the style panel.
-    if (!this.stylePanelMinified) {
-      this.setActionModeToSelectTool();
+  }
+
+  getPanelSize(): number {
+    if (!this.stylePanelMinified || !this.notificationsPanelMinified) {
+      return 30;
     }
+    return 5;
   }
 
   setActionModeToSelectTool(): void {
@@ -766,6 +837,9 @@ export default class Easel extends Vue {
     });
   }
 
+  switchActionMode(): void {
+    this.setActionMode(this.actionMode);
+  }
   onWindowResized(): void {
     this.adjustSize();
   }
@@ -875,6 +949,21 @@ export default class Easel extends Vue {
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
     sans-serif;
+}
+
+#currentTool {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start; /* Pull contents vertically to the top */
+  align-items: flex-end; /* Align contents horizontally to the right */
+  height: 100%;
+  color: #000;
+  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
+    sans-serif;
+}
+
+#tool {
+  font-size: 20px;
 }
 
 #toolbox {
