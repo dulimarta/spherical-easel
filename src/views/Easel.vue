@@ -59,7 +59,6 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
-
                   </div>
                   <div class="anchored bottom left">
                     <div v-for="shortcut, index in bottomLeftShortcuts"
@@ -767,9 +766,6 @@ export default class Easel extends Vue {
     });
   }
 
-  switchActionMode(): void {
-    this.setActionMode(this.actionMode);
-  }
   onWindowResized(): void {
     this.adjustSize();
   }
