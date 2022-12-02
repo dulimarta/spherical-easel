@@ -158,7 +158,6 @@ export default class MessageBox extends Vue {
 
   // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
   // private messageTimer: NodeJS.Timer | null = null;
-  private displayToolUseMessages = SETTINGS.toolUse.display; // Is this needed?
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
 
   mounted(): void {

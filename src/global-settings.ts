@@ -1257,7 +1257,7 @@ export const SETTINGS = {
     showNodeLabel: {
       props: {
         emphasizeTypes: [[]] as string[][],
-        mdiIcon: "mdi-label-outline" ,
+        mdiIcon: "mdi-label-outline",
         filePath: ""
       }
     },
