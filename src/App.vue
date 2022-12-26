@@ -1,7 +1,7 @@
 <!--
   template is HTML for the layout for the UI of the vue application (i.e. the main
   window with everything in it), it allows for binding with the
-  underlying Document Object Model. We can use this template for specifiying
+  underlying Document Object Model. We can use this template for specifying
   locations in the document with the "id" class.
 -->
 
@@ -263,14 +263,12 @@ import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
-import { mapState, mapActions, mapWritableState, mapGetters } from "pinia";
+import { mapState, mapActions, mapWritableState } from "pinia";
 
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import i18n from "./i18n";
-import ConstructionListVue from "./components/ConstructionList.vue";
-// import { gzip } from "node-gzip";
 
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
@@ -534,9 +532,6 @@ export default class App extends Vue {
       //to make this appear right side up remove the transform
       svgElement.removeAttribute("transform");
 
-      //export using module
-      var png = await d3ToPng("#clonedSVG", "PNGname");
-
       //clean up workspace and finish
       svgElement.remove();
       console.log("PNG exported");
@@ -583,7 +578,7 @@ export default class App extends Vue {
       clone.style.removeProperty("transform");
 
       //export PNG to the gif stream
-      var png3 = await d3ToPng("#clonedSVG", "1", {
+      d3ToPng("#clonedSVG", "1", {
         download: false,
         format: "png"
       }).then(fileData => {
