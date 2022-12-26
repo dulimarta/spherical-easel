@@ -130,7 +130,7 @@ export default class ToolGroups extends Vue {
   // private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
   created(): void {
-    this.inProductionMode = process.env.NODE_ENV === "production";
+    this.inProductionMode = import.meta.env.MODE === "production";
     this.buttonGroup.push(...toolGroups);
     this.buttonGroup.forEach((gr: ToolButtonGroup) => {
       gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);

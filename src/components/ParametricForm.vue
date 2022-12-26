@@ -241,7 +241,7 @@ export default class ParametricForm extends Vue {
   }
 
   get inProductionMode(): boolean {
-    return process.env.NODE_ENV === "production";
+    return import.meta.env.MODE === "production";
   }
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key

@@ -41,7 +41,7 @@ type StyleOptionDiff = {
     ])
   }
 })
-export default class extends Vue {
+export default class StyleEditor extends Vue {
   @Prop({ required: true }) readonly panel!: StyleEditPanels;
   // @Prop({ required: true }) readonly styleData!: StyleOptions | null;
   @Prop({ required: true }) noduleFilterFunction!: (n: SENodule) => boolean;

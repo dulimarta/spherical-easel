@@ -355,7 +355,7 @@ export default class App extends Vue {
   applyTransformationText = i18n.t(`objects.selectTransformation`);
 
   get baseURL(): string {
-    return process.env.BASE_URL ?? "";
+    return import.meta.env.BASE_URL ?? "";
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -396,7 +396,7 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    console.log("Base URL is ", process.env.BASE_URL);
+    console.log("Base URL is ", import.meta.env.BASE_URL);
     // SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
