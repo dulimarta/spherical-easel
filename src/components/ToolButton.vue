@@ -20,7 +20,6 @@
           v-on="on"
           @click="
   () => {
-    possibleToolAction();
     if ($attrs.disabled) return;
     $emit(
       'display-only-this-tool-use-message',
@@ -28,6 +27,7 @@
     );
     displayToolUseMessage = true;
     setElevation();
+    switchButton(button);
   }
 "
           x-large
@@ -46,61 +46,6 @@
       </template>
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
-
-    <!-- TODO: move the snackbar to ToolGroup? -->
-
-    <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
-    automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar
-      v-model="displayToolUseMessage"
-      bottom
-      left
-      :timeout="toolUseMessageDelay"
-      :value="displayToolUseMessages"
-      multi-line
-    >
-      <!---If the displayed name is zoom in or out add a slash before the word pan --->
-      <span v-if="
-  button.displayedName === 'PanZoomInDisplayedName' ||
-  button.displayedName === 'PanZoomOutDisplayedName'
-">
-        <strong
-          class="warning--text"
-          v-html="buttonLabel1"
-        ></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <!---If the displayed name is only one line delete the non-breaking space --->
-      <span v-else-if="
-  button.displayedName === 'CreateCoordinateDisplayedName' ||
-  button.displayedName === 'ZoomFitDisplayedName' ||
-  button.displayedName === 'CreateTangentDisplayedName' ||
-  button.displayedName === 'CreateMidpointDisplayedName' ||
-  button.displayedName === 'CreatePolarDisplayedName' ||
-  button.displayedName === 'CreateEllipseDisplayedName' ||
-  button.displayedName === 'DeleteDisplayedName' ||
-  button.displayedName === 'CreatePerpendicularDisplayedName'
-">
-        <strong
-          class="warning--text"
-          v-html="buttonLabel2"
-        ></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <span v-else>
-        <strong
-          class="warning--text"
-          v-html="buttonLabel3"
-        ></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <v-btn
-        @click="displayToolUseMessage = false"
-        icon
-      >
-        <v-icon color="success">mdi-close</v-icon>
-      </v-btn>
-    </v-snackbar>
   </div>
 </template>
 
@@ -110,7 +55,7 @@ import Vue, { ref, watch, computed } from "vue";
 // import { Prop, Watch } from "vue-property-decorator";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-// import { mapState } from "pinia";
+import { mapState, mapActions } from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 // import { SEExpression } from "@/models/SEExpression";
@@ -189,11 +134,15 @@ function setElevation() {
   }
 }
 
+function switchButton(button: ToolButtonType): void { // Set the button selected so it can be tracked
+  seStore.setButton(button);
+}
+
 //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
-function possibleToolAction() {
-  if (props.button.actionModeValue === "measuredCircle") {
+function possibleToolAction(): void {
+  /*if (this.button.actionModeValue === "measuredCircle") {
     //...open the measurement panel and close the others or tell the user to create a measurement
-    if (expressions.length > 0) {
+    if (this.expressions.length > 0) {
       //...open the object tree tab,
       EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       EventBus.fire("expand-measurement-sheet", {});
@@ -203,9 +152,9 @@ function possibleToolAction() {
         type: "info"
       });
     }
-  } else if (props.button.actionModeValue === "translation") {
+  } else if (this.button.actionModeValue === "translation") {
     //...open the measurement panel and close the others or tell the user to create a measurement
-    if (expressions.length > 0) {
+    if (this.expressions.length > 0) {
       //...open the object tree tab,
       EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       EventBus.fire("expand-measurement-sheet", {});
@@ -215,9 +164,9 @@ function possibleToolAction() {
         type: "info"
       });
     }
-  } else if (props.button.actionModeValue === "rotation") {
+  } else if (this.button.actionModeValue === "rotation") {
     //...open the measurement panel and close the others or tell the user to create a measurement
-    if (expressions.length > 0) {
+    if (this.expressions.length > 0) {
       //...open the object tree tab,
       EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       EventBus.fire("expand-measurement-sheet", {});
@@ -227,9 +176,9 @@ function possibleToolAction() {
         type: "info"
       });
     }
-  } else if (props.button.actionModeValue === "applyTransformation") {
+  } else if (this.button.actionModeValue === "applyTransformation") {
     //...open the measurement panel and close the others or tell the user to create a measurement
-    if (seTransformations.length > 0) {
+    if (this.seTransformations.length > 0) {
       //...open the object tree tab,
       EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
       EventBus.fire("expand-transformation-sheet", {});
@@ -239,8 +188,9 @@ function possibleToolAction() {
         type: "error"
       });
     }
-  }
+  }*/
 }
+
 
 // @Prop({ default: 0 }) readonly elev?: number;
 /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so

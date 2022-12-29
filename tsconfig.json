@@ -33,10 +33,13 @@
     "src/**/*.vue"
     // "tests/*.d.ts",
   ],
-  "verbose": true
+  "verbose": true,
   // "globals": {
   //   "ts-jest": {
   //     "diagnostics": false
   //   }
-  // }
+  // },
+  "vueCompilerOptions": {
+    "target": 2.7
+  }
 }

@@ -5,8 +5,8 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    // "plugin:vue/essential",
-    // "eslint:recommend",
+    "plugin:vue/recommended",
+    "eslint:recommend",
     // "@vue/typescript/recommended"
   ],
   parserOptions: {
@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     // "vue/multi-word-component-names": "off"
+    "vue/no-unused-vars": "error",
     "space-before-function-paren": "off"
   },
   overrides: [
