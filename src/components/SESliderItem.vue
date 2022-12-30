@@ -40,135 +40,133 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import { Prop, Component } from "vue-property-decorator";
+<script lang="ts" setup>
+import { ref } from "vue";
 import { SEExpression } from "@/models/SEExpression";
 import { SESlider } from "@/models/SESlider";
 import { SliderPlaybackMode } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 
-@Component
-export default class SESliderItem extends Vue {
-  @Prop()
-  readonly node!: SESlider;
+// @Component
+// export default class SESliderItem extends Vue {
+const props = defineProps < { node: SESlider }>();
+const emit = defineEmits(["object-select"])
+  const playbackMode = ref(SliderPlaybackMode.ONCE);
+  const playbackSpeed = ref(750);
+  let playbackForward = true;
+  let timer: number | null = null;
 
-  playbackMode = SliderPlaybackMode.ONCE;
-  playbackSpeed = 750;
-  playbackForward = true;
-  timer: number | null = null;
-
-  playbackSelections = [
+  const playbackSelections = [
     { text: "Once", value: SliderPlaybackMode.ONCE },
     { text: "Loop", value: SliderPlaybackMode.LOOP },
     { text: "Reverse Loop", value: SliderPlaybackMode.REFLECT }
   ];
 
-  speedSelections = [
+  const speedSelections = [
     { text: "Slow", value: 1250 },
     { text: "Normal", value: 750 },
     { text: "Fast", value: 250 }
   ];
 
-  selectMe(): void {
-    if (this.node instanceof SEExpression) {
-      // console.debug("Clicked", this.node.name);
-      this.$emit("object-select", { id: this.node.id });
+  function selectMe(): void {
+    if (props.node instanceof SEExpression) {
+      // console.debug("Clicked", props.node.name);
+      emit("object-select", { id: props.node.id });
       EventBus.fire("set-expression-for-tool", {
-        expression: this.node
+        expression: props.node
       });
     }
   }
-  glowMe(flag: boolean): void {
-    // console.log("here", this.node instanceof SEExpression);
+  function glowMe(flag: boolean): void {
+    // console.log("here", props.node instanceof SEExpression);
     EventBus.fire("measured-circle-set-temporary-radius", {
       display: flag,
-      radius: this.node.value
+      radius: props.node.value
     });
   }
 
-  animate_once(): void {
-    if (this.node.value >= this.node.max) {
-      clearInterval(this.timer!);
-      this.timer = null;
+  function animate_once(): void {
+    if (props.node.value >= props.node.max) {
+      clearInterval(timer!);
+      timer = null;
     } else {
-      this.node.value += this.node.step;
-      this.node.markKidsOutOfDate();
-      this.node.update();
+      props.node.value += props.node.step;
+      props.node.markKidsOutOfDate();
+      props.node.update();
     }
   }
 
-  animate_loop(): void {
-    if (this.node.value >= this.node.max) {
-      this.node.value = this.node.min;
+  function animate_loop(): void {
+    if (props.node.value >= props.node.max) {
+      props.node.value = props.node.min;
     } else {
-      this.node.value += this.node.step;
-      this.node.markKidsOutOfDate();
-      this.node.update();
+      props.node.value += props.node.step;
+      props.node.markKidsOutOfDate();
+      props.node.update();
     }
   }
 
-  animate_loop_reverse(): void {
-    if (this.node.value >= this.node.max) {
-      this.playbackForward = false;
-    } else if (this.node.value <= this.node.min) {
-      this.playbackForward = true;
+  function animate_loop_reverse(): void {
+    if (props.node.value >= props.node.max) {
+      playbackForward = false;
+    } else if (props.node.value <= props.node.min) {
+      playbackForward = true;
     }
-    if (this.playbackForward) this.node.value += this.node.step;
-    else this.node.value -= this.node.step;
-    this.node.markKidsOutOfDate();
-    this.node.update();
+    if (playbackForward) props.node.value += props.node.step;
+    else props.node.value -= props.node.step;
+    props.node.markKidsOutOfDate();
+    props.node.update();
   }
 
-  play(): void {
+  function play(): void {
     // console.debug("Playback mode", this.playbackMode, this.timer);
-    if (this.timer === null) {
-      switch (this.playbackMode) {
+    if (timer === null) {
+      switch (playbackMode.value) {
         case SliderPlaybackMode.ONCE:
-          this.timer = window.setInterval(
-            () => this.animate_once(),
-            this.playbackSpeed
+          timer = window.setInterval(
+            () => animate_once(),
+            playbackSpeed.value
           );
-          this.node.value = this.node.min;
+          props.node.value = props.node.min;
           break;
         case SliderPlaybackMode.LOOP:
-          this.timer = window.setInterval(
-            () => this.animate_loop,
-            this.playbackSpeed
+          timer = window.setInterval(
+            () => animate_loop,
+            playbackSpeed.value
           );
           break;
         case SliderPlaybackMode.REFLECT:
-          this.timer = window.setInterval(
-            () => this.animate_loop_reverse(),
-            this.playbackSpeed
+          timer = window.setInterval(
+            () => animate_loop_reverse(),
+            playbackSpeed.value
           );
       }
     }
   }
 
-  stop(): void {
+  function stop(): void {
     // console.debug("Stop slider anim");
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
     }
   }
 
   // get isMeasurement(): boolean {
-  //   return this.node instanceof SEMeasurement;
+  //   return props.node instanceof SEMeasurement;
   // }
   // get isCalculation(): boolean {
-  //   return this.node instanceof SECalculation;
+  //   return props.node instanceof SECalculation;
   // }
 
   // get showClass(): string {
-  //   return this.node.showing ? "visibleNode" : "invisibleNode";
+  //   return props.node.showing ? "visibleNode" : "invisibleNode";
   // }
 
   // get definitionText(): string {
-  //   return this.node.name;
+  //   return props.node.name;
   // }
-}
+
 </script>
 
 <style scoped lang="scss">

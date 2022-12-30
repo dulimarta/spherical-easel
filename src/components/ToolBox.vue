@@ -1,45 +1,39 @@
 <template>
-
   <!-- These the navigation arrows TODO: I would like these to be in the same row as the
     tabs-->
   <!-- This the not minimized left drawer containing two tabs -->
-  <transition name="slide-out"
-    mode="out-in">
-    <div v-if="!minified"
-      key="full">
-      <v-tabs v-model="activeLeftDrawerTab"
-        centered
-        grow
-        @change="switchTab">
-        <v-tooltip bottom
+  <transition name="slide-out" mode="out-in">
+    <div v-if="!minified" key="full">
+      <v-tabs v-model="activeLeftDrawerTab" centered grow @change="switchTab">
+        <v-tooltip
+          bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
-            <v-tab class="mt-3"
-              v-on="on">
+            <v-tab class="mt-3" v-on="on">
               <v-icon left>$vuetify.icons.value.toolsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip bottom
+        <v-tooltip
+          bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
-            <v-tab class="mt-3"
-              v-on="on">
+            <v-tab class="mt-3" v-on="on">
               <v-icon left>$vuetify.icons.value.objectsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
         </v-tooltip>
-        <v-tooltip bottom
+        <v-tooltip
+          bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
-            <v-tab class="mt-3"
-              v-on="on">
+            <v-tab class="mt-3" v-on="on">
               <v-icon left>$vuetify.icons.value.constructionsTab</v-icon>
             </v-tab>
           </template>
@@ -50,8 +44,7 @@
           <ToolGroups id="toolGroups"></ToolGroups>
         </v-tab-item>
         <v-tab-item>
-          <ObjectTree id="objtree">
-          </ObjectTree>
+          <ObjectTree id="objtree"> </ObjectTree>
         </v-tab-item>
         <v-tab-item>
           <ConstructionLoader id="loader"></ConstructionLoader>
@@ -59,7 +52,8 @@
       </v-tabs>
     </div>
 
-    <div v-else
+    <div
+      v-else
       v-on:click="$emit('toggle-tool-box-panel')"
       class="mini-icons"
       key="partial">
@@ -72,80 +66,60 @@
       <v-spacer />
     </div>
   </transition>
-
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import { Component, Prop } from "vue-property-decorator";
+<script lang="ts" setup>
+import Vue, { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 
 import SETTINGS from "@/global-settings";
-import { ActionMode } from "@/types";
-import { mapState, mapActions } from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 
-@Component({
-  components: {
-    ToolGroups,
-    // Use dynamic import so subcomponents are loaded on demand
-    ObjectTree: () => import("@/components/ObjectTree.vue"),
-    ConstructionLoader: () => import("@/components/ConstructionLoader.vue")
-  },
-  computed: {
-    ...mapState(useSEStore, ["actionMode"])
-  },
-  methods: {
-    ...mapActions(useSEStore, ["setActionMode"])
-  }
-})
-export default class Toolbox extends Vue {
-  @Prop()
-  readonly minified!: boolean;
+const seStore = useSEStore();
+const { actionMode } = seStore;
+const props = defineProps<{ minified: boolean }>();
 
-  // ('layers')')
-  readonly setActionMode!: (args: { id: ActionMode; name: string }) => void;
-  readonly actionMode!: ActionMode;
+// ('layers')')
 
-  private leftDrawerMinified = false;
-  /* Copy global setting to local variable */
-  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-  private activeLeftDrawerTab = 0;
+let leftDrawerMinified = false;
+/* Copy global setting to local variable */
+const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
+const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
+const activeLeftDrawerTab = ref(0);
 
-  created(): void {
-    EventBus.listen("left-panel-set-active-tab", this.setActiveTab);
-  }
+onBeforeMount((): void => {
+  EventBus.listen("left-panel-set-active-tab", setActiveTab);
+});
 
-  mounted(): void {
-    // this.scene = this.layers[LAYER.midground];
-  }
+// onMounted((): void =>{
+// this.scene = this.layers[LAYER.midground];
+// })
 
-  switchTab(): void {
-    // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
-    if (this.activeLeftDrawerTab === 1) {
-      // 1 is the index of the object tree tab
-      // change to the move mode, but only if we are not using the measured circle tool
-      if (
-        this.actionMode !== "measuredCircle" &&
-        this.actionMode !== "translation" &&
-        this.actionMode !== "rotation"
-      ) {
-        this.setActionMode({
-          id: "move",
-          name: "MoveDisplayedName"
-        });
-      }
+function switchTab(): void {
+  // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
+  if (activeLeftDrawerTab.value === 1) {
+    // 1 is the index of the object tree tab
+    // change to the move mode, but only if we are not using the measured circle tool
+    if (
+      actionMode !== "measuredCircle" &&
+      actionMode !== "translation" &&
+      actionMode !== "rotation"
+    ) {
+      seStore.setActionMode({
+        id: "move",
+        name: "MoveDisplayedName"
+      });
     }
   }
-  setActiveTab(e: { tabNumber: number }): void {
-    this.activeLeftDrawerTab = e.tabNumber;
-  }
-  beforeDestroy(): void {
-    EventBus.unlisten("left-panel-set-active-tab");
-  }
 }
+function setActiveTab(e: { tabNumber: number }): void {
+  activeLeftDrawerTab.value = e.tabNumber;
+}
+
+onBeforeUnmount((): void => {
+  EventBus.unlisten("left-panel-set-active-tab");
+});
 </script>
 
 <style lang="scss" scoped>

@@ -1,173 +1,168 @@
 <template>
   <div>
-    <v-container class="node"
+    <v-container
+      class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-
-      <v-row dense
-        justify="start"
-        class="pa-0">
+      <v-row dense justify="start" class="pa-0">
         <v-col cols="auto">
-          <v-icon v-if="isAntipode"
-            medium>
-            $vuetify.icons.value.antipodalPoint</v-icon>
-          <v-icon v-else-if="isPointOnObject"
-            medium>
+          <v-icon v-if="isAntipode" medium>
+            $vuetify.icons.value.antipodalPoint</v-icon
+          >
+          <v-icon v-else-if="isPointOnObject" medium>
             $vuetify.icons.value.pointOnObject
           </v-icon>
-          <v-icon v-else-if="isIntersectionPoint"
-            medium>
+          <v-icon v-else-if="isIntersectionPoint" medium>
             $vuetify.icons.value.intersect
           </v-icon>
-          <v-icon v-else-if="isPolar"
-            medium>
+          <v-icon v-else-if="isPolar" medium>
             $vuetify.icons.value.polar
           </v-icon>
-          <v-icon v-else-if="isMidpoint"
-            medium>
+          <v-icon v-else-if="isMidpoint" medium>
             $vuetify.icons.value.midpoint
           </v-icon>
-          <v-icon v-else-if="isNSectPoint"
-            medium>
+          <v-icon v-else-if="isNSectPoint" medium>
             $vuetify.icons.value.nSectPoint
           </v-icon>
-          <v-icon v-else-if="isTransformedPoint"
-            medium>
+          <v-icon v-else-if="isTransformedPoint" medium>
             $vuetify.icons.value.transformedPoint
           </v-icon>
-          <v-icon v-else-if="isPoint"
-            medium>
-            $vuetify.icons.value.point</v-icon>
-          <v-icon v-else-if="isTransformedSegment"
-            medium>
+          <v-icon v-else-if="isPoint" medium>
+            $vuetify.icons.value.point</v-icon
+          >
+          <v-icon v-else-if="isTransformedSegment" medium>
             $vuetify.icons.value.transformedSegment
           </v-icon>
-          <v-icon v-else-if="isLineSegment"
-            medium>
-            $vuetify.icons.value.segment</v-icon>
-          <v-icon v-else-if="isPerpendicular"
-            medium>
-            $vuetify.icons.value.perpendicular</v-icon>
-          <v-icon v-else-if="isTangent"
-            medium>
-            $vuetify.icons.value.tangent</v-icon>
-          <v-icon v-else-if="isAngleBisector"
-            medium>
-            $vuetify.icons.value.angleBisector</v-icon>
-          <v-icon v-else-if="isNSectLine"
-            medium>
-            $vuetify.icons.value.nSectLine</v-icon>
-          <v-icon v-else-if="isTransformedLine"
-            medium>
+          <v-icon v-else-if="isLineSegment" medium>
+            $vuetify.icons.value.segment</v-icon
+          >
+          <v-icon v-else-if="isPerpendicular" medium>
+            $vuetify.icons.value.perpendicular</v-icon
+          >
+          <v-icon v-else-if="isTangent" medium>
+            $vuetify.icons.value.tangent</v-icon
+          >
+          <v-icon v-else-if="isAngleBisector" medium>
+            $vuetify.icons.value.angleBisector</v-icon
+          >
+          <v-icon v-else-if="isNSectLine" medium>
+            $vuetify.icons.value.nSectLine</v-icon
+          >
+          <v-icon v-else-if="isTransformedLine" medium>
             $vuetify.icons.value.transformedLine
           </v-icon>
-          <v-icon v-else-if="isLine"
-            medium>
-            $vuetify.icons.value.line</v-icon>
-          <v-icon v-else-if="isTransformedCircle"
-            medium>
+          <v-icon v-else-if="isLine" medium> $vuetify.icons.value.line</v-icon>
+          <v-icon v-else-if="isTransformedCircle" medium>
             $vuetify.icons.value.transformedCircle
           </v-icon>
-          <v-icon v-else-if="isCircle"
-            medium>
+          <v-icon v-else-if="isCircle" medium>
             $vuetify.icons.value.circle
           </v-icon>
-          <v-icon v-else-if="isTransformedEllipse"
-            medium>
+          <v-icon v-else-if="isTransformedEllipse" medium>
             $vuetify.icons.value.transformedEllipse
           </v-icon>
-          <v-icon v-else-if="isEllipse"
-            medium>
+          <v-icon v-else-if="isEllipse" medium>
             $vuetify.icons.value.ellipse
           </v-icon>
-          <v-icon v-else-if="isParametric"
-            medium>
+          <v-icon v-else-if="isParametric" medium>
             $vuetify.icons.value.parametric
           </v-icon>
-          <v-icon :class="shakeTransformationDisplay"
+          <v-icon
+            :class="shakeTransformationDisplay"
             v-else-if="isTranslation"
             medium>
             $vuetify.icons.value.translation
           </v-icon>
-          <v-icon :class="shakeTransformationDisplay"
+          <v-icon
+            :class="shakeTransformationDisplay"
             v-else-if="isRotation"
             medium>
             $vuetify.icons.value.rotation
           </v-icon>
-          <v-icon :class="shakeTransformationDisplay"
+          <v-icon
+            :class="shakeTransformationDisplay"
             v-else-if="isReflection"
             medium>
             $vuetify.icons.value.reflection
           </v-icon>
-          <v-icon :class="shakeTransformationDisplay"
+          <v-icon
+            :class="shakeTransformationDisplay"
             v-else-if="isPointReflection"
             medium>
             $vuetify.icons.value.pointReflection
           </v-icon>
-          <v-icon :class="shakeTransformationDisplay"
+          <v-icon
+            :class="shakeTransformationDisplay"
             v-else-if="isInversion"
             medium>
             $vuetify.icons.value.inversion
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
-            v-else-if="isAngle"
-            medium>
+          <v-icon :class="shakeMeasurementDisplay" v-else-if="isAngle" medium>
             $vuetify.icons.value.angle
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isMeasureTriangle"
             medium>
             $vuetify.icons.value.measureTriangle
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isMeasurePolygon"
             medium>
             $vuetify.icons.value.measurePolygon
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isSegmentLength"
             medium>
             $vuetify.icons.value.segmentLength
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isPointDistance"
             medium>
             $vuetify.icons.value.pointDistance
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isCalculation"
             medium>
             $vuetify.icons.value.calculationObject
           </v-icon>
-          <v-icon :class="shakeMeasurementDisplay"
+          <v-icon
+            :class="shakeMeasurementDisplay"
             v-else-if="isMeasurement"
             medium>
             $vuetify.icons.value.measurementObject
           </v-icon>
-
         </v-col>
         <v-col class="text-truncate">
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div id="_test_selection"
+              <div
+                id="_test_selection"
                 class="contentText"
                 @click="selectMe"
                 v-on="on"
-                :class="[showClass,shakeMeasurementDisplay,shakeTransformationDisplay]">
+                :class="[
+                  showClass,
+                  shakeMeasurementDisplay,
+                  shakeTransformationDisplay
+                ]">
                 <span class="text-truncate">{{ shortDisplayText }}</span>
               </div>
             </template>
             <span>{{ definitionText }}</span>
           </v-tooltip>
-
         </v-col>
         <v-col justify="end">
-          <v-row align="center"
-            no-gutters>
+          <v-row align="center" no-gutters>
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
-                  <div id="_test_copy_to_clipboard"
+                  <div
+                    id="_test_copy_to_clipboard"
                     v-if="isMeasurement && supportsClipboard"
                     v-on="on"
                     @click="copyToClipboard">
@@ -182,7 +177,8 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
-                  <div id="_test_toggle_format"
+                  <div
+                    id="_test_toggle_format"
                     v-if="isExpressionAndNotCoordinate"
                     v-on="on"
                     @click="cycleValueDisplayMode">
@@ -197,18 +193,18 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
-                  <div id="_test_toggle_visibility"
+                  <div
+                    id="_test_toggle_visibility"
                     v-if="isPlottable"
                     v-on="on"
                     @click="toggleVisibility">
-                    <v-icon small
-                      v-if="isHidden"
-                      :key="visibilityUpdateKey">
+                    <v-icon small v-if="isHidden" :key="visibilityUpdateKey">
                       $vuetify.icons.value.showNode
                     </v-icon>
-                    <v-icon small
+                    <v-icon
+                      small
                       v-else
-                      style="color:gray"
+                      style="color: gray"
                       :key="visibilityUpdateKey">
                       $vuetify.icons.value.hideNode
                     </v-icon>
@@ -220,18 +216,21 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
-                  <div id="_toggle_label_display"
+                  <div
+                    id="_toggle_label_display"
                     v-if="isPlottable"
                     v-on="on"
                     @click="toggleLabelDisplay">
-                    <v-icon small
+                    <v-icon
+                      small
                       v-if="isLabelHidden"
                       :key="labelVisibilityUpdateKey">
                       $vuetify.icons.value.showNodeLabel
                     </v-icon>
-                    <v-icon small
+                    <v-icon
+                      small
                       v-else
-                      style="color:gray"
+                      style="color: gray"
                       :key="labelVisibilityUpdateKey">
                       $vuetify.icons.value.hideNodeLabel
                     </v-icon>
@@ -243,27 +242,21 @@
             <v-col>
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
-                  <div id="_delete_node"
-                    v-on="on"
-                    @click="deleteNode">
-                    <v-icon small>
-                      $vuetify.icons.value.deleteNode
-                    </v-icon>
+                  <div id="_delete_node" v-on="on" @click="deleteNode">
+                    <v-icon small> $vuetify.icons.value.deleteNode </v-icon>
                   </div>
                 </template>
                 <span>{{ $t(`objectTree.deleteNode`) }}</span>
               </v-tooltip>
             </v-col>
-
           </v-row>
         </v-col>
       </v-row>
       <v-row v-if="isParametric">
-        <v-col cols="auto">
-          t = {{parametricTime.toFixed(3)}}
-        </v-col>
+        <v-col cols="auto"> t = {{ parametricTime.toFixed(3) }} </v-col>
         <v-col>
-          <v-slider v-model="parametricTime"
+          <v-slider
+            v-model="parametricTime"
             :min="parametricTMin"
             :max="parametricTMax"
             :step="parametricTStep" />
@@ -276,9 +269,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import { Prop, Component, Watch } from "vue-property-decorator";
+<script lang="ts" setup>
+import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -291,7 +283,7 @@ import { SECalculation } from "../models/SECalculation";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { ActionMode, ObjectState, ValueDisplayMode } from "@/types";
+import {  ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -305,9 +297,8 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
-import { Matrix4, Vector3 } from "three";
+// import { Matrix4 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SETransformation } from "@/models/SETransformation";
@@ -324,151 +315,143 @@ import { SEIsometryCircle } from "@/models/SEIsometryCircle";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 
-@Component({
-  computed: {
-    ...mapState(useSEStore, ["inverseTotalRotationMatrix", "actionMode"])
-  },
-  methods: {
-    ...mapActions(useSEStore, ["unglowAllSENodules"])
-  }
-})
-export default class SENoduleItem extends Vue {
-  @Prop() readonly node!: SENodule;
+const seStore = useSEStore()
+const { actionMode } = seStore
+const props = defineProps < {
+  node: SENodule
+}>();
+const emit = defineEmits(["object-select"])
 
-  private visibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
-  private labelVisibilityUpdateKey = 0; //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
+  const visibilityUpdateKey = ref(0); //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
+  const labelVisibilityUpdateKey = ref(0); //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 
-  readonly inverseRotationMatrix!: Matrix4;
-  readonly actionMode!: ActionMode;
-  readonly unglowAllSENodules!: () => void;
-  private rotationMatrix = new Matrix4();
-  private traceLocation = new Vector3();
-  private nodeName = "";
-  private nodeType = "";
+  // const rotationMatrix = new Matrix4();
+  // private traceLocation = new Vector3();
+  let nodeName = "";
+  let nodeType = "";
 
-  curve: SEParametric | null = null;
-  curvePoint: SEParametricTracePoint | null = null;
-  parametricTime = 0;
-  parametricTMin = 0;
-  parametricTMax = 1;
-  parametricTStep = 0.01;
+  let curve: SEParametric | null = null;
+  let curvePoint: SEParametricTracePoint | null = null;
+  const parametricTime = ref(0);
+  const parametricTMin = ref(0);
+  const parametricTMax = ref(1);
+  const parametricTStep = ref(0.01);
 
-  supportsClipboard = false; //For copying the value of a measurement to the clipboard
+  const supportsClipboard = ref(false); //For copying the value of a measurement to the clipboard
 
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
-  private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
-  private beforeDeleteSENoduleIDList: number[] = [];
 
-  created() {
+
+  onBeforeMount(() => {
     if (navigator.clipboard) {
-      this.supportsClipboard = true;
+      supportsClipboard.value = true;
     }
-  }
+  })
 
-  mounted(): void {
-    if (this.node instanceof SEParametric) {
-      this.curve = this.node;
+  onMounted((): void => {
+    if (props.node instanceof SEParametric) {
+      curve = props.node;
       // const pt = new Point();
-      this.curvePoint = this.curve.tracePoint;
-      const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
-      this.parametricTMin = tMin;
-      this.parametricTMax = tMax;
-      this.parametricTStep = (tMax - tMin) / 100;
-      this.onParametricTimeChanged(tMin);
+      curvePoint = curve.tracePoint;
+      const [tMin, tMax] = curve.tMinMaxExpressionValues();
+      parametricTMin.value = tMin;
+      parametricTMax.value = tMax;
+      parametricTStep.value = (tMax - tMin) / 100;
+      onParametricTimeChanged(tMin);
     }
-  }
-  glowMe(flag: boolean): void {
+  })
+  function glowMe(flag: boolean): void {
     /* If the highlighted object is plottable, we highlight
        it directly. Otherwise, we highlight its parents */
-    if (this.isPlottable) this.node.glowing = flag;
-    else if (this.node instanceof SESegmentLength) {
-      const target = this.node.parents[0] as SESegment;
+    if (isPlottable) props.node.glowing = flag;
+    else if (props.node instanceof SESegmentLength) {
+      const target = props.node.parents[0] as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SEPointDistance) {
-      this.node.parents
+    } else if (props.node instanceof SEPointDistance) {
+      props.node.parents
         .map(n => n as SEPoint)
         .forEach((p: SEPoint) => {
           p.glowing = flag;
         });
-    } else if (this.node instanceof SEPolygon) {
-      this.node.seEdgeSegments
+    } else if (props.node instanceof SEPolygon) {
+      props.node.seEdgeSegments
         .map(n => n as SESegment)
         .forEach((p: SESegment) => {
           p.glowing = flag;
         });
-    } else if (this.node instanceof SEPointCoordinate) {
-      const target = this.node.point as SEPoint;
+    } else if (props.node instanceof SEPointCoordinate) {
+      const target = props.node.point as SEPoint;
       target.glowing = flag;
-    } else if (this.node instanceof SETranslation) {
-      const target = this.node.seLineOrSegment as SESegment;
+    } else if (props.node instanceof SETranslation) {
+      const target = props.node.seLineOrSegment as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SEPointReflection) {
-      const target = this.node.sePointOfReflection as SEPoint;
+    } else if (props.node instanceof SEPointReflection) {
+      const target = props.node.sePointOfReflection as SEPoint;
       target.glowing = flag;
-    } else if (this.node instanceof SEReflection) {
-      const target = this.node.seLineOrSegment as SESegment;
+    } else if (props.node instanceof SEReflection) {
+      const target = props.node.seLineOrSegment as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SERotation) {
-      const target = this.node.seRotationPoint as SEPoint;
+    } else if (props.node instanceof SERotation) {
+      const target = props.node.seRotationPoint as SEPoint;
       target.glowing = flag;
-    } else if (this.node instanceof SEInversion) {
-      const target = this.node.seCircleOfInversion as SECircle;
+    } else if (props.node instanceof SEInversion) {
+      const target = props.node.seCircleOfInversion as SECircle;
       target.glowing = flag;
     }
 
-    if (this.node instanceof SEExpression) {
+    if (props.node instanceof SEExpression) {
       EventBus.fire("measured-circle-set-temporary-radius", {
         display: flag,
-        radius: this.node.value
+        radius: props.node.value
       });
     }
   }
 
-  selectMe(): void {
-    // console.log("Clicked", this.node.name);
-    if (this.node instanceof SEExpression) {
-      this.$emit("object-select", { id: this.node.id });
+  function selectMe(): void {
+    // console.log("Clicked", props.node.name);
+    if (props.node instanceof SEExpression) {
+      emit("object-select", { id: props.node.id });
       EventBus.fire("set-expression-for-tool", {
-        expression: this.node
+        expression: props.node
       });
-    } else if (this.node instanceof SETransformation) {
+    } else if (props.node instanceof SETransformation) {
       EventBus.fire("set-transformation-for-tool", {
-        transformation: this.node
+        transformation: props.node
       });
     }
   }
 
-  toggleVisibility(): void {
-    new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
-    this.visibilityUpdateKey += 1;
-    this.labelVisibilityUpdateKey += 1;
+  function toggleVisibility(): void {
+    new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
+    visibilityUpdateKey.value += 1;
+    labelVisibilityUpdateKey.value += 1;
   }
-  toggleLabelDisplay(): void {
+  function toggleLabelDisplay(): void {
     if (
-      this.node instanceof SEPoint ||
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse ||
-      this.node instanceof SEAngleMarker ||
-      this.node instanceof SEParametric ||
-      this.node instanceof SEPolygon
+      props.node instanceof SEPoint ||
+      props.node instanceof SELine ||
+      props.node instanceof SESegment ||
+      props.node instanceof SECircle ||
+      props.node instanceof SEEllipse ||
+      props.node instanceof SEAngleMarker ||
+      props.node instanceof SEParametric ||
+      props.node instanceof SEPolygon
     ) {
-      if (this.node.label) {
+      if (props.node.label) {
         new SetNoduleDisplayCommand(
-          this.node.label,
-          !this.node.label.showing
+          props.node.label,
+          !props.node.label.showing
         ).execute();
       }
     }
-    this.visibilityUpdateKey += 1; // Without this, the display icon doesn't change between the two showing and not showing variants.
-    this.labelVisibilityUpdateKey += 1; // Without this, the label icon doesn't change between the two showing and not showing variants.
+    visibilityUpdateKey.value += 1; // Without this, the display icon doesn't change between the two showing and not showing variants.
+    labelVisibilityUpdateKey.value += 1; // Without this, the label icon doesn't change between the two showing and not showing variants.
   }
-  copyToClipboard(): void {
-    if (this.node instanceof SEExpression) {
-      navigator.clipboard.writeText(String(this.node.value)).then(() =>
+  function copyToClipboard(): void {
+    if (props.node instanceof SEExpression) {
+      navigator.clipboard.writeText(String(props.node.value)).then(() =>
         EventBus.fire("show-alert", {
           key: "objectTree.copiedMeasurementSuccessfullyToClipboard",
           type: "success"
@@ -477,42 +460,42 @@ export default class SENoduleItem extends Vue {
     }
   }
 
-  deleteNode(): void {
+  function deleteNode(): void {
     //Trigger event in sphereFrame to use the delete tool to delete the object and all its descendants
     EventBus.fire("delete-node", {
-      victim: this.node,
-      victimName: this.nodeName,
-      victimType: this.nodeType
+      victim: props.node,
+      victimName: nodeName,
+      victimType: nodeType
     });
     // when deleting mesurements, the measure object(if any) must be unglowed
-    this.unglowAllSENodules();
+    seStore.unglowAllSENodules();
   }
 
-  cycleValueDisplayMode(): void {
+  function cycleValueDisplayMode(): void {
     // If the user clicks this they the want to have the label showing so turn it on
-    if (this.node instanceof SEAngleMarker) {
-      if (this.node.label) {
-        if (!this.node.label.showing) {
-          new SetNoduleDisplayCommand(this.node.label, true).execute();
+    if (props.node instanceof SEAngleMarker) {
+      if (props.node.label) {
+        if (!props.node.label.showing) {
+          new SetNoduleDisplayCommand(props.node.label, true).execute();
         }
       }
-    } else if (this.node instanceof SESegmentLength) {
-      if (this.node.seSegment.label) {
-        if (!this.node.seSegment.label.showing) {
+    } else if (props.node instanceof SESegmentLength) {
+      if (props.node.seSegment.label) {
+        if (!props.node.seSegment.label.showing) {
           new SetNoduleDisplayCommand(
-            this.node.seSegment.label,
+            props.node.seSegment.label,
             true
           ).execute();
         }
       }
-    } else if (this.node instanceof SEPolygon) {
-      if (this.node.label) {
-        if (!this.node.label.showing) {
-          new SetNoduleDisplayCommand(this.node.label, true).execute();
+    } else if (props.node instanceof SEPolygon) {
+      if (props.node.label) {
+        if (!props.node.label.showing) {
+          new SetNoduleDisplayCommand(props.node.label, true).execute();
         }
       }
     }
-    const oldValueDisplayMode = (this.node as SEExpression).valueDisplayMode;
+    const oldValueDisplayMode = (props.node as SEExpression).valueDisplayMode;
     let newValueDisplayMode: ValueDisplayMode;
     // Compute the next valueDisplayMode so that we cycle through the different options
     switch (oldValueDisplayMode) {
@@ -527,39 +510,41 @@ export default class SENoduleItem extends Vue {
         break;
     }
     new SetValueDisplayModeCommand(
-      this.node as SEExpression,
+      props.node as SEExpression,
       oldValueDisplayMode,
       newValueDisplayMode
     ).execute();
     // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
-    // if (!(this.node instanceof SECalculation)) {
-    //   this.node.parents[0].markKidsOutOfDate();
-    //   this.node.parents[0].update();
+    // if (!(props.node instanceof SECalculation)) {
+    //   props.node.parents[0].markKidsOutOfDate();
+    //   props.node.parents[0].update();
     // }
     // console.debug(
-    //   `Cycle display mode: node ${this.node.name}, new mode: ${newValueDisplayMode}`
+    //   `Cycle display mode: node ${props.node.name}, new mode: ${newValueDisplayMode}`
     // );
-    this.visibilityUpdateKey += 1;
-    this.labelVisibilityUpdateKey += 1;
+    visibilityUpdateKey.value += 1;
+    labelVisibilityUpdateKey.value += 1;
   }
 
-  @Watch("parametricTime")
-  onParametricTimeChanged(tVal: number): void {
-    if (this.curve && this.curvePoint) {
-      this.curvePoint.setLocationByTime(tVal);
-      this.curvePoint.markKidsOutOfDate();
-      this.curvePoint.update();
+
+watch(() => parametricTime.value, onParametricTimeChanged)
+
+  function onParametricTimeChanged(tVal: number): void {
+    if (curve && curvePoint) {
+      curvePoint.setLocationByTime(tVal);
+      curvePoint.markKidsOutOfDate();
+      curvePoint.update();
     }
   }
 
-  animateCurvePoint(): void {
+  function animateCurvePoint(): void {
     const repeatCount = Math.ceil(
-      (this.parametricTMax - this.parametricTMin) / this.parametricTStep
+      (parametricTMax.value - parametricTMin.value) / parametricTStep.value
     );
-    this.parametricTime = this.parametricTMin;
+    parametricTime.value = parametricTMin.value;
     const timer = setInterval(() => {
-      if (this.parametricTime <= this.parametricTMax) {
-        this.parametricTime += this.parametricTStep;
+      if (parametricTime.value <= parametricTMax.value) {
+        parametricTime.value += parametricTStep.value;
       }
     }, 100);
     setTimeout(() => {
@@ -568,417 +553,416 @@ export default class SENoduleItem extends Vue {
     }, repeatCount * 100);
   }
 
-  get isPoint(): boolean {
-    return this.node instanceof SEPoint;
-  }
-  get isHidden(): boolean {
-    return !this.node.showing;
-  }
-  get isLabelHidden(): boolean {
+  const isPoint = computed((): boolean => {
+    return props.node instanceof SEPoint;
+  })
+  const isHidden = computed((): boolean =>{
+    return !props.node.showing;
+  })
+  const isLabelHidden = computed((): boolean=> {
     if (
-      this.node instanceof SEPoint ||
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse ||
-      this.node instanceof SEAngleMarker ||
-      this.node instanceof SEParametric ||
-      this.node instanceof SEPolygon
+      props.node instanceof SEPoint ||
+      props.node instanceof SELine ||
+      props.node instanceof SESegment ||
+      props.node instanceof SECircle ||
+      props.node instanceof SEEllipse ||
+      props.node instanceof SEAngleMarker ||
+      props.node instanceof SEParametric ||
+      props.node instanceof SEPolygon
     ) {
-      return !this.node.label?.showing;
+      return !props.node.label?.showing;
     }
     return false;
-  }
-  get isExpressionAndNotCoordinate(): boolean {
+  })
+  const isExpressionAndNotCoordinate = computed((): boolean=> {
     return (
-      this.node instanceof SEExpression &&
-      !(this.node instanceof SEPointCoordinate)
+      props.node instanceof SEExpression &&
+      !(props.node instanceof SEPointCoordinate)
     );
-  }
-  get isLine(): boolean {
-    if (this.node instanceof SELine) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+  })
+  const isLine = computed((): boolean =>{
+    if (props.node instanceof SELine) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
-  get isLineSegment(): boolean {
-    //return this.node instanceof SESegment;
-    if (this.node instanceof SESegment) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.segments`, 3);
+  })
+  const isLineSegment = computed((): boolean =>{
+    //return props.node instanceof SESegment;
+    if (props.node instanceof SESegment) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.segments`, 3);
       return true;
     }
     return false;
-  }
-  get isCircle(): boolean {
-    //return this.node instanceof SECircle;
-    if (this.node instanceof SECircle) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.segments`, 3);
+  })
+  const isCircle = computed((): boolean=> {
+    //return props.node instanceof SECircle;
+    if (props.node instanceof SECircle) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.segments`, 3);
       return true;
     }
     return false;
-  }
-  get isEllipse(): boolean {
-    //return this.node instanceof SEEllipse;
-    if (this.node instanceof SEEllipse) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.ellipses`, 3);
+  })
+  const isEllipse = computed((): boolean =>{
+    //return props.node instanceof SEEllipse;
+    if (props.node instanceof SEEllipse) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.ellipses`, 3);
       return true;
     }
     return false;
-  }
-  get isIntersectionPoint(): boolean {
-    //return this.node instanceof SEIntersectionPoint;
-    if (this.node instanceof SEIntersectionPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+  })
+  const isIntersectionPoint = computed((): boolean=> {
+    //return props.node instanceof SEIntersectionPoint;
+    if (props.node instanceof SEIntersectionPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
-  get isAngle(): boolean {
-    //return this.node instanceof SEAngleMarker;
-    if (this.node instanceof SEAngleMarker) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.angleMarkers`, 3);
+  })
+  const isAngle = computed((): boolean =>{
+    //return props.node instanceof SEAngleMarker;
+    if (props.node instanceof SEAngleMarker) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.angleMarkers`, 3);
       return true;
     }
     return false;
-  }
-  get isMeasurement(): boolean {
-    //   return this.node instanceof SEExpression;
-    if (this.node instanceof SEExpression) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.measurements`, 3);
+  })
+  const isMeasurement = computed((): boolean =>{
+    //   return props.node instanceof SEExpression;
+    if (props.node instanceof SEExpression) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.measurements`, 3);
       return true;
     }
     return false;
-  }
-  get isCalculation(): boolean {
-    // return this.node instanceof SECalculation;
-    if (this.node instanceof SECalculation) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.calculations`, 3);
+  })
+  const isCalculation = computed((): boolean =>{
+    // return props.node instanceof SECalculation;
+    if (props.node instanceof SECalculation) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.calculations`, 3);
       return true;
     }
     return false;
-  }
-  // get isSlider(): boolean { // Not needed as SESlider items are sorted in SENoduleList
-  //   return this.node instanceof SESlider;
+  })
+  // const isSlider = computed((): boolean { // Not needed as SESlider items are sorted in SENoduleList
+  //   return props.node instanceof SESlider;
   // }
-  get isMeasureTriangle(): boolean {
+  const isMeasureTriangle = computed((): boolean =>{
     //return (
-    //  this.node instanceof SEPolygon && this.node.seEdgeSegments.length === 3
+    //  props.node instanceof SEPolygon && props.node.seEdgeSegments.length === 3
     //);
     if (
-      this.node instanceof SEPolygon &&
-      this.node.seEdgeSegments.length === 3
+      props.node instanceof SEPolygon &&
+      props.node.seEdgeSegments.length === 3
     ) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.triangles`, 3);
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.triangles`, 3);
       return true;
     }
     return false;
-  }
-  get isMeasurePolygon(): boolean {
-    //return this.node instanceof SEPolygon;
-    if (this.node instanceof SEPolygon) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.polygons`, 3);
+  })
+  const isMeasurePolygon = computed((): boolean =>{
+    //return props.node instanceof SEPolygon;
+    if (props.node instanceof SEPolygon) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.polygons`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isParametric(): boolean {
-    // return this.node instanceof SEParametric;
-    if (this.node instanceof SEParametric) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.parametrics`, 3);
+  const isParametric = computed((): boolean =>{
+    // return props.node instanceof SEParametric;
+    if (props.node instanceof SEParametric) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.parametrics`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isAntipode(): boolean {
-    //return this.node instanceof SEAntipodalPoint;
-    if (this.node instanceof SEAntipodalPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+  const isAntipode = computed((): boolean =>{
+    //return props.node instanceof SEAntipodalPoint;
+    if (props.node instanceof SEAntipodalPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isPolar(): boolean {
+  const isPolar = computed((): boolean=> {
     //return (
-    //  this.node instanceof SEPolarLine || this.node instanceof SEPolarPoint
+    //  props.node instanceof SEPolarLine || props.node instanceof SEPolarPoint
     //);
-    if (this.node instanceof SEPolarLine) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
-    } else if (this.node instanceof SEPolarPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+    if (props.node instanceof SEPolarLine) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
+    } else if (props.node instanceof SEPolarPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
     }
     return (
-      this.node instanceof SEPolarLine || this.node instanceof SEPolarPoint
+      props.node instanceof SEPolarLine || props.node instanceof SEPolarPoint
     );
-  }
+  })
 
-  get isPerpendicular(): boolean {
-    //return this.node instanceof SEPerpendicularLineThruPoint;
-    if (this.node instanceof SEPerpendicularLineThruPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+  const isPerpendicular = computed((): boolean=> {
+    //return props.node instanceof SEPerpendicularLineThruPoint;
+    if (props.node instanceof SEPerpendicularLineThruPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
-  get isPointOnObject(): boolean {
-    // return this.node instanceof SEPointOnOneOrTwoDimensional;
-    if (this.node instanceof SEPointOnOneOrTwoDimensional) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+  })
+  const isPointOnObject = computed((): boolean=> {
+    // return props.node instanceof SEPointOnOneOrTwoDimensional;
+    if (props.node instanceof SEPointOnOneOrTwoDimensional) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isSegmentLength(): boolean {
-    // return this.node instanceof SESegmentLength;
-    if (this.node instanceof SESegmentLength) {
-      this.nodeName = this.node.seSegment.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.measurements`, 3);
+  const isSegmentLength = computed((): boolean=> {
+    // return props.node instanceof SESegmentLength;
+    if (props.node instanceof SESegmentLength) {
+      nodeName = props.node.seSegment.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.measurements`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isPointDistance(): boolean {
-    //return this.node instanceof SEPointDistance;
-    if (this.node instanceof SEPointDistance) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.measurements`, 3);
+  const isPointDistance = computed((): boolean =>{
+    //return props.node instanceof SEPointDistance;
+    if (props.node instanceof SEPointDistance) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.measurements`, 3);
       return true;
     }
     return false;
-  }
-  get isMidpoint(): boolean {
+  })
+  const isMidpoint = computed((): boolean=> {
     //return (
-    // this.node instanceof SENSectPoint && (this.node as SENSectPoint).N === 2
+    // props.node instanceof SENSectPoint && (props.node as SENSectPoint).N === 2
     //)
     if (
-      this.node instanceof SENSectPoint &&
-      (this.node as SENSectPoint).N === 2
+      props.node instanceof SENSectPoint &&
+      (props.node as SENSectPoint).N === 2
     ) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
-  get isNSectPoint(): boolean {
-    //return this.node instanceof SENSectPoint;
-    if (this.node instanceof SENSectPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+  })
+  const isNSectPoint = computed((): boolean =>{
+    //return props.node instanceof SENSectPoint;
+    if (props.node instanceof SENSectPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isTangent(): boolean {
-    //return this.node instanceof SETangentLineThruPoint;
-    if (this.node instanceof SETangentLineThruPoint) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+  const isTangent = computed((): boolean =>{
+    //return props.node instanceof SETangentLineThruPoint;
+    if (props.node instanceof SETangentLineThruPoint) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
-  get isAngleBisector(): boolean {
+  })
+  const isAngleBisector = computed((): boolean=> {
     // return (
-    //   this.node instanceof SENSectLine && (this.node as SENSectLine).N === 2
+    //   props.node instanceof SENSectLine && (props.node as SENSectLine).N === 2
     // );
     if (
-      this.node instanceof SENSectLine &&
-      (this.node as SENSectLine).N === 2
+      props.node instanceof SENSectLine &&
+      (props.node as SENSectLine).N === 2
     ) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
-  get isNSectLine(): boolean {
-    // return this.node instanceof SENSectLine;
-    if (this.node instanceof SENSectLine) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+  })
+  const isNSectLine = computed((): boolean =>{
+    // return props.node instanceof SENSectLine;
+    if (props.node instanceof SENSectLine) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isTranslation(): boolean {
-    //return this.node instanceof SETranslation;
-    if (this.node instanceof SETranslation) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.transformations`, 3);
+  const isTranslation = computed((): boolean =>{
+    //return props.node instanceof SETranslation;
+    if (props.node instanceof SETranslation) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.transformations`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isRotation(): boolean {
-    //return this.node instanceof SERotation;
-    if (this.node instanceof SERotation) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.transformations`, 3);
+  const isRotation = computed((): boolean =>{
+    //return props.node instanceof SERotation;
+    if (props.node instanceof SERotation) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.transformations`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isReflection(): boolean {
-    //return this.node instanceof SEReflection;
-    if (this.node instanceof SEReflection) {
-      this.nodeName = this.node.name; // this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.transformations`, 3);
+  const isReflection = computed((): boolean=> {
+    //return props.node instanceof SEReflection;
+    if (props.node instanceof SEReflection) {
+      nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.transformations`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isPointReflection(): boolean {
-    // return this.node instanceof SEPointReflection;
-    if (this.node instanceof SEPointReflection) {
-      this.nodeName = this.node.name; // this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.transformations`, 3);
+  const isPointReflection = computed((): boolean =>{
+    // return props.node instanceof SEPointReflection;
+    if (props.node instanceof SEPointReflection) {
+      nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.transformations`, 3);
       return true;
     }
     return false;
-  }
+  })
 
-  get isInversion(): boolean {
-    //return this.node instanceof SEInversion;
-    if (this.node instanceof SEInversion) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.transformations`, 3);
+  const isInversion = computed((): boolean =>{
+    //return props.node instanceof SEInversion;
+    if (props.node instanceof SEInversion) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.transformations`, 3);
       return true;
     }
     return false;
-  }
-  get isTransformedPoint(): boolean {
+  })
+  const isTransformedPoint = computed((): boolean =>{
     // return (
-    //   this.node instanceof SETransformedPoint ||
-    //   this.node instanceof SEInversionCircleCenter
+    //   props.node instanceof SETransformedPoint ||
+    //   props.node instanceof SEInversionCircleCenter
     // );
     if (
-      this.node instanceof SETransformedPoint ||
-      this.node instanceof SEInversionCircleCenter
+      props.node instanceof SETransformedPoint ||
+      props.node instanceof SEInversionCircleCenter
     ) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.points`, 3);
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.points`, 3);
       return true;
     }
     return false;
-  }
-  get isTransformedLine(): boolean {
-    //return this.node instanceof SEIsometryLine;
-    if (this.node instanceof SEIsometryLine) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.lines`, 3);
+  })
+  const isTransformedLine = computed((): boolean =>{
+    //return props.node instanceof SEIsometryLine;
+    if (props.node instanceof SEIsometryLine) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.lines`, 3);
       return true;
     }
     return false;
-  }
-  get isTransformedSegment(): boolean {
-    //return this.node instanceof SEIsometrySegment;
-    if (this.node instanceof SEIsometrySegment) {
-      this.nodeName = this.node.name; //this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.segments`, 3);
+  })
+  const isTransformedSegment = computed((): boolean =>{
+    //return props.node instanceof SEIsometrySegment;
+    if (props.node instanceof SEIsometrySegment) {
+      nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.segments`, 3);
       return true;
     }
     return false;
-  }
-  get isTransformedCircle(): boolean {
+  })
+  const isTransformedCircle = computed((): boolean =>{
     // return (
-    //   (this.node instanceof SECircle &&
-    //     this.node.circleSEPoint instanceof SETransformedPoint &&
-    //     this.node.centerSEPoint instanceof SETransformedPoint &&
-    //     this.node.circleSEPoint.parentTransformation.name ===
-    //       this.node.centerSEPoint.parentTransformation.name) ||
-    //   (this.node instanceof SECircle &&
-    //     this.node.centerSEPoint instanceof SEInversionCircleCenter)
+    //   (props.node instanceof SECircle &&
+    //     props.node.circleSEPoint instanceof SETransformedPoint &&
+    //     props.node.centerSEPoint instanceof SETransformedPoint &&
+    //     props.node.circleSEPoint.parentTransformation.name ===
+    //       props.node.centerSEPoint.parentTransformation.name) ||
+    //   (props.node instanceof SECircle &&
+    //     props.node.centerSEPoint instanceof SEInversionCircleCenter)
     // );
     if (
-      this.node instanceof SEIsometryCircle ||
-      (this.node instanceof SECircle &&
-        this.node.circleSEPoint instanceof SETransformedPoint &&
-        this.node.centerSEPoint instanceof SEInversionCircleCenter &&
-        this.node.centerSEPoint.parentTransformation.name ===
-          this.node.circleSEPoint.parentTransformation.name)
+      props.node instanceof SEIsometryCircle ||
+      (props.node instanceof SECircle &&
+        props.node.circleSEPoint instanceof SETransformedPoint &&
+        props.node.centerSEPoint instanceof SEInversionCircleCenter &&
+        props.node.centerSEPoint.parentTransformation.name ===
+          props.node.circleSEPoint.parentTransformation.name)
     ) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.circles`, 3);
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.circles`, 3);
       return true;
     }
     return false;
-  }
-  get isTransformedEllipse(): boolean {
-    if (this.node instanceof SEIsometryEllipse) {
-      this.nodeName = this.node.label?.ref.shortUserName ?? "";
-      this.nodeType = i18n.tc(`objects.ellipses`, 3);
+  })
+  const isTransformedEllipse = computed((): boolean=> {
+    if (props.node instanceof SEIsometryEllipse) {
+      nodeName = props.node.label?.ref.shortUserName ?? "";
+      nodeType = i18n.tc(`objects.ellipses`, 3);
       return true;
     }
     return false;
-  }
-  get isPlottable(): boolean {
+  })
+  const isPlottable = computed((): boolean =>{
     return (
-      this.node instanceof SEPoint ||
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse ||
-      this.node instanceof SEAngleMarker ||
-      this.node instanceof SEParametric ||
-      this.node instanceof SEPolygon
+      props.node instanceof SEPoint ||
+      props.node instanceof SELine ||
+      props.node instanceof SESegment ||
+      props.node instanceof SECircle ||
+      props.node instanceof SEEllipse ||
+      props.node instanceof SEAngleMarker ||
+      props.node instanceof SEParametric ||
+      props.node instanceof SEPolygon
     );
-  }
+  })
 
-  get showClass(): string {
-    this.visibilityUpdateKey += 1; // if we don't do this, then for a user created point, undoing/redoing doesn't update the icon between eye/slash eye. This issue is revealed when 1) Draw two lines 2) use point tool to create the intersection 3) hide the intersection with the object panel icon 4) undo button on sphere frame
-    this.labelVisibilityUpdateKey += 1; //
-    return this.node.showing ? "visibleNode" : "invisibleNode";
-  }
+  const showClass = computed((): string =>{
+    visibilityUpdateKey.value += 1; // if we don't do this, then for a user created point, undoing/redoing doesn't update the icon between eye/slash eye. This issue is revealed when 1) Draw two lines 2) use point tool to create the intersection 3) hide the intersection with the object panel icon 4) undo button on sphere frame
+    labelVisibilityUpdateKey.value += 1; //
+    return props.node.showing ? "visibleNode" : "invisibleNode";
+  })
   //only shake the measurement icons initially when the measured circle tool is selected (There should also be a message displayed telling the user to select a measurement)
-  get shakeMeasurementDisplay(): string {
-    return this.actionMode === "measuredCircle" &&
-      this.node instanceof SEExpression
+  const shakeMeasurementDisplay = computed((): string =>{
+    return actionMode === "measuredCircle" &&
+      props.node instanceof SEExpression
       ? "shake"
       : "";
-  }
+  })
 
   //only shake the transformation icons initially when the apply transformations tool is selected (There should also be a message displayed telling the user to select a translation)
-  get shakeTransformationDisplay(): string {
-    return this.actionMode === "applyTransformation" &&
-      this.node instanceof SETransformation
+  const shakeTransformationDisplay = computed((): string=>{
+    return actionMode === "applyTransformation" &&
+      props.node instanceof SETransformation
       ? "shake"
       : "";
-  }
+  })
 
-  get shortDisplayText(): string {
-    return this.node.noduleItemText;
-  }
-  get definitionText(): string {
-    return this.node.noduleDescription;
-  }
-}
+  const shortDisplayText = computed((): string =>{
+    return props.node.noduleItemText;
+  })
+  const definitionText = computed((): string=> {
+    return props.node.noduleDescription;
+  })
 </script>
 
 <style scoped lang="scss">
