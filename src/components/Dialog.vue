@@ -34,7 +34,6 @@
 </template>
 
 <script lang="ts">
-import EventBus from "@/eventHandlers/EventBus";
 import { Component, Prop, Vue } from "vue-property-decorator";
 export interface DialogAction {
   hide: () => void;
