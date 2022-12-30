@@ -1,9 +1,10 @@
 module.exports = {
-  jsxBracketSameLine: true,
+  // jsxBracketSameLine: true,
   vueIndentScriptAndStyle: false,
   tabWidth: 2,
   arrowParens: "avoid",
   bracketSpacing: true,
+  bracketSameLine: true,
   trailingComma: "none",
   singleQuote: false,
 };
