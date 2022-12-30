@@ -23,7 +23,7 @@
             v-on:object-select="onExpressionSelect"></SENoduleItem>
           <SESliderItem
             v-else
-            :node="toSlider(n) /* a trick to avoid parser error */"
+            :node="toSlider(n) /* a trick to S type error */"
             :key="`${n.id}-slider`"
             v-on:object-select="onExpressionSelect"></SESliderItem>
           <v-divider :key="`${n.id}-divider`"></v-divider>

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-card raised
-      outlined>
+    <v-card raised outlined>
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea id="_test_input_expr"
+              <v-textarea
+                id="_test_input_expr"
                 auto-grow
                 dense
                 full-width
@@ -21,10 +21,10 @@
                 @keydown="onKeyPressed"
                 @click:clear="reset">
               </v-textarea>
-
             </v-col>
           </v-row>
-          <v-text-field id="_test_output_result"
+          <v-text-field
+            id="_test_output_result"
             dense
             outlined
             readonly
@@ -38,7 +38,8 @@
         <v-spacer></v-spacer>
         <!--- Disable the FAB when either the expression text is empty or
           there is a syntax error -->
-        <v-btn id="_test_add_expr"
+        <v-btn
+          id="_test_add_expr"
           small
           fab
           right
@@ -51,98 +52,90 @@
     </v-card>
   </div>
 </template>
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
+<script lang="ts" setup>
+import { onMounted, ref } from "vue";
 // import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 
-@Component({
-  computed: {
-    ...mapState(useSEStore, ["expressions"])
-  }
-})
-export default class ExpressionForm extends Vue {
-  readonly expressions!: SEExpression[];
+const seStore = useSEStore();
+const { expressions } = seStore;
 
-  private parser = new ExpressionParser();
+let parser = new ExpressionParser();
 
-  private calcExpression = "";
+const calcExpression = ref("");
 
-  private calcResult = 0;
-  private parsingError = "";
-  private timerInstance: ReturnType<typeof setTimeout> | null = null;
-  readonly varMap = new Map<string, number>();
+const calcResult = ref(0);
+const parsingError = ref("");
+let timerInstance: ReturnType<typeof setTimeout> | null = null;
+const varMap = new Map<string, number>();
 
-  mounted(): void {
-    EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
-  }
+onMounted((): void => {
+  EventBus.listen("measurement-selected", addVarToExpr);
+});
 
-  reset(): void {
-    this.calcExpression = "";
-    this.calcResult = 0;
-  }
+function reset(): void {
+  calcExpression.value = "";
+  calcResult.value = 0;
+}
 
-  addVarToExpr(param: any): void {
-    this.calcExpression += param;
-    this.onKeyPressed();
-  }
+function addVarToExpr(param: any): void {
+  calcExpression.value += param;
+  onKeyPressed();
+}
 
-  onKeyPressed(): void {
-    // console.debug("Key press");
-    this.parsingError = "";
-    if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = setTimeout(() => {
-      try {
-        this.expressions.forEach((m: SEExpression) => {
-          const measurementName = m.name;
-          // console.debug("Measurement", m, measurementName);
-          this.varMap.set(measurementName, m.value);
-        });
-        // console.debug(
-        //   "Calc ",
-        //   this.calcExpression,
-        //   "using parser",
-        //   this.parser,
-        //   "var map",
-        //   this.varMap
-        // );
-        this.calcResult =
-          this.calcExpression.length > 0
-            ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-            : 0;
-        // console.debug("Calculation result is", this.calcResult);
-      } catch (err: any) {
-        // no code
-        // console.debug("Got an error", err);
-        this.parsingError = err.message;
-      }
-    }, 1000);
-  }
+function onKeyPressed(): void {
+  // console.debug("Key press");
+  parsingError.value = "";
+  if (timerInstance) clearTimeout(timerInstance);
+  timerInstance = setTimeout(() => {
+    try {
+      expressions.forEach((m: SEExpression) => {
+        const measurementName = m.name;
+        // console.debug("Measurement", m, measurementName);
+        varMap.set(measurementName, m.value);
+      });
+      // console.debug(
+      //   "Calc ",
+      //   calcExpression.value,
+      //   "using parser",
+      //   this.parser,
+      //   "var map",
+      //   this.varMap
+      // );
+      calcResult.value =
+        calcExpression.value.length > 0
+          ? parser.evaluateWithVars(calcExpression.value, varMap)
+          : 0;
+      // console.debug("Calculation result is", calcResult.value);
+    } catch (err: any) {
+      // no code
+      // console.debug("Got an error", err);
+      parsingError.value = err.message;
+    }
+  }, 1000);
+}
 
-  addExpression(): void {
-    // console.debug("Adding expression", this.calcExpression);
-    const calc = new SECalculation(this.calcExpression);
-    new AddCalculationCommand(
-      calc,
-      this.calcExpression,
-      calc.calculationParents
-    ).execute();
-    calc.markKidsOutOfDate();
-    calc.update();
-    this.reset();
-    this.varMap.clear();
-    this.expressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-  }
+function addExpression(): void {
+  // console.debug("Adding expression", calcExpression.value);
+  const calc = new SECalculation(calcExpression.value);
+  new AddCalculationCommand(
+    calc,
+    calcExpression.value,
+    calc.calculationParents
+  ).execute();
+  calc.markKidsOutOfDate();
+  calc.update();
+  reset();
+  varMap.clear();
+  expressions.forEach((m: SEExpression) => {
+    const measurementName = m.name;
+    // console.debug("Measurement", m, measurementName);
+    varMap.set(measurementName, m.value);
+  });
 }
 </script>

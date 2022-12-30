@@ -1,8 +1,8 @@
 <template>
-
   <v-form v-model="isValid">
     <div id="dataEntry">
-      <v-text-field id="_test_input_min"
+      <v-text-field
+        id="_test_input_min"
         v-bind:label="$t('objectTree.min')"
         class="field _test_input"
         outlined
@@ -10,14 +10,16 @@
         v-model.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
-      <v-text-field id="_test_input_step"
+      <v-text-field
+        id="_test_input_step"
         v-bind:label="$t('objectTree.step')"
         class="field _test_input"
         outlined
         dense
         v-model.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
-      <v-text-field id="_test_input_max"
+      <v-text-field
+        id="_test_input_max"
         v-bind:label="$t('objectTree.max')"
         class="field _test_input"
         outlined
@@ -25,7 +27,8 @@
         v-model.number="sliderMax"
         :error="sliderMax < sliderMin"></v-text-field>
     </div>
-    <v-slider id="_test_slider"
+    <v-slider
+      id="_test_slider"
       v-model="sliderValue"
       :min="sliderMin"
       :max="sliderMax"
@@ -34,17 +37,18 @@
       background-color="accent lighten-2"
       ticks="always"
       tick-size="4"></v-slider>
-    <v-divider>
-    </v-divider>
+    <v-divider> </v-divider>
     <div id="action">
-      <v-btn id="_test_add_slider"
+      <v-btn
+        id="_test_add_slider"
         color="primary"
         text
         :disabled="!isValid"
-        @click="addSlider">{{$t("objectTree.create")}}</v-btn>
+        @click="addSlider"
+        >{{ $t("objectTree.create") }}</v-btn
+      >
     </div>
   </v-form>
-
 </template>
 <style lang="scss" scoped>
 #dataEntry {
@@ -65,51 +69,48 @@
   justify-content: flex-end;
 }
 </style>
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
+<script lang="ts" setup>
+import  {ref, watch} from "vue";
+// import Component from "vue-class-component";
 import { SESlider } from "@/models/SESlider";
-import { Watch } from "vue-property-decorator";
+// import { Watch } from "vue-property-decorator";
 import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
-@Component
-export default class SliderForm extends Vue {
-  private sliderMin = 0;
-  private sliderMax = 1;
-  private sliderStep = 0.1;
-  private sliderValue = 0;
+// @Component
+// export default class SliderForm extends Vue {
+  const sliderMin = ref(0);
+  const sliderMax = ref(1);
+  const sliderStep = ref(0.1);
+  const sliderValue = ref(0);
 
-  private isValid = false;
+  const isValid = ref(false);
 
-  addSlider(): void {
+  function addSlider(): void {
     const sliderMeasure = new SESlider({
-      min: this.sliderMin,
-      max: this.sliderMax,
-      step: this.sliderStep,
-      value: this.sliderValue
+      min: sliderMin.value,
+      max: sliderMax.value,
+      step: sliderStep.value,
+      value: sliderValue.value
     });
     new AddSliderMeasurementCommand(sliderMeasure).execute();
   }
 
-  private adjustSlidertep() {
-    const numTicks = (this.sliderMax - this.sliderMin) / this.sliderStep;
+  function adjustSlidertep() {
+    const numTicks = (sliderMax.value - sliderMin.value) / sliderStep.value;
     // console.debug(
-    //   `Min:${this.sliderMin}, Max=${this.sliderMax}, Step=${this.sliderStep}`
+    //   `Min:${sliderMin.value}, Max=${sliderMax.value}, Step=${sliderStep.value}`
     // );
     if (numTicks > 25) {
-      this.sliderStep = (this.sliderMax - this.sliderMin) / 25;
+      sliderStep.value = (sliderMax.value - sliderMin.value) / 25;
     }
   }
 
-  @Watch("sliderMin")
-  onMinimumChanged(newVal: number): void {
-    if (newVal > this.sliderMax || this.sliderStep === 0) return;
-    this.adjustSlidertep();
-  }
+  watch(() => sliderMin.value, (newVal: number): void =>{
+    if (newVal > sliderMax.value || sliderStep.value === 0) return;
+    adjustSlidertep();
+  })
 
-  @Watch("sliderMax")
-  onMaximumChanged(newVal: number): void {
-    if (newVal < this.sliderMin || this.sliderStep === 0) return;
-    this.adjustSlidertep();
-  }
-}
+  watch(() => sliderMax.value, (newVal: number): void => {
+    if (newVal < sliderMin.value || sliderStep.value === 0) return;
+    adjustSlidertep();
+  })
 </script>
