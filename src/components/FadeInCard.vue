@@ -1,25 +1,19 @@
 <template>
   <transition name="fade">
-    <v-card v-show="showWhen"
-      color="color"
-      elevation="8"
-      class="content">
+    <v-card v-show="showWhen" color="color" elevation="8" class="content">
       <slot></slot>
     </v-card>
   </transition>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+<script lang="ts" setup>
+import { ref } from "vue";
 
-@Component({})
-export default class FadeInCard extends Vue {
-  @Prop({ default: true })
-  readonly showWhen!: boolean;
-  readonly color!: string;
-}
+defineProps<{
+  showWhen: boolean;
+}>();
+
+const color = ref("");
 </script>
 
 <style scoped>

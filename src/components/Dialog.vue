@@ -1,9 +1,7 @@
 <template>
-  <v-dialog v-model="visible"
-    transition="dialog-transition"
-    v-bind="$attrs">
+  <v-dialog v-model="visible" transition="dialog-transition" v-bind="$attrs">
     <v-card elevation="2">
-      <v-card-title id="_test_title">{{title}}</v-card-title>
+      <v-card-title id="_test_title">{{ title }}</v-card-title>
       <v-divider />
       <v-card-text>
         <slot />
@@ -11,30 +9,40 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn id="_test_posButton"
-          :disabled="disableButton"
+        <v-btn
+          id="_test_posButton"
+          :disabled="isDisabled"
           v-if="yesAction"
           color="primary"
-          @click="yesAction()">{{yesLabel}}</v-btn>
-        <v-btn id="_test_posButton"
-          v-else
-          color="primary"
-          @click="hide()">{{yesLabel}}</v-btn>
-        <v-btn id="_test_negButton"
+          @click="yesAction"
+          >{{ yesLabel }}</v-btn
+        >
+        <v-btn id="_test_posButton" v-else color="primary" @click="hide()">{{
+          yesLabel
+        }}</v-btn>
+        <v-btn
+          id="_test_negButton"
           v-if="noAction && noText"
           color="secondary"
-          @click="noAction()">{{noText}}</v-btn>
-        <v-btn id="_test_negButton"
+          @click="noAction"
+          >{{ noText }}</v-btn
+        >
+        <v-btn
+          id="_test_negButton"
           v-else-if="noText"
           color="secondary"
-          @click="hide()">{{noText}}</v-btn>
+          @click="hide()"
+          >{{ noText }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+<script lang="ts" setup>
+import { computed, ref } from "vue";
+
+// import { Component, Prop, Vue } from "vue-property-decorator";
 export interface DialogAction {
   hide: () => void;
   show: () => void;
@@ -42,38 +50,33 @@ export interface DialogAction {
 
 type DialogFunc = () => void;
 
-@Component
-export default class Dialog extends Vue implements DialogAction {
-  @Prop() title!: string;
-  @Prop() yesText!: string | undefined;
-  @Prop() yesAction!: DialogFunc;
-  @Prop() noText!: string | undefined;
-  @Prop() noAction!: DialogFunc;
-  @Prop() isDisabled!: boolean;
+// @Component
+// export default class Dialog extends Vue implements DialogAction {
+const props = defineProps<{
+  title: string;
+  yesText?: string;
+  yesAction?: DialogFunc;
+  noText?: string;
+  noAction?: DialogFunc;
+  isDisabled?: boolean;
+}>();
 
-  visible = false;
+const visible = ref(false);
 
-  get yesLabel(): string {
-    return this.yesText ?? "Yes";
-  }
-  get noLabel(): string {
-    return this.noText ?? "No";
-  }
-  get disableButton(): boolean {
-    return this.isDisabled;
-  }
+const yesLabel = computed((): string => {
+  return props.yesText ?? "Yes";
+});
+const noLabel = computed((): string => {
+  return props.noText ?? "No";
+});
 
-  show(): void {
-    this.visible = true;
-    // console.debug(`Dialog ${this.title} is active`);
-    // EventBus.fire("dialog-box-is-active", { active: true });
-  }
-  hide(): void {
-    this.visible = false;
-    // EventBus.fire("dialog-box-is-active", { active: false });
-  }
+function show(): void {
+  visible.value = true;
+  // console.debug(`Dialog ${this.title} is active`);
+  // EventBus.fire("dialog-box-is-active", { active: true });
+}
+function hide(): void {
+  visible.value = false;
+  // EventBus.fire("dialog-box-is-active", { active: false });
 }
 </script>
-
-<style scoped>
-</style>

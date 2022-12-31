@@ -1,7 +1,7 @@
-  <template>
-  <v-icon v-if="mdiIcon"
-    :size="iconSizeValue">{{mdiIconName}}</v-icon>
-  <svg v-else
+<template>
+  <v-icon v-if="mdiIcon" :size="iconSizeValue">{{ mdiIconName }}</v-icon>
+  <svg
+    v-else
     xmlns="http://www.w3.org/2000/svg"
     transform="matrix(1 0 0 -1 0 0)"
     viewBox="-250 -250 500 500"
@@ -11,62 +11,59 @@
     :aria-labelledby="iconName"
     style="overflow: visible"
     vector-effect="non-scaling-stroke">
-    <g v-html="svgSnippetAmended">
-    </g>
+    <g v-html="svgSnippetAmended"></g>
   </svg>
-
 </template>
 
-
-
-<script lang="ts">
+<script lang="ts" setup>
 import axios from "axios";
-import { Prop, Component, Vue } from "vue-property-decorator";
-//import SETTINGS from "@/global-settings";
+import { onMounted, ref, Ref } from "vue";
 import SETTINGS from "../../src/global-settings";
 import { IconNames } from "../../src/types/index";
 
-@Component({})
-export default class IconBase extends Vue {
-  @Prop() readonly iconName!: IconNames;
-  @Prop() readonly iconSize?: number;
-  @Prop() readonly notInline?: boolean;
+// @Component({})
+// export default class IconBase extends Vue {
+const props = defineProps < {
+  iconName: IconNames;
+  iconSize?: number;
+  notInline?: boolean
+}>()
 
-  private emphasizeTypes: string[][] = [[]];
-  private mdiIcon: boolean | string = false;
-  private filePath = "";
+  let emphasizeTypes: string[][] = [[]];
+  const mdiIcon: Ref<boolean | string> = ref(false);
+  let filePath = "";
 
-  private svgSnippetRaw = "";
-  private svgSnippetAmended = "";
-  private doneFetching = false;
-  private iconSizeValue = SETTINGS.icons.defaultIconSize;
-  private mdiIconName = "";
+  let svgSnippetRaw = "";
+  const svgSnippetAmended = ref("");
+  let doneFetching = false;
+  const iconSizeValue = ref(SETTINGS.icons.defaultIconSize);
+  const mdiIconName = ref("");
 
-  mounted(): void {
-    if (this.notInline === undefined) {
-      this.iconSizeValue =
-        this.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
+  onMounted((): void => {
+    if (props.notInline === undefined) {
+      iconSizeValue.value =
+        props.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
     } else {
-      this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize;
+      iconSizeValue.value = props.iconSize ?? SETTINGS.icons.defaultIconSize;
     }
-    this.filePath = SETTINGS.icons[this.iconName].props.filePath;
-    this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
-    this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;
-    if (typeof this.mdiIcon !== "string") {
-      this.doneFetching = false;
+    filePath = SETTINGS.icons[props.iconName].props.filePath;
+    emphasizeTypes = SETTINGS.icons[props.iconName].props.emphasizeTypes;
+    mdiIcon.value = SETTINGS.icons[props.iconName].props.mdiIcon;
+    if (typeof mdiIcon.value !== "string") {
+      doneFetching = false;
       // By default, axios assumes a JSON response and the input will be parsed as JSON.
       // We want to override it to "text"
-      axios.get(this.filePath, { responseType: "text" }).then(r => {
-        this.svgSnippetRaw = r.data;
-        this.doneFetching = true;
-        const parts = this.svgSnippetRaw.split(";");
+      axios.get(filePath, { responseType: "text" }).then(r => {
+        svgSnippetRaw = r.data;
+        doneFetching = true;
+        const parts = svgSnippetRaw.split(";");
         // scale the angleMarkers fill and circular edge
         // the angle markers fill object contains the center of the dialation
         // then the d="M -75.437 -26.553... gives the center of the dialation
         // so the new translation vector is [-75.437*(1-scale),-26.553*(1-scale)]
         // const ind = parts.findIndex(ele => {
-        //   const type = this.getAttribute(ele, "type");
-        //   const fill = this.getAttribute(ele, "myfill");
+        //   const type = getAttribute(ele, "type");
+        //   const fill = getAttribute(ele, "myfill");
         //   // console.log("check", type, fill);
         //   if (type === "angleMarker" && fill === "true") {
         //     return true;
@@ -77,7 +74,7 @@ export default class IconBase extends Vue {
 
         // if (ind !== -1) {
         //   // there is an angleMarker fill path
-        //   const vals = this.getAttribute(parts[ind], "d")?.split(" ") ?? [];
+        //   const vals = getAttribute(parts[ind], "d")?.split(" ") ?? [];
         //   if (vals.length === 0) {
         //     throw new Error(
         //       `IconBase - Undefined d path attribute in ${parts[ind]}.`
@@ -87,12 +84,12 @@ export default class IconBase extends Vue {
         // vals[1] and vals[2] contain the center of the dilation, scale *all* anglemarker parts (both circle edge and fill)
         parts.forEach((svgString, index) => {
           if (index === 0) return; // do nothing to the <defn>...</defn> string
-          const type = this.getAttribute(svgString, "type");
-          const side = this.getAttribute(svgString, "side");
-          const fill = this.getAttribute(svgString, "myfill");
+          const type = getAttribute(svgString, "type");
+          const side = getAttribute(svgString, "side");
+          const fill = getAttribute(svgString, "myfill");
 
           if (fill === "true" && type === "angleMarker") {
-            const vals = this.getAttribute(svgString, "d")?.split(" ") ?? [];
+            const vals = getAttribute(svgString, "d")?.split(" ") ?? [];
             if (vals.length === 0) {
               throw new Error(
                 `IconBase - Undefined d path attribute in ${svgString}.`
@@ -101,11 +98,11 @@ export default class IconBase extends Vue {
             // this is part of an angleMarker and the previous part is the edge of the fill so
             if (side === "front") {
               // this angleMarker is on the front
-              parts[index] = this.setAttribute(
+              parts[index] = setAttribute(
                 parts[index],
                 "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index], "transform") ?? "",
+                setTransformationScale(
+                  getAttribute(parts[index], "transform") ?? "",
                   SETTINGS.icons.normal.angle.scale.front,
                   Number(vals[1]) *
                     (1 - SETTINGS.icons.normal.angle.scale.front),
@@ -113,11 +110,11 @@ export default class IconBase extends Vue {
                     (1 - SETTINGS.icons.normal.angle.scale.front)
                 )
               );
-              parts[index - 1] = this.setAttribute(
+              parts[index - 1] = setAttribute(
                 parts[index - 1],
                 "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index - 1], "transform") ?? "",
+                setTransformationScale(
+                  getAttribute(parts[index - 1], "transform") ?? "",
                   SETTINGS.icons.normal.angle.scale.front,
                   Number(vals[1]) *
                     (1 - SETTINGS.icons.normal.angle.scale.front),
@@ -127,22 +124,22 @@ export default class IconBase extends Vue {
               );
             } else {
               //this angleMarker is on the back
-              parts[index] = this.setAttribute(
+              parts[index] = setAttribute(
                 parts[index],
                 "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index], "transform") ?? "",
+                setTransformationScale(
+                  getAttribute(parts[index], "transform") ?? "",
                   SETTINGS.icons.normal.angle.scale.front,
                   Number(vals[1]) *
                     (1 - SETTINGS.icons.normal.angle.scale.back),
                   Number(vals[2]) * (1 - SETTINGS.icons.normal.angle.scale.back)
                 )
               );
-              parts[index - 1] = this.setAttribute(
+              parts[index - 1] = setAttribute(
                 parts[index - 1],
                 "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index - 1], "transform") ?? "",
+                setTransformationScale(
+                  getAttribute(parts[index - 1], "transform") ?? "",
                   SETTINGS.icons.normal.angle.scale.front,
                   Number(vals[1]) *
                     (1 - SETTINGS.icons.normal.angle.scale.back),
@@ -155,43 +152,43 @@ export default class IconBase extends Vue {
         // }
         parts.forEach((svgString, index) => {
           if (index === 0) return; // do nothing to the <defn>...</defn> string
-          parts[index] = this.amendAttributes(parts[index]);
+          parts[index] = amendAttributes(parts[index]);
           // Remove the four added attributes, type, side, fill, and part
-          parts[index] = this.removeAttribute(parts[index], "type");
-          parts[index] = this.removeAttribute(parts[index], "side");
-          parts[index] = this.removeAttribute(parts[index], "myfill");
-          parts[index] = this.removeAttribute(parts[index], "part");
+          parts[index] = removeAttribute(parts[index], "type");
+          parts[index] = removeAttribute(parts[index], "side");
+          parts[index] = removeAttribute(parts[index], "myfill");
+          parts[index] = removeAttribute(parts[index], "part");
         });
-        this.svgSnippetAmended = parts.join(" ");
-        // console.log(this.svgSnippetAmended);
+        svgSnippetAmended.value = parts.join(" ");
+        // console.log(svgSnippetAmended);
       });
     } else {
-      this.mdiIconName = this.mdiIcon;
+      mdiIconName.value = mdiIcon.value;
     }
-  }
+  })
 
   /**Blah abl */
-  amendAttributes(svgPathString: string): string {
-    const type = this.getAttribute(svgPathString, "type");
+  function amendAttributes(svgPathString: string): string {
+    const type = getAttribute(svgPathString, "type");
     if (type === undefined) {
       throw new Error(
         `IconBase - amendAttributes ${svgPathString} has no attribute type`
       );
     }
-    const side = this.getAttribute(svgPathString, "side");
+    const side = getAttribute(svgPathString, "side");
     if (side === undefined) {
       throw new Error(
         `IconBase - amendAttributes ${svgPathString} has no attribute side`
       );
     }
-    const fill = this.getAttribute(svgPathString, "myfill");
+    const fill = getAttribute(svgPathString, "myfill");
     if (fill === undefined) {
       throw new Error(
         `IconBase - amendAttributes ${svgPathString} has no attribute fill`
       );
     }
 
-    // console.log(this.getAttribute(svgPathString, "id"));
+    // console.log(getAttribute(svgPathString, "id"));
     // console.log(Nodule.idPlottableDescriptionMap);
 
     let newStrokeColor;
@@ -200,12 +197,12 @@ export default class IconBase extends Vue {
 
     switch (type) {
       case "boundaryCircle": // The boundary circle
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke-width",
           SETTINGS.icons.boundaryCircle.strokeWidth.toString()
         );
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke",
           SETTINGS.icons.boundaryCircle.color
@@ -215,36 +212,36 @@ export default class IconBase extends Vue {
         if (
           // make sure that we only apply the stroke width/color to the non-fill parts
           fill === "false"
-          // Number(this.getAttribute(svgPathString, "id")!.slice(-2)) < 11
+          // Number(getAttribute(svgPathString, "id")!.slice(-2)) < 11
         ) {
-          newStrokeWidth = this.getStrokeWidth(
+          newStrokeWidth = getStrokeWidth(
             "angleMarker",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          newStrokeColor = this.getStrokeColor(
+          newStrokeColor = getStrokeColor(
             "angleMarker",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke-width",
             newStrokeWidth
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke",
             newStrokeColor
           );
         } else {
           //now consider the fill objects
-          newFillColor = this.getFillColor(
+          newFillColor = getFillColor(
             "angleMarker",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "fill",
             newFillColor
@@ -253,33 +250,33 @@ export default class IconBase extends Vue {
         break;
       case "circle": //Circles
         // the fill object has an undefined stroke and shouldn't be changed (unless you want to destroy the gradient)
-        if (this.getAttribute(svgPathString, "stroke") !== "undefined") {
-          newStrokeWidth = this.getStrokeWidth(
+        if (getAttribute(svgPathString, "stroke") !== "undefined") {
+          newStrokeWidth = getStrokeWidth(
             "circle",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          newStrokeColor = this.getStrokeColor(
+          newStrokeColor = getStrokeColor(
             "circle",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke-width",
             newStrokeWidth
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke",
             newStrokeColor
           );
         } else {
           //now consider the fill objects
-          newFillColor = this.getFillColor("circle", this.emphasizeTypes, side);
+          newFillColor = getFillColor("circle", emphasizeTypes, side);
           if (newFillColor !== "") {
             // The fill object is not emphasized
-            svgPathString = this.setAttribute(
+            svgPathString = setAttribute(
               svgPathString,
               "fill",
               newFillColor
@@ -288,47 +285,47 @@ export default class IconBase extends Vue {
         }
         break;
       case "line": //Lines
-        newStrokeWidth = this.getStrokeWidth("line", this.emphasizeTypes, side);
-        newStrokeColor = this.getStrokeColor("line", this.emphasizeTypes, side);
-        svgPathString = this.setAttribute(
+        newStrokeWidth = getStrokeWidth("line", emphasizeTypes, side);
+        newStrokeColor = getStrokeColor("line", emphasizeTypes, side);
+        svgPathString = setAttribute(
           svgPathString,
           "stroke-width",
           newStrokeWidth
         );
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke",
           newStrokeColor
         );
         break;
       case "point": //Points
-        newStrokeWidth = this.getStrokeWidth(
+        newStrokeWidth = getStrokeWidth(
           "point",
-          this.emphasizeTypes,
+          emphasizeTypes,
           side
         );
-        newStrokeColor = this.getStrokeColor(
+        newStrokeColor = getStrokeColor(
           "point",
-          this.emphasizeTypes,
+          emphasizeTypes,
           side
         );
-        newFillColor = this.getFillColor("point", this.emphasizeTypes, side);
-        svgPathString = this.setAttribute(
+        newFillColor = getFillColor("point", emphasizeTypes, side);
+        svgPathString = setAttribute(
           svgPathString,
           "stroke-width",
           newStrokeWidth
         );
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke",
           newStrokeColor
         );
-        svgPathString = this.setAttribute(svgPathString, "fill", newFillColor);
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(svgPathString, "fill", newFillColor);
+        svgPathString = setAttribute(
           svgPathString,
           "transform",
-          this.setTransformationScale(
-            this.getAttribute(svgPathString, "transform") ?? "",
+          setTransformationScale(
+            getAttribute(svgPathString, "transform") ?? "",
             side === "back"
               ? SETTINGS.icons.normal.point.scale.back
               : SETTINGS.icons.normal.point.scale.front
@@ -336,22 +333,22 @@ export default class IconBase extends Vue {
         );
         break;
       case "segment": //Segments
-        newStrokeWidth = this.getStrokeWidth(
+        newStrokeWidth = getStrokeWidth(
           "segment",
-          this.emphasizeTypes,
+          emphasizeTypes,
           side
         );
-        newStrokeColor = this.getStrokeColor(
+        newStrokeColor = getStrokeColor(
           "segment",
-          this.emphasizeTypes,
+          emphasizeTypes,
           side
         );
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke-width",
           newStrokeWidth
         );
-        svgPathString = this.setAttribute(
+        svgPathString = setAttribute(
           svgPathString,
           "stroke",
           newStrokeColor
@@ -360,37 +357,37 @@ export default class IconBase extends Vue {
 
       case "ellipse": //Ellipses
         // the fill object has an undefined stroke and shouldn't be changed (unless you want to destroy the gradient)
-        if (this.getAttribute(svgPathString, "stroke") !== "undefined") {
-          newStrokeWidth = this.getStrokeWidth(
+        if (getAttribute(svgPathString, "stroke") !== "undefined") {
+          newStrokeWidth = getStrokeWidth(
             "ellipse",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          newStrokeColor = this.getStrokeColor(
+          newStrokeColor = getStrokeColor(
             "ellipse",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke-width",
             newStrokeWidth
           );
-          svgPathString = this.setAttribute(
+          svgPathString = setAttribute(
             svgPathString,
             "stroke",
             newStrokeColor
           );
         } else {
           //now consider the fill objects
-          newFillColor = this.getFillColor(
+          newFillColor = getFillColor(
             "ellipse",
-            this.emphasizeTypes,
+            emphasizeTypes,
             side
           );
           if (newFillColor !== "") {
             // The fill object is not emphasized
-            svgPathString = this.setAttribute(
+            svgPathString = setAttribute(
               svgPathString,
               "fill",
               newFillColor
@@ -402,7 +399,7 @@ export default class IconBase extends Vue {
     return svgPathString;
   }
 
-  getAttribute(
+  function getAttribute(
     svgPathString: string,
     attributeString: string
   ): string | undefined {
@@ -415,7 +412,7 @@ export default class IconBase extends Vue {
     return svgPathString.slice(startIndex, endIndex);
   }
 
-  setAttribute(
+  function setAttribute(
     svgPathString: string,
     attributeString: string,
     newAttributeValueString: string
@@ -431,7 +428,7 @@ export default class IconBase extends Vue {
     return firstPart + newAttributeValueString + endPart;
   }
 
-  removeAttribute(svgPathString: string, attributeString: string): string {
+  function removeAttribute(svgPathString: string, attributeString: string): string {
     const attributeIndex = svgPathString.indexOf(attributeString + "=");
     if (attributeIndex === -1) {
       return svgPathString; // no changes if the attrribute is not already there
@@ -447,7 +444,7 @@ export default class IconBase extends Vue {
    * to
    * "matrix(newScale 0 0 newScale xTranslate|114.678 yTranslate|27.373)"
    */
-  setTransformationScale(
+  function setTransformationScale(
     oldTransformMatrix: string,
     newScale: number,
     xTranslate?: number,
@@ -455,7 +452,7 @@ export default class IconBase extends Vue {
   ): string {
     if (oldTransformMatrix === "") {
       throw new Error(
-        `IconBase - Error in Set Transform Scale. Undefined SVG tansform matrix`
+        `IconBase - Error in Set Transform Scale. Undefined SVG transform matrix`
       );
     }
     const vals = oldTransformMatrix
@@ -482,7 +479,7 @@ export default class IconBase extends Vue {
     );
   }
 
-  getStrokeWidth(
+  function getStrokeWidth(
     objectType: string,
     emph: string[][],
     backFront: string
@@ -661,7 +658,7 @@ export default class IconBase extends Vue {
     return "1";
   }
 
-  getStrokeColor(
+  function getStrokeColor(
     objectType: string,
     emph: string[][],
     backFront: string
@@ -840,7 +837,7 @@ export default class IconBase extends Vue {
     return "hsla(0, 0%, 0%, 1)";
   }
 
-  getFillColor(
+  function getFillColor(
     objectType: string,
     emph: string[][],
     backFront: string
@@ -966,7 +963,6 @@ export default class IconBase extends Vue {
     }
     return "hsla(0, 0%, 0%, 0)";
   }
-}
 </script>
 
 <style scoped>
