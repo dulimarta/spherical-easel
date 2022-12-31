@@ -93,10 +93,11 @@ import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
 import { useSEStore } from "@/stores/se";
 import { appAuth, appDB, appStorage } from "@/firebase-config";
+import { storeToRefs } from "pinia";
 
 const acctStore = useAccountStore();
 const seStore = useSEStore();
-const { hasUnsavedNodules } = seStore;
+const { hasUnsavedNodules } = storeToRefs(seStore);
 
 let snapshotUnsubscribe: (() => void) | null = null;
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([])

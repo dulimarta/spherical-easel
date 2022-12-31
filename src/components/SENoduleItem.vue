@@ -314,9 +314,10 @@ import { SEIsometryLine } from "@/models/SEIsometryLine";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
+import { storeToRefs } from "pinia";
 
 const seStore = useSEStore()
-const { actionMode } = seStore
+const { actionMode } = storeToRefs(seStore)
 const props = defineProps < {
   node: SENodule
 }>();
@@ -943,7 +944,7 @@ watch(() => parametricTime.value, onParametricTimeChanged)
   })
   //only shake the measurement icons initially when the measured circle tool is selected (There should also be a message displayed telling the user to select a measurement)
   const shakeMeasurementDisplay = computed((): string =>{
-    return actionMode === "measuredCircle" &&
+    return actionMode.value === "measuredCircle" &&
       props.node instanceof SEExpression
       ? "shake"
       : "";
@@ -951,7 +952,7 @@ watch(() => parametricTime.value, onParametricTimeChanged)
 
   //only shake the transformation icons initially when the apply transformations tool is selected (There should also be a message displayed telling the user to select a translation)
   const shakeTransformationDisplay = computed((): string=>{
-    return actionMode === "applyTransformation" &&
+    return actionMode.value === "applyTransformation" &&
       props.node instanceof SETransformation
       ? "shake"
       : "";

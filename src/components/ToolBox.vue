@@ -75,17 +75,18 @@ import ToolGroups from "@/components/ToolGroups.vue";
 import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
+import { storeToRefs } from "pinia";
 
 const seStore = useSEStore();
-const { actionMode } = seStore;
+const { actionMode } = storeToRefs(seStore);
 const props = defineProps<{ minified: boolean }>();
 
 // ('layers')')
 
 let leftDrawerMinified = false;
 /* Copy global setting to local variable */
-const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
-const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
+const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 const activeLeftDrawerTab = ref(0);
 
 onBeforeMount((): void => {
@@ -102,9 +103,9 @@ function switchTab(): void {
     // 1 is the index of the object tree tab
     // change to the move mode, but only if we are not using the measured circle tool
     if (
-      actionMode !== "measuredCircle" &&
-      actionMode !== "translation" &&
-      actionMode !== "rotation"
+      actionMode.value !== "measuredCircle" &&
+      actionMode.value !== "translation" &&
+      actionMode.value !== "rotation"
     ) {
       seStore.setActionMode({
         id: "move",

@@ -795,7 +795,7 @@ export const useSEStore = defineStore({
     hasObjects(state): boolean {
       return state.sePointIds.length > 0;
     },
-    inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
+    // inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
     // hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
     //   return (testPoint: SEPoint): boolean => {
     //     // create the antipode location vector

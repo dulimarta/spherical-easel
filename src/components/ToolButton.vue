@@ -55,7 +55,7 @@ import Vue, { ref, watch, computed } from "vue";
 // import { Prop, Watch } from "vue-property-decorator";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-import { mapState, mapActions } from "pinia";
+import {  storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 // import { SEExpression } from "@/models/SEExpression";
@@ -68,7 +68,7 @@ import EventBus from "@/eventHandlers/EventBus";
 //   }
 // })
 const seStore = useSEStore();
-const { actionMode, expressions, seTransformations } = seStore;
+const { actionMode, expressions, seTransformations } = storeToRefs(seStore);
 // export default class ToolButton extends Vue {
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -123,7 +123,7 @@ const buttonLabel3 = computed((): string => {
 });
 watch(() => actionMode, setElevation);
 function setElevation() {
-  if (actionMode === props.button.actionModeValue) {
+  if (actionMode.value === props.button.actionModeValue) {
     // console.log("set elevation 1", this.button.actionModeValue);
     elev.value = 5;
     weight.value = "bold";

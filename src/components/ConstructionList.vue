@@ -79,6 +79,7 @@ import axios, { AxiosResponse } from "axios";
 import { useSEStore } from "@/stores/se";
 import { computed, onBeforeMount, onMounted } from "vue";
 import { appAuth } from "@/firebase-config";
+import { storeToRefs } from "pinia";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing?: boolean;
@@ -86,8 +87,8 @@ const props = defineProps<{
 const emit = defineEmits(["load-requested"])
 
 const seStore = useSEStore();
-const { svgCanvas } = seStore;
-let { inverseTotalRotationMatrix } = seStore;
+const { svgCanvas } =  storeToRefs(seStore);
+let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
 let svgParent: HTMLDivElement | null = null;
 let svgRoot!: SVGElement;
@@ -109,7 +110,7 @@ const userEmail = computed((): string => {
 onMounted((): void => {
   // To use `innerHTML` we have to get a reference to the parent of
   // the <svg> tree
-  svgParent = svgCanvas as HTMLDivElement;
+  svgParent = svgCanvas.value as HTMLDivElement;
   svgRoot = svgParent.querySelector("svg") as SVGElement;
 });
 
@@ -119,7 +120,7 @@ function previewOrDefault(dataUrl: string | undefined): string {
 
 function onListEnter(/*ev:MouseEvent*/): void {
   previewSVG = null;
-  originalSphereMatrix.copy(inverseTotalRotationMatrix);
+  originalSphereMatrix.copy(inverseTotalRotationMatrix.value);
 }
 
 // TODO: the onXXXX functions below are not bug-free yet
@@ -164,7 +165,7 @@ function onListLeave(/*_ev: MouseEvent*/): void {
   // Restore the canvas ** THIS CAUSES PROBLEMS WITH THE *styling (i.e. anything other than the default)* DISPLAY OF THE LABELS
   svgParent?.replaceChild(svgRoot, svgParent.firstChild as SVGElement);
   // Restore the rotation matrix
-  inverseTotalRotationMatrix = originalSphereMatrix;
+  inverseTotalRotationMatrix.value = originalSphereMatrix;
   /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
   //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
   // setTimeout(() => {

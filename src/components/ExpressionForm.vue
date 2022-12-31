@@ -61,9 +61,10 @@ import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
+import { storeToRefs } from "pinia";
 
 const seStore = useSEStore();
-const { expressions } = seStore;
+const { expressions } = storeToRefs(seStore);
 
 let parser = new ExpressionParser();
 
@@ -94,7 +95,7 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      expressions.forEach((m: SEExpression) => {
+      expressions.value.forEach((m: SEExpression) => {
         const measurementName = m.name;
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);
@@ -132,7 +133,7 @@ function addExpression(): void {
   calc.update();
   reset();
   varMap.clear();
-  expressions.forEach((m: SEExpression) => {
+  expressions.value.forEach((m: SEExpression) => {
     const measurementName = m.name;
     // console.debug("Measurement", m, measurementName);
     varMap.set(measurementName, m.value);

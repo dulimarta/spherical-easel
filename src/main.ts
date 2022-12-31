@@ -10,7 +10,7 @@ import i18n from "./i18n";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { createPinia, PiniaVuePlugin } from "pinia";
-import VueCompositionAPI from "@vue/composition-api";
+// import VueCompositionAPI from "@vue/composition-api";
 
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
@@ -18,7 +18,7 @@ import {appDB, appAuth, appStorage} from "@/firebase-config"
 import MouseHandler from "./eventHandlers/MouseHandler";
 Vue.use(VueI18n);
 Vue.use(PiniaVuePlugin);
-Vue.use(VueCompositionAPI);
+// Vue.use(VueCompositionAPI);
 
 const pinia = createPinia();
 

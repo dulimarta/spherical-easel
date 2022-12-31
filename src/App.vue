@@ -319,7 +319,7 @@ export default class App extends Vue {
   formats = ["SVG", "PNG"];
 
   // Text of the transformation being applied - only displayed when the tool is applyTransformation
-  applyTransformationText = i18n.t(`objects.selectTransformation`);
+  // applyTransformationText = i18n.t(`objects.selectTransformation`);
 
   get baseURL(): string {
     return import.meta.env.BASE_URL ?? "";
@@ -356,10 +356,10 @@ export default class App extends Vue {
     this.clientBrowser = detect();
     this.resetToolset();
     //ACStore.resetToolset();
-    EventBus.listen(
-      "set-apply-transformation-footer-text",
-      this.additionalFooterText
-    );
+    // EventBus.listen(
+      // "set-apply-transformation-footer-text",
+      // this.additionalFooterText
+    // );
   }
 
   mounted(): void {
@@ -405,7 +405,7 @@ export default class App extends Vue {
     this.uid = "";
     window.removeEventListener("keydown", this.keyHandler);
     EventBus.unlisten("secret-key-detected");
-    EventBus.unlisten("set-apply-transformation-footer-text");
+    // EventBus.unlisten("set-apply-transformation-footer-text");
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;
@@ -419,10 +419,10 @@ export default class App extends Vue {
     this.whoami = "";
   }
 
-  additionalFooterText(e: { text: string }): void {
-    //console.debug("apply transform", e.text);
-    this.applyTransformationText = e.text;
-  }
+  // additionalFooterText(e: { text: string }): void {
+    // console.debug("apply transform", e.text);
+    // this.applyTransformationText = e.text;
+  // }
 
   doLoginOrCheck(): void {
     if (this.$appAuth.currentUser !== null) {

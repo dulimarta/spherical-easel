@@ -131,6 +131,7 @@ import ParametricForm from "@/components/ParametricForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
+import { storeToRefs } from "pinia";
 
 
 const seStore = useSEStore();
@@ -145,7 +146,7 @@ const {
   expressions,
   actionMode,
   seTransformations
-} = seStore;
+} = storeToRefs(seStore);
 
 let displayExpressionSheetAgain = true;
 
@@ -154,7 +155,7 @@ const zeroObjects = computed((): boolean => {
   //   `Object Tree: ZeroObjects -- number of objects ${seNodules.length}`
   // );
   return (
-    seNodules.filter(n => n.exists).length === 0 && expressions.length === 0
+    seNodules.value.filter(n => n.exists).length === 0 && expressions.value.length === 0
   );
 });
 
@@ -162,14 +163,14 @@ const showExpressionSheet = computed((): boolean => {
   //This message will appear once each time the number of expressions is zero and the measure circle tool is active
   // console.log("here show expression sheet");
   if (
-    (actionMode === "measuredCircle" ||
-      actionMode === "translation" ||
-      actionMode === "rotation") &&
-    expressions.length === 0 &&
+    (actionMode.value === "measuredCircle" ||
+      actionMode.value === "translation" ||
+      actionMode.value === "rotation") &&
+    expressions.value.length === 0 &&
     displayExpressionSheetAgain
   ) {
     displayExpressionSheetAgain = false;
-    switch (actionMode) {
+    switch (actionMode.value) {
       case "measuredCircle":
         EventBus.fire("show-alert", {
           key: "objectTree.createMeasurementForMeasuredCircle",
@@ -192,14 +193,14 @@ const showExpressionSheet = computed((): boolean => {
   }
 
   if (
-    (actionMode === "measuredCircle" ||
-      actionMode === "translation" ||
-      actionMode === "rotation") &&
-    expressions.length > 0
+    (actionMode.value === "measuredCircle" ||
+      actionMode.value === "translation" ||
+      actionMode.value === "rotation") &&
+    expressions.value.length > 0
   ) {
     displayExpressionSheetAgain = true;
   }
-  return expressions.length > 0;
+  return expressions.value.length > 0;
 });
 </script>
 

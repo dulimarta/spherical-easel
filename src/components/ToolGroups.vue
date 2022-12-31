@@ -95,11 +95,12 @@ import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
+import { storeToRefs } from "pinia";
 
 const acctStore = useAccountStore();
-const { userRole, includedTools } = acctStore;
+const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
-const { expressions, seTransformations } = seStore;
+const { expressions, seTransformations } = storeToRefs(seStore);
 
 /* Controls the selection of the actionMode using the buttons. The default is segment. */
 const actionMode: Ref<{ id: ActionMode; name: string }> = ref({
@@ -129,14 +130,14 @@ onBeforeMount((): void => {
   buttonGroup.value.forEach((gr: ToolButtonGroup) => {
     gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
   });
-  currentToolset.push(...includedTools);
+  currentToolset.push(...includedTools.value);
 });
 
 /* Writes the current state/edit mode to the store, where the Easel view can read it. */
 function switchActionMode(): void {
   switch (actionMode.value.id) {
     case "measuredCircle":
-      if (expressions.length > 0) {
+      if (expressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -148,7 +149,7 @@ function switchActionMode(): void {
       }
       break;
     case "translation":
-      if (expressions.length > 0) {
+      if (expressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -161,7 +162,7 @@ function switchActionMode(): void {
       break;
 
     case "rotation":
-      if (expressions.length > 0) {
+      if (expressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -174,7 +175,7 @@ function switchActionMode(): void {
       break;
 
     case "applyTransformation":
-      if (seTransformations.length > 0) {
+      if (seTransformations.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-transformation-sheet", {});
@@ -221,7 +222,7 @@ function toggleEditMode(): void {
     const selected = cloneDeep(toolGroups);
     selected.forEach((g: ToolButtonGroup) => {
       g.children = g.children.filter((tool: ToolButtonType) =>
-        includedTools.includes(tool.actionModeValue)
+        includedTools.value.includes(tool.actionModeValue)
       );
     });
     buttonGroup.value.push(...selected);
@@ -229,7 +230,7 @@ function toggleEditMode(): void {
 }
 
 function toolIncluded(name: ActionMode): boolean {
-  return includedTools.findIndex((s: string) => s === name) >= 0;
+  return includedTools.value.findIndex((s: string) => s === name) >= 0;
 }
 
 /* A list of all the buttons that are possible to display/use. Only those that the User has

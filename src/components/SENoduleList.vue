@@ -43,13 +43,14 @@ import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { storeToRefs } from "pinia";
 const props = defineProps<{
   children: SENodule[];
   i18LabelKey: string;
 }>(); /** When defined, label takes over the node name */
 
 const seStore = useSEStore();
-const { actionMode } = seStore;
+const { actionMode } = storeToRefs(seStore);
 
 const expanded = ref(false);
 onBeforeMount((): void => {
@@ -103,7 +104,7 @@ function expandMeasurementSheet(): void {
   if (props.i18LabelKey === "objects.measurements") {
     if (hasExistingChildren) {
       expanded.value = true;
-      switch (actionMode) {
+      switch (actionMode.value) {
         case "measuredCircle":
           EventBus.fire("show-alert", {
             key: "objectTree.selectAMeasurementForMeasuredCircle",
@@ -136,7 +137,7 @@ function expandTransformationSheet(): void {
   if (props.i18LabelKey === "objects.transformations") {
     if (hasExistingChildren) {
       expanded.value = true;
-      switch (actionMode) {
+      switch (actionMode.value) {
         case "applyTransformation":
           EventBus.fire("show-alert", {
             key: "objectTree.selectATransformation",
