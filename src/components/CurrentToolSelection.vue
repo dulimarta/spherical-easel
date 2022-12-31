@@ -2,38 +2,36 @@
   <div>
     <!-- Displays the current tool in the left panel by the collapsible arorw -->
     <div v-if="!toolboxMinified">
-      <div class="pa-4" v-if="activeToolName">
+      <v-container class="pa-4" v-if="activeToolName">
         <v-row>
-          <v-icon class="mr-2" :key="Math.random()"
-            >$vuetify.icons.values.{{ actionMode }}
-          </v-icon>
-          <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
-          <h3 v-if="activeToolName != 'ApplyTransformationDisplayedName'">
+        <v-icon  class="mr-2" :key="Math.random()"
+          >$vuetify.icons.values.{{ actionMode }}
+        </v-icon>
+        <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
+        <h3 v-if="activeToolName != 'ApplyTransformationDisplayedName'">
+          {{ $t(`buttons.${activeToolName}`, {}).toString() }}
+        </h3>
+        <template v-else>
+          <h3>
             {{ $t(`buttons.${activeToolName}`, {}).toString() }}
+            <br />
+            <h4 class="ap" :key="Math.random()">
+              {{ applyTransformationText }}
+            </h4>
           </h3>
-          <template v-else>
-            <h3>
-              {{ $t(`buttons.${activeToolName}`, {}).toString() }}
-              <br />
-              <h4 class="ap" :key="Math.random()">
-                {{ applyTransformationText }}
-              </h4>
-            </h3>
-          </template>
-        </v-row>
-      </div>
+        </template>
+      </v-row>
+      </v-container>
       <div v-else>
-        <h2>{{ $t(`buttons.NoToolSelected`, {}).toString() }}</h2>
+        <h3>{{ $t(`buttons.NoToolSelected`, {}).toString() }}</h3>
       </div>
     </div>
     <!-- Displays the icon and arrow if toolbox is minified -->
     <div v-else>
       <div class="pa-4" v-if="activeToolName">
-        <v-row>
-          <v-icon class="mr-3" :key="Math.random()"
-            >$vuetify.icons.values.{{ actionMode }}
-          </v-icon>
-        </v-row>
+        <v-icon class="mr-3" :key="Math.random()"
+          >$vuetify.icons.values.{{ actionMode }}
+        </v-icon>
       </div>
     </div>
   </div>
@@ -51,12 +49,14 @@ const props = defineProps<{
 }>();
 const seStore = useSEStore();
 const { activeToolName, actionMode } = storeToRefs(seStore);
-const applyTransformationText = ref("")
-applyTransformationText.value = i18n.t(`objects.selectTransformation`).toString();
+const applyTransformationText = ref("");
+applyTransformationText.value = i18n
+  .t(`objects.selectTransformation`)
+  .toString();
 
 //The next 3 functions are for the text for the applied transformation.
 onBeforeMount((): void => {
-  console.debug("CurrentToolSelection: setting up event bus listener")
+  console.debug("CurrentToolSelection: setting up event bus listener");
   EventBus.listen("set-apply-transformation-footer-text", additionalFooterText);
 });
 
