@@ -28,8 +28,8 @@
 
 </template>
 
-<script lang="ts">
-import Vue from "vue";
+<script lang="ts" setup>
+import Vue, { ref } from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
@@ -40,15 +40,12 @@ import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 
-@Component({ components: { ParametricTExpression } })
-export default class SENoduleTree extends Vue {
-  @Prop()
-  readonly tExpressionData!: [];
+const props = defineProps < {
+  tExpressionData: any[];
+  i18LabelKey: string
+}>()
 
-  @Prop()
-  readonly i18LabelKey!: string;
-
-  private expanded = false;
+  const expanded = ref(false);
 
   // get hasExistingChildren(): boolean {
   //   return this.existingChildren.length > 0;
@@ -66,7 +63,7 @@ export default class SENoduleTree extends Vue {
   // }
 
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
-  onExpressionSelect(x: any): void {
+  function onExpressionSelect(x: any): void {
     // const pos = this.children.findIndex(n => n.id === x.id);
     // // console.debug("****Selection", x, "at", pos);
     // if (pos >= 0) {

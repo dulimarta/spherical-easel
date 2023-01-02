@@ -1,11 +1,13 @@
 <template>
   <div>
-    <v-tooltip bottom
+    <v-tooltip
+      bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       max-width="400px">
-      <template v-slot:activator="{on}">
-        <v-text-field v-model="tValueExpression"
+      <template v-slot:activator="{ on }">
+        <v-text-field
+          v-model="tValueExpression"
           v-on="on"
           dense
           :label="$t(i18nLabelKey)"
@@ -15,95 +17,81 @@
           outlined
           clearable></v-text-field>
       </template>
-      {{$t(i18nToolTip)}}
+      {{ $t(i18nToolTip) }}
     </v-tooltip>
   </div>
 </template>
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+
+<script lang="ts" setup>
+import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-// import i18n from "@/i18n";
-// const SE = namespace("se");
 
-@Component({})
-export default class ParametricTNumber extends Vue {
-  // @SE.State((s: AppState) => s.expressions)
-  // readonly expressions!: SEExpression[];
+const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+const props = defineProps<{
+  i18nToolTip: string;
+  i18nLabelKey: string;
+  placeholder: string;
+  name: string;
+}>();
 
-  @Prop()
-  readonly i18nToolTip!: string;
+let parser = new ExpressionParser();
+const tValueExpression = ref("");
+let tValueResult = 0;
+const parsingError = ref("");
+let timerInstance: number | null = null;
+const varMap = new Map<string, number>();
 
-  @Prop()
-  readonly i18nLabelKey!: string;
+onMounted((): void => {
+  EventBus.listen("measurement-selected", addVarToExpr);
+  EventBus.listen("parametric-clear-data", reset);
+});
 
-  @Prop()
-  readonly placeholder!: string;
+function reset(): void {
+  tValueExpression.value = "";
+  parsingError.value = "";
+}
 
-  @Prop()
-  readonly name!: string;
+function addVarToExpr(param: any): void {
+  console.debug(
+    "Variable selected",
+    param,
+    "Todo:  only add this varaible to the text area/ field that is in focus."
+  );
+  // calcExpression += param;
+  onKeyPressed();
+}
 
-  private parser = new ExpressionParser();
-  private tValueExpression = "";
-  private tValueResult = 0;
-  private parsingError = "";
-  private timerInstance: number | null = null;
-  readonly varMap = new Map<string, number>();
+function onKeyPressed(): void {
+  // console.debug("Key press");
+  parsingError.value = "";
+  if (timerInstance) clearTimeout(timerInstance);
+  timerInstance = window.setTimeout(() => {
+    try {
+      tValueResult =
+        tValueExpression.value.length > 0
+          ? parser.evaluate(tValueExpression.value)
+          : 0;
 
-  mounted(): void {
-    EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
-    EventBus.listen("parametric-clear-data", this.reset);
-  }
+      EventBus.fire("parametric-data-update", {
+        [props.name]: tValueResult
+      });
 
-  reset(): void {
-    this.tValueExpression = "";
-    this.parsingError = "";
-  }
+      EventBus.fire("test-t-value", { val: tValueResult });
 
-  addVarToExpr(param: any): void {
-    console.debug(
-      "Variable selected",
-      param,
-      "Todo:  only add this varaible to the text area/ field that is in focus."
-    );
-    // this.calcExpression += param;
-    this.onKeyPressed();
-  }
-
-  onKeyPressed(): void {
-    // console.debug("Key press");
-    this.parsingError = "";
-    if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = window.setTimeout(() => {
-      try {
-        this.tValueResult =
-          this.tValueExpression.length > 0
-            ? this.parser.evaluate(this.tValueExpression)
-            : 0;
-
-        EventBus.fire("parametric-data-update", {
-          [this.name]: this.tValueResult
-        });
-
-        EventBus.fire("test-t-value", { val: this.tValueResult });
-
-        // console.debug("Calculation result is", this.calcResult);
-      } catch (err: any) {
-        // no code
-        console.debug("Got an error", err);
-        this.parsingError = err.message;
-        EventBus.fire("parametric-data-update", {
-          [this.name]: NaN
-        });
-        EventBus.fire("test-t-value", { val: 0 });
-      }
-    }, 1000);
-  }
+      // console.debug("Calculation result is", calcResult);
+    } catch (err: any) {
+      // no code
+      console.debug("Got an error", err);
+      parsingError.value = err.message;
+      EventBus.fire("parametric-data-update", {
+        [props.name]: NaN
+      });
+      EventBus.fire("test-t-value", { val: 0 });
+    }
+  }, 1000);
 }
 </script>

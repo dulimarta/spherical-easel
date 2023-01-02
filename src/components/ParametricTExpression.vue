@@ -1,17 +1,18 @@
 <template>
   <div>
-    <v-card raised
-      outlined>
+    <v-card raised outlined>
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-tooltip bottom
+              <v-tooltip
+                bottom
                 :open-delay="toolTipOpenDelay"
                 :close-delay="toolTipCloseDelay"
                 max-width="400px">
-                <template v-slot:activator="{on}">
-                  <v-text-field v-model="tValueExpression"
+                <template v-slot:activator="{ on }">
+                  <v-text-field
+                    v-model="tValueExpression"
                     v-on="on"
                     dense
                     :label="$t(i18nLabelKey)"
@@ -23,7 +24,7 @@
                     :hint="currentValueString"
                     persistent-hint></v-text-field>
                 </template>
-                {{$t(i18nToolTip)}}
+                {{ $t(i18nToolTip) }}
               </v-tooltip>
             </v-col>
           </v-row>
@@ -32,112 +33,102 @@
     </v-card>
   </div>
 </template>
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+<script lang="ts" setup>
+import { onMounted, ref } from "vue";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-import { mapState } from "pinia";
+import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 
-@Component({
-  computed: {
-    ...mapState(useSEStore, ["expressions"])
-  }
-})
-export default class ParametricTExpression extends Vue {
-  readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+const seStore = useSEStore();
+const { expressions } = storeToRefs(seStore);
 
-  readonly expressions!: SEExpression[];
+const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  @Prop()
-  readonly i18nToolTip!: string;
+const props = defineProps<{
+  i18nToolTip: string;
 
-  @Prop()
-  readonly i18nLabelKey!: string;
+  i18nLabelKey: string;
 
-  @Prop()
-  readonly placeholder!: string;
+  placeholder: string;
 
-  @Prop()
-  readonly name!: string;
+  name: string;
+}>();
 
-  private parser = new ExpressionParser();
-  private tValueExpression = "";
-  private tValueResult = 0;
-  private currentValueString = "";
-  private parsingError = "";
-  private timerInstance: ReturnType<typeof setTimeout> | null = null;
-  readonly varMap = new Map<string, number>();
+let parser = new ExpressionParser();
+const tValueExpression = ref("");
+let tValueResult = 0;
+const currentValueString = ref("");
+const parsingError = ref("");
+let timerInstance: ReturnType<typeof setTimeout> | null = null;
+const varMap = new Map<string, number>();
 
-  mounted(): void {
-    EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
-    EventBus.listen("parametric-clear-data", this.reset);
-  }
+onMounted((): void => {
+  EventBus.listen("measurement-selected", addVarToExpr);
+  EventBus.listen("parametric-clear-data", reset);
+});
 
-  reset(): void {
-    this.tValueExpression = "";
-    this.currentValueString = "";
-    this.parsingError = "";
-  }
+function reset(): void {
+  tValueExpression.value = "";
+  currentValueString.value = "";
+  parsingError.value = "";
+}
 
-  addVarToExpr(param: any): void {
-    console.debug(
-      "Variable selected",
-      param,
-      "Todo:  only add this varaible to the text area/ field that is in focus."
-    );
-    // this.calcExpression += param;
-    this.onKeyPressed();
-  }
+function addVarToExpr(param: any): void {
+  console.debug(
+    "Variable selected",
+    param,
+    "Todo:  only add this varaible to the text area/ field that is in focus."
+  );
+  // this.calcExpression += param;
+  onKeyPressed();
+}
 
-  onKeyPressed(): void {
-    // console.debug("Key press");
-    this.parsingError = "";
-    if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = setTimeout(() => {
-      try {
-        this.expressions.forEach((m: SEExpression) => {
-          const measurementName = m.name;
-          // console.debug("Measurement", m, measurementName);
-          this.varMap.set(measurementName, m.value);
-        });
-        // console.debug(
-        //   "Calc ",
-        //   this.calcExpression,
-        //   "using parser",
-        //   this.parser,
-        //   "var map",
-        //   this.varMap
-        // );
-        this.tValueResult =
-          this.tValueExpression.length > 0
-            ? this.parser.evaluateWithVars(this.tValueExpression, this.varMap)
-            : 0;
-        this.currentValueString =
-          i18n.t(`objectTree.currentTValue`) +
-          this.tValueResult.toFixed(SETTINGS.decimalPrecision);
+function onKeyPressed(): void {
+  // console.debug("Key press");
+  parsingError.value = "";
+  if (timerInstance) clearTimeout(timerInstance);
+  timerInstance = setTimeout(() => {
+    try {
+      expressions.value.forEach((m: SEExpression) => {
+        const measurementName = m.name;
+        // console.debug("Measurement", m, measurementName);
+        varMap.set(measurementName, m.value);
+      });
+      // console.debug(
+      //   "Calc ",
+      //   this.calcExpression,
+      //   "using parser",
+      //   this.parser,
+      //   "var map",
+      //   this.varMap
+      // );
+      tValueResult =
+        tValueExpression.value.length > 0
+          ? parser.evaluateWithVars(tValueExpression.value, varMap)
+          : 0;
+      currentValueString.value =
+        i18n.t(`objectTree.currentTValue`) +
+        tValueResult.toFixed(SETTINGS.decimalPrecision);
 
-        EventBus.fire("parametric-data-update", {
-          [this.name]: this.tValueExpression
-        });
+      EventBus.fire("parametric-data-update", {
+        [props.name]: tValueExpression.value
+      });
 
-        // console.debug("Calculation result is", this.calcResult);
-      } catch (err: any) {
-        // no code
-        console.debug("Got an error", err);
-        this.parsingError = err.message;
-        EventBus.fire("parametric-data-update", {
-          [this.name]: ""
-        });
-        EventBus.fire("test-t-value", { val: 0 });
-      }
-    }, 1000);
-  }
+      // console.debug("Calculation result is", this.calcResult);
+    } catch (err: any) {
+      // no code
+      console.debug("Got an error", err);
+      parsingError.value = err.message;
+      EventBus.fire("parametric-data-update", {
+        [props.name]: ""
+      });
+      EventBus.fire("test-t-value", { val: 0 });
+    }
+  }, 1000);
 }
 </script>

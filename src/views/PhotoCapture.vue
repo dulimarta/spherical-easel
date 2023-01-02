@@ -52,14 +52,15 @@
 }
 </style>
 
-<script lang="ts">
+<script lang="ts" setup>
 // Reference: https://webrtc.github.io/samples/
 // import VueComponent from "vue";
 import EventBus from "@/eventHandlers/EventBus";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { ref, defineComponent, Ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, Ref } from "vue";
 import { Route } from "vue-router";
+import { useRouter } from "vue-router/types/composables";
 type MyData = {
   hasCamera: boolean;
   streaming: boolean;
@@ -67,122 +68,104 @@ type MyData = {
   imageData: string;
   videoTrack?: MediaStreamTrack;
 };
-export default defineComponent({
-  setup() {
-    const acctCStore = useAccountStore();
-    const { temporaryProfilePicture } = storeToRefs(acctCStore);
-    const selectedDeviceId = ref("");
-    const availableDevices: Ref<Array<MediaDeviceInfo>> = ref([]);
-    const width = ref(320);
-    const height = ref(320); // computed at runtime based on actual width
-    const video: Ref<HTMLVideoElement | null> = ref(null);
-    const canvas: Ref<HTMLCanvasElement | null> = ref(null);
-    return {
-      selectedDeviceId,
-      availableDevices,
-      width,
-      height,
-      temporaryProfilePicture,
-      video,
-      canvas
-    };
-  },
-  data(): MyData {
-    return {
-      hasCamera: false,
-      streaming: false,
-      imageData: ""
-    };
-  },
+const emit = defineEmits(["no-capture"]);
+const router = useRouter();
+const acctCStore = useAccountStore();
+const { temporaryProfilePicture } = storeToRefs(acctCStore);
+const selectedDeviceId = ref("");
+const availableDevices: Ref<Array<MediaDeviceInfo>> = ref([]);
+const width = ref(320);
+const height = ref(320); // computed at runtime based on actual width
+const video: Ref<HTMLVideoElement | null> = ref(null);
+const canvas: Ref<HTMLCanvasElement | null> = ref(null);
+let hasCamera = false;
+let streaming = false;
+let imageData = "";
+let stream: MediaStream | null = null;
+let videoTrack: MediaStreamTrack | null = null;
 
-  // $refs!: {
-  //   video: HTMLVideoElement;
-  //   canvas: HTMLCanvasElement;
-  // };
-  // temporaryProfilePicture!: string;
-
-  mounted(): void {
-    // Stop any active tracks
-    console.debug("On mounted...", this.video);
-    this.stream?.getTracks().forEach((t: MediaStreamTrack) => {
-      console.debug("Media track", t);
-      t.stop();
-    });
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
-      .then((stream: MediaStream) => {
-        console.debug("Media stream", stream);
-        this.stream = stream;
-        this.video!.srcObject = stream;
-        this.videoTrack = stream.getVideoTracks()[0];
-        this.video!.play();
-        console.debug("Devs", navigator.mediaDevices);
-        return navigator.mediaDevices.enumerateDevices();
-      })
-      .then((devices: Array<MediaDeviceInfo>) => {
-        this.availableDevices = devices.filter(
-          (info: MediaDeviceInfo) => info.kind === "videoinput"
-        );
-        console.debug("Media devices", this.availableDevices);
-        this.hasCamera = this.availableDevices.length > 0;
-        this.video!.addEventListener("canplay", (_ev: Event) => {
-          if (!this.streaming) {
-            // Recalculate the height based on video resolution
-            this.height =
-              this.video!.videoHeight / (this.video!.videoWidth / this.width);
-            if (isNaN(this.height)) {
-              this.height = (this.width * 3) / 4;
-            }
-            this.streaming = true;
+onMounted((): void => {
+  // Stop any active tracks
+  console.debug("On mounted...", video.value);
+  stream?.getTracks().forEach((t: MediaStreamTrack) => {
+    console.debug("Media track", t);
+    t.stop();
+  });
+  navigator.mediaDevices
+    .getUserMedia({ video: true, audio: false })
+    .then((ms: MediaStream) => {
+      console.debug("Media stream", stream);
+      stream = ms;
+      video.value!.srcObject = stream;
+      videoTrack = stream.getVideoTracks()[0];
+      video.value!.play();
+      console.debug("Devs", navigator.mediaDevices);
+      return navigator.mediaDevices.enumerateDevices();
+    })
+    .then((devices: Array<MediaDeviceInfo>) => {
+      availableDevices.value = devices.filter(
+        (info: MediaDeviceInfo) => info.kind === "videoinput"
+      );
+      console.debug("Media devices", availableDevices.value);
+      hasCamera = availableDevices.value.length > 0;
+      video.value!.addEventListener("canplay", (_ev: Event) => {
+        if (!streaming) {
+          // Recalculate the height based on video resolution
+          height.value =
+            video.value!.videoHeight / (video.value!.videoWidth / width.value);
+          if (isNaN(height.value)) {
+            height.value = (width.value * 3) / 4;
           }
-        });
-      })
-      .catch((err: any) => {
-        EventBus.fire("show-alert", {
-          key: "Media device error" + err.message,
-          type: "error"
-        });
-        // console.log("MediaDevice error", err.message, err.name);
+          streaming = true;
+        }
       });
-  },
-  beforeDestroy(): void {
-    this.videoTrack?.stop();
-    if (this.video) this.video.srcObject = null;
-  },
-  // TODO: Fix these when upgrading vue-router
-  beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
-    console.debug("Before route leave", toRoute);
-    this.videoTrack?.stop();
-    if (this.video) this.video.srcObject = null;
-    next();
-  },
-  methods: {
-    stopCamera(): void {
-      this.videoTrack?.stop();
-      this.video!.srcObject = null;
-      this.streaming = false;
-    },
-
-    useCameraShot(): void {
-      const context = this.canvas?.getContext("2d");
-      context?.drawImage(this.video!, 0, 0, this.width, this.height);
-      const imageHex = this.canvas?.toDataURL("image/png");
-      if (imageHex) {
-        this.imageData = imageHex;
-        this.stopCamera();
-        this.temporaryProfilePicture = imageHex;
-      }
-      // this.videoTrack?.stop();
-      this.$router.push({
-        name: "PhotoCropper"
+    })
+    .catch((err: any) => {
+      EventBus.fire("show-alert", {
+        key: "Media device error" + err.message,
+        type: "error"
       });
-    },
-
-    done(): void {
-      this.stopCamera();
-      this.$emit("no-capture", {});
-      this.$router.back();
-    }
-  }
+      // console.log("MediaDevice error", err.message, err.name);
+    });
 });
+
+onBeforeUnmount((): void => {
+  videoTrack?.stop();
+  if (video.value) video.value.srcObject = null;
+});
+
+// TODO: Fix these when upgrading vue-router
+function beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
+  console.debug("Before route leave", toRoute);
+  videoTrack?.stop();
+  if (video.value) video.value.srcObject = null;
+  next();
+}
+
+function stopCamera(): void {
+  videoTrack?.stop();
+  video.value!.srcObject = null;
+  streaming = false;
+}
+
+function useCameraShot(): void {
+  const context = canvas.value?.getContext("2d");
+  context?.drawImage(video.value!, 0, 0, width.value, height.value);
+  const imageHex = canvas.value?.toDataURL("image/png");
+  if (imageHex) {
+    imageData = imageHex;
+    stopCamera();
+    temporaryProfilePicture.value = imageHex;
+  }
+  // this.videoTrack?.stop();
+  router.push({
+    name: "PhotoCropper"
+  });
+}
+
+function done(): void {
+  stopCamera();
+  emit("no-capture", {});
+  router.back();
+}
 </script>

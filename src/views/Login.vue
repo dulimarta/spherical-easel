@@ -78,114 +78,105 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 // @ is an alias to /src
 import { UserCredential } from "@firebase/auth-types";
 import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
 import { appAuth } from "@/firebase-config";
-import { defineComponent, ref } from "vue";
+import { computed, ref } from "vue";
+import { useRouter } from "@/utils/router-proxy";
 
-export default defineComponent({
-  setup() {
-    const userEmail = ref("");
-    const userPassword = ref("");
-    const emailRules = [
-      (s: string | undefined): boolean | string => {
-        if (!s) return false;
-        /* should  be neither undefined nor null */ else if (s.indexOf("@") > 0)
-          return true;
-        else return "Missing '@'?";
-      }
-    ];
 
-    const passwordRules = [
-      (s: string | undefined): boolean | string => {
-        if (!s) return false;
-        else
-          return s.length >= 6
-            ? true
-            : "Password must be at least 6 characters";
-      }
-    ];
+const router = useRouter();
+const userEmail = ref("");
+const userPassword = ref("");
+const emailRules = [
+  (s: string | undefined): boolean | string => {
+    if (!s) return false;
+    /* should  be neither undefined nor null */ else if (s.indexOf("@") > 0)
+      return true;
+    else return "Missing '@'?";
+  }
+];
 
-    const validEntries = ref(false);
-    return { userEmail, userPassword, validEntries, emailRules, passwordRules };
-  },
-  computed: {
-    isValidEmail(): boolean {
-      return this.emailRules
-        .map(fn => fn(this.userEmail))
-        .every(s => typeof s === "boolean" && s);
-    }
-  },
-  methods: {
-    doSignup(): void {
-      appAuth
-        .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
-        .then((cred: UserCredential) => {
-          cred.user?.sendEmailVerification();
-          EventBus.fire("show-alert", {
-            key: "account.emailVerification",
-            keyOptions: { emailAddr: cred.user?.email },
-            type: "info"
-          });
-        })
-        .catch((error: any) => {
-          EventBus.fire("show-alert", {
-            key: "account.createError",
-            keyOptions: { error },
-            type: "error"
-          });
-        });
-    },
+const passwordRules = [
+  (s: string | undefined): boolean | string => {
+    if (!s) return false;
+    else return s.length >= 6 ? true : "Password must be at least 6 characters";
+  }
+];
 
-    doSignIn(): void {
-      appAuth
-        .signInWithEmailAndPassword(this.userEmail, this.userPassword)
-        .then((cred: UserCredential) => {
-          if (cred.user?.emailVerified) {
-            this.$router.replace({
-              path: "/"
-            });
-          } else {
-            EventBus.fire("show-alert", {
-              key: "account.emailNotVerified",
-              keyOptions: undefined,
-              type: "warning"
-            });
-          }
-        })
-        .catch((error: any) => {
-          EventBus.fire("show-alert", {
-            key: "account.loginError",
-            keyOptions: { error },
-            type: "error"
-          });
-        });
-    },
+const validEntries = ref(false);
 
-    doReset(): void {
-      console.debug("Sending password reset email to", this.userEmail);
-      appAuth.sendPasswordResetEmail(this.userEmail).then(() => {
-        EventBus.fire("show-alert", {
-          key: "account.passwordReset",
-          keyOptions: { emailAddr: this.userEmail },
-          type: "info"
-        });
+const isValidEmail = computed((): boolean => {
+  return emailRules
+    .map(fn => fn(userEmail.value))
+    .every(s => typeof s === "boolean" && s);
+});
+
+function doSignup(): void {
+  appAuth
+    .createUserWithEmailAndPassword(userEmail.value, userPassword.value)
+    .then((cred: UserCredential) => {
+      cred.user?.sendEmailVerification();
+      EventBus.fire("show-alert", {
+        key: "account.emailVerification",
+        keyOptions: { emailAddr: cred.user?.email },
+        type: "info"
       });
-    },
-
-    doGoogleLogin(): void {
-      const provider: firebase.auth.AuthProvider =
-        new firebase.auth.GoogleAuthProvider();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      appAuth.signInWithPopup(provider).then((cred: UserCredential) => {
-        this.$router.replace({
+    })
+    .catch((error: any) => {
+      EventBus.fire("show-alert", {
+        key: "account.createError",
+        keyOptions: { error },
+        type: "error"
+      });
+    });
+}
+function doSignIn(): void {
+  appAuth
+    .signInWithEmailAndPassword(userEmail.value, userPassword.value)
+    .then((cred: UserCredential) => {
+      if (cred.user?.emailVerified) {
+        router.replace({
           path: "/"
         });
+      } else {
+        EventBus.fire("show-alert", {
+          key: "account.emailNotVerified",
+          keyOptions: undefined,
+          type: "warning"
+        });
+      }
+    })
+    .catch((error: any) => {
+      EventBus.fire("show-alert", {
+        key: "account.loginError",
+        keyOptions: { error },
+        type: "error"
       });
-    }
-  }
-});
+    });
+}
+function doReset(): void {
+  console.debug("Sending password reset email to", userEmail.value);
+  appAuth.sendPasswordResetEmail(userEmail.value).then(() => {
+    EventBus.fire("show-alert", {
+      key: "account.passwordReset",
+      keyOptions: { emailAddr: userEmail.value },
+      type: "info"
+    });
+  });
+}
+
+function doGoogleLogin(): void {
+  const provider: firebase.auth.AuthProvider =
+    new firebase.auth.GoogleAuthProvider();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  appAuth.signInWithPopup(provider).then((cred: UserCredential) => {
+    router.replace({
+      path: "/"
+    });
+  });
+}
 </script>

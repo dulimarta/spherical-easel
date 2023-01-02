@@ -28,27 +28,23 @@
 
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
-import { SENodule } from "../models/SENodule";
-import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
-import SENoduleItem from "@/components/SENoduleItem.vue";
-import SESliderItem from "@/components/SESliderItem.vue";
-import { SESlider } from "@/models/SESlider";
-import EventBus from "@/eventHandlers/EventBus";
+<script lang="ts" setup>
+import { ref } from "vue";
+// import { SENodule } from "../models/SENodule";
+// import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
+// import SENoduleItem from "@/components/SENoduleItem.vue";
+// import SESliderItem from "@/components/SESliderItem.vue";
+// import { SESlider } from "@/models/SESlider";
+// import EventBus from "@/eventHandlers/EventBus";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
-@Component({ components: { ParametricCoordinate } })
-export default class SENoduleTree extends Vue {
-  @Prop()
-  readonly coordinateData!: [];
+const props = defineProps < {
+  coordinateData: any[];
 
-  @Prop()
-  readonly i18LabelKey!: string;
+  i18LabelKey: string
+}>()
 
-  private expanded = false;
+  const expanded = ref(false);
 
   // get hasExistingChildren(): boolean {
   //   return this.existingChildren.length > 0;
@@ -66,7 +62,7 @@ export default class SENoduleTree extends Vue {
   // }
 
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
-  onExpressionSelect(x: any): void {
+  function onExpressionSelect(x: any): void {
     // const pos = this.children.findIndex(n => n.id === x.id);
     // // console.debug("****Selection", x, "at", pos);
     // if (pos >= 0) {
