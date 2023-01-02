@@ -1,11 +1,9 @@
 <template>
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
-    <div id="header"
-      class="accent">
-      <span class="text-subtitle-1">{{$t(i18LabelKey)}}</span>
-      <v-btn smalls
-        @click="expanded = !expanded">
+    <div id="header" class="accent">
+      <span class="text-subtitle-1">{{ $t(i18LabelKey) }}</span>
+      <v-btn smalls @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
       </v-btn>
@@ -13,10 +11,11 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="(tVal,idk) in tExpressionData">
+        <template v-for="(tVal, idk) in tExpressionData">
           <!-- content goes here -->
-          <ParametricTExpression :placeholder="tVal.placeholder"
-            :key="idk+2"
+          <ParametricTExpression
+            :placeholder="tVal.placeholder"
+            :key="idk + 2"
             :i18nLabelKey="tVal.i18nLabelkey"
             :i18nToolTip="tVal.i18nToolTip"
             :name="tVal.name">
@@ -25,7 +24,6 @@
       </div>
     </transition>
   </div>
-
 </template>
 
 <script lang="ts" setup>
@@ -40,39 +38,38 @@ import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 
-const props = defineProps < {
+const props = defineProps<{
   tExpressionData: any[];
-  i18LabelKey: string
-}>()
+  i18LabelKey: string;
+}>();
 
-  const expanded = ref(false);
+const expanded = ref(false);
 
-  // get hasExistingChildren(): boolean {
-  //   return this.existingChildren.length > 0;
+// get hasExistingChildren(): boolean {
+//   return this.existingChildren.length > 0;
+// }
+
+// name(node: SENodule): string {
+//   return node?.name ?? "None";
+// }
+
+// get existingChildren(): SENodule[] {
+//   return this.children.filter((n: SENodule) => {
+//     if (n instanceof SEIntersectionPoint) return n.isUserCreated;
+//     else return n.exists;
+//   });
+// }
+
+//When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
+function onExpressionSelect(x: any): void {
+  // const pos = this.children.findIndex(n => n.id === x.id);
+  // // console.debug("****Selection", x, "at", pos);
+  // if (pos >= 0) {
+  //   EventBus.fire(
+  //     "measurement-selected",
+  //     this.children[pos].name
+  //   );
   // }
-
-  // name(node: SENodule): string {
-  //   return node?.name ?? "None";
-  // }
-
-  // get existingChildren(): SENodule[] {
-  //   return this.children.filter((n: SENodule) => {
-  //     if (n instanceof SEIntersectionPoint) return n.isUserCreated;
-  //     else return n.exists;
-  //   });
-  // }
-
-  //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
-  function onExpressionSelect(x: any): void {
-    // const pos = this.children.findIndex(n => n.id === x.id);
-    // // console.debug("****Selection", x, "at", pos);
-    // if (pos >= 0) {
-    //   EventBus.fire(
-    //     "measurement-selected",
-    //     this.children[pos].name
-    //   );
-    // }
-  }
 }
 </script>
 

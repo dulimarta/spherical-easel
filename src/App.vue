@@ -28,7 +28,7 @@
             width="40" />
         </router-link>
         <v-toolbar-title>
-          {{ $t("main.SphericalEaselMainTitle") }}
+          {{ i18nText("main.SphericalEaselMainTitle") }}
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
@@ -69,14 +69,14 @@
         <v-icon
           v-show="showExport"
           class="pr-3"
-          @click="$refs.shareConstructionDialog.show()">
+          @click="showShareConstructionDialog">
           mdi-application-export</v-icon
         >
         <v-icon
           v-if="whoami !== ''"
           :disabled="!hasObjects"
           class="mr-2"
-          @click="$refs.saveConstructionDialog.show()"
+          @click="showSaveConstructionDialog"
           >$shareConstruction
         </v-icon>
       </template>
@@ -97,26 +97,26 @@
     </v-main>
     <Dialog
       ref="logoutDialog"
-      :title="$t('constructions.confirmLogout')"
-      :yes-text="$t('constructions.proceed')"
+      :title="i18nText('constructions.confirmLogout')"
+      :yes-text="i18nText('constructions.proceed')"
       :yes-action="() => doLogout()"
-      :no-text="$t('constructions.cancel')"
+      :no-text="i18nText('constructions.cancel')"
       style=""
       max-width="40%">
       <p>
-        {{ $t("constructions.logoutDialog") }}
+        {{ i18nText("constructions.logoutDialog") }}
       </p>
     </Dialog>
 
     <Dialog
       ref="saveConstructionDialog"
-      :title="$t('constructions.saveConstruction')"
-      :yes-text="$t('constructions.save')"
-      :no-text="$t('constructions.cancel')"
+      :title="i18nText('constructions.saveConstruction')"
+      :yes-text="i18nText('constructions.save')"
+      :no-text="i18nText('constructions.cancel')"
       :yes-action="() => doShare()"
       max-width="40%">
       <p>
-        {{ $t("constructions.saveConstructionDialog") }}
+        {{ i18nText("constructions.saveConstructionDialog") }}
       </p>
 
       <v-text-field
@@ -125,25 +125,25 @@
         clearable
         counter
         persistent-hint
-        :label="$t('constructions.description')"
+        :label="i18nText('constructions.description')"
         required
         v-model="description"
         @keypress.stop></v-text-field>
       <v-switch
         v-model="publicConstruction"
         :disabled="uid.length === 0"
-        :label="$t('constructions.makePublic')"></v-switch>
+        :label="i18nText('constructions.makePublic')"></v-switch>
     </Dialog>
     <Dialog
       ref="shareConstructionDialog"
-      :title="$t('constructions.shareConstructionDialog')"
-      :yesText="$t('constructions.exportConstructionDialog')"
+      :title="i18nText('constructions.shareConstructionDialog')"
+      :yesText="i18nText('constructions.exportConstructionDialog')"
       :yes-action="() => doExportConstructionDialog()"
-      :no-text="$t('constructions.cancel')"
+      :no-text="i18nText('constructions.cancel')"
       max-width="40%"
       content-class="shareConstructionClass">
       <p>
-        {{ $t("constructions.shareLinkDialog") }}
+        {{ i18nText("constructions.shareLinkDialog") }}
       </p>
 
       <input ref="shareLinkReference" readonly :value="shareLink" />
@@ -152,9 +152,9 @@
 
     <Dialog
       ref="exportConstructionDialog"
-      :title="$t('constructions.exportConstructionDialog')"
-      :yesText="$t('constructions.exportConstructionDialog')"
-      :no-text="$t('constructions.cancel')"
+      :title="i18nText('constructions.exportConstructionDialog')"
+      :yesText="i18nText('constructions.exportConstructionDialog')"
+      :no-text="i18nText('constructions.cancel')"
       :yes-action="() => doExportButton()"
       :isDisabled="disableButton"
       max-width="60%">
@@ -167,14 +167,14 @@
         <v-col cols="10" xs="10" sm="10" md="4" lg="6" xl="6">
           <v-row>
             <v-col class="pr-4">
-              <p>{{ $t("constructions.sliderFileDimensions") }}</p>
+              <p>{{ i18nText("constructions.sliderFileDimensions") }}</p>
               <v-slider
                 v-model="slider"
                 class="align-center"
                 :max="sliderMax"
                 :min="sliderMin"
                 hide-details
-                >{{ $t("constructions.displaySlider") }}
+                >{{ i18nText("constructions.displaySlider") }}
                 <template v-slot:append>
                   <v-text-field
                     type="number"
@@ -208,9 +208,16 @@
   This section is for Typescript code (note lang="ts") for binding the output of the user
   actions to desired changes in the display and the rest of the app.
 -->
-<script lang="ts">
+<script lang="ts" setup>
 /* Import the custom components */
-import VueComponent from "vue";
+import VueComponent, {
+  Ref,
+  ref,
+  computed,
+  onBeforeMount,
+  onMounted,
+onBeforeUnmount
+} from "vue";
 import { Vue, Component } from "vue-property-decorator";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
@@ -218,524 +225,520 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
-import {
-  FirebaseFirestore,
-  DocumentReference,
-  DocumentSnapshot
-} from "@firebase/firestore-types";
+import { DocumentReference, DocumentSnapshot } from "@firebase/firestore-types";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
-import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
-import { mapState, mapActions, mapWritableState } from "pinia";
+import { storeToRefs } from "pinia";
 
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
-import i18n from "./i18n";
+import { i18nText } from "./i18n";
+import { appAuth, appStorage, appDB } from "./firebase-config";
+import { useRouter } from "./utils/router-proxy";
 
 // Register vue router in-component navigation guard functions
-Component.registerHooks([
-  "beforeRouteEnter",
-  "beforeRouteLeave",
-  "beforeRouteUpdate"
-]);
+// Component.registerHooks([
+//   "beforeRouteEnter",
+//   "beforeRouteLeave",
+//   "beforeRouteUpdate"
+// ]);
 
-@Component({
-  components: { MessageBox, Dialog },
-  methods: {
-    ...mapActions(useAccountStore, ["resetToolset"]),
-    ...mapActions(useSEStore, ["clearUnsavedFlag"])
-  },
-  computed: {
-    ...mapState(useAccountStore, ["includedTools"]),
-    ...mapState(useSEStore, [
-      "activeToolName",
-      "svgCanvas",
-      "inverseTotalRotationMatrix",
-      "hasObjects"
-    ]),
-    ...mapWritableState(useAccountStore, ["userRole"])
-    // ...mapGetters(useSEStore, ["hasObjects"])
-  }
-})
-export default class App extends Vue {
+// @Component({
+//   components: { MessageBox, Dialog },
+//   methods: {
+const acctStore = useAccountStore();
+const seStore = useSEStore();
+//     ...mapActions(useAccountStore, ["resetToolset"]),
+//     ...mapActions(useSEStore, ["clearUnsavedFlag"])
+//   },
+//   computed: {
+//     ...mapState(useAccountStore, ["includedTools"]),
+//     ...mapState(useSEStore, [
+//       "activeToolName",
+//       "svgCanvas",
+//       "inverseTotalRotationMatrix",
+//       "hasObjects"
+//     ]),
+//     ...mapWritableState(useAccountStore, ["userRole"])
+//     // ...mapGetters(useSEStore, ["hasObjects"])
+//   }
+// })
+// export default class App extends Vue {
+const { includedTools, userRole } = storeToRefs(acctStore);
+
+const {
   //#region activeToolName
-  readonly activeToolName!: string;
+  activeToolName,
   //#endregion activeToolName
+  svgCanvas,
+  inverseTotalRotationMatrix,
+  hasObjects
+} = storeToRefs(seStore);
 
-  readonly svgCanvas!: HTMLDivElement | null;
+const router = useRouter();
 
-  readonly inverseTotalRotationMatrix!: Matrix4;
+let clientBrowser: any;
+const description = ref("");
+const publicConstruction = ref(false);
+// $refs!: {
+const logoutDialog: Ref<DialogAction | null> = ref(null);
+const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
+const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
+const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
+const shareLinkReference: Ref<HTMLElement|null> = ref(null);
+// };
+let footerColor = "accent";
+let authSubscription!: Unsubscribe;
+const whoami = ref("");
+const uid = ref("");
+const profilePicUrl: Ref<string | null> = ref(null);
+let svgRoot: SVGElement;
+const showExport = ref(false);
+const selectedFormat = ref("");
+const slider = ref(600);
+const sliderMin = 200;
+const sliderMax = 1200;
+const shareLink = ref("--Placeholder for share link--");
+const disableButton = ref(false);
+// lastText = "";
+// count = 0;
 
-  readonly includedTools!: Array<string>;
-  readonly resetToolset!: () => void;
-  //readonly hasObjects!: boolean;
-  readonly hasObjects!: () => boolean;
-  readonly clearUnsavedFlag!: () => void;
-
-  userRole!: string | undefined;
-
-  readonly $appAuth!: FirebaseAuth;
-  readonly $appDB!: FirebaseFirestore;
-  readonly $appStorage!: FirebaseStorage;
-
-  clientBrowser: any;
-  description = "";
-  publicConstruction = false;
-  $refs!: {
-    logoutDialog: VueComponent & DialogAction;
-    saveConstructionDialog: VueComponent & DialogAction;
-    shareConstructionDialog: VueComponent & DialogAction;
-    exportConstructionDialog: VueComponent & DialogAction;
-    shareLinkReference: VueComponent & HTMLElement;
-  };
-  footerColor = "accent";
-  authSubscription!: Unsubscribe;
-  whoami = "";
-  uid = "";
-  profilePicUrl: string | null = null;
-  svgRoot!: SVGElement;
-  showExport = false;
-  selectedFormat = "";
-  slider = 600;
-  sliderMin = 200;
-  sliderMax = 1200;
-  shareLink = "--Placeholder for share link--";
-  disableButton = false;
-  lastText = "";
-  count = 0;
-
-  /* User account feature is initialy disabled. To unlock this feature
+/* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-  acceptedKeys = 0;
-  accountEnabled = false;
+let acceptedKeys = 0;
+const accountEnabled = ref(false);
 
-  // target formats for export window
-  //formats = ["SVG", "PNG", "GIF"];
-  formats = ["SVG", "PNG"];
+// target formats for export window
+//formats = ["SVG", "PNG", "GIF"];
+const formats = ["SVG", "PNG"];
 
-  // Text of the transformation being applied - only displayed when the tool is applyTransformation
-  // applyTransformationText = i18n.t(`objects.selectTransformation`);
+// Text of the transformation being applied - only displayed when the tool is applyTransformation
+// applyTransformationText = i18n.t(`objects.selectTransformation`);
 
-  get baseURL(): string {
-    return import.meta.env.BASE_URL ?? "";
+const baseURL = computed((): string => {
+  return import.meta.env.BASE_URL ?? "";
+});
+
+function keyHandler(ev: KeyboardEvent): void {
+  if (ev.repeat) return; // Ignore repeated events on the same key
+  if (!ev.altKey) return;
+  if (!ev.ctrlKey) return;
+
+  if (ev.code === "KeyS" && acceptedKeys === 0) {
+    console.info("'S' is accepted");
+    acceptedKeys = 1;
+  } else if (ev.code === "KeyE" && acceptedKeys === 1) {
+    acceptedKeys = 2;
+    // Directly setting the accountEnable flag here does not trigger
+    // a UI update even after calling $forceUpdate()
+    // Firing an event seems to solve the problem
+    EventBus.fire("secret-key-detected", {});
+  } else {
+    acceptedKeys = 0;
   }
+}
 
-  readonly keyHandler = (ev: KeyboardEvent): void => {
-    if (ev.repeat) return; // Ignore repeated events on the same key
-    if (!ev.altKey) return;
-    if (!ev.ctrlKey) return;
+onBeforeMount((): void => {
+  window.addEventListener("keydown", keyHandler);
+  EventBus.listen("secret-key-detected", () => {
+    console.log("Got the secret key");
+    accountEnabled.value = true;
+    acceptedKeys = 0;
+    // $forceUpdate();
+  });
+  EventBus.listen("share-construction-requested", doShare);
+  clientBrowser = detect();
+  acctStore.resetToolset();
+  //ACStore.resetToolset();
+  // EventBus.listen(
+  // "set-apply-transformation-footer-text",
+  // additionalFooterText
+  // );
+});
 
-    if (ev.code === "KeyS" && this.acceptedKeys === 0) {
-      console.info("'S' is accepted");
-      this.acceptedKeys = 1;
-    } else if (ev.code === "KeyE" && this.acceptedKeys === 1) {
-      this.acceptedKeys = 2;
-      // Directly setting the accountEnable flag here does not trigger
-      // a UI update even after calling $forceUpdate()
-      // Firing an event seems to solve the problem
-      EventBus.fire("secret-key-detected", {});
+onMounted((): void => {
+  console.log("Base URL is ", import.meta.env.BASE_URL);
+  // SEStore.init();
+  EventBus.listen("set-footer-color", setFooterColor);
+  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
+    if (u !== null) {
+      showExport.value = true;
+      whoami.value = u.email ?? "unknown email";
+      uid.value = u.uid;
+      appDB
+        .collection("users")
+        .doc(uid.value)
+        .get()
+        .then((ds: DocumentSnapshot) => {
+          if (ds.exists) {
+            accountEnabled.value = true;
+            console.debug("User data", ds.data());
+            const { profilePictureURL, role } = ds.data() as any;
+            if (profilePictureURL) {
+              profilePicUrl.value = profilePictureURL;
+            }
+            if (role) {
+              userRole.value = role.toLowerCase();
+            }
+          }
+        });
     } else {
-      this.acceptedKeys = 0;
+      whoami.value = "";
+      profilePicUrl.value = "";
     }
-  };
+  });
+  // Get the top-level SVG element
+  svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
+});
 
-  created(): void {
-    window.addEventListener("keydown", this.keyHandler);
-    EventBus.listen("secret-key-detected", () => {
-      console.log("Got the secret key");
-      this.accountEnabled = true;
-      this.acceptedKeys = 0;
-      this.$forceUpdate();
-    });
-    EventBus.listen("share-construction-requested", this.doShare);
-    this.clientBrowser = detect();
-    this.resetToolset();
-    //ACStore.resetToolset();
-    // EventBus.listen(
-      // "set-apply-transformation-footer-text",
-      // this.additionalFooterText
-    // );
+onBeforeUnmount((): void => {
+  if (authSubscription) authSubscription();
+  whoami.value = "";
+  uid.value = "";
+  window.removeEventListener("keydown", keyHandler);
+  EventBus.unlisten("secret-key-detected");
+  // EventBus.unlisten("set-apply-transformation-footer-text");
+});
+function setFooterColor(e: { color: string }): void {
+  footerColor = e.color;
+}
+
+async function doLogout(): Promise<void> {
+  await appAuth.signOut();
+  logoutDialog.value?.hide();
+  userRole.value = undefined;
+  uid.value = "";
+  whoami.value = "";
+}
+
+// additionalFooterText(e: { text: string }): void {
+// console.debug("apply transform", e.text);
+// applyTransformationText = e.text;
+// }
+
+function doLoginOrCheck(): void {
+  if (appAuth.currentUser !== null) {
+    logoutDialog.value?.show();
+  } else {
+    router.replace({ path: "/account" });
   }
+}
+function showShareConstructionDialog() {
+  shareConstructionDialog.value?.show()
+}
 
-  mounted(): void {
-    console.log("Base URL is ", import.meta.env.BASE_URL);
-    // SEStore.init();
-    EventBus.listen("set-footer-color", this.setFooterColor);
-    this.authSubscription = this.$appAuth.onAuthStateChanged(
-      (u: User | null) => {
-        if (u !== null) {
-          this.showExport = true;
-          this.whoami = u.email ?? "unknown email";
-          this.uid = u.uid;
-          this.$appDB
-            .collection("users")
-            .doc(this.uid)
-            .get()
-            .then((ds: DocumentSnapshot) => {
-              if (ds.exists) {
-                this.accountEnabled = true;
-                console.debug("User data", ds.data());
-                const { profilePictureURL, role } = ds.data() as any;
-                if (profilePictureURL) {
-                  this.profilePicUrl = profilePictureURL;
-                }
-                if (role) {
-                  this.userRole = role.toLowerCase();
-                }
-              }
-            });
-        } else {
-          this.whoami = "";
-          this.profilePicUrl = "";
-        }
-      }
-    );
-    // Get the top-level SVG element
-    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
-  }
+async function doExportConstructionDialog(): Promise<void> {
+  shareConstructionDialog.value?.hide();
+  exportConstructionDialog.value?.show();
 
-  beforeDestroy(): void {
-    if (this.authSubscription) this.authSubscription();
-    this.whoami = "";
-    this.uid = "";
-    window.removeEventListener("keydown", this.keyHandler);
-    EventBus.unlisten("secret-key-detected");
-    // EventBus.unlisten("set-apply-transformation-footer-text");
-  }
-  setFooterColor(e: { color: string }): void {
-    this.footerColor = e.color;
-  }
+  // copy sphere construction svg and get URL, then set the preview img src as that URL
+  const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  svgElement.style.removeProperty("transform");
+  const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+  const currentWidth = canvasReference.clientWidth;
+  svgElement.setAttribute(
+    "viewBox",
+    "0 0 " + currentWidth + " " + currentWidth
+  );
+  svgElement.setAttribute("height", "400px");
+  svgElement.setAttribute("width", "400px");
+  const svgBlob = new Blob([svgElement.outerHTML], {
+    type: "image/svg+xml;charset=utf-8"
+  });
+  const svgURL = URL.createObjectURL(svgBlob);
 
-  async doLogout(): Promise<void> {
-    await this.$appAuth.signOut();
-    this.$refs.logoutDialog.hide();
-    this.userRole = undefined;
-    this.uid = "";
-    this.whoami = "";
-  }
+  await Vue.nextTick();
 
-  // additionalFooterText(e: { text: string }): void {
-    // console.debug("apply transform", e.text);
-    // this.applyTransformationText = e.text;
-  // }
+  var preview = document.getElementById("preview") as HTMLImageElement;
+  preview.src = svgURL;
+}
 
-  doLoginOrCheck(): void {
-    if (this.$appAuth.currentUser !== null) {
-      this.$refs.logoutDialog.show();
-    } else {
-      this.$router.replace({ path: "/account" });
-    }
-  }
+async function doExportButton(): Promise<void> {
+  exportConstructionDialog.value?.hide();
+  //Clone the SVG
+  const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  //get the current width of canvas
+  const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
+  const currentWidth = canvasReference.clientWidth;
 
-  async doExportConstructionDialog(): Promise<void> {
-    this.$refs.shareConstructionDialog.hide();
-    this.$refs.exportConstructionDialog.show();
+  //required line of code for svg elements
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-    // copy sphere construction svg and get URL, then set the preview img src as that URL
-    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svgElement.style.removeProperty("transform");
-    const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
-    const currentWidth = canvasReference.clientWidth;
-    svgElement.setAttribute(
-      "viewBox",
-      "0 0 " + currentWidth + " " + currentWidth
-    );
-    svgElement.setAttribute("height", "400px");
-    svgElement.setAttribute("width", "400px");
+  // Set dimensions of exported image based on slider values
+  svgElement.setAttribute("height", slider + "");
+  svgElement.setAttribute("width", slider + "");
+
+  svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svgElement.setAttribute("transform", "matrix(1 0 0 -1 0 0)");
+  svgElement.setAttribute(
+    "viewBox",
+    "0 0 " + currentWidth + " " + currentWidth
+  );
+  svgElement.setAttribute("vector-effect", "non-scaling-stroke");
+  // export construction to desired file format
+  if (selectedFormat.value == "SVG") {
+    //create blob and url, then call filesaver
     const svgBlob = new Blob([svgElement.outerHTML], {
       type: "image/svg+xml;charset=utf-8"
     });
     const svgURL = URL.createObjectURL(svgBlob);
+    FileSaver.saveAs(svgURL, "construction.svg");
 
-    await Vue.nextTick();
+    console.log("SVG exported");
+  } else if (selectedFormat.value == "PNG") {
+    //set the ID of the clone and append it to body
+    svgElement.id = "clonedSVG";
+    document.body.append(svgElement);
 
-    var preview = document.getElementById("preview") as HTMLImageElement;
-    preview.src = svgURL;
-  }
+    //to make this appear right side up remove the transform
+    svgElement.removeAttribute("transform");
 
-  async doExportButton(): Promise<void> {
-    this.$refs.exportConstructionDialog.hide();
+    //clean up workspace and finish
+    svgElement.remove();
+    console.log("PNG exported");
+  } else if (selectedFormat.value == "GIF") {
+    // create GIF to add frames to
+    var gif = new GIF({
+      workers: 2,
+      quality: 10,
+      width: slider,
+      height: slider
+    });
+
     //Clone the SVG
-    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    const clone = svgRoot.cloneNode(true) as SVGElement;
+    //required line of code for svg elements
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    //set the ID of the clone and append it to body
+    clone.id = "clonedSVG";
+    document.body.append(clone);
+
+    // Set dimensions of exported image based on slider values
+    clone.setAttribute("height", slider + "px");
+    clone.setAttribute("width", slider + "px");
+
     //get the current width of canvas
     const canvasReference = document.querySelector("#canvas") as HTMLDivElement;
     const currentWidth = canvasReference.clientWidth;
 
-    //required line of code for svg elements
-    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-    // Set dimensions of exported image based on slider values
-    svgElement.setAttribute("height", this.slider + "");
-    svgElement.setAttribute("width", this.slider + "");
-
-    svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svgElement.setAttribute("transform", "matrix(1 0 0 -1 0 0)");
-    svgElement.setAttribute(
+    //set the view of the image to be around the circle
+    //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
+    clone.setAttribute(
       "viewBox",
-      "0 0 " + currentWidth + " " + currentWidth
+      0.476 * currentWidth -
+        348.57 +
+        " " +
+        (0.476 * currentWidth - 348.57) +
+        " 733 733"
     );
-    svgElement.setAttribute("vector-effect", "non-scaling-stroke");
-    // export construction to desired file format
-    if (this.selectedFormat == "SVG") {
-      //create blob and url, then call filesaver
-      const svgBlob = new Blob([svgElement.outerHTML], {
-        type: "image/svg+xml;charset=utf-8"
-      });
-      const svgURL = URL.createObjectURL(svgBlob);
-      FileSaver.saveAs(svgURL, "construction.svg");
 
-      console.log("SVG exported");
-    } else if (this.selectedFormat == "PNG") {
-      //set the ID of the clone and append it to body
-      svgElement.id = "clonedSVG";
-      document.body.append(svgElement);
+    //since d3ToPng exports the png as it appears in browser, we must remove the transform
+    clone.style.removeProperty("transform");
 
-      //to make this appear right side up remove the transform
-      svgElement.removeAttribute("transform");
-
-      //clean up workspace and finish
-      svgElement.remove();
-      console.log("PNG exported");
-    } else if (this.selectedFormat == "GIF") {
-      // create GIF to add frames to
-      var gif = new GIF({
-        workers: 2,
-        quality: 10,
-        width: this.slider,
-        height: this.slider
-      });
-
-      //Clone the SVG
-      const clone = this.svgRoot.cloneNode(true) as SVGElement;
-      //required line of code for svg elements
-      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-      //set the ID of the clone and append it to body
-      clone.id = "clonedSVG";
-      document.body.append(clone);
-
-      // Set dimensions of exported image based on slider values
-      clone.setAttribute("height", this.slider + "px");
-      clone.setAttribute("width", this.slider + "px");
-
-      //get the current width of canvas
-      const canvasReference = document.querySelector(
-        "#canvas"
-      ) as HTMLDivElement;
-      const currentWidth = canvasReference.clientWidth;
-
-      //set the view of the image to be around the circle
-      //linear equation determined by comparing "console.log(currentWidth);" with successfull hard codes
-      clone.setAttribute(
-        "viewBox",
-        0.476 * currentWidth -
-          348.57 +
-          " " +
-          (0.476 * currentWidth - 348.57) +
-          " 733 733"
-      );
-
-      //since d3ToPng exports the png as it appears in browser, we must remove the transform
-      clone.style.removeProperty("transform");
-
-      //export PNG to the gif stream
-      d3ToPng("#clonedSVG", "1", {
-        download: false,
-        format: "png"
-      }).then(fileData => {
-        var img = new HTMLImageElement();
-        img.src = fileData; // fileData is base64
-        gif.addFrame(img);
-      });
-
-      // make some change
-      // clone.setAttribute("viewBox", "50 50 733 733");
-
-      // await Vue.nextTick();
-
-      // process final GIF
-      gif.on("finished", function (blob: any) {
-        //window.open(URL.createObjectURL(blob));
-        const gifURL = URL.createObjectURL(blob);
-        FileSaver.saveAs(gifURL, "mygif.gif");
-        clone.remove();
-      });
-
-      gif.render();
-
-      console.log("GIF exported");
-      // //set the ID of the clone and append it to body
-      // svgElement.id = "clonedSVG";
-      // document.body.append(svgElement);
-
-      // //export PNG to the gif stream
-      // var png3 = await d3ToPng("#clonedSVG", "1", {
-      //   download: false,
-      //   format: "png"
-      // }).then(fileData => {
-      //   var img = new HTMLImageElement();
-      //   img.src = fileData; // fileData is base64
-      //   gif.addFrame(img);
-      // });
-
-      // // process final GIF
-      // gif.on("finished", function (blob: any) {
-      //   //window.open(URL.createObjectURL(blob));
-      //   const gifURL = URL.createObjectURL(blob);
-      //   FileSaver.saveAs(gifURL, "mygif.gif");
-      //   svgElement.remove();
-      // });
-
-      // gif.render();
-
-      // console.log("GIF exported");
-    }
-  }
-
-  exportDimensionsCheck(txt: string | undefined): boolean {
-    //checking if first action is format selection
-    if (this.count > 2 && (txt == "SVG" || txt == "PNG" || txt == "GIF")) {
-      txt = this.lastText;
-    } else {
-      this.lastText = txt + "";
-    }
-    this.count++;
-
-    //Input validation
-    if (
-      !txt ||
-      parseInt(txt) < 200 ||
-      parseInt(txt) > 1200 ||
-      this.selectedFormat == ""
-    ) {
-      this.disableButton = true;
-      return false;
-    } else {
-      this.disableButton = false;
-      return true;
-    }
-  }
-
-  async doShare(): Promise<void> {
-    /* TODO: move the following constant to global-settings? */
-    const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
-    // A local function to convert a blob to base64 representation
-    const toBase64 = (inputBlob: Blob): Promise<string> =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = () => {
-          resolve(reader.result as string);
-        };
-        reader.readAsDataURL(inputBlob);
-      });
-
-    /* dump the command history */
-    const scriptOut = Command.dumpOpcode();
-
-    // TODO: should we decouple the zoomFactor from the rotation matrix when
-    // saving a construction?. Possible issue: the construction
-    // was saved by a user working on a larger screen (large zoomFactor),
-    // but loaded by a user working on a smaller screen (small zoomFactor)
-
-    const rotationMat = this.inverseTotalRotationMatrix;
-    const collectionPath = this.publicConstruction
-      ? "constructions"
-      : `users/${this.uid}/constructions`;
-
-    // Make a duplicate of the SVG tree
-    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-    // Remove the top-level transformation matrix
-    // We have to save the preview in its "natural" pose
-    svgElement.style.removeProperty("transform");
-
-    const svgBlob = new Blob([svgElement.outerHTML], {
-      type: "image/svg+xml;charset=utf-8"
+    //export PNG to the gif stream
+    d3ToPng("#clonedSVG", "1", {
+      download: false,
+      format: "png"
+    }).then(fileData => {
+      var img = new HTMLImageElement();
+      img.src = fileData; // fileData is base64
+      gif.addFrame(img);
     });
-    const svgPreviewData = await toBase64(svgBlob);
-    console.log(svgPreviewData); // TODO delete
 
-    // const svgURL = URL.createObjectURL(svgBlob);
-    // FileSaver.saveAs(svgURL, "hans.svg");
+    // make some change
+    // clone.setAttribute("viewBox", "50 50 733 733");
 
-    /* Create a pipeline of Firebase tasks
+    // await Vue.nextTick();
+
+    // process final GIF
+    gif.on("finished", function (blob: any) {
+      //window.open(URL.createObjectURL(blob));
+      const gifURL = URL.createObjectURL(blob);
+      FileSaver.saveAs(gifURL, "mygif.gif");
+      clone.remove();
+    });
+
+    gif.render();
+
+    console.log("GIF exported");
+    // //set the ID of the clone and append it to body
+    // svgElement.id = "clonedSVG";
+    // document.body.append(svgElement);
+
+    // //export PNG to the gif stream
+    // var png3 = await d3ToPng("#clonedSVG", "1", {
+    //   download: false,
+    //   format: "png"
+    // }).then(fileData => {
+    //   var img = new HTMLImageElement();
+    //   img.src = fileData; // fileData is base64
+    //   gif.addFrame(img);
+    // });
+
+    // // process final GIF
+    // gif.on("finished", function (blob: any) {
+    //   //window.open(URL.createObjectURL(blob));
+    //   const gifURL = URL.createObjectURL(blob);
+    //   FileSaver.saveAs(gifURL, "mygif.gif");
+    //   svgElement.remove();
+    // });
+
+    // gif.render();
+
+    // console.log("GIF exported");
+  }
+}
+
+function exportDimensionsCheck(txt: string | undefined): boolean {
+  // TODO: clean up the following logic
+  //checking if first action is format selection
+  // if (count > 2 && (txt == "SVG" || txt == "PNG" || txt == "GIF")) {
+  //   txt = lastText;
+  // } else {
+  //   lastText = txt + "";
+  // }
+  // count++;
+
+  // //Input validation
+  // if (
+  //   !txt ||
+  //   parseInt(txt) < 200 ||
+  //   parseInt(txt) > 1200 ||
+  //   selectedFormat == ""
+  // ) {
+  //   disableButton = true;
+  //   return false;
+  // } else {
+  //   disableButton = false;
+  //   return true;
+  // }
+  return true;
+}
+
+function showSaveConstructionDialog() {
+  saveConstructionDialog.value?.show()
+}
+
+async function doShare(): Promise<void> {
+  /* TODO: move the following constant to global-settings? */
+  const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
+  // A local function to convert a blob to base64 representation
+  const toBase64 = (inputBlob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.readAsDataURL(inputBlob);
+    });
+
+  /* dump the command history */
+  const scriptOut = Command.dumpOpcode();
+
+  // TODO: should we decouple the zoomFactor from the rotation matrix when
+  // saving a construction?. Possible issue: the construction
+  // was saved by a user working on a larger screen (large zoomFactor),
+  // but loaded by a user working on a smaller screen (small zoomFactor)
+
+  const rotationMat = inverseTotalRotationMatrix;
+  const collectionPath = publicConstruction
+    ? "constructions"
+    : `users/${uid}/constructions`;
+
+  // Make a duplicate of the SVG tree
+  const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+  // Remove the top-level transformation matrix
+  // We have to save the preview in its "natural" pose
+  svgElement.style.removeProperty("transform");
+
+  const svgBlob = new Blob([svgElement.outerHTML], {
+    type: "image/svg+xml;charset=utf-8"
+  });
+  const svgPreviewData = await toBase64(svgBlob);
+  console.log(svgPreviewData); // TODO delete
+
+  // const svgURL = URL.createObjectURL(svgBlob);
+  // FileSaver.saveAs(svgURL, "hans.svg");
+
+  /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
        Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
     */
-    this.$appDB // Task #1
-      .collection(collectionPath)
-      .add({
-        version: "1",
-        dateCreated: new Date().toISOString(),
-        author: this.whoami,
-        description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements),
-        tools: this.includedTools,
-        script: "" // Use an empty string (for type checking only)
-      } as ConstructionInFirestore)
-      .then((constructionDoc: DocumentReference) => {
-        /* Task #2 */
-        const scriptPromise: Promise<string> =
-          scriptOut.length < FIELD_SIZE_LIMIT
-            ? Promise.resolve(scriptOut)
-            : this.$appStorage
-                .ref(`scripts/${constructionDoc.id}`)
-                .putString(scriptOut)
-                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+  appDB // Task #1
+    .collection(collectionPath)
+    .add({
+      version: "1",
+      dateCreated: new Date().toISOString(),
+      author: whoami.value,
+      description: description.value,
+      rotationMatrix: JSON.stringify(rotationMat.value.elements),
+      tools: includedTools.value,
+      script: "" // Use an empty string (for type checking only)
+    } as ConstructionInFirestore)
+    .then((constructionDoc: DocumentReference) => {
+      /* Task #2 */
+      const scriptPromise: Promise<string> =
+        scriptOut.length < FIELD_SIZE_LIMIT
+          ? Promise.resolve(scriptOut)
+          : appStorage
+              .ref(`scripts/${constructionDoc.id}`)
+              .putString(scriptOut)
+              .then((t) => t.ref.getDownloadURL());
 
-        /* Task #3 */
-        const svgPromise: Promise<string> =
-          svgPreviewData.length < FIELD_SIZE_LIMIT
-            ? Promise.resolve(svgPreviewData)
-            : this.$appStorage
-                .ref(`construction-svg/${constructionDoc.id}`)
-                .putString(svgPreviewData)
-                .then((t: UploadTaskSnapshot) => t.ref.getDownloadURL());
+      /* Task #3 */
+      const svgPromise: Promise<string> =
+        svgPreviewData.length < FIELD_SIZE_LIMIT
+          ? Promise.resolve(svgPreviewData)
+          : appStorage
+              .ref(`construction-svg/${constructionDoc.id}`)
+              .putString(svgPreviewData)
+              .then((t) => t.ref.getDownloadURL());
 
-        /* Wrap the result from the three tasks as a new Promise */
-        return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
-      })
-      .then(([docId, scriptData, svgData]) => {
-        this.$appDB
-          .collection(collectionPath)
-          .doc(docId)
-          .update({ script: scriptData, preview: svgData });
-        // Pass on the document ID to be included in the alert message
-        return docId;
-      })
-      .then((docId: string) => {
-        EventBus.fire("show-alert", {
-          key: "constructions.firestoreConstructionSaved",
-          keyOptions: { docId },
-          type: "info"
-        });
-        this.clearUnsavedFlag();
-      })
-      .catch((err: Error) => {
-        console.error("Can't save document", err.message);
-        EventBus.fire("show-alert", {
-          key: "constructions.firestoreSaveError",
-          // keyOptions: { docId: constructionDoc.id },
-          type: "error"
-        });
+      /* Wrap the result from the three tasks as a new Promise */
+      return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
+    })
+    .then(([docId, scriptData, svgData]) => {
+      appDB
+        .collection(collectionPath)
+        .doc(docId)
+        .update({ script: scriptData, preview: svgData });
+      // Pass on the document ID to be included in the alert message
+      return docId;
+    })
+    .then((docId: string) => {
+      EventBus.fire("show-alert", {
+        key: "constructions.firestoreConstructionSaved",
+        keyOptions: { docId },
+        type: "info"
       });
+      seStore.clearUnsavedFlag();
+    })
+    .catch((err: Error) => {
+      console.error("Can't save document", err.message);
+      EventBus.fire("show-alert", {
+        key: "constructions.firestoreSaveError",
+        // keyOptions: { docId: constructionDoc.id },
+        type: "error"
+      });
+    });
 
-    this.$refs.saveConstructionDialog.hide();
-  }
+  saveConstructionDialog.value?.hide();
+}
 
-  copyShareLink(): void {
-    this.$refs.shareLinkReference.focus();
-    document.execCommand("copy");
-  }
+function copyShareLink(): void {
+  shareLinkReference.value?.focus();
+  document.execCommand("copy");
 }
 </script>
 

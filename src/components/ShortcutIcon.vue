@@ -31,15 +31,15 @@ const props = defineProps<{
   labelMsg: string;
   icon: string;
   iconColor?: string;
-  btnColor?: string;
+  btnColor?: string|null;
   disableBtn: boolean;
-  button?: ToolButtonType;
+  button?: ToolButtonType|null;
 }>();
 
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-function switchButton(button?: ToolButtonType): void {
+function switchButton(button?: ToolButtonType|null): void {
   //Set the button selected so it can be tracked
   if (button) {
     seStore.setButton(button);

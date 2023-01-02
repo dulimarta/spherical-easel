@@ -20,7 +20,11 @@ Vue.use(VueI18n);
 //   return messages;
 // }
 
-export default new VueI18n({
+export function i18nText(key: string): string {
+  return i18nInstance.t(key).toString();
+}
+
+const i18nInstance = new VueI18n({
   locale: import.meta.env.VITE_APP_I18N_LOCALE || "en",
   fallbackLocale: import.meta.env.VITE_APP_I18N_FALLBACK_LOCALE || "en",
   /* skip the function call in a test environment */
@@ -31,3 +35,4 @@ export default new VueI18n({
     }
   // : loadLocaleMessages()
 });
+export default i18nInstance;
