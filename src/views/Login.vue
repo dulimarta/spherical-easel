@@ -2,19 +2,20 @@
   <v-container fluid>
     <v-row justify="center">
       <v-col cols="5">
-        <v-sheet elevation="4"
-          class="pa-4">
+        <v-sheet elevation="4" class="pa-4">
           <v-form v-model="validEntries">
             <v-row class="flex-column mb-2">
               <v-col cols="auto">
-                <v-text-field label="UserId/Email"
+                <v-text-field
+                  label="UserId/Email"
                   v-model="userEmail"
                   :rules="emailRules"
                   required
                   prepend-icon="mdi-account"></v-text-field>
               </v-col>
               <v-col cols="auto">
-                <v-text-field label="Password"
+                <v-text-field
+                  label="Password"
                   v-model="userPassword"
                   type="password"
                   :rules="passwordRules"
@@ -23,25 +24,29 @@
               <v-col cols="auto">
                 <v-row>
                   <v-col cols="auto">
-                    <v-btn @click="doSignup"
-                      :disabled="!validEntries">Signup</v-btn>
+                    <v-btn @click="doSignup" :disabled="!validEntries"
+                      >Signup</v-btn
+                    >
                   </v-col>
                   <v-col cols="auto">
-                    <v-btn :disabled="!isValidEmail" @click="doReset">Reset Password</v-btn>
+                    <v-btn :disabled="!isValidEmail" @click="doReset"
+                      >Reset Password</v-btn
+                    >
                   </v-col>
                   <v-col cols="auto">
-                    <v-btn color="primary"
+                    <v-btn
+                      color="primary"
                       @click="doSignIn"
-                      :disabled="!validEntries">Signin</v-btn>
+                      :disabled="!validEntries"
+                      >Signin</v-btn
+                    >
                   </v-col>
                 </v-row>
               </v-col>
             </v-row>
             <v-divider />
             <v-row>
-              <v-col cols="auto">
-                or use other account providers
-              </v-col>
+              <v-col cols="auto"> or use other account providers </v-col>
             </v-row>
             <v-row>
               <v-col cols="4">
@@ -50,9 +55,7 @@
                 </v-btn>
               </v-col>
               <v-col cols="4">
-                <v-btn disabled>
-                  <v-icon left>mdi-yahoo</v-icon>Yahoo
-                </v-btn>
+                <v-btn disabled> <v-icon left>mdi-yahoo</v-icon>Yahoo </v-btn>
               </v-col>
               <v-col cols="4">
                 <v-btn disabled>
@@ -65,9 +68,7 @@
                 </v-btn>
               </v-col>
               <v-col cols="4">
-                <v-btn disabled>
-                  <v-icon left>mdi-github</v-icon>GitHub
-                </v-btn>
+                <v-btn disabled> <v-icon left>mdi-github</v-icon>GitHub </v-btn>
               </v-col>
             </v-row>
           </v-form>
@@ -79,104 +80,112 @@
 
 <script lang="ts">
 // @ is an alias to /src
-import { Component, Vue } from "vue-property-decorator";
-import { FirebaseAuth, UserCredential } from "@firebase/auth-types";
+import { UserCredential } from "@firebase/auth-types";
 import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
-@Component
-export default class Login extends Vue {
-  readonly $appAuth!: FirebaseAuth;
-  userEmail = "";
-  userPassword = "";
-  readonly emailRules = [
-    (s: string | undefined): boolean | string => {
-      if (!s) return false;
-      /* should  be neither undefined nor null */ else if (s.indexOf("@") > 0)
-        return true;
-      else return "Missing '@'?";
+import { appAuth } from "@/firebase-config";
+import { defineComponent, ref } from "vue";
+
+export default defineComponent({
+  setup() {
+    const userEmail = ref("");
+    const userPassword = ref("");
+    const emailRules = [
+      (s: string | undefined): boolean | string => {
+        if (!s) return false;
+        /* should  be neither undefined nor null */ else if (s.indexOf("@") > 0)
+          return true;
+        else return "Missing '@'?";
+      }
+    ];
+
+    const passwordRules = [
+      (s: string | undefined): boolean | string => {
+        if (!s) return false;
+        else
+          return s.length >= 6
+            ? true
+            : "Password must be at least 6 characters";
+      }
+    ];
+
+    const validEntries = ref(false);
+    return { userEmail, userPassword, validEntries, emailRules, passwordRules };
+  },
+  computed: {
+    isValidEmail(): boolean {
+      return this.emailRules
+        .map(fn => fn(this.userEmail))
+        .every(s => typeof s === "boolean" && s);
     }
-  ];
+  },
+  methods: {
+    doSignup(): void {
+      appAuth
+        .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
+        .then((cred: UserCredential) => {
+          cred.user?.sendEmailVerification();
+          EventBus.fire("show-alert", {
+            key: "account.emailVerification",
+            keyOptions: { emailAddr: cred.user?.email },
+            type: "info"
+          });
+        })
+        .catch((error: any) => {
+          EventBus.fire("show-alert", {
+            key: "account.createError",
+            keyOptions: { error },
+            type: "error"
+          });
+        });
+    },
 
-  readonly passwordRules = [
-    (s: string | undefined): boolean | string => {
-      if (!s) return false;
-      else
-        return s.length >= 6 ? true : "Password must be at least 6 characters";
-    }
-  ];
+    doSignIn(): void {
+      appAuth
+        .signInWithEmailAndPassword(this.userEmail, this.userPassword)
+        .then((cred: UserCredential) => {
+          if (cred.user?.emailVerified) {
+            this.$router.replace({
+              path: "/"
+            });
+          } else {
+            EventBus.fire("show-alert", {
+              key: "account.emailNotVerified",
+              keyOptions: undefined,
+              type: "warning"
+            });
+          }
+        })
+        .catch((error: any) => {
+          EventBus.fire("show-alert", {
+            key: "account.loginError",
+            keyOptions: { error },
+            type: "error"
+          });
+        });
+    },
 
-  validEntries = false;
-
-  get isValidEmail(): boolean {
-    return this.emailRules
-      .map(fn => fn(this.userEmail))
-      .every(s => typeof s === "boolean" && s);
-  }
-
-  doSignup(): void {
-    this.$appAuth
-      .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
-      .then((cred: UserCredential) => {
-        cred.user?.sendEmailVerification();
+    doReset(): void {
+      console.debug("Sending password reset email to", this.userEmail);
+      appAuth.sendPasswordResetEmail(this.userEmail).then(() => {
         EventBus.fire("show-alert", {
-          key: "account.emailVerification",
-          keyOptions: { emailAddr: cred.user?.email },
+          key: "account.passwordReset",
+          keyOptions: { emailAddr: this.userEmail },
           type: "info"
         });
-      })
-      .catch((error: any) => {
-        EventBus.fire("show-alert", {
-          key: "account.createError",
-          keyOptions: { error },
-          type: "error"
+      });
+    },
+
+    doGoogleLogin(): void {
+      const provider: firebase.auth.AuthProvider =
+        new firebase.auth.GoogleAuthProvider();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      appAuth.signInWithPopup(provider).then((cred: UserCredential) => {
+        this.$router.replace({
+          path: "/"
         });
       });
+    }
   }
-
-  doSignIn(): void {
-    this.$appAuth
-      .signInWithEmailAndPassword(this.userEmail, this.userPassword)
-      .then((cred: UserCredential) => {
-        if (cred.user?.emailVerified) {
-          this.$router.replace({
-            path: "/"
-          });
-        } else {
-          EventBus.fire("show-alert", {
-            key: "account.emailNotVerified",
-            keyOptions: undefined,
-            type: "warning"
-          });
-        }
-      })
-      .catch((error: any) => {
-        EventBus.fire("show-alert", {
-          key: "account.loginError",
-          keyOptions: { error },
-          type: "error"
-        });
-      });
-  }
-
-  doReset(): void {
-    console.debug("Sending password reset email to", this.userEmail);
-    this.$appAuth.sendPasswordResetEmail(this.userEmail).then(() => {
-      EventBus.fire("show-alert", {
-        key: "account.passwordReset",
-        keyOptions: { emailAddr: this.userEmail },
-        type: "info"
-      });
-    });
-  }
-
-  doGoogleLogin(): void {
-    const provider: firebase.auth.AuthProvider = new firebase.auth.GoogleAuthProvider();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.$appAuth.signInWithPopup(provider).then((cred: UserCredential) => {
-      this.$router.replace({
-        path: "/"
-      });
-    });
-  }
-}
+});
 </script>

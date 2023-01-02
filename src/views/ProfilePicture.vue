@@ -1,25 +1,20 @@
 <template>
   <div>
-    <v-hover v-slot:default="{hover}">
+    <v-hover v-slot:default="{ hover }">
       <div id="profileImage">
-        <img v-if="profileImage"
-          width="128"
-          :src="profileImage">
-        <v-icon v-else
-          :color="hover ? 'primary' : 'secondary' "
-          size="128">mdi-account
+        <img v-if="profileImage" width="128" :src="profileImage" />
+        <v-icon v-else :color="hover ? 'primary' : 'secondary'" size="128"
+          >mdi-account
         </v-icon>
-        <v-overlay absolute
-          :value="hover">
+        <v-overlay absolute :value="hover">
           <v-row>
             <v-col cols="auto">
-              <v-icon @click="toPhotoCapture">
-                mdi-camera</v-icon>
+              <v-icon @click="toPhotoCapture"> mdi-camera</v-icon>
             </v-col>
             <v-col cols="auto">
-              <v-icon @click="$refs.imageUpload.click()">
-                mdi-upload</v-icon>
-              <input ref="imageUpload"
+              <v-icon @click="imageUpload?.click()"> mdi-upload</v-icon>
+              <input
+                ref="imageUpload"
                 type="file"
                 accept="image/*"
                 @change="onImageUploaded" />
@@ -32,61 +27,65 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { FirebaseAuth } from "@firebase/auth-types";
-import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+
+import {  DocumentSnapshot } from "@firebase/firestore-types";
 import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
-import { mapWritableState } from "pinia";
+import { storeToRefs } from "pinia";
+import { appAuth, appDB } from "@/firebase-config";
+import { defineComponent, onMounted, ref, Ref } from "vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
-@Component({
-  computed: {
-    ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
-  }
-})
-export default class extends Vue {
-  readonly $appAuth!: FirebaseAuth;
-  readonly $appDB!: FirebaseFirestore;
-  temporaryProfilePicture!: string;
-  profileImage: string | null = null;
+// @Component({
+//   computed: {
+//     ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
+//   }
+// })
+export default defineComponent({
+  setup() {
+    const profileImage: Ref<string | null> = ref(null);
+    const acctStore = useAccountStore()
+    const { temporaryProfilePicture } = storeToRefs(acctStore)
+    const imageUpload: Ref<HTMLInputElement|null> = ref(null)
 
-  mounted(): void {
-    const uid = this.$appAuth.currentUser?.uid;
-    if (!uid) return;
-    this.$appDB
-      .collection("users")
-      .doc(uid)
-      .get()
-      .then((ds: DocumentSnapshot) => {
-        if (ds.exists) {
-          const userDetails = ds.data() as UserProfile;
-          this.profileImage = userDetails.profilePictureURL ?? null;
-        }
-      });
-  }
-
-  toPhotoCapture(): void {
-    this.$router.push({ name: "PhotoCapture" });
-    this.$emit("photo-change", {});
-  }
-
-  onImageUploaded(event: Event): void {
-    const files = (event.target as FileEvent).files;
-    if (files && files.length > 0) {
-      this.$emit("photo-change", {});
-      const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent) => {
-        const imageBase64 = (ev.target as any).result;
-        this.temporaryProfilePicture = imageBase64;
-        this.$router.push({
-          name: "PhotoCropper"
+    onMounted((): void => {
+      const uid = appAuth.currentUser?.uid;
+      if (!uid) return;
+      appDB
+        .collection("users")
+        .doc(uid)
+        .get()
+        .then((ds: DocumentSnapshot) => {
+          if (ds.exists) {
+            const userDetails = ds.data() as UserProfile;
+            profileImage.value = userDetails.profilePictureURL ?? null;
+          }
         });
-      };
-      reader.readAsDataURL(files[0]);
+    })
+    return { temporaryProfilePicture, profileImage, imageUpload }
+  },
+  methods: {
+    toPhotoCapture (): void {
+      this.$router.push({ name: "PhotoCapture" });
+      this.$emit("photo-change", {});
+    },
+    onImageUploaded(event: Event): void {
+      const files = (event.target as FileEvent).files;
+      if (files && files.length > 0) {
+        this.$emit("photo-change", {});
+        const reader = new FileReader();
+        reader.onload = (ev: ProgressEvent) => {
+          const imageBase64 = (ev.target as any).result;
+          this.temporaryProfilePicture = imageBase64;
+          this.$router.push({
+            name: "PhotoCropper"
+          });
+        };
+        reader.readAsDataURL(files[0]);
+      }
     }
   }
-}
+})
 </script>
 
 <style scoped>

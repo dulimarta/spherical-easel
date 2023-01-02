@@ -61,6 +61,8 @@ const props = defineProps<{
   isDisabled?: boolean;
 }>();
 
+defineExpose({ show, hide }) // Make these two functions "public"
+
 const visible = ref(false);
 
 const yesLabel = computed((): string => {

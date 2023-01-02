@@ -1,23 +1,21 @@
 <template>
   <div>
-    <ImageCropper class="cropper"
+    <ImageCropper
+      class="cropper"
       v-if="inputImageBase64.length > 0"
       :src="inputImageBase64"
-      :stencil-props="{ aspectRation: 1/1, resizable: true}"
-      :stencil-component="$options.components.CircleStencil"
+      :stencil-props="{ aspectRation: 1 / 1, resizable: true }"
+      :stencil-component="$options.components?.CircleStencil"
       @change="onCropChanged">
     </ImageCropper>
     <v-btn @click="uploadProfilePicture">
-      <v-icon left
-        color="secondary">mdi-upload</v-icon>
+      <v-icon left color="secondary">mdi-upload</v-icon>
       Crop & Upload
     </v-btn>
     <v-btn @click="cancelCrop">
-      <v-icon left
-        color="secondary">mdi-close</v-icon>
+      <v-icon left color="secondary">mdi-close</v-icon>
       Cancel
     </v-btn>
-
   </div>
 </template>
 
@@ -27,18 +25,16 @@
 }
 </style>
 <script lang="ts">
-import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
+import { Cropper as ImageCropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-import { Component, Vue } from "vue-property-decorator";
 import { Route } from "vue-router";
-import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
-import { FirebaseFirestore } from "@firebase/firestore-types";
-import { FirebaseAuth } from "@firebase/auth-types";
+// import { UploadTaskSnapshot } from "@firebase/storage-types";
 import EventBus from "@/eventHandlers/EventBus";
+import { computed, ref, defineComponent } from "vue";
+import { appAuth, appStorage, appDB } from "@/firebase-config";
 import { useAccountStore } from "@/stores/account";
-import { mapWritableState } from "pinia";
-
+import { storeToRefs } from "pinia";
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -50,32 +46,35 @@ type CropDetails = {
     height: number;
   };
 };
-@Component({
-  components: { ImageCropper, CircleStencil },
-  computed: {
-    ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
-  }
-})
-export default class PhotoCropper extends Vue {
-  readonly $appDB!: FirebaseFirestore;
-  readonly $appAuth!: FirebaseAuth;
-  readonly $appStorage!: FirebaseStorage;
+type MyData = {
+  croppedImageBinary: Blob | null;
+  inputImageBinary: ImageBitmap | null;
+  goBackSteps: number;
+};
+export default defineComponent({
+  setup() {
+    const acctStore = useAccountStore()
 
-  // @UserAcct.State((s: AccountState) => s.temporaryProfilePicture)
-  temporaryProfilePicture!: string;
+    const { temporaryProfilePicture } = storeToRefs(acctStore)
 
-  inputImageBinary: ImageBitmap | null = null;
-  croppedImageBase64 = "";
-  croppedImageBinary: Blob | null = null;
-  goBackSteps = 1;
+    const croppedImageBase64 = ref("");
 
-  get inputImageBase64(): string {
-    return this.temporaryProfilePicture;
-  }
+    const inputImageBase64 = computed((): string => {
+      return temporaryProfilePicture.value;
+    });
+    return { inputImageBase64, croppedImageBase64, temporaryProfilePicture };
+  },
+  data(): MyData {
+    return {
+      inputImageBinary: null,
+      goBackSteps: 1,
+      croppedImageBinary: /*Blob | null = */ null
+    };
+  },
 
   beforeRouteEnter(toRoute: Route, fromRoute: Route, next: any): void {
     // At this time the function does not have access to "this"
-    next((vm: PhotoCropper) => {
+    next((vm: any) => {
       // If this component is pushed from PhotoCapture
       // we have to pop 2 items from the history stack
       // Otherwise we have to pop only 1 item
@@ -89,73 +88,72 @@ export default class PhotoCropper extends Vue {
         }
       );
     });
-  }
+  },
+  methods: {
+    onCropChanged(z: CropDetails): void {
+      if (this.inputImageBinary) {
+        this.croppedImageBase64 = z.canvas.toDataURL("image/png");
+        this.croppedImageBinary = this.dataURItoBlob(this.croppedImageBase64);
+      }
+    },
+    dataURItoBlob(uri: string): Blob {
+      // The incoming string has the following header:
+      // data:image/png;base64,xxxxxxxx
 
-  onCropChanged(z: CropDetails): void {
-    if (this.inputImageBinary) {
-      this.croppedImageBase64 = z.canvas.toDataURL("image/png");
-      this.croppedImageBinary = this.dataURItoBlob(this.croppedImageBase64);
+      const parts = uri.split(","); // separate the image bytes from the header
+      let imageHexString: string;
+      if (parts[0].indexOf("base64") >= 0) imageHexString = atob(parts[1]);
+      else imageHexString = unescape(parts[1]);
+      const colonPos = parts[0].indexOf(":");
+      const semiColPos = parts[0].indexOf(";");
+      const mimeType = parts[0].substring(colonPos + 1, semiColPos);
+      const intArray = new Uint8Array(imageHexString.length);
+
+      for (let k = 0; k < imageHexString.length; k++)
+        intArray[k] = imageHexString.charCodeAt(k);
+      return new Blob([intArray], { type: mimeType });
+    },
+
+    uploadProfilePicture(): void {
+      // Upload cropped image to Firebase Firestore
+      if (this.croppedImageBinary) {
+        const uid = appAuth.currentUser?.uid ?? "nouser";
+        appStorage
+          .ref(`profilePictures/${uid}`)
+          .put(this.croppedImageBinary, {
+            contentType: "image/png"
+          })
+          .then((s) => s.ref.getDownloadURL())
+          .then((url: string) => {
+            this.$emit("photo-captured", {});
+            this.$router.go(-this.goBackSteps);
+
+            // Use {merge:true} to update or create new fields
+            return appDB
+              .collection("users")
+              .doc(uid)
+              .set({ profilePictureURL: url }, { merge: true });
+          })
+          .then(() => {
+            EventBus.fire("show-alert", {
+              key: "Profile picture is saved to Firebase",
+              type: "info"
+            });
+            this.temporaryProfilePicture = "";
+          })
+          .catch((err: any) => {
+            EventBus.fire("show-alert", {
+              key: "Unable to upload profile picture to Firebase" + err,
+              type: "error"
+            });
+          });
+      }
+    },
+    cancelCrop(): void {
+      this.temporaryProfilePicture = "";
+      this.$emit("no-capture", {});
+      this.$router.go(-this.goBackSteps);
     }
   }
-  dataURItoBlob(uri: string): Blob {
-    // The incoming string has the following header:
-    // data:image/png;base64,xxxxxxxx
-
-    const parts = uri.split(","); // separate the image bytes from the header
-    let imageHexString: string;
-    if (parts[0].indexOf("base64") >= 0) imageHexString = atob(parts[1]);
-    else imageHexString = unescape(parts[1]);
-    const colonPos = parts[0].indexOf(":");
-    const semiColPos = parts[0].indexOf(";");
-    const mimeType = parts[0].substring(colonPos + 1, semiColPos);
-    const intArray = new Uint8Array(imageHexString.length);
-
-    for (let k = 0; k < imageHexString.length; k++)
-      intArray[k] = imageHexString.charCodeAt(k);
-    return new Blob([intArray], { type: mimeType });
-  }
-
-  uploadProfilePicture(): void {
-    // Upload cropped image to Firebase Firestore
-    if (this.croppedImageBinary) {
-      const uid = this.$appAuth.currentUser?.uid ?? "nouser";
-      this.$appStorage
-        .ref(`profilePictures/${uid}`)
-        .put(this.croppedImageBinary, {
-          contentType: "image/png"
-        })
-        .then((s: UploadTaskSnapshot) => {
-          return s.ref.getDownloadURL();
-        })
-        .then((url: string) => {
-          this.$emit("photo-captured", {});
-          this.$router.go(-this.goBackSteps);
-
-          // Use {merge:true} to update or create new fields
-          return this.$appDB
-            .collection("users")
-            .doc(uid)
-            .set({ profilePictureURL: url }, { merge: true });
-        })
-        .then(() => {
-          EventBus.fire("show-alert", {
-            key: "Profile picture is saved to Firebase",
-            type: "info"
-          });
-          this.temporaryProfilePicture = "";
-        })
-        .catch((err: any) => {
-          EventBus.fire("show-alert", {
-            key: "Unable to upload profile picture to Firebase" + err,
-            type: "error"
-          });
-        });
-    }
-  }
-  cancelCrop(): void {
-    this.temporaryProfilePicture = "";
-    this.$emit("no-capture", {});
-    this.$router.go(-this.goBackSteps);
-  }
-}
+});
 </script>
