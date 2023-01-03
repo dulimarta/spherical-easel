@@ -85,7 +85,7 @@ import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
 import { appAuth } from "@/firebase-config";
 import { computed, ref } from "vue";
-import { useRouter } from "@/utils/router-proxy";
+import { useRouter } from "vue-router";
 
 
 const router = useRouter();

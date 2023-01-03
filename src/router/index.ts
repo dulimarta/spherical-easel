@@ -1,11 +1,11 @@
-import Vue from "vue";
-import VueRouter, { RouteConfig } from "vue-router";
+// import Vue from "vue";
+import  { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
-Vue.use(VueRouter);
+// Vue.use(VueRouter);
 
-const routes: Array<RouteConfig> = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Home",
@@ -50,9 +50,8 @@ const routes: Array<RouteConfig> = [
   }
 ];
 
-const router = new VueRouter({
-  mode: "history",
-  base: import.meta.env.BASE_URL,
+export default createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
 
@@ -63,4 +62,4 @@ const router = new VueRouter({
 //     routes
 //   });
 // };
-export default router;
+// export default router;

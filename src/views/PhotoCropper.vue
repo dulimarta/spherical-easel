@@ -28,14 +28,13 @@
 import { Cropper as ImageCropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-import { Route } from "vue-router";
 // import { UploadTaskSnapshot } from "@firebase/storage-types";
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, ref, defineComponent } from "vue";
 import { appAuth, appStorage, appDB } from "@/firebase-config";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { useRouter } from "@/utils/router-proxy";
+import { RouteLocationNormalized, useRouter, onBeforeRouteUpdate } from "vue-router";
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -64,23 +63,23 @@ let inputImageBinary: ImageBitmap | null = null;
 let goBackSteps = 1;
 let croppedImageBinary: Blob | null = null;
 
-function beforeRouteEnter(toRoute: Route, fromRoute: Route, next: any): void {
+onBeforeRouteUpdate(async (toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized) => {
   // At this time the function does not have access to "this"
-  next((vm: any) => {
+
     // If this component is pushed from PhotoCapture
     // we have to pop 2 items from the history stack
     // Otherwise we have to pop only 1 item
-    vm.goBackSteps = fromRoute.path.includes("photocapture") ? 2 : 1;
-    const tempProfile = vm.temporaryProfilePicture;
+    goBackSteps = fromRoute.path.includes("photocapture") ? 2 : 1;
+    const tempProfile = temporaryProfilePicture.value;
 
     // Convert base64 image to binary blob
-    createImageBitmap(vm.dataURItoBlob(tempProfile)).then(
+    createImageBitmap(dataURItoBlob(tempProfile)).then(
       (bmp: ImageBitmap) => {
-        vm.inputImageBinary = bmp;
+        inputImageBinary = bmp;
       }
     );
   });
-}
+
 
 function onCropChanged(z: CropDetails): void {
   if (inputImageBinary) {

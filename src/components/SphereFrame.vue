@@ -50,7 +50,7 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { ActionMode } from "@/types";
-import colors from "vuetify/es5/util/colors";
+import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";

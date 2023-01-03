@@ -1,4 +1,5 @@
 <template>
+  <h2>Hans is here</h2>
   <div>
     <Splitpanes
       class="default-theme"
@@ -124,9 +125,9 @@
               <v-icon>mdi-arrow-right</v-icon>
             </v-btn>
 
-            <StylePanel
+            <!--StylePanel
               :minified="stylePanelMinified"
-              v-on:toggle-style-panel="minifyStylePanel" />
+              v-on:toggle-style-panel="minifyStylePanel" /-->
 
             <MessageBox
               :minified="notificationsPanelMinified"
@@ -142,7 +143,7 @@
       :yes-text="i18nText('constructions.keep')"
       :no-text="i18nText('constructions.discard')"
       :no-action="doLeave">
-      {{ $t(`constructions.unsavedConstructionMsg`) }}
+      {{ i18nText(`constructions.unsavedConstructionMsg`) }}
     </Dialog>
     <Dialog
       ref="clearConstructionDialog"
@@ -151,7 +152,7 @@
       :yes-action="() => resetSphere()"
       :no-text="i18nText('constructions.cancel')"
       max-width="40%">
-      <p>{{ $t(`constructions.clearConstructionMsg`) }}</p>
+      <p>{{ i18nText(`constructions.clearConstructionMsg`) }}</p>
     </Dialog>
   </div>
 </template>
@@ -190,7 +191,6 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
-import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
@@ -206,7 +206,8 @@ import { toolGroups } from "@/components/toolgroups";
 import { appDB, appStorage, appAuth } from "@/firebase-config";
 import i18n, { i18nText } from "@/i18n";
 import { getCurrentInstance } from "vue";
-import { useRouter } from "@/utils/router-proxy";
+import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
+import {useLayout } from "vuetify"
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -253,7 +254,7 @@ const { seNodules, temporaryNodules, hasObjects, actionMode } =
 const props = defineProps<{
   documentId?: string;
 }>();
-const vuetifyInstance = getCurrentInstance()!.proxy.$vuetify.application;
+const { mainRect, getLayoutItem } = useLayout()
 
 let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
 const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
@@ -267,13 +268,13 @@ let undoEnabled = false;
 let redoEnabled = false;
 
 let confirmedLeaving = false;
-let attemptedToRoute: Route | null = null;
+let attemptedToRoute: RouteLocationNormalized | null = null;
 let accountEnabled = false;
 let uid = "";
 let authSubscription!: Unsubscribe;
 
 // $refs!: {
-const responsiveBox: Ref<VueComponent | null> = ref(null);
+const responsiveBox = ref(null);
 // toolbox: VueComponent;
 // mainPanel: VueComponent;
 // stylePanel: HTMLDivElement;
@@ -464,12 +465,11 @@ function createCircle(): void {
 
 function adjustSize(): void {
   availHeight =
-    window.innerHeight - vuetifyInstance.footer - vuetifyInstance.top - 24; // quick hack (-24) to leave room at the bottom
-  const tmp = responsiveBox;
-  if (tmp.value!) {
-    let canvasPanel = tmp.value.$el as HTMLElement;
-    const rightBox = canvasPanel.getBoundingClientRect();
-    currentCanvasSize.value = availHeight - rightBox.top;
+    window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
+
+  const tmp = getLayoutItem("responsiveBox")
+  if (tmp) {
+    currentCanvasSize.value = availHeight - tmp.top;
   }
 }
 
@@ -540,9 +540,9 @@ function dividerMoved(
 ): void {
   const availableWidth =
     ((100 - event[0].size - event[2].size) / 100) *
-    (window.innerWidth - vuetifyInstance.left - vuetifyInstance.right);
+    (window.innerWidth - mainRect.value.left - mainRect.value.right);
   availHeight =
-    window.innerHeight - vuetifyInstance.top - vuetifyInstance.footer;
+    window.innerHeight - mainRect.value.top - mainRect.value.bottom;
   currentCanvasSize.value = Math.min(availableWidth, availHeight);
 }
 
@@ -689,17 +689,17 @@ function listItemStyle(i: number, xLoc: string, yLoc: string) {
   return style;
 }
 
-function beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
+onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized): boolean => {
   if (hasObjects && !confirmedLeaving) {
     unsavedWorkDialog.value?.show();
     attemptedToRoute = toRoute;
-    next(false); // Stay on this view
+    return false
   } else {
     /* Proceed to the next view when the canvas has no objects OR
       user has confirmed leaving this view */
-    next();
+    return true
   }
-}
+})
 </script>
 <style scoped lang="scss">
 #container {

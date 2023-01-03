@@ -59,8 +59,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onBeforeUnmount, onMounted, ref, Ref } from "vue";
-import { Route } from "vue-router";
-import { useRouter } from "vue-router/types/composables";
+import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
 type MyData = {
   hasCamera: boolean;
   streaming: boolean;
@@ -135,12 +134,12 @@ onBeforeUnmount((): void => {
 });
 
 // TODO: Fix these when upgrading vue-router
-function beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
+onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized): boolean => {
   console.debug("Before route leave", toRoute);
   videoTrack?.stop();
   if (video.value) video.value.srcObject = null;
-  next();
-}
+  return true
+})
 
 function stopCamera(): void {
   videoTrack?.stop();

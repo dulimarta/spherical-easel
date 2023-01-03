@@ -10,12 +10,11 @@
     This is the main application that must contain all the vuetify components.
     There can be only one of these environments.
   -->
-  <v-app app>
+  <v-app>
     <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
-    <v-app-bar app color="primary" dark dense clipped-left>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+    <v-app-bar color="primary" :title="i18nText('main.SphericalEaselMainTitle')">
 
       <div class="d-flex align-center">
         <router-link to="/">
@@ -23,13 +22,11 @@
             alt="Spherical Easel Logo"
             class="shrink mr-2"
             contain
-            src="../docs/.vuepress/public/SphericalEaselLogo.png"
+            src="@/assets/SphericalEaselLogo.gif"
             transition="scale-transition"
-            width="40" />
+            aspect-ratio="1"
+            :width="40" />
         </router-link>
-        <v-toolbar-title>
-          {{ i18nText("main.SphericalEaselMainTitle") }}
-        </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <!--- TODO: Change the URL to match the hosting site
@@ -77,11 +74,11 @@
           :disabled="!hasObjects"
           class="mr-2"
           @click="showSaveConstructionDialog"
-          >$shareConstruction
+          >mdi-share
         </v-icon>
       </template>
       <router-link to="/settings/">
-        <v-icon>$appSettings</v-icon>
+        <v-icon>mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
 
@@ -90,12 +87,14 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
-      <router-view>
-        <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
-      </router-view>
+      <router-view />
+        <!-- this is the spot where the views controlled by Vue Router will be rendered v-html="$t('buttons.' + button.displayedName )"-->
+
       <!-- <MessageBox></MessageBox>-->
     </v-main>
-    <Dialog
+  </v-app>
+
+    <!--Dialog
       ref="logoutDialog"
       :title="i18nText('constructions.confirmLogout')"
       :yes-text="i18nText('constructions.proceed')"
@@ -200,8 +199,7 @@
           </v-col>
         </v-col>
       </v-row>
-    </Dialog>
-  </v-app>
+    </Dialog-->
 </template>
 
 <!--
@@ -210,7 +208,7 @@
 -->
 <script lang="ts" setup>
 /* Import the custom components */
-import VueComponent, {
+import  {
   Ref,
   ref,
   computed,
@@ -218,7 +216,7 @@ import VueComponent, {
   onMounted,
 onBeforeUnmount
 } from "vue";
-import { Vue, Component } from "vue-property-decorator";
+import { Vue } from "vue-property-decorator";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
@@ -239,7 +237,7 @@ import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import { i18nText } from "./i18n";
 import { appAuth, appStorage, appDB } from "./firebase-config";
-import { useRouter } from "./utils/router-proxy";
+import { useRouter } from "vue-router";
 
 // Register vue router in-component navigation guard functions
 // Component.registerHooks([

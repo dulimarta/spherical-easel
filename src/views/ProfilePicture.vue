@@ -33,7 +33,7 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { appAuth, appDB } from "@/firebase-config";
 import { defineComponent, onMounted, ref, Ref } from "vue";
-import { useRouter } from "@/utils/router-proxy";
+import { useRouter } from "vue-router";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
 const emit = defineEmits(["photo-change"]);
