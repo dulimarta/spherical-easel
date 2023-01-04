@@ -35,7 +35,6 @@ export default defineConfig({
     // }),
     vuetify({ autoImport: true }),
     VueI18nPlugin({
-      include: ["en", "id"],
       bridge: true // Use this option for a transition from vue-i18n v8 to v9
     })
   ],

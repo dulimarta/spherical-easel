@@ -3,7 +3,7 @@
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+// import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";

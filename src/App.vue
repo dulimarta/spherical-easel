@@ -15,7 +15,6 @@
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
     <v-app-bar color="primary" :title="t('main.SphericalEaselMainTitle')">
-      {{ locale }}
       <div class="d-flex align-center">
         <router-link to="/">
           <v-img
@@ -214,9 +213,8 @@ import  {
   computed,
   onBeforeMount,
   onMounted,
-onBeforeUnmount
+onBeforeUnmount, nextTick
 } from "vue";
-import { Vue } from "vue-property-decorator";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
@@ -267,7 +265,6 @@ const seStore = useSEStore();
 //     // ...mapGetters(useSEStore, ["hasObjects"])
 //   }
 // })
-// export default class App extends Vue {
 const { includedTools, userRole } = storeToRefs(acctStore);
 
 const {
@@ -452,7 +449,7 @@ async function doExportConstructionDialog(): Promise<void> {
   });
   const svgURL = URL.createObjectURL(svgBlob);
 
-  await Vue.nextTick();
+  await nextTick();
 
   var preview = document.getElementById("preview") as HTMLImageElement;
   preview.src = svgURL;

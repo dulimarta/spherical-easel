@@ -175,6 +175,7 @@ export default {
     step: "Step",
     toggleDisplay: "Toggle penampilan object"
   },
+  constructions: { confirmation: "sdfsdf" },
   objects: {
     circles: "Lingkaran",
     lines: "Garis",
@@ -368,4 +369,4 @@ export default {
     MeasurementTools: "",
     TransformationalTools: "Transformasi"
   }
-} as LocaleMessages;
+}

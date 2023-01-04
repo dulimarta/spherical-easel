@@ -1,4 +1,3 @@
-import { LocaleMessages } from "vue-i18n";
 
 export default {
   account: {
@@ -855,4 +854,4 @@ export default {
     deleteMsg: "Delete {msgType} messages"
 
   }
-} as LocaleMessages;
+}

@@ -28,7 +28,6 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
 import FadeInCard from "@/components/FadeInCard.vue";
 import HintButton from "@/components/HintButton.vue";
 import EventBus from "@/eventHandlers/EventBus";

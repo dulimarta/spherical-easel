@@ -28,8 +28,6 @@
 
 <script lang="ts" setup>
 import Vue, { ref } from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";

@@ -1,6 +1,4 @@
 <template>
-  <v-icon icon="$circle"></v-icon>
-  <v-icon icon="mdi-numeric"></v-icon>
   <div>
     <Splitpanes
       class="default-theme"
@@ -45,33 +43,33 @@
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
-                    <!--div
+                    <div
                       v-for="(shortcut, index) in topLeftShortcuts"
                       :key="index"
-                      :style="listItemStyle(index, 'left', 'top')"-->
-                      <!--ShortcutIcon
+                      :style="listItemStyle(index, 'left', 'top')">
+                      <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
                         :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" /-->
-                    <!--/div-->
+                        :button="shortcut.buttonType" />
+                    </div>
                   </div>
                   <div class="anchored bottom left">
                     <div
                       v-for="(shortcut, index) in bottomLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'bottom')">
-                      <!--ShortcutIcon
+                      <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
                         :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" /-->
+                        :button="shortcut.buttonType" />
                     </div>
                   </div>
                   <div class="anchored top right">
@@ -79,14 +77,14 @@
                       v-for="(shortcut, index) in topRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'top')">
-                      <!--ShortcutIcon
+                      <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
                         :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" /-->
+                        :button="shortcut.buttonType" />
                     </div>
                   </div>
                   <div class="anchored bottom right">
@@ -94,14 +92,14 @@
                       v-for="(shortcut, index) in bottomRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'bottom')">
-                      <!--ShortcutIcon
+                      <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
                         :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" /-->
+                        :button="shortcut.buttonType" />
                     </div>
                   </div>
                 </v-responsive>
@@ -159,7 +157,7 @@
 </template>
 
 <script lang="ts" setup>
-import VueComponent, {
+import {
   computed,
   onBeforeMount,
   onBeforeUnmount,
@@ -187,7 +185,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore } from "@/types";
+import { ConstructionInFirestore, ToolButtonType } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
@@ -208,7 +206,17 @@ import { appDB, appStorage, appAuth } from "@/firebase-config";
 import { useI18n } from "vue-i18n";
 import { getCurrentInstance } from "vue";
 import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
-import {useLayout } from "vuetify"
+import { useLayout } from "vuetify"
+
+type ShortCutIconDetails = {
+  clickFunc: () => void,
+  labelMsg: string,
+  icon: string,
+  iconColor: string,
+  disableBtn: boolean,
+  btnColor?: string,
+buttonType?: ToolButtonType
+}
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -284,119 +292,115 @@ const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 // };
 
-const topLeftShortcuts = computed(() => {
+const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
   return [
-    // {
-    //   labelMsg: "main.UndoLastAction",
-    //   icon: SETTINGS.icons.undo.props.mdiIcon,
-    //   clickFunc: undoEdit,
-    //   iconColor: "blue",
-    //   btnColor: null,
-    //   disableBtn: !stylePanelMinified.value || !undoEnabled,
-    //   button: null
-    // },
-    // {
-    //   labelMsg: "main.RedoLastAction",
-    //   icon: SETTINGS.icons.redo.props.mdiIcon,
-    //   clickFunc: redoAction,
-    //   iconColor: "blue",
-    //   btnColor: null,
-    //   disableBtn: !stylePanelMinified.value || !undoEnabled,
-    //   button: null
-    // }
+    {
+      labelMsg: "main.UndoLastAction",
+      icon: SETTINGS.icons.undo.props.mdiIcon,
+      clickFunc: undoEdit,
+      iconColor: "blue",
+      disableBtn: !stylePanelMinified.value || !undoEnabled,
+
+    },
+    {
+      labelMsg: "main.RedoLastAction",
+      icon: SETTINGS.icons.redo.props.mdiIcon,
+      clickFunc: redoAction,
+      iconColor: "blue",
+      disableBtn: !stylePanelMinified.value || !undoEnabled,
+    }
   ];
 });
-const topRightShortcuts = computed(() => {
+const topRightShortcuts = computed((): ShortCutIconDetails[] => {
   return [
-    // {
-    //   labelMsg: "constructions.resetSphere",
-    //   icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
-    //   clickFunc: () => {
-    //     clearConstructionDialog.value?.show();
-    //   },
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: null
-    // }
+    {
+      labelMsg: "constructions.resetSphere",
+      icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
+      clickFunc: () => {
+        clearConstructionDialog.value?.show();
+      },
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+    }
   ];
 });
 
-const bottomRightShortcuts = computed(() => {
+const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
   return [
-    // {
-    //   labelMsg: "buttons.PanZoomInToolTipMessage",
-    //   icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-    //   clickFunc: enableZoomIn,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
-    // },
+    {
+      labelMsg: "buttons.PanZoomInToolTipMessage",
+      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
+      clickFunc: enableZoomIn,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
+    },
 
-    // {
-    //   labelMsg: "buttons.PanZoomOutToolTipMessage",
-    //   icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-    //   clickFunc: enableZoomOut,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
-    // },
+    {
+      labelMsg: "buttons.PanZoomOutToolTipMessage",
+      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
+      clickFunc: enableZoomOut,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
+    },
 
-    // {
-    //   labelMsg: "buttons.ZoomFitToolTipMessage",
-    //   icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-    //   clickFunc: enableZoomFit,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
-    // }
+    {
+      labelMsg: "buttons.ZoomFitToolTipMessage",
+      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
+      clickFunc: enableZoomFit,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
+    }
   ];
 });
 
-const bottomLeftShortcuts = computed(() => {
+const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
   return [
-    // {
-    //   labelMsg: "buttons.CreatePointToolTipMessage",
-    //   icon: "$point",
-    //   clickFunc: createPoint,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[2].children.find(e => e.actionModeValue == "point")
-    // },
+    {
+      labelMsg: "buttons.CreatePointToolTipMessage",
+      icon: "$point",
+      clickFunc: createPoint,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "point")
+    },
 
-    // {
-    //   labelMsg: "buttons.CreateLineToolTipMessage",
-    //   icon: "$line",
-    //   clickFunc: createLine,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[2].children.find(e => e.actionModeValue == "line")
-    // },
+    {
+      labelMsg: "buttons.CreateLineToolTipMessage",
+      icon: "$line",
+      clickFunc: createLine,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "line")
+    },
 
-    // {
-    //   labelMsg: "buttons.CreateLineSegmentToolTipMessage",
-    //   icon: "$segment",
-    //   clickFunc: createSegment,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
-    // },
+    {
+      labelMsg: "buttons.CreateLineSegmentToolTipMessage",
+      icon: "$segment",
+      clickFunc: createSegment,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "segment")
+    },
 
-    // {
-    //   labelMsg: "buttons.CreateCircleToolTipMessage",
-    //   icon: "$circle",
-    //   clickFunc: createCircle,
-    //   iconColor: "blue",
-    //   btnColor: "primary",
-    //   disableBtn: false,
-    //   button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
-    // }
+    {
+      labelMsg: "buttons.CreateCircleToolTipMessage",
+      icon: "$circle",
+      clickFunc: createCircle,
+      iconColor: "blue",
+      btnColor: "primary",
+      disableBtn: false,
+      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "circle")
+    }
   ];
 });
 
@@ -704,6 +708,14 @@ onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNo
 })
 </script>
 <style scoped lang="scss">
+
+.splitpanes__pane {
+  // color: hsla(40, 50%, 50%, 0.6);
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+  // font-size: 5em;
+}
 #container {
   display: flex;
   flex-direction: column;

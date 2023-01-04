@@ -86,8 +86,12 @@
   "i18n-ally.localesPaths": [
     "docs/languages",
     "src/languages",
-    "src/assets/languages"
+    "src/assets/languages",
+    "../../../../../../Users/Hans/source/repos/sphericalgeometryvue/src/assets/languages",
+    "../../../../../../Users/Hans/source/repos/sphericalgeometryvue/src/assets/langs"
   ],
   "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "i18n-ally.enabledFrameworks": ["vue"],
+  "i18n-ally.localPaths": ["./src/assets/languages"]
 }

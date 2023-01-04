@@ -263,7 +263,6 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import { Component, Prop, Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "../types/Styles";

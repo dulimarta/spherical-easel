@@ -71,9 +71,7 @@
 </style>
 <script lang="ts" setup>
 import  {ref, watch} from "vue";
-// import Component from "vue-class-component";
 import { SESlider } from "@/models/SESlider";
-// import { Watch } from "vue-property-decorator";
 import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
 // @Component
 // export default class SliderForm extends Vue {

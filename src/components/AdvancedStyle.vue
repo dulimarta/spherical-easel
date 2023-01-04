@@ -3,18 +3,16 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import Component from "vue-class-component";
-import { Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
-@Component({
-  components: { FadeInCard },
-  computed: {
-    ...mapState(useSEStore, ["selectedSENodules"])
-  }
-})
+// @Component({
+//   components: { FadeInCard },
+//   computed: {
+//     ...mapState(useSEStore, ["selectedSENodules"])
+//   }
+// })
 export default class AdvancedStyle extends Vue {
   // You are not allow to style labels directly so remove them from the selection and warn the user
   readonly selectedSENodules!: SENodule[];
@@ -38,7 +36,7 @@ export default class AdvancedStyle extends Vue {
     return this.hasStyles(/strokeWidthPercent/);
   }
 
-  @Watch("selectedSENodules")
+  // @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());

@@ -13,7 +13,7 @@
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug",
-    "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/assets/languages/**/*.json'"
+    "i18n:report": "vue-i18n-extract report"
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
@@ -39,9 +39,7 @@
     "two.js": "0.7.13",
     "vue": "^3.2.0",
     "vue-advanced-cropper": "^1.7.0",
-    "vue-class-component": "^7.2.6",
     "vue-i18n": "^9.2.2",
-    "vue-property-decorator": "^9.1.2",
     "vue-router": "~4.0.0",
     "vue-web-cam": "^1.9.0",
     "vuetify": "3"
@@ -62,13 +60,14 @@
     "@vuepress/plugin-back-to-top": "^1.9.7",
     "canvas": "^2.6.1",
     "eslint": "~8",
-    "eslint-plugin-vue": "^8",
+    "eslint-plugin-vue": "~9.3.0",
     "firestore-jest-mock": "https://github.com/dulimarta/firestore-jest-mock",
     "markdown-it-vuepress-code-snippet-enhanced": "^1.0.1",
     "sass": "~1.32.13",
     "typescript": "~4.5.5",
-    "vite": "4.0.3",
+    "vite": "~4.0.3",
     "vite-plugin-vuetify": "^1.0.1",
+    "vue-i18n-extract": "^2.0.7",
     "vue-jest": "^3.0.7",
     "vuepress": "^1.9.7",
     "vuepress-plugin-check-md": "^0.0.2",

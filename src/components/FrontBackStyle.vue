@@ -380,8 +380,6 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import Component from "vue-class-component";
-import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "../types/Styles";
@@ -410,32 +408,32 @@ type ConflictItems = {
   dashArray: boolean;
   reverseDashArray: boolean;
 };
-@Component({
-  components: {
-    FadeInCard,
-    SimpleNumberSelector,
-    SimpleColorSelector,
-    HintButton,
-    OverlayWithFixButton,
-    StyleEditor,
-    InputGroup
-  },
-  methods: {
-    ...mapActions(useSEStore, ["changeBackContrast"])
-  },
-  computed: {
-    ...mapState(useSEStore, [
-      "selectedSENodules",
-      "oldStyleSelections",
-      "styleSavedFromPanel"
-    ])
-  }
-})
+// @Component({
+//   components: {
+//     FadeInCard,
+//     SimpleNumberSelector,
+//     SimpleColorSelector,
+//     HintButton,
+//     OverlayWithFixButton,
+//     StyleEditor,
+//     InputGroup
+//   },
+//   methods: {
+//     ...mapActions(useSEStore, ["changeBackContrast"])
+//   },
+//   computed: {
+//     ...mapState(useSEStore, [
+//       "selectedSENodules",
+//       "oldStyleSelections",
+//       "styleSavedFromPanel"
+//     ])
+//   }
+// })
 export default class FrontBackStyle extends Vue {
-  @Prop()
+  // @Prop()
   readonly panel!: StyleEditPanels; // This is a constant in each copy of the BasicFrontBackStyle
 
-  @Prop()
+  // @Prop()
   readonly activePanel!: StyleEditPanels;
 
   readonly selectedSENodules!: SENodule[];
@@ -446,7 +444,7 @@ export default class FrontBackStyle extends Vue {
 
   readonly changeBackContrast!: (_: number) => void;
 
-  @Watch("selectedSENodules")
+  // @Watch("selectedSENodules")
   resetAllItemsFromConflict(): void {
     // console.log("here reset input colors");
     const key = Object.keys(this.conflictItems);

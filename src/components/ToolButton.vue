@@ -51,8 +51,6 @@
 
 <script lang="ts" setup>
 import Vue, { ref, watch, computed } from "vue";
-// import Component from "vue-class-component";
-// import { Prop, Watch } from "vue-property-decorator";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import {  storeToRefs } from "pinia";

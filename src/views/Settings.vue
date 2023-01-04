@@ -134,7 +134,6 @@ div#appSetting {
 }
 </style>
 <script lang="ts" setup>
-// import { Vue, Component } from "vue-property-decorator";
 import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import { User } from "@firebase/auth-types";

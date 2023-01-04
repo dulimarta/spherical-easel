@@ -42,7 +42,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 
-// import { Component, Prop, Vue } from "vue-property-decorator";
 export interface DialogAction {
   hide: () => void;
   show: () => void;

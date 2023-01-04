@@ -22,8 +22,6 @@
 </template>
 <script lang="ts" setup>
 import Vue, { onMounted, ref } from "vue";
-// import Component from "vue-class-component";
-// import { Prop } from "vue-property-decorator";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";

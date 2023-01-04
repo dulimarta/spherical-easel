@@ -116,7 +116,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";

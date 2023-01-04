@@ -68,8 +68,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop, PropSync, Watch } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
 // import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
