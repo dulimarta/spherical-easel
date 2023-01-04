@@ -78,7 +78,7 @@
         plain
         depressed
         class="pa-0 mx-0">
-        <v-icon>$vuetify.icons.value.notifications </v-icon>
+        <v-icon>$notifications </v-icon>
       </v-btn>
       <v-snackbar
         v-if="currentMsg"

@@ -14,8 +14,8 @@
     <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
-    <v-app-bar color="primary" :title="i18nText('main.SphericalEaselMainTitle')">
-
+    <v-app-bar color="primary" :title="t('main.SphericalEaselMainTitle')">
+      {{ locale }}
       <div class="d-flex align-center">
         <router-link to="/">
           <v-img
@@ -235,7 +235,7 @@ import { storeToRefs } from "pinia";
 import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
-import { i18nText } from "./i18n";
+import { useI18n } from "vue-i18n";
 import { appAuth, appStorage, appDB } from "./firebase-config";
 import { useRouter } from "vue-router";
 
@@ -249,6 +249,7 @@ import { useRouter } from "vue-router";
 // @Component({
 //   components: { MessageBox, Dialog },
 //   methods: {
+  const {t, locale} = useI18n({inheritLocale: true})
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 //     ...mapActions(useAccountStore, ["resetToolset"]),

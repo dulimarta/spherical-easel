@@ -14,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
-    "types": ["vuetify", "webpack", "webpack-env", "jest" /*"cypress" */],
+    "types": ["vuetify", "jest", "@intlify/unplugin-vue-i18n/messages"],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types",
@@ -40,6 +40,6 @@
   //   }
   // },
   "vueCompilerOptions": {
-    "target": 2.7
+    "target": 3
   }
 }

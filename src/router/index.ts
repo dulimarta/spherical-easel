@@ -1,9 +1,7 @@
-// import Vue from "vue";
 import  { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
-// Vue.use(VueRouter);
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -54,12 +52,3 @@ export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
-
-// export const createRouter = () => {
-//   return new VueRouter({
-//     mode: "history",
-//     base: process.env.BASE_URL,
-//     routes
-//   });
-// };
-// export default router;

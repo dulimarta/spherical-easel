@@ -11,7 +11,7 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" v-on="on">
-              <v-icon left>$vuetify.icons.value.toolsTab</v-icon>
+              <v-icon left>$toolsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
@@ -23,7 +23,7 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" v-on="on">
-              <v-icon left>$vuetify.icons.value.objectsTab</v-icon>
+              <v-icon left>$objectsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
@@ -34,7 +34,7 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" v-on="on">
-              <v-icon left>$vuetify.icons.value.constructionsTab</v-icon>
+              <v-icon left>$constructionsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
@@ -58,11 +58,11 @@
       class="mini-icons"
       key="partial">
       <v-spacer />
-      <v-icon>$vuetify.icons.value.toolsTab</v-icon>
+      <v-icon>$toolsTab</v-icon>
       <v-spacer />
-      <v-icon>$vuetify.icons.value.objectsTab</v-icon>
+      <v-icon>$objectsTab</v-icon>
       <v-spacer />
-      <v-icon>$vuetify.icons.value.constructionsTab</v-icon>
+      <v-icon>$constructionsTab</v-icon>
       <v-spacer />
     </div>
   </transition>
@@ -71,7 +71,8 @@
 <script lang="ts" setup>
 import Vue, { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
-
+import ObjectTree from "./ObjectTree.vue";
+import ConstructionLoader from "./ConstructionLoader.vue";
 import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";

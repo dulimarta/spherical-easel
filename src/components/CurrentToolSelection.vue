@@ -4,9 +4,9 @@
     <div v-if="!toolboxMinified">
       <v-container class="pa-4" v-if="activeToolName">
         <v-row>
-        <v-icon  class="mr-2" :key="Math.random()"
-          >$vuetify.icons.values.{{ actionMode }}
-        </v-icon>
+        <v-icon  class="mr-2" :key="Math.random()" icon="point"></v-icon>
+          <!--{{ actionMode }}
+        </v-icon-->
         <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
         <h3 v-if="activeToolName != 'ApplyTransformationDisplayedName'">
           {{ $t(`buttons.${activeToolName}`, {}).toString() }}
@@ -16,7 +16,7 @@
             {{ $t(`buttons.${activeToolName}`, {}).toString() }}
             <br />
             <h4 class="ap" :key="Math.random()">
-              {{ applyTransformationText }}
+              {{ t('objects.selectTransformation') }}
             </h4>
           </h3>
         </template>
@@ -40,7 +40,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, onBeforeUnmount, onMounted } from "vue";
 import { useSEStore } from "@/stores/se";
-import i18n from "@/i18n";
+import { useI18n } from "vue-i18n"
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 
@@ -49,10 +49,11 @@ const props = defineProps<{
 }>();
 const seStore = useSEStore();
 const { activeToolName, actionMode } = storeToRefs(seStore);
+const {t} = useI18n()
 const applyTransformationText = ref("");
-applyTransformationText.value = i18n
-  .t(`objects.selectTransformation`)
-  .toString();
+// applyTransformationText.value = i18n
+//   .t(`objects.selectTransformation`)
+//   .toString();
 
 //The next 3 functions are for the text for the applied transformation.
 onBeforeMount((): void => {

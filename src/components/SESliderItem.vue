@@ -4,7 +4,7 @@
       @click="selectMe"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-      <v-icon>$vuetify.icons.value.slider</v-icon>
+      <v-icon>$slider</v-icon>
       <span>{{ node.name }}: {{node.value}}</span>
     </div>
     <v-slider v-model.number="node.value"

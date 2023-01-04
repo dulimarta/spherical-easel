@@ -247,7 +247,7 @@ const developerButtonList: ToolButtonType[] = [
     id: 0,
     actionModeValue: "iconFactory",
     displayedName: "CreateIconDisplayedName",
-    icon: "$vuetify.icons.value.iconFactory",
+    icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",
     toolUseMessage: "CreateIconToolUseMessage",
     displayToolUseMessage: false

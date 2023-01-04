@@ -7,134 +7,134 @@
       <v-row dense justify="start" class="pa-0">
         <v-col cols="auto">
           <v-icon v-if="isAntipode" medium>
-            $vuetify.icons.value.antipodalPoint</v-icon
+            $antipodalPoint</v-icon
           >
           <v-icon v-else-if="isPointOnObject" medium>
-            $vuetify.icons.value.pointOnObject
+            $pointOnObject
           </v-icon>
           <v-icon v-else-if="isIntersectionPoint" medium>
-            $vuetify.icons.value.intersect
+            $intersect
           </v-icon>
           <v-icon v-else-if="isPolar" medium>
-            $vuetify.icons.value.polar
+            $polar
           </v-icon>
           <v-icon v-else-if="isMidpoint" medium>
-            $vuetify.icons.value.midpoint
+            $midpoint
           </v-icon>
           <v-icon v-else-if="isNSectPoint" medium>
-            $vuetify.icons.value.nSectPoint
+            $nSectPoint
           </v-icon>
           <v-icon v-else-if="isTransformedPoint" medium>
-            $vuetify.icons.value.transformedPoint
+            $transformedPoint
           </v-icon>
           <v-icon v-else-if="isPoint" medium>
-            $vuetify.icons.value.point</v-icon
+            $point</v-icon
           >
           <v-icon v-else-if="isTransformedSegment" medium>
-            $vuetify.icons.value.transformedSegment
+            $transformedSegment
           </v-icon>
           <v-icon v-else-if="isLineSegment" medium>
-            $vuetify.icons.value.segment</v-icon
+            $segment</v-icon
           >
           <v-icon v-else-if="isPerpendicular" medium>
-            $vuetify.icons.value.perpendicular</v-icon
+            $perpendicular</v-icon
           >
           <v-icon v-else-if="isTangent" medium>
-            $vuetify.icons.value.tangent</v-icon
+            $tangent</v-icon
           >
           <v-icon v-else-if="isAngleBisector" medium>
-            $vuetify.icons.value.angleBisector</v-icon
+            $angleBisector</v-icon
           >
           <v-icon v-else-if="isNSectLine" medium>
-            $vuetify.icons.value.nSectLine</v-icon
+            $nSectLine</v-icon
           >
           <v-icon v-else-if="isTransformedLine" medium>
-            $vuetify.icons.value.transformedLine
+            $transformedLine
           </v-icon>
-          <v-icon v-else-if="isLine" medium> $vuetify.icons.value.line</v-icon>
+          <v-icon v-else-if="isLine" medium> $line</v-icon>
           <v-icon v-else-if="isTransformedCircle" medium>
-            $vuetify.icons.value.transformedCircle
+            $transformedCircle
           </v-icon>
           <v-icon v-else-if="isCircle" medium>
-            $vuetify.icons.value.circle
+            $circle
           </v-icon>
           <v-icon v-else-if="isTransformedEllipse" medium>
-            $vuetify.icons.value.transformedEllipse
+            $transformedEllipse
           </v-icon>
           <v-icon v-else-if="isEllipse" medium>
-            $vuetify.icons.value.ellipse
+            $ellipse
           </v-icon>
           <v-icon v-else-if="isParametric" medium>
-            $vuetify.icons.value.parametric
+            $parametric
           </v-icon>
           <v-icon
             :class="shakeTransformationDisplay"
             v-else-if="isTranslation"
             medium>
-            $vuetify.icons.value.translation
+            $translation
           </v-icon>
           <v-icon
             :class="shakeTransformationDisplay"
             v-else-if="isRotation"
             medium>
-            $vuetify.icons.value.rotation
+            $rotation
           </v-icon>
           <v-icon
             :class="shakeTransformationDisplay"
             v-else-if="isReflection"
             medium>
-            $vuetify.icons.value.reflection
+            $reflection
           </v-icon>
           <v-icon
             :class="shakeTransformationDisplay"
             v-else-if="isPointReflection"
             medium>
-            $vuetify.icons.value.pointReflection
+            $pointReflection
           </v-icon>
           <v-icon
             :class="shakeTransformationDisplay"
             v-else-if="isInversion"
             medium>
-            $vuetify.icons.value.inversion
+            $inversion
           </v-icon>
           <v-icon :class="shakeMeasurementDisplay" v-else-if="isAngle" medium>
-            $vuetify.icons.value.angle
+            $angle
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isMeasureTriangle"
             medium>
-            $vuetify.icons.value.measureTriangle
+            $measureTriangle
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isMeasurePolygon"
             medium>
-            $vuetify.icons.value.measurePolygon
+            $measurePolygon
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isSegmentLength"
             medium>
-            $vuetify.icons.value.segmentLength
+            $segmentLength
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isPointDistance"
             medium>
-            $vuetify.icons.value.pointDistance
+            $pointDistance
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isCalculation"
             medium>
-            $vuetify.icons.value.calculationObject
+            $calculationObject
           </v-icon>
           <v-icon
             :class="shakeMeasurementDisplay"
             v-else-if="isMeasurement"
             medium>
-            $vuetify.icons.value.measurementObject
+            $measurementObject
           </v-icon>
         </v-col>
         <v-col class="text-truncate">
@@ -167,7 +167,7 @@
                     v-on="on"
                     @click="copyToClipboard">
                     <v-icon small>
-                      $vuetify.icons.value.copyToClipboard
+                      $copyToClipboard
                     </v-icon>
                   </div>
                 </template>
@@ -183,7 +183,7 @@
                     v-on="on"
                     @click="cycleValueDisplayMode">
                     <v-icon small>
-                      $vuetify.icons.value.cycleNodeValueDisplayMode
+                      $cycleNodeValueDisplayMode
                     </v-icon>
                   </div>
                 </template>
@@ -199,14 +199,14 @@
                     v-on="on"
                     @click="toggleVisibility">
                     <v-icon small v-if="isHidden" :key="visibilityUpdateKey">
-                      $vuetify.icons.value.showNode
+                      $showNode
                     </v-icon>
                     <v-icon
                       small
                       v-else
                       style="color: gray"
                       :key="visibilityUpdateKey">
-                      $vuetify.icons.value.hideNode
+                      $
                     </v-icon>
                   </div>
                 </template>
@@ -225,14 +225,14 @@
                       small
                       v-if="isLabelHidden"
                       :key="labelVisibilityUpdateKey">
-                      $vuetify.icons.value.showNodeLabel
+                      $showNodeLabel
                     </v-icon>
                     <v-icon
                       small
                       v-else
                       style="color: gray"
                       :key="labelVisibilityUpdateKey">
-                      $vuetify.icons.value.hideNodeLabel
+                      $hideNodeLabel
                     </v-icon>
                   </div>
                 </template>
@@ -243,7 +243,7 @@
               <v-tooltip right>
                 <template v-slot:activator="{ on }">
                   <div id="_delete_node" v-on="on" @click="deleteNode">
-                    <v-icon small> $vuetify.icons.value.deleteNode </v-icon>
+                    <v-icon small> $deleteNode </v-icon>
                   </div>
                 </template>
                 <span>{{ $t(`objectTree.deleteNode`) }}</span>

@@ -103,7 +103,7 @@
       depressed
       class="pa-0 mx-0"
       >
-      <v-icon>$vuetify.icons.value.stylePanel
+      <v-icon>$stylePanel
       </v-icon>
 
     </v-btn>

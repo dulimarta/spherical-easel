@@ -1,38 +1,13 @@
-import Vue from "vue";
-import VueI18n, { LocaleMessages } from "vue-i18n";
-import messagesEn from "@/assets/languages/en";
-Vue.use(VueI18n);
+import { createI18n } from "vue-i18n";
+// import messagesEn from "@/assets/languages/en";
+// import messagedId from "@/assets/languages/id";
+import messages from "@intlify/unplugin-vue-i18n/messages"
 
-// function loadLocaleMessages(): LocaleMessages {
-//   const locales = require.context(
-//     "@/assets/languages",
-//     true,
-//     /[A-Za-z0-9-_,\s]+\.ts$/i
-//   );
-//   const messages: LocaleMessages = {};
-//   locales.keys().forEach(key => {
-//     const matched = key.match(/([A-Za-z0-9-_]+)\./i);
-//     if (matched && matched.length > 1) {
-//       const locale = matched[1];
-//       messages[locale] = locales(key).default;
-//     }
-//   });
-//   return messages;
-// }
-
-export function i18nText(key: string): string {
-  return i18nInstance.t(key).toString();
-}
-
-const i18nInstance = new VueI18n({
+export default createI18n({
   locale: import.meta.env.VITE_APP_I18N_LOCALE || "en",
-  fallbackLocale: import.meta.env.VITE_APP_I18N_FALLBACK_LOCALE || "en",
   /* skip the function call in a test environment */
-  messages:
-    // import.meta.env.MODE === "test"
-    {
-      en: messagesEn
-    }
-  // : loadLocaleMessages()
+  messages /*{
+    en: messagesEn,
+    id: messagedId
+  }*/
 });
-export default i18nInstance;

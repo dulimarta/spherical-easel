@@ -10,7 +10,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "select",
         displayedName: "SelectDisplayedName",
-        icon: "$vuetify.icons.value.select",
+        icon: "$select",
         toolTipMessage: "SelectToolTipMessage",
         toolUseMessage: "SelectToolUseMessage",
         displayToolUseMessage: false
@@ -19,7 +19,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "delete",
         displayedName: "DeleteDisplayedName",
-        icon: "$vuetify.icons.value.delete",
+        icon: "$delete",
         toolTipMessage: "DeleteToolTipMessage",
         toolUseMessage: "DeleteToolUseMessage",
         displayToolUseMessage: false
@@ -28,7 +28,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 25,
         actionModeValue: "zoomIn",
         displayedName: "PanZoomInDisplayedName",
-        icon: "$vuetify.icons.value.zoomIn",
+        icon: "$zoomIn",
         toolTipMessage: "PanZoomInToolTipMessage",
         toolUseMessage: "PanZoomInToolUseMessage",
         displayToolUseMessage: false
@@ -37,7 +37,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 30,
         actionModeValue: "zoomOut",
         displayedName: "PanZoomOutDisplayedName",
-        icon: "$vuetify.icons.value.zoomOut",
+        icon: "$zoomOut",
         toolTipMessage: "PanZoomOutToolTipMessage",
         toolUseMessage: "PanZoomOutToolUseMessage",
         displayToolUseMessage: false
@@ -46,7 +46,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 35,
         actionModeValue: "zoomFit",
         displayedName: "ZoomFitDisplayedName",
-        icon: "$vuetify.icons.value.zoomFit",
+        icon: "$zoomFit",
         toolTipMessage: "ZoomFitToolTipMessage",
         toolUseMessage: "ZoomFitToolUseMessage",
         displayToolUseMessage: false
@@ -60,7 +60,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "hide",
         displayedName: "HideDisplayedName",
-        icon: "$vuetify.icons.value.hide",
+        icon: "$hide",
         toolTipMessage: "HideObjectToolTipMessage",
         toolUseMessage: "HideObjectToolUseMessage",
         displayToolUseMessage: false
@@ -69,7 +69,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "toggleLabelDisplay",
         displayedName: "ToggleLabelDisplayedName",
-        icon: "$vuetify.icons.value.toggleLabelDisplay",
+        icon: "$toggleLabelDisplay",
         toolTipMessage: "ToggleLabelToolTipMessage",
         toolUseMessage: "ToggleLabelToolUseMessage",
         displayToolUseMessage: false
@@ -79,7 +79,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "move",
         displayedName: "MoveDisplayedName",
-        icon: "$vuetify.icons.value.move",
+        icon: "$move",
         toolTipMessage: "MoveObjectToolTipMessage",
         toolUseMessage: "MoveObjectToolUseMessage",
         displayToolUseMessage: false
@@ -88,7 +88,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "rotate",
         displayedName: "RotateDisplayedName",
-        icon: "$vuetify.icons.value.rotate",
+        icon: "$rotate",
         toolTipMessage: "RotateSphereToolTipMessage",
         toolUseMessage: "RotateSphereToolUseMessage",
         displayToolUseMessage: false
@@ -102,7 +102,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "point",
         displayedName: "CreatePointDisplayedName",
-        icon: "$vuetify.icons.value.point",
+        icon: "$point",
         toolTipMessage: "CreatePointToolTipMessage",
         toolUseMessage: "CreatePointToolUseMessage",
         displayToolUseMessage: false
@@ -111,7 +111,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "line",
         displayedName: "CreateLineDisplayedName",
-        icon: "$vuetify.icons.value.line",
+        icon: "$line",
         toolTipMessage: "CreateLineToolTipMessage",
         toolUseMessage: "CreateLineToolUseMessage",
         displayToolUseMessage: false
@@ -120,7 +120,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 10,
         actionModeValue: "segment",
         displayedName: "CreateLineSegmentDisplayedName",
-        icon: "$vuetify.icons.value.segment",
+        icon: "$segment",
         toolTipMessage: "CreateLineSegmentToolTipMessage",
         toolUseMessage: "CreateLineSegmentToolUseMessage",
         displayToolUseMessage: false
@@ -129,7 +129,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "circle",
         displayedName: "CreateCircleDisplayedName",
-        icon: "$vuetify.icons.value.circle",
+        icon: "$circle",
         toolTipMessage: "CreateCircleToolTipMessage",
         toolUseMessage: "CreateCircleToolUseMessage",
         displayToolUseMessage: false
@@ -143,7 +143,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "midpoint",
         displayedName: "CreateMidpointDisplayedName",
-        icon: "$vuetify.icons.value.midpoint",
+        icon: "$midpoint",
         toolTipMessage: "CreateMidpointToolTipMessage",
         toolUseMessage: "CreateMidpointToolUseMessage",
         displayToolUseMessage: false
@@ -152,7 +152,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "angleBisector",
         displayedName: "CreateAngleBisectorDisplayedName",
-        icon: "$vuetify.icons.value.angleBisector",
+        icon: "$angleBisector",
         toolTipMessage: "CreateAngleBisectorToolTipMessage",
         toolUseMessage: "CreateAngleBisectorToolUseMessage",
         displayToolUseMessage: false
@@ -161,7 +161,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "antipodalPoint",
         displayedName: "CreateAntipodalPointDisplayedName",
-        icon: "$vuetify.icons.value.antipodalPoint",
+        icon: "$antipodalPoint",
         toolTipMessage: "CreateAntipodalPointToolTipMessage",
         toolUseMessage: "CreateAntipodalPointToolUseMessage",
         displayToolUseMessage: false
@@ -170,7 +170,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "polar",
         displayedName: "CreatePolarDisplayedName",
-        icon: "$vuetify.icons.value.polar",
+        icon: "$polar",
         toolTipMessage: "CreatePolarToolTipMessage",
         toolUseMessage: "CreatePolarToolUseMessage",
         displayToolUseMessage: false
@@ -179,7 +179,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 25,
         actionModeValue: "tangent",
         displayedName: "CreateTangentDisplayedName",
-        icon: "$vuetify.icons.value.tangent",
+        icon: "$tangent",
         toolTipMessage: "CreateTangentToolTipMessage",
         toolUseMessage: "CreateTangentToolUseMessage",
         displayToolUseMessage: false
@@ -188,7 +188,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 30,
         actionModeValue: "perpendicular",
         displayedName: "CreatePerpendicularDisplayedName",
-        icon: "$vuetify.icons.value.perpendicular",
+        icon: "$perpendicular",
         toolTipMessage: "CreatePerpendicularToolTipMessage",
         toolUseMessage: "CreatePerpendicularToolUseMessage",
         displayToolUseMessage: false
@@ -197,7 +197,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 50,
         actionModeValue: "intersect",
         displayedName: "CreateIntersectionDisplayedName",
-        icon: "$vuetify.icons.value.intersect",
+        icon: "$intersect",
         toolTipMessage: "CreateIntersectionToolTipMessage",
         toolUseMessage: "CreateIntersectionToolUseMessage",
         displayToolUseMessage: false
@@ -206,7 +206,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 45,
         actionModeValue: "pointOnObject",
         displayedName: "CreatePointOnOneDimDisplayedName",
-        icon: "$vuetify.icons.value.pointOnObject",
+        icon: "$pointOnObject",
         toolTipMessage: "CreatePointOnOneDimToolTipMessage",
         toolUseMessage: "CreatePointOnOneDimToolUseMessage",
         displayToolUseMessage: false
@@ -220,7 +220,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "segmentLength",
         displayedName: "CreateSegmentLengthDisplayedName",
-        icon: "$vuetify.icons.value.segmentLength",
+        icon: "$segmentLength",
         toolTipMessage: "CreateSegmentLengthToolTipMessage",
         toolUseMessage: "CreateSegmentLengthToolUseMessage",
         displayToolUseMessage: false
@@ -229,7 +229,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "pointDistance",
         displayedName: "CreatePointDistanceDisplayedName",
-        icon: "$vuetify.icons.value.pointDistance",
+        icon: "$pointDistance",
         toolTipMessage: "CreatePointDistanceToolTipMessage",
         toolUseMessage: "CreatePointDistanceToolUseMessage",
         displayToolUseMessage: false
@@ -238,7 +238,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 10,
         actionModeValue: "angle",
         displayedName: "CreateAngleDisplayedName",
-        icon: "$vuetify.icons.value.angle",
+        icon: "$angle",
         toolTipMessage: "CreateAngleToolTipMessage",
         toolUseMessage: "CreateAngleToolUseMessage",
         displayToolUseMessage: false
@@ -247,7 +247,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "coordinate",
         displayedName: "CreateCoordinateDisplayedName",
-        icon: "$vuetify.icons.value.coordinate",
+        icon: "$coordinate",
         toolTipMessage: "CreateCoordinateToolTipMessage",
         toolUseMessage: "CreateCoordinateToolUseMessage",
         displayToolUseMessage: false
@@ -256,7 +256,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "measureTriangle",
         displayedName: "MeasureTriangleDisplayedName",
-        icon: "$vuetify.icons.value.measureTriangle",
+        icon: "$measureTriangle",
         toolTipMessage: "MeasureTriangleToolTipMessage",
         toolUseMessage: "MeasureTriangleToolUseMessage",
         displayToolUseMessage: false
@@ -265,7 +265,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 25,
         actionModeValue: "measurePolygon",
         displayedName: "MeasurePolygonDisplayedName",
-        icon: "$vuetify.icons.value.measurePolygon",
+        icon: "$measurePolygon",
         toolTipMessage: "MeasurePolygonToolTipMessage",
         toolUseMessage: "MeasurePolygonToolUseMessage",
         displayToolUseMessage: false
@@ -279,7 +279,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "ellipse",
         displayedName: "CreateEllipseDisplayedName",
-        icon: "$vuetify.icons.value.ellipse",
+        icon: "$ellipse",
         toolTipMessage: "CreateEllipseToolTipMessage",
         toolUseMessage: "CreateEllipseToolUseMessage",
         displayToolUseMessage: false
@@ -293,7 +293,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 10,
         actionModeValue: "nSectPoint",
         displayedName: "CreateNSectSegmentDisplayedName",
-        icon: "$vuetify.icons.value.nSectPoint",
+        icon: "$nSectPoint",
         toolTipMessage: "CreateNSectSegmentToolTipMessage",
         toolUseMessage: "CreateNSectSegmentToolUseMessage",
         displayToolUseMessage: false
@@ -302,7 +302,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "nSectLine",
         displayedName: "CreateNSectAngleDisplayedName",
-        icon: "$vuetify.icons.value.nSectLine",
+        icon: "$nSectLine",
         toolTipMessage: "CreateNSectAngleToolTipMessage",
         toolUseMessage: "CreateNSectAngleToolUseMessage",
         displayToolUseMessage: false
@@ -311,7 +311,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "threePointCircle",
         displayedName: "CreateThreePointCircleDisplayedName",
-        icon: "$vuetify.icons.value.threePointCircle",
+        icon: "$threePointCircle",
         toolTipMessage: "CreateThreePointCircleToolTipMessage",
         toolUseMessage: "CreateThreePointCircleToolUseMessage",
         displayToolUseMessage: false
@@ -325,7 +325,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 0,
         actionModeValue: "pointReflection",
         displayedName: "CreatePointReflectionDisplayedName",
-        icon: "$vuetify.icons.value.pointReflection",
+        icon: "$pointReflection",
         toolTipMessage: "CreatePointReflectionToolTipMessage",
         toolUseMessage: "CreatePointReflectionToolUseMessage",
         displayToolUseMessage: false
@@ -334,7 +334,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 5,
         actionModeValue: "reflection",
         displayedName: "CreateReflectionDisplayedName",
-        icon: "$vuetify.icons.value.reflection",
+        icon: "$reflection",
         toolTipMessage: "CreateReflectionToolTipMessage",
         toolUseMessage: "CreateReflectionToolUseMessage",
         displayToolUseMessage: false
@@ -343,7 +343,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 10,
         actionModeValue: "rotation",
         displayedName: "CreateRotationDisplayedName",
-        icon: "$vuetify.icons.value.rotation",
+        icon: "$rotation",
         toolTipMessage: "CreateRotationToolTipMessage",
         toolUseMessage: "CreateRotationToolUseMessage",
         displayToolUseMessage: false
@@ -352,7 +352,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "translation",
         displayedName: "CreateTranslationDisplayedName",
-        icon: "$vuetify.icons.value.translation",
+        icon: "$translation",
         toolTipMessage: "CreateTranslationToolTipMessage",
         toolUseMessage: "CreateTranslationToolUseMessage",
         displayToolUseMessage: false
@@ -361,7 +361,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 20,
         actionModeValue: "inversion",
         displayedName: "CreateInversionDisplayedName",
-        icon: "$vuetify.icons.value.inversion",
+        icon: "$inversion",
         toolTipMessage: "CreateInversionToolTipMessage",
         toolUseMessage: "CreateInversionToolUseMessage",
         displayToolUseMessage: false
@@ -370,7 +370,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 25,
         actionModeValue: "applyTransformation",
         displayedName: "ApplyTransformationDisplayedName",
-        icon: "$vuetify.icons.value.applyTransformation",
+        icon: "$applyTransformation",
         toolTipMessage: "ApplyTransformationToolTipMessage",
         toolUseMessage: "ApplyTransformationToolUseMessage",
         displayToolUseMessage: false
@@ -384,7 +384,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
         id: 15,
         actionModeValue: "measuredCircle",
         displayedName: "CreateMeasuredCircleDisplayedName",
-        icon: "$vuetify.icons.value.measuredCircle",
+        icon: "$measuredCircle",
         toolTipMessage: "CreateMeasuredCircleToolTipMessage",
         toolUseMessage: "CreateMeasuredCircleToolUseMessage",
         displayToolUseMessage: false
