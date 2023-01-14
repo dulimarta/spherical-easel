@@ -323,8 +323,8 @@
             <StylePanel :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" />
 
-                     <MessageBox :minified="notificationsPanelMinified"
-              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+                     <!--MessageBox :minified="notificationsPanelMinified"
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
 
             </div>
 
@@ -392,7 +392,7 @@ import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
-import MessageBox from "@/components/MessageBox.vue";
+// import MessageBox from "@/components/MessageBox.vue";
 import {toolGroups} from "@/components/toolgroups";
 
 
@@ -414,7 +414,7 @@ import {toolGroups} from "@/components/toolgroups";
     Dialog,
     ShortcutIcon,
     CurrentToolSelection,
-    MessageBox
+    // MessageBox
   },
   methods: {
     ...mapActions(useSEStore, [

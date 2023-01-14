@@ -245,7 +245,7 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import MessageBox from "@/components/MessageBox.vue";
+// import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
@@ -280,7 +280,7 @@ Component.registerHooks([
 ]);
 
 @Component({
-  components: { MessageBox, Dialog },
+  components: {/*MessageBox,*/ Dialog },
   methods: {
     ...mapActions(useAccountStore, ["resetToolset"]),
     ...mapActions(useSEStore, ["clearUnsavedFlag"])
@@ -357,7 +357,7 @@ export default class App extends Vue {
   applyTransformationText = i18n.t(`objects.selectTransformation`);
 
   get baseURL(): string {
-    return process.env.BASE_URL ?? "";
+    return import.meta.env.BASE_URL ?? "";
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -398,7 +398,7 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    console.log("Base URL is ", process.env.BASE_URL);
+    console.log("Base URL is ", import.meta.env.BASE_URL);
     // SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(

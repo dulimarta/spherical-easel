@@ -3,9 +3,7 @@
     <!-- If the notifications panel is open, then display the messages from the messages array, not the queue.-->
     <div v-if="!minified"
       key="full"
-      style="height: 100%; overflow:auto"
-      @mouseenter="() => {}"
-      @mouseleave="() => {}">
+      style="height: 100%; overflow:auto">
 
       <v-divider></v-divider>
       <v-container id="scroll-target"
