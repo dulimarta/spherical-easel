@@ -10,17 +10,17 @@
                 :open-delay="toolTipOpenDelay"
                 :close-delay="toolTipCloseDelay"
                 max-width="400px">
-                <template v-slot:activator="{ on }">
+                <template v-slot:activator="{ props }">
                   <v-textarea
                     v-bind:label="$t(i18nKey)"
-                    v-on="on"
+                    v-bind="props"
                     auto-growdense
                     outlined
                     clearable
                     rows="2"
                     :placeholder="placeholder"
                     class="ma-0"
-                    v-model="coordinateExpression"
+                    :model-value="coordinateExpression"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
                     @click:clear="reset">

@@ -9,8 +9,8 @@
           bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
-          <template v-slot:activator="{ on }">
-            <v-tab class="mt-3" v-on="on">
+          <template v-slot:activator="{ props }">
+            <v-tab class="mt-3" v-bind="props">
               <v-icon left>$toolsTab</v-icon>
             </v-tab>
           </template>
@@ -21,8 +21,8 @@
           bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
-          <template v-slot:activator="{ on }">
-            <v-tab class="mt-3" v-on="on">
+          <template v-slot:activator="{ props }">
+            <v-tab class="mt-3" v-bind="props">
               <v-icon left>$objectsTab</v-icon>
             </v-tab>
           </template>
@@ -32,24 +32,27 @@
           bottom
           :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
-          <template v-slot:activator="{ on }">
-            <v-tab class="mt-3" v-on="on">
+          <template v-slot:activator="{ props }">
+            <v-tab class="mt-3" v-bind="props">
               <v-icon left>$constructionsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
         </v-tooltip>
-
-        <v-tab-item>
-          <ToolGroups id="toolGroups"></ToolGroups>
-        </v-tab-item>
-        <v-tab-item>
-          <ObjectTree id="objtree"> </ObjectTree>
-        </v-tab-item>
-        <v-tab-item>
-          <ConstructionLoader id="loader"></ConstructionLoader>
-        </v-tab-item>
       </v-tabs>
+      <v-window v-model="activeLeftDrawerTab">
+        <v-window-item>
+          <ToolGroups id="toolGroups"></ToolGroups>
+        </v-window-item>
+        <v-window-item>
+          Group 2
+          <!--ObjectTree id="objtree"> </ObjectTree-->
+        </v-window-item>
+        <v-window-item>
+          Group 3
+          <!--ConstructionLoader id="loader"></ConstructionLoader-->
+        </v-window-item>
+      </v-window>
     </div>
 
     <div

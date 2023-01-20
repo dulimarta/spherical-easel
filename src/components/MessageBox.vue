@@ -13,7 +13,7 @@
         style="max-height: 400px"
         class="scroll-y">
         <v-row>
-          <v-select dense v-model="selectedMessageType" :items="messageTypes">
+          <v-select dense :model-value="selectedMessageType" :items="messageTypes">
             <template v-slot:selection="{ item }">
               {{ $t(`notifications.${item}`) }}
             </template>
@@ -82,7 +82,7 @@
       </v-btn>
       <v-snackbar
         v-if="currentMsg"
-        v-model="showMe"
+        :model-value="showMe"
         top
         right
         :color="`${currentMsg.msgColor}`"

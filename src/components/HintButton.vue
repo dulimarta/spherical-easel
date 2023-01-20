@@ -1,29 +1,26 @@
 <template>
-  <v-tooltip
-    bottom
-    :open-delay="toolTipOpenDelay"
-    :close-delay="toolTipCloseDelay"
-    max-width="400px">
-    <template v-slot:activator="{ on }">
-      <!-- Use v-bind="$attrs" to pass thru incoming attributes to v-btn.
+  <!-- Use v-bind="$attrs" to pass thru incoming attributes to v-btn.
       Be sure NOT to place it as the last attr -->
-      <v-btn
-        v-on="on"
-        v-bind="$attrs"
-        @click="$listeners.click"
-        class="text-subtitle-2"
-        ripple
-        right
-        bottom
-        fab
-        x-small>
-        <v-icon v-if="type === 'undo'">mdi-undo</v-icon>
-        <v-icon v-else-if="type === 'default'">mdi-backup-restore</v-icon>
-        <v-icon v-else-if="type === 'colorInput'">mdi-dots-horizontal </v-icon>
-      </v-btn>
-    </template>
-    <span v-t="i18nTooltip" :style="labelStyle"></span>
-  </v-tooltip>
+  <v-btn
+    v-bind="$attrs"
+    @click="$listeners.click"
+    class="text-subtitle-2"
+    ripple
+    right
+    bottom
+    fab
+    x-small>
+    <v-icon v-if="type === 'undo'">mdi-undo</v-icon>
+    <v-icon v-else-if="type === 'default'">mdi-backup-restore</v-icon>
+    <v-icon v-else-if="type === 'colorInput'">mdi-dots-horizontal </v-icon>
+    <v-tooltip
+      bottom
+      :open-delay="toolTipOpenDelay"
+      activator="parent"
+      :close-delay="toolTipCloseDelay">
+      {{ i18nTooltip }}
+    </v-tooltip>
+  </v-btn>
 </template>
 
 <script lang="ts" setup>

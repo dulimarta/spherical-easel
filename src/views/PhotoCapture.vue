@@ -3,7 +3,7 @@
     <v-row class="flex-column" align="center">
       <v-col>
         <v-select
-          v-model="selectedDeviceId"
+          :model-value="selectedDeviceId"
           label="Select Camera"
           :items="availableDevices"
           item-text="label"

@@ -7,7 +7,7 @@
       <v-icon>$slider</v-icon>
       <span>{{ node.name }}: {{node.value}}</span>
     </div>
-    <v-slider v-model.number="node.value"
+    <v-slider :model-value.number="node.value"
       :min="node.min"
       :max="node.max"
       :step="node.step"
@@ -16,7 +16,7 @@
     <v-container>
       <v-row align="center">
         <v-col cols="9">
-          <v-select v-model="playbackMode"
+          <v-select :model-value="playbackMode"
             append-icon="mdi-menu"
             :items="playbackSelections"></v-select>
         </v-col>
@@ -25,7 +25,7 @@
         </v-col>
 
         <v-col cols="9">
-          <v-select v-model="playbackSpeed"
+          <v-select :model-value="playbackSpeed"
             append-icon="mdi-speedometer"
             :items="speedSelections"></v-select>
         </v-col>

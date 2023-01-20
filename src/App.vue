@@ -26,23 +26,19 @@
             aspect-ratio="1"
             :width="40" />
         </router-link>
-        <v-tooltip left>
-          <template v-slot:activator="{ on }">
-            <!--- TODO: Change the URL to match the hosting site
+        <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-            <a href="/docs/">
-              <v-icon class="ml-2" v-on="on">mdi-help-circle</v-icon>
-            </a>
-            <!-- Use <a> For GitLab -->
-            <!--a :href="`${baseURL}/docs`">
+        <a href="/docs/">
+          <v-icon class="ml-2">mdi-help-circle</v-icon>
+          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
+        </a>
+        <!-- Use <a> For GitLab -->
+        <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
-                v-on="on">mdi-help-circle</v-icon>
+                v-bind="props">mdi-help-circle</v-icon>
             </a-->
-          </template>
-          <span>Open Doc</span>
-        </v-tooltip>
       </div>
 
       <v-spacer></v-spacer>
@@ -87,13 +83,13 @@
     -->
     <v-main>
       <router-view />
-        <!-- this is the spot where the views controlled by Vue Router will be rendered v-html="$t('buttons.' + button.displayedName )"-->
+      <!-- this is the spot where the views controlled by Vue Router will be rendered v-html="$t('buttons.' + button.displayedName )"-->
 
       <!-- <MessageBox></MessageBox>-->
     </v-main>
   </v-app>
 
-    <!--Dialog
+  <!--Dialog
       ref="logoutDialog"
       :title="i18nText('constructions.confirmLogout')"
       :yes-text="i18nText('constructions.proceed')"
@@ -207,13 +203,14 @@
 -->
 <script lang="ts" setup>
 /* Import the custom components */
-import  {
+import {
   Ref,
   ref,
   computed,
   onBeforeMount,
   onMounted,
-onBeforeUnmount, nextTick
+  onBeforeUnmount,
+  nextTick
 } from "vue";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
@@ -247,7 +244,7 @@ import { useRouter } from "vue-router";
 // @Component({
 //   components: { MessageBox, Dialog },
 //   methods: {
-  const {t, locale} = useI18n({inheritLocale: true})
+const { t, locale } = useI18n({ inheritLocale: true });
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 //     ...mapActions(useAccountStore, ["resetToolset"]),
@@ -286,7 +283,7 @@ const logoutDialog: Ref<DialogAction | null> = ref(null);
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
-const shareLinkReference: Ref<HTMLElement|null> = ref(null);
+const shareLinkReference: Ref<HTMLElement | null> = ref(null);
 // };
 let footerColor = "accent";
 let authSubscription!: Unsubscribe;
@@ -425,7 +422,7 @@ function doLoginOrCheck(): void {
   }
 }
 function showShareConstructionDialog() {
-  shareConstructionDialog.value?.show()
+  shareConstructionDialog.value?.show();
 }
 
 async function doExportConstructionDialog(): Promise<void> {
@@ -619,7 +616,7 @@ function exportDimensionsCheck(txt: string | undefined): boolean {
 }
 
 function showSaveConstructionDialog() {
-  saveConstructionDialog.value?.show()
+  saveConstructionDialog.value?.show();
 }
 
 async function doShare(): Promise<void> {
@@ -690,7 +687,7 @@ async function doShare(): Promise<void> {
           : appStorage
               .ref(`scripts/${constructionDoc.id}`)
               .putString(scriptOut)
-              .then((t) => t.ref.getDownloadURL());
+              .then(t => t.ref.getDownloadURL());
 
       /* Task #3 */
       const svgPromise: Promise<string> =
@@ -699,7 +696,7 @@ async function doShare(): Promise<void> {
           : appStorage
               .ref(`construction-svg/${constructionDoc.id}`)
               .putString(svgPreviewData)
-              .then((t) => t.ref.getDownloadURL());
+              .then(t => t.ref.getDownloadURL());
 
       /* Wrap the result from the three tasks as a new Promise */
       return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);

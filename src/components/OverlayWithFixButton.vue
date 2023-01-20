@@ -32,12 +32,12 @@
 
       <v-card-actions class="justify-center">
         <template>
-          <v-tooltip bottom
+          <v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
-            <template v-slot:activator="{ on }">
-              <v-btn v-on="on"
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props"
                 color="info"
                 @click="$listeners.click">
                 {{$t(i18nButtonLabel)}}

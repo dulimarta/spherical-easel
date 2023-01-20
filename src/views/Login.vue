@@ -3,12 +3,12 @@
     <v-row justify="center">
       <v-col cols="5">
         <v-sheet elevation="4" class="pa-4">
-          <v-form v-model="validEntries">
+          <v-form :model-value="validEntries">
             <v-row class="flex-column mb-2">
               <v-col cols="auto">
                 <v-text-field
                   label="UserId/Email"
-                  v-model="userEmail"
+                  :model-value="userEmail"
                   :rules="emailRules"
                   required
                   prepend-icon="mdi-account"></v-text-field>
@@ -16,7 +16,7 @@
               <v-col cols="auto">
                 <v-text-field
                   label="Password"
-                  v-model="userPassword"
+                  :model-value="userPassword"
                   type="password"
                   :rules="passwordRules"
                   prepend-icon="mdi-lock"></v-text-field>

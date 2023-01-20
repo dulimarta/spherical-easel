@@ -1,7 +1,7 @@
 // <reference path="@/extensions/three-ext.d.ts" />
 // <reference path="@/extensions/number-ext.d.ts" />
 // <reference path="@/types/two.js/index.d.ts" />
-import {createApp} from "vue";
+import {createApp, configureCompat} from "vue";
 import App from "./App.vue";
 import router from "./router";
 import vuetify from "./plugins/vuetify";
@@ -15,7 +15,13 @@ import { useSEStore } from "@/stores/se";
 // import {appDB, appAuth, appStorage} from "@/firebase-config"
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { appDB } from "./firebase-config";
-
+configureCompat({
+  COMPONENT_ASYNC: false,
+  ATTR_FALSE_VALUE: false,
+  RENDER_FUNCTION: false,
+  COMPONENT_V_MODEL: false,
+  WATCH_ARRAY: false,
+})
 const pinia = createPinia();
 
 

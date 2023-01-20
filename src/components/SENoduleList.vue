@@ -14,19 +14,17 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="n in existingChildren">
+        <template v-for="n in existingChildren" :key="n.id">
           <!-- content goes here -->
           <SENoduleItem
             :node="n"
             v-if="!isSlider(n)"
-            :key="n.id"
             v-on:object-select="onExpressionSelect"></SENoduleItem>
           <SESliderItem
             v-else
             :node="toSlider(n) /* a trick to S type error */"
-            :key="`${n.id}-slider`"
             v-on:object-select="onExpressionSelect"></SESliderItem>
-          <v-divider :key="`${n.id}-divider`"></v-divider>
+          <v-divider></v-divider>
         </template>
       </div>
     </transition>

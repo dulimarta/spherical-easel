@@ -1,10 +1,10 @@
 <template>
   <v-container>
-    <v-tabs centered v-model="selectedTab">
+    <v-tabs centered :model-value="selectedTab">
       <v-tab v-if="profileEnabled">User Profile</v-tab>
       <v-tab>App Preferences</v-tab>
     </v-tabs>
-    <v-tabs-items v-model="selectedTab">
+    <v-tabs-items :model-value="selectedTab">
       <v-tab-item v-if="profileEnabled">
         <v-sheet elevation="2" class="pa-2">
           <div
@@ -22,13 +22,13 @@
                 @photo-captured="setUpdatingPicture(false)"></router-view>
             </div>
             <div class="px-2">
-              <v-text-field label="Email" readonly v-model="userEmail" />
-              <v-text-field v-model="userDisplayName" label="Display Name" />
-              <v-text-field v-model="userLocation" label="Location" />
+              <v-text-field label="Email" readonly :model-value="userEmail" />
+              <v-text-field :model-value="userDisplayName" label="Display Name" />
+              <v-text-field :model-value="userLocation" label="Location" />
 
               <v-select
                 label="Role"
-                v-model="userRole"
+                :model-value="userRole"
                 :items="['Student', 'Instructor', 'Community Member']">
               </v-select>
               <v-row justify="center">
@@ -63,7 +63,7 @@
           <div id="appSetting">
             <label>Language</label>
             <v-select
-              v-model="selectedLanguage"
+              :model-value="selectedLanguage"
               outlined
               :items="languages"
               item-text="name"
@@ -72,7 +72,7 @@
               return-object>
             </v-select>
             <label>Decimal Precision</label>
-            <v-radio-group v-model="decimalPrecision" row>
+            <v-radio-group :model-value="decimalPrecision" row>
               <v-radio label="3" value="3"></v-radio>
               <v-radio label="5" value="5"></v-radio>
               <v-radio label="7" value="7"></v-radio>

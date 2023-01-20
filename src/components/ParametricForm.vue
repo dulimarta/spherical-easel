@@ -38,10 +38,9 @@
 
           <v-row>
             <v-col cols="12">
-              <template v-for="(tVal, idk) in tNumberData">
+              <template v-for="(tVal, idk) in tNumberData" :key="idk">
                 <ParametricTNumber
                   :placeholder="tVal.placeholder"
-                  :key="idk"
                   :i18nLabelKey="tVal.i18nLabelkey"
                   :i18nToolTip="tVal.i18nToolTip"
                   :name="tVal.name">
@@ -81,7 +80,7 @@
 </template>
 <script lang="ts" setup>
 import Vue, { computed, onBeforeMount, onBeforeUnmount, onMounted } from "vue";
-import Component from "vue-class-component";
+// import Component from "vue-class-component";
 import {
   CoordExpression,
   MinMaxExpression,

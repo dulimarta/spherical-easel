@@ -42,13 +42,13 @@
           <span>
             {{" ("+ Math.floor(backStyleContrast*100)+"%)" }}
           </span>
-          <v-tooltip bottom
+          <v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
-            <template v-slot:activator="{ on }">
-              <span v-on="on">
-                <v-slider v-model="backStyleContrast"
+            <template v-slot:activator="{ props }">
+              <span v-bind="props">
+                <v-slider :model-value="backStyleContrast"
                   :min="0"
                   step="0.1"
                   :max="1"
@@ -202,7 +202,7 @@
             <!-- Angle Marker Decoration Selector -->
             <v-row justify="space-around">
               <v-col>
-                <v-switch v-model="styleOptions.angleMarkerTickMark"
+                <v-switch :model-value="styleOptions.angleMarkerTickMark"
                   :color="conflictItems.angleMarkerTickMark?'red':''"
                   @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'); conflictItems.angleMarkerTickMark = false">
                   <template v-slot:label>
@@ -212,7 +212,7 @@
                 </v-switch>
               </v-col>
               <v-col>
-                <v-switch v-model="styleOptions.angleMarkerDoubleArc"
+                <v-switch :model-value="styleOptions.angleMarkerDoubleArc"
                   :color="conflictItems.angleMarkerDoubleArc?'red':''"
                   @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'),conflictItems.angleMarkerDoubleArc = false">
                   <template v-slot:label>
@@ -221,7 +221,7 @@
                   </template>
                 </v-switch>
 
-                <v-switch v-model="styleOptions.angleMarkerArrowHeads"
+                <v-switch :model-value="styleOptions.angleMarkerArrowHeads"
                   :color="conflictItems.angleMarkerArrowHeads?'red':''"
                   @change="updateInputGroup('angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'),conflictItems.angleMarkerArrowHeads = false">
                   <template v-slot:label>
@@ -262,7 +262,7 @@
               {{ activeDashPattern(styleOptions) }}
             </span>
             <!-- The dash property slider -->
-            <v-range-slider v-model="styleOptions.dashArray"
+            <v-range-slider :model-value="styleOptions.dashArray"
               :key="dashArrayKey"
               min="0"
               :step="setStep(hasStyle(/angleMarker/))"
@@ -289,13 +289,13 @@
               <v-row justify="space-around"
                 no-gutters>
                 <v-col>
-                  <v-tooltip bottom
+                  <v-tooltip location="bottom"
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay"
                     max-width="400px">
-                    <template v-slot:activator="{ on }">
-                      <span v-on="on">
-                        <v-checkbox v-model="emptyDashPattern"
+                    <template v-slot:activator="{ props }">
+                      <span v-on="props">
+                        <v-checkbox :model-value="emptyDashPattern"
                           :key="activeDashPatternKey"
                           :false-value="true"
                           :true-value="false"
@@ -316,13 +316,13 @@
                   </v-tooltip>
                 </v-col>
                 <v-col>
-                  <v-tooltip bottom
+                  <v-tooltip location="bottom"
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay"
                     max-width="400px">
-                    <template v-slot:activator="{ on }">
-                      <span v-on="on">
-                        <v-checkbox v-model="styleOptions.reverseDashArray"
+                    <template v-slot:activator="{ props }">
+                      <span v-on="props">
+                        <v-checkbox :model-value="styleOptions.reverseDashArray"
                           :key="activeReverseDashPatternKey"
                           :disabled="emptyDashPattern"
                           :color="conflictItems.reverseDashArray? `red`: ''"
@@ -352,13 +352,13 @@
     <v-container class="pa-0 ma-0">
       <v-row no-gutters>
         <v-col cols="auto">
-          <v-tooltip bottom
+          <v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px"
             class="pa-0 pm-0">
-            <template v-slot:activator="{on}">
-              <v-btn v-on="on"
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props"
                 @click="toggleShowMoreLabelStyles"
                 class="text-subtitle-2"
                 text

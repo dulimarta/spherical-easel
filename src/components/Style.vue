@@ -23,7 +23,7 @@
                 sm="4"
                 md="4"
                 class="ma-0 pl-0 pb-0 pt-0 pr-0">
-                <v-switch v-model="allLabelsShowing"
+                <v-switch :model-value="allLabelsShowing"
                   @change="toggleLabelsShowing"
                   :label="$t('style.showLabels')"
                   color="primary"
@@ -36,7 +36,7 @@
                 sm="4"
                 md="4"
                 class="ma-0 pl-0 pb-0 pt-0 pr-0">
-                <v-switch v-model="allObjectsShowing"
+                <v-switch :model-value="allObjectsShowing"
                   @change="toggleObjectsShowing"
                   :label="$t('style.showObjects')"
                   color="primary"
@@ -74,7 +74,7 @@
         @click="$emit('toggle-style-panel')">
       </OverlayWithFixButton>
 
-      <v-expansion-panels v-model="activePanel">
+      <v-expansion-panels :model-value="activePanel">
         <v-expansion-panel v-for="(p, idx) in panels"
           :key="idx">
           <v-expansion-panel-header color="blue lighten-3"

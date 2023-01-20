@@ -138,13 +138,13 @@
           </v-icon>
         </v-col>
         <v-col class="text-truncate">
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
+          <v-tooltip location="end">
+            <template v-slot:activator="{ props }">
               <div
                 id="_test_selection"
                 class="contentText"
                 @click="selectMe"
-                v-on="on"
+                v-bind="props"
                 :class="[
                   showClass,
                   shakeMeasurementDisplay,
@@ -159,12 +159,12 @@
         <v-col justify="end">
           <v-row align="center" no-gutters>
             <v-col>
-              <v-tooltip right>
-                <template v-slot:activator="{ on }">
+              <v-tooltip location="end">
+                <template v-slot:activator="{ props }">
                   <div
                     id="_test_copy_to_clipboard"
                     v-if="isMeasurement && supportsClipboard"
-                    v-on="on"
+                    v-bind="props"
                     @click="copyToClipboard">
                     <v-icon small>
                       $copyToClipboard
@@ -175,12 +175,12 @@
               </v-tooltip>
             </v-col>
             <v-col>
-              <v-tooltip right>
-                <template v-slot:activator="{ on }">
+              <v-tooltip location="end">
+                <template v-slot:activator="{ props }">
                   <div
                     id="_test_toggle_format"
                     v-if="isExpressionAndNotCoordinate"
-                    v-on="on"
+                    v-bind="props"
                     @click="cycleValueDisplayMode">
                     <v-icon small>
                       $cycleNodeValueDisplayMode
@@ -191,12 +191,12 @@
               </v-tooltip>
             </v-col>
             <v-col>
-              <v-tooltip right>
-                <template v-slot:activator="{ on }">
+              <v-tooltip location="end">
+                <template v-slot:activator="{ props }">
                   <div
                     id="_test_toggle_visibility"
                     v-if="isPlottable"
-                    v-on="on"
+                    v-bind="props"
                     @click="toggleVisibility">
                     <v-icon small v-if="isHidden" :key="visibilityUpdateKey">
                       $showNode
@@ -214,12 +214,12 @@
               </v-tooltip>
             </v-col>
             <v-col>
-              <v-tooltip right>
-                <template v-slot:activator="{ on }">
+              <v-tooltip location="end">
+                <template v-slot:activator="{ props }">
                   <div
                     id="_toggle_label_display"
                     v-if="isPlottable"
-                    v-on="on"
+                    v-bind="props"
                     @click="toggleLabelDisplay">
                     <v-icon
                       small
@@ -240,9 +240,9 @@
               </v-tooltip>
             </v-col>
             <v-col>
-              <v-tooltip right>
-                <template v-slot:activator="{ on }">
-                  <div id="_delete_node" v-on="on" @click="deleteNode">
+              <v-tooltip location="end">
+                <template v-slot:activator="{ props }">
+                  <div id="_delete_node" v-bind="props" @click="deleteNode">
                     <v-icon small> $deleteNode </v-icon>
                   </div>
                 </template>
@@ -256,7 +256,7 @@
         <v-col cols="auto"> t = {{ parametricTime.toFixed(3) }} </v-col>
         <v-col>
           <v-slider
-            v-model="parametricTime"
+            :model-value="parametricTime"
             :min="parametricTMin"
             :max="parametricTMax"
             :step="parametricTStep" />

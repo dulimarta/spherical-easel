@@ -39,13 +39,13 @@
             class="text-subtitle-2"
             style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
           <!-- Label Text Selections -->
-          <v-tooltip bottom
+          <v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
-            <template v-slot:activator="{ on }">
-              <span v-on="on">
-                <v-text-field v-model="styleOptions.labelDisplayText"
+            <template v-slot:activator="{ props }">
+              <span v-bind="props">
+                <v-text-field :model-value="styleOptions.labelDisplayText"
                   :disabled="selectionCount !== 1"
                   v-bind:label="$t('style.labelText')"
                   :counter="maxLabelDisplayTextLength"
@@ -64,7 +64,7 @@
           </v-tooltip>
           <!-- Label Display Mode Selections -->
 
-          <v-select v-model.lazy="styleOptions.labelDisplayMode"
+          <v-select :model-value.lazy="styleOptions.labelDisplayMode"
             :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelDisplayMode}]"
             :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
             ref="labelDisplayMode"
@@ -76,7 +76,7 @@
             dense>
           </v-select>
           <div v-show="showMoreLabelStyles">
-            <v-text-field v-model.lazy="styleOptions.labelDisplayCaption"
+            <v-text-field :model-value.lazy="styleOptions.labelDisplayCaption"
               v-bind:label="$t('style.labelCaption')"
               :counter="maxLabelDisplayCaptionLength"
               :placeholder="placeHolderText(selectionCount, true)"
@@ -90,7 +90,7 @@
               :rules="[labelDisplayCaptionCheck,labelDisplayCaptionTruncate(styleOptions)]">
             </v-text-field>
             <!-- Label Text Family Selections -->
-            <v-select v-model.lazy="styleOptions.labelTextFamily"
+            <v-select :model-value.lazy="styleOptions.labelTextFamily"
               v-bind:label="$t('style.labelTextFamily')"
               :items="labelTextFamilyItems"
               ref="labelTextFamily"
@@ -100,7 +100,7 @@
               outlined
               dense>
             </v-select>
-            <v-select v-model.lazy="styleOptions.labelTextStyle"
+            <v-select :model-value.lazy="styleOptions.labelTextStyle"
               v-bind:label="$t('style.labelTextStyle')"
               :items="labelTextStyleItems"
               ref="labelTextStyle"
@@ -110,7 +110,7 @@
               outlined
               dense>
             </v-select>
-            <v-select v-model.lazy="styleOptions.labelTextDecoration"
+            <v-select :model-value.lazy="styleOptions.labelTextDecoration"
               v-bind:label="$t('style.labelTextDecoration')"
               :items="labelTextDecorationItems"
               ref="labelTextDecorations"
@@ -238,13 +238,13 @@
     </StyleEditor>
 
     <!-- Show more or less styling options -->
-    <v-tooltip bottom
+    <v-tooltip location="bottom"
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       max-width="400px"
       class="pa-0 pm-0">
-      <template v-slot:activator="{on}">
-        <v-btn v-on="on"
+      <template v-slot:activator="{ props }">
+        <v-btn v-bind="props"
           @click="toggleShowMoreLabelStyles"
           class="text-subtitle-2"
           text

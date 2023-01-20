@@ -8,7 +8,7 @@
     <br />
 
     <!-- The number selector slider -->
-    <v-slider v-model.number="styleData"
+    <v-slider :model-value.number="styleData"
       @change="changeEvent"
       v-bind="$attrs"
       type="range"

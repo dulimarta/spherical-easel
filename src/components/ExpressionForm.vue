@@ -16,7 +16,7 @@
                 v-bind:label="$t('objectTree.calculationExpression')"
                 placeholder="cos(pi/2)*M1"
                 class="ma-0"
-                v-model="calcExpression"
+                :model-value="calcExpression"
                 :error-messages="parsingError"
                 @keydown="onKeyPressed"
                 @click:clear="reset">
@@ -30,7 +30,7 @@
             readonly
             v-bind:label="$t('objectTree.result')"
             placeholder="0"
-            v-model="calcResult">
+            :model-value="calcResult">
           </v-text-field>
         </v-container>
       </v-card-text>

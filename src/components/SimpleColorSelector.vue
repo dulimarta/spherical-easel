@@ -16,13 +16,13 @@
         no-gutters
         align="center">
         <v-col cols="auto">
-          <v-tooltip bottom
+          <v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
-            <template v-slot:activator="{ on }">
-              <span v-on="on">
-                <v-checkbox v-model="noData"
+            <template v-slot:activator="{ props }">
+              <span v-bind="props">
+                <v-checkbox :model-value="noData"
                   :label="noDataUILabel"
                   color="indigo darken-3"
                   hide-details
@@ -56,7 +56,7 @@
         :hide-inputs="!showColorInputs"
         :swatches-max-height="100"
         :swatches="colorSwatches"
-        v-model="internalColor"
+        :model-value="internalColor"
         mode="hsla"
         id="colorPicker">
       </v-color-picker>

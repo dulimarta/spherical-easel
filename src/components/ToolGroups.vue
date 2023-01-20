@@ -16,7 +16,7 @@
         <h3 class="body-1 font-weight-bold">
           {{ $t(`toolGroups.${g.group}`) }}
         </h3>
-        <v-btn-toggle v-model="actionMode" @change="switchActionMode">
+        <v-btn-toggle :model-value="actionMode" @change="switchActionMode">
           <v-container>
             <v-row justify="start" align="stretch" class="accent">
               <v-col
@@ -65,7 +65,7 @@
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
       <v-btn-toggle
-        v-model="actionMode"
+        :model-value="actionMode"
         @change="switchActionMode"
         class="mr-2 d-flex flex-wrap accent">
         <ToolButton

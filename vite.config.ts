@@ -22,7 +22,7 @@ export default defineConfig({
         transformAssetUrls,
         compilerOptions: {
           compatConfig: {
-            MODE: 2
+            MODE: 3
           }
         }
       }

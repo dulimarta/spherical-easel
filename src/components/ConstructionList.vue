@@ -3,8 +3,8 @@
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list three-line>
-      <template v-for="(r, pos) in items">
-        <v-hover v-slot:default="{ hover }" :key="pos">
+      <template v-for="(r, pos) in items" :key="pos">
+        <v-hover v-slot:default="{ hover }">
           <!-- the class "listitem" is used for testing. Do not remove it -->
           <v-list-item
             class="_test_constructionItem"

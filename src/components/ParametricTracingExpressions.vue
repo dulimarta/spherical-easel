@@ -11,11 +11,10 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="(tVal, idk) in tExpressionData">
+        <template v-for="(tVal, idk) in tExpressionData" :key="idk + 2">
           <!-- content goes here -->
           <ParametricTExpression
             :placeholder="tVal.placeholder"
-            :key="idk + 2"
             :i18nLabelKey="tVal.i18nLabelkey"
             :i18nToolTip="tVal.i18nToolTip"
             :name="tVal.name">

@@ -5,10 +5,10 @@
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       max-width="400px">
-      <template v-slot:activator="{ on }">
+      <template v-slot:activator="{ props }">
         <v-text-field
-          v-model="tValueExpression"
-          v-on="on"
+          :model-value="tValueExpression"
+          v-bind="props"
           dense
           :label="$t(i18nLabelKey)"
           :error-messages="parsingError"

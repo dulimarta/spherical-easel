@@ -11,11 +11,10 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="(coordinate, idk) in coordinateData">
+        <template v-for="(coordinate, idk) in coordinateData" :key="idk">
           <!-- content goes here -->
           <ParametricCoordinate
             :placeholder="coordinate.placeholder"
-            :key="idk"
             :i18nKey="coordinate.i18n_key"
             :i18nToolTip="coordinate.i18nToolTip"
             :name="coordinate.name">

@@ -6,7 +6,7 @@
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
       <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
-        <v-container style="background-color: white">
+        <!--v-container style="background-color: white">
           <v-row>
             <v-btn icon @click="minifyToolbox">
               <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
@@ -17,12 +17,13 @@
               :actionMode="actionMode"
               :toolboxMinified="toolboxMinified" />
           </v-row>
-        </v-container>
-        <!--Toolbox
+        </v-container-->
+        {{toolboxMinified}}
+        <Toolbox
           id="toolbox"
           ref="toolbox"
           :minified="toolboxMinified"
-          v-on:toggle-tool-box-panel="minifyToolbox" /-->
+          v-on:toggle-tool-box-panel="minifyToolbox" />
       </Pane>
       <Pane :size="centerWidth">
         <!-- Use the right pane mainly for the canvas and style panel -->
@@ -38,7 +39,6 @@
                   :aspect-ratio="1"
                   :max-height="currentCanvasSize"
                   :max-width="currentCanvasSize"
-                  ref="responsiveBox"
                   id="responsiveBox"
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
@@ -47,14 +47,14 @@
                       v-for="(shortcut, index) in topLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'top')">
-                      <ShortcutIcon
+                      <!--ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                        :disable="shortcut.disableBtn"
+                        :button="shortcut.buttonType" /-->
                     </div>
                   </div>
                   <div class="anchored bottom left">
@@ -62,14 +62,14 @@
                       v-for="(shortcut, index) in bottomLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'bottom')">
-                      <ShortcutIcon
+                      <!--ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                        :disable="shortcut.disableBtn"
+                        :button="shortcut.buttonType" /-->
                     </div>
                   </div>
                   <div class="anchored top right">
@@ -77,14 +77,14 @@
                       v-for="(shortcut, index) in topRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'top')">
-                      <ShortcutIcon
+                      <!--ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                        :disable="shortcut.disableBtn"
+                        :button="shortcut.buttonType" /-->
                     </div>
                   </div>
                   <div class="anchored bottom right">
@@ -92,14 +92,14 @@
                       v-for="(shortcut, index) in bottomRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'bottom')">
-                      <ShortcutIcon
+                      <!--ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                        :disable="shortcut.disableBtn"
+                        :button="shortcut.buttonType" /-->
                     </div>
                   </div>
                 </v-responsive>
@@ -167,7 +167,7 @@ import {
 } from "vue";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
-// import Toolbox from "@/components/ToolBox.vue";
+import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
@@ -284,7 +284,7 @@ let uid = "";
 let authSubscription!: Unsubscribe;
 
 // $refs!: {
-const responsiveBox = ref(null);
+// const responsiveBox = ref(null);
 // toolbox: VueComponent;
 // mainPanel: VueComponent;
 // stylePanel: HTMLDivElement;
@@ -473,10 +473,8 @@ function adjustSize(): void {
   availHeight =
     window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
 
-  const tmp = getLayoutItem("responsiveBox")
-  if (tmp) {
-    currentCanvasSize.value = availHeight - tmp.top;
-  }
+  console.debug("adjustSize() available height is ", window.innerHeight, mainRect.value)
+  currentCanvasSize.value = availHeight
 }
 
 function loadDocument(docId: string): void {
@@ -578,6 +576,7 @@ function setActionModeToSelectTool(): void {
 }
 
 function onWindowResized(): void {
+  console.debug("onWindowResized()")
   adjustSize();
 }
 /* Undoes the last user action that changed the state of the sphere. */

@@ -1,5 +1,5 @@
 <template>
-  <v-form v-model="isValid">
+  <v-form :model-value="isValid">
     <div id="dataEntry">
       <v-text-field
         id="_test_input_min"
@@ -7,7 +7,7 @@
         class="field _test_input"
         outlined
         dense
-        v-model.number="sliderMin"
+        :model-value.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
       <v-text-field
@@ -16,7 +16,7 @@
         class="field _test_input"
         outlined
         dense
-        v-model.number="sliderStep"
+        :model-value.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
       <v-text-field
         id="_test_input_max"
@@ -24,12 +24,12 @@
         class="field _test_input"
         outlined
         dense
-        v-model.number="sliderMax"
+        :model-value.number="sliderMax"
         :error="sliderMax < sliderMin"></v-text-field>
     </div>
     <v-slider
       id="_test_slider"
-      v-model="sliderValue"
+      :model-value="sliderValue"
       :min="sliderMin"
       :max="sliderMax"
       :step="sliderStep"
