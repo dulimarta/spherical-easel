@@ -56,86 +56,6 @@
 
       <v-spacer></v-spacer>
 
-      <Dialog ref="shareConstructionDialog"
-        :title="$t('constructions.shareConstructionDialog')"
-        :yesText="$t('constructions.exportConstructionDialog')"
-        :yes-action="() => doExportConstructionDialog()"
-        :no-text="$t('constructions.cancel')"
-        max-width="40%"
-        content-class="shareConstructionClass">
-        <p>
-          {{$t('constructions.shareLinkDialog')}}</p>
-
-        <input ref="shareLinkReference"
-          v-on:focus="$event.target.select()"
-          readonly
-          :value="shareLink" />
-        <button @click="copyShareLink">Copy</button>
-
-      </Dialog>
-
-      <Dialog ref="exportConstructionDialog"
-        :title="$t('constructions.exportConstructionDialog')"
-        :yesText="$t('constructions.exportConstructionDialog')"
-        :no-text="$t('constructions.cancel')"
-        :yes-action="() => doExportButton()"
-        :isDisabled="disableButton"
-        max-width="60%">
-
-        <v-row align="center"
-          justify="space-between">
-          <v-col cols="10"
-            xs="10"
-            sm="10"
-            md="2"
-            lg="3"
-            xl="3">
-            <div>
-              <img id="preview">
-            </div>
-          </v-col>
-          <v-col cols="10"
-            xs="10"
-            sm="10"
-            md="4"
-            lg="6"
-            xl="6">
-            <v-row>
-              <v-col class="pr-4">
-                <p>{{$t('constructions.sliderFileDimensions')}}</p>
-                <v-slider v-model="slider"
-                  class="align-center"
-                  :max="sliderMax"
-                  :min="sliderMin"
-                  hide-details>{{$t('constructions.displaySlider')}}
-                  <template v-slot:append>
-                    <v-text-field type="number"
-                      v-model="slider"
-                      class="mt-0 pt-0"
-                      hide-details
-                      single-line
-                      style="width: 120px"
-                      :rules="[exportDimensionsCheck]"
-                      @keypress.stop></v-text-field>
-                  </template>
-                </v-slider>
-              </v-col>
-            </v-row>
-
-            <v-col class="d-flex"
-              cols="12"
-              sm="6">
-              <v-select :items="formats"
-                label="Format"
-                v-model="selectedFormat"
-                :rules="[exportDimensionsCheck]"
-                solo></v-select>
-            </v-col>
-          </v-col>
-        </v-row>
-
-      </Dialog>
-
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
@@ -152,15 +72,13 @@
           class="mx-2"
           @click="doLoginOrCheck">mdi-account</v-icon>
         <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-        <v-icon v-show="showExport"
+        <v-icon v-show="showExport && hasObjects"
           class="pr-3"
-          @click="$refs.shareConstructionDialog.show()">
+          @click="doExportConstructionDialog">
           mdi-application-export</v-icon>
-        <v-icon v-if="whoami !== ''"
-          :disabled="!hasObjects"
+        <v-icon v-if="whoami !== '' && hasObjects"
           class="mr-2"
-          @click="$refs.saveConstructionDialog.show()">$shareConstruction
-        </v-icon>
+          @click="$refs.saveConstructionDialog.show()">mdi-content-save</v-icon>
       </template>
       <router-link to="/settings/">
         <v-icon>$appSettings</v-icon>
@@ -180,25 +98,69 @@
     <!-- <v-footer app
       :color="footerColor"
       padless>
-      <v-col class="text-center">
-        <span
-          v-if="activeToolName ==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
-          class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
-        </span>
-        <span
-          v-else-if="activeToolName === 'ApplyTransformationDisplayedName'"
-          class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim() + ' <strong>' + applyTransformationText + '</strong>'">
-        </span>
-        <span v-else-if="activeToolName!== ''"
-          class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
-        </span>
-        <span v-else
-          class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
-      </v-col>
     </v-footer> -->
+
+    <Dialog ref="exportConstructionDialog"
+      :title="$t('constructions.exportConstructionDialog')"
+      :yesText="$t('constructions.exportConstructionDialog')"
+      :no-text="$t('constructions.cancel')"
+      :yes-action="() => doExportButton()"
+      :isDisabled="disableButton"
+      max-width="60%">
+
+      <v-row align="center"
+        justify="space-between">
+        <v-col cols="10"
+          xs="10"
+          sm="10"
+          md="2"
+          lg="3"
+          xl="3">
+          <div>
+            <img id="preview">
+          </div>
+        </v-col>
+        <v-col cols="10"
+          xs="10"
+          sm="10"
+          md="4"
+          lg="6"
+          xl="6">
+          <v-row>
+            <v-col class="pr-4">
+              <p>{{$t('constructions.sliderFileDimensions')}}</p>
+              <v-slider v-model="slider"
+                class="align-center"
+                :max="sliderMax"
+                :min="sliderMin"
+                hide-details>{{$t('constructions.displaySlider')}}
+                <template v-slot:append>
+                  <v-text-field type="number"
+                    v-model="slider"
+                    class="mt-0 pt-0"
+                    hide-details
+                    single-line
+                    style="width: 120px"
+                    :rules="[exportDimensionsCheck]"
+                    @keypress.stop></v-text-field>
+                </template>
+              </v-slider>
+            </v-col>
+          </v-row>
+
+          <v-col class="d-flex"
+            cols="12"
+            sm="6">
+            <v-select :items="formats"
+              label="Format"
+              v-model="selectedFormat"
+              :rules="[exportDimensionsCheck]"
+              solo></v-select>
+          </v-col>
+        </v-col>
+      </v-row>
+
+    </Dialog>
     <Dialog ref="logoutDialog"
       :title="$t('constructions.confirmLogout')"
       :yes-text="$t('constructions.proceed')"
@@ -215,7 +177,7 @@
       :title="$t('constructions.saveConstruction')"
       :yes-text="$t('constructions.save')"
       :no-text="$t('constructions.cancel')"
-      :yes-action="() => doShare()"
+      :yes-action="() => doSave()"
       max-width="40%">
       <p>
         {{$t('constructions.saveConstructionDialog')}}
@@ -280,7 +242,7 @@ Component.registerHooks([
 ]);
 
 @Component({
-  components: {/*MessageBox,*/ Dialog },
+  components: { /*MessageBox,*/ Dialog },
   methods: {
     ...mapActions(useAccountStore, ["resetToolset"]),
     ...mapActions(useSEStore, ["clearUnsavedFlag"])
@@ -324,7 +286,6 @@ export default class App extends Vue {
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
-    shareConstructionDialog: VueComponent & DialogAction;
     exportConstructionDialog: VueComponent & DialogAction;
     shareLinkReference: VueComponent & HTMLElement;
   };
@@ -387,7 +348,7 @@ export default class App extends Vue {
       this.acceptedKeys = 0;
       this.$forceUpdate();
     });
-    EventBus.listen("share-construction-requested", this.doShare);
+    EventBus.listen("share-construction-requested", this.doSave);
     this.clientBrowser = detect();
     this.resetToolset();
     //ACStore.resetToolset();
@@ -468,7 +429,6 @@ export default class App extends Vue {
   }
 
   async doExportConstructionDialog(): Promise<void> {
-    this.$refs.shareConstructionDialog.hide();
     this.$refs.exportConstructionDialog.show();
 
     // copy sphere construction svg and get URL, then set the preview img src as that URL
@@ -660,7 +620,7 @@ export default class App extends Vue {
     }
   }
 
-  async doShare(): Promise<void> {
+  async doSave(): Promise<void> {
     /* TODO: move the following constant to global-settings? */
     const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
     // A local function to convert a blob to base64 representation

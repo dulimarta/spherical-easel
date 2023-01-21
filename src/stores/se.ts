@@ -59,7 +59,7 @@ type PiniaAppState = {
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  inverseTotalRotationMatrix: Matrix4;
+  // inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
@@ -126,7 +126,7 @@ export const useSEStore = defineStore({
     seTransformationIds: [],
     oldSelectedSENoduleIDs: [],
     styleSavedFromPanel: StyleEditPanels.Label,
-    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    // inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
     selectedSENoduleIds: []
   }),
   actions: {
