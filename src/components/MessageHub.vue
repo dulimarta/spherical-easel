@@ -94,7 +94,7 @@ type MessageType = {
 };
 
 @Component
-export default class MessageBox extends Vue {
+export default class MessageHub extends Vue {
   @Prop() readonly minified!: boolean;
   showMe = false;
   messageTypes = ["all", ...SETTINGS.messageTypes];

@@ -23,6 +23,10 @@
       The division with the "app" id is the reference to the vue app (called App.vue)
     -->
   <div id="app"></div>
+  <script type="module">
+    import {Buffer} from "buffer"
+    window.Buffer = Buffer
+  </script>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

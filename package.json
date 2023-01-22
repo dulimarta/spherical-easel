@@ -46,6 +46,7 @@
     "vuetify": "^2.6.7"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@intlify/vue-i18n-loader": "~1.0.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
