@@ -93,8 +93,8 @@
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
-      <!-- <MessageBox></MessageBox>-->
     </v-main>
+
     <!-- <v-footer app
       :color="footerColor"
       padless>
@@ -207,7 +207,6 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-// import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
@@ -231,7 +230,9 @@ import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import i18n from "./i18n";
-import ConstructionListVue from "./components/ConstructionList.vue";
+import MessageHub from "@/components/MessageHub.vue";
+
+// import ConstructionListVue from "./components/ConstructionList.vue";
 // import { gzip } from "node-gzip";
 
 // Register vue router in-component navigation guard functions
@@ -242,7 +243,7 @@ Component.registerHooks([
 ]);
 
 @Component({
-  components: { /*MessageBox,*/ Dialog },
+  components: { Dialog, MessageHub },
   methods: {
     ...mapActions(useAccountStore, ["resetToolset"]),
     ...mapActions(useSEStore, ["clearUnsavedFlag"])
