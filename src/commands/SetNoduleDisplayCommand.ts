@@ -21,7 +21,7 @@ export class SetNoduleDisplayCommand extends Command {
   }
 
   do(): void {
-    console.debug(`nodule ${this.seNodule.name}, show value ${this.showing}`);
+    // console.debug(`nodule ${this.seNodule.name}, show value ${this.showing}`);
     this.seNodule.showing = this.showing;
     // Check the global variable that indicates if when hiding an object we should hide the label (and similar for showing)
     // Notice that checking if the this.initialLabelShowingValue is true, means that the object is labelable

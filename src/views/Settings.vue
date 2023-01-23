@@ -120,7 +120,6 @@
 </template>
 
 <style lang="scss" scoped>
-@import "~vuetify/src/styles/styles.sass";
 
 div#container {
   padding: 1rem;

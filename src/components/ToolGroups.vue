@@ -11,6 +11,7 @@
       <v-icon v-else>mdi-pencil</v-icon>
     </v-btn>
 
+    <!--g.children.filter(button => !disabledTools.some(mode => mode===button.actionModeValue)) -->
     <div v-for="(g,gpos) in buttonGroup"
       :key="gpos">
       <template v-if="g.children.length > 0">
@@ -28,6 +29,7 @@
                 :key="bpos">
                 <ToolButton :disabled="inEditMode"
                   :button="button"
+                  :editMode="inEditMode"
                   v-on:display-only-this-tool-use-message="displayOnlyThisToolUseMessageFunc">
                   <template #overlay
                     v-if="inEditMode">
@@ -63,8 +65,8 @@
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
       <v-btn-toggle v-model="actionMode"
-        @change="switchActionMode"
-        class="mr-2 d-flex flex-wrap accent">
+        class="mr-2 d-flex flex-wrap accent"
+        @change="switchActionMode">
 
         <ToolButton v-for="(button, pos) in developerButtonList"
           :key="pos"
@@ -102,6 +104,7 @@ import EventBus from "@/eventHandlers/EventBus";
   components: { ToolButton },
   computed: {
     ...mapState(useAccountStore, ["userRole", "includedTools"]),
+    // ...mapState(useSEStore, ["disabledTools"])
     ...mapState(useSEStore, ["expressions", "seTransformations"])
   },
   methods: {
@@ -115,12 +118,13 @@ export default class ToolGroups extends Vue {
   readonly includeToolName!: (s: ActionMode) => void;
   readonly excludeToolName!: (s: ActionMode) => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
+  // readonly disabledTools!: ActionMode[];
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
 
-  /* Controls the selection of the actionMode using the buttons. The default is segment. */
+  /* Controls the selection of the actionMode using the buttons. */
   private actionMode: { id: ActionMode; name: string } = {
-    id: "rotate",
+    id: "segment",
     name: ""
   };
 
@@ -265,8 +269,30 @@ export default class ToolGroups extends Vue {
       icon: "$vuetify.icons.value.iconFactory",
       toolTipMessage: "CreateIconToolTipMessage",
       toolUseMessage: "CreateIconToolUseMessage",
-      displayToolUseMessage: false
+      displayToolUseMessage: false,
+      disabledIcon: "$vuetify.icons.value.delete"
     }
+    // Disable the icon factory for deployment - this for developers only
+    // {
+    //   id: 0,
+    //   actionModeValue: "iconFactory",
+    //   displayedName: "CreateIconDisplayedName",
+    //   icon: "mdi-plus",
+    //   toolTipMessage: "CreateIconToolTipMessage",
+    //   toolUseMessage: "CreateIconToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "developerOnly"
+    // }
+    // {
+    //   id: 75,
+    //   actionModeValue: "slider",
+    //   displayedName: "CreateSliderDisplayedName",
+    //   icon: "mdi-arrow-left-right-bold",
+    //   toolTipMessage: "CreateSliderToolTipMessage",
+    //   toolUseMessage: "CreateSliderToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "construction"
+    // }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ];

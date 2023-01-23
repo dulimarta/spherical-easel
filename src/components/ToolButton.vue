@@ -5,12 +5,16 @@
     :ref="button.actionModeValue">
     <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
+    <!-- -->
     <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       :disabled="displayToolTips || $attrs.disabled">
       <template v-slot:activator="{ on }">
         <v-btn icon
+          id="btnA"
+          :disabled="disabledTools.some(mode => mode===button.actionModeValue) &&
+          !editMode"
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
@@ -23,11 +27,31 @@
           x-large
           :elevation="elev">
           <v-flex xs12>
-            <v-icon x-large>{{ button.icon }}</v-icon>
+            <!-- <div
+              v-if="disabledTools.some(mode => mode===button.actionModeValue)">
+              <v-icon x-large>
+                {{ button.disabledIcon }}
+              </v-icon>
+            </div>-->
+            <!--- I wish the alternate disabled button icon would work
+             but they don't you either get only the normal icon or the disabled (blank) icon, but not both-->
+            <!-- so I used the remove disabled css trick found here:
+              https://stackoverflow.com/questions/54009721/how-to-disable-vuetify-button-without-changing-colors
+             -->
+            <v-icon x-large>
+              {{ button.icon }}
+            </v-icon>
+
+            <!-- v-if="!disabledTools.some(mode => mode===button.actionModeValue)" -->
             <p class="button-text"
               :style="'--user-font-weight: ' + weight"
               v-html="$t('buttons.' + button.displayedName )">
             </p>
+            <!--  <p v-else
+              class="button-text"
+              :style="'--user-font-weight: ' + 200"
+              v-html="$t('buttons.' + button.displayedName )">
+            </p>-->
           </v-flex>
           <slot name="overlay"></slot>
         </v-btn>
@@ -35,40 +59,6 @@
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
 
-    <!-- TODO: move the snackbar to ToolGroup? -->
-
-    <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
-    automatically when the message is many lines long due to font or number of characters? --->
-   <!-- <v-snackbar v-model="displayToolUseMessage"
-      bottom
-      left
-      :timeout="toolUseMessageDelay"
-      :value="displayToolUseMessages"
-      multi-line>
-      If the displayed name is zoom in or out add a slash before the word pan
-      <span
-        v-if="button.displayedName==='PanZoomInDisplayedName' || button.displayedName==='PanZoomOutDisplayedName'">
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join('/').trim() + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-
-      <span
-        v-else-if="button.displayedName==='CreateCoordinateDisplayedName'|| button.displayedName==='ZoomFitDisplayedName'|| button.displayedName==='CreateTangentDisplayedName'|| button.displayedName==='CreateMidpointDisplayedName'|| button.displayedName==='CreatePolarDisplayedName'  || button.displayedName==='CreateEllipseDisplayedName'  || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join('').slice(0,-6) + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <span v-else>
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join(' ').trim() + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <v-btn @click="displayToolUseMessage = false"
-        icon>
-        <v-icon color="success">mdi-close</v-icon>
-      </v-btn>
-    </v-snackbar>-->
   </div>
 </template>
 
@@ -87,7 +77,13 @@ import { SETransformation } from "@/models/SETransformation";
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component({
   computed: {
-    ...mapState(useSEStore, ["actionMode", "buttonSelection", "expressions", "seTransformations"])
+    ...mapState(useSEStore, [
+      "actionMode",
+      "buttonSelection",
+      "expressions",
+      "seTransformations",
+      "disabledTools"
+    ])
   },
   methods: {
     ...mapActions(useSEStore, ["setButton"]),
@@ -115,26 +111,40 @@ export default class ToolButton extends Vue {
   @Prop({ default: null })
   button!: ToolButtonType;
 
+  @Prop({ default: false })
+  editMode!: boolean;
+
   private elev = 0;
-  private weight = "normal";
+  private weight = 400;
 
   private color = "red";
 
   readonly actionMode!: ActionMode;
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
+  readonly disabledTools!: ActionMode[];
   readonly setButton!: (_: ToolButtonType) => void;
+
+  created() {
+    // Trick to remove class after initializing form
+    this.$nextTick(() => {
+      const blah = document.getElementById("btnA");
+      if (blah !== null) {
+        blah.classList.remove("v-btn--disabled");
+      }
+    });
+  }
 
   @Watch("actionMode")
   private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
       // console.log("set elevation 1", this.button.actionModeValue);
       this.elev = 5;
-      this.weight = "bold";
+      this.weight = 700;
     } else {
       // console.log("set elevation 0", this.button.actionModeValue);
       this.elev = 0;
-      this.weight = "normal";
+      this.weight = 400;
     }
   }
 
@@ -142,58 +152,6 @@ export default class ToolButton extends Vue {
     this.setButton(button);
   }
 
-  //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
-  possibleToolAction(): void {
-    /*if (this.button.actionModeValue === "measuredCircle") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForMeasuredCircle",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "translation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForTranslation",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "rotation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForRotation",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "applyTransformation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.seTransformations.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-transformation-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createATransformation",
-          type: "error"
-        });
-      }
-    }*/
-  }
   // @Prop({ default: 0 }) readonly elev?: number;
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/
@@ -223,5 +181,8 @@ export default class ToolButton extends Vue {
 }
 .btn-round-border-radius {
   size: 60%;
+}
+button.v-btn[disabled] {
+  opacity: 0.4;
 }
 </style>

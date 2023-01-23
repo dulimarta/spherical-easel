@@ -14,14 +14,14 @@ import "firebase/storage";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { createPinia, PiniaVuePlugin } from "pinia";
-import VueCompositionAPI from "@vue/composition-api";
+// import VueCompositionAPI from "@vue/composition-api";
 
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 Vue.use(VueI18n);
 Vue.use(PiniaVuePlugin);
-Vue.use(VueCompositionAPI);
+// Vue.use(VueCompositionAPI);
 
 const pinia = createPinia();
 

@@ -46,6 +46,7 @@ export type ToolButtonType = {
   // toolGroup: string;
   toolUseMessage: string;
   toolTipMessage: string;
+  disabledIcon: string;
 };
 
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;

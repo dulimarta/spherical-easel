@@ -20,7 +20,6 @@
     "@firebase/auth-types": "^0.10.3",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
-    "@vue/composition-api": "^1.7.0",
     "axios": "^0.27.2",
     "d3-svg-to-png": "^0.1.7",
     "detect-browser": "^5.2.0",
@@ -29,7 +28,6 @@
     "gif.js": "^0.2.0",
     "lodash.clonedeep": "^4.5.0",
     "markdown-it-texmath": "^0.7.2",
-    "moment": "^2.26.0",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
     "pinia": "^2.0.16",
@@ -83,6 +81,5 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ],
-  "packageManager": "yarn@3.1.1"
+  ]
 }
