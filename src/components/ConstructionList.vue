@@ -90,7 +90,7 @@ import { useSEStore } from "@/stores/se";
     ...mapWritableState(useSEStore, ["inverseTotalRotationMatrix"])
   }
 })
-export default class extends Vue {
+export default class ConstructionList extends Vue {
   @Prop()
   readonly items!: Array<SphericalConstruction>;
 

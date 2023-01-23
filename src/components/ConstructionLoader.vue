@@ -88,6 +88,12 @@ import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
 
+// New additional format defined by Capstone group Fall 2022
+type PublicConstructionReference = {
+  author: string;
+  constructionDocId: string;
+};
+
 @Component({
   components: { Dialog, ConstructionList },
   computed: {
@@ -124,12 +130,12 @@ export default class ConstructionLoader extends Vue {
   readonly updateDisplay!: () => void;
   readonly setActionMode!: (_: { id: ActionMode; name: string }) => void;
 
-  snapshotUnsubscribe: (() => void) | null = null;
+  // snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
   privateConstructions: Array<SphericalConstruction> = [];
   shareURL = "";
   selectedDocId = "";
-  uid = "";
+  firebaseUid: string | null = null;
   $refs!: {
     constructionShareDialog: VueComponent & DialogAction;
     constructionLoadDialog: VueComponent & DialogAction;
@@ -137,99 +143,126 @@ export default class ConstructionLoader extends Vue {
     docURL: HTMLSpanElement;
   };
 
-  mounted(): void {
-    this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
-      this.populateData(qs, this.publicConstructions);
-    });
-    this.$appAuth.onAuthStateChanged((u: User | null) => {
-      this.uid = u?.uid ?? "";
-    });
-  }
-
-  @Watch("uid")
-  onUidChanged(newVal: string, _oldVal: string): void {
-    if (newVal.length > 0) {
-      this.snapshotUnsubscribe = this.$appDB
+  async mounted(): Promise<void> {
+    this.firebaseUid = this.$appAuth.currentUser?.uid ?? null;
+    if (this.firebaseUid) {
+      // Private construction
+      await this.$appDB
         .collection("users")
-        .doc(newVal)
+        .doc(this.firebaseUid)
         .collection("constructions")
-        .onSnapshot((qs: QuerySnapshot) => {
-          this.populateData(qs, this.privateConstructions);
-        });
-    } else {
-      if (this.snapshotUnsubscribe) {
-        this.snapshotUnsubscribe();
-        this.snapshotUnsubscribe = null;
-      }
+        .get()
+        .then((qs: QuerySnapshot) =>
+          this.populateData(qs, this.privateConstructions)
+        );
     }
+
+    // Private construction
+    await this.$appDB
+      .collection("constructions")
+      .get()
+      .then((qs: QuerySnapshot) =>
+        this.populateData(qs, this.publicConstructions)
+      );
   }
 
-  beforeDestroy(): void {
-    // Unregister the update function
-    if (this.snapshotUnsubscribe) this.snapshotUnsubscribe();
-  }
+  async parseDocument(
+    id: string,
+    doc: ConstructionInFirestore
+  ): Promise<SphericalConstruction | null> {
+    let parsedScript: ConstructionScript | undefined = undefined;
 
-  populateData(
-    qs: QuerySnapshot,
-    targetArr: Array<SphericalConstruction>
-  ): void {
-    // console.debug(`Here in populateData in Construction Loader .vue`);
-    targetArr.splice(0);
-    qs.forEach(async (qd: QueryDocumentSnapshot) => {
-      const doc = qd.data() as ConstructionInFirestore;
-      let parsedScript: ConstructionScript | undefined = undefined;
+    // Ignore constructions with empty script
+    if (doc.script.trim().length === 0) return null;
+    const trimmedScript = doc.script.trim();
+    if (trimmedScript.startsWith("https:")) {
+      // Fetch the script from Firebase Storage
+      const scriptText = await this.$appStorage
+        .refFromURL(doc.script)
+        .getDownloadURL()
+        .then((url: string) => axios.get(url))
+        .then((r: AxiosResponse) => r.data);
 
-      // Ignore constructions with empty script
-      if (doc.script.trim().length === 0) return;
-      const trimmedScript = doc.script.trim();
-      if (trimmedScript.startsWith("https:")) {
-        // Fetch the script from Firebase Storage
-        const scriptText = await this.$appStorage
-          .refFromURL(doc.script)
+      parsedScript = scriptText as ConstructionScript;
+    } else {
+      // Parse the script directly from the Firestore document
+      parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
+    }
+
+    if (parsedScript && parsedScript.length > 0) {
+      // we care only for non-empty script
+      let svgData: string | undefined;
+      if (doc.preview?.startsWith("https:")) {
+        svgData = await this.$appStorage
+          .refFromURL(doc.preview)
           .getDownloadURL()
           .then((url: string) => axios.get(url))
           .then((r: AxiosResponse) => r.data);
-
-        parsedScript = scriptText as ConstructionScript;
-      } else {
-        // Parse the script directly from the Firestore document
-        parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
+      } else svgData = doc.preview;
+      const objectCount = parsedScript
+        // A simple command contributes 1 object
+        // A CommandGroup contributes N objects (as many elements in its subcommands)
+        .map((z: string | Array<string>) =>
+          typeof z === "string" ? 1 : z.length
+        )
+        .reduce((prev: number, curr: number) => prev + curr);
+      let sphereRotationMatrix = new Matrix4();
+      if (doc.rotationMatrix) {
+        const matrixData = JSON.parse(doc.rotationMatrix);
+        sphereRotationMatrix.fromArray(matrixData);
       }
+      return {
+        id,
+        script: doc.script,
+        parsedScript,
+        objectCount,
+        author: doc.author,
+        dateCreated: doc.dateCreated,
+        description: doc.description,
+        sphereRotationMatrix,
+        previewData: svgData ?? "",
+        tools: doc.tools ?? undefined
+      };
+    } else return null;
+  }
 
-      if (parsedScript && parsedScript.length > 0) {
-        // we care only for non-empty script
-        let svgData: string | undefined;
-        if (doc.preview?.startsWith("https:")) {
-          svgData = await this.$appStorage
-            .refFromURL(doc.preview)
-            .getDownloadURL()
-            .then((url: string) => axios.get(url))
-            .then((r: AxiosResponse) => r.data);
-        } else svgData = doc.preview;
-        const objectCount = parsedScript
-          // A simple command contributes 1 object
-          // A CommandGroup contributes N objects (as many elements in its subcommands)
-          .map((z: string | Array<string>) =>
-            typeof z === "string" ? 1 : z.length
-          )
-          .reduce((prev: number, curr: number) => prev + curr);
-        let sphereRotationMatrix = new Matrix4();
-        if (doc.rotationMatrix) {
-          const matrixData = JSON.parse(doc.rotationMatrix);
-          sphereRotationMatrix.fromArray(matrixData);
-        }
-        targetArr.push({
-          id: qd.id,
-          script: doc.script,
-          parsedScript,
-          objectCount,
-          author: doc.author,
-          dateCreated: doc.dateCreated,
-          description: doc.description,
-          sphereRotationMatrix,
-          previewData: svgData ?? "",
-          tools: doc.tools ?? undefined
-        });
+  async populateData(
+    qs: QuerySnapshot,
+    targetArr: Array<SphericalConstruction>
+  ): Promise<void> {
+    console.debug(`Here in populateData in Construction Loader .vue`);
+    targetArr.splice(0);
+    qs.forEach(async (qd: QueryDocumentSnapshot) => {
+      const remoteData = qd.data();
+      let out: SphericalConstruction | null = null;
+      if (remoteData["constructionDocId"]) {
+        // In a new format defined by Capstone group Fall 2022
+        // public constructions are simply a reference to an
+        // owned construction by a particular author
+        const ref = remoteData as PublicConstructionReference;
+        const doc = await this.$appDB
+          .collection("users")
+          .doc(ref.author)
+          .collection("constructions")
+          .doc(ref.constructionDocId)
+          .get();
+
+        out = await this.parseDocument(
+          ref.constructionDocId,
+          doc.data() as ConstructionInFirestore
+        );
+      } else {
+        // In the older format defined prior to Fall 2022
+        // public constructions are stored outside of the owner's folder
+        out = await this.parseDocument(
+          qd.id,
+          remoteData as ConstructionInFirestore
+        );
+      }
+      if (out) {
+        targetArr.push(out);
+      } else {
+        console.debug("Failed to parse", qd.id);
       }
     });
     // Sort by creation date
@@ -323,16 +356,19 @@ export default class ConstructionLoader extends Vue {
   }
 
   doDeleteConstruction(): void {
+    const tasks: Array<Promise<void>> = [];
     this.$refs.constructionDeleteDialog.hide();
-    const task1 = this.$appDB
-      .collection("constructions")
-      .doc(this.selectedDocId)
-      .delete();
-    const task2 = this.$appDB
-      .collection(`users/${this.uid}/constructions`)
-      .doc(this.selectedDocId)
-      .delete();
-    Promise.any([task1, task2])
+    tasks.push(
+      this.$appDB.collection("constructions").doc(this.selectedDocId).delete()
+    );
+    if (this.firebaseUid) {
+      const task2 = this.$appDB
+        .collection(`users/${this.firebaseUid}/constructions`)
+        .doc(this.selectedDocId)
+        .delete();
+      tasks.push(task2);
+    }
+    Promise.any(tasks)
       .then(() => {
         EventBus.fire("show-alert", {
           key: "constructions.firestoreConstructionDeleted",

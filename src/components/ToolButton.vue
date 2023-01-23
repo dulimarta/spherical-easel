@@ -18,11 +18,11 @@
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="() => {
-           possibleToolAction();
             if ($attrs.disabled) return;
             $emit('display-only-this-tool-use-message', button.actionModeValue);
             displayToolUseMessage = true;
             setElevation()
+            switchButton(button);
           }"
           x-large
           :elevation="elev">
@@ -59,40 +59,6 @@
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
 
-    <!-- TODO: move the snackbar to ToolGroup? -->
-
-    <!--- To Check: Does the property multi-line allow the snackbars to be formatted correctly
-    automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar v-model="displayToolUseMessage"
-      bottom
-      left
-      :timeout="toolUseMessageDelay"
-      :value="displayToolUseMessages"
-      multi-line>
-      <!---If the displayed name is zoom in or out add a slash before the word pan --->
-      <span
-        v-if="button.displayedName==='PanZoomInDisplayedName' || button.displayedName==='PanZoomOutDisplayedName'">
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join('/').trim() + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <!---If the displayed name is only one line delete the non-breaking space --->
-      <span
-        v-else-if="button.displayedName==='CreateCoordinateDisplayedName'|| button.displayedName==='ZoomFitDisplayedName'|| button.displayedName==='CreateTangentDisplayedName'|| button.displayedName==='CreateMidpointDisplayedName'|| button.displayedName==='CreatePolarDisplayedName'  || button.displayedName==='CreateEllipseDisplayedName'  || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join('').slice(0,-6) + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <span v-else>
-        <strong class="warning--text"
-          v-html="$t('buttons.' +button.displayedName).split('<br>').join(' ').trim() + ': '"></strong>
-        {{ $t("buttons." + button.toolUseMessage) }}
-      </span>
-      <v-btn @click="displayToolUseMessage = false"
-        icon>
-        <v-icon color="success">mdi-close</v-icon>
-      </v-btn>
-    </v-snackbar>
   </div>
 </template>
 
@@ -102,7 +68,7 @@ import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-import { mapState } from "pinia";
+import { mapState, mapActions} from "pinia";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "@/models/SEExpression";
@@ -113,10 +79,14 @@ import { SETransformation } from "@/models/SETransformation";
   computed: {
     ...mapState(useSEStore, [
       "actionMode",
+      "buttonSelection",
       "expressions",
       "seTransformations",
       "disabledTools"
     ])
+  },
+  methods: {
+    ...mapActions(useSEStore, ["setButton"]),
   }
 })
 export default class ToolButton extends Vue {
@@ -153,6 +123,7 @@ export default class ToolButton extends Vue {
   readonly expressions!: SEExpression[];
   readonly seTransformations!: SETransformation[];
   readonly disabledTools!: ActionMode[];
+  readonly setButton!: (_: ToolButtonType) => void;
 
   created() {
     // Trick to remove class after initializing form
@@ -177,58 +148,10 @@ export default class ToolButton extends Vue {
     }
   }
 
-  //When switching to the measured circle tool, rotation, translation or any tool that needs a measurement...
-  possibleToolAction(): void {
-    if (this.button.actionModeValue === "measuredCircle") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForMeasuredCircle",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "translation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForTranslation",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "rotation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.expressions.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForRotation",
-          type: "info"
-        });
-      }
-    } else if (this.button.actionModeValue === "applyTransformation") {
-      //...open the measurement panel and close the others or tell the user to create a measurement
-      if (this.seTransformations.length > 0) {
-        //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-transformation-sheet", {});
-      } else {
-        EventBus.fire("show-alert", {
-          key: "objectTree.createATransformation",
-          type: "error"
-        });
-      }
-    }
+  switchButton(button: ToolButtonType): void { // Set the button selected so it can be tracked
+    this.setButton(button);
   }
+
   // @Prop({ default: 0 }) readonly elev?: number;
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/

@@ -20,7 +20,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { ActionMode, plottableType, SEIntersectionReturnType } from "@/types";
+import { ActionMode, plottableType, SEIntersectionReturnType, ToolButtonType } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
@@ -52,6 +52,7 @@ type PiniaAppState = {
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   activeToolName: string;
+  buttonSelection: any;
   previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
@@ -59,7 +60,7 @@ type PiniaAppState = {
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  inverseTotalRotationMatrix: Matrix4;
+  // inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
@@ -389,6 +390,7 @@ export const useSEStore = defineStore({
     actionMode: "rotate",
     previousActionMode: "rotate",
     activeToolName: "rotate",
+    buttonSelection: {},
     previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
@@ -408,9 +410,9 @@ export const useSEStore = defineStore({
     seTransformationIds: [],
     oldSelectedSENoduleIDs: [],
     styleSavedFromPanel: StyleEditPanels.Label,
-    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
     selectedSENoduleIds: [],
-    disabledTools: []
+    disabledTools: [],
+    // inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   }),
   actions: {
     init(): void {
@@ -496,6 +498,11 @@ export const useSEStore = defineStore({
     // setSphereRadius(r: number): void {
     //   // TODO
     // },
+
+    setButton(buttonSelection: ToolButtonType): void {
+      this.buttonSelection = buttonSelection;
+    },
+
     setActionMode(mode: { id: ActionMode; name: string }): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (
