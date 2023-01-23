@@ -51,7 +51,7 @@
           :color="notif.msgColor">
           <v-container>
             <v-row>
-              <v-col cols="10">{{notif.type}}
+              <v-col cols="10">
                 {{notif.translatedKey}}
                 <span v-if="notif.translationSecondKey">:
                   {{notif.translationSecondKey}}</span>
