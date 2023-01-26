@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-if="uid.length > 0">
+    <template v-if="firebaseUid && firebaseUid.length > 0">
       <div class="text-h6">
         {{$t(`constructions.privateConstructions`)}}</div>
       <!--- WARNING: the "id" attribs below are needed for testing -->
@@ -9,7 +9,7 @@
         v-on:load-requested="shouldLoadConstruction"
         v-on:delete-requested="shouldDeleteConstruction" />
     </template>
-    <div class="text-h6">{{$t(`constructions.publicConstructions`)}}</div>
+    <div class="text-h6">{{$t(`constructions.publicConstructions`)}} ({{ publicConstructions.length }})</div>
     <ConstructionList id="publicList"
       :items="publicConstructions"
       :allow-sharing="true"
