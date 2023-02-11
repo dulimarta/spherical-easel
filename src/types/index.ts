@@ -560,12 +560,19 @@ export interface ConstructionInFirestore {
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
 }
+/* Reference to a user's favorite tool in settings */
+export interface FavoriteTool {
+  actionModeValue: string;
+  displayedName: string;
+  icon: string;
+}
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
   displayName?: string;
   location?: string;
   role?: string;
+  favoriteTools?: string;
 }
 
 export enum AngleMode {

@@ -45,7 +45,7 @@ type FileEvent = EventTarget & { files: FileList | undefined };
     ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
   }
 })
-export default class extends Vue {
+export default class ProfilePicture extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   temporaryProfilePicture!: string;

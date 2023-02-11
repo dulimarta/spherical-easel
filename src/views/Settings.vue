@@ -61,7 +61,7 @@
         </v-sheet>
 
       </v-tab-item>
-      <v-tab-item>Second
+      <v-tab-item>
         <v-sheet elevation="2"
           class="pa-2">
           <h3 v-t="'settings.title'"></h3>
@@ -146,10 +146,11 @@ import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
-import { UserProfile } from "@/types";
+import {FavoriteTool, UserProfile } from "@/types";
 import { Unsubscribe } from "@firebase/util";
 
 import EventBus from "@/eventHandlers/EventBus";
+import { toolGroups } from "@/components/toolgroups";
 
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
@@ -165,6 +166,7 @@ export default class Settings extends Vue {
   userEmail = "";
   userDisplayName = "";
   userLocation = "";
+  userFavoriteTools: FavoriteTool[][] = [];
   userRole = "Community Member";
   selectedTab = null;
   authSubscription!: Unsubscribe;
@@ -185,6 +187,7 @@ export default class Settings extends Vue {
           // console.log("From Firestore", uProfile);
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
+          this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           if (uProfile.role) this.userRole = uProfile.role;
         }
       });
@@ -198,11 +201,46 @@ export default class Settings extends Vue {
           this.userLocation = "";
           this.userRole = "Community Member";
         }
-
         // console.log("Auth changed", u, this.profileEnabled);
       }
     );
   }
+  decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
+    let finalToolsList: FavoriteTool[][] = [];
+
+    // Convert list's string representation to 2D array of strings
+    let favoriteToolNames: string[][];
+    favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
+
+    // Create a FavoriteTool for all the tools and save in a list
+    // TODO: We might be able to get rid of this bit here and merge it with the following loop
+    let allTools: FavoriteTool[];
+    allTools = toolGroups.map(group => group.children.map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon
+    }))).reduce((acc, val) => acc.concat(val), []);
+
+    // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
+    for (const corner of favoriteToolNames) {
+      // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
+      let temp_corner: FavoriteTool[] = [];
+      for (const tool of corner) {
+        let temp_tool = allTools.filter(tl => tool === tl.actionModeValue);
+        if (temp_tool.length > 0) {
+          temp_corner.push(temp_tool[0]);
+        }
+      }
+      finalToolsList.push(temp_corner);
+    }
+    return finalToolsList;
+  }
+  encodeFavoriteTools(): string {
+    // Create 2D list of names
+    let favoritesList = this.userFavoriteTools.map(corner => corner.map(tool => tool.actionModeValue));
+    // Map list to string and return
+    return favoritesList.map(corner => corner.join(", ")).join("\n");
+}
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
   }
@@ -213,7 +251,8 @@ export default class Settings extends Vue {
     const newProf: UserProfile = {
       displayName: this.userDisplayName,
       location: this.userLocation,
-      role: this.userRole
+      role: this.userRole,
+      favoriteTools: this.encodeFavoriteTools()
     };
     this.$appDB
       .collection("users")
