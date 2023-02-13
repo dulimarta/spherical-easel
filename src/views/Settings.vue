@@ -38,6 +38,136 @@
                 , 'Community Member'
                 ]">
               </v-select>
+
+
+              <!-- TODO: This is just for reference, Horrible scalability here. Can't figure out looping -->
+<!--              <label>Test Section</label>-->
+<!--              <v-container :fluid="true" class="pa-2 ma-2">-->
+<!--                <v-row>-->
+<!--                  <v-col>-->
+<!--                    <v-row>-->
+<!--                      <v-card class="pa-2 ma-2">-->
+<!--                        <v-card-title>-->
+<!--                          All Tools-->
+<!--                        </v-card-title>-->
+<!--                        <v-card-text>-->
+<!--                          <v-list style="overflow-y: auto;">-->
+<!--                            <v-list-item-group multiple>-->
+<!--                              <v-list-item v-for="(item, i) in allToolsList" :key="i">-->
+
+<!--                                <v-list-item-icon>-->
+<!--                                  <v-icon v-text="item.icon"></v-icon>-->
+<!--                                </v-list-item-icon>-->
+
+<!--                                <v-list-item-content>-->
+<!--                                  {{ item.actionModeValue }}-->
+<!--                                </v-list-item-content>-->
+
+<!--                              </v-list-item>-->
+<!--                            </v-list-item-group>-->
+<!--                          </v-list>-->
+<!--                        </v-card-text>-->
+<!--                      </v-card>-->
+<!--                    </v-row>-->
+<!--                  </v-col>-->
+<!--&lt;!&ndash;                  <v-spacer style="max-width: 30px"></v-spacer>&ndash;&gt;-->
+<!--                  <v-col>-->
+<!--                    <v-row>-->
+<!--                      <v-card class="pa-2 ma-2" width="250px">-->
+<!--                        <v-card-title>Top-Left Corner</v-card-title>-->
+<!--                      </v-card>-->
+<!--                      <v-card class="pa-2 ma-2" width="250px">-->
+<!--                        <v-card-title>Top-Right Corner</v-card-title>-->
+<!--                      </v-card>-->
+<!--                    </v-row>-->
+<!--                    <v-row>-->
+<!--                      <v-card class="pa-2 ma-2" width="250px">-->
+<!--                        <v-card-title>Bottom-Left Corner</v-card-title>-->
+<!--                      </v-card>-->
+<!--                      <v-card class="pa-2 ma-2" width="250px">-->
+<!--                        <v-card-title>Bottom-Right Corner</v-card-title>-->
+<!--                      </v-card>-->
+<!--                    </v-row>-->
+<!--                  </v-col>-->
+<!--                </v-row>-->
+<!--              </v-container>-->
+
+
+              <label>Favorite Tools</label>
+              <v-container>
+                <v-col>
+                  <v-row>
+                    <v-card class="pa-2 ma-2">
+                      <v-col>
+                        {{allListSelectedIndex}}
+                        <v-card-title>
+                          All Tools
+                        </v-card-title>
+                        <v-card-text>
+                          <v-list style="max-height:900px; overflow-y: auto;">
+                            <v-list-item-group v-model="allListSelectedIndex">
+                              <v-list-item v-for="(item, i) in allToolsList" :key="i">
+                                <v-list-item-icon>
+                                  <v-icon v-text="item.icon"></v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                  {{ item.actionModeValue }}
+                                </v-list-item-content>
+                              </v-list-item>
+                            </v-list-item-group>
+                          </v-list>
+                        </v-card-text>
+                      </v-col>
+                    </v-card>
+                    <v-spacer style="max-width: 30px"></v-spacer>
+                    <v-col>
+                      <v-row v-for="(corner, i) in userFavoriteTools" :key="i">
+                        <v-card class="pa-2 ma-2">
+                          <v-col>
+                            <v-row class="fill-height">
+                              <v-card-title>
+                                <!-- TODO: Keep track of what is selected with a variable, then pass into addToolToFavorites() -->
+                                <!-- Tools cannot be used multiple times -->
+                                <!-- All tools that are already there (except for the lower left) should always be there -->
+                                <v-btn @click="addToolToFavorites(i, allListSelectedIndex)">+</v-btn>
+                              </v-card-title>
+
+                              <v-card-title>
+                                <div>Corner {{i + 1}}</div>
+                              </v-card-title>
+
+                              <v-card-title>
+                                <v-btn @click="removeToolFromFavorites(i, selectedIndex)">-</v-btn>
+                              </v-card-title>
+
+                            </v-row>
+                            <v-card-text>
+                              {{selectedIndex}}
+                              <v-list>
+                                <v-list-item-group v-model="selectedIndex">
+                                  <v-list-item v-for="(item, j) in corner" :key="j">
+
+                                    <v-list-item-icon>
+                                      <v-icon v-text="item.icon"></v-icon>
+                                    </v-list-item-icon>
+
+                                    <v-list-item-content>
+                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                    </v-list-item-content>
+
+                                  </v-list-item>
+                                </v-list-item-group>
+                              </v-list>
+                            </v-card-text>
+                          </v-col>
+                        </v-card>
+                      </v-row>
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-container>
+
+
               <v-row justify="center">
                 <v-col cols="auto">
                   <v-btn @click="doSave">Save</v-btn>
@@ -166,17 +296,31 @@ export default class Settings extends Vue {
   userEmail = "";
   userDisplayName = "";
   userLocation = "";
-  userFavoriteTools: FavoriteTool[][] = [];
+  userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  allToolsList: FavoriteTool[] = [];
   userRole = "Community Member";
   selectedTab = null;
   authSubscription!: Unsubscribe;
   profileEnabled = false;
+  selectedIndex = 0;
+  allListSelectedIndex = 0;
 
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
 
   mounted(): void {
+    // Set up master list of all tools for favorites selection
+    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon
+    }))).reduce((acc, val) => acc.concat(val), []);
+
+    console.log(this.allToolsList.length);
+    // TEMPORARY AND USED FOR DEBUGGING
+    this.userFavoriteTools = this.decodeFavoriteTools("intersect, inversion\nmidpoint, reflection, zoomIn, point\n\nmove, line");
+
     this.$appDB
       .collection("users")
       .doc(this.userUid)
@@ -184,7 +328,7 @@ export default class Settings extends Vue {
       .then((ds: DocumentSnapshot) => {
         if (ds.exists) {
           const uProfile = ds.data() as UserProfile;
-          // console.log("From Firestore", uProfile);
+          console.log("From Firestore", uProfile);
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
           this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
@@ -200,6 +344,7 @@ export default class Settings extends Vue {
           this.userDisplayName = "";
           this.userLocation = "";
           this.userRole = "Community Member";
+          this.userFavoriteTools = [[],[],[],[]];
         }
         // console.log("Auth changed", u, this.profileEnabled);
       }
@@ -212,21 +357,12 @@ export default class Settings extends Vue {
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
 
-    // Create a FavoriteTool for all the tools and save in a list
-    // TODO: We might be able to get rid of this bit here and merge it with the following loop
-    let allTools: FavoriteTool[];
-    allTools = toolGroups.map(group => group.children.map(child => ({
-      actionModeValue: child.actionModeValue,
-      displayedName: child.displayedName,
-      icon: child.icon
-    }))).reduce((acc, val) => acc.concat(val), []);
-
     // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
     for (const corner of favoriteToolNames) {
       // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
       let temp_corner: FavoriteTool[] = [];
       for (const tool of corner) {
-        let temp_tool = allTools.filter(tl => tool === tl.actionModeValue);
+        let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
           temp_corner.push(temp_tool[0]);
         }
@@ -240,7 +376,19 @@ export default class Settings extends Vue {
     let favoritesList = this.userFavoriteTools.map(corner => corner.map(tool => tool.actionModeValue));
     // Map list to string and return
     return favoritesList.map(corner => corner.join(", ")).join("\n");
-}
+  }
+  addToolToFavorites(corner: number, index: number): void {
+    // Add the tool at allTools[index] into the corresponding corner of the user's favorite tools
+    console.log("added " + index + " to corner " + corner);
+    console.log(this.allListSelectedIndex);
+    this.userFavoriteTools[corner].push(this.allToolsList[index]);
+    this.allToolsList.splice(index, 1);
+  }
+  removeToolFromFavorites(corner: number, index: number): void {
+    this.allToolsList.push(this.userFavoriteTools[corner][index]);
+    this.userFavoriteTools[corner].splice(index, 1);
+    this.allToolsList.sort();
+  }
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
   }
