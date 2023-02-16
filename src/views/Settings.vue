@@ -92,13 +92,206 @@
 <!--                </v-row>-->
 <!--              </v-container>-->
 
+              <v-container>
+                <v-row>
+                  <v-col cols="12" md="4">
+                    <v-row>
+                      <v-col cols="12" md="12">
+                        <!-- master list -->
+                        <v-card height="600px" class="pa-2 ma-2">
+                          <v-card-title>
+                            All Tools
+                          </v-card-title>
+                          <v-card-text>
+                            <v-list style="max-height:500px; overflow-y:auto;">
+                              <v-list-item-group v-model="allListSelectedIndex">
+                                <v-list-item v-for="(item, i) in allToolsList" :key="i">
+                                  <v-list-item-icon>
+                                    <v-icon v-text="item.icon"></v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    {{ item.actionModeValue }}
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </v-list-item-group>
+                            </v-list>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                  <v-col cols="12" md="8">
+                    <v-row>
+                      <v-col>
+                        <!-- top left -->
+                        <v-card>
+                          <v-card-title>
+                            <v-col>
+                              <v-row>
+                                <div>
+                                  Top-Left Corner
+                                </div>
+                              </v-row>
+                              <v-row>
+                                <div >
+                                  <!-- TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way -->
+                                  <v-btn class="px-16" style="scale:60%; font-size:xx-large; padding:0" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
+                                </div>
+                                <div>
+                                  <v-btn class="px-16" style="scale:60%; font-size:xx-large; padding:0" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>
+                                </div>
+                              </v-row>
+                            </v-col>
+                          </v-card-title>
+                          <v-card-text>
+                            <v-list>
+                              <v-list-item-group v-model="selectedIndex">
+                                <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">
+                                  <v-list-item-icon>
+                                    <v-icon v-text="item.icon"></v-icon>
+                                  </v-list-item-icon>
+                                  <v-list-item-content>
+                                    <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </v-list-item-group>
+                            </v-list>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <!-- top right -->
+                        <v-card class="pa-2 ma-2">
+                          <v-col>
+                            <v-row>
+                              <v-card-title>
+                                <v-col style="padding-bottom:0">
+                                  <v-row >
+                                    <v-card-title>
+                                      Top-Left Corner
+                                    </v-card-title>
+                                  </v-row>
+                                  <v-row style="margin-top:0">
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
+                                    </v-col>
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>
+                                    </v-col>
+                                  </v-row>
+                                </v-col>
+                              </v-card-title>
+                            </v-row>
+                            <v-card-text>
+                              <v-list>
+                                <v-list-item-group v-model="selectedIndex">
+                                  <v-list-item v-for="(item, j) in userFavoriteTools[1]" :key="j">
+                                    <v-list-item-icon>
+                                      <v-icon v-text="item.icon"></v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                </v-list-item-group>
+                              </v-list>
+                            </v-card-text>
+                          </v-col>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <!-- bottom left -->
+                        <v-card class="pa-2 ma-2">
+                          <v-col>
+                            <v-row>
+                              <v-card-title>
+                                <v-col style="padding-bottom:0">
+                                  <v-row >
+                                    <v-card-title>
+                                      Top-Left Corner
+                                    </v-card-title>
+                                  </v-row>
+                                  <v-row style="margin-top:0">
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
+                                    </v-col>
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>
+                                    </v-col>
+                                  </v-row>
+                                </v-col>
+                              </v-card-title>
+                            </v-row>
+                            <v-card-text>
+                              <v-list>
+                                <v-list-item-group v-model="selectedIndex">
+                                  <v-list-item v-for="(item, j) in userFavoriteTools[2]" :key="j">
+                                    <v-list-item-icon>
+                                      <v-icon v-text="item.icon"></v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                </v-list-item-group>
+                              </v-list>
+                            </v-card-text>
+                          </v-col>
+                        </v-card>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <!-- bottom right -->
+                        <v-card class="pa-2 ma-2">
+                          <v-col>
+                            <v-row>
+                              <v-card-title>
+                                <v-col style="padding-bottom:0">
+                                  <v-row >
+                                    <v-card-title>
+                                      Top-Left Corner
+                                    </v-card-title>
+                                  </v-row>
+                                  <v-row style="margin-top:0">
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
+                                    </v-col>
+                                    <v-col style="margin:0; padding:0">
+                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>
+                                    </v-col>
+                                  </v-row>
+                                </v-col>
+                              </v-card-title>
+                            </v-row>
+                            <v-card-text>
+                              <v-list>
+                                <v-list-item-group v-model="selectedIndex">
+                                  <v-list-item v-for="(item, j) in userFavoriteTools[3]" :key="j">
+                                    <v-list-item-icon>
+                                      <v-icon v-text="item.icon"></v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                    </v-list-item-content>
+                                  </v-list-item>
+                                </v-list-item-group>
+                              </v-list>
+                            </v-card-text>
+                          </v-col>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                </v-row>
+              </v-container>
+
 
               <label>Favorite Tools</label>
               <v-container>
                 <v-col>
                   <v-row>
                     <v-card class="pa-2 ma-2">
-                      <v-col>
                         {{allListSelectedIndex}}
                         <v-card-title>
                           All Tools
@@ -117,7 +310,6 @@
                             </v-list-item-group>
                           </v-list>
                         </v-card-text>
-                      </v-col>
                     </v-card>
                     <v-spacer style="max-width: 30px"></v-spacer>
                     <v-col>
