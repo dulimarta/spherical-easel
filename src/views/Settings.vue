@@ -509,7 +509,6 @@ export default class Settings extends Vue {
       icon: child.icon
     }))).reduce((acc, val) => acc.concat(val), []);
 
-    console.log(this.allToolsList.length);
     // TEMPORARY AND USED FOR DEBUGGING
     this.userFavoriteTools = this.decodeFavoriteTools("intersect, inversion\nmidpoint, reflection, zoomIn, point\n\nmove, line");
 

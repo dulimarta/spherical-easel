@@ -191,7 +191,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ActionMode, ConstructionInFirestore } from "@/types";
+import {ActionMode, ConstructionInFirestore, FavoriteTool, UserProfile} from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -325,6 +325,10 @@ export default class Easel extends Vue {
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
+
+  private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+
+  private allToolsList: FavoriteTool[] = [];
 
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
@@ -545,6 +549,10 @@ export default class Easel extends Vue {
     }
   }
 
+  get userUid(): string | undefined {
+    return this.$appAuth.currentUser?.uid;
+  }
+
   loadDocument(docId: string): void {
     this.removeAllFromLayers();
     this.init();
@@ -583,6 +591,13 @@ export default class Easel extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
+    // Set up master list of all tools for favorites selection
+    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon
+    }))).reduce((acc, val) => acc.concat(val), []);
+
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
@@ -593,6 +608,20 @@ export default class Easel extends Vue {
     EventBus.listen("secret-key-detected", () => {
       if (this.uid.length > 0) this.accountEnabled = true;
     });
+    // Load user's favorite tools
+    let toolsString = "\n\n\n";
+    this.$appDB
+        .collection("users")
+        .doc(this.userUid)
+        .get()
+        .then((ds: DocumentSnapshot) => {
+          if (ds.exists) {
+            const uProfile = ds.data() as UserProfile;
+            toolsString = uProfile.favoriteTools as string == null ? toolsString : uProfile.favoriteTools as string;
+            toolsString = uProfile.favoriteTools as string;
+          }
+        });
+    this.userFavoriteTools = this.decodeFavoriteTools(toolsString ?? "\n\n\n");
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) this.uid = u.uid;
@@ -600,6 +629,31 @@ export default class Easel extends Vue {
     );
     window.addEventListener("keydown", this.handleKeyDown);
   }
+
+  decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
+    // TODO: Need to use structures in toolgroups instead of favoritetool
+    // TODO: Need to add defaults to the list
+    let finalToolsList: FavoriteTool[][] = [];
+
+    // Convert list's string representation to 2D array of strings
+    let favoriteToolNames: string[][];
+    favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
+
+    // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
+    for (const corner of favoriteToolNames) {
+      // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
+      let temp_corner: FavoriteTool[] = [];
+      for (const tool of corner) {
+        let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
+        if (temp_tool.length > 0) {
+          temp_corner.push(temp_tool[0]);
+        }
+      }
+      finalToolsList.push(temp_corner);
+    }
+    return finalToolsList;
+  }
+
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
