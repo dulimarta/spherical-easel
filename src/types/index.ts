@@ -565,6 +565,7 @@ export interface FavoriteTool {
   actionModeValue: string;
   displayedName: string;
   icon: string;
+  disabled: boolean;
 }
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {

@@ -41,55 +41,54 @@
 
               <h3>Favorite Tools</h3>
               <v-container>
-                <v-row>
+                <!-- I apologize to anyone who has experience in web dev for what you are about to witness -->
+                <v-row style="height:800px">
                   <!--
                   columns in vuetify are essentially flex boxes. We can use the flex-grow style tag to assign
                   proportions to each column. This allows us to create separators and manage the size of grids
                   across multiple device and monitor sizes.
                   -->
-                  <v-col style="flex-grow:1"></v-col>
+                  <v-col style="height:95%; flex-grow:1"></v-col>
                   <!-- Master list of tools -->
-                  <v-col style="flex-grow:24">
-                    <v-row>
-                      <v-col>
-                        <!-- master list -->
-                        <v-card height="600px">
-                          <v-card-title>
-                            All Tools
-                          </v-card-title>
-                          <v-card-text>
-                            <v-list style="max-height:500px; overflow-y:auto;">
-                              <v-list-item-group v-model="allListSelectedIndex">
-                                <v-list-item v-for="(item, i) in allToolsList" :key="i">
-                                  <v-list-item-icon>
-                                    <v-icon v-text="item.icon"></v-icon>
-                                  </v-list-item-icon>
-                                  <v-list-item-content>
-                                    {{ item.actionModeValue }}
-                                  </v-list-item-content>
-                                </v-list-item>
-                              </v-list-item-group>
-                            </v-list>
-                          </v-card-text>
-                        </v-card>
-                      </v-col>
-                    </v-row>
+                  <v-col style="height:95%; flex-grow:24">
+                    <!-- master list -->
+                    <v-card style="height:100%; width:100%">
+                      <v-card-title>
+                        All Tools
+                      </v-card-title>
+                      <v-card-text style="height:100%">
+                        <v-list style="max-height:90%; overflow-y: auto">
+                          <v-list-item-group v-model="allListSelectedIndex">
+                            <v-list-item v-for="(item, i) in allToolsList" :key="i" :disabled="item.disabled">
+                              <v-list-item-icon>
+                                <v-icon v-text="item.icon"></v-icon>
+                              </v-list-item-icon>
+                              <v-list-item-content>
+                                {{ item.actionModeValue }}
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list-item-group>
+                        </v-list>
+                      </v-card-text>
+                    </v-card>
                   </v-col>
-                  <v-col style="flex-grow:8"></v-col>
+                  <v-col style="height:95%; flex-grow:4"></v-col>
                   <!-- Top-Left and Bottom-Left Corners -->
-                  <v-col style="flex-grow:24">
-                    <v-row>
-                      <v-card>
-                        <v-card-title style="flex-wrap:nowrap">
-                          <!-- TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way -->
+                  <!-- TODO: https://v2.vuetifyjs.com/en/styles/border-radius/#usage -->
+                  <!-- TODO: https://v2.vuetifyjs.com/en/styles/elevation/#usage -->
+                  <v-col style="height:95%; flex-grow:24">
+                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                      <!-- Top-Left Corner -->
+                      <v-card style="height:95%; width:100%; flex-basis:auto">
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
                           <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div>Top-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn></v-col>
+                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Top-Left Corner</div></v-col>
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">-</v-btn></v-col>
                         </v-card-title>
-                        <v-card-text>
-                          <v-list>
-                            <v-list-item-group v-model="selectedIndex">
-                              <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">
+                        <v-card-text style="height:100%">
+                          <v-list style="max-height:70%; overflow-y: auto">
+                            <v-list-item-group v-model="topLeftSelectedIndex">
+                              <v-list-item v-for="(item, j) in displayedFavoriteTools[0]" :key="j" :disabled="item.disabled">
                                 <v-list-item-icon>
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
@@ -102,18 +101,18 @@
                         </v-card-text>
                       </v-card>
                     </v-row>
-                    <v-row>
-                      <v-card>
-                        <v-card-title style="flex-wrap:nowrap">
-                          <!-- TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way -->
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div>Top-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn></v-col>
+                    <!-- Bottom-Left Corner -->
+                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                      <v-card style="height:100%; width:100%; flex-basis:auto">
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(3, allListSelectedIndex)">+</v-btn></v-col>
+                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Bottom-Left Corner</div></v-col>
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(3, bottomLeftSelectedIndex)">-</v-btn></v-col>
                         </v-card-title>
-                        <v-card-text>
-                          <v-list>
-                            <v-list-item-group v-model="selectedIndex">
-                              <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">
+                        <v-card-text style="height:100%">
+                          <v-list style="max-height:70%; overflow-y: auto">
+                            <v-list-item-group v-model="bottomLeftSelectedIndex">
+                              <v-list-item v-for="(item, j) in displayedFavoriteTools[3]" :key="j" :disabled="item.disabled">
                                 <v-list-item-icon>
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
@@ -127,21 +126,21 @@
                       </v-card>
                     </v-row>
                   </v-col>
-                  <v-col style="flex-grow:4"></v-col>
+                  <v-col style="height:95%; flex-grow:2"></v-col>
                   <!-- Top-Right and Bottom-Right Corners -->
-                  <v-col style="flex-grow:24">
-                    <v-row>
-                      <v-card>
-                        <v-card-title style="flex-wrap:nowrap">
-                          <!-- TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way -->
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div>Top-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn></v-col>
+                  <v-col style="height:95%; flex-grow:24">
+                    <!-- Top-Right Corner -->
+                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                      <v-card style="height:95%; width:100%; flex-basis:auto">
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(1, allListSelectedIndex)">+</v-btn></v-col>
+                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Top-Right Corner</div></v-col>
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(1, topRightSelectedIndex)">-</v-btn></v-col>
                         </v-card-title>
-                        <v-card-text>
-                          <v-list>
-                            <v-list-item-group v-model="selectedIndex">
-                              <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">
+                        <v-card-text style="height:100%">
+                          <v-list style="max-height:70%; overflow-y: auto">
+                            <v-list-item-group v-model="topRightSelectedIndex">
+                              <v-list-item v-for="(item, j) in displayedFavoriteTools[1]" :key="j" :disabled="item.disabled">
                                 <v-list-item-icon>
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
@@ -154,18 +153,18 @@
                         </v-card-text>
                       </v-card>
                     </v-row>
-                    <v-row>
-                      <v-card>
-                        <v-card-title style="flex-wrap:nowrap">
-                          <!-- TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way -->
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div>Top-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn></v-col>
+                    <!-- Bottom-Right Corner -->
+                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                      <v-card style="height:100%; width:100%; flex-basis:auto">
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(2, allListSelectedIndex)">+</v-btn></v-col>
+                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Bottom-Right Corner</div></v-col>
+                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(2, bottomRightSelectedIndex)">-</v-btn></v-col>
                         </v-card-title>
-                        <v-card-text>
-                          <v-list>
-                            <v-list-item-group v-model="selectedIndex">
-                              <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">
+                        <v-card-text style="height:100%">
+                          <v-list style="max-height:70%; overflow-y: auto">
+                            <v-list-item-group v-model="bottomRightSelectedIndex">
+                              <v-list-item v-for="(item, j) in displayedFavoriteTools[2]" :key="j" :disabled="item.disabled">
                                 <v-list-item-icon>
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
@@ -179,202 +178,9 @@
                       </v-card>
                     </v-row>
                   </v-col>
-                  <v-col style="flex-grow:1"></v-col>
+                  <v-col style="height:95%; flex-grow:1"></v-col>
                 </v-row>
               </v-container>
-
-<!--              <v-container>-->
-<!--                <v-row>-->
-<!--                  <v-col style="flex-grow:12">-->
-<!--                    <v-row>-->
-<!--                      <v-col>-->
-<!--                        &lt;!&ndash; master list &ndash;&gt;-->
-<!--                        <v-card height="600px">-->
-<!--                          <v-card-title>-->
-<!--                            All Tools-->
-<!--                          </v-card-title>-->
-<!--                          <v-card-text>-->
-<!--                            <v-list style="max-height:500px; overflow-y:auto;">-->
-<!--                              <v-list-item-group v-model="allListSelectedIndex">-->
-<!--                                <v-list-item v-for="(item, i) in allToolsList" :key="i">-->
-<!--                                  <v-list-item-icon>-->
-<!--                                    <v-icon v-text="item.icon"></v-icon>-->
-<!--                                  </v-list-item-icon>-->
-<!--                                  <v-list-item-content>-->
-<!--                                    {{ item.actionModeValue }}-->
-<!--                                  </v-list-item-content>-->
-<!--                                </v-list-item>-->
-<!--                              </v-list-item-group>-->
-<!--                            </v-list>-->
-<!--                          </v-card-text>-->
-<!--                        </v-card>-->
-<!--                      </v-col>-->
-<!--                    </v-row>-->
-<!--                  </v-col>-->
-<!--                  <v-col style="flex-grow:2"></v-col>-->
-<!--                  <v-col style="flex-grow:24">-->
-<!--                    <v-row>-->
-<!--                      <v-col>-->
-<!--                        &lt;!&ndash; top left &ndash;&gt;-->
-<!--                        <v-card>-->
-<!--                          <v-card-title>-->
-<!--                            <v-col>-->
-<!--                              <v-row style="flex-wrap:nowrap">-->
-<!--                                <div >-->
-<!--                                  &lt;!&ndash; TODO: + and - are not the same size. Lots of gross code to try and make it look ok but we need to do it the right way &ndash;&gt;-->
-<!--                                  <v-btn class="px-16" style="scale:60%; font-size:xx-large; padding:0" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>-->
-<!--                                </div>-->
-<!--                                <div>-->
-<!--                                  Top-Left Corner-->
-<!--                                </div>-->
-<!--                                <div>-->
-<!--                                  <v-btn class="px-16" style="scale:60%; font-size:xx-large; padding:0" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>-->
-<!--                                </div>-->
-<!--                              </v-row>-->
-<!--                            </v-col>-->
-<!--                          </v-card-title>-->
-<!--                          <v-card-text>-->
-<!--                            <v-list>-->
-<!--                              <v-list-item-group v-model="selectedIndex">-->
-<!--                                <v-list-item v-for="(item, j) in userFavoriteTools[0]" :key="j">-->
-<!--                                  <v-list-item-icon>-->
-<!--                                    <v-icon v-text="item.icon"></v-icon>-->
-<!--                                  </v-list-item-icon>-->
-<!--                                  <v-list-item-content>-->
-<!--                                    <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>-->
-<!--                                  </v-list-item-content>-->
-<!--                                </v-list-item>-->
-<!--                              </v-list-item-group>-->
-<!--                            </v-list>-->
-<!--                          </v-card-text>-->
-<!--                        </v-card>-->
-<!--                      </v-col>-->
-<!--                      <v-col>-->
-<!--                        &lt;!&ndash; top right &ndash;&gt;-->
-<!--                        <v-card>-->
-<!--                          <v-col>-->
-<!--                            <v-row>-->
-<!--                              <v-card-title>-->
-<!--                                <v-col style="padding-bottom:0">-->
-<!--                                  <v-row >-->
-<!--                                    <v-card-title>-->
-<!--                                      Top-Left Corner-->
-<!--                                    </v-card-title>-->
-<!--                                  </v-row>-->
-<!--                                  <v-row style="margin-top:0">-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                  </v-row>-->
-<!--                                </v-col>-->
-<!--                              </v-card-title>-->
-<!--                            </v-row>-->
-<!--                            <v-card-text>-->
-<!--                              <v-list>-->
-<!--                                <v-list-item-group v-model="selectedIndex">-->
-<!--                                  <v-list-item v-for="(item, j) in userFavoriteTools[1]" :key="j">-->
-<!--                                    <v-list-item-icon>-->
-<!--                                      <v-icon v-text="item.icon"></v-icon>-->
-<!--                                    </v-list-item-icon>-->
-<!--                                    <v-list-item-content>-->
-<!--                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>-->
-<!--                                    </v-list-item-content>-->
-<!--                                  </v-list-item>-->
-<!--                                </v-list-item-group>-->
-<!--                              </v-list>-->
-<!--                            </v-card-text>-->
-<!--                          </v-col>-->
-<!--                        </v-card>-->
-<!--                      </v-col>-->
-<!--                    </v-row>-->
-<!--                    <v-row>-->
-<!--                      <v-col>-->
-<!--                        &lt;!&ndash; bottom left &ndash;&gt;-->
-<!--                        <v-card>-->
-<!--                          <v-col>-->
-<!--                            <v-row>-->
-<!--                              <v-card-title>-->
-<!--                                <v-col style="padding-bottom:0">-->
-<!--                                  <v-row >-->
-<!--                                    <v-card-title>-->
-<!--                                      Top-Left Corner-->
-<!--                                    </v-card-title>-->
-<!--                                  </v-row>-->
-<!--                                  <v-row style="margin-top:0">-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                  </v-row>-->
-<!--                                </v-col>-->
-<!--                              </v-card-title>-->
-<!--                            </v-row>-->
-<!--                            <v-card-text>-->
-<!--                              <v-list>-->
-<!--                                <v-list-item-group v-model="selectedIndex">-->
-<!--                                  <v-list-item v-for="(item, j) in userFavoriteTools[2]" :key="j">-->
-<!--                                    <v-list-item-icon>-->
-<!--                                      <v-icon v-text="item.icon"></v-icon>-->
-<!--                                    </v-list-item-icon>-->
-<!--                                    <v-list-item-content>-->
-<!--                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>-->
-<!--                                    </v-list-item-content>-->
-<!--                                  </v-list-item>-->
-<!--                                </v-list-item-group>-->
-<!--                              </v-list>-->
-<!--                            </v-card-text>-->
-<!--                          </v-col>-->
-<!--                        </v-card>-->
-<!--                      </v-col>-->
-<!--                      <v-col>-->
-<!--                        &lt;!&ndash; bottom right &ndash;&gt;-->
-<!--                        <v-card>-->
-<!--                          <v-col>-->
-<!--                            <v-row>-->
-<!--                              <v-card-title>-->
-<!--                                <v-col style="padding-bottom:0">-->
-<!--                                  <v-row >-->
-<!--                                    <v-card-title>-->
-<!--                                      Top-Left Corner-->
-<!--                                    </v-card-title>-->
-<!--                                  </v-row>-->
-<!--                                  <v-row style="margin-top:0">-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                    <v-col style="margin:0; padding:0">-->
-<!--                                      <v-btn style="scale:0.6; font-size:xx-large" @click="removeToolFromFavorites(0, selectedIndex)">-</v-btn>-->
-<!--                                    </v-col>-->
-<!--                                  </v-row>-->
-<!--                                </v-col>-->
-<!--                              </v-card-title>-->
-<!--                            </v-row>-->
-<!--                            <v-card-text>-->
-<!--                              <v-list>-->
-<!--                                <v-list-item-group v-model="selectedIndex">-->
-<!--                                  <v-list-item v-for="(item, j) in userFavoriteTools[3]" :key="j">-->
-<!--                                    <v-list-item-icon>-->
-<!--                                      <v-icon v-text="item.icon"></v-icon>-->
-<!--                                    </v-list-item-icon>-->
-<!--                                    <v-list-item-content>-->
-<!--                                      <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>-->
-<!--                                    </v-list-item-content>-->
-<!--                                  </v-list-item>-->
-<!--                                </v-list-item-group>-->
-<!--                              </v-list>-->
-<!--                            </v-card-text>-->
-<!--                          </v-col>-->
-<!--                        </v-card>-->
-<!--                      </v-col>-->
-<!--                    </v-row>-->
-<!--                  </v-col>-->
-<!--                </v-row>-->
-<!--              </v-container>-->
 
               <v-row justify="center">
                 <v-col cols="auto">
@@ -504,29 +310,56 @@ export default class Settings extends Vue {
   userEmail = "";
   userDisplayName = "";
   userLocation = "";
+  maxFavoriteToolsLimit = 6;
+  // The user's actual favorite tools
   userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  // The displayed favorite tools (includes defaults)
+  displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  // TODO: Look at notes to realize how much extra work there is because someone didn't
+  //       define the quick tools in toolgroups.ts as ToolButtons but instead as their own type
+  defaultToolNames = [
+    [],
+    [],
+    ["zoomIn", "zoomOut", "zoomFit"],
+    []
+  ]
   allToolsList: FavoriteTool[] = [];
   userRole = "Community Member";
   selectedTab = null;
   authSubscription!: Unsubscribe;
   profileEnabled = false;
-  selectedIndex = 0;
-  allListSelectedIndex = 0;
+  topLeftSelectedIndex?: number;
+  bottomLeftSelectedIndex?: number;
+  topRightSelectedIndex?: number;
+  bottomRightSelectedIndex?: number;
+  allListSelectedIndex?: number;
 
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
 
   mounted(): void {
-    // Set up master list of all tools for favorites selection
-    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
-      actionModeValue: child.actionModeValue,
-      displayedName: child.displayedName,
-      icon: child.icon
-    }))).reduce((acc, val) => acc.concat(val), []);
+    /** Notes for the devs:
+     * Things to do:
+     *
+     * We should probably refactor ShortcutIcon.vue so that it inherits from ToolButton instead of being its own type,
+     * then move the buttons that are ONLY DEFINED IN EASEL.VUE BECAUSE WHY WOULD WE DEFINE THEM IN TOOLGROUPS.TS THAT
+     * WOULD MAKE TOO MUCH SENSE so that we can reference them in Settings.vue and Easel.vue when adding the default
+     * tools to the favorites list.
+     *
+     * Check if we need to be copying objects into the lists. Was running into issues where setting disabled on a tool
+     * in one list after adding it to another caused the value to change in both lists
+     *
+     * Need to figure out how to make the selected v-list-item-group not be selected anymore, so we don't need to set
+     * each selectedIndex to undefined when adding/removing from lists
+     *
+     * Need to figure out how to prevent everything from looking horrible when zooming in. Right now this is the
+     * lowest priority.
+     *
+     */
 
-    // TEMPORARY AND USED FOR DEBUGGING
-    this.userFavoriteTools = this.decodeFavoriteTools("intersect, inversion\nmidpoint, reflection, zoomIn, point\n\nmove, line");
+    // Sets up the master list of tools and displayedFavoriteTools
+    this.initializeToolLists();
 
     this.$appDB
       .collection("users")
@@ -538,6 +371,7 @@ export default class Settings extends Vue {
           console.log("From Firestore", uProfile);
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
+          // Sets up the userFavoriteTools list
           this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           if (uProfile.role) this.userRole = uProfile.role;
         }
@@ -556,26 +390,98 @@ export default class Settings extends Vue {
         // console.log("Auth changed", u, this.profileEnabled);
       }
     );
+    console.log(this.displayedFavoriteTools);
+  }
+  initializeToolLists(): void {
+    // Reasoning for having a displayedFavoriteTools and userFavoriteTools lists:
+    // We might need to have two lists. One that is used for displaying and one that is the actual favorites list
+    // This is because if we add the defaults to the userFavoriteToolsList, then the encode method will add those
+    // defaults to firebase.
+
+    // If we don't initialize these values HERE (apparently we can't at the top of the class), vue throws hands
+    this.topLeftSelectedIndex = undefined;
+    this.bottomLeftSelectedIndex = undefined;
+    this.topRightSelectedIndex = undefined;
+    this.bottomRightSelectedIndex = undefined;
+    this.allListSelectedIndex = undefined;
+
+    // Set up master list of all tools for favorites selection
+    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon,
+      disabled: false
+    }))).reduce((acc, val) => acc.concat(val), []);
+
+    console.log("this.defaultToolNames: " + this.defaultToolNames);
+
+    // Add default tools to displayedFavoriteTools
+    for (let i = 0; i < this.defaultToolNames.length; i++) {
+      for (let j = 0; j < this.defaultToolNames[i].length; j++) {
+        let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
+        if (temp_tool.length > 0) {
+          let tool = Object.assign({}, temp_tool[0]);
+          tool.disabled = true;
+          this.displayedFavoriteTools[i].push(tool);
+          // Set this tool to disabled because the user cannot disable defaults
+          console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+        } else {
+          console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
+        }
+      }
+    }
+    // for (const corner of this.defaultToolNames) {
+    //   for (const tool of corner) {
+    //     let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
+    //     if (temp_tool.length > 0) {
+    //       // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
+    //       this.displayedFavoriteTools[i].push(Object.assign({}, temp_tool[0]));
+    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+    //     } else {
+    //       console.log("Warning: Could not find '" + tool + "' in this.allToolsList");
+    //     }
+    //   }
+    // }
   }
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
+
+    // FavoriteTool[][] array we are returning
     let finalToolsList: FavoriteTool[][] = [];
 
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
 
-    // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
+    // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
     for (const corner of favoriteToolNames) {
       // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
       let temp_corner: FavoriteTool[] = [];
       for (const tool of corner) {
+        // Filter will always return a list, even though there will only ever be one match
         let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
-          temp_corner.push(temp_tool[0]);
+          temp_corner.push(Object.assign({}, temp_tool[0]));
         }
       }
       finalToolsList.push(temp_corner);
     }
+
+    // Add the user's favorite tools to the displayedFavoriteTools list
+    for (let i = 0; i < finalToolsList.length; i++) {
+      for (const tool of finalToolsList[i]) {
+        // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
+        this.displayedFavoriteTools[i].push(Object.assign({}, tool));
+      }
+    }
+
+    // Iterate through allToolsList to set each favorited tool as not focusable
+    for (let i = 0; i < this.displayedFavoriteTools.length; i++) {
+      for (let j = 0; j < this.displayedFavoriteTools[i].length; j++) {
+        let index = this.allToolsList.findIndex(tool => tool.actionModeValue === this.displayedFavoriteTools[i][j].actionModeValue);
+        this.allToolsList[index].disabled = true;
+      }
+    }
+
     return finalToolsList;
   }
   encodeFavoriteTools(): string {
@@ -584,17 +490,51 @@ export default class Settings extends Vue {
     // Map list to string and return
     return favoritesList.map(corner => corner.join(", ")).join("\n");
   }
-  addToolToFavorites(corner: number, index: number): void {
+  addToolToFavorites(corner: number, index?: number): void {
+    if (index === undefined) return;
+    if (this.displayedFavoriteTools[corner].length >= this.maxFavoriteToolsLimit) return;
     // Add the tool at allTools[index] into the corresponding corner of the user's favorite tools
-    console.log("added " + index + " to corner " + corner);
-    console.log(this.allListSelectedIndex);
-    this.userFavoriteTools[corner].push(this.allToolsList[index]);
-    this.allToolsList.splice(index, 1);
+    // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
+    this.userFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
+    // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
+    this.displayedFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
+    // Set the tool in allToolsList to disable
+    this.allToolsList[index].disabled = true;
+    // Set the displayed tool to not be disabled
+    this.displayedFavoriteTools[corner][this.displayedFavoriteTools[corner].length - 1].disabled = false;
+    // TODO: Re-figure out how to make the selected v-list-item-group not be selected anymore so we don't need this
+    //       I literally had this figured out and completely forgot it :|
+    // Deselect the tool in allToolsList (Prevents duplicates)
+    this.allListSelectedIndex = undefined;
   }
-  removeToolFromFavorites(corner: number, index: number): void {
-    this.allToolsList.push(this.userFavoriteTools[corner][index]);
-    this.userFavoriteTools[corner].splice(index, 1);
-    this.allToolsList.sort();
+  removeToolFromFavorites(corner: number, index?: number): void {
+    if (index === undefined) return;
+    // Get the tool name to make focusable again
+    let toolName = this.displayedFavoriteTools[corner][index].actionModeValue;
+    // Need to get the index for the item in userFavoriteTools
+    let indexDelta = this.displayedFavoriteTools[corner].length - this.userFavoriteTools[corner].length;
+    let userFavoriteToolsIndex = index - indexDelta;
+    this.userFavoriteTools[corner].splice(userFavoriteToolsIndex, 1);
+    this.displayedFavoriteTools[corner].splice(index, 1);
+    // Set the corresponding tool to focusable again
+    let allToolsListIndex = this.allToolsList.findIndex(tool => tool.actionModeValue === toolName);
+    this.allToolsList[allToolsListIndex].disabled = false;
+    // TODO: Re-figure out how to make the selected v-list-item-group not be selected anymore so we don't need this
+    // Deselect the tool in the corresponding corner (Prevents duplicates)
+    switch (corner) {
+      case 0:
+        this.topLeftSelectedIndex = undefined;
+        break;
+      case 1:
+        this.topRightSelectedIndex = undefined;
+        break;
+      case 2:
+        this.bottomRightSelectedIndex = undefined;
+        break;
+      case 3:
+        this.bottomLeftSelectedIndex = undefined;
+        break;
+    }
   }
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
