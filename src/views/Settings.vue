@@ -82,7 +82,7 @@
                       <v-card style="height:95%; width:100%; flex-basis:auto">
                         <v-card-title style="justify-content:center; flex-wrap:nowrap">
                           <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Top-Left Corner</div></v-col>
+                          <v-col style="flex-grow:8; min-width:30%" ><div style="text-align:center; align-self:center;">Top-Left Corner</div></v-col>
                           <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">-</v-btn></v-col>
                         </v-card-title>
                         <v-card-text style="height:100%">
@@ -328,11 +328,12 @@ export default class Settings extends Vue {
   selectedTab = null;
   authSubscription!: Unsubscribe;
   profileEnabled = false;
-  topLeftSelectedIndex?: number;
-  bottomLeftSelectedIndex?: number;
-  topRightSelectedIndex?: number;
-  bottomRightSelectedIndex?: number;
-  allListSelectedIndex?: number;
+  // If we don't initialize these values HERE (apparently we can't at the top of the class), vue throws hands
+  topLeftSelectedIndex: number | null = null;
+  bottomLeftSelectedIndex:  number | null = null;
+  topRightSelectedIndex?:  number | null = null;
+  bottomRightSelectedIndex?:  number | null = null;
+  allListSelectedIndex?:  number | null = null;
 
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
@@ -397,13 +398,6 @@ export default class Settings extends Vue {
     // We might need to have two lists. One that is used for displaying and one that is the actual favorites list
     // This is because if we add the defaults to the userFavoriteToolsList, then the encode method will add those
     // defaults to firebase.
-
-    // If we don't initialize these values HERE (apparently we can't at the top of the class), vue throws hands
-    this.topLeftSelectedIndex = undefined;
-    this.bottomLeftSelectedIndex = undefined;
-    this.topRightSelectedIndex = undefined;
-    this.bottomRightSelectedIndex = undefined;
-    this.allListSelectedIndex = undefined;
 
     // Set up master list of all tools for favorites selection
     this.allToolsList = toolGroups.map(group => group.children.map(child => ({
@@ -490,8 +484,8 @@ export default class Settings extends Vue {
     // Map list to string and return
     return favoritesList.map(corner => corner.join(", ")).join("\n");
   }
-  addToolToFavorites(corner: number, index?: number): void {
-    if (index === undefined) return;
+  addToolToFavorites(corner: number, index: number | null): void {
+    if (index === null) return;
     if (this.displayedFavoriteTools[corner].length >= this.maxFavoriteToolsLimit) return;
     // Add the tool at allTools[index] into the corresponding corner of the user's favorite tools
     // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
@@ -505,10 +499,10 @@ export default class Settings extends Vue {
     // TODO: Re-figure out how to make the selected v-list-item-group not be selected anymore so we don't need this
     //       I literally had this figured out and completely forgot it :|
     // Deselect the tool in allToolsList (Prevents duplicates)
-    this.allListSelectedIndex = undefined;
+    this.allListSelectedIndex = null;
   }
-  removeToolFromFavorites(corner: number, index?: number): void {
-    if (index === undefined) return;
+  removeToolFromFavorites(corner: number, index: number | null): void {
+    if (index === null) return;
     // Get the tool name to make focusable again
     let toolName = this.displayedFavoriteTools[corner][index].actionModeValue;
     // Need to get the index for the item in userFavoriteTools
@@ -523,16 +517,16 @@ export default class Settings extends Vue {
     // Deselect the tool in the corresponding corner (Prevents duplicates)
     switch (corner) {
       case 0:
-        this.topLeftSelectedIndex = undefined;
+        this.topLeftSelectedIndex = null;
         break;
       case 1:
-        this.topRightSelectedIndex = undefined;
+        this.topRightSelectedIndex = null;
         break;
       case 2:
-        this.bottomRightSelectedIndex = undefined;
+        this.bottomRightSelectedIndex = null;
         break;
       case 3:
-        this.bottomLeftSelectedIndex = undefined;
+        this.bottomLeftSelectedIndex = null;
         break;
     }
   }
