@@ -1,32 +1,12 @@
 import { ToolButtonGroup } from "@/types";
+import {toolDictionary} from "@/components/tooldictionary";
 
 export const toolGroups: Array<ToolButtonGroup> = [
   /* Note: the group names below must match the identifier of
      toolgroups.XXXXXX defined in the I18N translation files */
   {
     group: "EditTools",
-    children: [
-      {
-        id: 0,
-        actionModeValue: "select",
-        displayedName: "SelectDisplayedName",
-        icon: "$vuetify.icons.value.select",
-        toolTipMessage: "SelectToolTipMessage",
-        toolUseMessage: "SelectToolUseMessage",
-        displayToolUseMessage: false,
-        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
-      },
-      {
-        id: 5,
-        actionModeValue: "delete",
-        displayedName: "DeleteDisplayedName",
-        icon: "$vuetify.icons.value.delete",
-        toolTipMessage: "DeleteToolTipMessage",
-        toolUseMessage: "DeleteToolUseMessage",
-        displayToolUseMessage: false,
-        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
-      }
-    ]
+    children: [  toolDictionary.get("select")!, toolDictionary.get("delete")! ]
   },
   {
     group: "DisplayTools",

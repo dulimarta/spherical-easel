@@ -191,7 +191,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import {ActionMode, ConstructionInFirestore, FavoriteTool, UserProfile} from "@/types";
+import {ActionMode, ConstructionInFirestore, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -429,7 +429,7 @@ export default class Easel extends Vue {
       },
 
       {
-        labelMsg: "buttons.CreateLineToolTipMessage",
+        toolTipMessage: "buttons.CreateLineToolTipMessage",
         icon: "$vuetify.icons.value.line",
         clickFunc: this.createLine,
         iconColor: null,
@@ -439,7 +439,7 @@ export default class Easel extends Vue {
       },
 
       {
-        labelMsg: "buttons.CreateLineSegmentToolTipMessage",
+        toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
         icon: "$vuetify.icons.value.segment",
         clickFunc: this.createSegment,
         iconColor: null,
@@ -449,7 +449,7 @@ export default class Easel extends Vue {
       },
 
       {
-        labelMsg: "buttons.CreateCircleToolTipMessage",
+        toolTipMessage: "buttons.CreateCircleToolTipMessage",
         icon: "$vuetify.icons.value.circle",
         clickFunc: this.createCircle,
         iconColor: null,

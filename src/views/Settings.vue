@@ -399,6 +399,14 @@ export default class Settings extends Vue {
     // This is because if we add the defaults to the userFavoriteToolsList, then the encode method will add those
     // defaults to firebase.
 
+    // TODO: We need to move all the tool definitions to tooldictionary.ts
+    //       tooldictionary is a dictionary that holds all tool definitions. We index it by ActionMode
+    //       toolgroups.ts will reference this dictionary for each tool in a given group
+    //       ShortcutIcon.vue is a hole different beast that we will need to tackle next week after
+    //       we talk to Dr. Dulimarta and Dr. Dickinson
+
+    // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
+
     // Set up master list of all tools for favorites selection
     this.allToolsList = toolGroups.map(group => group.children.map(child => ({
       actionModeValue: child.actionModeValue,
