@@ -10,17 +10,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
   },
   {
     group: "DisplayTools",
-    children: [
-      {
-        id: 0,
-        actionModeValue: "hide",
-        displayedName: "HideDisplayedName",
-        icon: "$vuetify.icons.value.hide",
-        toolTipMessage: "HideObjectToolTipMessage",
-        toolUseMessage: "HideObjectToolUseMessage",
-        displayToolUseMessage: false,
-        disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
-      },
+    children: [ toolDictionary.get("hide")!,
       {
         id: 5,
         actionModeValue: "toggleLabelDisplay",

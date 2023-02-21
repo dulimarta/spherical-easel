@@ -391,7 +391,6 @@ export default class Settings extends Vue {
         // console.log("Auth changed", u, this.profileEnabled);
       }
     );
-    console.log(this.displayedFavoriteTools);
   }
   initializeToolLists(): void {
     // Reasoning for having a displayedFavoriteTools and userFavoriteTools lists:
@@ -557,7 +556,7 @@ export default class Settings extends Vue {
       .set(newProf, { merge: true })
       .then(() => {
         EventBus.fire("show-alert", {
-          key: "Your profile has been update",
+          key: "Your profile has been updated",
           type: "info"
         });
       });

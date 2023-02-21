@@ -21,6 +21,16 @@ toolDictionary.set("delete", {
     displayToolUseMessage: false,
     disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
 })
+toolDictionary.set("hide", {
+    id: 0,
+    actionModeValue: "hide",
+    displayedName: "HideDisplayedName",
+    icon: "$vuetify.icons.value.hide",
+    toolTipMessage: "HideObjectToolTipMessage",
+    toolUseMessage: "HideObjectToolUseMessage",
+    displayToolUseMessage: false,
+    disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
+})
 
 
 
