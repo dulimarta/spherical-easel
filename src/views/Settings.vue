@@ -42,7 +42,7 @@
               <h3>Favorite Tools</h3>
               <v-container>
                 <!-- I apologize to anyone who has experience in web dev for what you are about to witness -->
-                <v-row style="height:800px">
+                <v-row style="height:800px; flex-wrap:nowrap">
                   <!--
                   columns in vuetify are essentially flex boxes. We can use the flex-grow style tag to assign
                   proportions to each column. This allows us to create separators and manage the size of grids
@@ -64,7 +64,7 @@
                                 <v-icon v-text="item.icon"></v-icon>
                               </v-list-item-icon>
                               <v-list-item-content>
-                                {{ item.actionModeValue }}
+                                <v-list-item-title v-html="$t('buttons.' + item.displayedName )"></v-list-item-title>
                               </v-list-item-content>
                             </v-list-item>
                           </v-list-item-group>
@@ -80,10 +80,16 @@
                     <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <!-- Top-Left Corner -->
                       <v-card style="height:95%; width:100%; flex-basis:auto">
-                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8; min-width:30%" ><div style="text-align:center; align-self:center;">Top-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">-</v-btn></v-col>
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
+                          </v-col>
+                          <v-col style="flex-grow:8;">
+                            <div style="text-align:center; align-self:center;">Top-Left Corner</div>
+                          </v-col>
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">-</v-btn>
+                          </v-col>
                         </v-card-title>
                         <v-card-text style="height:100%">
                           <v-list style="max-height:70%; overflow-y: auto">
@@ -93,7 +99,7 @@
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
-                                  <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                  <v-list-item-title v-html="$t('buttons.' + item.displayedName )"></v-list-item-title>
                                 </v-list-item-content>
                               </v-list-item>
                             </v-list-item-group>
@@ -104,10 +110,16 @@
                     <!-- Bottom-Left Corner -->
                     <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:100%; width:100%; flex-basis:auto">
-                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(3, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Bottom-Left Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(3, bottomLeftSelectedIndex)">-</v-btn></v-col>
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="addToolToFavorites(3, allListSelectedIndex)">+</v-btn>
+                          </v-col>
+                          <v-col style="flex-grow:8;">
+                            <div style="text-align:center; align-self:center;">Bottom-Left Corner</div>
+                          </v-col>
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(3, bottomLeftSelectedIndex)">-</v-btn>
+                          </v-col>
                         </v-card-title>
                         <v-card-text style="height:100%">
                           <v-list style="max-height:70%; overflow-y: auto">
@@ -117,7 +129,7 @@
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
-                                  <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                  <v-list-item-title v-html="$t('buttons.' + item.displayedName )"></v-list-item-title>
                                 </v-list-item-content>
                               </v-list-item>
                             </v-list-item-group>
@@ -132,10 +144,16 @@
                     <!-- Top-Right Corner -->
                     <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:95%; width:100%; flex-basis:auto">
-                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(1, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Top-Right Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(1, topRightSelectedIndex)">-</v-btn></v-col>
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="addToolToFavorites(1, allListSelectedIndex)">+</v-btn>
+                          </v-col>
+                          <v-col style="flex-grow:8;">
+                            <div style="text-align:center; align-self:center;">Top-Right Corner</div>
+                          </v-col>
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(1, topRightSelectedIndex)">-</v-btn>
+                          </v-col>
                         </v-card-title>
                         <v-card-text style="height:100%">
                           <v-list style="max-height:70%; overflow-y: auto">
@@ -145,7 +163,7 @@
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
-                                  <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                  <v-list-item-title v-html="$t('buttons.' + item.displayedName )"></v-list-item-title>
                                 </v-list-item-content>
                               </v-list-item>
                             </v-list-item-group>
@@ -156,10 +174,16 @@
                     <!-- Bottom-Right Corner -->
                     <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:100%; width:100%; flex-basis:auto">
-                        <v-card-title style="justify-content:center; flex-wrap:nowrap">
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="addToolToFavorites(2, allListSelectedIndex)">+</v-btn></v-col>
-                          <v-col style="flex-grow:8"><div style="text-align:center; align-self:center;">Bottom-Right Corner</div></v-col>
-                          <v-col style="flex-grow:2"><v-btn style="font-size:xx-large;" @click="removeToolFromFavorites(2, bottomRightSelectedIndex)">-</v-btn></v-col>
+                        <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="addToolToFavorites(2, allListSelectedIndex)">+</v-btn>
+                          </v-col>
+                          <v-col style="flex-grow:8;">
+                            <div style="text-align:center; align-self:center;">Bottom-Right Corner</div>
+                          </v-col>
+                          <v-col style="flex-grow:2">
+                            <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(2, bottomLeftSelectedIndex)">-</v-btn>
+                          </v-col>
                         </v-card-title>
                         <v-card-text style="height:100%">
                           <v-list style="max-height:70%; overflow-y: auto">
@@ -169,7 +193,7 @@
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
-                                  <v-list-item-title v-text="item.actionModeValue"></v-list-item-title>
+                                  <v-list-item-title v-html="$t('buttons.' + item.displayedName )"></v-list-item-title>
                                 </v-list-item-content>
                               </v-list-item>
                             </v-list-item-group>
