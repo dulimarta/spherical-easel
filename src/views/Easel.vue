@@ -591,7 +591,7 @@ export default class Easel extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    // Set up master list of all tools for favorites selection
+    // Move undo, redo, and clear into the tooldictionary.
     this.allToolsList = toolGroups.map(group => group.children.map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,

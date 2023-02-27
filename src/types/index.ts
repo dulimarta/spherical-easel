@@ -47,6 +47,7 @@ export type ToolButtonType = {
   toolUseMessage: string;
   toolTipMessage: string;
   disabledIcon: string;
+  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
   clickFunc?: () => void;
 };
 

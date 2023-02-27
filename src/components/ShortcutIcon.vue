@@ -4,6 +4,7 @@
     :open-delay="toolTipOpenDelay"
     :close-delay="toolTipCloseDelay"
   >
+    <!-- TODO: shortcut icons do not use @click="switchButton(button)"; Others do -->
     <template v-slot:activator="{on}">
       <v-btn
         :disabled="disableBtn"
@@ -15,6 +16,7 @@
         @click="switchButton(button)"
         v-on="on"
       >
+
         <v-icon :disabled="disableBtn" :color="iconColor">{{ icon }}</v-icon>
       </v-btn>
     </template>

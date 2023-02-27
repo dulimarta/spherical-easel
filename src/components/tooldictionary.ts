@@ -419,3 +419,7 @@ toolDictionary.set("measuredCircle", {
     displayToolUseMessage: false,
     disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
 })
+// TODO: Put the statically defined shortcut icons here, set clickfunc to what they are in Easel.vue
+// toolDictionary.set("undo" {
+//
+// })
