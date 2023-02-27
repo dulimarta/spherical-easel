@@ -43,7 +43,7 @@ export type ToolButtonType = {
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
-  // toolGroup: string;
+  toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;
   disabledIcon: string;

@@ -39,7 +39,7 @@
                 ]">
               </v-select>
 
-              <h3>Favorite Tools</h3>
+              <div style="">Favorite Tools</div>
               <v-container>
                 <!-- I apologize to anyone who has experience in web dev for what you are about to witness -->
                 <v-row style="height:800px; flex-wrap:nowrap">
@@ -364,6 +364,8 @@ export default class Settings extends Vue {
   }
 
   mounted(): void {
+    // var test = LocaleMessages.get("buttons")
+    // import VueI18n, {LocaleMessages} from "vue-i18n"
     /** Notes for the devs:
      * Things to do:
      *
@@ -427,16 +429,27 @@ export default class Settings extends Vue {
     //       toolgroups.ts will reference this dictionary for each tool in a given group
     //       ShortcutIcon.vue is a hole different beast that we will need to tackle next week after
     //       we talk to Dr. Dulimarta and Dr. Dickinson
-
     // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
 
     // Set up master list of all tools for favorites selection
-    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
+    let compList = toolGroups.map(group => group.children.map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,
       icon: child.icon,
-      disabled: false
+      disabled: false,
+      langName: this.$t("buttons." + child.displayedName)
     }))).reduce((acc, val) => acc.concat(val), []);
+
+    // Sort the temp List
+    compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
+
+    // Redefine the allToolsList
+    this.allToolsList = compList.map(tool => ({
+      actionModeValue: tool.actionModeValue,
+      displayedName: tool.displayedName,
+      icon: tool.icon,
+      disabled: false
+    }))
 
     console.log("this.defaultToolNames: " + this.defaultToolNames);
 
@@ -455,18 +468,6 @@ export default class Settings extends Vue {
         }
       }
     }
-    // for (const corner of this.defaultToolNames) {
-    //   for (const tool of corner) {
-    //     let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
-    //     if (temp_tool.length > 0) {
-    //       // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
-    //       this.displayedFavoriteTools[i].push(Object.assign({}, temp_tool[0]));
-    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
-    //     } else {
-    //       console.log("Warning: Could not find '" + tool + "' in this.allToolsList");
-    //     }
-    //   }
-    // }
   }
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
 
