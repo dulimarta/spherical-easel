@@ -210,6 +210,7 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 import { toolGroups } from "@/components/toolgroups";
 import MessageHub from "@/components/MessageHub.vue";
+import {toolDictionary} from "@/components/tooldictionary";
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -347,6 +348,9 @@ export default class Easel extends Vue {
   get topLeftShortcuts() {
     return [
       {
+        labelMsg: toolDictionary.get("undoAction").toolTipMessage;
+      },
+      {
         labelMsg: "main.UndoLastAction",
         icon: SETTINGS.icons.undo.props.mdiIcon,
         clickFunc: this.undoEdit,
@@ -466,6 +470,7 @@ export default class Easel extends Vue {
     EventBus.listen("magnification-updated", this.resizePlottables);
     EventBus.listen("undo-enabled", this.setUndoEnabled);
     EventBus.listen("redo-enabled", this.setRedoEnabled);
+    EventBus.listen("display-clear-construction-dialog-box", this.resetSphere);
   }
   //#endregion magnificationUpdate
 
@@ -658,6 +663,7 @@ export default class Easel extends Vue {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
     EventBus.unlisten("secret-key-detected");
+    EventBus.unlisten("display-clear-construction-dialog-box");
     window.removeEventListener("keydown", this.handleKeyDown);
   }
 

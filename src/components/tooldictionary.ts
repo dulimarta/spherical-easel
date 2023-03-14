@@ -1,5 +1,8 @@
 import {ActionMode, ToolButtonType} from "@/types";
+import { Command } from "@/commands/Command"
+import EventBus from "@/eventHandlers/EventBus";
 
+// Note: when adding a new tool, will also need to add a new case in SphereFrame.vue switchActionMode()
 export const toolDictionary: Map<ActionMode, ToolButtonType> = new Map()
 toolDictionary.set("select", {
     id: 0,
@@ -419,7 +422,43 @@ toolDictionary.set("measuredCircle", {
     displayToolUseMessage: false,
     disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
 })
-// TODO: Put the statically defined shortcut icons here, set clickfunc to what they are in Easel.vue
-// toolDictionary.set("undo" {
-//
-// })
+// Note: I've added "undoAction" and "redoAction" to index.ts under ActionMode
+toolDictionary.set("undoAction", {
+    id: 0,
+    actionModeValue: "undoAction",
+    displayedName: "UndoLastAction",
+    icon: "$vuetify.icons.undo.props.mdiIcon",
+    toolTipMessage: "UndoLastActionToolTipMessage",
+    toolUseMessage: "UndoLastActionToolUseMessage",
+    displayToolUseMessage: false,
+    disabledIcon: "$vuetify.icons.value.blank",
+    clickFunc: () => {
+        Command.undo();
+    }
+})
+toolDictionary.set("redoAction", {
+    id: 5,
+    actionModeValue: "redoAction",
+    displayedName: "RedoLastAction",
+    icon: "$vuetify.icons.redo.props.mdiIcon",
+    toolTipMessage: "RedoLastActionToolTipMessage",
+    toolUseMessage: "RedoLastActionToolUseMessage",
+    displayToolUseMessage: false,
+    disabledIcon: "$vuetify.icons.value.blank",
+    clickFunc: () => {
+        Command.redo();
+    }
+})
+toolDictionary.set("resetAction", {
+    id: 10,
+    actionModeValue: "resetAction",
+    displayedName: "ResetSphereAction",
+    icon: "$vuetify.icons.clearConstruction.props.mdiIcon",
+    toolTipMessage: "ResetSphereActionToolTipMessage",
+    toolUseMessage: "ResetSphereActionToolUseMessage",
+    displayToolUseMessage: false,
+    disabledIcon: "$vuetify.icons.value.blank",
+    clickFunc: () => {
+        EventBus.fire("display-clear-construction-dialog-box", {});
+    }
+})

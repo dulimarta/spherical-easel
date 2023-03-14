@@ -264,7 +264,10 @@ export type ActionMode =
   | "reflection"
   | "pointReflection"
   | "inversion"
-  | "applyTransformation";
+  | "applyTransformation"
+  | "undoAction"
+  | "redoAction"
+  | "resetAction";
 
 export type IconNames =
   | ActionMode
