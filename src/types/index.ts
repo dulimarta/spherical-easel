@@ -43,10 +43,12 @@ export type ToolButtonType = {
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
-  // toolGroup: string;
+  toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;
   disabledIcon: string;
+  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
+  clickFunc?: () => void;
 };
 
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
@@ -262,7 +264,10 @@ export type ActionMode =
   | "reflection"
   | "pointReflection"
   | "inversion"
-  | "applyTransformation";
+  | "applyTransformation"
+  | "undoAction"
+  | "redoAction"
+  | "resetAction";
 
 export type IconNames =
   | ActionMode
@@ -560,12 +565,20 @@ export interface ConstructionInFirestore {
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
 }
+/* Reference to a user's favorite tool in settings */
+export interface FavoriteTool {
+  actionModeValue: string;
+  displayedName: string;
+  icon: string;
+  disabled: boolean;
+}
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
   displayName?: string;
   location?: string;
   role?: string;
+  favoriteTools?: string;
 }
 
 export enum AngleMode {
