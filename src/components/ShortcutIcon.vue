@@ -31,14 +31,11 @@ import SETTINGS from "@/global-settings";
 import { mapState, mapActions} from "pinia";
 import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
-
-
 @Component({
  methods: {
     ...mapActions(useSEStore, ["setButton"]),
   }}
   )
-
 export default class ShortcutIcon extends Vue {
   @Prop() readonly labelMsg!: string;
   @Prop() readonly icon!: string;
@@ -46,19 +43,15 @@ export default class ShortcutIcon extends Vue {
   @Prop() readonly btnColor!: string;
   @Prop() readonly disableBtn!: boolean;
   @Prop() button!: ToolButtonType | null;
-
   readonly setButton!: (_: ToolButtonType) => void;
-
   toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-
   switchButton(button: ToolButtonType | null): void { //Set the button selected so it can be tracked
     if (this.button) {
       this.setButton(button!);
     }
   }
 }
-
 </script>
 
 <style></style>

@@ -179,7 +179,6 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
-
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
@@ -241,11 +240,9 @@ import {toolDictionary} from "@/components/tooldictionary";
     listItemStyle: function (i, xLoc, yLoc) {
       //xLoc determines left or right, yLoc determines top or bottom
       const style: any = {};
-
       if (i !== 0) {
         style.position = "absolute";
       }
-
       switch (i) {
         case 1:
           style[yLoc] = "0px";
@@ -283,23 +280,18 @@ import {toolDictionary} from "@/components/tooldictionary";
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
-
   readonly seNodules!: SENodule[];
   readonly temporaryNodules!: Nodule[];
   readonly hasObjects!: boolean;
-
   readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
   readonly removeAllFromLayers!: () => void;
   readonly init!: () => void;
   readonly updateDisplay!: () => void;
-
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
-
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
-
   private buttonList = buttonList;
   private toolboxMinified = false;
   private stylePanelMinified = true;
@@ -310,7 +302,6 @@ export default class Easel extends Vue {
   private displayToolTips = SETTINGS.toolTip.disableDisplay;
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
   private displayToolUseMessage = SETTINGS.toolUse.display;
-
   private undoEnabled = false;
   private redoEnabled = false;
   private displayZoomInToolUseMessage = false;
@@ -320,22 +311,17 @@ export default class Easel extends Vue {
   private displayCreatePointToolUseMessage = false;
   private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
-
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
-
   private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
-
   private allToolsList: FavoriteTool[] = [];
-
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
     name: ""
   };
-
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
@@ -344,11 +330,10 @@ export default class Easel extends Vue {
     unsavedWorkDialog: VueComponent & DialogAction;
     clearConstructionDialog: VueComponent & DialogAction;
   };
-
   get topLeftShortcuts() {
     return [
       {
-        labelMsg: toolDictionary.get("undoAction").toolTipMessage;
+        //labelMsg: toolDictionary.get("undoAction").toolTipMessage;
       },
       {
         labelMsg: "main.UndoLastAction",
@@ -385,7 +370,6 @@ export default class Easel extends Vue {
       }
     ];
   }
-
   get bottomRightShortcuts() {
     return [
       {
@@ -397,7 +381,6 @@ export default class Easel extends Vue {
         disableBtn: false,
         button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
       },
-
       {
         labelMsg: "buttons.PanZoomOutToolTipMessage",
         icon: SETTINGS.icons.zoomOut.props.mdiIcon,
@@ -407,7 +390,6 @@ export default class Easel extends Vue {
         disableBtn: false,
         button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
       },
-
       {
         labelMsg: "buttons.ZoomFitToolTipMessage",
         icon: SETTINGS.icons.zoomFit.props.mdiIcon,
@@ -419,7 +401,6 @@ export default class Easel extends Vue {
       }
     ];
   }
-
   get bottomLeftShortcuts() {
     return [
       {
@@ -431,7 +412,6 @@ export default class Easel extends Vue {
         disableBtn: false,
         button: toolGroups[2].children.find(e => e.actionModeValue == "point")
       },
-
       {
         toolTipMessage: "buttons.CreateLineToolTipMessage",
         icon: "$vuetify.icons.value.line",
@@ -441,7 +421,6 @@ export default class Easel extends Vue {
         disableBtn: false,
         button: toolGroups[2].children.find(e => e.actionModeValue == "line")
       },
-
       {
         toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
         icon: "$vuetify.icons.value.segment",
@@ -451,7 +430,6 @@ export default class Easel extends Vue {
         disableBtn: false,
         button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
       },
-
       {
         toolTipMessage: "buttons.CreateCircleToolTipMessage",
         icon: "$vuetify.icons.value.circle",
@@ -463,7 +441,6 @@ export default class Easel extends Vue {
       }
     ];
   }
-
   //#region magnificationUpdate
   constructor() {
     super();
@@ -473,20 +450,17 @@ export default class Easel extends Vue {
     EventBus.listen("display-clear-construction-dialog-box", this.resetSphere);
   }
   //#endregion magnificationUpdate
-
   get centerWidth(): number {
     return (
       100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
     );
   }
-
   private setUndoEnabled(e: { value: boolean }): void {
     this.undoEnabled = e.value;
   }
   private setRedoEnabled(e: { value: boolean }): void {
     this.redoEnabled = e.value;
   }
-
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
     this.setActionMode({
@@ -508,7 +482,6 @@ export default class Easel extends Vue {
       name: "ZoomFitDisplayedName"
     });
   }
-
   private createPoint(): void {
     this.displayCreatePointToolUseMessage = true;
     this.setActionMode({
@@ -516,7 +489,6 @@ export default class Easel extends Vue {
       name: "CreatePointDisplayedName"
     });
   }
-
   private createLine(): void {
     this.displayCreateLineToolUseMessage = true;
     this.setActionMode({
@@ -531,7 +503,6 @@ export default class Easel extends Vue {
       name: "CreateLineSegmentDisplayedName"
     });
   }
-
   private createCircle(): void {
     this.displayCreateCircleToolUseMessage = true;
     this.setActionMode({
@@ -539,7 +510,6 @@ export default class Easel extends Vue {
       name: "CreateCircleDisplayedName"
     });
   }
-
   private adjustSize(): void {
     this.availHeight =
       window.innerHeight -
@@ -553,11 +523,9 @@ export default class Easel extends Vue {
       this.currentCanvasSize = this.availHeight - rightBox.top;
     }
   }
-
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
-
   loadDocument(docId: string): void {
     this.removeAllFromLayers();
     this.init();
@@ -593,7 +561,6 @@ export default class Easel extends Vue {
         }
       });
   }
-
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Move undo, redo, and clear into the tooldictionary.
@@ -602,7 +569,6 @@ export default class Easel extends Vue {
       displayedName: child.displayedName,
       icon: child.icon
     }))).reduce((acc, val) => acc.concat(val), []);
-
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
@@ -634,16 +600,13 @@ export default class Easel extends Vue {
     );
     window.addEventListener("keydown", this.handleKeyDown);
   }
-
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
     // TODO: Need to use structures in toolgroups instead of favoritetool
     // TODO: Need to add defaults to the list
     let finalToolsList: FavoriteTool[][] = [];
-
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
-
     // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
     for (const corner of favoriteToolNames) {
       // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
@@ -658,7 +621,6 @@ export default class Easel extends Vue {
     }
     return finalToolsList;
   }
-
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
@@ -666,7 +628,6 @@ export default class Easel extends Vue {
     EventBus.unlisten("display-clear-construction-dialog-box");
     window.removeEventListener("keydown", this.handleKeyDown);
   }
-
   /**
    * Split pane resize handler
    * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
@@ -683,32 +644,27 @@ export default class Easel extends Vue {
       this.$vuetify.application.footer;
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
-
   minifyToolbox(): void {
     this.toolboxMinified = !this.toolboxMinified;
   }
-
   minifyNotificationsPanel(): void {
     this.notificationsPanelMinified = !this.notificationsPanelMinified;
   }
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
   }
-
   getPanelSize(): number {
     if (!this.stylePanelMinified || !this.notificationsPanelMinified) {
       return 30;
     }
     return 5;
   }
-
   setActionModeToSelectTool(): void {
     this.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
-
   switchActionMode(): void {
     this.setActionMode(this.actionMode);
   }
@@ -723,7 +679,6 @@ export default class Easel extends Vue {
   redoAction(): void {
     Command.redo();
   }
-
   resetSphere(): void {
     this.$refs.clearConstructionDialog.hide();
     this.removeAllFromLayers();
@@ -735,7 +690,6 @@ export default class Easel extends Vue {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   }
-
   handleKeyDown(keyEvent: KeyboardEvent): void {
     // TO DO: test this on PC
     if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
@@ -774,7 +728,6 @@ export default class Easel extends Vue {
     Label.updateTextScaleFactorForZoom(e.factor);
     Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
     Parametric.updateCurrentStrokeWidthForZoom(e.factor);
-
     //console.debug("Resize all nodules and the temporary ones");
     // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {
@@ -786,18 +739,15 @@ export default class Easel extends Vue {
     });
   }
   //#endregion resizePlottables
-
   requestShare(): void {
     // Alternate place to handle "Share Construction"
     // EventBus.fire("share-construction-requested", {});
   }
-
   doLeave(): void {
     this.confirmedLeaving = true;
     if (this.attemptedToRoute)
       this.$router.replace({ path: this.attemptedToRoute.path });
   }
-
   beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
     if (this.hasObjects && !this.confirmedLeaving) {
       this.$refs.unsavedWorkDialog.show();
@@ -831,7 +781,6 @@ export default class Easel extends Vue {
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
     sans-serif;
 }
-
 #currentTool {
   display: flex;
   flex-direction: row;
@@ -842,15 +791,12 @@ export default class Easel extends Vue {
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
     sans-serif;
 }
-
 #tool {
   font-size: 20px;
 }
-
 #toolbox {
   width: 100%;
 }
-
 #responsiveBox {
   border: 2px double darkcyan;
   position: relative;
@@ -858,7 +804,6 @@ export default class Easel extends Vue {
     position: absolute;
   }
 }
-
 #styleContainer {
   // border: 2px solid red;
   height: calc(100vh - 136px);
