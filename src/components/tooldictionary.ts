@@ -1,6 +1,7 @@
 import {ActionMode, ToolButtonType} from "@/types";
 import { Command } from "@/commands/Command"
 import EventBus from "@/eventHandlers/EventBus";
+import SETTINGS from "@/global-settings";
 
 // Note: when adding a new tool, will also need to add a new case in SphereFrame.vue switchActionMode()
 export const toolDictionary: Map<ActionMode, ToolButtonType> = new Map()
@@ -427,7 +428,7 @@ toolDictionary.set("undoAction", {
     id: 0,
     actionModeValue: "undoAction",
     displayedName: "UndoLastAction",
-    icon: "$vuetify.icons.undo.props.mdiIcon",
+    icon: "$vuetify.icons.value.undo",
     toolTipMessage: "UndoLastActionToolTipMessage",
     toolUseMessage: "UndoLastActionToolUseMessage",
     displayToolUseMessage: false,
@@ -440,7 +441,7 @@ toolDictionary.set("redoAction", {
     id: 5,
     actionModeValue: "redoAction",
     displayedName: "RedoLastAction",
-    icon: "$vuetify.icons.redo.props.mdiIcon",
+    icon: "$vuetify.icons.value.redo",
     toolTipMessage: "RedoLastActionToolTipMessage",
     toolUseMessage: "RedoLastActionToolUseMessage",
     displayToolUseMessage: false,
@@ -453,7 +454,7 @@ toolDictionary.set("resetAction", {
     id: 10,
     actionModeValue: "resetAction",
     displayedName: "ResetSphereAction",
-    icon: "$vuetify.icons.clearConstruction.props.mdiIcon",
+    icon: "$vuetify.icons.value.clearConstruction",
     toolTipMessage: "ResetSphereActionToolTipMessage",
     toolUseMessage: "ResetSphereActionToolUseMessage",
     displayToolUseMessage: false,

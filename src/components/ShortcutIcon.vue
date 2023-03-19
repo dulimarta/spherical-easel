@@ -10,7 +10,7 @@
         :disabled="disableBtn"
         :color="btnColor"
         :value="button"
-        icon
+        :icon="icon"
         tile
         v-on:click="$listeners.click"
         @click="switchButton(button)"

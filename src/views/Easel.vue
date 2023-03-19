@@ -329,6 +329,15 @@ export default class Easel extends Vue {
 
   private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
 
+  private displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+
+  private defaultToolNames = [
+    [],
+    [],
+    ["zoomIn", "zoomOut", "zoomFit"],
+    []
+  ]
+
   private allToolsList: FavoriteTool[] = [];
 
   private actionMode: { id: ActionMode; name: string } = {
@@ -346,22 +355,29 @@ export default class Easel extends Vue {
   };
 
   get topLeftShortcuts() {
+    let undotool = toolDictionary.get("undoAction");
     return [
       {
-        labelMsg: toolDictionary.get("undoAction").toolTipMessage;
-      },
-      {
-        labelMsg: "main.UndoLastAction",
-        icon: SETTINGS.icons.undo.props.mdiIcon,
-        clickFunc: this.undoEdit,
+        labelMsg: undotool.displayedName,
+        icon: undotool.icon,
+        clickFunc: undotool.clickFunc,
         iconColor: "blue",
         btnColor: null,
         disableBtn: !this.stylePanelMinified || !this.undoEnabled,
         button: null
       },
+      // {
+      //   labelMsg: "main.UndoLastAction",
+      //   icon: SETTINGS.icons.undo.props.mdiIcon,
+      //   clickFunc: this.undoEdit,
+      //   iconColor: "blue",
+      //   btnColor: null,
+      //   disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+      //   button: null
+      // },
       {
         labelMsg: "main.RedoLastAction",
-        icon: SETTINGS.icons.redo.props.mdiIcon,
+        icon: "$vuetify.icons.value.redo",
         clickFunc: this.redoAction,
         iconColor: "blue",
         btnColor: null,
@@ -374,7 +390,7 @@ export default class Easel extends Vue {
     return [
       {
         labelMsg: "constructions.resetSphere",
-        icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
+        icon: "$vuetify.icons.value.clearConstruction",
         clickFunc: () => {
           this.$refs.clearConstructionDialog.show();
         },
@@ -597,11 +613,7 @@ export default class Easel extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Move undo, redo, and clear into the tooldictionary.
-    this.allToolsList = toolGroups.map(group => group.children.map(child => ({
-      actionModeValue: child.actionModeValue,
-      displayedName: child.displayedName,
-      icon: child.icon
-    }))).reduce((acc, val) => acc.concat(val), []);
+    this.initializeToolLists();
 
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
@@ -622,40 +634,114 @@ export default class Easel extends Vue {
         .then((ds: DocumentSnapshot) => {
           if (ds.exists) {
             const uProfile = ds.data() as UserProfile;
-            toolsString = uProfile.favoriteTools as string == null ? toolsString : uProfile.favoriteTools as string;
-            toolsString = uProfile.favoriteTools as string;
+            console.log("From Firestore", uProfile);
+            this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           }
         });
-    this.userFavoriteTools = this.decodeFavoriteTools(toolsString ?? "\n\n\n");
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) this.uid = u.uid;
+        else this.userFavoriteTools = [[],[],[],[]];
       }
     );
     window.addEventListener("keydown", this.handleKeyDown);
   }
 
+  convertFavoriteToShortcut(fTool: FavoriteTool): {} {
+    // converts a favorite tool to a shortcut icon
+    // TODO: Issue with the clickFunc. Will we need to create a click func for EVERY tool??
+    // TODO: Also console is spitting out errors left and right
+    let tool = toolDictionary.get(fTool.actionModeValue);
+    return {
+      labelMsg: tool.toolTipMessage,
+      icon: tool.icon,
+      clickFunc: this.createPoint,
+      iconColor: null,
+      btnColor: "primary",
+      disableBtn: false,
+      button: toolGroups[2].children.find(e => e.actionModeValue == "point")
+    };
+  }
+
+  initializeToolLists(): void {
+    // Set up master list of all tools for favorites selection
+    let compList = toolGroups.map(group => group.children.map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon,
+      disabled: false,
+      langName: this.$t("buttons." + child.displayedName)
+    }))).reduce((acc, val) => acc.concat(val), []);
+
+    // Sort the temp List
+    compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
+
+    // Redefine the allToolsList
+    this.allToolsList = compList.map(tool => ({
+      actionModeValue: tool.actionModeValue,
+      displayedName: tool.displayedName,
+      icon: tool.icon,
+      disabled: false
+    }))
+
+    console.log("this.defaultToolNames: " + this.defaultToolNames);
+
+    // Add default tools to displayedFavoriteTools
+    for (let i = 0; i < this.defaultToolNames.length; i++) {
+      for (let j = 0; j < this.defaultToolNames[i].length; j++) {
+        let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
+        if (temp_tool.length > 0) {
+          let tool = Object.assign({}, temp_tool[0]);
+          tool.disabled = true;
+          this.displayedFavoriteTools[i].push(tool);
+          // Set this tool to disabled because the user cannot disable defaults
+          console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+        } else {
+          console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
+        }
+      }
+    }
+  }
+
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
-    // TODO: Need to use structures in toolgroups instead of favoritetool
-    // TODO: Need to add defaults to the list
+
+    // FavoriteTool[][] array we are returning
     let finalToolsList: FavoriteTool[][] = [];
 
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
 
-    // save each matching FavoriteTool to the userFavoriteTools, where each index is a corner
+    // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
     for (const corner of favoriteToolNames) {
       // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
       let temp_corner: FavoriteTool[] = [];
       for (const tool of corner) {
+        // Filter will always return a list, even though there will only ever be one match
         let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
-          temp_corner.push(temp_tool[0]);
+          temp_corner.push(Object.assign({}, temp_tool[0]));
         }
       }
       finalToolsList.push(temp_corner);
     }
+
+    // Add the user's favorite tools to the displayedFavoriteTools list
+    for (let i = 0; i < finalToolsList.length; i++) {
+      for (const tool of finalToolsList[i]) {
+        // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
+        this.displayedFavoriteTools[i].push(Object.assign({}, tool));
+      }
+    }
+
+    // Iterate through allToolsList to set each favorited tool as not focusable
+    for (let i = 0; i < this.displayedFavoriteTools.length; i++) {
+      for (let j = 0; j < this.displayedFavoriteTools[i].length; j++) {
+        let index = this.allToolsList.findIndex(tool => tool.actionModeValue === this.displayedFavoriteTools[i][j].actionModeValue);
+        this.allToolsList[index].disabled = true;
+      }
+    }
+
     return finalToolsList;
   }
 

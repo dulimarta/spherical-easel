@@ -567,7 +567,7 @@ export interface ConstructionInFirestore {
 }
 /* Reference to a user's favorite tool in settings */
 export interface FavoriteTool {
-  actionModeValue: string;
+  actionModeValue: ActionMode;
   displayedName: string;
   icon: string;
   disabled: boolean;
