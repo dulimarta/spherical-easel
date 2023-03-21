@@ -30,12 +30,12 @@ import { Prop, Component } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
 import { mapState, mapActions} from "pinia";
 import { useSEStore } from "@/stores/se";
-import { ToolButtonType } from "@/types";
+import {ActionMode, ToolButtonType} from "@/types";
 
 
 @Component({
  methods: {
-    ...mapActions(useSEStore, ["setButton"]),
+    ...mapActions(useSEStore, ["setActionMode", "setButton"]),
   }}
   )
 
@@ -47,14 +47,22 @@ export default class ShortcutIcon extends Vue {
   @Prop() readonly disableBtn!: boolean;
   @Prop() button!: ToolButtonType | null;
 
+  readonly setActionMode!: (arg: { id: ActionMode; name: string }) => void;
+
   readonly setButton!: (_: ToolButtonType) => void;
 
   toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   switchButton(button: ToolButtonType | null): void { //Set the button selected so it can be tracked
-    if (this.button) {
+    if (button?.clickFunc != null) {
+      button.clickFunc();
+    } else {
       this.setButton(button!);
+      this.setActionMode({
+        id: "point",
+        name: "CreatePointDisplayedName"
+      });
     }
   }
 }

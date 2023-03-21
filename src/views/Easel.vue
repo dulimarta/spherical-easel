@@ -273,6 +273,7 @@ import {toolDictionary} from "@/components/tooldictionary";
   },
   computed: {
     ...mapState(useSEStore, [
+        "disabledTools",
       "seNodules",
       "temporaryNodules",
       "hasObjects",
@@ -296,6 +297,8 @@ export default class Easel extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
+
+  readonly disabledTools!: Array<ActionMode>;
 
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -357,15 +360,8 @@ export default class Easel extends Vue {
   get topLeftShortcuts() {
     let undotool = toolDictionary.get("undoAction");
     return [
-      {
-        labelMsg: undotool.displayedName,
-        icon: undotool.icon,
-        clickFunc: undotool.clickFunc,
-        iconColor: "blue",
-        btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: null
-      },
+      this.convertFavoriteToShortcut("undoAction"),
+        this.convertFavoriteToShortcut("point"),
       // {
       //   labelMsg: "main.UndoLastAction",
       //   icon: SETTINGS.icons.undo.props.mdiIcon,
@@ -647,19 +643,18 @@ export default class Easel extends Vue {
     window.addEventListener("keydown", this.handleKeyDown);
   }
 
-  convertFavoriteToShortcut(fTool: FavoriteTool): {} {
+  convertFavoriteToShortcut(toolActionMode: ActionMode): {} {
     // converts a favorite tool to a shortcut icon
     // TODO: Issue with the clickFunc. Will we need to create a click func for EVERY tool??
     // TODO: Also console is spitting out errors left and right
-    let tool = toolDictionary.get(fTool.actionModeValue);
+    let tool = toolDictionary.get(toolActionMode);
     return {
-      labelMsg: tool.toolTipMessage,
-      icon: tool.icon,
-      clickFunc: this.createPoint,
+      labelMsg: tool?.toolTipMessage,
+      icon: tool?.icon,
       iconColor: null,
       btnColor: "primary",
-      disableBtn: false,
-      button: toolGroups[2].children.find(e => e.actionModeValue == "point")
+      disableBtn: this.disabledTools.map(),
+      button: toolDictionary.get(toolActionMode)
     };
   }
 
