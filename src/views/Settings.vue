@@ -1,96 +1,236 @@
 <template>
   <v-container>
-    <v-tabs centered
-      v-model="selectedTab">
+    <v-tabs centered v-model="selectedTab">
       <v-tab v-if="profileEnabled">User Profile</v-tab>
       <v-tab>App Preferences</v-tab>
     </v-tabs>
     <v-tabs-items v-model="selectedTab">
 
       <v-tab-item v-if="profileEnabled">
-        <v-sheet elevation="2"
-          class="pa-2">
+        <v-sheet elevation="2" class="pa-2">
 
-          <div id="profileInfo"
-            class="text-body-2"
-            :style="{
-              flexDirection : updatingPicture ? 'column':'row',
-              alignItems: updatingPicture ? 'flex-center' : 'flex-start'}">
+          <div id="profileInfo" class="text-body-2" :style="{
+            flexDirection: updatingPicture ? 'column' : 'row',
+            alignItems: updatingPicture ? 'flex-center' : 'flex-start'
+          }">
             <div class="mx-3">
               <!-- Nested router view for handling profile picture update -->
-              <router-view @photo-change="setUpdatingPicture(true)"
-                @no-capture="setUpdatingPicture(false)"
+              <router-view @photo-change="setUpdatingPicture(true)" @no-capture="setUpdatingPicture(false)"
                 @photo-captured="setUpdatingPicture(false)"></router-view>
             </div>
             <div class="px-2">
-              <v-text-field label="Email"
-                readonly
-                v-model="userEmail" />
-              <v-text-field v-model="userDisplayName"
-                label="Display Name" />
-              <v-text-field v-model="userLocation"
-                label="Location" />
+              <v-text-field label="Email" readonly v-model="userEmail" />
+              <v-text-field v-model="userDisplayName" label="Display Name" />
+              <v-text-field v-model="userLocation" label="Location" />
 
-              <v-select label="Role"
-                v-model="userRole"
-                :items="
+              <v-select label="Role" v-model="userRole" :items="
                 ['Student', 'Instructor'
-                , 'Community Member'
+                  , 'Community Member'
                 ]">
               </v-select>
 
 
               <!-- TODO: class text-truncate for ellipses on card title -->
-<!--              <v-container>-->
-<!--                <v-row>-->
-<!--                  <v-col cols="3" >-->
-<!--                    <v-card class="mt-3">-->
-<!--                      <v-card-text>top left</v-card-text>-->
-<!--                    </v-card>-->
-<!--                  </v-col>-->
-<!--                  <v-col cols="9">-->
-<!--                    <v-container>-->
-<!--                      <v-row>-->
-<!--                        <v-col cols="6">-->
-<!--                          <v-card>-->
-<!--                            <v-card-text>top left</v-card-text>-->
-<!--                          </v-card>-->
-<!--                        </v-col>-->
-<!--                        <v-col cols="6">-->
-<!--                          <v-card>-->
-<!--                          <v-card-text>top left</v-card-text>-->
-<!--                          </v-card>-->
-<!--                        </v-col>-->
-<!--                        <v-col cols="6">-->
-<!--                          <v-card>-->
-<!--                            <v-card-text>top left</v-card-text>-->
-<!--                          </v-card>-->
-<!--                        </v-col>-->
-<!--                        <v-col cols="6">-->
-<!--                          <v-card>-->
-<!--                            <v-card-text>top left</v-card-text>-->
-<!--                          </v-card>-->
-<!--                        </v-col>-->
-<!--                      </v-row>-->
-<!--                    </v-container>-->
-<!--                  </v-col>-->
-<!--                </v-row>-->
-<!--              </v-container>-->
-
-              <div style="">Favorite Tools</div>
               <v-container>
-                <!-- I apologize to anyone who has experience in web dev for what you are about to witness -->
-                <v-row style="height:800px; flex-wrap:nowrap">
-                  <!--
+                <v-row>
+                  <v-col cols="3">
+                    <v-card class="mt-3">
+                      <v-card class = "mainListCard">
+                        <v-card-title>
+                          All Tools
+                        </v-card-title>
+                        <v-card-text>
+                          <v-list class="mainToolsList">
+                            <v-list-item-group v-model="allListSelectedIndex">
+                              <v-list-item v-for="(item, i) in allToolsList" :key="i" :disabled="item.disabled">
+                                <v-list-item-icon>
+                                  <v-icon v-text="item.icon"></v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                  <v-list-item-title v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
+                                </v-list-item-content>
+                              </v-list-item>
+                            </v-list-item-group>
+                          </v-list>
+                        </v-card-text>
+                      </v-card>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-container>
+                      <v-row>
+                        <v-col cols="6">
+                          <v-card class = "cards">
+                            <v-card class="cards">
+                              <v-card-title
+                                style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(0, allListSelectedIndex)">
+                                    +
+                                  </v-btn>
+                                </v-col>
+                                <v-col style="flex-grow:8;">
+                                  <div style="text-align:center; align-self:center;">Top-Left Corner</div>
+                                </v-col>
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">
+                                    -
+                                  </v-btn>
+                                </v-col>
+                              </v-card-title>
+                              <v-card-text style="height:100%">
+                                <v-list class="secondaryList">
+                                  <v-list-item-group v-model="topLeftSelectedIndex">
+                                    <v-list-item v-for="(item) in displayedFavoriteTools[0]" :key="item.icon"
+                                      :disabled="item.disabled">
+                                      <v-list-item-icon>
+                                        <v-icon>{{ item.icon }}</v-icon>
+                                      </v-list-item-icon>
+                                      <v-list-item-content>
+                                        <v-list-item-title
+                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
+                                      </v-list-item-content>
+                                    </v-list-item>
+                                  </v-list-item-group>
+                                </v-list>
+                              </v-card-text>
+                            </v-card>
+                          </v-card>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-card class= "cards">
+                            <v-card class="cards" style="height:95%; width:100%; flex-basis:auto">
+                              <v-card-title
+                                style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(1, allListSelectedIndex)">
+                                    +
+                                  </v-btn>
+                                </v-col>
+                                <v-col style="flex-grow:8;">
+                                  <div style="text-align:center; align-self:center;">Top-Right Corner</div>
+                                </v-col>
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;"
+                                    @click="removeToolFromFavorites(1, topRightSelectedIndex)">-
+                                  </v-btn>
+                                </v-col>
+                              </v-card-title>
+                              <v-card-text style="height:100%">
+                                <v-list class="secondaryList">
+                                  <v-list-item-group v-model="topRightSelectedIndex">
+                                    <v-list-item v-for="(item) in displayedFavoriteTools[1]" :key="item.icon"
+                                      :disabled="item.disabled">
+                                      <v-list-item-icon>
+                                        <v-icon v-text="item.icon"></v-icon>
+                                      </v-list-item-icon>
+                                      <v-list-item-content>
+                                        <v-list-item-title
+                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
+                                      </v-list-item-content>
+                                    </v-list-item>
+                                  </v-list-item-group>
+                                </v-list>
+                              </v-card-text>
+                            </v-card>
+                          </v-card>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-card class = "cards">
+                            <v-card class = "cards" style="height:100%; width:100%; flex-basis:auto">
+                              <v-card-title
+                                style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(3, allListSelectedIndex)">
+                                    +
+                                  </v-btn>
+                                </v-col>
+                                <v-col style="flex-grow:8;">
+                                  <div style="text-align:center; align-self:center;">Bottom-Left Corner</div>
+                                </v-col>
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;"
+                                    @click="removeToolFromFavorites(3, bottomLeftSelectedIndex)">-
+                                  </v-btn>
+                                </v-col>
+                              </v-card-title>
+                              <v-card-text style="height:100%">
+                                <v-list class="secondaryList">
+                                  <v-list-item-group v-model="bottomLeftSelectedIndex">
+                                    <v-list-item v-for="(item) in displayedFavoriteTools[3]" :key="item.icon"
+                                      :disabled="item.disabled">
+                                      <v-list-item-icon>
+                                        <v-icon v-text="item.icon"></v-icon>
+                                      </v-list-item-icon>
+                                      <v-list-item-content>
+                                        <v-list-item-title
+                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
+                                      </v-list-item-content>
+                                    </v-list-item>
+                                  </v-list-item-group>
+                                </v-list>
+                              </v-card-text>
+                            </v-card>
+                          </v-card>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-card class = "cards">
+                            <v-card class = "cards" style="height:100%; width:100%; flex-basis:auto">
+                              <v-card-title
+                                style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(2, allListSelectedIndex)">
+                                    +
+                                  </v-btn>
+                                </v-col>
+                                <v-col style="flex-grow:8;">
+                                  <div style="text-align:center; align-self:center;">Bottom-Right Corner</div>
+                                </v-col>
+                                <v-col style="flex-grow:2">
+                                  <v-btn style="font-size:2rem;"
+                                    @click="removeToolFromFavorites(2, bottomRightSelectedIndex)">-
+                                  </v-btn>
+                                </v-col>
+                              </v-card-title>
+                              <v-card-text style="height:100%">
+                                <v-list class="secondaryList">
+                                  <v-list-item-group v-model="bottomRightSelectedIndex">
+                                    <v-list-item v-for="(item) in displayedFavoriteTools[2]" :key="item.icon"
+                                      :disabled="item.disabled">
+                                      <v-list-item-icon>
+                                        <v-icon v-text="item.icon"></v-icon>
+                                      </v-list-item-icon>
+                                      <v-list-item-content>
+                                        <v-list-item-title
+                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
+                                      </v-list-item-content>
+                                    </v-list-item>
+                                  </v-list-item-group>
+                                </v-list>
+                              </v-card-text>
+                            </v-card>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </v-col>
+                </v-row>
+              </v-container>
+
+              <!-- <div style="">Favorite Tools</div>
+              <v-container> -->
+              <!-- I apologize to anyone who has experience in web dev for what you are about to witness -->
+              <!-- <v-row style="height:800px; flex-wrap:nowrap"> -->
+              <!--
                   columns in vuetify are essentially flex boxes. We can use the flex-grow style tag to assign
                   proportions to each column. This allows us to create separators and manage the size of grids
                   across multiple device and monitor sizes.
                   -->
-                  <v-col style="height:95%; flex-grow:1"></v-col>
-                  <!-- Master list of tools -->
-                  <v-col style="height:95%; flex-grow:24">
-                    <!-- master list -->
-                    <v-card style="height:100%; width:100%">
+              <!-- <v-col style="height:95%; flex-grow:1"></v-col> -->
+              <!-- Master list of tools -->
+              <!-- <v-col style="height:95%; flex-grow:24"> -->
+              <!-- master list -->
+              <!-- <v-card style="height:100%; width:100%">
                       <v-card-title>
                         All Tools
                       </v-card-title>
@@ -110,14 +250,14 @@
                       </v-card-text>
                     </v-card>
                   </v-col>
-                  <v-col style="height:95%; flex-grow:4"></v-col>
-                  <!-- Top-Left and Bottom-Left Corners -->
-                  <!-- TODO: https://v2.vuetifyjs.com/en/styles/border-radius/#usage -->
-                  <!-- TODO: https://v2.vuetifyjs.com/en/styles/elevation/#usage -->
-                  <v-col style="height:95%; flex-grow:24">
-                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
-                      <!-- Top-Left Corner -->
-                      <v-card style="height:95%; width:100%; flex-basis:auto">
+                  <v-col style="height:95%; flex-grow:4"></v-col> -->
+              <!-- Top-Left and Bottom-Left Corners -->
+              <!-- TODO: https://v2.vuetifyjs.com/en/styles/border-radius/#usage -->
+              <!-- TODO: https://v2.vuetifyjs.com/en/styles/elevation/#usage -->
+              <!-- <v-col style="height:95%; flex-grow:24">
+                    <v-row style="height:50%; align-items:flex-start; justify-content:center"> -->
+              <!-- Top-Left Corner -->
+              <!-- <v-card style="height:95%; width:100%; flex-basis:auto">
                         <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                           <v-col style="flex-grow:2">
                             <v-btn style="font-size:2rem;" @click="addToolToFavorites(0, allListSelectedIndex)">+</v-btn>
@@ -144,9 +284,9 @@
                           </v-list>
                         </v-card-text>
                       </v-card>
-                    </v-row>
-                    <!-- Bottom-Left Corner -->
-                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                    </v-row> -->
+              <!-- Bottom-Left Corner -->
+              <!-- <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:100%; width:100%; flex-basis:auto">
                         <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                           <v-col style="flex-grow:2">
@@ -176,11 +316,11 @@
                       </v-card>
                     </v-row>
                   </v-col>
-                  <v-col style="height:95%; flex-grow:2"></v-col>
-                  <!-- Top-Right and Bottom-Right Corners -->
-                  <v-col style="height:95%; flex-grow:24">
-                    <!-- Top-Right Corner -->
-                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                  <v-col style="height:95%; flex-grow:2"></v-col> -->
+              <!-- Top-Right and Bottom-Right Corners -->
+              <!-- <v-col style="height:95%; flex-grow:24"> -->
+              <!-- Top-Right Corner -->
+              <!-- <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:95%; width:100%; flex-basis:auto">
                         <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                           <v-col style="flex-grow:2">
@@ -208,9 +348,9 @@
                           </v-list>
                         </v-card-text>
                       </v-card>
-                    </v-row>
-                    <!-- Bottom-Right Corner -->
-                    <v-row style="height:50%; align-items:flex-start; justify-content:center">
+                    </v-row> -->
+              <!-- Bottom-Right Corner -->
+              <!-- <v-row style="height:50%; align-items:flex-start; justify-content:center">
                       <v-card style="height:100%; width:100%; flex-basis:auto">
                         <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                           <v-col style="flex-grow:2">
@@ -242,16 +382,14 @@
                   </v-col>
                   <v-col style="height:95%; flex-grow:1"></v-col>
                 </v-row>
-              </v-container>
+              </v-container> -->
 
               <v-row justify="center">
                 <v-col cols="auto">
                   <v-btn @click="doSave">Save</v-btn>
                 </v-col>
                 <v-col cols="auto">
-                  <v-btn class="mx-2"
-                    :disabled="!userEmail"
-                    @click="doChangePassword">Change Password</v-btn>
+                  <v-btn class="mx-2" :disabled="!userEmail" @click="doChangePassword">Change Password</v-btn>
                 </v-col>
                 <v-col cols="auto">
                   <v-btn color="red lighten-2">Delete Account</v-btn>
@@ -268,27 +406,18 @@
 
       </v-tab-item>
       <v-tab-item>
-        <v-sheet elevation="2"
-          class="pa-2">
+        <v-sheet elevation="2" class="pa-2">
           <h3 v-t="'settings.title'"></h3>
           <div id="appSetting">
             <label>Language</label>
-            <v-select v-model="selectedLanguage"
-              outlined
-              :items="languages"
-              item-text="name"
-              item-value="locale"
-              label="Language"
-              return-object>
+            <v-select v-model="selectedLanguage" outlined :items="languages" item-text="name" item-value="locale"
+              label="Language" return-object>
             </v-select>
             <label>Decimal Precision</label>
             <v-radio-group row>
-              <v-radio label="3"
-                value="3"></v-radio>
-              <v-radio label="5"
-                value="5"></v-radio>
-              <v-radio label="7"
-                value="7"></v-radio>
+              <v-radio label="3" value="3"></v-radio>
+              <v-radio label="5" value="5"></v-radio>
+              <v-radio label="7" value="7"></v-radio>
             </v-radio-group>
             <labeL>Selection Precision</labeL>
             <v-radio-group row>
@@ -318,26 +447,46 @@
     </v-tabs-items>
 
     <v-row>
-      <v-col cols="12"
-        sm="6">
+      <v-col cols="12" sm="6">
       </v-col>
     </v-row>
   </v-container>
 </template>
 
+
 <style lang="scss" scoped>
+.mainListCard {
+  min-width: 200px;
+}
+.cards {
+  min-width: 235px;
+}
+.secondaryList {
+  height: 362px;
+  overflow-y: auto;
+}
+
+.mainToolsList {
+  max-height: 885px;
+  overflow-y: auto;
+}
+
+
 div#container {
   padding: 1rem;
-}
+}S
+
 div#profileInfo {
   display: flex;
+
   // flex-direction: row;
   // align-items: flex-start;
-  & > :nth-child(2) {
+  &> :nth-child(2) {
     // background-color: map-get($green, lighten-2);
     flex-grow: 1;
   }
 }
+
 div#appSetting {
   display: grid;
   grid-template-columns: 1fr 3fr; // align-items: baseline;
@@ -349,7 +498,7 @@ import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
-import {FavoriteTool, UserProfile } from "@/types";
+import { FavoriteTool, UserProfile } from "@/types";
 import { Unsubscribe } from "@firebase/util";
 import EventBus from "@/eventHandlers/EventBus";
 import { toolGroups } from "@/components/toolgroups";
@@ -387,10 +536,10 @@ export default class Settings extends Vue {
   profileEnabled = false;
   // If we don't initialize these values HERE (apparently we can't at the top of the class), vue throws hands
   topLeftSelectedIndex: number | null = null;
-  bottomLeftSelectedIndex:  number | null = null;
-  topRightSelectedIndex?:  number | null = null;
-  bottomRightSelectedIndex?:  number | null = null;
-  allListSelectedIndex?:  number | null = null;
+  bottomLeftSelectedIndex: number | null = null;
+  topRightSelectedIndex?: number | null = null;
+  bottomRightSelectedIndex?: number | null = null;
+  allListSelectedIndex?: number | null = null;
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
@@ -441,7 +590,7 @@ export default class Settings extends Vue {
           this.userDisplayName = "";
           this.userLocation = "";
           this.userRole = "Community Member";
-          this.userFavoriteTools = [[],[],[],[]];
+          this.userFavoriteTools = [[], [], [], []];
         }
         // console.log("Auth changed", u, this.profileEnabled);
       }
