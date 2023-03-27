@@ -446,6 +446,7 @@ export default class Easel extends Vue {
         button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
       },
       // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
+        // TODO: Undo is removing two points at a time (seems to be activating twice)
       {
         toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
         icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
