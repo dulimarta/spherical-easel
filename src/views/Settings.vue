@@ -296,7 +296,7 @@
 
 div#container {
   padding: 1rem;
-}S
+}
 
 div#profileInfo {
   display: flex;
