@@ -12,10 +12,10 @@ export default {
   main: {
     ConstructionsTabToolTip: "Saved Constructions",
     ObjectsTabToolTip: "Objects",
-    RedoLastAction: "Redo last action",
+    // RedoLastAction: "Redo last action",
     SphericalEaselMainTitle: "Spherical Easel",
-    ToolsTabToolTip: "Tools",
-    UndoLastAction: "Undo last action"
+    ToolsTabToolTip: "Tools"
+    // UndoLastAction: "Undo last action"
   },
   toolGroups: {
     EditTools: "Edit Tools",
@@ -32,6 +32,14 @@ export default {
   buttons: {
     CurrentTool: "Current Tool",
     NoToolSelected: "No Tool Selected",
+
+    RedoLastActionDisplayedName: "Redo Action",
+    RedoLastActionToolTipMessage: "Redo the last action",
+    RedoLastActionToolUseMessage: "Click to redo your last action",
+
+    UndoLastActionDisplayedName: "Undo Action",
+    UndoLastActionToolTipMessage: "Undo the last action",
+    UndoLastActionToolUseMessage: "Click to undo your last action",
 
     MeasureTriangleDisplayedName: "Measure Triangle",
     MeasureTriangleToolTipMessage:
