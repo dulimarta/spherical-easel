@@ -427,7 +427,7 @@ toolDictionary.set("measuredCircle", {
 toolDictionary.set("undoAction", {
     id: 0,
     actionModeValue: "undoAction",
-    displayedName: "UndoLastAction",
+    displayedName: "UndoLastActionDisplayedName",
     icon: "$vuetify.icons.value.undo",
     toolTipMessage: "UndoLastActionToolTipMessage",
     toolUseMessage: "UndoLastActionToolUseMessage",
@@ -440,7 +440,7 @@ toolDictionary.set("undoAction", {
 toolDictionary.set("redoAction", {
     id: 5,
     actionModeValue: "redoAction",
-    displayedName: "RedoLastAction",
+    displayedName: "RedoLastActionDisplayedName",
     icon: "$vuetify.icons.value.redo",
     toolTipMessage: "RedoLastActionToolTipMessage",
     toolUseMessage: "RedoLastActionToolUseMessage",
@@ -453,7 +453,7 @@ toolDictionary.set("redoAction", {
 toolDictionary.set("resetAction", {
     id: 10,
     actionModeValue: "resetAction",
-    displayedName: "ResetSphereAction",
+    displayedName: "ResetSphereActionDisplayedName",
     icon: "$vuetify.icons.value.clearConstruction",
     toolTipMessage: "ResetSphereActionToolTipMessage",
     toolUseMessage: "ResetSphereActionToolUseMessage",

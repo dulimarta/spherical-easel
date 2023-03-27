@@ -10,7 +10,7 @@
         :disabled="disableBtn"
         :color="btnColor"
         :value="button"
-        :icon="icon"
+        icon
         tile
         v-on:click="$listeners.click"
         @click="switchButton(button)"
@@ -20,7 +20,7 @@
         <v-icon :disabled="disableBtn" :color="iconColor">{{ icon }}</v-icon>
       </v-btn>
     </template>
-    <span>{{ $t(labelMsg) }}</span>
+    <span v-html="$t('buttons.' + labelMsg )"></span>
   </v-tooltip>
 </template>
 

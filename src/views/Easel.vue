@@ -335,8 +335,8 @@ export default class Easel extends Vue {
   private displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
 
   private defaultToolNames = [
-    [],
-    [],
+    ["undoAction", "redoAction"],
+    ["resetAction"],
     ["zoomIn", "zoomOut", "zoomFit"],
     []
   ]
@@ -358,33 +358,36 @@ export default class Easel extends Vue {
   };
 
   get topLeftShortcuts() {
-    let undotool = toolDictionary.get("undoAction");
     return [
-      this.convertFavoriteToShortcut("undoAction"),
-        this.convertFavoriteToShortcut("point"),
-      // {
-      //   labelMsg: "main.UndoLastAction",
-      //   icon: SETTINGS.icons.undo.props.mdiIcon,
-      //   clickFunc: this.undoEdit,
-      //   iconColor: "blue",
-      //   btnColor: null,
-      //   disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-      //   button: null
-      // },
+      // this.getShortcutIcon("undoAction"),
+      // this.getShortcutIcon("redoAction"),
+      // this.getShortcutIcon("point")
+      // TODO: This is causing a lot of issues in the debug view
+      // TODO: not able to use disabledTools for disableBtn
       {
-        labelMsg: "main.RedoLastAction",
-        icon: "$vuetify.icons.value.redo",
-        clickFunc: this.redoAction,
+        labelMsg: toolDictionary.get("undoAction")?.displayedName, //"main.UndoLastAction",
+        icon: toolDictionary.get("undoAction")?.icon, //SETTINGS.icons.undo.props.mdiIcon,
+        clickFunc: toolDictionary.get("undoAction")?.clickFunc, // this.undoEdit,
         iconColor: "blue",
         btnColor: null,
         disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: null
+        button: toolDictionary.get("undoAction")
+      },
+      {
+        labelMsg: toolDictionary.get("undoAction")?.displayedName, // "main.RedoLastAction",
+        icon: toolDictionary.get("redoAction")?.icon, // "$vuetify.icons.value.redo",
+        clickFunc: toolDictionary.get("redoAction")?.clickFunc, // this.redoAction,
+        iconColor: "blue",
+        btnColor: null,
+        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+        button: toolDictionary.get("redoAction")
       }
     ];
   }
   get topRightShortcuts() {
     return [
-      {
+        // this.getShortcutIcon("resetAction")
+        {
         labelMsg: "constructions.resetSphere",
         icon: "$vuetify.icons.value.clearConstruction",
         clickFunc: () => {
@@ -400,6 +403,9 @@ export default class Easel extends Vue {
 
   get bottomRightShortcuts() {
     return [
+        // this.getShortcutIcon("zoomIn"),
+        // this.getShortcutIcon("zoomOut"),
+        // this.getShortcutIcon("zoomFit")
       {
         labelMsg: "buttons.PanZoomInToolTipMessage",
         icon: SETTINGS.icons.zoomIn.props.mdiIcon,
@@ -435,23 +441,23 @@ export default class Easel extends Vue {
   get bottomLeftShortcuts() {
     return [
       {
-        labelMsg: "buttons.CreatePointToolTipMessage",
-        icon: "$vuetify.icons.value.point",
-        clickFunc: this.createPoint,
+        labelMsg: toolDictionary.get("point")?.displayedName, // "buttons.CreatePointToolTipMessage",
+        icon: toolDictionary.get("point")?.icon, // "$vuetify.icons.value.point",
+        clickFunc: toolDictionary.get("point")?.clickFunc, // this.createPoint,
         iconColor: null,
         btnColor: "primary",
         disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "point")
+        button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
       },
-
+      // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
       {
-        toolTipMessage: "buttons.CreateLineToolTipMessage",
-        icon: "$vuetify.icons.value.line",
-        clickFunc: this.createLine,
+        toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
+        icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
+        clickFunc: toolDictionary.get("line")?.clickFunc, // this.createLine,
         iconColor: null,
         btnColor: "primary",
         disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "line")
+        button: toolDictionary.get("line") // toolGroups[2].children.find(e => e.actionModeValue == "line")
       },
 
       {
@@ -643,19 +649,19 @@ export default class Easel extends Vue {
     window.addEventListener("keydown", this.handleKeyDown);
   }
 
-  convertFavoriteToShortcut(toolActionMode: ActionMode): {} {
+  getShortcutIcon(toolActionMode: ActionMode): {} {
     // converts a favorite tool to a shortcut icon
-    // TODO: Issue with the clickFunc. Will we need to create a click func for EVERY tool??
-    // TODO: Also console is spitting out errors left and right
+    // TODO: this.disabledTools.includes(toolActionMode) is not working, says that this.buttonSelection is null
     let tool = toolDictionary.get(toolActionMode);
     return {
       labelMsg: tool?.toolTipMessage,
       icon: tool?.icon,
       iconColor: null,
       btnColor: "primary",
-      disableBtn: this.disabledTools.map(),
+      disableBtn: this.disabledTools.includes(toolActionMode),
       button: toolDictionary.get(toolActionMode)
     };
+
   }
 
   initializeToolLists(): void {
