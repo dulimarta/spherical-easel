@@ -12,6 +12,7 @@ declare module 'vue' {
     Dialog: typeof import('./src/components/Dialog.vue')['default']
     ExpressionForm: typeof import('./src/components/ExpressionForm.vue')['default']
     FadeInCard: typeof import('./src/components/FadeInCard.vue')['default']
+    FavoriteToolsCard: typeof import('./src/components/FavoriteToolsCard.vue')['default']
     FrontBackStyle: typeof import('./src/components/FrontBackStyle.vue')['default']
     HintButton: typeof import('./src/components/HintButton.vue')['default']
     IconBase: typeof import('./src/components/IconBase.vue')['default']

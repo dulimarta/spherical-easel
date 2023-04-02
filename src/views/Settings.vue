@@ -59,146 +59,16 @@
                     <v-container>
                       <v-row>
                         <v-col cols="6">
-                          <v-card class="cards">
-                            <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                              <v-col style="flex-grow:2;">
-                                <v-btn style="font-size:2rem;" @click="addToolToFavorites(0, allListSelectedIndex)">
-                                  +
-                                </v-btn>
-                              </v-col>
-                              <v-col style="flex-grow:8;">
-                                <div style="text-align:center; align-self:center;">Top-Left Corner</div>
-                              </v-col>
-                              <v-col style="flex-grow:2;">
-                                <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(0, topLeftSelectedIndex)">
-                                  -
-                                </v-btn>
-                              </v-col>
-                            </v-card-title>
-                            <v-card-text style="height:100%">
-                              <v-list class="secondaryList">
-                                <v-list-item-group v-model="topLeftSelectedIndex">
-                                  <v-list-item v-for="(item) in displayedFavoriteTools[0]" :key="item.icon"
-                                    :disabled="item.disabled">
-                                    <v-list-item-icon>
-                                      <v-icon>{{ item.icon }}</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                      <v-list-item-title
-                                        v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
-                                    </v-list-item-content>
-                                  </v-list-item>
-                                </v-list-item-group>
-                              </v-list>
-                            </v-card-text>
-                          </v-card>
+                            <FavoriteToolsCard :itemList="displayedFavoriteTools[0]" listTitle="Top-Left Corner" />
                         </v-col>
                         <v-col cols="6">
-                            <v-card class="cards">
-                              <v-card-title style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                <v-col style="flex-grow:2">
-                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(1, allListSelectedIndex)">
-                                    +
-                                  </v-btn>
-                                </v-col>
-                                <v-col style="flex-grow:8;">
-                                  <div style="text-align:center; align-self:center;">Top-Right Corner</div>
-                                </v-col>
-                                <v-col style="flex-grow:2">
-                                  <v-btn style="font-size:2rem;"
-                                    @click="removeToolFromFavorites(1, topRightSelectedIndex)">-
-                                  </v-btn>
-                                </v-col>
-                              </v-card-title>
-                              <v-card-text style="height:100%">
-                                <v-list class="secondaryList">
-                                  <v-list-item-group v-model="topRightSelectedIndex">
-                                    <v-list-item v-for="(item) in displayedFavoriteTools[1]" :key="item.icon"
-                                      :disabled="item.disabled">
-                                      <v-list-item-icon>
-                                        <v-icon v-text="item.icon"></v-icon>
-                                      </v-list-item-icon>
-                                      <v-list-item-content>
-                                        <v-list-item-title
-                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
-                                      </v-list-item-content>
-                                    </v-list-item>
-                                  </v-list-item-group>
-                                </v-list>
-                              </v-card-text>
-                            </v-card>
+                            <FavoriteToolsCard :itemList="displayedFavoriteTools[1]" listTitle="Top-Right Corner" />
                         </v-col>
                         <v-col cols="6">
-                          <v-card class = "cards">
-                              <v-card-title
-                                style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                <v-col style="flex-grow:2">
-                                  <v-btn style="font-size:2rem;" @click="addToolToFavorites(3, allListSelectedIndex)">
-                                    +
-                                  </v-btn>
-                                </v-col>
-                                <v-col style="flex-grow:8;">
-                                  <div style="text-align:center; align-self:center;">Bottom-Left Corner</div>
-                                </v-col>
-                                <v-col style="flex-grow:2">
-                                  <v-btn style="font-size:2rem;"
-                                    @click="removeToolFromFavorites(3, bottomLeftSelectedIndex)">-
-                                  </v-btn>
-                                </v-col>
-                              </v-card-title>
-                              <v-card-text style="height:100%">
-                                <v-list class="secondaryList">
-                                  <v-list-item-group v-model="bottomLeftSelectedIndex">
-                                    <v-list-item v-for="(item) in displayedFavoriteTools[3]" :key="item.icon"
-                                      :disabled="item.disabled">
-                                      <v-list-item-icon>
-                                        <v-icon v-text="item.icon"></v-icon>
-                                      </v-list-item-icon>
-                                      <v-list-item-content>
-                                        <v-list-item-title
-                                          v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
-                                      </v-list-item-content>
-                                    </v-list-item>
-                                  </v-list-item-group>
-                                </v-list>
-                              </v-card-text>
-                            </v-card>
+                          <FavoriteToolsCard :itemList="displayedFavoriteTools[2]" listTitle="Bottom-Left Corner" />
                         </v-col>
                         <v-col cols="6">
-                          <v-card class = "cards">
-                            <v-card-title
-                              style="justify-content:center; flex-wrap:nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                              <v-col style="flex-grow:2">
-                                <v-btn style="font-size:2rem;" @click="addToolToFavorites(2, allListSelectedIndex)">
-                                  +
-                                </v-btn>
-                              </v-col>
-                              <v-col style="flex-grow:8;">
-                                <div style="text-align:center; align-self:center;">Bottom-Right Corner</div>
-                              </v-col>
-                              <v-col style="flex-grow:2">
-                                <v-btn style="font-size:2rem;"
-                                  @click="removeToolFromFavorites(2, bottomRightSelectedIndex)">-
-                                </v-btn>
-                              </v-col>
-                            </v-card-title>
-                            <v-card-text style="height:100%">
-                              <v-list class="secondaryList">
-                                <v-list-item-group v-model="bottomRightSelectedIndex">
-                                  <v-list-item v-for="(item) in displayedFavoriteTools[2]" :key="item.icon"
-                                    :disabled="item.disabled">
-                                    <v-list-item-icon>
-                                      <v-icon v-text="item.icon"></v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                      <v-list-item-title
-                                        v-html="$t('buttons.' + item.displayedName)"></v-list-item-title>
-                                    </v-list-item-content>
-                                  </v-list-item>
-                                </v-list-item-group>
-                              </v-list>
-                            </v-card-text>
-                          </v-card>
+                          <FavoriteToolsCard :itemList="displayedFavoriteTools[3]" listTitle="Bottom-Right Corner"/>
                         </v-col>
                       </v-row>
                     </v-container>
@@ -280,13 +150,6 @@
 .mainListCard {
   min-width: 200px;
 }
-.cards {
-  min-width: 235px;
-}
-.secondaryList {
-  height: 362px;
-  overflow-y: auto;
-}
 
 .mainToolsList {
   max-height: 885px;
@@ -324,7 +187,9 @@ import { FavoriteTool, UserProfile } from "@/types";
 import { Unsubscribe } from "@firebase/util";
 import EventBus from "@/eventHandlers/EventBus";
 import { toolGroups } from "@/components/toolgroups";
-@Component({ components: { PhotoCapture } })
+import FavoriteToolsCard from "@/components/FavoriteToolsCard.vue"
+
+@Component({ components: { PhotoCapture, FavoriteToolsCard } })
 export default class Settings extends Vue {
   $refs!: {
     imageUpload: HTMLInputElement;
