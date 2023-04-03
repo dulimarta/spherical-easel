@@ -324,6 +324,7 @@ import { FavoriteTool, UserProfile } from "@/types";
 import { Unsubscribe } from "@firebase/util";
 import EventBus from "@/eventHandlers/EventBus";
 import { toolGroups } from "@/components/toolgroups";
+import {toolDictionary} from "@/components/tooldictionary";
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
   $refs!: {
@@ -346,8 +347,8 @@ export default class Settings extends Vue {
   // TODO: Look at notes to realize how much extra work there is because someone didn't
   //       define the quick tools in toolgroups.ts as ToolButtons but instead as their own type
   defaultToolNames = [
-    [],
-    [],
+    ["undoAction", "redoAction"],
+    ["resetAction"],
     ["zoomIn", "zoomOut", "zoomFit"],
     []
   ]
@@ -368,24 +369,6 @@ export default class Settings extends Vue {
   mounted(): void {
     // var test = LocaleMessages.get("buttons")
     // import VueI18n, {LocaleMessages} from "vue-i18n"
-    /** Notes for the devs:
-     * Things to do:
-     *
-     * We should probably refactor ShortcutIcon.vue so that it inherits from ToolButton instead of being its own type,
-     * then move the buttons that are ONLY DEFINED IN EASEL.VUE BECAUSE WHY WOULD WE DEFINE THEM IN TOOLGROUPS.TS THAT
-     * WOULD MAKE TOO MUCH SENSE so that we can reference them in Settings.vue and Easel.vue when adding the default
-     * tools to the favorites list.
-     *
-     * Check if we need to be copying objects into the lists. Was running into issues where setting disabled on a tool
-     * in one list after adding it to another caused the value to change in both lists
-     *
-     * Need to figure out how to make the selected v-list-item-group not be selected anymore, so we don't need to set
-     * each selectedIndex to undefined when adding/removing from lists
-     *
-     * Need to figure out how to prevent everything from looking horrible when zooming in. Right now this is the
-     * lowest priority.
-     *
-     */
     // Sets up the master list of tools and displayedFavoriteTools
     this.initializeToolLists();
     this.$appDB
@@ -399,6 +382,7 @@ export default class Settings extends Vue {
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
           // Sets up the userFavoriteTools list
+          // TODO: This is asynchronous, so the displayedFavoriteTools won't always update with this
           this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           if (uProfile.role) this.userRole = uProfile.role;
         }
@@ -430,13 +414,14 @@ export default class Settings extends Vue {
     //       we talk to Dr. Dulimarta and Dr. Dickinson
     // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
     // Set up master list of all tools for favorites selection
-    let compList = toolGroups.map(group => group.children.map(child => ({
+    let compList = Array.from(toolDictionary.values()).map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,
       icon: child.icon,
       disabled: false,
       langName: this.$t("buttons." + child.displayedName)
-    }))).reduce((acc, val) => acc.concat(val), []);
+    }));
+
     // Sort the temp List
     compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
     // Redefine the allToolsList

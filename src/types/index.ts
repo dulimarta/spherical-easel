@@ -572,6 +572,18 @@ export interface FavoriteTool {
   icon: string;
   disabled: boolean;
 }
+
+/* Using this in Easel so we can generate a complete list of favorited tools to be cast into ShortcutIcons */
+export interface ShortcutIconItem {
+  actionModeValue: ActionMode;
+  labelMsg: string;
+  icon: string;
+  clickFunc?: () => void;
+  iconColor?: string;
+  btnColor?: string;
+  disableBtn?: boolean;
+  button?: ToolButtonType;
+}
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;

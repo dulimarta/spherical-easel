@@ -190,7 +190,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import {ActionMode, ConstructionInFirestore, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
+import {ActionMode, ConstructionInFirestore, FavoriteTool, ShortcutIconItem, ToolButtonType, UserProfile} from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -326,9 +326,9 @@ export default class Easel extends Vue {
   private uid = "";
   private authSubscription!: Unsubscribe;
 
-  private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  private userFavoriteTools: ShortcutIconItem[][] = [[], [], [], []];
 
-  private displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  private displayedFavoriteTools: ShortcutIconItem[][] = [[], [], [], []];
 
   private defaultToolNames = [
     ["undoAction", "redoAction"],
@@ -337,7 +337,7 @@ export default class Easel extends Vue {
     []
   ]
 
-  private allToolsList: FavoriteTool[] = [];
+  private allToolsList: ShortcutIconItem[] = [];
 
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
@@ -354,129 +354,133 @@ export default class Easel extends Vue {
   };
 
   get topLeftShortcuts() {
-    return [
-      // this.getShortcutIcon("undoAction"),
-      // this.getShortcutIcon("redoAction"),
-      // this.getShortcutIcon("point")
-      // TODO: This is causing a lot of issues in the debug view
-      // TODO: not able to use disabledTools for disableBtn
-      {
-        labelMsg: toolDictionary.get("undoAction")?.displayedName, //"main.UndoLastAction",
-        icon: toolDictionary.get("undoAction")?.icon, //SETTINGS.icons.undo.props.mdiIcon,
-        clickFunc: toolDictionary.get("undoAction")?.clickFunc, // this.undoEdit,
-        iconColor: "blue",
-        btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: toolDictionary.get("undoAction")
-      },
-      {
-        labelMsg: toolDictionary.get("undoAction")?.displayedName, // "main.RedoLastAction",
-        icon: toolDictionary.get("redoAction")?.icon, // "$vuetify.icons.value.redo",
-        clickFunc: toolDictionary.get("redoAction")?.clickFunc, // this.redoAction,
-        iconColor: "blue",
-        btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: toolDictionary.get("redoAction")
-      }
-    ];
+    return this.displayedFavoriteTools[0];
+    // return [
+    //   // this.getShortcutIcon("undoAction"),
+    //   // this.getShortcutIcon("redoAction"),
+    //   // this.getShortcutIcon("point")
+    //   // TODO: This is causing a lot of issues in the debug view
+    //   // TODO: not able to use disabledTools for disableBtn
+    //   {
+    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, //"main.UndoLastAction",
+    //     icon: toolDictionary.get("undoAction")?.icon, //SETTINGS.icons.undo.props.mdiIcon,
+    //     clickFunc: toolDictionary.get("undoAction")?.clickFunc, // this.undoEdit,
+    //     iconColor: "blue",
+    //     btnColor: null,
+    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+    //     button: toolDictionary.get("undoAction")
+    //   },
+    //   {
+    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, // "main.RedoLastAction",
+    //     icon: toolDictionary.get("redoAction")?.icon, // "$vuetify.icons.value.redo",
+    //     clickFunc: toolDictionary.get("redoAction")?.clickFunc, // this.redoAction,
+    //     iconColor: "blue",
+    //     btnColor: null,
+    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
+    //     button: toolDictionary.get("redoAction")
+    //   }
+    // ];
   }
   get topRightShortcuts() {
-    return [
-        // this.getShortcutIcon("resetAction")
-        {
-        labelMsg: "constructions.resetSphere",
-        icon: "$vuetify.icons.value.clearConstruction",
-        clickFunc: () => {
-          this.$refs.clearConstructionDialog.show();
-        },
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: null
-      }
-    ];
+    return this.displayedFavoriteTools[1];
+    // return [
+    //     // this.getShortcutIcon("resetAction")
+    //     {
+    //     labelMsg: "constructions.resetSphere",
+    //     icon: "$vuetify.icons.value.clearConstruction",
+    //     clickFunc: () => {
+    //       this.$refs.clearConstructionDialog.show();
+    //     },
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: null
+    //   }
+    // ];
   }
 
   get bottomRightShortcuts() {
-    return [
-        // this.getShortcutIcon("zoomIn"),
-        // this.getShortcutIcon("zoomOut"),
-        // this.getShortcutIcon("zoomFit")
-      {
-        labelMsg: "buttons.PanZoomInToolTipMessage",
-        icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-        clickFunc: this.enableZoomIn,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
-      },
-
-      {
-        labelMsg: "buttons.PanZoomOutToolTipMessage",
-        icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-        clickFunc: this.enableZoomOut,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
-      },
-
-      {
-        labelMsg: "buttons.ZoomFitToolTipMessage",
-        icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-        clickFunc: this.enableZoomFit,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
-      }
-    ];
+    return this.displayedFavoriteTools[2];
+    // return [
+    //     // this.getShortcutIcon("zoomIn"),
+    //     // this.getShortcutIcon("zoomOut"),
+    //     // this.getShortcutIcon("zoomFit")
+    //   {
+    //     labelMsg: "buttons.PanZoomInToolTipMessage",
+    //     icon: SETTINGS.icons.zoomIn.props.mdiIcon,
+    //     clickFunc: this.enableZoomIn,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
+    //   },
+    //
+    //   {
+    //     labelMsg: "buttons.PanZoomOutToolTipMessage",
+    //     icon: SETTINGS.icons.zoomOut.props.mdiIcon,
+    //     clickFunc: this.enableZoomOut,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
+    //   },
+    //
+    //   {
+    //     labelMsg: "buttons.ZoomFitToolTipMessage",
+    //     icon: SETTINGS.icons.zoomFit.props.mdiIcon,
+    //     clickFunc: this.enableZoomFit,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
+    //   }
+    // ];
   }
 
   get bottomLeftShortcuts() {
-    return [
-      {
-        labelMsg: toolDictionary.get("point")?.displayedName, // "buttons.CreatePointToolTipMessage",
-        icon: toolDictionary.get("point")?.icon, // "$vuetify.icons.value.point",
-        clickFunc: toolDictionary.get("point")?.clickFunc, // this.createPoint,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
-      },
-      // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
-        // TODO: Undo is removing two points at a time (seems to be activating twice)
-      {
-        toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
-        icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
-        clickFunc: toolDictionary.get("line")?.clickFunc, // this.createLine,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolDictionary.get("line") // toolGroups[2].children.find(e => e.actionModeValue == "line")
-      },
-
-      {
-        toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
-        icon: "$vuetify.icons.value.segment",
-        clickFunc: this.createSegment,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
-      },
-
-      {
-        toolTipMessage: "buttons.CreateCircleToolTipMessage",
-        icon: "$vuetify.icons.value.circle",
-        clickFunc: this.createCircle,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
-      }
-    ];
+    return this.displayedFavoriteTools[3];
+    // return [
+    //   {
+    //     labelMsg: toolDictionary.get("point")?.displayedName, // "buttons.CreatePointToolTipMessage",
+    //     icon: toolDictionary.get("point")?.icon, // "$vuetify.icons.value.point",
+    //     clickFunc: toolDictionary.get("point")?.clickFunc, // this.createPoint,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
+    //   },
+    //   // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
+    //     // TODO: Undo is removing two points at a time (seems to be activating twice)
+    //   {
+    //     toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
+    //     icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
+    //     clickFunc: toolDictionary.get("line")?.clickFunc, // this.createLine,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolDictionary.get("line") // toolGroups[2].children.find(e => e.actionModeValue == "line")
+    //   },
+    //
+    //   {
+    //     toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
+    //     icon: "$vuetify.icons.value.segment",
+    //     clickFunc: this.createSegment,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
+    //   },
+    //
+    //   {
+    //     toolTipMessage: "buttons.CreateCircleToolTipMessage",
+    //     icon: "$vuetify.icons.value.circle",
+    //     clickFunc: this.createCircle,
+    //     iconColor: null,
+    //     btnColor: "primary",
+    //     disableBtn: false,
+    //     button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
+    //   }
+    // ];
   }
 
   //#region magnificationUpdate
@@ -626,6 +630,7 @@ export default class Easel extends Vue {
     });
     // Load user's favorite tools
     let toolsString = "\n\n\n";
+    this.userFavoriteTools = this.decodeFavoriteTools(toolsString ?? "\n\n\n");
     this.$appDB
         .collection("users")
         .doc(this.userUid)
@@ -637,7 +642,6 @@ export default class Easel extends Vue {
             this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           }
         });
-    this.userFavoriteTools = this.decodeFavoriteTools(toolsString ?? "\n\n\n");
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) this.uid = u.uid;
@@ -645,43 +649,31 @@ export default class Easel extends Vue {
       }
     );
     window.addEventListener("keydown", this.handleKeyDown);
-  }
 
-  getShortcutIcon(toolActionMode: ActionMode): {} {
-    // converts a favorite tool to a shortcut icon
-    // TODO: this.disabledTools.includes(toolActionMode) is not working, says that this.buttonSelection is null
-    let tool = toolDictionary.get(toolActionMode);
-    return {
-      labelMsg: tool?.toolTipMessage,
-      icon: tool?.icon,
-      iconColor: null,
-      btnColor: "primary",
-      disableBtn: this.disabledTools.includes(toolActionMode),
-      button: toolDictionary.get(toolActionMode)
-    };
-
+    console.log(this.displayedFavoriteTools);
   }
 
   initializeToolLists(): void {
     // Set up master list of all tools for favorites selection
-    let compList = toolGroups.map(group => group.children.map(child => ({
+    const compList = Array.from(toolDictionary.values()).map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,
       icon: child.icon,
-      disabled: false,
-      langName: this.$t("buttons." + child.displayedName)
-    }))).reduce((acc, val) => acc.concat(val), []);
-
-    // Sort the temp List
-    compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
+      clickFunc: child.clickFunc,
+      button: child,
+    }));
 
     // Redefine the allToolsList
     this.allToolsList = compList.map(tool => ({
       actionModeValue: tool.actionModeValue,
-      displayedName: tool.displayedName,
+      labelMsg: tool.displayedName,
       icon: tool.icon,
-      disabled: false
-    }))
+      clickFunc: tool.clickFunc,
+      iconColor: "blue",
+      btnColor: "stop breaking",
+      disableBtn: false,
+      button: toolDictionary.get(tool.actionModeValue)
+    }));
 
     console.log("this.defaultToolNames: " + this.defaultToolNames);
 
@@ -691,7 +683,6 @@ export default class Easel extends Vue {
         let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
         if (temp_tool.length > 0) {
           let tool = Object.assign({}, temp_tool[0]);
-          tool.disabled = true;
           this.displayedFavoriteTools[i].push(tool);
           // Set this tool to disabled because the user cannot disable defaults
           console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
@@ -702,10 +693,10 @@ export default class Easel extends Vue {
     }
   }
 
-  decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
+  decodeFavoriteTools(favoritesListStr: string): ShortcutIconItem[][] {
 
-    // FavoriteTool[][] array we are returning
-    let finalToolsList: FavoriteTool[][] = [];
+    // ShortcutIcon[][] array we are returning
+    let finalToolsList: ShortcutIconItem[][] = [];
 
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
@@ -714,7 +705,7 @@ export default class Easel extends Vue {
     // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
     for (const corner of favoriteToolNames) {
       // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
-      let temp_corner: FavoriteTool[] = [];
+      let temp_corner: ShortcutIconItem[] = [];
       for (const tool of corner) {
         // Filter will always return a list, even though there will only ever be one match
         let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
@@ -730,14 +721,6 @@ export default class Easel extends Vue {
       for (const tool of finalToolsList[i]) {
         // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
         this.displayedFavoriteTools[i].push(Object.assign({}, tool));
-      }
-    }
-
-    // Iterate through allToolsList to set each favorited tool as not focusable
-    for (let i = 0; i < this.displayedFavoriteTools.length; i++) {
-      for (let j = 0; j < this.displayedFavoriteTools[i].length; j++) {
-        let index = this.allToolsList.findIndex(tool => tool.actionModeValue === this.displayedFavoriteTools[i][j].actionModeValue);
-        this.allToolsList[index].disabled = true;
       }
     }
 

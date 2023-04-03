@@ -237,7 +237,11 @@ export default {
     CreateIconDisplayedName: "Create Icon",
     CreateIconToolTipMessage: "Create Icon SVG Paths",
     CreateIconToolUseMessage:
-      "Click to create an the SVG paths for an icon from current view."
+      "Click to create an the SVG paths for an icon from current view.",
+
+    ResetSphereActionDisplayedName: "Clear Canvas",
+    ResetSphereActionToolTipMessage: "Clear the canvas",
+    ResetSphereActionToolUseMessage: "Click to clear the canvas of all drawings"
   },
   settings: {
     title: "Preferences"

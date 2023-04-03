@@ -12,7 +12,6 @@
         :value="button"
         icon
         tile
-        v-on:click="$listeners.click"
         @click="switchButton(button)"
         v-on="on"
       >
@@ -40,6 +39,7 @@ import {ActionMode, ToolButtonType} from "@/types";
   )
 
 export default class ShortcutIcon extends Vue {
+  @Prop() readonly actionModeValue!: ActionMode;
   @Prop() readonly labelMsg!: string;
   @Prop() readonly icon!: string;
   @Prop() readonly iconColor!: string;
@@ -60,7 +60,7 @@ export default class ShortcutIcon extends Vue {
     } else {
       this.setButton(button!);
       this.setActionMode({
-        id: "point",
+        id: this.actionModeValue,
         name: "CreatePointDisplayedName"
       });
     }
