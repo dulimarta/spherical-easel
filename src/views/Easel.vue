@@ -170,7 +170,7 @@
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Vue, Component, Prop } from "vue-property-decorator";
+import {Vue, Component, Prop, Watch} from "vue-property-decorator";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
@@ -190,7 +190,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import {ActionMode, ConstructionInFirestore, FavoriteTool, ShortcutIconItem, ToolButtonType, UserProfile} from "@/types";
+import {ActionMode, ConstructionInFirestore, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -273,7 +273,8 @@ import {toolDictionary} from "@/components/tooldictionary";
       "seNodules",
       "temporaryNodules",
       "hasObjects",
-      "activeToolName"
+      "activeToolName",
+      "disabledTools"
     ])
   }
 })
@@ -326,9 +327,10 @@ export default class Easel extends Vue {
   private uid = "";
   private authSubscription!: Unsubscribe;
 
-  private userFavoriteTools: ShortcutIconItem[][] = [[], [], [], []];
+  private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  private userFavoriteToolNames: string[][] = [[],[],[],[]]
 
-  private displayedFavoriteTools: ShortcutIconItem[][] = [[], [], [], []];
+  private displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
 
   private defaultToolNames = [
     ["undoAction", "redoAction"],
@@ -337,7 +339,7 @@ export default class Easel extends Vue {
     []
   ]
 
-  private allToolsList: ShortcutIconItem[] = [];
+  private allToolsList: FavoriteTool[] = [];
 
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
@@ -615,8 +617,7 @@ export default class Easel extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    // Move undo, redo, and clear into the tooldictionary.
-    this.initializeToolLists();
+    this.initializeAllToolsList();
 
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
@@ -628,9 +629,11 @@ export default class Easel extends Vue {
     EventBus.listen("secret-key-detected", () => {
       if (this.uid.length > 0) this.accountEnabled = true;
     });
-    // Load user's favorite tools
+
+    // Set user's favorite tools to empty
     let toolsString = "\n\n\n";
-    this.userFavoriteTools = this.decodeFavoriteTools(toolsString ?? "\n\n\n");
+    this.setUserFavoriteToolNames(toolsString);
+
     this.$appDB
         .collection("users")
         .doc(this.userUid)
@@ -639,7 +642,9 @@ export default class Easel extends Vue {
           if (ds.exists) {
             const uProfile = ds.data() as UserProfile;
             console.log("From Firestore", uProfile);
-            this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
+            // If user has tools, set userFavoriteToolNames appropriately
+            // console.log("LOOK AT MEASDFASDFASDFASDFASDF", uProfile.favoriteTools);
+            this.setUserFavoriteToolNames(uProfile.favoriteTools ?? toolsString);
           }
         });
     this.authSubscription = this.$appAuth.onAuthStateChanged(
@@ -650,11 +655,23 @@ export default class Easel extends Vue {
     );
     window.addEventListener("keydown", this.handleKeyDown);
 
-    console.log(this.displayedFavoriteTools);
+    this.rebuildDisplayedFavoriteTools();
   }
 
-  initializeToolLists(): void {
-    // Set up master list of all tools for favorites selection
+  toolDisabled(actionModeValue: ActionMode): boolean {
+    if (this.disabledTools.includes(actionModeValue)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  initializeAllToolsList(): void {
+    // This function is called at the beginning of mounted, and builds the favorite tools in each corner
+    // of the easel. We store references of each tool that is favorited in allToolsList to the displayedFavoriteTools
+    // array so that we can update allToolsList when tools get disabled and the tools in displayedFavoriteTools reflect
+    // that change
+
     const compList = Array.from(toolDictionary.values()).map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,
@@ -663,27 +680,79 @@ export default class Easel extends Vue {
       button: child,
     }));
 
-    // Redefine the allToolsList
     this.allToolsList = compList.map(tool => ({
+      displayedName: tool.displayedName,
       actionModeValue: tool.actionModeValue,
       labelMsg: tool.displayedName,
       icon: tool.icon,
       clickFunc: tool.clickFunc,
       iconColor: "blue",
       btnColor: "stop breaking",
-      disableBtn: false,
+      disableBtn: this.toolDisabled(tool.actionModeValue),
       button: toolDictionary.get(tool.actionModeValue)
     }));
 
-    console.log("this.defaultToolNames: " + this.defaultToolNames);
+    // console.log("this.defaultToolNames: " + this.defaultToolNames);
+    //
+    // // Add default tools to displayedFavoriteTools
+    // for (let i = 0; i < this.defaultToolNames.length; i++) {
+    //   for (let j = 0; j < this.defaultToolNames[i].length; j++) {
+    //     let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
+    //     if (temp_tool.length > 0) {
+    //       // Push reference to tool that is in allToolsList
+    //       this.displayedFavoriteTools[i].push(temp_tool[0]);
+    //       // Set this tool to disabled because the user cannot disable defaults
+    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+    //     } else {
+    //       console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
+    //     }
+    //   }
+    // }
+    //
+    // // save each matching FavoriteTool in allToolsList to displayedFavoriteTools, where each index is a corner
+    // for (let i = 0; i < this.userFavoriteToolNames.length; i++) {
+    //   for (let j = 0; j < this.userFavoriteToolNames[i].length; j++) {
+    //     let temp_tool = this.allToolsList.filter(tl => this.userFavoriteToolNames[i][j] === tl.actionModeValue);
+    //     // Filter will always return a list, even though there will only ever be one match
+    //     if (temp_tool.length > 0) {
+    //       // push reference to tool that is in allToolsList
+    //       this.displayedFavoriteTools[i].push(temp_tool[0])
+    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+    //     } else {
+    //       console.log("Warning: Could not find '" + this.userFavoriteToolNames[i][j] + "' in this.allToolsList");
+    //     }
+    //   }
+    // }
+  }
 
-    // Add default tools to displayedFavoriteTools
+  // TODO: ISSUE, undo, redo, and reset are not and will never be in disabledTools. Could just keep it that way.
+  @Watch("disabledTools", { deep: true })
+  updateAllTools(): void {
+    // iterates through this.allToolsList and sets each tool that is in disabledTools to disabled
+    for (let i = 0; i < this.allToolsList.length; i++) {
+      this.allToolsList[i].disableBtn = this.toolDisabled(this.allToolsList[i].actionModeValue);
+    }
+  }
+
+  // TODO: Watch function updates this.userFavoriteToolNames, then calls this function
+  // TODO: This will not work until the watch function is implemented.
+  @Watch("disabledTools", { deep: true })
+  rebuildDisplayedFavoriteTools(): void {
+    // This function will just rebuild displayedFavoriteTools. We use this when
+    // userFavoriteToolNames or defaultToolNames is updated.
+
+    console.log("rebuildDisplayedFavoriteTools: userFavoriteToolNames: ", this.userFavoriteToolNames);
+
+    // Clear out the all displayedFavoriteTools
+    this.displayedFavoriteTools.splice(0);
+    this.displayedFavoriteTools = [[],[],[],[]];
+
+    // Add default tools back into displayedFavoriteTools
     for (let i = 0; i < this.defaultToolNames.length; i++) {
       for (let j = 0; j < this.defaultToolNames[i].length; j++) {
         let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
         if (temp_tool.length > 0) {
-          let tool = Object.assign({}, temp_tool[0]);
-          this.displayedFavoriteTools[i].push(tool);
+          this.displayedFavoriteTools[i].push(temp_tool[0]);
           // Set this tool to disabled because the user cannot disable defaults
           console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
         } else {
@@ -691,40 +760,25 @@ export default class Easel extends Vue {
         }
       }
     }
-  }
 
-  decodeFavoriteTools(favoritesListStr: string): ShortcutIconItem[][] {
-
-    // ShortcutIcon[][] array we are returning
-    let finalToolsList: ShortcutIconItem[][] = [];
-
-    // Convert list's string representation to 2D array of strings
-    let favoriteToolNames: string[][];
-    favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
-
-    // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
-    for (const corner of favoriteToolNames) {
-      // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
-      let temp_corner: ShortcutIconItem[] = [];
-      for (const tool of corner) {
+    // Add user favorite tools back into displayedFavoriteTools
+    for (let i = 0; i < this.userFavoriteToolNames.length; i++) {
+      for (let j = 0; j < this.userFavoriteToolNames[i].length; j++) {
+        let temp_tool = this.allToolsList.filter(tl => this.userFavoriteToolNames[i][j] === tl.actionModeValue);
         // Filter will always return a list, even though there will only ever be one match
-        let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
-          temp_corner.push(Object.assign({}, temp_tool[0]));
+          this.displayedFavoriteTools[i].push(temp_tool[0]);
+          console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+        } else {
+          console.log("Warning: Could not find '" + this.userFavoriteToolNames[i][j] + "' in this.allToolsList");
         }
       }
-      finalToolsList.push(temp_corner);
     }
+  }
 
-    // Add the user's favorite tools to the displayedFavoriteTools list
-    for (let i = 0; i < finalToolsList.length; i++) {
-      for (const tool of finalToolsList[i]) {
-        // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
-        this.displayedFavoriteTools[i].push(Object.assign({}, tool));
-      }
-    }
-
-    return finalToolsList;
+  setUserFavoriteToolNames(favoritesListStr: string): void {
+    // Convert list's string representation to 2D array of strings
+    this.userFavoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
   }
 
   beforeDestroy(): void {

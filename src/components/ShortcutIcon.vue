@@ -30,6 +30,7 @@ import SETTINGS from "@/global-settings";
 import { mapState, mapActions} from "pinia";
 import { useSEStore } from "@/stores/se";
 import {ActionMode, ToolButtonType} from "@/types";
+import {toolDictionary} from "@/components/tooldictionary";
 
 
 @Component({
@@ -54,14 +55,20 @@ export default class ShortcutIcon extends Vue {
   toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
+  //
   switchButton(button: ToolButtonType | null): void { //Set the button selected so it can be tracked
     if (button?.clickFunc != null) {
       button.clickFunc();
     } else {
       this.setButton(button!);
+      // ISSUE: Can't get the button to swap when clicking on a shortcutIcon
+      // This is me trying to fix things
+      const tool = toolDictionary.get(this.actionModeValue);
+      const shortcutName = tool ? tool.displayedName : "";
       this.setActionMode({
         id: this.actionModeValue,
-        name: "CreatePointDisplayedName"
+        name: shortcutName
+        // name: "CreatePointDisplayedName"
       });
     }
   }
