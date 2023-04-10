@@ -40,7 +40,6 @@ import {toolDictionary} from "@/components/tooldictionary";
   )
 
 export default class ShortcutIcon extends Vue {
-  @Prop() readonly actionModeValue!: ActionMode;
   @Prop() readonly labelMsg!: string;
   @Prop() readonly icon!: string;
   @Prop() readonly iconColor!: string;
@@ -60,16 +59,13 @@ export default class ShortcutIcon extends Vue {
     if (button?.clickFunc != null) {
       button.clickFunc();
     } else {
-      this.setButton(button!);
       // ISSUE: Can't get the button to swap when clicking on a shortcutIcon
       // This is me trying to fix things
-      const tool = toolDictionary.get(this.actionModeValue);
-      const shortcutName = tool ? tool.displayedName : "";
       this.setActionMode({
-        id: this.actionModeValue,
-        name: shortcutName
-        // name: "CreatePointDisplayedName"
+        id: button?.actionModeValue!,
+        name: button?.displayedName!
       });
+      this.setButton(button!);
     }
   }
 }

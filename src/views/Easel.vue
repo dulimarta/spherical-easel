@@ -48,7 +48,7 @@
                     <div v-for="shortcut, index in topLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'top')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -69,7 +69,7 @@
                     <div v-for="shortcut, index in bottomLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'bottom')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -90,7 +90,7 @@
                     <div v-for="shortcut, index in topRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'top')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -104,7 +104,7 @@
                     <div v-for="shortcut, index in bottomRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'bottom')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
