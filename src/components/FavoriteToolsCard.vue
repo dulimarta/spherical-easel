@@ -13,7 +13,7 @@
             </v-col>
             <v-col style="flex-grow:8;">
                 <div style="text-align:center; align-self:center;">
-                    {{ listTitle }} Test
+                    {{ listTitle }}
                 </div>
             </v-col>
             <v-col style="flex-grow:2">
@@ -56,10 +56,17 @@ import { FavoriteTool } from '@/types'
 import { Vue, Prop } from 'vue-property-decorator';
 
     export default class FavoriteToolsCard extends Vue{
-       @Prop({ type: Array, required: true}) itemList!: FavoriteTool[]
-       @Prop({ type: String, required: true}) listTitle!: string
+       @Prop({ type: Array, required: true})
+       itemList!: FavoriteTool[];
+       @Prop({ type: String, required: true})
+       readonly listTitle!: string;
 
        created(){
+        console.log(this.listTitle);
+        console.log("FavoriteToolsCard created");
+       }
+
+       mounted(){
         console.log(this.listTitle);
         console.log("FavoriteToolsCard created");
        }
