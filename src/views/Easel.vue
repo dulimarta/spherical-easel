@@ -1,27 +1,27 @@
 <template>
   <div>
     <Splitpanes class="default-theme"
-      @resize="dividerMoved"
-      :push-other-panes="false">
+                @resize="dividerMoved"
+                :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
       <Pane min-size="5"
-        max-size="35"
-        :size="toolboxMinified ? 5 : 25">
+            max-size="35"
+            :size="toolboxMinified ? 5 : 25">
         <v-container style="background-color: white">
           <v-row>
             <v-btn icon
-              @click="minifyToolbox">
+                   @click="minifyToolbox">
               <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
               <v-icon v-else>mdi-arrow-left</v-icon>
             </v-btn>
             <CurrentToolSelection :actionMode="actionMode"
-              :toolboxMinified="this.toolboxMinified" />
+                                  :toolboxMinified="this.toolboxMinified" />
 
           </v-row>
           <Toolbox id="toolbox"
-            ref="toolbox"
-            :minified="toolboxMinified"
-            v-on:toggle-tool-box-panel="minifyToolbox" />
+                   ref="toolbox"
+                   :minified="toolboxMinified"
+                   v-on:toggle-tool-box-panel="minifyToolbox" />
         </v-container>
       </Pane>
       <Pane :size="centerWidth">
@@ -32,29 +32,29 @@
         When expanded, it takes 30% of the remaining width
       -->
         <v-container fluid
-          ref="mainPanel">
+                     ref="mainPanel">
           <v-row>
             <v-col cols="12">
               <v-row justify="center"
-                class="pb-1">
+                     class="pb-1">
                 <v-responsive :aspect-ratio="1"
-                  :max-height="currentCanvasSize"
-                  :max-width="currentCanvasSize"
-                  ref="responsiveBox"
-                  id="responsiveBox"
-                  class="pa-0">
+                              :max-height="currentCanvasSize"
+                              :max-width="currentCanvasSize"
+                              ref="responsiveBox"
+                              id="responsiveBox"
+                              class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
                   <div class="anchored top left">
-                    <div v-for="shortcut, index in topLeftShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'left', 'top')">
+                    <div v-for="(shortcut, index)  in topLeftShortcuts"
+                         :key="index"
+                         :style="listItemStyle(index, 'left', 'top')">
                       <ShortcutIcon
-                        :labelMsg="shortcut.labelMsg"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" />
+                          :labelMsg="shortcut.labelMsg"
+                          :icon="shortcut.icon"
+                          :iconColor="shortcut.iconColor"
+                          :btnColor="shortcut.btnColor"
+                          :disableBtn="shortcut.disableBtn"
+                          :button="shortcut.button" />
                     </div>
                     <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -66,16 +66,16 @@
 
                   </div>
                   <div class="anchored bottom left">
-                    <div v-for="shortcut, index in bottomLeftShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'left', 'bottom')">
+                    <div v-for="(shortcut, index)  in bottomLeftShortcuts"
+                         :key="index"
+                         :style="listItemStyle(index, 'left', 'bottom')">
                       <ShortcutIcon
-                        :labelMsg="shortcut.labelMsg"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" />
+                          :labelMsg="shortcut.labelMsg"
+                          :icon="shortcut.icon"
+                          :iconColor="shortcut.iconColor"
+                          :btnColor="shortcut.btnColor"
+                          :disableBtn="shortcut.disableBtn"
+                          :button="shortcut.button" />
                     </div>
                     <!-- <v-btn-toggle v-model="actionMode"
                       @change="switchActionMode"
@@ -87,30 +87,30 @@
                   </div>
                   <div class="anchored top right">
 
-                    <div v-for="shortcut, index in topRightShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'right', 'top')">
+                    <div v-for="(shortcut, index)  in topRightShortcuts"
+                         :key="index"
+                         :style="listItemStyle(index, 'right', 'top')">
                       <ShortcutIcon
-                        :labelMsg="shortcut.labelMsg"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" />
+                          :labelMsg="shortcut.labelMsg"
+                          :icon="shortcut.icon"
+                          :iconColor="shortcut.iconColor"
+                          :btnColor="shortcut.btnColor"
+                          :disableBtn="shortcut.disableBtn"
+                          :button="shortcut.button" />
                     </div>
 
                   </div>
                   <div class="anchored bottom right">
-                    <div v-for="shortcut, index in bottomRightShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'right', 'bottom')">
+                    <div v-for="(shortcut, index) in bottomRightShortcuts"
+                         :key="index"
+                         :style="listItemStyle(index, 'right', 'bottom')">
                       <ShortcutIcon
-                        :labelMsg="shortcut.labelMsg"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
-                        :disableBtn="shortcut.disableBtn"
-                        :button="shortcut.button" />
+                          :labelMsg="shortcut.labelMsg"
+                          :icon="shortcut.icon"
+                          :iconColor="shortcut.iconColor"
+                          :btnColor="shortcut.btnColor"
+                          :disableBtn="shortcut.disableBtn"
+                          :button="shortcut.button" />
                     </div>
 
                   </div>
@@ -123,11 +123,11 @@
       </Pane>
 
       <Pane min-size="5"
-        :max-size="25" :size="getPanelSize()">
+            :max-size="25" :size="getPanelSize()">
         <Splitpanes class="default-theme" horizontal>
           <Pane>
             <v-btn icon
-              @click="() => {stylePanelMinified = !stylePanelMinified; notificationsPanelMinified = !notificationsPanelMinified;}">
+                   @click="() => {stylePanelMinified = !stylePanelMinified; notificationsPanelMinified = !notificationsPanelMinified;}">
               <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
               <v-icon v-else>mdi-arrow-right</v-icon>
             </v-btn>
@@ -140,7 +140,7 @@
               <div id="styleContainer">
 
                 <StylePanel :minified="stylePanelMinified"
-                  v-on:toggle-style-panel="minifyStylePanel" />
+                            v-on:toggle-style-panel="minifyStylePanel" />
 
               </div>
 
@@ -150,19 +150,19 @@
       </Pane>
     </Splitpanes>
     <Dialog ref="unsavedWorkDialog"
-      max-width="40%"
-      :title="$t('constructions.confirmation')"
-      :yes-text="$t('constructions.keep')"
-      :no-text="$t('constructions.discard')"
-      :no-action="doLeave">
+            max-width="40%"
+            :title="$t('constructions.confirmation')"
+            :yes-text="$t('constructions.keep')"
+            :no-text="$t('constructions.discard')"
+            :no-action="doLeave">
       {{$t(`constructions.unsavedConstructionMsg`)}}
     </Dialog>
     <Dialog ref="clearConstructionDialog"
-      :title="$t('constructions.confirmReset')"
-      :yes-text="$t('constructions.proceed')"
-      :yes-action="() => resetSphere()"
-      :no-text="$t('constructions.cancel')"
-      max-width="40%">
+            :title="$t('constructions.confirmReset')"
+            :yes-text="$t('constructions.proceed')"
+            :yes-action="() => resetSphere()"
+            :no-text="$t('constructions.cancel')"
+            max-width="40%">
       <p> {{$t(`constructions.clearConstructionMsg`)}}</p>
     </Dialog>
   </div>
@@ -357,132 +357,17 @@ export default class Easel extends Vue {
 
   get topLeftShortcuts() {
     return this.displayedFavoriteTools[0];
-    // return [
-    //   // this.getShortcutIcon("undoAction"),
-    //   // this.getShortcutIcon("redoAction"),
-    //   // this.getShortcutIcon("point")
-    //   // TODO: This is causing a lot of issues in the debug view
-    //   // TODO: not able to use disabledTools for disableBtn
-    //   {
-    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, //"main.UndoLastAction",
-    //     icon: toolDictionary.get("undoAction")?.icon, //SETTINGS.icons.undo.props.mdiIcon,
-    //     clickFunc: toolDictionary.get("undoAction")?.clickFunc, // this.undoEdit,
-    //     iconColor: "blue",
-    //     btnColor: null,
-    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-    //     button: toolDictionary.get("undoAction")
-    //   },
-    //   {
-    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, // "main.RedoLastAction",
-    //     icon: toolDictionary.get("redoAction")?.icon, // "$vuetify.icons.value.redo",
-    //     clickFunc: toolDictionary.get("redoAction")?.clickFunc, // this.redoAction,
-    //     iconColor: "blue",
-    //     btnColor: null,
-    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-    //     button: toolDictionary.get("redoAction")
-    //   }
-    // ];
   }
   get topRightShortcuts() {
     return this.displayedFavoriteTools[1];
-    // return [
-    //     // this.getShortcutIcon("resetAction")
-    //     {
-    //     labelMsg: "constructions.resetSphere",
-    //     icon: "$vuetify.icons.value.clearConstruction",
-    //     clickFunc: () => {
-    //       this.$refs.clearConstructionDialog.show();
-    //     },
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: null
-    //   }
-    // ];
   }
 
   get bottomRightShortcuts() {
     return this.displayedFavoriteTools[2];
-    // return [
-    //     // this.getShortcutIcon("zoomIn"),
-    //     // this.getShortcutIcon("zoomOut"),
-    //     // this.getShortcutIcon("zoomFit")
-    //   {
-    //     labelMsg: "buttons.PanZoomInToolTipMessage",
-    //     icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-    //     clickFunc: this.enableZoomIn,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
-    //   },
-    //
-    //   {
-    //     labelMsg: "buttons.PanZoomOutToolTipMessage",
-    //     icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-    //     clickFunc: this.enableZoomOut,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
-    //   },
-    //
-    //   {
-    //     labelMsg: "buttons.ZoomFitToolTipMessage",
-    //     icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-    //     clickFunc: this.enableZoomFit,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
-    //   }
-    // ];
   }
 
   get bottomLeftShortcuts() {
     return this.displayedFavoriteTools[3];
-    // return [
-    //   {
-    //     labelMsg: toolDictionary.get("point")?.displayedName, // "buttons.CreatePointToolTipMessage",
-    //     icon: toolDictionary.get("point")?.icon, // "$vuetify.icons.value.point",
-    //     clickFunc: toolDictionary.get("point")?.clickFunc, // this.createPoint,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
-    //   },
-    //   // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
-    //     // TODO: Undo is removing two points at a time (seems to be activating twice)
-    //   {
-    //     toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
-    //     icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
-    //     clickFunc: toolDictionary.get("line")?.clickFunc, // this.createLine,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolDictionary.get("line") // toolGroups[2].children.find(e => e.actionModeValue == "line")
-    //   },
-    //
-    //   {
-    //     toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
-    //     icon: "$vuetify.icons.value.segment",
-    //     clickFunc: this.createSegment,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
-    //   },
-    //
-    //   {
-    //     toolTipMessage: "buttons.CreateCircleToolTipMessage",
-    //     icon: "$vuetify.icons.value.circle",
-    //     clickFunc: this.createCircle,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
-    //   }
-    // ];
   }
 
   //#region magnificationUpdate
@@ -497,7 +382,7 @@ export default class Easel extends Vue {
 
   get centerWidth(): number {
     return (
-      100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
+        100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
     );
   }
 
@@ -563,10 +448,10 @@ export default class Easel extends Vue {
 
   private adjustSize(): void {
     this.availHeight =
-      window.innerHeight -
-      this.$vuetify.application.footer -
-      this.$vuetify.application.top -
-      24; // quick hack (-24) to leave room at the bottom
+        window.innerHeight -
+        this.$vuetify.application.footer -
+        this.$vuetify.application.top -
+        24; // quick hack (-24) to leave room at the bottom
     const tmp = this.$refs.responsiveBox;
     if (tmp) {
       let canvasPanel = tmp.$el as HTMLElement;
@@ -585,34 +470,34 @@ export default class Easel extends Vue {
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     this.$appDB
-      .collection("constructions") // load the script from public collection
-      .doc(docId)
-      .get()
-      .then(async (doc: DocumentSnapshot) => {
-        if (doc.exists) {
-          const { script } = doc.data() as ConstructionInFirestore;
-          // Check whether the script is inline or stored in Firebase storage
-          if (script.startsWith("https:")) {
-            // The script must be fetched from Firebase storage
-            const scriptText = await this.$appStorage
-              .refFromURL(script)
-              .getDownloadURL()
-              .then((url: string) => axios.get(url))
-              .then((r: AxiosResponse) => r.data);
-            run(JSON.parse(scriptText) as ConstructionScript);
+        .collection("constructions") // load the script from public collection
+        .doc(docId)
+        .get()
+        .then(async (doc: DocumentSnapshot) => {
+          if (doc.exists) {
+            const { script } = doc.data() as ConstructionInFirestore;
+            // Check whether the script is inline or stored in Firebase storage
+            if (script.startsWith("https:")) {
+              // The script must be fetched from Firebase storage
+              const scriptText = await this.$appStorage
+                  .refFromURL(script)
+                  .getDownloadURL()
+                  .then((url: string) => axios.get(url))
+                  .then((r: AxiosResponse) => r.data);
+              run(JSON.parse(scriptText) as ConstructionScript);
+            } else {
+              // The script is inline
+              run(JSON.parse(script) as ConstructionScript);
+            }
+            this.updateDisplay();
           } else {
-            // The script is inline
-            run(JSON.parse(script) as ConstructionScript);
+            EventBus.fire("show-alert", {
+              key: "constructions.constructionNotFound",
+              keyOptions: { docId: docId },
+              type: "error"
+            });
           }
-          this.updateDisplay();
-        } else {
-          EventBus.fire("show-alert", {
-            key: "constructions.constructionNotFound",
-            keyOptions: { docId: docId },
-            type: "error"
-          });
-        }
-      });
+        });
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
@@ -623,8 +508,8 @@ export default class Easel extends Vue {
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
     EventBus.listen(
-      "set-action-mode-to-select-tool",
-      this.setActionModeToSelectTool
+        "set-action-mode-to-select-tool",
+        this.setActionModeToSelectTool
     );
     EventBus.listen("secret-key-detected", () => {
       if (this.uid.length > 0) this.accountEnabled = true;
@@ -643,15 +528,14 @@ export default class Easel extends Vue {
             const uProfile = ds.data() as UserProfile;
             console.log("From Firestore", uProfile);
             // If user has tools, set userFavoriteToolNames appropriately
-            // console.log("LOOK AT MEASDFASDFASDFASDFASDF", uProfile.favoriteTools);
             this.setUserFavoriteToolNames(uProfile.favoriteTools ?? toolsString);
           }
         });
     this.authSubscription = this.$appAuth.onAuthStateChanged(
-      (u: User | null) => {
-        if (u !== null) this.uid = u.uid;
-        else this.userFavoriteTools = [[],[],[],[]];
-      }
+        (u: User | null) => {
+          if (u !== null) this.uid = u.uid;
+          else this.userFavoriteTools = [[],[],[],[]];
+        }
     );
     window.addEventListener("keydown", this.handleKeyDown);
 
@@ -691,41 +575,8 @@ export default class Easel extends Vue {
       disableBtn: this.toolDisabled(tool.actionModeValue),
       button: toolDictionary.get(tool.actionModeValue)
     }));
-
-    // console.log("this.defaultToolNames: " + this.defaultToolNames);
-    //
-    // // Add default tools to displayedFavoriteTools
-    // for (let i = 0; i < this.defaultToolNames.length; i++) {
-    //   for (let j = 0; j < this.defaultToolNames[i].length; j++) {
-    //     let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
-    //     if (temp_tool.length > 0) {
-    //       // Push reference to tool that is in allToolsList
-    //       this.displayedFavoriteTools[i].push(temp_tool[0]);
-    //       // Set this tool to disabled because the user cannot disable defaults
-    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
-    //     } else {
-    //       console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
-    //     }
-    //   }
-    // }
-    //
-    // // save each matching FavoriteTool in allToolsList to displayedFavoriteTools, where each index is a corner
-    // for (let i = 0; i < this.userFavoriteToolNames.length; i++) {
-    //   for (let j = 0; j < this.userFavoriteToolNames[i].length; j++) {
-    //     let temp_tool = this.allToolsList.filter(tl => this.userFavoriteToolNames[i][j] === tl.actionModeValue);
-    //     // Filter will always return a list, even though there will only ever be one match
-    //     if (temp_tool.length > 0) {
-    //       // push reference to tool that is in allToolsList
-    //       this.displayedFavoriteTools[i].push(temp_tool[0])
-    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
-    //     } else {
-    //       console.log("Warning: Could not find '" + this.userFavoriteToolNames[i][j] + "' in this.allToolsList");
-    //     }
-    //   }
-    // }
   }
 
-  // TODO: ISSUE, undo, redo, and reset are not and will never be in disabledTools. Could just keep it that way.
   @Watch("disabledTools", { deep: true })
   updateAllTools(): void {
     // iterates through this.allToolsList and sets each tool that is in disabledTools to disabled
@@ -734,8 +585,6 @@ export default class Easel extends Vue {
     }
   }
 
-  // TODO: Watch function updates this.userFavoriteToolNames, then calls this function
-  // TODO: This will not work until the watch function is implemented.
   @Watch("disabledTools", { deep: true })
   rebuildDisplayedFavoriteTools(): void {
     // This function will just rebuild displayedFavoriteTools. We use this when
@@ -795,14 +644,14 @@ export default class Easel extends Vue {
    */
   dividerMoved(event: Array<{ min: number; max: number; size: number }>): void {
     const availableWidth =
-      ((100 - event[0].size - event[2].size) / 100) *
-      (window.innerWidth -
-        this.$vuetify.application.left -
-        this.$vuetify.application.right);
+        ((100 - event[0].size - event[2].size) / 100) *
+        (window.innerWidth -
+            this.$vuetify.application.left -
+            this.$vuetify.application.right);
     this.availHeight =
-      window.innerHeight -
-      this.$vuetify.application.top -
-      this.$vuetify.application.footer;
+        window.innerHeight -
+        this.$vuetify.application.top -
+        this.$vuetify.application.footer;
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
 
@@ -865,9 +714,9 @@ export default class Easel extends Vue {
       if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.metaKey) {
         Command.undo();
       } else if (
-        keyEvent.code === "KeyZ" &&
-        keyEvent.shiftKey &&
-        keyEvent.metaKey
+          keyEvent.code === "KeyZ" &&
+          keyEvent.shiftKey &&
+          keyEvent.metaKey
       ) {
         Command.redo();
       }
@@ -876,9 +725,9 @@ export default class Easel extends Vue {
       if (keyEvent.code === "KeyZ" && !keyEvent.shiftKey && keyEvent.ctrlKey) {
         Command.undo();
       } else if (
-        keyEvent.code === "KeyY" &&
-        !keyEvent.shiftKey &&
-        keyEvent.ctrlKey
+          keyEvent.code === "KeyY" &&
+          !keyEvent.shiftKey &&
+          keyEvent.ctrlKey
       ) {
         Command.redo();
       }
@@ -951,7 +800,7 @@ export default class Easel extends Vue {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #currentTool {
@@ -962,7 +811,7 @@ export default class Easel extends Vue {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #tool {
@@ -987,7 +836,7 @@ export default class Easel extends Vue {
   padding-bottom: 0;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 .left {
   left: 0;

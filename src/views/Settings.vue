@@ -344,8 +344,6 @@ export default class Settings extends Vue {
   userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
   // The displayed favorite tools (includes defaults)
   displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
-  // TODO: Look at notes to realize how much extra work there is because someone didn't
-  //       define the quick tools in toolgroups.ts as ToolButtons but instead as their own type
   defaultToolNames = [
     ["undoAction", "redoAction"],
     ["resetAction"],
@@ -357,7 +355,6 @@ export default class Settings extends Vue {
   selectedTab = null;
   authSubscription!: Unsubscribe;
   profileEnabled = false;
-  // If we don't initialize these values HERE (apparently we can't at the top of the class), vue throws hands
   topLeftSelectedIndex: number | null = null;
   bottomLeftSelectedIndex: number | null = null;
   topRightSelectedIndex?: number | null = null;
@@ -367,8 +364,6 @@ export default class Settings extends Vue {
     return this.$appAuth.currentUser?.uid;
   }
   mounted(): void {
-    // var test = LocaleMessages.get("buttons")
-    // import VueI18n, {LocaleMessages} from "vue-i18n"
     // Sets up the master list of tools and displayedFavoriteTools
     this.initializeToolLists();
     this.$appDB
@@ -382,7 +377,6 @@ export default class Settings extends Vue {
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
           // Sets up the userFavoriteTools list
-          // TODO: This is asynchronous, so the displayedFavoriteTools won't always update with this
           this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           if (uProfile.role) this.userRole = uProfile.role;
         }
@@ -403,35 +397,27 @@ export default class Settings extends Vue {
     );
   }
   initializeToolLists(): void {
-    // Reasoning for having a displayedFavoriteTools and userFavoriteTools lists:
-    // We might need to have two lists. One that is used for displaying and one that is the actual favorites list
-    // This is because if we add the defaults to the userFavoriteToolsList, then the encode method will add those
-    // defaults to firebase.
-    // TODO: We need to move all the tool definitions to tooldictionary.ts
-    //       tooldictionary is a dictionary that holds all tool definitions. We index it by ActionMode
-    //       toolgroups.ts will reference this dictionary for each tool in a given group
-    //       ShortcutIcon.vue is a hole different beast that we will need to tackle next week after
-    //       we talk to Dr. Dulimarta and Dr. Dickinson
-    // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
-    // Set up master list of all tools for favorites selection
-    let compList = Array.from(toolDictionary.values()).map(child => ({
+    // Builds the allToolsList so we can make other lists from it. Also adds default tools to corners
+    const compList = Array.from(toolDictionary.values()).map(child => ({
       actionModeValue: child.actionModeValue,
       displayedName: child.displayedName,
       icon: child.icon,
-      disabled: false,
-      langName: this.$t("buttons." + child.displayedName)
+      clickFunc: child.clickFunc,
+      button: child,
     }));
 
-    // Sort the temp List
-    compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
+    compList.sort((a, b) => a.displayedName < b.displayedName ? -1 : a.displayedName > b.displayedName ? 1 : 0);
+
     // Redefine the allToolsList
     this.allToolsList = compList.map(tool => ({
       actionModeValue: tool.actionModeValue,
       displayedName: tool.displayedName,
       icon: tool.icon,
-      disabled: false
+      disabled: false,
+      disableBtn: false
     }))
     console.log("this.defaultToolNames: " + this.defaultToolNames);
+
     // Add default tools to displayedFavoriteTools
     for (let i = 0; i < this.defaultToolNames.length; i++) {
       for (let j = 0; j < this.defaultToolNames[i].length; j++) {
@@ -449,18 +435,19 @@ export default class Settings extends Vue {
       }
     }
   }
+
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
     // FavoriteTool[][] array we are returning
     let finalToolsList: FavoriteTool[][] = [];
+
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
+
     // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
     for (const corner of favoriteToolNames) {
-      // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
       let temp_corner: FavoriteTool[] = [];
       for (const tool of corner) {
-        // Filter will always return a list, even though there will only ever be one match
         let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
           temp_corner.push(Object.assign({}, temp_tool[0]));
@@ -468,13 +455,14 @@ export default class Settings extends Vue {
       }
       finalToolsList.push(temp_corner);
     }
+
     // Add the user's favorite tools to the displayedFavoriteTools list
     for (let i = 0; i < finalToolsList.length; i++) {
       for (const tool of finalToolsList[i]) {
-        // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
         this.displayedFavoriteTools[i].push(Object.assign({}, tool));
       }
     }
+
     // Iterate through allToolsList to set each favorited tool as not focusable
     for (let i = 0; i < this.displayedFavoriteTools.length; i++) {
       for (let j = 0; j < this.displayedFavoriteTools[i].length; j++) {
@@ -484,42 +472,47 @@ export default class Settings extends Vue {
     }
     return finalToolsList;
   }
+
   encodeFavoriteTools(): string {
     // Create 2D list of names
     let favoritesList = this.userFavoriteTools.map(corner => corner.map(tool => tool.actionModeValue));
     // Map list to string and return
     return favoritesList.map(corner => corner.join(", ")).join("\n");
   }
+
   addToolToFavorites(corner: number, index: number | null): void {
     if (index === null) return;
     if (this.displayedFavoriteTools[corner].length >= this.maxFavoriteToolsLimit) return;
+
     // Add the tool at allTools[index] into the corresponding corner of the user's favorite tools
-    // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
     this.userFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
-    // TODO: Created a copy of the object, not sure if this is needed. Trying to avoid pass by reference issues
     this.displayedFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
+
     // Set the tool in allToolsList to disable
     this.allToolsList[index].disabled = true;
+
     // Set the displayed tool to not be disabled
     this.displayedFavoriteTools[corner][this.displayedFavoriteTools[corner].length - 1].disabled = false;
-    // TODO: Re-figure out how to make the selected v-list-item-group not be selected anymore so we don't need this
-    //       I literally had this figured out and completely forgot it :|
+
     // Deselect the tool in allToolsList (Prevents duplicates)
     this.allListSelectedIndex = null;
   }
   removeToolFromFavorites(corner: number, index: number | null): void {
     if (index === null) return;
+
     // Get the tool name to make focusable again
     let toolName = this.displayedFavoriteTools[corner][index].actionModeValue;
+
     // Need to get the index for the item in userFavoriteTools
     let indexDelta = this.displayedFavoriteTools[corner].length - this.userFavoriteTools[corner].length;
     let userFavoriteToolsIndex = index - indexDelta;
     this.userFavoriteTools[corner].splice(userFavoriteToolsIndex, 1);
     this.displayedFavoriteTools[corner].splice(index, 1);
+
     // Set the corresponding tool to focusable again
     let allToolsListIndex = this.allToolsList.findIndex(tool => tool.actionModeValue === toolName);
     this.allToolsList[allToolsListIndex].disabled = false;
-    // TODO: Re-figure out how to make the selected v-list-item-group not be selected anymore so we don't need this
+
     // Deselect the tool in the corresponding corner (Prevents duplicates)
     switch (corner) {
       case 0:
