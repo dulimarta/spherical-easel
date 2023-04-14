@@ -59,16 +59,52 @@
                     <v-container>
                       <v-row>
                         <v-col cols="6">
-                            <FavoriteToolsCard :itemList="displayedFavoriteTools[0]" listTitle="Top-Left Corner" />
+                            <FavoriteToolsCard v-if="dataReceived"
+                            :itemList="displayedFavoriteTools[0]"
+                            :itemListBackend="userFavoriteTools[0]"
+                            listTitle="Top-Left Corner"
+                            :mainList="allToolsList"
+                            :mainListIndex="allListSelectedIndex"
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                            <div v-else>
+                              <p>loading</p>
+                            </div>
+                          </v-col>
+                        <v-col cols="6">
+                            <FavoriteToolsCard v-if="dataReceived"
+                            :itemList="displayedFavoriteTools[1]"
+                            :itemListBackend="userFavoriteTools[1]"
+                            listTitle="Top-Right Corner"
+                            :mainList="allToolsList"
+                            :mainListIndex="allListSelectedIndex"
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                            <div v-else>
+                              <p>loading</p>
+                            </div>
+                          </v-col>
+                        <v-col cols="6">
+                          <FavoriteToolsCard v-if="dataReceived"
+                          :itemList="displayedFavoriteTools[3]"
+                            :itemListBackend="userFavoriteTools[3]"
+                          listTitle="Bottom-Left Corner"
+                          :mainList="allToolsList"
+                          :mainListIndex="allListSelectedIndex"
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                          <div v-else>
+                              <p>loading</p>
+                            </div>
                         </v-col>
                         <v-col cols="6">
-                            <FavoriteToolsCard :itemList="displayedFavoriteTools[1]" listTitle="Top-Right Corner" />
-                        </v-col>
-                        <v-col cols="6">
-                          <FavoriteToolsCard :itemList="displayedFavoriteTools[2]" listTitle="Bottom-Left Corner" />
-                        </v-col>
-                        <v-col cols="6">
-                          <FavoriteToolsCard :itemList="displayedFavoriteTools[3]" listTitle="Bottom-Right Corner"/>
+                          <FavoriteToolsCard v-if="dataReceived"
+                          :itemList="displayedFavoriteTools[2]"
+                            :itemListBackend="userFavoriteTools[2]"
+                          listTitle="Bottom-Right Corner"
+                          :mainList="allToolsList"
+                          :mainListIndex="allListSelectedIndex"
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                          <div v-else>
+                              <p>loading</p>
+                            </div>
                         </v-col>
                       </v-row>
                     </v-container>
@@ -228,19 +264,20 @@ export default class Settings extends Vue {
   topRightSelectedIndex?: number | null = null;
   bottomRightSelectedIndex?: number | null = null;
   allListSelectedIndex?: number | null = null;
+  dataReceived: boolean = false;
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
-  mounted(): void {
+  mounted(){
     // var test = LocaleMessages.get("buttons")
     // import VueI18n, {LocaleMessages} from "vue-i18n"
     // Sets up the master list of tools and displayedFavoriteTools
     this.initializeToolLists();
-    this.$appDB
+     this.$appDB
       .collection("users")
       .doc(this.userUid)
       .get()
-      .then((ds: DocumentSnapshot) => {
+      .then(async(ds: DocumentSnapshot) => {
         if (ds.exists) {
           const uProfile = ds.data() as UserProfile;
           console.log("From Firestore", uProfile);
@@ -250,7 +287,13 @@ export default class Settings extends Vue {
           // TODO: This is asynchronous, so the displayedFavoriteTools won't always update with this
           this.userFavoriteTools = this.decodeFavoriteTools(uProfile.favoriteTools ?? "\n\n\n");
           if (uProfile.role) this.userRole = uProfile.role;
+          console.log("line 266")
         }
+        console.log("here line 268")
+        console.log(this.displayedFavoriteTools)
+        //from this point, the data is good.
+        this.dataReceived = true;
+
       });
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
@@ -294,6 +337,7 @@ export default class Settings extends Vue {
       actionModeValue: tool.actionModeValue,
       displayedName: tool.displayedName,
       icon: tool.icon,
+      disableBtn: false,
       disabled: false
     }))
     console.log("this.defaultToolNames: " + this.defaultToolNames);
