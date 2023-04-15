@@ -396,6 +396,7 @@ export default class Settings extends Vue {
       }
     );
   }
+
   initializeToolLists(): void {
     // Builds the allToolsList so we can make other lists from it. Also adds default tools to corners
     const compList = Array.from(toolDictionary.values()).map(child => ({
