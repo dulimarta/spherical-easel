@@ -7,7 +7,9 @@
         overflow: hidden
         text-overflow: ellipsis">
             <v-col style="flex-grow:2">
-                <v-btn style="font-size:2rem;" @click="addToolToFavorites(mainListIndex)">
+                <v-btn style="font-size:2rem;"
+                :disabled="addDisabled"
+                @click="addToolToFavorites(mainListIndex)">
                     +
                 </v-btn>
             </v-col>
@@ -17,7 +19,9 @@
                 </div>
             </v-col>
             <v-col style="flex-grow:2">
-                <v-btn style="font-size:2rem;" @click="removeToolFromFavorites(selectedIndex)">
+                <v-btn style="font-size:2rem;"
+                :disabled="removeDisabled"
+                @click="removeToolFromFavorites(selectedIndex)">
                         -
                 </v-btn>
             </v-col>
@@ -74,10 +78,16 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
        maxFavoriteToolsLimit!: number;
 
        selectedIndex: number | null = null;
+       addDisabled: Boolean = false;
+       removeDisabled: Boolean = false;
 
        addToolToFavorites(index: number | null): void{
             if (index === null) return;
-            if (this.itemList.length >= this.maxFavoriteToolsLimit) return;
+            if (this.itemList.length >= this.maxFavoriteToolsLimit){
+                this.removeDisabled = false;
+                this.addDisabled = true;
+                return;
+            }
 
             let toolName = this.mainList[index].actionModeValue;
 
@@ -88,13 +98,20 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
             this.mainList[index].disabled = true;
             this.itemList[this.itemList.length - 1].disabled = false;
 
-            this.mainListIndex = null;
-
-
+            this.$emit("update:DeselectTool", null);
        }
 
         removeToolFromFavorites(index: number | null): void {
-            if (index === null) return
+            if (index === null){
+                if(this.itemListBackend.length <= 0){
+                    this.removeDisabled = true;
+                    this.addDisabled = false;
+                    return;
+                }
+                return;
+            }
+
+
 
             let toolName = this.itemList[index].actionModeValue;
 

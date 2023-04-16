@@ -65,7 +65,8 @@
                             listTitle="Top-Left Corner"
                             :mainList="allToolsList"
                             :mainListIndex="allListSelectedIndex"
-                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
+                            @update:DeselectTool="allListSelectedIndex = $event"/>
                             <div v-else>
                               <p>loading</p>
                             </div>
@@ -77,7 +78,8 @@
                             listTitle="Top-Right Corner"
                             :mainList="allToolsList"
                             :mainListIndex="allListSelectedIndex"
-                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
+                            @update:DeselectTool="allListSelectedIndex = $event"/>
                             <div v-else>
                               <p>loading</p>
                             </div>
@@ -85,11 +87,12 @@
                         <v-col cols="6">
                           <FavoriteToolsCard v-if="dataReceived"
                           :itemList="displayedFavoriteTools[3]"
-                            :itemListBackend="userFavoriteTools[3]"
+                          :itemListBackend="userFavoriteTools[3]"
                           listTitle="Bottom-Left Corner"
                           :mainList="allToolsList"
                           :mainListIndex="allListSelectedIndex"
-                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                          :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
+                          @update:DeselectTool="allListSelectedIndex = $event"/>
                           <div v-else>
                               <p>loading</p>
                             </div>
@@ -97,11 +100,12 @@
                         <v-col cols="6">
                           <FavoriteToolsCard v-if="dataReceived"
                           :itemList="displayedFavoriteTools[2]"
-                            :itemListBackend="userFavoriteTools[2]"
+                          :itemListBackend="userFavoriteTools[2]"
                           listTitle="Bottom-Right Corner"
                           :mainList="allToolsList"
                           :mainListIndex="allListSelectedIndex"
-                            :maxFavoriteToolsLimit="maxFavoriteToolsLimit"/>
+                          :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
+                          @update:DeselectTool="allListSelectedIndex = $event"/>
                           <div v-else>
                               <p>loading</p>
                             </div>
