@@ -44,8 +44,8 @@
                   id="responsiveBox"
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
-                  <div class="anchored top left">
-                    <div v-for="shortcut, index in topLeftShortcuts"
+                  <div class="anchored top left" v-if="dataReceived">
+                    <div v-for="(shortcut, index) in topLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'top')">
                       <ShortcutIcon
@@ -65,8 +65,9 @@
                       </v-btn-toggle>-->
 
                   </div>
+                  <div v-else>l</div>
                   <div class="anchored bottom left">
-                    <div v-for="shortcut, index in bottomLeftShortcuts"
+                    <div v-for="(shortcut, index) in bottomLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'bottom')">
                       <ShortcutIcon
@@ -87,7 +88,7 @@
                   </div>
                   <div class="anchored top right">
 
-                    <div v-for="shortcut, index in topRightShortcuts"
+                    <div v-for="(shortcut, index) in topRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'top')">
                       <ShortcutIcon
@@ -101,7 +102,7 @@
 
                   </div>
                   <div class="anchored bottom right">
-                    <div v-for="shortcut, index in bottomRightShortcuts"
+                    <div v-for="(shortcut, index) in bottomRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'bottom')">
                       <ShortcutIcon
@@ -321,6 +322,9 @@ export default class Easel extends Vue {
   private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
 
+  private favoriteTools: string = "\n\n\n";
+  private dataReceived: boolean = false;
+
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
@@ -357,132 +361,17 @@ export default class Easel extends Vue {
 
   get topLeftShortcuts() {
     return this.displayedFavoriteTools[0];
-    // return [
-    //   // this.getShortcutIcon("undoAction"),
-    //   // this.getShortcutIcon("redoAction"),
-    //   // this.getShortcutIcon("point")
-    //   // TODO: This is causing a lot of issues in the debug view
-    //   // TODO: not able to use disabledTools for disableBtn
-    //   {
-    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, //"main.UndoLastAction",
-    //     icon: toolDictionary.get("undoAction")?.icon, //SETTINGS.icons.undo.props.mdiIcon,
-    //     clickFunc: toolDictionary.get("undoAction")?.clickFunc, // this.undoEdit,
-    //     iconColor: "blue",
-    //     btnColor: null,
-    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-    //     button: toolDictionary.get("undoAction")
-    //   },
-    //   {
-    //     labelMsg: toolDictionary.get("undoAction")?.displayedName, // "main.RedoLastAction",
-    //     icon: toolDictionary.get("redoAction")?.icon, // "$vuetify.icons.value.redo",
-    //     clickFunc: toolDictionary.get("redoAction")?.clickFunc, // this.redoAction,
-    //     iconColor: "blue",
-    //     btnColor: null,
-    //     disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-    //     button: toolDictionary.get("redoAction")
-    //   }
-    // ];
   }
   get topRightShortcuts() {
     return this.displayedFavoriteTools[1];
-    // return [
-    //     // this.getShortcutIcon("resetAction")
-    //     {
-    //     labelMsg: "constructions.resetSphere",
-    //     icon: "$vuetify.icons.value.clearConstruction",
-    //     clickFunc: () => {
-    //       this.$refs.clearConstructionDialog.show();
-    //     },
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: null
-    //   }
-    // ];
   }
 
   get bottomRightShortcuts() {
     return this.displayedFavoriteTools[2];
-    // return [
-    //     // this.getShortcutIcon("zoomIn"),
-    //     // this.getShortcutIcon("zoomOut"),
-    //     // this.getShortcutIcon("zoomFit")
-    //   {
-    //     labelMsg: "buttons.PanZoomInToolTipMessage",
-    //     icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-    //     clickFunc: this.enableZoomIn,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
-    //   },
-    //
-    //   {
-    //     labelMsg: "buttons.PanZoomOutToolTipMessage",
-    //     icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-    //     clickFunc: this.enableZoomOut,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
-    //   },
-    //
-    //   {
-    //     labelMsg: "buttons.ZoomFitToolTipMessage",
-    //     icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-    //     clickFunc: this.enableZoomFit,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
-    //   }
-    // ];
   }
 
   get bottomLeftShortcuts() {
     return this.displayedFavoriteTools[3];
-    // return [
-    //   {
-    //     labelMsg: toolDictionary.get("point")?.displayedName, // "buttons.CreatePointToolTipMessage",
-    //     icon: toolDictionary.get("point")?.icon, // "$vuetify.icons.value.point",
-    //     clickFunc: toolDictionary.get("point")?.clickFunc, // this.createPoint,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolDictionary.get("point") // toolGroups[2].children.find(e => e.actionModeValue == "point")
-    //   },
-    //   // TODO: when clicking on a button w/o a clickfunc, setButton isn't setting the button correctly. It's setting it to point
-    //     // TODO: Undo is removing two points at a time (seems to be activating twice)
-    //   {
-    //     toolTipMessage: toolDictionary.get("line")?.displayedName, // "buttons.CreateLineToolTipMessage",
-    //     icon: toolDictionary.get("line")?.icon, // "$vuetify.icons.value.line",
-    //     clickFunc: toolDictionary.get("line")?.clickFunc, // this.createLine,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolDictionary.get("line") // toolGroups[2].children.find(e => e.actionModeValue == "line")
-    //   },
-    //
-    //   {
-    //     toolTipMessage: "buttons.CreateLineSegmentToolTipMessage",
-    //     icon: "$vuetify.icons.value.segment",
-    //     clickFunc: this.createSegment,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
-    //   },
-    //
-    //   {
-    //     toolTipMessage: "buttons.CreateCircleToolTipMessage",
-    //     icon: "$vuetify.icons.value.circle",
-    //     clickFunc: this.createCircle,
-    //     iconColor: null,
-    //     btnColor: "primary",
-    //     disableBtn: false,
-    //     button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
-    //   }
-    // ];
   }
 
   //#region magnificationUpdate
@@ -630,23 +519,22 @@ export default class Easel extends Vue {
       if (this.uid.length > 0) this.accountEnabled = true;
     });
 
-    // Set user's favorite tools to empty
-    let toolsString = "\n\n\n";
-    this.setUserFavoriteToolNames(toolsString);
-
     this.$appDB
         .collection("users")
         .doc(this.userUid)
         .get()
         .then((ds: DocumentSnapshot) => {
+          // TODO: it's trying to check this before we've received data
+          // Even though App.vue has received the data
+          console.log("ds.exists: " + ds.exists);
           if (ds.exists) {
             const uProfile = ds.data() as UserProfile;
             console.log("From Firestore", uProfile);
             // If user has tools, set userFavoriteToolNames appropriately
-            // console.log("LOOK AT MEASDFASDFASDFASDFASDF", uProfile.favoriteTools);
-            this.setUserFavoriteToolNames(uProfile.favoriteTools ?? toolsString);
+            this.favoriteTools = uProfile.favoriteTools ?? "\n\n\n";
           }
         });
+
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
         if (u !== null) this.uid = u.uid;
@@ -655,15 +543,12 @@ export default class Easel extends Vue {
     );
     window.addEventListener("keydown", this.handleKeyDown);
 
-    this.rebuildDisplayedFavoriteTools();
+    // This will build the shortcuts
+    this.setUserFavoriteToolNames();
   }
 
   toolDisabled(actionModeValue: ActionMode): boolean {
-    if (this.disabledTools.includes(actionModeValue)) {
-      return true;
-    } else {
-      return false;
-    }
+    return this.disabledTools.includes(actionModeValue);
   }
 
   initializeAllToolsList(): void {
@@ -692,40 +577,8 @@ export default class Easel extends Vue {
       button: toolDictionary.get(tool.actionModeValue)
     }));
 
-    // console.log("this.defaultToolNames: " + this.defaultToolNames);
-    //
-    // // Add default tools to displayedFavoriteTools
-    // for (let i = 0; i < this.defaultToolNames.length; i++) {
-    //   for (let j = 0; j < this.defaultToolNames[i].length; j++) {
-    //     let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
-    //     if (temp_tool.length > 0) {
-    //       // Push reference to tool that is in allToolsList
-    //       this.displayedFavoriteTools[i].push(temp_tool[0]);
-    //       // Set this tool to disabled because the user cannot disable defaults
-    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
-    //     } else {
-    //       console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
-    //     }
-    //   }
-    // }
-    //
-    // // save each matching FavoriteTool in allToolsList to displayedFavoriteTools, where each index is a corner
-    // for (let i = 0; i < this.userFavoriteToolNames.length; i++) {
-    //   for (let j = 0; j < this.userFavoriteToolNames[i].length; j++) {
-    //     let temp_tool = this.allToolsList.filter(tl => this.userFavoriteToolNames[i][j] === tl.actionModeValue);
-    //     // Filter will always return a list, even though there will only ever be one match
-    //     if (temp_tool.length > 0) {
-    //       // push reference to tool that is in allToolsList
-    //       this.displayedFavoriteTools[i].push(temp_tool[0])
-    //       console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
-    //     } else {
-    //       console.log("Warning: Could not find '" + this.userFavoriteToolNames[i][j] + "' in this.allToolsList");
-    //     }
-    //   }
-    // }
   }
 
-  // TODO: ISSUE, undo, redo, and reset are not and will never be in disabledTools. Could just keep it that way.
   @Watch("disabledTools", { deep: true })
   updateAllTools(): void {
     // iterates through this.allToolsList and sets each tool that is in disabledTools to disabled
@@ -734,14 +587,12 @@ export default class Easel extends Vue {
     }
   }
 
-  // TODO: Watch function updates this.userFavoriteToolNames, then calls this function
-  // TODO: This will not work until the watch function is implemented.
-  @Watch("disabledTools", { deep: true })
+
   rebuildDisplayedFavoriteTools(): void {
     // This function will just rebuild displayedFavoriteTools. We use this when
     // userFavoriteToolNames or defaultToolNames is updated.
-
-    console.log("rebuildDisplayedFavoriteTools: userFavoriteToolNames: ", this.userFavoriteToolNames);
+    this.dataReceived = false;
+    // console.log("rebuildDisplayedFavoriteTools: userFavoriteToolNames: ", this.userFavoriteToolNames);
 
     // Clear out the all displayedFavoriteTools
     this.displayedFavoriteTools.splice(0);
@@ -774,11 +625,15 @@ export default class Easel extends Vue {
         }
       }
     }
+    this.dataReceived = true;
   }
 
-  setUserFavoriteToolNames(favoritesListStr: string): void {
+  @Watch("favoriteTools", { deep : true})
+  setUserFavoriteToolNames(): void {
     // Convert list's string representation to 2D array of strings
-    this.userFavoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
+    this.userFavoriteToolNames = this.favoriteTools.split("\n").map(row => row.split(", "));
+    console.log("setUserFavoriteToolNames()");
+    this.rebuildDisplayedFavoriteTools();
   }
 
   beforeDestroy(): void {
@@ -834,13 +689,16 @@ export default class Easel extends Vue {
   switchActionMode(): void {
     this.setActionMode(this.actionMode);
   }
+
   onWindowResized(): void {
     this.adjustSize();
   }
+
   /* Undoes the last user action that changed the state of the sphere. */
   undoEdit(): void {
     Command.undo();
   }
+
   /* Redoes the last user action that changed the state of the sphere. */
   redoAction(): void {
     Command.redo();

@@ -1,10 +1,10 @@
 <template>
     <v-card class = "cards">
         <v-card-title
-        style="justify-content:center
-        flex-wrap:nowrap
-        white-space: nowrap
-        overflow: hidden
+        style="justify-content:center;
+        flex-wrap:nowrap;
+        white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis">
             <v-col style="flex-grow:2">
                 <v-btn style="font-size:2rem;"
@@ -98,6 +98,7 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
             this.mainList[index].disabled = true;
             this.itemList[this.itemList.length - 1].disabled = false;
 
+            this.removeDisabled = false;
             this.$emit("update:DeselectTool", null);
        }
 
@@ -124,6 +125,7 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
             let allToolsListIndex = this.mainList.findIndex(tool => tool.actionModeValue === toolName);
             this.mainList[allToolsListIndex].disabled = false;
 
+            this.addDisabled = false;
             this.selectedIndex = null;
         }
     }
