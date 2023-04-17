@@ -502,10 +502,11 @@ export default class Easel extends Vue {
           });
         }
       });
+
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
-  mounted(): void {
+  mounted(){
     this.initializeAllToolsList();
 
     window.addEventListener("resize", this.onWindowResized);
@@ -519,25 +520,26 @@ export default class Easel extends Vue {
       if (this.uid.length > 0) this.accountEnabled = true;
     });
 
-    this.$appDB
-        .collection("users")
-        .doc(this.userUid)
-        .get()
-        .then((ds: DocumentSnapshot) => {
-          // TODO: it's trying to check this before we've received data
-          // Even though App.vue has received the data
-          console.log("ds.exists: " + ds.exists);
-          if (ds.exists) {
-            const uProfile = ds.data() as UserProfile;
-            console.log("From Firestore", uProfile);
-            // If user has tools, set userFavoriteToolNames appropriately
-            this.favoriteTools = uProfile.favoriteTools ?? "\n\n\n";
-          }
-        });
-
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
-        if (u !== null) this.uid = u.uid;
+        if (u !== null) {
+          this.uid = u.uid;
+          this.$appDB
+              .collection("users")
+              .doc(this.userUid)
+              .get()
+              .then((ds: DocumentSnapshot) => {
+                // TODO: it's trying to check this before we've received data
+                // Even though App.vue has received the data
+                console.log("ds.exists: " + ds.exists);
+                if (ds.exists) {
+                  const uProfile = ds.data() as UserProfile;
+                  console.log("From Firestore", uProfile);
+                  // If user has tools, set userFavoriteToolNames appropriately
+                  this.favoriteTools = uProfile.favoriteTools ?? "\n\n\n";
+                }
+              });
+        }
         else this.userFavoriteTools = [[],[],[],[]];
       }
     );
