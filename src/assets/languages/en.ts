@@ -1,6 +1,13 @@
 import { LocaleMessages } from "vue-i18n";
 
 export default {
+  headingNames: {
+    allToolsName: "All Tools",
+    topLeftCorner: "Top-Left Corner",
+    topRightCorner: "Top-Right Corner",
+    bottomLeftCorner: "Bottom-Left Corner",
+    bottomRightCorner: "Bottom-Right Corner"
+  },
   account: {
     createError: "Unable to create a new account: {error}",
     emailNotVeified:

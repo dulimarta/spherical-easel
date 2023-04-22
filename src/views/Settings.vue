@@ -36,7 +36,7 @@
                     <v-card class="mt-3">
                       <v-card class = "mainListCard">
                         <v-card-title>
-                          All Tools
+                          {{ $t("headingNames.allToolsName") }}
                         </v-card-title>
                         <v-card-text>
                           <v-list class="mainToolsList">
@@ -62,7 +62,7 @@
                             <FavoriteToolsCard v-if="dataReceived"
                             :itemList="displayedFavoriteTools[0]"
                             :itemListBackend="userFavoriteTools[0]"
-                            listTitle="Top-Left Corner"
+                            :listTitle="$t('headingNames.topLeftCorner')"
                             :mainList="allToolsList"
                             :mainListIndex="allListSelectedIndex"
                             :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
@@ -75,7 +75,7 @@
                             <FavoriteToolsCard v-if="dataReceived"
                             :itemList="displayedFavoriteTools[1]"
                             :itemListBackend="userFavoriteTools[1]"
-                            listTitle="Top-Right Corner"
+                            :listTitle="$t('headingNames.topRightCorner')"
                             :mainList="allToolsList"
                             :mainListIndex="allListSelectedIndex"
                             :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
@@ -88,7 +88,7 @@
                           <FavoriteToolsCard v-if="dataReceived"
                           :itemList="displayedFavoriteTools[3]"
                           :itemListBackend="userFavoriteTools[3]"
-                          listTitle="Bottom-Left Corner"
+                          :listTitle="$t('headingNames.bottomLeftCorner')"
                           :mainList="allToolsList"
                           :mainListIndex="allListSelectedIndex"
                           :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
@@ -101,7 +101,7 @@
                           <FavoriteToolsCard v-if="dataReceived"
                           :itemList="displayedFavoriteTools[2]"
                           :itemListBackend="userFavoriteTools[2]"
-                          listTitle="Bottom-Right Corner"
+                          :listTitle="$t('headingNames.bottomRightCorner')"
                           :mainList="allToolsList"
                           :mainListIndex="allListSelectedIndex"
                           :maxFavoriteToolsLimit="maxFavoriteToolsLimit"
