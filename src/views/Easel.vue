@@ -589,7 +589,8 @@ export default class Easel extends Vue {
     }
   }
 
-
+  // TODO: Check if we need this
+  // @Watch("disabledTools", { deep: true})
   rebuildDisplayedFavoriteTools(): void {
     // This function will just rebuild displayedFavoriteTools. We use this when
     // userFavoriteToolNames or defaultToolNames is updated.
@@ -811,7 +812,7 @@ export default class Easel extends Vue {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #currentTool {
@@ -822,7 +823,7 @@ export default class Easel extends Vue {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #tool {
@@ -847,7 +848,7 @@ export default class Easel extends Vue {
   padding-bottom: 0;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 .left {
   left: 0;

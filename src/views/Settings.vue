@@ -274,7 +274,7 @@ export default class Settings extends Vue {
     // import VueI18n, {LocaleMessages} from "vue-i18n"
     // Sets up the master list of tools and displayedFavoriteTools
     this.initializeToolLists();
-     this.$appDB
+    this.$appDB
       .collection("users")
       .doc(this.userUid)
       .get()
@@ -305,6 +305,7 @@ export default class Settings extends Vue {
       }
     );
   }
+
   initializeToolLists(): void {
     // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
     // Set up master list of all tools for favorites selection
@@ -315,6 +316,16 @@ export default class Settings extends Vue {
       disabled: false,
       langName: this.$t("buttons." + child.displayedName)
     }));
+
+    /** TODO: merging
+     * const compList = Array.from(toolDictionary.values()).map(child => ({
+     *       actionModeValue: child.actionModeValue,
+     *       displayedName: child.displayedName,
+     *       icon: child.icon,
+     *       clickFunc: child.clickFunc,
+     *       button: child,
+     *     }));
+     */
 
     // Sort the temp List
     compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
@@ -343,18 +354,19 @@ export default class Settings extends Vue {
       }
     }
   }
+
   decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
     // FavoriteTool[][] array we are returning
     let finalToolsList: FavoriteTool[][] = [];
+
     // Convert list's string representation to 2D array of strings
     let favoriteToolNames: string[][];
     favoriteToolNames = favoritesListStr.split("\n").map(row => row.split(", "));
+
     // save each matching FavoriteTool in allToolsList to finalToolsList, where each index is a corner
     for (const corner of favoriteToolNames) {
-      // Yes this is way less efficient, but we need to keep the order of the tools. Use this till better solution
       let temp_corner: FavoriteTool[] = [];
       for (const tool of corner) {
-        // Filter will always return a list, even though there will only ever be one match
         let temp_tool = this.allToolsList.filter(tl => tool === tl.actionModeValue);
         if (temp_tool.length > 0) {
           temp_corner.push(Object.assign({}, temp_tool[0]));
@@ -362,12 +374,14 @@ export default class Settings extends Vue {
       }
       finalToolsList.push(temp_corner);
     }
+
     // Add the user's favorite tools to the displayedFavoriteTools list
     for (let i = 0; i < finalToolsList.length; i++) {
       for (const tool of finalToolsList[i]) {
         this.displayedFavoriteTools[i].push(Object.assign({}, tool));
       }
     }
+
     // Iterate through allToolsList to set each favorited tool as not focusable
     for (let i = 0; i < this.displayedFavoriteTools.length; i++) {
       for (let j = 0; j < this.displayedFavoriteTools[i].length; j++) {
@@ -377,6 +391,7 @@ export default class Settings extends Vue {
     }
     return finalToolsList;
   }
+
   encodeFavoriteTools(): string {
     // Create 2D list of names
     let favoritesList = this.userFavoriteTools.map(corner => corner.map(tool => tool.actionModeValue));
