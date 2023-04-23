@@ -89,9 +89,6 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
                 return;
             }
 
-            let toolName = this.mainList[index].actionModeValue;
-
-
             this.itemList.push(Object.assign({}, this.mainList[index]));
             this.itemListBackend.push(Object.assign({}, this.mainList[index]));
 
@@ -111,8 +108,6 @@ import { Vue, Prop, Component } from 'vue-property-decorator';
                 }
                 return;
             }
-
-
 
             let toolName = this.itemList[index].actionModeValue;
 

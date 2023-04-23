@@ -423,7 +423,6 @@ toolDictionary.set("measuredCircle", {
     displayToolUseMessage: false,
     disabledIcon: "$vuetify.icons.value.blank" // doesn't work yet - see ToolButton.vue comment in HTML
 })
-// Note: I've added "undoAction" and "redoAction" to index.ts under ActionMode
 toolDictionary.set("undoAction", {
     id: 0,
     actionModeValue: "undoAction",
@@ -433,7 +432,7 @@ toolDictionary.set("undoAction", {
     toolUseMessage: "UndoLastActionToolUseMessage",
     displayToolUseMessage: false,
     disabledIcon: "$vuetify.icons.value.blank",
-    clickFunc: () => {
+    clickFunc: () => {  // These have a clickFunc because the functions used to be statically defined in Easel.vue
         Command.undo();
     }
 })

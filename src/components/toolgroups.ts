@@ -7,15 +7,6 @@ export const toolGroups: Array<ToolButtonGroup> = [
   {
     group: "EditTools",
     children: [
-        /**
-         * We need to make the children dynamic by what each toolDictionary entries toolGroup var is
-         *
-         * for tool in toolDictionary:
-         *      if tool.toolGroup == 'EditTools':
-         *          // add tool
-         *      else:
-         *          // don't care
-         */
         toolDictionary.get("select")!,
         toolDictionary.get("delete")!
     ]

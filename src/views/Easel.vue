@@ -529,7 +529,6 @@ export default class Easel extends Vue {
               .doc(this.userUid)
               .get()
               .then((ds: DocumentSnapshot) => {
-                // TODO: it's trying to check this before we've received data
                 // Even though App.vue has received the data
                 console.log("ds.exists: " + ds.exists);
                 if (ds.exists) {
@@ -574,7 +573,7 @@ export default class Easel extends Vue {
       icon: tool.icon,
       clickFunc: tool.clickFunc,
       iconColor: "blue",
-      btnColor: "stop breaking",
+      btnColor: "blue", // This doesn't really do anything
       disableBtn: this.toolDisabled(tool.actionModeValue),
       button: toolDictionary.get(tool.actionModeValue)
     }));
@@ -589,13 +588,10 @@ export default class Easel extends Vue {
     }
   }
 
-  // TODO: Check if we need this
-  // @Watch("disabledTools", { deep: true})
   rebuildDisplayedFavoriteTools(): void {
     // This function will just rebuild displayedFavoriteTools. We use this when
     // userFavoriteToolNames or defaultToolNames is updated.
     this.dataReceived = false;
-    // console.log("rebuildDisplayedFavoriteTools: userFavoriteToolNames: ", this.userFavoriteToolNames);
 
     // Clear out the all displayedFavoriteTools
     this.displayedFavoriteTools.splice(0);
@@ -635,7 +631,6 @@ export default class Easel extends Vue {
   setUserFavoriteToolNames(): void {
     // Convert list's string representation to 2D array of strings
     this.userFavoriteToolNames = this.favoriteTools.split("\n").map(row => row.split(", "));
-    console.log("setUserFavoriteToolNames()");
     this.rebuildDisplayedFavoriteTools();
   }
 

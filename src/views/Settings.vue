@@ -301,7 +301,6 @@ export default class Settings extends Vue {
           this.userRole = "Community Member";
           this.userFavoriteTools = [[], [], [], []];
         }
-        // console.log("Auth changed", u, this.profileEnabled);
       }
     );
   }
@@ -316,16 +315,6 @@ export default class Settings extends Vue {
       disabled: false,
       langName: this.$t("buttons." + child.displayedName)
     }));
-
-    /** TODO: merging
-     * const compList = Array.from(toolDictionary.values()).map(child => ({
-     *       actionModeValue: child.actionModeValue,
-     *       displayedName: child.displayedName,
-     *       icon: child.icon,
-     *       clickFunc: child.clickFunc,
-     *       button: child,
-     *     }));
-     */
 
     // Sort the temp List
     compList.sort((a, b) => a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0);
@@ -397,56 +386,6 @@ export default class Settings extends Vue {
     let favoritesList = this.userFavoriteTools.map(corner => corner.map(tool => tool.actionModeValue));
     // Map list to string and return
     return favoritesList.map(corner => corner.join(", ")).join("\n");
-  }
-
-  addToolToFavorites(corner: number, index: number | null): void {
-    if (index === null) return;
-    if (this.displayedFavoriteTools[corner].length >= this.maxFavoriteToolsLimit) return;
-
-    // Add the tool at allTools[index] into the corresponding corner of the user's favorite tools
-    this.userFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
-    this.displayedFavoriteTools[corner].push(Object.assign({}, this.allToolsList[index]));
-
-    // Set the tool in allToolsList to disable
-    this.allToolsList[index].disabled = true;
-
-    // Set the displayed tool to not be disabled
-    this.displayedFavoriteTools[corner][this.displayedFavoriteTools[corner].length - 1].disabled = false;
-
-    // Deselect the tool in allToolsList (Prevents duplicates)
-    this.allListSelectedIndex = null;
-  }
-  removeToolFromFavorites(corner: number, index: number | null): void {
-    if (index === null) return;
-
-    // Get the tool name to make focusable again
-    let toolName = this.displayedFavoriteTools[corner][index].actionModeValue;
-
-    // Need to get the index for the item in userFavoriteTools
-    let indexDelta = this.displayedFavoriteTools[corner].length - this.userFavoriteTools[corner].length;
-    let userFavoriteToolsIndex = index - indexDelta;
-    this.userFavoriteTools[corner].splice(userFavoriteToolsIndex, 1);
-    this.displayedFavoriteTools[corner].splice(index, 1);
-
-    // Set the corresponding tool to focusable again
-    let allToolsListIndex = this.allToolsList.findIndex(tool => tool.actionModeValue === toolName);
-    this.allToolsList[allToolsListIndex].disabled = false;
-
-    // Deselect the tool in the corresponding corner (Prevents duplicates)
-    switch (corner) {
-      case 0:
-        this.topLeftSelectedIndex = null;
-        break;
-      case 1:
-        this.topRightSelectedIndex = null;
-        break;
-      case 2:
-        this.bottomRightSelectedIndex = null;
-        break;
-      case 3:
-        this.bottomLeftSelectedIndex = null;
-        break;
-    }
   }
 
   switchLocale(): void {

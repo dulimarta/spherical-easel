@@ -566,7 +566,6 @@ export interface ConstructionInFirestore {
   tools: Array<ActionMode> | undefined;
 }
 
-// TODO: Merge FavoriteTool and ShortcutIconItem
 /* Reference to a user's favorite tool in settings */
 export interface FavoriteTool {
   actionModeValue: ActionMode;
@@ -577,22 +576,11 @@ export interface FavoriteTool {
   labelMsg?: string;
   clickFunc?: () => void;
   iconColor?: string;
-  btbColor?: string;
+  btnColor?: string;
   disableBtn: boolean;
   button?: ToolButtonType;
 }
 
-// /* Using this in Easel so we can generate a complete list of favorited tools to be cast into ShortcutIcons */
-// export interface ShortcutIconItem {
-//   actionModeValue: ActionMode;
-//   labelMsg: string;
-//   icon: string;
-//   clickFunc?: () => void;
-//   iconColor?: string;
-//   btnColor?: string;
-//   disableBtn?: boolean;
-//   button?: ToolButtonType;
-// }
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
