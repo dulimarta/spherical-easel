@@ -44,11 +44,11 @@
                   id="responsiveBox"
                   class="pa-0">
                   <SphereFrame :canvas-size="currentCanvasSize" />
-                  <div class="anchored top left">
-                    <div v-for="shortcut, index in topLeftShortcuts"
+                  <div class="anchored top left" v-if="dataReceived">
+                    <div v-for="(shortcut, index) in topLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'top')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -65,11 +65,12 @@
                       </v-btn-toggle>-->
 
                   </div>
+                  <div v-else>l</div>
                   <div class="anchored bottom left">
-                    <div v-for="shortcut, index in bottomLeftShortcuts"
+                    <div v-for="(shortcut, index) in bottomLeftShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'left', 'bottom')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -87,10 +88,10 @@
                   </div>
                   <div class="anchored top right">
 
-                    <div v-for="shortcut, index in topRightShortcuts"
+                    <div v-for="(shortcut, index) in topRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'top')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -101,10 +102,10 @@
 
                   </div>
                   <div class="anchored bottom right">
-                    <div v-for="shortcut, index in bottomRightShortcuts"
+                    <div v-for="(shortcut, index) in bottomRightShortcuts"
                       :key="index"
                       :style="listItemStyle(index, 'right', 'bottom')">
-                      <ShortcutIcon @click="shortcut.clickFunc"
+                      <ShortcutIcon
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
@@ -170,7 +171,7 @@
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Vue, Component, Prop } from "vue-property-decorator";
+import {Vue, Component, Prop, Watch} from "vue-property-decorator";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
@@ -179,7 +180,6 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
-
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
@@ -191,7 +191,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ActionMode, ConstructionInFirestore } from "@/types";
+import {ActionMode, ConstructionInFirestore, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -210,6 +210,7 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 import { toolGroups } from "@/components/toolgroups";
 import MessageHub from "@/components/MessageHub.vue";
+import {toolDictionary} from "@/components/tooldictionary";
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -240,11 +241,9 @@ import MessageHub from "@/components/MessageHub.vue";
     listItemStyle: function (i, xLoc, yLoc) {
       //xLoc determines left or right, yLoc determines top or bottom
       const style: any = {};
-
       if (i !== 0) {
         style.position = "absolute";
       }
-
       switch (i) {
         case 1:
           style[yLoc] = "0px";
@@ -275,7 +274,8 @@ import MessageHub from "@/components/MessageHub.vue";
       "seNodules",
       "temporaryNodules",
       "hasObjects",
-      "activeToolName"
+      "activeToolName",
+      "disabledTools"
     ])
   }
 })
@@ -295,6 +295,8 @@ export default class Easel extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
+
+  readonly disabledTools!: Array<ActionMode>;
 
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -320,11 +322,28 @@ export default class Easel extends Vue {
   private displayCreateLineSegmentToolUseMessage = false;
   private displayCreateLineToolUseMessage = false;
 
+  private favoriteTools: string = "\n\n\n";
+  private dataReceived: boolean = false;
+
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
   private accountEnabled = false;
   private uid = "";
   private authSubscription!: Unsubscribe;
+
+  private userFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+  private userFavoriteToolNames: string[][] = [[],[],[],[]]
+
+  private displayedFavoriteTools: FavoriteTool[][] = [[], [], [], []];
+
+  private defaultToolNames = [
+    ["undoAction", "redoAction"],
+    ["resetAction"],
+    ["zoomIn", "zoomOut", "zoomFit"],
+    []
+  ]
+
+  private allToolsList: FavoriteTool[] = [];
 
   private actionMode: { id: ActionMode; name: string } = {
     id: "rotate",
@@ -341,119 +360,18 @@ export default class Easel extends Vue {
   };
 
   get topLeftShortcuts() {
-    return [
-      {
-        labelMsg: "main.UndoLastAction",
-        icon: SETTINGS.icons.undo.props.mdiIcon,
-        clickFunc: this.undoEdit,
-        iconColor: "blue",
-        btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: null
-      },
-      {
-        labelMsg: "main.RedoLastAction",
-        icon: SETTINGS.icons.redo.props.mdiIcon,
-        clickFunc: this.redoAction,
-        iconColor: "blue",
-        btnColor: null,
-        disableBtn: !this.stylePanelMinified || !this.undoEnabled,
-        button: null
-      }
-    ];
+    return this.displayedFavoriteTools[0];
   }
   get topRightShortcuts() {
-    return [
-      {
-        labelMsg: "constructions.resetSphere",
-        icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
-        clickFunc: () => {
-          this.$refs.clearConstructionDialog.show();
-        },
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: null
-      }
-    ];
+    return this.displayedFavoriteTools[1];
   }
 
   get bottomRightShortcuts() {
-    return [
-      {
-        labelMsg: "buttons.PanZoomInToolTipMessage",
-        icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-        clickFunc: this.enableZoomIn,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
-      },
-
-      {
-        labelMsg: "buttons.PanZoomOutToolTipMessage",
-        icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-        clickFunc: this.enableZoomOut,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
-      },
-
-      {
-        labelMsg: "buttons.ZoomFitToolTipMessage",
-        icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-        clickFunc: this.enableZoomFit,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
-      }
-    ];
+    return this.displayedFavoriteTools[2];
   }
 
   get bottomLeftShortcuts() {
-    return [
-      {
-        labelMsg: "buttons.CreatePointToolTipMessage",
-        icon: "$vuetify.icons.value.point",
-        clickFunc: this.createPoint,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "point")
-      },
-
-      {
-        labelMsg: "buttons.CreateLineToolTipMessage",
-        icon: "$vuetify.icons.value.line",
-        clickFunc: this.createLine,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "line")
-      },
-
-      {
-        labelMsg: "buttons.CreateLineSegmentToolTipMessage",
-        icon: "$vuetify.icons.value.segment",
-        clickFunc: this.createSegment,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "segment")
-      },
-
-      {
-        labelMsg: "buttons.CreateCircleToolTipMessage",
-        icon: "$vuetify.icons.value.circle",
-        clickFunc: this.createCircle,
-        iconColor: null,
-        btnColor: "primary",
-        disableBtn: false,
-        button: toolGroups[2].children.find(e => e.actionModeValue == "circle")
-      }
-    ];
+    return this.displayedFavoriteTools[3];
   }
 
   //#region magnificationUpdate
@@ -462,6 +380,7 @@ export default class Easel extends Vue {
     EventBus.listen("magnification-updated", this.resizePlottables);
     EventBus.listen("undo-enabled", this.setUndoEnabled);
     EventBus.listen("redo-enabled", this.setRedoEnabled);
+    EventBus.listen("display-clear-construction-dialog-box", this.resetSphere);
   }
   //#endregion magnificationUpdate
 
@@ -545,6 +464,10 @@ export default class Easel extends Vue {
     }
   }
 
+  get userUid(): string | undefined {
+    return this.$appAuth.currentUser?.uid;
+  }
+
   loadDocument(docId: string): void {
     this.removeAllFromLayers();
     this.init();
@@ -579,10 +502,13 @@ export default class Easel extends Vue {
           });
         }
       });
+
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
-  mounted(): void {
+  mounted(){
+    this.initializeAllToolsList();
+
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
@@ -593,17 +519,130 @@ export default class Easel extends Vue {
     EventBus.listen("secret-key-detected", () => {
       if (this.uid.length > 0) this.accountEnabled = true;
     });
+
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
-        if (u !== null) this.uid = u.uid;
+        if (u !== null) {
+          this.uid = u.uid;
+          this.$appDB
+              .collection("users")
+              .doc(this.userUid)
+              .get()
+              .then((ds: DocumentSnapshot) => {
+                // TODO: it's trying to check this before we've received data
+                // Even though App.vue has received the data
+                console.log("ds.exists: " + ds.exists);
+                if (ds.exists) {
+                  const uProfile = ds.data() as UserProfile;
+                  console.log("From Firestore", uProfile);
+                  // If user has tools, set userFavoriteToolNames appropriately
+                  this.favoriteTools = uProfile.favoriteTools ?? "\n\n\n";
+                }
+              });
+        }
+        else this.userFavoriteTools = [[],[],[],[]];
       }
     );
     window.addEventListener("keydown", this.handleKeyDown);
+
+    // This will build the shortcuts
+    this.setUserFavoriteToolNames();
   }
+
+  toolDisabled(actionModeValue: ActionMode): boolean {
+    return this.disabledTools.includes(actionModeValue);
+  }
+
+  initializeAllToolsList(): void {
+    // This function is called at the beginning of mounted, and builds the favorite tools in each corner
+    // of the easel. We store references of each tool that is favorited in allToolsList to the displayedFavoriteTools
+    // array so that we can update allToolsList when tools get disabled and the tools in displayedFavoriteTools reflect
+    // that change
+
+    const compList = Array.from(toolDictionary.values()).map(child => ({
+      actionModeValue: child.actionModeValue,
+      displayedName: child.displayedName,
+      icon: child.icon,
+      clickFunc: child.clickFunc,
+      button: child,
+    }));
+
+    this.allToolsList = compList.map(tool => ({
+      displayedName: tool.displayedName,
+      actionModeValue: tool.actionModeValue,
+      labelMsg: tool.displayedName,
+      icon: tool.icon,
+      clickFunc: tool.clickFunc,
+      iconColor: "blue",
+      btnColor: "stop breaking",
+      disableBtn: this.toolDisabled(tool.actionModeValue),
+      button: toolDictionary.get(tool.actionModeValue)
+    }));
+
+  }
+
+  @Watch("disabledTools", { deep: true })
+  updateAllTools(): void {
+    // iterates through this.allToolsList and sets each tool that is in disabledTools to disabled
+    for (let i = 0; i < this.allToolsList.length; i++) {
+      this.allToolsList[i].disableBtn = this.toolDisabled(this.allToolsList[i].actionModeValue);
+    }
+  }
+
+
+  rebuildDisplayedFavoriteTools(): void {
+    // This function will just rebuild displayedFavoriteTools. We use this when
+    // userFavoriteToolNames or defaultToolNames is updated.
+    this.dataReceived = false;
+    // console.log("rebuildDisplayedFavoriteTools: userFavoriteToolNames: ", this.userFavoriteToolNames);
+
+    // Clear out the all displayedFavoriteTools
+    this.displayedFavoriteTools.splice(0);
+    this.displayedFavoriteTools = [[],[],[],[]];
+
+    // Add default tools back into displayedFavoriteTools
+    for (let i = 0; i < this.defaultToolNames.length; i++) {
+      for (let j = 0; j < this.defaultToolNames[i].length; j++) {
+        let temp_tool = this.allToolsList.filter(tl => this.defaultToolNames[i][j] === tl.actionModeValue);
+        if (temp_tool.length > 0) {
+          this.displayedFavoriteTools[i].push(temp_tool[0]);
+          // Set this tool to disabled because the user cannot disable defaults
+          console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+        } else {
+          console.log("Warning: Could not find '" + this.defaultToolNames[i][j] + "' in this.allToolsList");
+        }
+      }
+    }
+
+    // Add user favorite tools back into displayedFavoriteTools
+    for (let i = 0; i < this.userFavoriteToolNames.length; i++) {
+      for (let j = 0; j < this.userFavoriteToolNames[i].length; j++) {
+        let temp_tool = this.allToolsList.filter(tl => this.userFavoriteToolNames[i][j] === tl.actionModeValue);
+        // Filter will always return a list, even though there will only ever be one match
+        if (temp_tool.length > 0) {
+          this.displayedFavoriteTools[i].push(temp_tool[0]);
+          console.log("Added '" + temp_tool[0].actionModeValue + "' to this.displayedFavoriteTools");
+        } else {
+          console.log("Warning: Could not find '" + this.userFavoriteToolNames[i][j] + "' in this.allToolsList");
+        }
+      }
+    }
+    this.dataReceived = true;
+  }
+
+  @Watch("favoriteTools", { deep : true})
+  setUserFavoriteToolNames(): void {
+    // Convert list's string representation to 2D array of strings
+    this.userFavoriteToolNames = this.favoriteTools.split("\n").map(row => row.split(", "));
+    console.log("setUserFavoriteToolNames()");
+    this.rebuildDisplayedFavoriteTools();
+  }
+
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
     EventBus.unlisten("set-action-mode-to-select-tool");
     EventBus.unlisten("secret-key-detected");
+    EventBus.unlisten("display-clear-construction-dialog-box");
     window.removeEventListener("keydown", this.handleKeyDown);
   }
 
@@ -652,13 +691,16 @@ export default class Easel extends Vue {
   switchActionMode(): void {
     this.setActionMode(this.actionMode);
   }
+
   onWindowResized(): void {
     this.adjustSize();
   }
+
   /* Undoes the last user action that changed the state of the sphere. */
   undoEdit(): void {
     Command.undo();
   }
+
   /* Redoes the last user action that changed the state of the sphere. */
   redoAction(): void {
     Command.redo();
