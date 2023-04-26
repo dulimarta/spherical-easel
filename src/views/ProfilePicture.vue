@@ -39,18 +39,16 @@ import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { mapWritableState } from "pinia";
 type FileEvent = EventTarget & { files: FileList | undefined };
-
 @Component({
   computed: {
     ...mapWritableState(useAccountStore, ["temporaryProfilePicture"])
   }
 })
-export default class extends Vue {
+export default class ProfilePicture extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   temporaryProfilePicture!: string;
   profileImage: string | null = null;
-
   mounted(): void {
     const uid = this.$appAuth.currentUser?.uid;
     if (!uid) return;
@@ -65,12 +63,10 @@ export default class extends Vue {
         }
       });
   }
-
   toPhotoCapture(): void {
     this.$router.push({ name: "PhotoCapture" });
     this.$emit("photo-change", {});
   }
-
   onImageUploaded(event: Event): void {
     const files = (event.target as FileEvent).files;
     if (files && files.length > 0) {

@@ -123,7 +123,7 @@ export default class ToolGroups extends Vue {
   readonly seTransformations!: SETransformation[];
 
   /* Controls the selection of the actionMode using the buttons. */
-  private actionMode: { id: ActionMode; name: string } = {
+  actionMode: { id: ActionMode; name: string } = {
     id: "segment",
     name: ""
   };
