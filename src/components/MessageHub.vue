@@ -33,7 +33,7 @@
       </v-row>
       <v-row justify="end">
         <v-col md="12">
-          <v-btn small
+          <v-btn small @click="deleteAllMessages"
             color="error">
             {{$t('notifications.deleteMsg', {
               msgType: $t(`notifications.${selectedMessageType}`).toString()
@@ -157,6 +157,10 @@ export default class MessageHub extends Vue {
 
   deleteMessageByIndex(pos: number) {
     this.messages.splice(pos, 1); // Remove individual message from notifications list
+  }
+
+  deleteAllMessages() {
+    this.messages.splice(0)
   }
 }
 </script>

@@ -9,7 +9,8 @@
         v-on:load-requested="shouldLoadConstruction"
         v-on:delete-requested="shouldDeleteConstruction" />
     </template>
-    <div class="text-h6">{{$t(`constructions.publicConstructions`)}} ({{ publicConstructions.length }})</div>
+    <div class="text-h6">{{$t(`constructions.publicConstructions`)}}
+      ({{ publicConstructions.length }})</div>
     <ConstructionList id="publicList"
       :items="publicConstructions"
       :allow-sharing="true"
@@ -247,10 +248,12 @@ export default class ConstructionLoader extends Vue {
           .doc(ref.constructionDocId)
           .get();
 
-        out = await this.parseDocument(
-          ref.constructionDocId,
-          doc.data() as ConstructionInFirestore
-        );
+        if (doc) { // Just in case the actual document is missing
+          out = await this.parseDocument(
+            ref.constructionDocId,
+            doc.data() as ConstructionInFirestore
+          );
+        }
       } else {
         // In the older format defined prior to Fall 2022
         // public constructions are stored outside of the owner's folder
