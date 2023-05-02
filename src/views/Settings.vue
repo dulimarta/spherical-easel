@@ -62,8 +62,7 @@
           <h3 v-t="'settings.title'"></h3>
           <div id="appSetting">
             <label>Language</label>
-            <v-select
-              :model-value="selectedLanguage"
+            <v-select v-model="selectedLanguage"
               outlined
               :items="languages"
               item-text="name"
@@ -136,22 +135,25 @@ div#appSetting {
 <script lang="ts" setup>
 import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
-import { User } from "@firebase/auth-types";
-import { DocumentSnapshot } from "@firebase/firestore-types";
-import { appAuth, appDB } from "@/firebase-config";
+import { getAuth, User, sendPasswordResetEmail, Unsubscribe } from "firebase/auth";
+import { DocumentSnapshot, getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { UserProfile } from "@/types";
-import { Unsubscribe } from "@firebase/util";
 
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
 
+type LocaleName = {
+  locale: string, name:string
+}
+const appAuth = getAuth()
+const appDB = getFirestore()
 // @Component({ components: { PhotoCapture } })
 // export default class Settings extends Vue {
 // $refs!: {
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 // };
 const updatingPicture = ref(false);
-const selectedLanguage: Ref<unknown> = ref({});
+const selectedLanguage: Ref<LocaleName> = ref({locale: "", name: ""});
 const languages = SETTINGS.supportedLanguages;
 const decimalPrecision = ref(3);
 const userEmail = ref("");
@@ -167,19 +169,18 @@ const userUid = computed((): string | undefined => {
 });
 
 onMounted((): void => {
-  appDB
-    .collection("users")
-    .doc(userUid.value)
-    .get()
-    .then((ds: DocumentSnapshot) => {
-      if (ds.exists) {
-        const uProfile = ds.data() as UserProfile;
-        // console.log("From Firestore", uProfile);
-        userDisplayName.value = uProfile.displayName ?? "N/A";
-        userLocation.value = uProfile.location ?? "N/A";
-        if (uProfile.role) userRole.value = uProfile.role;
-      }
-    });
+  if (userUid.value) {
+    getDoc(doc(appDB, "users", userUid.value))
+      .then((ds: DocumentSnapshot) => {
+        if (ds.exists()) {
+          const uProfile = ds.data() as UserProfile;
+          // console.log("From Firestore", uProfile);
+          userDisplayName.value = uProfile.displayName ?? "N/A";
+          userLocation.value = uProfile.location ?? "N/A";
+          if (uProfile.role) userRole.value = uProfile.role;
+        }
+      });
+  }
   authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
     profileEnabled.value = u !== null;
     if (u !== null) {
@@ -206,10 +207,8 @@ function doSave(): void {
     location: userLocation.value,
     role: userRole.value
   };
-  appDB
-    .collection("users")
-    .doc(userUid.value)
-    .set(newProf, { merge: true })
+  const profileDoc = doc(appDB, "users",userUid.value!)
+    setDoc(profileDoc, newProf, { merge: true })
     .then(() => {
       EventBus.fire("show-alert", {
         key: "Your profile has been update",
@@ -220,7 +219,7 @@ function doSave(): void {
 
 function doChangePassword(): void {
   if (userEmail.value)
-    appAuth.sendPasswordResetEmail(userEmail.value).then(() => {
+    sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
       EventBus.fire("show-alert", {
         key: "A password reset link has been delivered by email",
         type: "info"

@@ -75,8 +75,13 @@ import VueComponent, {
 } from "vue";
 import {
   QuerySnapshot,
-  QueryDocumentSnapshot
-} from "@firebase/firestore-types";
+  QueryDocumentSnapshot,
+  getFirestore,
+  onSnapshot,
+  collection,
+  doc,
+  deleteDoc
+} from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import {
   ConstructionScript,
@@ -92,16 +97,23 @@ import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 import axios, { AxiosResponse } from "axios";
 import { useSEStore } from "@/stores/se";
-import { appAuth, appDB, appStorage } from "@/firebase-config";
 import { storeToRefs } from "pinia";
+import { getAuth } from "firebase/auth";
+import {
+  getStorage,
+  ref as storageRef,
+  getDownloadURL
+} from "firebase/storage";
 
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { hasUnsavedNodules } = storeToRefs(seStore);
-
-let snapshotUnsubscribe: (() => void) | null = null;
-const publicConstructions: Ref<Array<SphericalConstruction>> = ref([])
-const privateConstructions: Ref<Array<SphericalConstruction>> = ref([])
+const appAuth = getAuth();
+const appDB = getFirestore();
+const appStorage = getStorage();
+let snapshotListener: Array<() => void> = [];
+const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const privateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const shareURL = ref("");
 const selectedDocId = ref("");
 
@@ -118,22 +130,29 @@ const firebaseUid = computed((): string => {
 
 onMounted((): void => {
   if (firebaseUid) {
-    snapshotUnsubscribe = appDB
-      .collection("users")
-      .doc(firebaseUid.value)
-      .collection("constructions")
-      .onSnapshot((qs: QuerySnapshot) => {
-        populateData(qs, privateConstructions.value);
-      });
+    const privateColl = collection(
+      appDB,
+      "users",
+      firebaseUid.value,
+      "constructions"
+    );
+    const listener = onSnapshot(privateColl, (qs: QuerySnapshot) => {
+      populateData(qs, privateConstructions.value);
+    });
+    snapshotListener.push(listener);
   }
-  appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
+  const publicColl = collection(appDB, "constructions");
+  const listener = onSnapshot(publicColl, (qs: QuerySnapshot) => {
     populateData(qs, publicConstructions.value);
   });
+  snapshotListener.push(listener);
 });
 
 onBeforeUnmount((): void => {
   // Unregister the update function
-  if (snapshotUnsubscribe) snapshotUnsubscribe();
+  snapshotListener.forEach(unsubscribeFn => {
+    unsubscribeFn();
+  });
 });
 
 function populateData(
@@ -151,9 +170,9 @@ function populateData(
     const trimmedScript = doc.script.trim();
     if (trimmedScript.startsWith("https:")) {
       // Fetch the script from Firebase Storage
-      const scriptText = await appStorage
-        .refFromURL(doc.script)
-        .getDownloadURL()
+      const scriptText = await getDownloadURL(
+        storageRef(appStorage, doc.script)
+      )
         .then((url: string) => axios.get(url))
         .then((r: AxiosResponse) => r.data);
 
@@ -167,9 +186,7 @@ function populateData(
       // we care only for non-empty script
       let svgData: string | undefined;
       if (doc.preview?.startsWith("https:")) {
-        svgData = await appStorage
-          .refFromURL(doc.preview)
-          .getDownloadURL()
+        svgData = await getDownloadURL(storageRef(appStorage, doc.preview))
           .then((url: string) => axios.get(url))
           .then((r: AxiosResponse) => r.data);
       } else svgData = doc.preview;
@@ -292,14 +309,10 @@ function shouldDeleteConstruction(event: { docId: string }): void {
 
 function doDeleteConstruction(): void {
   constructionDeleteDialog.value?.hide();
-  const task1 = appDB
-    .collection("constructions")
-    .doc(selectedDocId.value)
-    .delete();
-  const task2 = appDB
-    .collection(`users/${firebaseUid}/constructions`)
-    .doc(selectedDocId.value)
-    .delete();
+  const doc1 = doc(appDB, "constructions", selectedDocId.value)
+  const task1 = deleteDoc(doc1);
+  const doc2 = doc(appDB, "users", firebaseUid.value, "constructions",selectedDocId.value)
+  const task2 = deleteDoc(doc2);
   Promise.any([task1, task2])
     .then(() => {
       EventBus.fire("show-alert", {

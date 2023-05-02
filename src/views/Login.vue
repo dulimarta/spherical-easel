@@ -80,14 +80,22 @@
 
 <script lang="ts" setup>
 // @ is an alias to /src
-import { UserCredential } from "@firebase/auth-types";
+import {
+  UserCredential,
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  GoogleAuthProvider
+} from "firebase/auth";
 import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
-import { appAuth } from "@/firebase-config";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
-
+const appAuth = getAuth();
 const router = useRouter();
 const userEmail = ref("");
 const userPassword = ref("");
@@ -116,10 +124,9 @@ const isValidEmail = computed((): boolean => {
 });
 
 function doSignup(): void {
-  appAuth
-    .createUserWithEmailAndPassword(userEmail.value, userPassword.value)
+  createUserWithEmailAndPassword(appAuth, userEmail.value, userPassword.value)
     .then((cred: UserCredential) => {
-      cred.user?.sendEmailVerification();
+      sendEmailVerification(cred.user);
       EventBus.fire("show-alert", {
         key: "account.emailVerification",
         keyOptions: { emailAddr: cred.user?.email },
@@ -135,8 +142,7 @@ function doSignup(): void {
     });
 }
 function doSignIn(): void {
-  appAuth
-    .signInWithEmailAndPassword(userEmail.value, userPassword.value)
+  signInWithEmailAndPassword(appAuth, userEmail.value, userPassword.value)
     .then((cred: UserCredential) => {
       if (cred.user?.emailVerified) {
         router.replace({
@@ -160,7 +166,7 @@ function doSignIn(): void {
 }
 function doReset(): void {
   console.debug("Sending password reset email to", userEmail.value);
-  appAuth.sendPasswordResetEmail(userEmail.value).then(() => {
+  sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
     EventBus.fire("show-alert", {
       key: "account.passwordReset",
       keyOptions: { emailAddr: userEmail.value },
@@ -170,10 +176,9 @@ function doReset(): void {
 }
 
 function doGoogleLogin(): void {
-  const provider: firebase.auth.AuthProvider =
-    new firebase.auth.GoogleAuthProvider();
+  const provider = new GoogleAuthProvider();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  appAuth.signInWithPopup(provider).then((cred: UserCredential) => {
+  signInWithPopup(appAuth, provider).then((cred: UserCredential) => {
     router.replace({
       path: "/"
     });

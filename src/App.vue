@@ -217,10 +217,9 @@ import MessageBox from "@/components/MessageBox.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
-import { Error, FirebaseAuth, User } from "@firebase/auth-types";
-import { DocumentReference, DocumentSnapshot } from "@firebase/firestore-types";
-import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
-import { Unsubscribe } from "@firebase/util";
+import { User, getAuth, Unsubscribe } from "firebase/auth";
+import { DocumentReference, DocumentSnapshot, getFirestore, doc, collection, getDoc, addDoc, updateDoc } from "firebase/firestore";
+import { FirebaseStorage, UploadTaskSnapshot, getStorage, ref as storageRef, uploadString, getDownloadURL } from "firebase/storage";
 import { Command } from "./commands/Command";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
@@ -231,7 +230,9 @@ import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import { useI18n } from "vue-i18n";
-import { appAuth, appStorage, appDB } from "./firebase-config";
+const appAuth = getAuth()
+const appDB = getFirestore()
+const appStorage = getStorage()
 import { useRouter } from "vue-router";
 
 // Register vue router in-component navigation guard functions
@@ -363,12 +364,10 @@ onMounted((): void => {
       showExport.value = true;
       whoami.value = u.email ?? "unknown email";
       uid.value = u.uid;
-      appDB
-        .collection("users")
-        .doc(uid.value)
-        .get()
+      const userDoc = doc(appDB,"users", uid.value)
+        getDoc(userDoc)
         .then((ds: DocumentSnapshot) => {
-          if (ds.exists) {
+          if (ds.exists()) {
             accountEnabled.value = true;
             console.debug("User data", ds.data());
             const { profilePictureURL, role } = ds.data() as any;
@@ -668,9 +667,8 @@ async function doShare(): Promise<void> {
        Task 2: Upload the script to Firebase Storage (for large script)
        Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
     */
-  appDB // Task #1
-    .collection(collectionPath)
-    .add({
+  addDoc( // Task #1
+    collection(appDB, collectionPath), {
       version: "1",
       dateCreated: new Date().toISOString(),
       author: whoami.value,
@@ -684,28 +682,25 @@ async function doShare(): Promise<void> {
       const scriptPromise: Promise<string> =
         scriptOut.length < FIELD_SIZE_LIMIT
           ? Promise.resolve(scriptOut)
-          : appStorage
-              .ref(`scripts/${constructionDoc.id}`)
-              .putString(scriptOut)
-              .then(t => t.ref.getDownloadURL());
+          : uploadString(storageRef(appStorage, `scripts/${constructionDoc.id}`),
+  scriptOut)
+              .then(t => getDownloadURL(t.ref));
 
       /* Task #3 */
       const svgPromise: Promise<string> =
         svgPreviewData.length < FIELD_SIZE_LIMIT
           ? Promise.resolve(svgPreviewData)
-          : appStorage
-              .ref(`construction-svg/${constructionDoc.id}`)
-              .putString(svgPreviewData)
-              .then(t => t.ref.getDownloadURL());
+          : uploadString(
+              storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
+              svgPreviewData)
+              .then(t => getDownloadURL(t.ref));
 
       /* Wrap the result from the three tasks as a new Promise */
       return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
     })
     .then(([docId, scriptData, svgData]) => {
-      appDB
-        .collection(collectionPath)
-        .doc(docId)
-        .update({ script: scriptData, preview: svgData });
+      const constructionDoc = doc(appDB,collectionPath,docId)
+      updateDoc(constructionDoc, { script: scriptData, preview: svgData });
       // Pass on the document ID to be included in the alert message
       return docId;
     })

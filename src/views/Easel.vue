@@ -187,15 +187,14 @@ import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, ToolButtonType } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
-import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { getFirestore, DocumentSnapshot, doc, getDoc } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
-import { Unsubscribe } from "@firebase/util";
-import { FirebaseAuth, User } from "@firebase/auth-types";
-import { FirebaseStorage } from "@firebase/storage-types";
+import { getAuth, User, Unsubscribe } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState, storeToRefs } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
@@ -482,12 +481,10 @@ function loadDocument(docId: string): void {
   seStore.init();
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
-  appDB
-    .collection("constructions") // load the script from public collection
-    .doc(docId)
-    .get()
+  // load the script from public collection
+  getDoc(doc(appDB,"constructions",docId))
     .then(async (doc: DocumentSnapshot) => {
-      if (doc.exists) {
+      if (doc.exists()) {
         const { script } = doc.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {

@@ -27,15 +27,22 @@
 </template>
 
 <script lang="ts" setup>
-import { DocumentSnapshot } from "@firebase/firestore-types";
+import {
+  DocumentSnapshot,
+  getFirestore,
+  doc,
+  getDoc
+} from "firebase/firestore";
 import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { appAuth, appDB } from "@/firebase-config";
 import { defineComponent, onMounted, ref, Ref } from "vue";
 import { useRouter } from "vue-router";
+import { getAuth } from "firebase/auth";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
+const appDB = getFirestore();
+const appAuth = getAuth();
 const emit = defineEmits(["photo-change"]);
 const router = useRouter();
 const profileImage: Ref<string | null> = ref(null);
@@ -46,16 +53,13 @@ const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 onMounted((): void => {
   const uid = appAuth.currentUser?.uid;
   if (!uid) return;
-  appDB
-    .collection("users")
-    .doc(uid)
-    .get()
-    .then((ds: DocumentSnapshot) => {
-      if (ds.exists) {
-        const userDetails = ds.data() as UserProfile;
-        profileImage.value = userDetails.profilePictureURL ?? null;
-      }
-    });
+  const userDoc = doc(appDB, "users", uid);
+  getDoc(userDoc).then((ds: DocumentSnapshot) => {
+    if (ds.exists()) {
+      const userDetails = ds.data() as UserProfile;
+      profileImage.value = userDetails.profilePictureURL ?? null;
+    }
+  });
 });
 
 function toPhotoCapture(): void {

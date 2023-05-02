@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
-    "@firebase/auth-types": "^0.10.3",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
@@ -26,7 +25,7 @@
     "d3-svg-to-png": "^0.1.7",
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",
-    "firebase": "^8.10.0",
+    "firebase": "^9.21.0",
     "gif.js": "^0.2.0",
     "lodash.clonedeep": "^4.5.0",
     "markdown-it-texmath": "^0.7.2",

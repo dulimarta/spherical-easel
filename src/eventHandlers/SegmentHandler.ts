@@ -22,7 +22,6 @@ import Two from "two.js";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { TwitterAuthProvider_Instance } from "@firebase/auth-types";
 
 export default class SegmentHandler extends Highlighter {
   /**

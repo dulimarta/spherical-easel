@@ -28,13 +28,14 @@
 import { Cropper as ImageCropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-// import { UploadTaskSnapshot } from "@firebase/storage-types";
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, ref, defineComponent } from "vue";
-import { appAuth, appStorage, appDB } from "@/firebase-config";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { RouteLocationNormalized, useRouter, onBeforeRouteUpdate } from "vue-router";
+import { getAuth } from "firebase/auth";
+import {doc, getFirestore, setDoc} from "firebase/firestore"
+import { getStorage, ref as storageRef, getDownloadURL, uploadBytes } from "firebase/storage";
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -47,6 +48,9 @@ type CropDetails = {
   };
 };
 
+const appDB = getFirestore()
+const appAuth = getAuth()
+const appStorage = getStorage()
 const router = useRouter();
 const emit = defineEmits(["no-capture", "photo-captured"]);
 const acctStore = useAccountStore();
@@ -109,21 +113,18 @@ function uploadProfilePicture(): void {
   // Upload cropped image to Firebase Firestore
   if (croppedImageBinary) {
     const uid = appAuth.currentUser?.uid ?? "nouser";
-    appStorage
-      .ref(`profilePictures/${uid}`)
-      .put(croppedImageBinary, {
+    const pngRef = storageRef(appStorage, `profilePictures/${uid}`)
+    uploadBytes(pngRef, croppedImageBinary, {
         contentType: "image/png"
       })
-      .then(s => s.ref.getDownloadURL())
+      .then(s => getDownloadURL(s.ref))
       .then((url: string) => {
         emit("photo-captured", {});
         router.go(-goBackSteps);
 
         // Use {merge:true} to update or create new fields
-        return appDB
-          .collection("users")
-          .doc(uid)
-          .set({ profilePictureURL: url }, { merge: true });
+        const userDoc = doc(appDB,"users",uid)
+        return setDoc(userDoc, { profilePictureURL: url }, { merge: true });
       })
       .then(() => {
         EventBus.fire("show-alert", {

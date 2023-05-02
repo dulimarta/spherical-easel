@@ -7,7 +7,7 @@
       bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      :disabled="displayToolTips || $attrs.disabled">
+      :disabled="displayToolTips">
       <template v-slot:activator="{ props }">
         <v-btn
           icon
@@ -55,6 +55,7 @@ import EventBus from "@/eventHandlers/EventBus";
 // })
 const seStore = useSEStore();
 const { actionMode, expressions, seTransformations } = storeToRefs(seStore);
+const emit = defineEmits(["display-only-this-tool-use-message"])
 // export default class ToolButton extends Vue {
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -70,7 +71,7 @@ displayOnlyThisToolUseMessageFunc
 in the parent which changes the value of button.displayToolUseMessage (except in the button with
 id button.id), this is variable is being watched in this child and turns off the display of the
 snackbar/toolUseMessage  */
-const displayToolUseMessage = false;
+let displayToolUseMessage = false;
 
 /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
 child */
@@ -109,11 +110,11 @@ const buttonLabel3 = computed((): string => {
 });
 
 function doClick() {
-  if ($attrs.disabled) return;
-  $emit("display-only-this-tool-use-message", button.actionModeValue);
+  // if ($attrs.disabled) return;
+  emit("display-only-this-tool-use-message", props.button.actionModeValue);
   displayToolUseMessage = true;
   setElevation();
-  switchButton(button);
+  switchButton(props.button);
 }
 
 watch(() => actionMode, setElevation);
