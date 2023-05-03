@@ -29,6 +29,7 @@
     "gif.js": "^0.2.0",
     "lodash.clonedeep": "^4.5.0",
     "markdown-it-texmath": "^0.7.2",
+    "mitt": "^3.0.0",
     "moment": "^2.26.0",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",

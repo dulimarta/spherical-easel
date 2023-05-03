@@ -30,7 +30,7 @@ const props = defineProps < {
   notInline?: boolean
 }>()
 
-console.debug("What", props)
+  // console.debug("What", props)
   let emphasizeTypes: string[][] = [[]];
   const mdiIcon: Ref<boolean | string> = ref(false);
   let filePath = "";

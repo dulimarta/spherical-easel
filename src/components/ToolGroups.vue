@@ -23,8 +23,9 @@
                 cols="auto"
                 v-for="(button, bpos) in g.children"
                 :key="bpos">
+                <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
                 <ToolButton
-                  :disabled="inEditMode"
+                  :disabled="inEditMode ? true : null"
                   :button="button"
                   v-on:display-only-this-tool-use-message="
                     displayOnlyThisToolUseMessageFunc

@@ -1,27 +1,30 @@
-import Vue from "vue";
 /** This class enables communications between non-Vue classes
  * with Vue components */
+// Vue3 deprecated $on, $off, $emit, so we have to use
+// a third party library for firing, listening, and registering events
+
+import mitt, { Emitter } from "mitt"
 
 class EventBus {
-  private vueInstance: Vue;
+  private mitt: Emitter<any>
 
   constructor() {
-    this.vueInstance = new Vue();
+    this.mitt = mitt()
   }
 
   fire(eventName: string, data: any): void {
     this.verifyKebabCase(eventName);
-    this.vueInstance.$emit(eventName, data);
+    this.mitt.emit(eventName, data);
   }
 
   listen(eventName: string, callback: any) {
     this.verifyKebabCase(eventName);
-    this.vueInstance.$on(eventName, callback);
+    this.mitt.on(eventName, callback);
   }
 
   unlisten(eventName: string): void {
     this.verifyKebabCase(eventName);
-    this.vueInstance.$off(eventName);
+    this.mitt.off(eventName);
   }
   // TODO: do we need a function to "unregister" the event listener?
 
