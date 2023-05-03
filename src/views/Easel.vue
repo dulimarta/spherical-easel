@@ -194,16 +194,15 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
 import { getAuth, User, Unsubscribe } from "firebase/auth";
-import { getStorage } from "firebase/storage";
+import { getStorage, ref as storageRef, getDownloadURL } from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState, storeToRefs } from "pinia";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 import MessageBox from "@/components/MessageBox.vue";
 import { toolGroups } from "@/components/toolgroups";
-import { appDB, appStorage, appAuth } from "@/firebase-config";
 import { useI18n } from "vue-i18n";
-import { getCurrentInstance } from "vue";
+// import { getCurrentInstance } from "vue";
 import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
 import { useLayout } from "vuetify"
 
@@ -216,6 +215,9 @@ type ShortCutIconDetails = {
   btnColor?: string,
 buttonType?: ToolButtonType
 }
+const appDB = getFirestore()
+const appAuth = getAuth()
+const appStorage = getStorage()
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -489,9 +491,8 @@ function loadDocument(docId: string): void {
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {
           // The script must be fetched from Firebase storage
-          const scriptText = await appStorage
-            .refFromURL(script)
-            .getDownloadURL()
+          const constructionStorage = storageRef(appStorage, script)
+          const scriptText = await getDownloadURL(constructionStorage)
             .then((url: string) => axios.get(url))
             .then((r: AxiosResponse) => r.data);
           run(JSON.parse(scriptText) as ConstructionScript);

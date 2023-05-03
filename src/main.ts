@@ -9,12 +9,11 @@ import i18n from "./i18n";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 import { createPinia } from "pinia";
-
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from "./firebase-config";
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
-// import {appDB, appAuth, appStorage} from "@/firebase-config"
 import MouseHandler from "./eventHandlers/MouseHandler";
-import { appDB } from "./firebase-config";
 configureCompat({
   COMPONENT_ASYNC: false,
   ATTR_FALSE_VALUE: false,
@@ -23,10 +22,9 @@ configureCompat({
   WATCH_ARRAY: false,
 })
 const pinia = createPinia();
-
+const firebaseApp = initializeApp(firebaseConfig)
 
 const app = createApp(App)
-// app.config.globalProperties.$appDB = appDB
 app.use(vuetify)
 app.use(router)
 app.use(pinia)

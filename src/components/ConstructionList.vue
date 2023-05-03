@@ -77,8 +77,8 @@ import { SphericalConstruction } from "@/types";
 import { Matrix4 } from "three";
 import axios, { AxiosResponse } from "axios";
 import { useSEStore } from "@/stores/se";
+import { getAuth } from "firebase/auth";
 import { computed, onBeforeMount, onMounted } from "vue";
-import { appAuth } from "@/firebase-config";
 import { storeToRefs } from "pinia";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
@@ -87,6 +87,7 @@ const props = defineProps<{
 const emit = defineEmits(["load-requested"])
 
 const seStore = useSEStore();
+const appAuth = getAuth()
 const { svgCanvas } =  storeToRefs(seStore);
 let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
