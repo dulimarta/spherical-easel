@@ -128,23 +128,6 @@ interface ParametricDataType {
   cuspParameterValues?: number[];
 }
 
-// @Component({
-//   components: {
-//     ParametricCoordinates,
-//     ParametricTNumber,
-//     ParametricTracingExpressions,
-//     ParametricCuspParameterValues
-//   },
-//   computed: {
-//     ...mapState(useSEStore, [
-//       "expressions",
-//       "seParametrics",
-//       "createAllIntersectionsWithParametric"
-//     ])
-//   },
-//   methods: {}
-// })
-// export default class ParametricForm extends Vue {
 const seStore = useSEStore();
 const { expressions, seParametrics } = storeToRefs(seStore);
 /**

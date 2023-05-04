@@ -147,11 +147,7 @@ type LocaleName = {
 }
 const appAuth = getAuth()
 const appDB = getFirestore()
-// @Component({ components: { PhotoCapture } })
-// export default class Settings extends Vue {
-// $refs!: {
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
-// };
 const updatingPicture = ref(false);
 const selectedLanguage: Ref<LocaleName> = ref({locale: "", name: ""});
 const languages = SETTINGS.supportedLanguages;

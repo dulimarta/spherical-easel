@@ -16,46 +16,39 @@
         <h3 class="body-1 font-weight-bold">
           {{ $t(`toolGroups.${g.group}`) }}
         </h3>
-        <v-btn-toggle :model-value="actionMode" @change="switchActionMode">
-          <v-container>
-            <v-row justify="start" align="stretch" class="accent">
-              <v-col
-                cols="auto"
-                v-for="(button, bpos) in g.children"
-                :key="bpos">
-                <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
-                <ToolButton
-                  :disabled="inEditMode ? true : null"
-                  :button="button"
-                  v-on:display-only-this-tool-use-message="
-                    displayOnlyThisToolUseMessageFunc
-                  ">
-                  <template #overlay v-if="inEditMode">
-                    <v-overlay
-                      v-if="toolIncluded(button.actionModeValue)"
-                      absolute
-                      opacity="0.25">
-                      <v-icon
-                        color="white"
-                        class="overlayicon"
-                        @click="excludeTool(button.actionModeValue)">
-                        mdi-minus-circle</v-icon
-                      >
+        <div class="button-group">
+          <!--v-container style="border: 1px solid red">
+            <v-row justify="start" align-content="start"
+            class="accent">
+              <v-col cols="auto" v-for="(button, bpos) in g.children" :key="bpos"-->
+          <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
+          <ToolButton
+            v-for="(button, bpos) in g.children"
+            v-on:display-only-this-tool-use-message="
+              displayOnlyThisToolUseMessageFunc
+            "
+            @toolbutton-clicked="toolButtonHandler"
+            :key="bpos"
+            :disabled="inEditMode ? true : null"
+            :button="button"
+            :selected="isToolSelected(button.actionModeValue)">
+            <!--template #overlay v-if="inEditMode">
+                    <v-overlay v-if="toolIncluded(button.actionModeValue)" absolute opacity="0.25">
+                      <v-icon color="white" class="overlayicon" @click="excludeTool(button.actionModeValue)">
+                        mdi-minus-circle
+                      </v-icon>
                     </v-overlay>
                     <v-overlay v-else absolute opacity="0.85">
-                      <v-icon
-                        color="primary"
-                        class="overlayicon"
-                        @click="includeTool(button.actionModeValue)">
-                        mdi-plus-circle</v-icon
-                      >
+                      <v-icon color="primary" class="overlayicon" @click="includeTool(button.actionModeValue)">
+                        mdi-plus-circle
+                      </v-icon>
                     </v-overlay>
-                  </template>
-                </ToolButton>
-              </v-col>
+                  </template-->
+          </ToolButton>
+          <!--/v-col>
             </v-row>
-          </v-container>
-        </v-btn-toggle>
+          </v-container-->
+        </div>
       </template>
     </div>
 
@@ -65,20 +58,15 @@
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
-      <v-btn-toggle
-        :model-value="actionMode"
-        @change="switchActionMode"
-        class="mr-2 d-flex flex-wrap accent">
-        <ToolButton
-          v-for="(button, pos) in developerButtonList"
-          :key="pos"
-          :button="button"
-          :elev="elev"
-          v-on:display-only-this-tool-use-message="
-            displayOnlyThisToolUseMessageFunc
-          ">
-        </ToolButton>
-      </v-btn-toggle>
+      <ToolButton
+        v-for="(button, pos) in developerButtonList"
+        :key="pos"
+        :button="button"
+        :selected="isToolSelected(button.actionModeValue)"
+        @toolbutton-clicked="toolButtonHandler"
+        v-on:display-only-this-tool-use-message="
+          displayOnlyThisToolUseMessageFunc
+        "></ToolButton>
     </div>
   </div>
 </template>
@@ -113,12 +101,16 @@ const actionMode: Ref<{ id: ActionMode; name: string }> = ref({
 // private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 // private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-const elev = ref(24);
+// const elev = ref(24);
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
 const currentToolset: Array<ActionMode> = [];
+const activeTool: Ref<ToolButtonType|null> = ref(null);
 
+function isToolSelected(myIdentity: string) {
+  return activeTool.value?.actionModeValue === myIdentity;
+}
 /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
 // private buttonDisplayList = SETTINGS.userButtonDisplayList;
@@ -134,6 +126,16 @@ onBeforeMount((): void => {
   currentToolset.push(...includedTools.value);
 });
 
+function toolButtonHandler(buttonId: string) {
+  console.log("Toolbutton handler", buttonId);
+  const whichButton = buttonGroup.value.flatMap((group: ToolButtonGroup) => group.children)
+  .find((toolBtn:ToolButtonType) => toolBtn.actionModeValue == buttonId)
+  if (whichButton) {
+    console.log("Toolbutton handler, found the button", whichButton);
+    activeTool.value = whichButton;
+    seStore.setButton(whichButton)
+  }
+}
 /* Writes the current state/edit mode to the store, where the Easel view can read it. */
 function switchActionMode(): void {
   switch (actionMode.value.id) {
@@ -216,7 +218,6 @@ function toggleEditMode(): void {
   buttonGroup.value.splice(0);
   if (inEditMode.value) {
     // Show all buttons
-
     buttonGroup.value.push(...toolGroups);
   } else {
     // show only included buttons
@@ -257,6 +258,11 @@ const developerButtonList: ToolButtonType[] = [
 </script>
 
 <style lang="scss">
+.button-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
 .overlayicon {
   position: absolute;
   top: -40px;

@@ -49,8 +49,6 @@ export interface DialogAction {
 
 type DialogFunc = () => void;
 
-// @Component
-// export default class Dialog extends Vue implements DialogAction {
 const props = defineProps<{
   title: string;
   yesText?: string;

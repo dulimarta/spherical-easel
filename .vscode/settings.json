@@ -3,11 +3,11 @@
   "peacock.color": "#905dc6",
   "prettier.htmlWhitespaceSensitivity": "ignore",
   "prettier.useEditorConfig": false,
-  "prettier.requireConfig": true,
+  "prettier.requireConfig": false,
   // "vetur.experimental.templateInterpolationService": true,
   "vetur.format.defaultFormatter.js": "prettier-eslint",
   "vetur.format.defaultFormatter.ts": "prettier-tslint",
-
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "vetur.format.defaultFormatter.html": "js-beautify-html",
   "vetur.format.defaultFormatterOptions": {
     "js-beautify-html": {
@@ -35,7 +35,11 @@
     "sash.hoverBorder": "#aa83d3",
     "statusBarItem.remoteBackground": "#905dc6",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "commandCenter.border": "#e7e7e799"
+    "commandCenter.border": "#e7e7e799",
+    "editorGroup.border": "#aa83d3",
+    "panel.border": "#aa83d3",
+    "sideBar.border": "#aa83d3",
+    "tab.activeBorder": "#aa83d3"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

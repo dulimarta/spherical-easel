@@ -242,27 +242,9 @@ import { useRouter } from "vue-router";
 //   "beforeRouteUpdate"
 // ]);
 
-// @Component({
-//   components: { MessageBox, Dialog },
-//   methods: {
 const { t, locale } = useI18n({ inheritLocale: true });
 const acctStore = useAccountStore();
 const seStore = useSEStore();
-//     ...mapActions(useAccountStore, ["resetToolset"]),
-//     ...mapActions(useSEStore, ["clearUnsavedFlag"])
-//   },
-//   computed: {
-//     ...mapState(useAccountStore, ["includedTools"]),
-//     ...mapState(useSEStore, [
-//       "activeToolName",
-//       "svgCanvas",
-//       "inverseTotalRotationMatrix",
-//       "hasObjects"
-//     ]),
-//     ...mapWritableState(useAccountStore, ["userRole"])
-//     // ...mapGetters(useSEStore, ["hasObjects"])
-//   }
-// })
 const { includedTools, userRole } = storeToRefs(acctStore);
 
 const {

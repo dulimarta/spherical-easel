@@ -73,8 +73,6 @@
 import  {ref, watch} from "vue";
 import { SESlider } from "@/models/SESlider";
 import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
-// @Component
-// export default class SliderForm extends Vue {
   const sliderMin = ref(0);
   const sliderMax = ref(1);
   const sliderStep = ref(0.1);

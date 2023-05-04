@@ -47,8 +47,6 @@ import { SESlider } from "@/models/SESlider";
 import { SliderPlaybackMode } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 
-// @Component
-// export default class SESliderItem extends Vue {
 const props = defineProps < { node: SESlider }>();
 const emit = defineEmits(["object-select"])
   const playbackMode = ref(SliderPlaybackMode.ONCE);

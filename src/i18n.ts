@@ -5,6 +5,8 @@ import messagedId from "@/assets/languages/id";
 
 export default createI18n({
   locale: import.meta.env.VITE_APP_I18N_LOCALE || "en",
+  allowComposition: true,
+  legacy: false,
   /* skip the function call in a test environment */
   messages: {
     en: messagesEn,

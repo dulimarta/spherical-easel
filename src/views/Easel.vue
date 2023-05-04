@@ -176,7 +176,8 @@ import EventBus from "../eventHandlers/EventBus";
 
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
-import StylePanel from "@/components/Style.vue";
+// Temporaryly exclude Style.vue
+// import StylePanel from "@/components/Style.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -224,44 +225,12 @@ const appStorage = getStorage()
  * When left panel open, right panel minified: 20:75:5 (4:15:1)
  * When left panel minifie, right panel open: 5:75:20 (1:15:4)
  */
-// @Component({
-//   components: {
-//     Splitpanes,
-//     Pane,
-//     Toolbox,
-//     SphereFrame,
-//     ToolButton,
-//     StylePanel,
-//     IconBase,
-//     Dialog,
-//     ShortcutIcon,
-//     CurrentToolSelection,
-//     MessageBox
-//   },
-//   methods: {
-  const {t} = useI18n()
+const {t} = useI18n()
 const seStore = useSEStore();
 const router = useRouter()
-//     ...mapActions(useSEStore, [
-//       "setActionMode",
-//       "init",
-//       "removeAllFromLayers",
-//       "updateDisplay"
-//     ])
-//   },
 const { seNodules, temporaryNodules, hasObjects, actionMode } =
   storeToRefs(seStore);
 
-//   computed: {
-//     ...mapState(useSEStore, [
-//       "seNodules",
-//       "temporaryNodules",
-//       "hasObjects",
-//       "activeToolName"
-//     ])
-//   }
-// })
-// export default class Easel extends Vue {
 const props = defineProps<{
   documentId?: string;
 }>();

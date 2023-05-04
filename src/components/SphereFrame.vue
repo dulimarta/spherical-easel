@@ -65,8 +65,8 @@ import InversionTransformationHandler from "@/eventHandlers/InversionTransformat
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
-
-import i18n from "@/i18n";
+import { useI18n } from "vue-i18n";
+// import i18n from "@/i18n";
 
 const seStore = useSEStore();
 const {
@@ -78,6 +78,7 @@ const {
   expressions,
   buttonSelection
 } = storeToRefs(seStore);
+const {t} = useI18n();
 
 const props = withDefaults(defineProps<{ canvasSize: number }>(), {
   canvasSize: 240
@@ -658,8 +659,8 @@ function deleteNode(e: {
       number: deletedNodeIds.length - 1,
       objects:
         deletedNodeIds.length === 2
-          ? i18n.tc(`objects.objects`, 4)
-          : i18n.tc(`objects.objects`, 3)
+          ? t(`objects.objects`, 4)
+          : t(`objects.objects`, 3)
     },
     type: "success"
   });

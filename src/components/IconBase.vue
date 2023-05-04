@@ -22,8 +22,6 @@ import SETTINGS from "../../src/global-settings";
 import { IconNames } from "../../src/types/index";
 
 
-// @Component({})
-// export default class IconBase extends Vue {
 const props = defineProps < {
   iconName: IconNames;
   iconSize?: number;

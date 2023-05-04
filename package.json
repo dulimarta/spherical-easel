@@ -60,6 +60,7 @@
     "@vuepress/plugin-back-to-top": "^1.9.7",
     "canvas": "^2.6.1",
     "eslint": "~8",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-vue": "~9.3.0",
     "firestore-jest-mock": "https://github.com/dulimarta/firestore-jest-mock",
     "markdown-it-vuepress-code-snippet-enhanced": "^1.0.1",

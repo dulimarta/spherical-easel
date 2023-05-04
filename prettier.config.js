@@ -7,4 +7,5 @@ module.exports = {
   bracketSameLine: true,
   trailingComma: "none",
   singleQuote: false,
+  htmlWhitespaceSensitivity: "ignore" // prevent dangling right angle bracket
 };
