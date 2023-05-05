@@ -1,29 +1,17 @@
 <template>
   <div>
-    <Splitpanes
+    <Splitpanes :style="contentHeight"
       class="default-theme"
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
-        <!--v-container style="background-color: white">
-          <v-row>
-            <v-btn icon @click="minifyToolbox">
-              <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-              <v-icon v-else>mdi-arrow-left</v-icon>
-            </v-btn>
-            <CurrentToolSelection
-              v-if="!toolboxMinified"
-              :actionMode="actionMode"
-              :toolboxMinified="toolboxMinified" />
-          </v-row>
-        </v-container-->
-        {{toolboxMinified}}
+      <Pane
+        min-size="5"
+        max-size="35"
+        :size="toolboxMinified ? 5 : 25" >
         <Toolbox
           id="toolbox"
-          ref="toolbox"
-          :minified="toolboxMinified"
-          v-on:toggle-tool-box-panel="minifyToolbox" />
+          ref="toolbox" />
       </Pane>
       <Pane :size="centerWidth">
         <!-- Use the right pane mainly for the canvas and style panel -->
@@ -124,11 +112,11 @@
               <v-icon>mdi-arrow-right</v-icon>
             </v-btn-->
 
-            <!--StylePanel
+        <!--StylePanel
               :minified="stylePanelMinified"
               v-on:toggle-style-panel="minifyStylePanel" /-->
 
-            <!--MessageBox
+        <!--MessageBox
               :minified="notificationsPanelMinified"
               v-on:toggle-notifications-panel="minifyNotificationsPanel" />
           </div>
@@ -188,54 +176,67 @@ import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, ToolButtonType } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
-import { getFirestore, DocumentSnapshot, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  DocumentSnapshot,
+  doc,
+  getDoc
+} from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
 import { getAuth, User, Unsubscribe } from "firebase/auth";
-import { getStorage, ref as storageRef, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref as storageRef,
+  getDownloadURL
+} from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
 import { mapActions, mapState, storeToRefs } from "pinia";
-import ShortcutIcon from "@/components/ShortcutIcon.vue";
-import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
-import MessageBox from "@/components/MessageBox.vue";
 import { toolGroups } from "@/components/toolgroups";
 import { useI18n } from "vue-i18n";
 // import { getCurrentInstance } from "vue";
-import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
-import { useLayout } from "vuetify"
+import {
+  onBeforeRouteLeave,
+  RouteLocationNormalized,
+  useRouter
+} from "vue-router";
+import { useLayout, useDisplay } from "vuetify";
 
 type ShortCutIconDetails = {
-  clickFunc: () => void,
-  labelMsg: string,
-  icon: string,
-  iconColor: string,
-  disableBtn: boolean,
-  btnColor?: string,
-buttonType?: ToolButtonType
-}
-const appDB = getFirestore()
-const appAuth = getAuth()
-const appStorage = getStorage()
+  clickFunc: () => void;
+  labelMsg: string;
+  icon: string;
+  iconColor: string;
+  disableBtn: boolean;
+  btnColor?: string;
+  buttonType?: ToolButtonType;
+};
+const appDB = getFirestore();
+const appAuth = getAuth();
+const appStorage = getStorage();
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
  * When left panel open, right panel minified: 20:75:5 (4:15:1)
  * When left panel minifie, right panel open: 5:75:20 (1:15:4)
  */
-const {t} = useI18n()
+const { t } = useI18n();
 const seStore = useSEStore();
-const router = useRouter()
+const router = useRouter();
 const { seNodules, temporaryNodules, hasObjects, actionMode } =
   storeToRefs(seStore);
 
 const props = defineProps<{
   documentId?: string;
 }>();
-const { mainRect, getLayoutItem } = useLayout()
-
+const { mainRect } = useLayout();
+const display = useDisplay();
+const contentHeight = computed(() => ({
+  height: (display.height.value - mainRect.value.top) + "px"
+}))
 let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
 const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
@@ -255,7 +256,6 @@ let authSubscription!: Unsubscribe;
 
 // $refs!: {
 // const responsiveBox = ref(null);
-// toolbox: VueComponent;
 // mainPanel: VueComponent;
 // stylePanel: HTMLDivElement;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
@@ -269,15 +269,14 @@ const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
       icon: SETTINGS.icons.undo.props.mdiIcon,
       clickFunc: undoEdit,
       iconColor: "blue",
-      disableBtn: !stylePanelMinified.value || !undoEnabled,
-
+      disableBtn: !stylePanelMinified.value || !undoEnabled
     },
     {
       labelMsg: "main.RedoLastAction",
       icon: SETTINGS.icons.redo.props.mdiIcon,
       clickFunc: redoAction,
       iconColor: "blue",
-      disableBtn: !stylePanelMinified.value || !undoEnabled,
+      disableBtn: !stylePanelMinified.value || !undoEnabled
     }
   ];
 });
@@ -291,7 +290,7 @@ const topRightShortcuts = computed((): ShortCutIconDetails[] => {
       },
       iconColor: "blue",
       btnColor: "primary",
-      disableBtn: false,
+      disableBtn: false
     }
   ];
 });
@@ -305,7 +304,9 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
       iconColor: "blue",
       btnColor: "primary",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomIn")
+      buttonType: toolGroups[0].children.find(
+        e => e.actionModeValue == "zoomIn"
+      )
     },
 
     {
@@ -315,7 +316,9 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
       iconColor: "blue",
       btnColor: "primary",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomOut")
+      buttonType: toolGroups[0].children.find(
+        e => e.actionModeValue == "zoomOut"
+      )
     },
 
     {
@@ -325,7 +328,9 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
       iconColor: "blue",
       btnColor: "primary",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(e => e.actionModeValue == "zoomFit")
+      buttonType: toolGroups[0].children.find(
+        e => e.actionModeValue == "zoomFit"
+      )
     }
   ];
 });
@@ -359,7 +364,9 @@ const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
       iconColor: "blue",
       btnColor: "primary",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "segment")
+      buttonType: toolGroups[2].children.find(
+        e => e.actionModeValue == "segment"
+      )
     },
 
     {
@@ -369,7 +376,9 @@ const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
       iconColor: "blue",
       btnColor: "primary",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "circle")
+      buttonType: toolGroups[2].children.find(
+        e => e.actionModeValue == "circle"
+      )
     }
   ];
 });
@@ -443,8 +452,12 @@ function adjustSize(): void {
   availHeight =
     window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
 
-  console.debug("adjustSize() available height is ", window.innerHeight, mainRect.value)
-  currentCanvasSize.value = availHeight
+  console.debug(
+    "adjustSize() available height is ",
+    window.innerHeight,
+    mainRect.value
+  );
+  currentCanvasSize.value = availHeight;
 }
 
 function loadDocument(docId: string): void {
@@ -453,14 +466,14 @@ function loadDocument(docId: string): void {
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   // load the script from public collection
-  getDoc(doc(appDB,"constructions",docId))
-    .then(async (doc: DocumentSnapshot) => {
+  getDoc(doc(appDB, "constructions", docId)).then(
+    async (doc: DocumentSnapshot) => {
       if (doc.exists()) {
         const { script } = doc.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {
           // The script must be fetched from Firebase storage
-          const constructionStorage = storageRef(appStorage, script)
+          const constructionStorage = storageRef(appStorage, script);
           const scriptText = await getDownloadURL(constructionStorage)
             .then((url: string) => axios.get(url))
             .then((r: AxiosResponse) => r.data);
@@ -477,7 +490,8 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
-    });
+    }
+  );
 }
 
 /** mounted() is part of VueJS lifecycle hooks */
@@ -512,8 +526,7 @@ function dividerMoved(
   const availableWidth =
     ((100 - event[0].size - event[2].size) / 100) *
     (window.innerWidth - mainRect.value.left - mainRect.value.right);
-  availHeight =
-    window.innerHeight - mainRect.value.top - mainRect.value.bottom;
+  availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom;
   currentCanvasSize.value = Math.min(availableWidth, availHeight);
 }
 
@@ -543,7 +556,7 @@ function setActionModeToSelectTool(): void {
 }
 
 function onWindowResized(): void {
-  console.debug("onWindowResized()")
+  console.debug("onWindowResized()");
   adjustSize();
 }
 /* Undoes the last user action that changed the state of the sphere. */
@@ -661,20 +674,24 @@ function listItemStyle(i: number, xLoc: string, yLoc: string) {
   return style;
 }
 
-onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized): boolean => {
-  if (hasObjects && !confirmedLeaving) {
-    unsavedWorkDialog.value?.show();
-    attemptedToRoute = toRoute;
-    return false
-  } else {
-    /* Proceed to the next view when the canvas has no objects OR
+onBeforeRouteLeave(
+  (
+    toRoute: RouteLocationNormalized,
+    fromRoute: RouteLocationNormalized
+  ): boolean => {
+    if (hasObjects && !confirmedLeaving) {
+      unsavedWorkDialog.value?.show();
+      attemptedToRoute = toRoute;
+      return false;
+    } else {
+      /* Proceed to the next view when the canvas has no objects OR
       user has confirmed leaving this view */
-    return true
+      return true;
+    }
   }
-})
+);
 </script>
 <style scoped lang="scss">
-
 .splitpanes__pane {
   // color: hsla(40, 50%, 50%, 0.6);
   // display: flex;
@@ -713,7 +730,8 @@ onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNo
 }
 
 #toolbox {
-  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
 
 #responsiveBox {

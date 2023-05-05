@@ -1,37 +1,31 @@
 <template>
   <!-- Displays the current tool in the left panel by the collapsible arorw -->
   <span v-if="activeToolName">
-  <v-container class="pa-4" v-if="activeToolName">
-    <v-row align="center">
-      <!-- Vuetify custom icons require a '$' prefix -->
-      <v-icon class="mx-2" :icon="'$' +actionMode"></v-icon>
-      <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
-      <span class="text-body-2" v-if="activeToolName != 'ApplyTransformationDisplayedName'">
-        {{ $t(`buttons.${activeToolName}`, {}).toString() }}
-      </span>
-      <template v-else>
-        <h3>
+    <v-container>
+      <v-row align="center">
+        <!-- Vuetify custom icons require a '$' prefix -->
+        <v-icon class="mx-3" :icon="'$' + actionMode"></v-icon>
+        <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
+        <span
+          class="text-body-1 ml-1"
+          v-if="activeToolName != 'ApplyTransformationDisplayedName'">
           {{ $t(`buttons.${activeToolName}`, {}).toString() }}
-          <br />
-          <h4 :key="Math.random()">
-            {{ t("objects.selectTransformation") }}
-          </h4>
-        </h3>
-      </template>
-    </v-row>
-  </v-container>
-</span>
+        </span>
+        <template v-else>
+          <h3>
+            {{ $t(`buttons.${activeToolName}`, {}).toString() }}
+            <br />
+            <h4 :key="Math.random()">
+              {{ t("objects.selectTransformation") }}
+            </h4>
+          </h3>
+        </template>
+      </v-row>
+    </v-container>
+  </span>
   <span class="text-body-2" v-else>
     {{ $t(`buttons.NoToolSelected`, {}).toString() }}
   </span>
-  <!-- Displays the icon and arrow if toolbox is minified -->
-  <div v-else>
-    <div class="pa-4" v-if="activeToolName">
-      <v-icon class="mr-3" :key="Math.random()">
-        $vuetify.icons.values.{{ actionMode }}
-      </v-icon>
-    </div>
-  </div>
 </template>
 
 <script lang="ts" setup>

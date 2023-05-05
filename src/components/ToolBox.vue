@@ -2,39 +2,39 @@
   <!-- These the navigation arrows TODO: I would like these to be in the same row as the
     tabs-->
   <!-- This the not minimized left drawer containing two tabs -->
+  <!-- <CurrentToolSelection/> -->
   <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
+      <v-container>
+        <v-row align="center">
+          <v-btn icon size="small">
+            <v-icon @click="minified = !minified">mdi-arrow-left</v-icon>
+          </v-btn>
+          <CurrentToolSelection />
+        </v-row>
+      </v-container>
       <v-tabs v-model="activeLeftDrawerTab" centered grow @change="switchTab">
-        <v-tooltip
-          bottom
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay">
+        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
-              <v-icon left>$toolsTab</v-icon>
+              <v-icon>$toolsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip
-          bottom
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay">
+        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
-              <v-icon left>$objectsTab</v-icon>
+              <v-icon>$objectsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
         </v-tooltip>
-        <v-tooltip
-          bottom
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay">
+        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
-              <v-icon left>$constructionsTab</v-icon>
+              <v-icon>$constructionsTab</v-icon>
             </v-tab>
           </template>
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
@@ -60,13 +60,14 @@
       v-on:click="$emit('toggle-tool-box-panel')"
       class="mini-icons"
       key="partial">
-      <v-spacer />
+      <v-btn icon size="small">
+        <v-icon @click="minified = !minified">mdi-arrow-right</v-icon>
+      </v-btn>
+      <div class="mini-icons px-3">
       <v-icon>$toolsTab</v-icon>
-      <v-spacer />
       <v-icon>$objectsTab</v-icon>
-      <v-spacer />
       <v-icon>$constructionsTab</v-icon>
-      <v-spacer />
+      </div>
     </div>
   </transition>
 </template>
@@ -74,21 +75,23 @@
 <script lang="ts" setup>
 import Vue, { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
+import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
+import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
+
 import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
-import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
-const props = defineProps<{ minified: boolean }>();
+// const props = defineProps<{ minified: boolean }>();
 
 // ('layers')')
 
-let leftDrawerMinified = false;
+const minified = ref(false);
 /* Copy global setting to local variable */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -98,13 +101,13 @@ onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
 });
 
-onMounted((): void =>{
-  const { mainRect } = useLayout()
-  const { height, width, name} = useDisplay()
-  console.debug("Layout details", mainRect.value)
-  console.debug("Display details", height.value, width.value, name.value)
-// this.scene = this.layers[LAYER.midground];
-})
+onMounted((): void => {
+  const { mainRect } = useLayout();
+  const { height, width, name } = useDisplay();
+  console.debug("Layout details", mainRect.value);
+  console.debug("Display details", height.value, width.value, name.value);
+  // this.scene = this.layers[LAYER.midground];
+});
 
 function switchTab(): void {
   // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
@@ -138,7 +141,8 @@ onBeforeUnmount((): void => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center it vertically */
+
+  justify-content: space-evenly; /* Center it vertically */
 }
 
 #objtree,
