@@ -67,8 +67,7 @@
               :items="languages"
               item-text="name"
               item-value="locale"
-              label="Language"
-              return-object>
+              label="Language">
             </v-select>
             <label>Decimal Precision</label>
             <v-radio-group :model-value="decimalPrecision" row>
@@ -111,7 +110,7 @@
 </template>
 
 <style lang="scss" scoped>
-@import "vuetify/src/styles/styles.sass";
+// @import "vuetify/src/styles/styles.sass";
 
 div#container {
   padding: 1rem;

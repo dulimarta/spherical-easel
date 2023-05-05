@@ -2,38 +2,42 @@
   <!-- Displays a button only if the user has permission to see it. -->
   <!--div class="pa-0 debugged" :id="button.actionModeValue" :ref="button.actionModeValue"-->
   <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
-  <!-- The button is wrapped in to tooltip vue component -->
-  <!--v-tooltip
-      bottom
-      <template v-slot:activator="{ props }"-->
-  <!--v-btn
-          icon
-          :value="{ id: button.actionModeValue, name: button.displayedName }"
-          v-bind="props"
-
-          x-large-->
-  <v-sheet class="ma-1" :elevation="elev" rounded="lg" width="80px">
-    <div class="toolbutton" @click="doClick">
+  <!-- Initially tried v-sheet, but had problem with v-overlay covering larger
+    area beyond the bound of v-sheet. Switched to v-card to solve the issue -->
+  <v-card
+    class="ma-1"
+    :elevation="elev"
+    rounded="lg"
+    width="80px"
+    height="100px">
+    <div class="toolbutton" v-bind="props">
       <v-icon class="toolicon">{{ button.icon }}</v-icon>
       <span class="tooltext" :style="myStyle">
         {{ t("buttons." + button.displayedName) }}
+        {{ isEditing }}
       </span>
     </div>
+    <v-overlay
+      contained
+      v-model="isEditing"
+      :scrim="props.included ? '#00F' : '#000'">
+      <v-icon v-if="props.included" size="x-large" class="overlayicon">
+        mdi-minus-circle
+      </v-icon>
+      <v-icon v-else size="x-large" class="overlayicon">mdi-plus-circle</v-icon>
+    </v-overlay>
     <v-tooltip
       location="bottom"
       activator="parent"
       :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
       :disabled="displayToolTips">
       <span class="tooltip">{{ t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
-  </v-sheet>
-  <!--slot name="overlay"></slot-->
-  <!--/div-->
+  </v-card>
 </template>
 
 <script lang="ts" setup>
-import Vue, { Ref, ref, watch, computed, onUpdated } from "vue";
+import Vue, { Ref, ref, toRef, watch, computed, onUpdated } from "vue";
 import { ActionMode, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 import { storeToRefs } from "pinia";
@@ -44,22 +48,24 @@ import { StyleValue } from "vue";
 // import { SEExpression } from "@/models/SEExpression";
 // import { SETransformation } from "@/models/SETransformation";
 
+type ToolButtonProps = {
+  button: ToolButtonType;
+  selected: boolean;
+  editing: boolean;
+  included: boolean;
+};
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 const seStore = useSEStore();
 const { actionMode, expressions, seTransformations } = storeToRefs(seStore);
-const emit = defineEmits([
-  "display-only-this-tool-use-message",
-  "toolbutton-clicked"
-]);
+const emit = defineEmits(["display-only-this-tool-use-message"]);
 const { t } = useI18n();
-// export default class ToolButton extends Vue {
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 const displayToolTips = ref(SETTINGS.toolTip.disableDisplay);
 const toolUseMessageDelay = SETTINGS.toolUse.delay;
 const displayToolUseMessages = SETTINGS.toolUse.display;
-
+let inEditMode = true;
 /* This controls the display of the snackbar Tool Use Message. This is set to false by the
 $emit('displayOnlyThisToolUseMessage',button.id) <-- this turns off all other snackbar messages
 that sends a message to the parent (ToolGroups.vue) that triggers the method
@@ -71,12 +77,16 @@ let displayToolUseMessage = false;
 
 /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
 child */
-const props = defineProps<{ button: ToolButtonType; selected: boolean }>();
-// @Prop({ default: null })
-// button!: ToolButtonType;
+const props = defineProps<ToolButtonProps>();
 
-const elev = ref(0);
+const elev = ref(1);
 const weight: Ref<"bold" | "normal"> = ref("normal");
+const isEditing = ref(props.editing);
+// const isEditingProp = toRef(props, 'editing')
+// watch(() => props, (x) => {
+//   console.log("xyz", isEditingProp.value)
+//   isEditing.value = x.editing
+// })
 let selected = false;
 
 const myStyle = computed((): StyleValue => {
@@ -86,12 +96,9 @@ const myStyle = computed((): StyleValue => {
 });
 
 onUpdated(() => {
-  // if (selected != props.selected)
-  //   console.info(
-  //     props.button.actionModeValue + " updated to " + props.selected
-  //   );
   selected = props.selected;
-  elev.value = props.selected ? 5 : 0;
+  isEditing.value = props.editing;
+  elev.value = props.selected ? 5 : 1;
   weight.value = props.selected ? "bold" : "normal";
 });
 
@@ -120,49 +127,12 @@ const buttonLabel3 = computed((): string => {
   // "
 });
 
-function doClick() {
-  // if ($attrs.disabled) return;
-  // emit("display-only-this-tool-use-message", props.button.actionModeValue);
-  if (!selected)
-    emit("toolbutton-clicked", props.button.actionModeValue);
-  // displayToolUseMessage = true;
-  // props.selected = !props.selected;
-  // setElevation();
-  // switchButton(props.button);
-
-  // elev.value = props.selected ? 5 : 0;
-  // weight.value = props.selected ? "bold" : "normal";
-}
-
-watch(() => actionMode, setElevation);
-function setElevation() {
-  if (actionMode.value === props.button.actionModeValue) {
-    // console.log("set elevation 1", this.button.actionModeValue);
-    elev.value = 5;
-    weight.value = "bold";
-  } else {
-    // console.log("set elevation 0", this.button.actionModeValue);
-    elev.value = 0;
-    weight.value = "normal";
-  }
-}
-
-// function switchButton(button: ToolButtonType): void {
-//   // Set the button selected so it can be tracked
-//   seStore.setButton(button);
-// }
-
-// @Prop({ default: 0 }) readonly elev?: number;
-/* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
-    that multiple snackbars tool use messages are not displayed at the same time*/
-// @Watch("button.displayToolUseMessage")
-// protected onButtonChanged() {
-//   this.displayToolUseMessage = false;
-// }
+// function toggleEditState() {
+//   emit("toolbutton-clicked", props.button.actionModeValue)
 // }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .toolbutton {
   display: inline-flex;
   flex-direction: column;
@@ -179,17 +149,44 @@ function setElevation() {
   padding-top: 0px;
   width: 85%;
   font-size: 11px;
-  white-space: nowrap;
+  // white-space: nowrap;
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
   font-weight: var(--user-font-weight);
 }
 .tooltip {
-  background-color: white;
   padding: 0.5em;
   border: 1px solid grey;
   border-radius: 0.5em;
+}
+
+.overlayicon {
+  position: absolute;
+  color: black;
+  top: 60px;
+  left: 25px;
+  // animation-name: shake;
+  // animation-duration: 250ms;
+  // animation-iteration-count: infinite;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0px);
+  }
+
+  25% {
+    transform: translateX(-3px);
+  }
+
+  50% {
+    transform: translateX(0px);
+  }
+
+  75% {
+    transform: translateX(+3px);
+  }
 }
 // .v-btn--icon.v-size--x-large {
 //   padding-top: 9px;

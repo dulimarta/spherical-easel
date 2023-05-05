@@ -1,53 +1,39 @@
 <template>
-  <div class="pa-1 accent" id="toolButtonContainer">
-    <v-btn
-      elevation="2"
-      v-if="userRole && userRole === 'instructor'"
-      fab
-      small
-      color="primary"
-      @click="toggleEditMode">
-      <v-icon v-if="inEditMode">mdi-check</v-icon>
-      <v-icon v-else>mdi-pencil</v-icon>
-    </v-btn>
-
+  <v-btn
+    elevation="2"
+    v-if="userRole && userRole === 'instructor'"
+    fab
+    small
+    color="primary"
+    @click="toggleEditMode">
+    <v-icon v-if="inEditMode">mdi-check</v-icon>
+    <v-icon v-else>mdi-pencil</v-icon>
+  </v-btn>
+  <v-item-group
+    v-model="selectedTool"
+    @update:model-value="toolSelectionChanged">
     <div v-for="(g, gpos) in buttonGroup" :key="gpos">
       <template v-if="g.children.length > 0">
-        <h3 class="body-1 font-weight-bold">
+        <h3 class="body-1 font-weight-bold button-group-heading">
           {{ $t(`toolGroups.${g.group}`) }}
         </h3>
         <div class="button-group">
-          <!--v-container style="border: 1px solid red">
-            <v-row justify="start" align-content="start"
-            class="accent">
-              <v-col cols="auto" v-for="(button, bpos) in g.children" :key="bpos"-->
           <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
-          <ToolButton
-            v-for="(button, bpos) in g.children"
-            v-on:display-only-this-tool-use-message="
-              displayOnlyThisToolUseMessageFunc
-            "
-            @toolbutton-clicked="toolButtonHandler"
-            :key="bpos"
-            :disabled="inEditMode ? true : null"
-            :button="button"
-            :selected="isToolSelected(button.actionModeValue)">
-            <!--template #overlay v-if="inEditMode">
-                    <v-overlay v-if="toolIncluded(button.actionModeValue)" absolute opacity="0.25">
-                      <v-icon color="white" class="overlayicon" @click="excludeTool(button.actionModeValue)">
-                        mdi-minus-circle
-                      </v-icon>
-                    </v-overlay>
-                    <v-overlay v-else absolute opacity="0.85">
-                      <v-icon color="primary" class="overlayicon" @click="includeTool(button.actionModeValue)">
-                        mdi-plus-circle
-                      </v-icon>
-                    </v-overlay>
-                  </template-->
-          </ToolButton>
-          <!--/v-col>
-            </v-row>
-          </v-container-->
+          <template v-for="btn in g.children" :key="btn.actionModeValue">
+            <v-item
+              v-slot="{ isSelected, toggle }"
+              :value="btn.actionModeValue">
+              <ToolButton
+                @click="toggle"
+                v-on:display-only-this-tool-use-message="
+                  displayOnlyThisToolUseMessageFunc
+                "
+                :button="btn"
+                :selected="isSelected"
+                :included="toolIncluded(btn.actionModeValue)"
+                :editing="inEditMode" />
+            </v-item>
+          </template>
         </div>
       </template>
     </div>
@@ -58,17 +44,22 @@
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
-      <ToolButton
-        v-for="(button, pos) in developerButtonList"
-        :key="pos"
-        :button="button"
-        :selected="isToolSelected(button.actionModeValue)"
-        @toolbutton-clicked="toolButtonHandler"
-        v-on:display-only-this-tool-use-message="
-          displayOnlyThisToolUseMessageFunc
-        "></ToolButton>
+      <v-item v-slot="{ isSelected, toggle }">
+        {{ isSelected }}
+        <ToolButton
+          @click="toggle"
+          v-for="(button, pos) in developerButtonList"
+          :key="pos"
+          :button="button"
+          :editing="inEditMode"
+          :selected="isSelected"
+          :included="true"
+          v-on:display-only-this-tool-use-message="
+            displayOnlyThisToolUseMessageFunc
+          " />
+      </v-item>
     </div>
-  </div>
+  </v-item-group>
 </template>
 
 <script lang="ts" setup>
@@ -101,16 +92,13 @@ const actionMode: Ref<{ id: ActionMode; name: string }> = ref({
 // private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 // private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-// const elev = ref(24);
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
 const currentToolset: Array<ActionMode> = [];
-const activeTool: Ref<ToolButtonType|null> = ref(null);
+const selectedTool: Ref<ActionMode | null> = ref(null);
+let lastSelectedTool: ActionMode | null = null;
 
-function isToolSelected(myIdentity: string) {
-  return activeTool.value?.actionModeValue === myIdentity;
-}
 /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
 // private buttonDisplayList = SETTINGS.userButtonDisplayList;
@@ -126,16 +114,37 @@ onBeforeMount((): void => {
   currentToolset.push(...includedTools.value);
 });
 
-function toolButtonHandler(buttonId: string) {
-  console.log("Toolbutton handler", buttonId);
-  const whichButton = buttonGroup.value.flatMap((group: ToolButtonGroup) => group.children)
-  .find((toolBtn:ToolButtonType) => toolBtn.actionModeValue == buttonId)
-  if (whichButton) {
-    console.log("Toolbutton handler, found the button", whichButton);
-    activeTool.value = whichButton;
-    seStore.setButton(whichButton)
+function toolSelectionChanged() {
+  // Warning: when the same tool button is clicked in succession,
+  // selectedTool.value toggles from someValue to undefined
+  if (!inEditMode.value) {
+    const whichButton = buttonGroup.value
+      .flatMap((group: ToolButtonGroup) => group.children)
+      .find(
+        (toolBtn: ToolButtonType) =>
+          toolBtn.actionModeValue == selectedTool.value
+      );
+    // console.log("Toolbutton handler, found the button", whichButton);
+    if (whichButton) {
+      seStore.setButton(whichButton);
+      seStore.setActionMode({
+        id: selectedTool.value!,
+        name: whichButton!.displayedName
+      });
+    }
+  } else {
+    const toolCheck = selectedTool.value
+      ? selectedTool.value
+      : lastSelectedTool!;
+    if (includedTools.value.includes(toolCheck))
+      acctStore.excludeToolName(toolCheck);
+    else acctStore.includeToolName(toolCheck);
   }
+  // Remember the last selection
+  if (selectedTool.value)
+    lastSelectedTool = selectedTool.value
 }
+
 /* Writes the current state/edit mode to the store, where the Easel view can read it. */
 function switchActionMode(): void {
   switch (actionMode.value.id) {
@@ -257,36 +266,13 @@ const developerButtonList: ToolButtonType[] = [
 ];
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .button-group {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
-.overlayicon {
-  position: absolute;
-  top: -40px;
-  right: -32px;
-  animation-name: shake;
-  animation-duration: 250ms;
-  animation-iteration-count: infinite;
-}
-
-@keyframes shake {
-  0% {
-    transform: translateX(0px);
-  }
-
-  25% {
-    transform: translateX(-3px);
-  }
-
-  50% {
-    transform: translateX(0px);
-  }
-
-  75% {
-    transform: translateX(+3px);
-  }
+.button-group-heading {
+  margin-top: 0.5em;
 }
 </style>

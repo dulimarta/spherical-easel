@@ -42,7 +42,7 @@
       </v-tabs>
       <v-window v-model="activeLeftDrawerTab">
         <v-window-item>
-          <ToolGroups id="toolGroups"></ToolGroups>
+          <ToolGroups />
         </v-window-item>
         <v-window-item>
           Group 2
