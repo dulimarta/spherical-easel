@@ -80,7 +80,8 @@ import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
-
+import { useLayout } from "vuetify";
+import { useDisplay } from "vuetify";
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const props = defineProps<{ minified: boolean }>();
@@ -97,9 +98,13 @@ onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
 });
 
-// onMounted((): void =>{
+onMounted((): void =>{
+  const { mainRect } = useLayout()
+  const { height, width, name} = useDisplay()
+  console.debug("Layout details", mainRect.value)
+  console.debug("Display details", height.value, width.value, name.value)
 // this.scene = this.layers[LAYER.midground];
-// })
+})
 
 function switchTab(): void {
   // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);

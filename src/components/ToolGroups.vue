@@ -65,12 +65,9 @@
 <script lang="ts" setup>
 import { Ref, ref, onBeforeMount } from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
-// import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
 import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
 import { useAccountStore } from "@/stores/account";
-/* Import the global settings. */
-// import SETTINGS from "@/global-settings";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";

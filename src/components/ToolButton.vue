@@ -14,7 +14,6 @@
       <v-icon class="toolicon">{{ button.icon }}</v-icon>
       <span class="tooltext" :style="myStyle">
         {{ t("buttons." + button.displayedName) }}
-        {{ isEditing }}
       </span>
     </div>
     <v-overlay
@@ -37,16 +36,12 @@
 </template>
 
 <script lang="ts" setup>
-import Vue, { Ref, ref, toRef, watch, computed, onUpdated } from "vue";
-import { ActionMode, ToolButtonType } from "@/types";
+import { Ref, ref, computed, onUpdated } from "vue";
+import { ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
-import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
-import EventBus from "@/eventHandlers/EventBus";
 import { StyleValue } from "vue";
-// import { SEExpression } from "@/models/SEExpression";
-// import { SETransformation } from "@/models/SETransformation";
 
 type ToolButtonProps = {
   button: ToolButtonType;
@@ -56,24 +51,13 @@ type ToolButtonProps = {
 };
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 const seStore = useSEStore();
-const { actionMode, expressions, seTransformations } = storeToRefs(seStore);
-const emit = defineEmits(["display-only-this-tool-use-message"]);
 const { t } = useI18n();
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 const displayToolTips = ref(SETTINGS.toolTip.disableDisplay);
-const toolUseMessageDelay = SETTINGS.toolUse.delay;
-const displayToolUseMessages = SETTINGS.toolUse.display;
-let inEditMode = true;
-/* This controls the display of the snackbar Tool Use Message. This is set to false by the
-$emit('displayOnlyThisToolUseMessage',button.id) <-- this turns off all other snackbar messages
-that sends a message to the parent (ToolGroups.vue) that triggers the method
-displayOnlyThisToolUseMessageFunc
-in the parent which changes the value of button.displayToolUseMessage (except in the button with
-id button.id), this is variable is being watched in this child and turns off the display of the
-snackbar/toolUseMessage  */
-let displayToolUseMessage = false;
+// const toolUseMessageDelay = SETTINGS.toolUse.delay;
+// const displayToolUseMessages = SETTINGS.toolUse.display;
 
 /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
 child */
@@ -82,12 +66,6 @@ const props = defineProps<ToolButtonProps>();
 const elev = ref(1);
 const weight: Ref<"bold" | "normal"> = ref("normal");
 const isEditing = ref(props.editing);
-// const isEditingProp = toRef(props, 'editing')
-// watch(() => props, (x) => {
-//   console.log("xyz", isEditingProp.value)
-//   isEditing.value = x.editing
-// })
-let selected = false;
 
 const myStyle = computed((): StyleValue => {
   return {
@@ -96,7 +74,6 @@ const myStyle = computed((): StyleValue => {
 });
 
 onUpdated(() => {
-  selected = props.selected;
   isEditing.value = props.editing;
   elev.value = props.selected ? 5 : 1;
   weight.value = props.selected ? "bold" : "normal";
@@ -126,10 +103,6 @@ const buttonLabel3 = computed((): string => {
   //   .trim() + ': '
   // "
 });
-
-// function toggleEditState() {
-//   emit("toolbutton-clicked", props.button.actionModeValue)
-// }
 </script>
 
 <style lang="scss" scoped>
@@ -166,9 +139,9 @@ const buttonLabel3 = computed((): string => {
   color: black;
   top: 60px;
   left: 25px;
-  // animation-name: shake;
-  // animation-duration: 250ms;
-  // animation-iteration-count: infinite;
+  animation-name: shake;
+  animation-duration: 500ms;
+  animation-iteration-count: infinite;
 }
 
 @keyframes shake {
