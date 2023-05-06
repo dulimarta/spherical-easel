@@ -1,6 +1,10 @@
 <template>
-  <div>
+  <div id="sphereContainer">
     <div id="canvas" ref="canvas"></div>
+    <!--div class="anchored top left">TL</div>
+    <div class="anchored top right">TR</div>
+    <div class="anchored bottom right">BR</div>
+    <div class="anchored bottom left">BL</div-->
   </div>
 </template>
 
@@ -78,7 +82,7 @@ const {
   expressions,
   buttonSelection
 } = storeToRefs(seStore);
-const {t} = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{ canvasSize: number }>(), {
   canvasSize: 240
@@ -999,5 +1003,28 @@ watch(
   50% {
     transform: rotate(180deg);
   }
+}
+
+#sphereContainer {
+  border: 3px solid black;
+  position: relative;
+}
+.anchored {
+  position: absolute;
+}
+.left {
+  left: 0;
+}
+
+.right {
+  right: 0;
+}
+
+.top {
+  top: 0;
+}
+
+.bottom {
+  bottom: 0;
 }
 </style>

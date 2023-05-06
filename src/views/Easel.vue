@@ -1,17 +1,13 @@
 <template>
   <div>
-    <Splitpanes :style="contentHeight"
+    <Splitpanes
+      :style="contentHeightStyle"
       class="default-theme"
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane
-        min-size="5"
-        max-size="35"
-        :size="toolboxMinified ? 5 : 25" >
-        <Toolbox
-          id="toolbox"
-          ref="toolbox" />
+      <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
+        <Toolbox id="toolbox" ref="toolbox" />
       </Pane>
       <Pane :size="centerWidth">
         <!-- Use the right pane mainly for the canvas and style panel -->
@@ -20,79 +16,69 @@
         When expanded, it takes 30% of the remaining width
       -->
         <v-container fluid ref="mainPanel">
-          <v-row>
-            <v-col cols="12">
-              <v-row justify="center" class="pb-1">
-                <v-responsive
-                  :aspect-ratio="1"
-                  :max-height="currentCanvasSize"
-                  :max-width="currentCanvasSize"
-                  id="responsiveBox"
-                  class="pa-0">
-                  <SphereFrame :canvas-size="currentCanvasSize" />
-                  <div class="anchored top left">
-                    <div
-                      v-for="(shortcut, index) in topLeftShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'left', 'top')">
-                      <!--ShortcutIcon
+          <v-row justify="center">
+            <!-- Shortcut icons are placed using absolute positioning. CSS requires
+            their parents to have its position set . Use either relative, absolute -->
+            <div style="position: relative">
+              <SphereFrame :canvas-size="currentCanvasSize" />
+              <div class="anchored top left">
+                <div
+                v-for="(shortcut, index) in topLeftShortcuts"
+                :key="index"
+                :style="listItemStyle(index, 'left', 'top')">
+                <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :btnColor="shortcut.btnColor"
                         :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" /-->
-                    </div>
-                  </div>
-                  <div class="anchored bottom left">
-                    <div
-                      v-for="(shortcut, index) in bottomLeftShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'left', 'bottom')">
-                      <!--ShortcutIcon
+                        :button="shortcut.buttonType" />
+              </div>
+              </div>
+              <div class="anchored bottom left">
+                <div
+                  v-for="(shortcut, index) in bottomLeftShortcuts"
+                  :key="index"
+                  :style="listItemStyle(index, 'left', 'bottom')">
+                  <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
                         :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" /-->
-                    </div>
-                  </div>
-                  <div class="anchored top right">
-                    <div
-                      v-for="(shortcut, index) in topRightShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'right', 'top')">
-                      <!--ShortcutIcon
+                        :button="shortcut.buttonType" />
+                </div>
+              </div>
+              <div class="anchored top right">
+                <div
+                  v-for="(shortcut, index) in topRightShortcuts"
+                  :key="index"
+                  :style="listItemStyle(index, 'right', 'top')">
+                  <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
                         :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" /-->
-                    </div>
-                  </div>
-                  <div class="anchored bottom right">
-                    <div
-                      v-for="(shortcut, index) in bottomRightShortcuts"
-                      :key="index"
-                      :style="listItemStyle(index, 'right', 'bottom')">
-                      <!--ShortcutIcon
+                        :button="shortcut.buttonType" />
+                </div>
+              </div>
+              <div class="anchored bottom right">
+                <div
+                  v-for="(shortcut, index) in bottomRightShortcuts"
+                  :key="index"
+                  :style="listItemStyle(index, 'right', 'bottom')">
+                  <ShortcutIcon
                         @click="shortcut.clickFunc"
                         :labelMsg="shortcut.labelMsg"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
                         :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" /-->
-                    </div>
-                  </div>
-                </v-responsive>
-              </v-row>
-            </v-col>
+                        :button="shortcut.buttonType" />
+                </div>
+              </div>
+            </div>
           </v-row>
         </v-container>
       </Pane>
@@ -157,6 +143,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
+import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
@@ -194,7 +181,7 @@ import {
   getDownloadURL
 } from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
-import { mapActions, mapState, storeToRefs } from "pinia";
+import { storeToRefs } from "pinia";
 import { toolGroups } from "@/components/toolgroups";
 import { useI18n } from "vue-i18n";
 // import { getCurrentInstance } from "vue";
@@ -234,9 +221,10 @@ const props = defineProps<{
 }>();
 const { mainRect } = useLayout();
 const display = useDisplay();
-const contentHeight = computed(() => ({
-  height: (display.height.value - mainRect.value.top) + "px"
-}))
+const contentHeight = computed(() => display.height.value - mainRect.value.top);
+const contentHeightStyle = computed(() => ({
+  height: contentHeight.value + "px"
+}));
 let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
 const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
@@ -254,10 +242,6 @@ let accountEnabled = false;
 let uid = "";
 let authSubscription!: Unsubscribe;
 
-// $refs!: {
-// const responsiveBox = ref(null);
-// mainPanel: VueComponent;
-// stylePanel: HTMLDivElement;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 // };
@@ -434,6 +418,7 @@ function createLine(): void {
     name: "CreateLineDisplayedName"
   });
 }
+
 function createSegment(): void {
   seStore.setActionMode({
     id: "segment",
@@ -451,7 +436,6 @@ function createCircle(): void {
 function adjustSize(): void {
   availHeight =
     window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
-
   console.debug(
     "adjustSize() available height is ",
     window.innerHeight,
@@ -528,17 +512,6 @@ function dividerMoved(
     (window.innerWidth - mainRect.value.left - mainRect.value.right);
   availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom;
   currentCanvasSize.value = Math.min(availableWidth, availHeight);
-}
-
-function minifyToolbox(): void {
-  toolboxMinified.value = !toolboxMinified.value;
-}
-
-function minifyNotificationsPanel(): void {
-  notificationsPanelMinified.value = !notificationsPanelMinified.value;
-}
-function minifyStylePanel(): void {
-  stylePanelMinified.value = !stylePanelMinified.value;
 }
 
 const panelSize = computed((): number => {
@@ -630,11 +603,6 @@ function resizePlottables(e: { factor: number }): void {
   });
 }
 //#endregion resizePlottables
-
-function requestShare(): void {
-  // Alternate place to handle "Share Construction"
-  // EventBus.fire("share-construction-requested", {});
-}
 
 function doLeave(): void {
   confirmedLeaving = true;
@@ -734,15 +702,6 @@ onBeforeRouteLeave(
   overflow: auto;
 }
 
-#responsiveBox {
-  border: 2px double darkcyan;
-  position: relative;
-
-  & .anchored {
-    position: absolute;
-  }
-}
-
 #styleContainer {
   // border: 2px solid red;
   height: calc(100vh - 136px);
@@ -752,6 +711,10 @@ onBeforeRouteLeave(
     sans-serif;
 }
 
+.anchored {
+  position: absolute;
+  margin: 4px;
+}
 .left {
   left: 0;
 }

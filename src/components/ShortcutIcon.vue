@@ -1,17 +1,15 @@
 <template>
   <v-btn
     v-bind="$attrs"
-    :color="btnColor ?? undefined"
     :value="button"
-    icon
+    icon size="x-small"
     tile
     @click="switchButton(button)">
     <v-icon v-bind="$attrs" :color="iconColor">{{ icon }}</v-icon>
     <v-tooltip
       activator="parent"
-      bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay">
+      location="bottom"
+      :open-delay="toolTipOpenDelay">
       {{ $t(labelMsg) }}
     </v-tooltip>
   </v-btn>
@@ -28,7 +26,6 @@ const props = defineProps<{
   labelMsg: string;
   icon: string;
   iconColor?: string;
-  btnColor?: string | null;
   // disableBtn: boolean;
   button?: ToolButtonType | null;
 }>();
