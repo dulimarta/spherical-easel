@@ -632,10 +632,7 @@ function setTransformationForTool(e: {
     currentTool.setTransformation(e.transformation);
   } else {
     // console.debug(`The current action mode ${actionMode}`);
-    seStore.setActionMode({
-      id: "applyTransformation",
-      name: "ApplyTransformationDisplayedName"
-    });
+    seStore.setActionMode("applyTransformation");
     // console.debug(`The current action mode ${actionMode}`);
     // currentTool?.deactivate();
     if (!applyTransformationTool) {

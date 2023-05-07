@@ -285,10 +285,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
   seStore.updateDisplay();
 
   // set the mode to move because chances are high that the user wants this mode after loading.
-  seStore.setActionMode({
-    id: "move",
-    name: "MoveDisplayedName"
-  });
+  seStore.setActionMode("move");
 }
 
 function doShareConstruction(event: { docId: string }): void {

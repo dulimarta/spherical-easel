@@ -80,10 +80,7 @@ const seStore = useSEStore();
 const { expressions, seTransformations } = storeToRefs(seStore);
 
 /* Controls the selection of the actionMode using the buttons. The default is segment. */
-const actionMode: Ref<{ id: ActionMode; name: string }> = ref({
-  id: "rotate" as ActionMode,
-  name: ""
-});
+const actionMode:  Ref<ActionMode>= ref("rotate")
 
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
 // private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -124,10 +121,7 @@ function toolSelectionChanged() {
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
       seStore.setButton(whichButton);
-      seStore.setActionMode({
-        id: selectedTool.value!,
-        name: whichButton!.displayedName
-      });
+      seStore.setActionMode(selectedTool.value!);
     }
   } else {
     const toolCheck = selectedTool.value
@@ -144,7 +138,7 @@ function toolSelectionChanged() {
 
 /* Writes the current state/edit mode to the store, where the Easel view can read it. */
 function switchActionMode(): void {
-  switch (actionMode.value.id) {
+  switch (actionMode.value) {
     case "measuredCircle":
       if (expressions.value.length > 0) {
         //...open the object tree tab,

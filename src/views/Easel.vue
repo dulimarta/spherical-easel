@@ -377,50 +377,29 @@ function setRedoEnabled(e: { value: boolean }): void {
 }
 
 function enableZoomIn(): void {
-  seStore.setActionMode({
-    id: "zoomIn",
-    name: "PanZoomInDisplayedName"
-  });
+  seStore.setActionMode("zoomIn");
 }
 function enableZoomOut(): void {
-  seStore.setActionMode({
-    id: "zoomOut",
-    name: "PanZoomOutDisplayedName"
-  });
+  seStore.setActionMode("zoomOut");
 }
 function enableZoomFit(): void {
-  seStore.setActionMode({
-    id: "zoomFit",
-    name: "ZoomFitDisplayedName"
-  });
+  seStore.setActionMode("zoomFit");
 }
 
 function createPoint(): void {
-  seStore.setActionMode({
-    id: "point",
-    name: "CreatePointDisplayedName"
-  });
+  seStore.setActionMode("point");
 }
 
 function createLine(): void {
-  seStore.setActionMode({
-    id: "line",
-    name: "CreateLineDisplayedName"
-  });
+  seStore.setActionMode("line");
 }
 
 function createSegment(): void {
-  seStore.setActionMode({
-    id: "segment",
-    name: "CreateLineSegmentDisplayedName"
-  });
+  seStore.setActionMode("segment");
 }
 
 function createCircle(): void {
-  seStore.setActionMode({
-    id: "circle",
-    name: "CreateCircleDisplayedName"
-  });
+  seStore.setActionMode("circle");
 }
 
 function adjustSize(): void {
@@ -512,10 +491,7 @@ const panelSize = computed((): number => {
 });
 
 function setActionModeToSelectTool(): void {
-  seStore.setActionMode({
-    id: "select",
-    name: "SelectDisplayedName"
-  });
+  seStore.setActionMode("select");
 }
 
 function onWindowResized(): void {

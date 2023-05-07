@@ -50,7 +50,6 @@ import Two from "two.js";
 type PiniaAppState = {
   actionMode: ActionMode;
   previousActionMode: ActionMode;
-  activeToolName: string;
   buttonSelection: any;
   previousActiveToolName: string;
   zoomMagnificationFactor: number;
@@ -100,12 +99,55 @@ const temporaryNodules: Array<Nodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 
+// Associate each ActionMode with the corresponding I18N key
+const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
+  ["angle", "CreateAngleDisplayedName"],
+  ["antipodalPoint", "CreateAntipodalPointDisplayedName"],
+  [ "circle", "CreateCircleDisplayedName"],
+  [ "coordinate", "CreateCoordinateDisplayedName"],
+  [ "delete", "DeleteDisplayedName"],
+  [ "ellipse", "CreateEllipseDisplayedName"],
+  [ "hide", "HideDisplayedName"],
+  [ "iconFactory", "CreateIconDisplayedName"],
+  [ "intersect", "CreateIntersectionDisplayedName"],
+  [ "line", "CreateLineDisplayedName"],
+  [ "move", "MoveDisplayedName"],
+  [ "perpendicular", "CreatePerpendicularDisplayedName"],
+  [ "tangent", "CreateTangentDisplayedName"],
+  [ "point", "CreatePointDisplayedName"],
+  [ "pointDistance", "CreatePointDistanceDisplayedName"],
+  [ "pointOnObject", "CreatePointOnOneDimDisplayedName"],
+  [ "polar", "CreatePolarDisplayedName"],
+  [ "rotate", "RotateDisplayedName"],
+  [ "segment", "CreateSegmentDisplayedName"],
+  [ "segmentLength", "CreateSegmentLengthDisplayedName"],
+  [ "select", "SelectDisplayedName"],
+  [ "toggleLabelDisplay", "ToggleLabelDisplayedName"],
+  [ "zoomFit", "ZoomFitDisplayedName"],
+  [ "zoomIn", "PanZoomInDisplayedName"],
+  [ "zoomOut", "PanZoomOutDisplayedName"],
+  [ "measureTriangle", "MeasureTriangleDisplayedName"],
+  [ "measurePolygon", "MeasurePolygonDisplayedName"],
+  [ "midpoint", "CreateMidpointDisplayedName"],
+  [ "nSectPoint", "CreateNSectSegmentDisplayedName"],
+  [ "angleBisector", "CreateAngleBisectorDisplayedName"],
+  [ "nSectLine", "CreateNSectAngleDisplayedName"],
+  [ "threePointCircle", "CreateThreePointCircleDisplayedName"],
+  [ "measuredCircle", "MeasureCircleDisplayedName"],
+  [ "translation", "CreateTranslationDisplayedName"],
+  [ "rotation", "CreateRotationDisplayedName"],
+  [ "reflection", "CreateReflectionDisplayedName"],
+  [ "pointReflection", "CreatePointReflectionDisplayedName"],
+  [ "inversion", "CreateInversionDisplayedName"],
+  [ "applyTransformation", "ApplyTransformationDisplayedName"]
+])
+
 export const useSEStore = defineStore({
   id: "se",
   state: (): PiniaAppState => ({
     actionMode: "rotate",
     previousActionMode: "rotate",
-    activeToolName: "rotate",
+    // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
     buttonSelection: {},
     previousActiveToolName: "",
     svgCanvas: null,
@@ -132,7 +174,7 @@ export const useSEStore = defineStore({
   actions: {
     init(): void {
       this.actionMode = "rotate";
-      this.activeToolName = "";
+      // this.activeToolName = "RotateDisplayedName";
       // Do not clear the layers array!
       // Replace clear() with splice(0). Since clear() is an extension function
       // Update to these arrays are not automatically picked up by VueJS
@@ -196,7 +238,7 @@ export const useSEStore = defineStore({
       this.buttonSelection = buttonSelection;
     },
 
-    setActionMode(mode: { id: ActionMode; name: string }): void {
+    setActionMode(mode: ActionMode): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (
         !(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")
@@ -204,12 +246,12 @@ export const useSEStore = defineStore({
         this.previousActionMode = this.actionMode;
         this.previousActiveToolName = this.activeToolName;
       }
-      this.actionMode = mode.id;
-      this.activeToolName = mode.name;
+      this.actionMode = mode;
+      // this.activeToolName = mode.name;
     },
     revertActionMode(): void {
       this.actionMode = this.previousActionMode;
-      this.activeToolName = this.previousActiveToolName;
+      // this.activeToolName = this.previousActiveToolName;
     },
     removeAllFromLayers(): void {
       seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
@@ -759,6 +801,9 @@ export const useSEStore = defineStore({
   getters: {
     //getZoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
+    activeToolName: (): string => {
+      return "a"
+    },
     seNodules: (): Array<SENodule> => seNodules,
     sePoints: (state): Array<SEPoint> =>
       state.sePointIds.map(id => sePoints.get(id)!),

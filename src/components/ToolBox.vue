@@ -119,10 +119,7 @@ function switchTab(): void {
       actionMode.value !== "translation" &&
       actionMode.value !== "rotation"
     ) {
-      seStore.setActionMode({
-        id: "move",
-        name: "MoveDisplayedName"
-      });
+      seStore.setActionMode("move");
     }
   }
 }
