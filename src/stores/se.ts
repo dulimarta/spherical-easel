@@ -51,7 +51,7 @@ type PiniaAppState = {
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   buttonSelection: any;
-  previousActiveToolName: string;
+  // previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
   hasUnsavedNodules: boolean;
@@ -99,49 +99,6 @@ const temporaryNodules: Array<Nodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 
-// Associate each ActionMode with the corresponding I18N key
-const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
-  ["angle", "CreateAngleDisplayedName"],
-  ["antipodalPoint", "CreateAntipodalPointDisplayedName"],
-  [ "circle", "CreateCircleDisplayedName"],
-  [ "coordinate", "CreateCoordinateDisplayedName"],
-  [ "delete", "DeleteDisplayedName"],
-  [ "ellipse", "CreateEllipseDisplayedName"],
-  [ "hide", "HideDisplayedName"],
-  [ "iconFactory", "CreateIconDisplayedName"],
-  [ "intersect", "CreateIntersectionDisplayedName"],
-  [ "line", "CreateLineDisplayedName"],
-  [ "move", "MoveDisplayedName"],
-  [ "perpendicular", "CreatePerpendicularDisplayedName"],
-  [ "tangent", "CreateTangentDisplayedName"],
-  [ "point", "CreatePointDisplayedName"],
-  [ "pointDistance", "CreatePointDistanceDisplayedName"],
-  [ "pointOnObject", "CreatePointOnOneDimDisplayedName"],
-  [ "polar", "CreatePolarDisplayedName"],
-  [ "rotate", "RotateDisplayedName"],
-  [ "segment", "CreateSegmentDisplayedName"],
-  [ "segmentLength", "CreateSegmentLengthDisplayedName"],
-  [ "select", "SelectDisplayedName"],
-  [ "toggleLabelDisplay", "ToggleLabelDisplayedName"],
-  [ "zoomFit", "ZoomFitDisplayedName"],
-  [ "zoomIn", "PanZoomInDisplayedName"],
-  [ "zoomOut", "PanZoomOutDisplayedName"],
-  [ "measureTriangle", "MeasureTriangleDisplayedName"],
-  [ "measurePolygon", "MeasurePolygonDisplayedName"],
-  [ "midpoint", "CreateMidpointDisplayedName"],
-  [ "nSectPoint", "CreateNSectSegmentDisplayedName"],
-  [ "angleBisector", "CreateAngleBisectorDisplayedName"],
-  [ "nSectLine", "CreateNSectAngleDisplayedName"],
-  [ "threePointCircle", "CreateThreePointCircleDisplayedName"],
-  [ "measuredCircle", "MeasureCircleDisplayedName"],
-  [ "translation", "CreateTranslationDisplayedName"],
-  [ "rotation", "CreateRotationDisplayedName"],
-  [ "reflection", "CreateReflectionDisplayedName"],
-  [ "pointReflection", "CreatePointReflectionDisplayedName"],
-  [ "inversion", "CreateInversionDisplayedName"],
-  [ "applyTransformation", "ApplyTransformationDisplayedName"]
-])
-
 export const useSEStore = defineStore({
   id: "se",
   state: (): PiniaAppState => ({
@@ -149,7 +106,7 @@ export const useSEStore = defineStore({
     previousActionMode: "rotate",
     // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
     buttonSelection: {},
-    previousActiveToolName: "",
+    // previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
     zoomMagnificationFactor: 1, // the initial zoom factor
@@ -244,7 +201,7 @@ export const useSEStore = defineStore({
         !(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")
       ) {
         this.previousActionMode = this.actionMode;
-        this.previousActiveToolName = this.activeToolName;
+        // this.previousActiveToolName = this.activeToolName;
       }
       this.actionMode = mode;
       // this.activeToolName = mode.name;
@@ -801,10 +758,6 @@ export const useSEStore = defineStore({
   getters: {
     //getZoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
-    activeToolName: (state): string => {
-      const i18nKey = ACTION_MODE_MAP.get(state.actionMode)
-      return i18nKey ? i18nKey : `Unmapped actionMode ${state.actionMode}`
-    },
     seNodules: (): Array<SENodule> => seNodules,
     sePoints: (state): Array<SEPoint> =>
       state.sePointIds.map(id => sePoints.get(id)!),

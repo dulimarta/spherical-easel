@@ -19,18 +19,15 @@
         </h3>
         <div class="button-group">
           <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
-          <template v-for="btn in g.children" :key="btn.actionModeValue">
+          <template v-for="btn in g.children" :key="btn.action">
             <v-item
               v-slot="{ isSelected, toggle }"
-              :value="btn.actionModeValue">
+              :value="btn.action">
               <ToolButton
                 @click="toggle"
-                v-on:display-only-this-tool-use-message="
-                  displayOnlyThisToolUseMessageFunc
-                "
                 :button="btn"
                 :selected="isSelected"
-                :included="toolIncluded(btn.actionModeValue)"
+                :included="toolIncluded(btn.action)"
                 :editing="inEditMode" />
             </v-item>
           </template>
@@ -53,10 +50,7 @@
           :button="button"
           :editing="inEditMode"
           :selected="isSelected"
-          :included="true"
-          v-on:display-only-this-tool-use-message="
-            displayOnlyThisToolUseMessageFunc
-          " />
+          :included="true" />
       </v-item>
     </div>
   </v-item-group>
@@ -116,7 +110,7 @@ function toolSelectionChanged() {
       .flatMap((group: ToolButtonGroup) => group.children)
       .find(
         (toolBtn: ToolButtonType) =>
-          toolBtn.actionModeValue == selectedTool.value
+          toolBtn.action == selectedTool.value
       );
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
@@ -203,11 +197,11 @@ function switchActionMode(): void {
 
 /* This turns off all other snackbar/toolUseMessage displays so that multiple
   snackbar/toolUseMessages are not displayed at the same time.  */
-function displayOnlyThisToolUseMessageFunc(actionModeValue: string): void {
+function displayOnlyThisToolUseMessageFunc(action: string): void {
   // Alternative solution: use Array high-order functions
   buttonGroup.value
     .flatMap(group => group.children)
-    .filter(btn => btn.actionModeValue !== actionModeValue)
+    .filter(btn => btn.action !== action)
     .forEach(btn => {
       btn.displayToolUseMessage = !btn.displayToolUseMessage;
     });
@@ -224,7 +218,7 @@ function toggleEditMode(): void {
     const selected = cloneDeep(toolGroups);
     selected.forEach((g: ToolButtonGroup) => {
       g.children = g.children.filter((tool: ToolButtonType) =>
-        includedTools.value.includes(tool.actionModeValue)
+        includedTools.value.includes(tool.action)
       );
     });
     buttonGroup.value.push(...selected);
@@ -247,7 +241,7 @@ function excludeTool(name: ActionMode): void {
 const developerButtonList: ToolButtonType[] = [
   {
     id: 0,
-    actionModeValue: "iconFactory",
+    action: "iconFactory",
     displayedName: "CreateIconDisplayedName",
     icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",

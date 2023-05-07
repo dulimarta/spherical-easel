@@ -39,7 +39,7 @@ export type ToolButtonGroup = {
 
 export type ToolButtonType = {
   id: number;
-  actionModeValue: ActionMode;
+  action: ActionMode;
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;

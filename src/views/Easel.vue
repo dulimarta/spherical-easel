@@ -217,14 +217,14 @@ const topLeftShortcuts = computed((): ShortcutIconType[] => {
     {
       tooltipMessage: "main.UndoLastAction",
       icon: SETTINGS.icons.undo.props.mdiIcon,
-      clickFunc: undoEdit,
+      clickFunc: Command.undo,
       iconColor: "blue",
       disableBtn: !stylePanelMinified.value || !undoEnabled
     },
     {
       tooltipMessage: "main.RedoLastAction",
       icon: SETTINGS.icons.redo.props.mdiIcon,
-      clickFunc: redoAction,
+      clickFunc: Command.redo,
       iconColor: "blue",
       disableBtn: !stylePanelMinified.value || !undoEnabled
     }
@@ -326,31 +326,6 @@ function setRedoEnabled(e: { value: boolean }): void {
   redoEnabled = e.value;
 }
 
-// function enableZoomIn(): void {
-//   seStore.setActionMode("zoomIn");
-// }
-// function enableZoomOut(): void {
-//   seStore.setActionMode("zoomOut");
-// }
-// function enableZoomFit(): void {
-//   seStore.setActionMode("zoomFit");
-// }
-// function createPoint(): void {
-//   seStore.setActionMode("point");
-// }
-
-// function createLine(): void {
-//   seStore.setActionMode("line");
-// }
-
-// function createSegment(): void {
-//   seStore.setActionMode("segment");
-// }
-
-// function createCircle(): void {
-//   seStore.setActionMode("circle");
-// }
-
 function adjustSize(): void {
   availHeight =
     window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
@@ -448,13 +423,13 @@ function onWindowResized(): void {
   adjustSize();
 }
 /* Undoes the last user action that changed the state of the sphere. */
-function undoEdit(): void {
-  Command.undo();
-}
-/* Redoes the last user action that changed the state of the sphere. */
-function redoAction(): void {
-  Command.redo();
-}
+// function undoEdit(): void {
+//   Command.undo();
+// }
+// /* Redoes the last user action that changed the state of the sphere. */
+// function redoAction(): void {
+//   Command.redo();
+// }
 
 function resetSphere(): void {
   clearConstructionDialog.value?.hide();

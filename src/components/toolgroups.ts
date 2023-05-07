@@ -8,7 +8,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "select",
+        action: "select",
         displayedName: "SelectDisplayedName",
         icon: "$select",
         toolTipMessage: "SelectToolTipMessage",
@@ -17,7 +17,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "delete",
+        action: "delete",
         displayedName: "DeleteDisplayedName",
         icon: "$delete",
         toolTipMessage: "DeleteToolTipMessage",
@@ -26,7 +26,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 25,
-        actionModeValue: "zoomIn",
+        action: "zoomIn",
         displayedName: "PanZoomInDisplayedName",
         icon: "$zoomIn",
         toolTipMessage: "PanZoomInToolTipMessage",
@@ -35,7 +35,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 30,
-        actionModeValue: "zoomOut",
+        action: "zoomOut",
         displayedName: "PanZoomOutDisplayedName",
         icon: "$zoomOut",
         toolTipMessage: "PanZoomOutToolTipMessage",
@@ -44,7 +44,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 35,
-        actionModeValue: "zoomFit",
+        action: "zoomFit",
         displayedName: "ZoomFitDisplayedName",
         icon: "$zoomFit",
         toolTipMessage: "ZoomFitToolTipMessage",
@@ -58,7 +58,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "hide",
+        action: "hide",
         displayedName: "HideDisplayedName",
         icon: "$hide",
         toolTipMessage: "HideObjectToolTipMessage",
@@ -67,7 +67,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "toggleLabelDisplay",
+        action: "toggleLabelDisplay",
         displayedName: "ToggleLabelDisplayedName",
         icon: "$toggleLabelDisplay",
         toolTipMessage: "ToggleLabelToolTipMessage",
@@ -77,7 +77,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
 
       {
         id: 15,
-        actionModeValue: "move",
+        action: "move",
         displayedName: "MoveDisplayedName",
         icon: "$move",
         toolTipMessage: "MoveObjectToolTipMessage",
@@ -86,7 +86,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "rotate",
+        action: "rotate",
         displayedName: "RotateDisplayedName",
         icon: "$rotate",
         toolTipMessage: "RotateSphereToolTipMessage",
@@ -100,7 +100,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "point",
+        action: "point",
         displayedName: "CreatePointDisplayedName",
         icon: "$point",
         toolTipMessage: "CreatePointToolTipMessage",
@@ -109,7 +109,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "line",
+        action: "line",
         displayedName: "CreateLineDisplayedName",
         icon: "$line",
         toolTipMessage: "CreateLineToolTipMessage",
@@ -118,7 +118,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 10,
-        actionModeValue: "segment",
+        action: "segment",
         displayedName: "CreateLineSegmentDisplayedName",
         icon: "$segment",
         toolTipMessage: "CreateLineSegmentToolTipMessage",
@@ -127,7 +127,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "circle",
+        action: "circle",
         displayedName: "CreateCircleDisplayedName",
         icon: "$circle",
         toolTipMessage: "CreateCircleToolTipMessage",
@@ -141,7 +141,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "midpoint",
+        action: "midpoint",
         displayedName: "CreateMidpointDisplayedName",
         icon: "$midpoint",
         toolTipMessage: "CreateMidpointToolTipMessage",
@@ -150,7 +150,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "angleBisector",
+        action: "angleBisector",
         displayedName: "CreateAngleBisectorDisplayedName",
         icon: "$angleBisector",
         toolTipMessage: "CreateAngleBisectorToolTipMessage",
@@ -159,7 +159,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 15,
-        actionModeValue: "antipodalPoint",
+        action: "antipodalPoint",
         displayedName: "CreateAntipodalPointDisplayedName",
         icon: "$antipodalPoint",
         toolTipMessage: "CreateAntipodalPointToolTipMessage",
@@ -168,7 +168,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "polar",
+        action: "polar",
         displayedName: "CreatePolarDisplayedName",
         icon: "$polar",
         toolTipMessage: "CreatePolarToolTipMessage",
@@ -177,7 +177,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 25,
-        actionModeValue: "tangent",
+        action: "tangent",
         displayedName: "CreateTangentDisplayedName",
         icon: "$tangent",
         toolTipMessage: "CreateTangentToolTipMessage",
@@ -186,7 +186,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 30,
-        actionModeValue: "perpendicular",
+        action: "perpendicular",
         displayedName: "CreatePerpendicularDisplayedName",
         icon: "$perpendicular",
         toolTipMessage: "CreatePerpendicularToolTipMessage",
@@ -195,7 +195,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 50,
-        actionModeValue: "intersect",
+        action: "intersect",
         displayedName: "CreateIntersectionDisplayedName",
         icon: "$intersect",
         toolTipMessage: "CreateIntersectionToolTipMessage",
@@ -204,7 +204,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 45,
-        actionModeValue: "pointOnObject",
+        action: "pointOnObject",
         displayedName: "CreatePointOnOneDimDisplayedName",
         icon: "$pointOnObject",
         toolTipMessage: "CreatePointOnOneDimToolTipMessage",
@@ -218,7 +218,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "segmentLength",
+        action: "segmentLength",
         displayedName: "CreateSegmentLengthDisplayedName",
         icon: "$segmentLength",
         toolTipMessage: "CreateSegmentLengthToolTipMessage",
@@ -227,7 +227,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "pointDistance",
+        action: "pointDistance",
         displayedName: "CreatePointDistanceDisplayedName",
         icon: "$pointDistance",
         toolTipMessage: "CreatePointDistanceToolTipMessage",
@@ -236,7 +236,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 10,
-        actionModeValue: "angle",
+        action: "angle",
         displayedName: "CreateAngleDisplayedName",
         icon: "$angle",
         toolTipMessage: "CreateAngleToolTipMessage",
@@ -245,7 +245,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 15,
-        actionModeValue: "coordinate",
+        action: "coordinate",
         displayedName: "CreateCoordinateDisplayedName",
         icon: "$coordinate",
         toolTipMessage: "CreateCoordinateToolTipMessage",
@@ -254,7 +254,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "measureTriangle",
+        action: "measureTriangle",
         displayedName: "MeasureTriangleDisplayedName",
         icon: "$measureTriangle",
         toolTipMessage: "MeasureTriangleToolTipMessage",
@@ -263,7 +263,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 25,
-        actionModeValue: "measurePolygon",
+        action: "measurePolygon",
         displayedName: "MeasurePolygonDisplayedName",
         icon: "$measurePolygon",
         toolTipMessage: "MeasurePolygonToolTipMessage",
@@ -277,7 +277,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "ellipse",
+        action: "ellipse",
         displayedName: "CreateEllipseDisplayedName",
         icon: "$ellipse",
         toolTipMessage: "CreateEllipseToolTipMessage",
@@ -291,7 +291,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 10,
-        actionModeValue: "nSectPoint",
+        action: "nSectPoint",
         displayedName: "CreateNSectSegmentDisplayedName",
         icon: "$nSectPoint",
         toolTipMessage: "CreateNSectSegmentToolTipMessage",
@@ -300,7 +300,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 15,
-        actionModeValue: "nSectLine",
+        action: "nSectLine",
         displayedName: "CreateNSectAngleDisplayedName",
         icon: "$nSectLine",
         toolTipMessage: "CreateNSectAngleToolTipMessage",
@@ -309,7 +309,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "threePointCircle",
+        action: "threePointCircle",
         displayedName: "CreateThreePointCircleDisplayedName",
         icon: "$threePointCircle",
         toolTipMessage: "CreateThreePointCircleToolTipMessage",
@@ -323,7 +323,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 0,
-        actionModeValue: "pointReflection",
+        action: "pointReflection",
         displayedName: "CreatePointReflectionDisplayedName",
         icon: "$pointReflection",
         toolTipMessage: "CreatePointReflectionToolTipMessage",
@@ -332,7 +332,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 5,
-        actionModeValue: "reflection",
+        action: "reflection",
         displayedName: "CreateReflectionDisplayedName",
         icon: "$reflection",
         toolTipMessage: "CreateReflectionToolTipMessage",
@@ -341,7 +341,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 10,
-        actionModeValue: "rotation",
+        action: "rotation",
         displayedName: "CreateRotationDisplayedName",
         icon: "$rotation",
         toolTipMessage: "CreateRotationToolTipMessage",
@@ -350,7 +350,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 15,
-        actionModeValue: "translation",
+        action: "translation",
         displayedName: "CreateTranslationDisplayedName",
         icon: "$translation",
         toolTipMessage: "CreateTranslationToolTipMessage",
@@ -359,7 +359,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 20,
-        actionModeValue: "inversion",
+        action: "inversion",
         displayedName: "CreateInversionDisplayedName",
         icon: "$inversion",
         toolTipMessage: "CreateInversionToolTipMessage",
@@ -368,7 +368,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
       },
       {
         id: 25,
-        actionModeValue: "applyTransformation",
+        action: "applyTransformation",
         displayedName: "ApplyTransformationDisplayedName",
         icon: "$applyTransformation",
         toolTipMessage: "ApplyTransformationToolTipMessage",
@@ -382,7 +382,7 @@ export const toolGroups: Array<ToolButtonGroup> = [
     children: [
       {
         id: 15,
-        actionModeValue: "measuredCircle",
+        action: "measuredCircle",
         displayedName: "CreateMeasuredCircleDisplayedName",
         icon: "$measuredCircle",
         toolTipMessage: "CreateMeasuredCircleToolTipMessage",

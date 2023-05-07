@@ -1,7 +1,7 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
-  <!--div class="pa-0 debugged" :id="button.actionModeValue" :ref="button.actionModeValue"-->
-  <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
+  <!--div class="pa-0 debugged" :id="button.action" :ref="button.action"-->
+  <!--v-if="(buttonDisplayList.indexOf(button.action) !== -1)"-->
   <!-- Initially tried v-sheet, but had problem with v-overlay covering larger
     area beyond the bound of v-sheet. Switched to v-card to solve the issue -->
   <v-card

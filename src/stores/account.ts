@@ -31,7 +31,7 @@ export const useAccountStore = defineStore("acct", {
       this.excludedTools.splice(0);
       const toolNames = toolGroups
         .flatMap((g: ToolButtonGroup) => g.children)
-        .map((t: ToolButtonType) => t.actionModeValue);
+        .map((t: ToolButtonType) => t.action);
       if (includeAll) {
         this.includedTools.push(...toolNames);
       } else {
