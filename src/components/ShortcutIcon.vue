@@ -1,16 +1,15 @@
 <template>
   <v-btn
     v-bind="$attrs"
-    :value="button"
     icon size="x-small"
     tile
-    @click="switchButton(button)">
-    <v-icon v-bind="$attrs" :color="iconColor">{{ icon }}</v-icon>
+    @click="invokeAction">
+    <v-icon v-bind="$attrs" :color="model.iconColor">{{ model.icon }}</v-icon>
     <v-tooltip
       activator="parent"
       location="bottom"
       :open-delay="toolTipOpenDelay">
-      {{ $t(tooltipMessage) }}
+      {{ $t(model.tooltipMessage) }}
     </v-tooltip>
   </v-btn>
 </template>
@@ -18,25 +17,26 @@
 <script lang="ts" setup>
 import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
-import { ToolButtonType } from "@/types";
+import { ShortcutIconType, ToolButtonType } from "@/types";
 
 const seStore = useSEStore();
 
 const props = defineProps<{
-  tooltipMessage: string;
-  icon: string;
-  iconColor?: string;
-  // disableBtn: boolean;
-  button?: ToolButtonType | null;
+  model:ShortcutIconType
 }>();
 
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-function switchButton(button?: ToolButtonType | null): void {
+function invokeAction(): void {
+  if (props.model.clickFunc)
+    props.model.clickFunc()
+  else if (props.model.action)
+    seStore.setActionMode(props.model.action)
+
   //Set the button selected so it can be tracked
-  if (button) {
-    seStore.setButton(button);
-  }
+  // if (button) {
+  //   seStore.setButton(button);
+  // }
 }
 </script>

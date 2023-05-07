@@ -26,13 +26,7 @@
                 v-for="(shortcut, index) in topLeftShortcuts"
                 :key="index"
                 :style="listItemStyle(index, 'left', 'top')">
-                <ShortcutIcon
-                        @click="shortcut.clickFunc"
-                        :tooltip-message="shortcut.tooltipMessage"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                <ShortcutIcon :model="shortcut" />
               </div>
               </div>
               <div class="anchored bottom left">
@@ -40,13 +34,7 @@
                   v-for="(shortcut, index) in bottomLeftShortcuts"
                   :key="index"
                   :style="listItemStyle(index, 'left', 'bottom')">
-                  <ShortcutIcon
-                        @click="shortcut.clickFunc"
-                        :tooltip-message="shortcut.tooltipMessage"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                  <ShortcutIcon :model="shortcut" />
                 </div>
               </div>
               <div class="anchored top right">
@@ -54,13 +42,7 @@
                   v-for="(shortcut, index) in topRightShortcuts"
                   :key="index"
                   :style="listItemStyle(index, 'right', 'top')">
-                  <ShortcutIcon
-                        @click="shortcut.clickFunc"
-                        :tooltip-message="shortcut.tooltipMessage"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                  <ShortcutIcon :model="shortcut"/>
                 </div>
               </div>
               <div class="anchored bottom right">
@@ -68,13 +50,7 @@
                   v-for="(shortcut, index) in bottomRightShortcuts"
                   :key="index"
                   :style="listItemStyle(index, 'right', 'bottom')">
-                  <ShortcutIcon
-                        @click="shortcut.clickFunc"
-                        :tooltip-message="shortcut.tooltipMessage"
-                        :icon="shortcut.icon"
-                        :iconColor="shortcut.iconColor"
-                        :disable="shortcut.disableBtn"
-                        :button="shortcut.buttonType" />
+                  <ShortcutIcon :model="shortcut" />
                 </div>
               </div>
             </div>
@@ -148,8 +124,8 @@ import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
 
-import buttonList from "@/components/ToolGroups.vue";
-import ToolButton from "@/components/ToolButton.vue";
+// import buttonList from "@/components/ToolGroups.vue";
+// import ToolButton from "@/components/ToolButton.vue";
 // Temporaryly exclude Style.vue
 // import StylePanel from "@/components/Style.vue";
 import Circle from "@/plottables/Circle";
@@ -169,7 +145,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
-import { ConstructionScript } from "@/types";
+import { ConstructionScript, ShortcutIconType } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
@@ -191,14 +167,6 @@ import {
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
 
-type ShortCutIconDetails = {
-  clickFunc: () => void;
-  tooltipMessage: string;
-  icon: string;
-  iconColor: string;
-  disableBtn: boolean;
-  buttonType?: ToolButtonType;
-};
 const appDB = getFirestore();
 const appAuth = getAuth();
 const appStorage = getStorage();
@@ -244,7 +212,7 @@ const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 // };
 
-const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
+const topLeftShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
       tooltipMessage: "main.UndoLastAction",
@@ -262,7 +230,7 @@ const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
     }
   ];
 });
-const topRightShortcuts = computed((): ShortCutIconDetails[] => {
+const topRightShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
       tooltipMessage: "constructions.resetSphere",
@@ -276,83 +244,65 @@ const topRightShortcuts = computed((): ShortCutIconDetails[] => {
   ];
 });
 
-const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
+const bottomRightShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
       tooltipMessage: "buttons.PanZoomInToolTipMessage",
       icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-      clickFunc: enableZoomIn,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(
-        e => e.actionModeValue == "zoomIn"
-      )
+      action: "zoomIn"
     },
 
     {
       tooltipMessage: "buttons.PanZoomOutToolTipMessage",
       icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-      clickFunc: enableZoomOut,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(
-        e => e.actionModeValue == "zoomOut"
-      )
+      action: "zoomOut"
     },
-
     {
       tooltipMessage: "buttons.ZoomFitToolTipMessage",
       icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-      clickFunc: enableZoomFit,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[0].children.find(
-        e => e.actionModeValue == "zoomFit"
-      )
+      action: "zoomFit"
     }
   ];
 });
 
-const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
+const bottomLeftShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
       tooltipMessage: "buttons.CreatePointToolTipMessage",
       icon: "$point",
-      clickFunc: createPoint,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "point")
+      action: "point"
     },
 
     {
       tooltipMessage: "buttons.CreateLineToolTipMessage",
       icon: "$line",
-      clickFunc: createLine,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(e => e.actionModeValue == "line")
+      action: "line"
     },
 
     {
       tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
       icon: "$segment",
-      clickFunc: createSegment,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(
-        e => e.actionModeValue == "segment"
-      )
+      action: "segment"
     },
 
     {
       tooltipMessage: "buttons.CreateCircleToolTipMessage",
       icon: "$circle",
-      clickFunc: createCircle,
       iconColor: "blue",
       disableBtn: false,
-      buttonType: toolGroups[2].children.find(
-        e => e.actionModeValue == "circle"
-      )
+      action: "circle"
     }
   ];
 });
@@ -376,31 +326,30 @@ function setRedoEnabled(e: { value: boolean }): void {
   redoEnabled = e.value;
 }
 
-function enableZoomIn(): void {
-  seStore.setActionMode("zoomIn");
-}
-function enableZoomOut(): void {
-  seStore.setActionMode("zoomOut");
-}
-function enableZoomFit(): void {
-  seStore.setActionMode("zoomFit");
-}
+// function enableZoomIn(): void {
+//   seStore.setActionMode("zoomIn");
+// }
+// function enableZoomOut(): void {
+//   seStore.setActionMode("zoomOut");
+// }
+// function enableZoomFit(): void {
+//   seStore.setActionMode("zoomFit");
+// }
+// function createPoint(): void {
+//   seStore.setActionMode("point");
+// }
 
-function createPoint(): void {
-  seStore.setActionMode("point");
-}
+// function createLine(): void {
+//   seStore.setActionMode("line");
+// }
 
-function createLine(): void {
-  seStore.setActionMode("line");
-}
+// function createSegment(): void {
+//   seStore.setActionMode("segment");
+// }
 
-function createSegment(): void {
-  seStore.setActionMode("segment");
-}
-
-function createCircle(): void {
-  seStore.setActionMode("circle");
-}
+// function createCircle(): void {
+//   seStore.setActionMode("circle");
+// }
 
 function adjustSize(): void {
   availHeight =

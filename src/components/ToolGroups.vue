@@ -80,7 +80,7 @@ const seStore = useSEStore();
 const { expressions, seTransformations } = storeToRefs(seStore);
 
 /* Controls the selection of the actionMode using the buttons. The default is segment. */
-const actionMode:  Ref<ActionMode>= ref("rotate")
+const actionMode:  Ref<ActionMode> =  ref("rotate")
 
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
 // private toolTipOpenDelay = SETTINGS.toolTip.openDelay;

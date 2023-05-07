@@ -801,8 +801,9 @@ export const useSEStore = defineStore({
   getters: {
     //getZoomMagnificationFactor: (): number => zoomMagnificationFactor,
     // zoomTranslation: (): number[] => zoomTranslation,
-    activeToolName: (): string => {
-      return "a"
+    activeToolName: (state): string => {
+      const i18nKey = ACTION_MODE_MAP.get(state.actionMode)
+      return i18nKey ? i18nKey : `Unmapped actionMode ${state.actionMode}`
     },
     seNodules: (): Array<SENodule> => seNodules,
     sePoints: (state): Array<SEPoint> =>

@@ -47,6 +47,15 @@ export type ToolButtonType = {
   toolUseMessage: string;
   toolTipMessage: string;
 };
+export type ShortcutIconType = {
+  clickFunc?: () => void;
+  action?: ActionMode
+  tooltipMessage: string;
+  icon: string;
+  iconColor: string;
+  disableBtn: boolean;
+};
+
 
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
 
