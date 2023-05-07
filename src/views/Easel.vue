@@ -28,10 +28,9 @@
                 :style="listItemStyle(index, 'left', 'top')">
                 <ShortcutIcon
                         @click="shortcut.clickFunc"
-                        :labelMsg="shortcut.labelMsg"
+                        :tooltip-message="shortcut.tooltipMessage"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
-                        :btnColor="shortcut.btnColor"
                         :disable="shortcut.disableBtn"
                         :button="shortcut.buttonType" />
               </div>
@@ -43,7 +42,7 @@
                   :style="listItemStyle(index, 'left', 'bottom')">
                   <ShortcutIcon
                         @click="shortcut.clickFunc"
-                        :labelMsg="shortcut.labelMsg"
+                        :tooltip-message="shortcut.tooltipMessage"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :disable="shortcut.disableBtn"
@@ -57,7 +56,7 @@
                   :style="listItemStyle(index, 'right', 'top')">
                   <ShortcutIcon
                         @click="shortcut.clickFunc"
-                        :labelMsg="shortcut.labelMsg"
+                        :tooltip-message="shortcut.tooltipMessage"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :disable="shortcut.disableBtn"
@@ -71,7 +70,7 @@
                   :style="listItemStyle(index, 'right', 'bottom')">
                   <ShortcutIcon
                         @click="shortcut.clickFunc"
-                        :labelMsg="shortcut.labelMsg"
+                        :tooltip-message="shortcut.tooltipMessage"
                         :icon="shortcut.icon"
                         :iconColor="shortcut.iconColor"
                         :disable="shortcut.disableBtn"
@@ -194,11 +193,10 @@ import { useLayout, useDisplay } from "vuetify";
 
 type ShortCutIconDetails = {
   clickFunc: () => void;
-  labelMsg: string;
+  tooltipMessage: string;
   icon: string;
   iconColor: string;
   disableBtn: boolean;
-  btnColor?: string;
   buttonType?: ToolButtonType;
 };
 const appDB = getFirestore();
@@ -249,14 +247,14 @@ const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
   return [
     {
-      labelMsg: "main.UndoLastAction",
+      tooltipMessage: "main.UndoLastAction",
       icon: SETTINGS.icons.undo.props.mdiIcon,
       clickFunc: undoEdit,
       iconColor: "blue",
       disableBtn: !stylePanelMinified.value || !undoEnabled
     },
     {
-      labelMsg: "main.RedoLastAction",
+      tooltipMessage: "main.RedoLastAction",
       icon: SETTINGS.icons.redo.props.mdiIcon,
       clickFunc: redoAction,
       iconColor: "blue",
@@ -267,13 +265,12 @@ const topLeftShortcuts = computed((): ShortCutIconDetails[] => {
 const topRightShortcuts = computed((): ShortCutIconDetails[] => {
   return [
     {
-      labelMsg: "constructions.resetSphere",
+      tooltipMessage: "constructions.resetSphere",
       icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
       clickFunc: () => {
         clearConstructionDialog.value?.show();
       },
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false
     }
   ];
@@ -282,11 +279,10 @@ const topRightShortcuts = computed((): ShortCutIconDetails[] => {
 const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
   return [
     {
-      labelMsg: "buttons.PanZoomInToolTipMessage",
+      tooltipMessage: "buttons.PanZoomInToolTipMessage",
       icon: SETTINGS.icons.zoomIn.props.mdiIcon,
       clickFunc: enableZoomIn,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[0].children.find(
         e => e.actionModeValue == "zoomIn"
@@ -294,11 +290,10 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
     },
 
     {
-      labelMsg: "buttons.PanZoomOutToolTipMessage",
+      tooltipMessage: "buttons.PanZoomOutToolTipMessage",
       icon: SETTINGS.icons.zoomOut.props.mdiIcon,
       clickFunc: enableZoomOut,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[0].children.find(
         e => e.actionModeValue == "zoomOut"
@@ -306,11 +301,10 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
     },
 
     {
-      labelMsg: "buttons.ZoomFitToolTipMessage",
+      tooltipMessage: "buttons.ZoomFitToolTipMessage",
       icon: SETTINGS.icons.zoomFit.props.mdiIcon,
       clickFunc: enableZoomFit,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[0].children.find(
         e => e.actionModeValue == "zoomFit"
@@ -322,31 +316,28 @@ const bottomRightShortcuts = computed((): ShortCutIconDetails[] => {
 const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
   return [
     {
-      labelMsg: "buttons.CreatePointToolTipMessage",
+      tooltipMessage: "buttons.CreatePointToolTipMessage",
       icon: "$point",
       clickFunc: createPoint,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[2].children.find(e => e.actionModeValue == "point")
     },
 
     {
-      labelMsg: "buttons.CreateLineToolTipMessage",
+      tooltipMessage: "buttons.CreateLineToolTipMessage",
       icon: "$line",
       clickFunc: createLine,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[2].children.find(e => e.actionModeValue == "line")
     },
 
     {
-      labelMsg: "buttons.CreateLineSegmentToolTipMessage",
+      tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
       icon: "$segment",
       clickFunc: createSegment,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[2].children.find(
         e => e.actionModeValue == "segment"
@@ -354,11 +345,10 @@ const bottomLeftShortcuts = computed((): ShortCutIconDetails[] => {
     },
 
     {
-      labelMsg: "buttons.CreateCircleToolTipMessage",
+      tooltipMessage: "buttons.CreateCircleToolTipMessage",
       icon: "$circle",
       clickFunc: createCircle,
       iconColor: "blue",
-      btnColor: "primary",
       disableBtn: false,
       buttonType: toolGroups[2].children.find(
         e => e.actionModeValue == "circle"

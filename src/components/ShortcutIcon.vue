@@ -10,7 +10,7 @@
       activator="parent"
       location="bottom"
       :open-delay="toolTipOpenDelay">
-      {{ $t(labelMsg) }}
+      {{ $t(tooltipMessage) }}
     </v-tooltip>
   </v-btn>
 </template>
@@ -23,7 +23,7 @@ import { ToolButtonType } from "@/types";
 const seStore = useSEStore();
 
 const props = defineProps<{
-  labelMsg: string;
+  tooltipMessage: string;
   icon: string;
   iconColor?: string;
   // disableBtn: boolean;

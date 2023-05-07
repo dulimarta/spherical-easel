@@ -248,9 +248,6 @@ const seStore = useSEStore();
 const { includedTools, userRole } = storeToRefs(acctStore);
 
 const {
-  //#region activeToolName
-  activeToolName,
-  //#endregion activeToolName
   svgCanvas,
   inverseTotalRotationMatrix,
   hasObjects
