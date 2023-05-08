@@ -45,8 +45,7 @@
           <ToolGroups />
         </v-window-item>
         <v-window-item>
-          Group 2
-          <!--ObjectTree id="objtree"> </ObjectTree-->
+          <ObjectTree id="objtree"> </ObjectTree>
         </v-window-item>
         <v-window-item>
           Group 3

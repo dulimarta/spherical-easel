@@ -721,7 +721,7 @@ export const SETTINGS = {
     }
   },
   icons: {
-    defaultIconSize: 40,
+    defaultIconSize: 32,
     defaultInlineIconSize: 25,
     boundaryCircle: {
       strokeWidth: 1.5,

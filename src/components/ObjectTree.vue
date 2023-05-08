@@ -4,28 +4,28 @@
     <div id="topContainer">
       <v-expansion-panels>
         <v-expansion-panel>
-          <v-expansion-panel-header color="accent">
+          <v-expansion-panel-title color="accent">
             {{ $t("objectTree.expression") }}
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
             <ExpressionForm></ExpressionForm>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header color="accent">
+          <v-expansion-panel-title color="accent">
             {{ $t("objectTree.parametricCurves") }}
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
             <ParametricForm></ParametricForm>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header color="accent">
+          <v-expansion-panel-title color="accent">
             {{ $t("objectTree.slider") }}
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
             <SliderForm></SliderForm>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
       <div class="ma-2 pa-1" id="objectTreeContainer">
@@ -39,7 +39,7 @@
             i18LabelKey="objects.points"
             :children="sePoints"></SENoduleList>
         </v-sheet>
-        <v-sheet
+        <!--v-sheet
           rounded
           color="accent"
           :elevation="4"
@@ -107,7 +107,7 @@
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
-        <!-- <v-sheet rounded
+        <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
@@ -115,7 +115,7 @@
           <SENoduleList i18LabelKey="Calculations"
             :children="calculations"
             @object-select="onExpressionSelect"></SENoduleList>
-        </v-sheet> -->
+        </v-sheet-->
         <span class="text-body-2 ma-2" v-show="zeroObjects">
           {{ $t("objectTree.noObjectsInDatabase") }}
         </span>

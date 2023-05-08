@@ -3,9 +3,9 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
       <span v-if="children.length === 1" class="text-subtitle-1">{{
-        $tc(i18LabelKey, 1)
+        $t(i18LabelKey, 1)
       }}</span>
-      <span v-else class="text-subtitle-1">{{ $tc(i18LabelKey, 0) }}</span>
+      <span v-else class="text-subtitle-1">{{ $t(i18LabelKey, 0) }}</span>
       <v-btn small v-show="hasExistingChildren" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
@@ -20,11 +20,11 @@
             :node="n"
             v-if="!isSlider(n)"
             v-on:object-select="onExpressionSelect"></SENoduleItem>
-          <SESliderItem
+          <!--SESliderItem
             v-else
             :node="toSlider(n) /* a trick to S type error */"
             v-on:object-select="onExpressionSelect"></SESliderItem>
-          <v-divider></v-divider>
+          <v-divider></v-divider-->
         </template>
       </div>
     </transition>
