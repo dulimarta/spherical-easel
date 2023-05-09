@@ -5,6 +5,7 @@ import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import NonFreePoint from "@/plottables/NonFreePoint";
+const {t} = i18n.global
 
 export class SEPolarPoint extends SEPoint {
   /**
@@ -31,7 +32,7 @@ export class SEPolarPoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.aPolarPointOf`, {
+      t(`objectTree.aPolarPointOf`, {
         line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
         index: this.index
       })

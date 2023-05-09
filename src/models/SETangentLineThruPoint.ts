@@ -8,6 +8,7 @@ import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const {t} = i18n.global
 
 export class SETangentLineThruPoint extends SELine {
   /**
@@ -142,15 +143,15 @@ export class SETangentLineThruPoint extends SELine {
   public get noduleDescription(): string {
     let oneDimensionalParentType;
     if (this._seParentOneDimensional instanceof SECircle) {
-      oneDimensionalParentType = i18n.tc("objects.circles", 3);
+      oneDimensionalParentType = t("objects.circles", 3);
     } else if (this._seParentOneDimensional instanceof SEEllipse) {
-      oneDimensionalParentType = i18n.tc("objects.ellipses", 3);
+      oneDimensionalParentType = t("objects.ellipses", 3);
     } else if (this._seParentOneDimensional instanceof SEParametric) {
-      oneDimensionalParentType = i18n.tc("objects.parametrics", 3);
+      oneDimensionalParentType = t("objects.parametrics", 3);
     }
 
     return String(
-      i18n.t(`objectTree.tangentLineThru`, {
+      t(`objectTree.tangentLineThru`, {
         pt: this._seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
         oneDimensionalParent:

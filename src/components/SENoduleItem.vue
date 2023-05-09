@@ -10,13 +10,11 @@
             size="medium"
             :icon="iconName"
             :class="animationClassName"></v-icon>
-          <!--
-
-          <v-icon v-else-if="isParametric" medium>
+          <!--v-icon v-else-if="isParametric" medium>
             $parametric
           </v-icon-->
         </v-col>
-        <!--v-col class="text-truncate">
+        <v-col class="text-truncate">
           <v-tooltip location="end">
             <template v-slot:activator="{ props }">
               <div
@@ -29,15 +27,14 @@
                   shakeMeasurementDisplay,
                   shakeTransformationDisplay
                 ]">
-                <span class="text-truncate">{{ shortDisplayText }}</span>
+                <span class="text-truncate ml-1">{{ shortDisplayText }}</span>
               </div>
             </template>
-            <span>{{ definitionText }}</span>
+            <span>{{ definitionText }}/ {{ nodeName }}</span>
           </v-tooltip>
-        </v-col-->
-        <!--v-col justify="end">
-          <v-row align="center" no-gutters>
-            <v-col>
+        </v-col>
+        <v-spacer />
+        <!--v-col>
               <v-tooltip location="end">
                 <template v-slot:activator="{ props }">
                   <div
@@ -52,84 +49,63 @@
                 </template>
                 <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
               </v-tooltip>
-            </v-col>
-            <v-col>
-              <v-tooltip location="end">
-                <template v-slot:activator="{ props }">
-                  <div
-                    id="_test_toggle_format"
-                    v-if="isExpressionAndNotCoordinate"
-                    v-bind="props"
-                    @click="cycleValueDisplayMode">
-                    <v-icon small>
-                      $cycleNodeValueDisplayMode
-                    </v-icon>
-                  </div>
-                </template>
-                <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
-              </v-tooltip>
-            </v-col>
-            <v-col>
-              <v-tooltip location="end">
-                <template v-slot:activator="{ props }">
-                  <div
-                    id="_test_toggle_visibility"
-                    v-if="isPlottable"
-                    v-bind="props"
-                    @click="toggleVisibility">
-                    <v-icon small v-if="isHidden" :key="visibilityUpdateKey">
-                      $showNode
-                    </v-icon>
-                    <v-icon
-                      small
-                      v-else
-                      style="color: gray"
-                      :key="visibilityUpdateKey">
-                      $
-                    </v-icon>
-                  </div>
-                </template>
-                <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-              </v-tooltip>
-            </v-col>
-            <v-col>
-              <v-tooltip location="end">
-                <template v-slot:activator="{ props }">
-                  <div
-                    id="_toggle_label_display"
-                    v-if="isPlottable"
-                    v-bind="props"
-                    @click="toggleLabelDisplay">
-                    <v-icon
-                      small
-                      v-if="isLabelHidden"
-                      :key="labelVisibilityUpdateKey">
-                      $showNodeLabel
-                    </v-icon>
-                    <v-icon
-                      small
-                      v-else
-                      style="color: gray"
-                      :key="labelVisibilityUpdateKey">
-                      $hideNodeLabel
-                    </v-icon>
-                  </div>
-                </template>
-                <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
-              </v-tooltip>
-            </v-col>
-            <v-col>
-              <v-tooltip location="end">
-                <template v-slot:activator="{ props }">
-                  <div id="_delete_node" v-bind="props" @click="deleteNode">
-                    <v-icon small> $deleteNode </v-icon>
-                  </div>
-                </template>
-                <span>{{ $t(`objectTree.deleteNode`) }}</span>
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-col-->
+            </v-col-->
+        <v-col>
+          <v-tooltip location="end">
+            <template v-slot:activator="{ props }">
+              <div
+                id="_test_toggle_format"
+                v-if="isExpressionAndNotCoordinate"
+                v-bind="props"
+                @click="cycleValueDisplayMode">
+                <v-icon small>$cycleNodeValueDisplayMode</v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+          </v-tooltip>
+        </v-col>
+        <v-col>
+          <v-tooltip location="end">
+            <template v-slot:activator="{ props }">
+              <v-icon
+                id="_test_toggle_visibility"
+                v-if="isPlottable"
+                v-bind="props"
+                @click="toggleVisibility"
+                size="small"
+                :icon="node.showing ? '$hideNode' : '$showNode'"
+                :key="visibilityUpdateKey"
+                :style="{ color: node.showing ? 'gray' : 'black' }" />
+            </template>
+            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+          </v-tooltip>
+        </v-col>
+        <v-col>
+          <v-tooltip location="end">
+            <template v-slot:activator="{ props }">
+              <v-icon
+                id="_toggle_label_display"
+                v-if="isPlottable"
+                v-bind="props"
+                @click="toggleLabelDisplay"
+                size="small"
+                :icon="isLabelHidden() ? '$showNodeLabel' : '$hideNodeLabel'"
+                :style="{ color: isLabelHidden() ? 'inherit' : 'gray' }"
+                :key="labelVisibilityUpdateKey"></v-icon>
+            </template>
+            <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
+          </v-tooltip>
+        </v-col>
+        <v-col>
+          <v-tooltip location="end">
+            <template v-slot:activator="{ props }">
+              <div id="_delete_node" v-bind="props" @click="deleteNode">
+                <v-icon size="small" icon="$deleteNode" />
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.deleteNode`) }}</span>
+          </v-tooltip>
+        </v-col>
       </v-row>
       <!--v-row v-if="isParametric">
         <v-col cols="auto"> t = {{ parametricTime.toFixed(3) }} </v-col>
@@ -202,8 +178,8 @@ const props = defineProps<{
 const emit = defineEmits(["object-select"]);
 const { t } = useI18n();
 
-const visibilityUpdateKey = ref(0); //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
-const labelVisibilityUpdateKey = ref(0); //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
+const visibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
+const labelVisibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 const iconName = ref("mdi-help");
 // const rotationMatrix = new Matrix4();
 // private traceLocation = new Vector3();
@@ -226,81 +202,34 @@ onBeforeMount(() => {
   if (navigator.clipboard) {
     supportsClipboard.value = true;
   }
-  if (props.node instanceof SEPoint) {
-    iconName.value = "$point";
+  if (props.node.isLabelable()) {
+    nodeName = (props.node as any).label?.ref.shortUserName ?? "";
+  }
+  if (false) {
+  } else if (props.node instanceof SEAngleMarker) {
+    iconName.value = "$angle";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.angleMarkers`, 3);
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
-    iconName.value = "$pointOnObject";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SECircle) {
+    iconName.value = "$circle";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SEEllipse) {
+    iconName.value = "$ellipse";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.ellipses`, 3);
   } else if (props.node instanceof SEIntersectionPoint) {
     iconName.value = "$intersect";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEPolarLine) {
-    iconName.value = "$polar";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEPolarPoint) {
-    iconName.value = "$polar";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (
-    props.node instanceof SENSectPoint &&
-    (props.node as SENSectPoint).N === 2
-  ) {
-    iconName.value = "$midpoint";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SENSectPoint) {
-    iconName.value = "$nSectPoint";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (
-    props.node instanceof SETransformedPoint ||
-    props.node instanceof SEInversionCircleCenter
-  ) {
-    iconName.value = "$transformedPoint";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEIsometrySegment) {
-    iconName.value = "$transformedSegment";
+  } else if (props.node instanceof SEInversion) {
+    iconName.value = "$inversion";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SESegment) {
-    iconName.value = "$segment";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SEPerpendicularLineThruPoint) {
-    iconName.value = "$perpendicular";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SETangentLineThruPoint) {
-    iconName.value = "$tangent";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (
-    props.node instanceof SENSectLine &&
-    (props.node as SENSectLine).N === 2
-  ) {
-    iconName.value = "$angleBisector";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SENSectLine) {
-    iconName.value = "$nSectLine";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEIsometryLine) {
-    iconName.value = "$transformedLine";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SELine) {
-    iconName.value = "$line";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`objects.transformations`, 3);
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&
@@ -310,85 +239,105 @@ onBeforeMount(() => {
         props.node.circleSEPoint.parentTransformation.name)
   ) {
     iconName.value = "$transformedCircle";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.circles`, 3);
-  } else if (props.node instanceof SECircle) {
-    iconName.value = "$circle";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
   } else if (props.node instanceof SEIsometryEllipse) {
     iconName.value = "$transformedEllipse";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.ellipses`, 3);
-  } else if (props.node instanceof SEEllipse) {
-    iconName.value = "$ellipse";
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.ellipses`, 3);
-  }
-  else if (props.node instanceof SETranslation) {
-    iconName.value = "$translation"
+  } else if (props.node instanceof SEIsometryLine) {
+    iconName.value = "$transformedLine";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.transformations`, 3);
-  }
-  else if (props.node instanceof SERotation) {
-    iconName.value = "$rotation"
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEIsometrySegment) {
+    iconName.value = "$transformedSegment";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.transformations`, 3);
-  }
-  else if (props.node instanceof SEReflection) {
-    iconName.value = "$reflection"
+    nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SELine) {
+    iconName.value = "$line";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SENSectLine) {
+    iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SENSectPoint) {
+    iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPerpendicularLineThruPoint) {
+    iconName.value = "$perpendicular";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEPoint) {
+    iconName.value = "$point";
+  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
+    iconName.value = "$pointOnObject";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPointReflection) {
+    iconName.value = "$pointReflection";
     nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  }
-  else if (props.node instanceof SEPointReflection) {
-    iconName.value = "$pointReflection"
+  } else if (props.node instanceof SEPolarLine) {
+    iconName.value = "$polar";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEPolarPoint) {
+    iconName.value = "$polar";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEReflection) {
+    iconName.value = "$reflection";
     nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  }
-  else if (props.node instanceof SEInversion) {
-    iconName.value = "$inversion"
+  } else if (props.node instanceof SERotation) {
+    iconName.value = "$rotation";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  }
-  else if (props.node instanceof SEAngleMarker) {
-    iconName.value = "$angle"
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.angleMarkers`, 3);
-  }
-  else if (
-    props.node instanceof SEPolygon &&
-    props.node.seEdgeSegments.length === 3
+  } else if (props.node instanceof SESegment) {
+    iconName.value = "$segment";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SETangentLineThruPoint) {
+    iconName.value = "$tangent";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.lines`, 3);
+  } else if (
+    props.node instanceof SETransformedPoint ||
+    props.node instanceof SEInversionCircleCenter
   ) {
-    iconName.value = "$measureTriangle"
-    nodeName = props.node.label?.ref.shortUserName ?? "";
+    iconName.value = "$transformedPoint";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SETranslation) {
+    iconName.value = "$translation";
+    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.transformations`, 3);
+  } else if (props.node instanceof SEPolygon) {
+    iconName.value =
+      props.node.seEdgeSegments.length === 3
+        ? "$measureTriangle"
+        : "$measurePolygon";
+    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.triangles`, 3);
-  }
-  else if (props.node instanceof SEPolygon) {
-    iconName.value = "$measurePolygon"
-    nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.polygons`, 3);
-  }
-  else if (props.node instanceof SESegmentLength) {
-    iconName.value = "$segmentLength"
-    nodeName = props.node.seSegment.label?.ref.shortUserName ?? "";
+  } else if (props.node instanceof SESegmentLength) {
+    iconName.value = "$segmentLength";
+    // nodeName = props.node.seSegment.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.measurements`, 3);
-  }
-  else if (props.node instanceof SEPointDistance) {
-    iconName.value = "$pointDistance"
+  } else if (props.node instanceof SEPointDistance) {
+    iconName.value = "$pointDistance";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.measurements`, 3);
-  }
-  else if (props.node instanceof SECalculation) {
-    iconName.value = "$calculationObject"
+  } else if (props.node instanceof SECalculation) {
+    iconName.value = "$calculationObject";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.calculations`, 3);
-  }
-  else if (props.node instanceof SEExpression) {
-    iconName.value = "$measurementObject"
+  } else if (props.node instanceof SEExpression) {
+    iconName.value = "$measurementObject";
     nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.measurements`, 3);
   }
-
 });
 
 onMounted((): void => {
@@ -467,9 +416,10 @@ function selectMe(): void {
 
 function toggleVisibility(): void {
   new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
-  visibilityUpdateKey.value += 1;
-  labelVisibilityUpdateKey.value += 1;
+  visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
+  labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
 }
+
 function toggleLabelDisplay(): void {
   if (
     props.node instanceof SEPoint ||
@@ -488,8 +438,8 @@ function toggleLabelDisplay(): void {
       ).execute();
     }
   }
-  visibilityUpdateKey.value += 1; // Without this, the display icon doesn't change between the two showing and not showing variants.
-  labelVisibilityUpdateKey.value += 1; // Without this, the label icon doesn't change between the two showing and not showing variants.
+  labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
+  visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
 }
 function copyToClipboard(): void {
   if (props.node instanceof SEExpression) {
@@ -561,8 +511,8 @@ function cycleValueDisplayMode(): void {
   // console.debug(
   //   `Cycle display mode: node ${props.node.name}, new mode: ${newValueDisplayMode}`
   // );
-  visibilityUpdateKey.value += 1;
-  labelVisibilityUpdateKey.value += 1;
+  // visibilityUpdateKey.value += 1;
+  // labelVisibilityUpdateKey.value += 1;
 }
 
 watch(() => parametricTime.value, onParametricTimeChanged);
@@ -594,7 +544,8 @@ function animateCurvePoint(): void {
 const isHidden = computed((): boolean => {
   return !props.node.showing;
 });
-const isLabelHidden = computed((): boolean => {
+
+const isLabelHidden = (): boolean => {
   if (
     props.node instanceof SEPoint ||
     props.node instanceof SELine ||
@@ -608,7 +559,7 @@ const isLabelHidden = computed((): boolean => {
     return !props.node.label?.showing;
   }
   return false;
-});
+};
 const isExpressionAndNotCoordinate = computed((): boolean => {
   return (
     props.node instanceof SEExpression &&
@@ -617,7 +568,7 @@ const isExpressionAndNotCoordinate = computed((): boolean => {
 });
 
 const isMeasurement = computed((): boolean => {
-    return props.node instanceof SEExpression;
+  return props.node instanceof SEExpression;
 });
 // const isSlider = computed((): boolean { // Not needed as SESlider items are sorted in SENoduleList
 //   return props.node instanceof SESlider;
@@ -630,16 +581,6 @@ const isParametric = computed((): boolean => {
     nodeType = t(`objects.parametrics`, 3);
     return true;
   }
-  return false;
-});
-
-const isNSectPoint = computed((): boolean => {
-  //return props.node instanceof SENSectPoint;
-  return false;
-});
-
-const isTangent = computed((): boolean => {
-  //return props.node instanceof SETangentLineThruPoint;
   return false;
 });
 
@@ -657,8 +598,8 @@ const isPlottable = computed((): boolean => {
 });
 
 const showClass = computed((): string => {
-  visibilityUpdateKey.value += 1; // if we don't do this, then for a user created point, undoing/redoing doesn't update the icon between eye/slash eye. This issue is revealed when 1) Draw two lines 2) use point tool to create the intersection 3) hide the intersection with the object panel icon 4) undo button on sphere frame
-  labelVisibilityUpdateKey.value += 1; //
+  // visibilityUpdateKey.value += 1; // if we don't do this, then for a user created point, undoing/redoing doesn't update the icon between eye/slash eye. This issue is revealed when 1) Draw two lines 2) use point tool to create the intersection 3) hide the intersection with the object panel icon 4) undo button on sphere frame
+  // labelVisibilityUpdateKey.value += 1; //
   return props.node.showing ? "visibleNode" : "invisibleNode";
 });
 

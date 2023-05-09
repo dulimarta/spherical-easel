@@ -6,7 +6,7 @@ import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const MIN = true;
-
+const {t} = i18n.global
 export class SEParametricTracePoint extends SEPoint {
   /**
    * The parent of this SEParametricEndPoint
@@ -58,7 +58,7 @@ export class SEParametricTracePoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.tracePointOfParametric`, {
+      t(`objectTree.tracePointOfParametric`, {
         parent: this._parametricParent.label?.ref.shortUserName
       })
     );

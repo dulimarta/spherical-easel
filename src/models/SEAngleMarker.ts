@@ -16,7 +16,7 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { AngleMode } from "@/types";
 import i18n from "@/i18n";
-
+const{t} = i18n.global
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
@@ -187,7 +187,7 @@ export class SEAngleMarker
   public get noduleDescription(): string {
     if (this._thirdSEParent !== undefined) {
       return String(
-        i18n.t(`objectTree.anglePoints`, {
+        t(`objectTree.anglePoints`, {
           p1: this._firstSEParent.label?.ref.shortUserName,
           p2: this._secondSEParent.label?.ref.shortUserName,
           p3: this._thirdSEParent.label?.ref.shortUserName,
@@ -200,7 +200,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SESegment
       ) {
         return String(
-          i18n.t(`objectTree.angleSegments`, {
+          t(`objectTree.angleSegments`, {
             seg1: this._firstSEParent.label?.ref.shortUserName,
             seg2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -211,7 +211,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SELine
       ) {
         return String(
-          i18n.t(`objectTree.angleLines`, {
+          t(`objectTree.angleLines`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -222,7 +222,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SESegment
       ) {
         return String(
-          i18n.t(`objectTree.angleLineSegment`, {
+          t(`objectTree.angleLineSegment`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -230,7 +230,7 @@ export class SEAngleMarker
         );
       } else {
         return String(
-          i18n.t(`objectTree.angleSegmentLine`, {
+          t(`objectTree.angleSegmentLine`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure

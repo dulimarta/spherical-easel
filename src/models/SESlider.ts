@@ -1,6 +1,8 @@
 import { SEExpression } from "./SEExpression";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
+const {t} = i18n.global
+
 const emptySet = new Set<string>();
 
 export class SESlider extends SEExpression /*implements Visitable*/ {
@@ -41,12 +43,12 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   }
   public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
-    return String(i18n.t(`objectTree.slider`));
+    return String(t(`objectTree.slider`));
   }
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.sliderValue`, {
+      t(`objectTree.sliderValue`, {
         token: this.name,
         val: this.prettyValue
       })

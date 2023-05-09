@@ -13,7 +13,7 @@ import {
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
-
+const {t} = i18n.global
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)
@@ -144,7 +144,7 @@ export class SEEllipse
   }
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.ellipseThrough`, {
+      t(`objectTree.ellipseThrough`, {
         focus1: this._focus1SEPoint.label?.ref.shortUserName,
         focus2: this._focus2SEPoint.label?.ref.shortUserName,
         through: this._ellipseSEPoint.label?.ref.shortUserName

@@ -5,6 +5,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const emptySet = new Set<string>();
+const {t} = i18n.global
 
 export enum CoordinateSelection {
   X_VALUE,
@@ -60,24 +61,24 @@ export class SEPointCoordinate extends SEExpression {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.x`)),
+          t(`objectTree.coordinateOf`, {
+            axisName: String(t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.y`)),
+          t(`objectTree.coordinateOf`, {
+            axisName: String(t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.z`)),
+          t(`objectTree.coordinateOf`, {
+            axisName: String(t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
@@ -91,27 +92,27 @@ export class SEPointCoordinate extends SEExpression {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.x`)),
+            axisName: String(t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.y`)),
+            axisName: String(t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.z`)),
+            axisName: String(t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })

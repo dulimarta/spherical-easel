@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
+const {t} = i18n.global
 
 const MAX = false;
 const MIN = true;
@@ -81,7 +82,7 @@ export class SEParametricEndPoint extends SEPoint {
       endPoint = "end";
     }
     return String(
-      i18n.t(`objectTree.endPointOfParametric`, {
+      t(`objectTree.endPointOfParametric`, {
         parent: this._parametricParent.label?.ref.shortUserName,
         end: endPoint
       })

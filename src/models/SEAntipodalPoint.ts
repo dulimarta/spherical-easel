@@ -2,7 +2,7 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-
+const {t} = i18n.global
 export class SEAntipodalPoint extends SEPoint {
   /**
    * The point parent of this SEAntipodalPoint
@@ -39,7 +39,7 @@ export class SEAntipodalPoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.antipodeOf`, {
+      t(`objectTree.antipodeOf`, {
         pt: this._antipodalPointParent.label?.ref.shortUserName
       })
     );

@@ -18,6 +18,7 @@ import {
 } from "@/types/Styles";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const {t} = i18n.global
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),
@@ -142,7 +143,7 @@ export class SESegment
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.segmentThrough`, {
+      t(`objectTree.segmentThrough`, {
         pt1: this._startSEPoint.label?.ref.shortUserName,
         pt2: this._endSEPoint.label?.ref.shortUserName,
         normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),

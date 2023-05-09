@@ -7,6 +7,7 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
+const {t} = i18n.global
 
 export class SEPointOnOneOrTwoDimensional extends SEPoint {
   /**
@@ -57,17 +58,17 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
   public get noduleDescription(): string {
     let typeParent;
     if (this.oneDimensionalParent instanceof SESegment) {
-      typeParent = i18n.tc("objects.segments", 3);
+      typeParent = t("objects.segments", 3);
     } else if (this.oneDimensionalParent instanceof SELine) {
-      typeParent = i18n.tc("objects.lines", 3);
+      typeParent = t("objects.lines", 3);
     } else if (this.oneDimensionalParent instanceof SECircle) {
-      typeParent = i18n.tc("objects.circles", 3);
+      typeParent = t("objects.circles", 3);
     } else if (this.oneDimensionalParent instanceof SEEllipse) {
-      typeParent = i18n.tc("objects.ellipses", 3);
+      typeParent = t("objects.ellipses", 3);
     }
 
     return String(
-      i18n.t(`objectTree.pointOnOneDimensional`, {
+      t(`objectTree.pointOnOneDimensional`, {
         parent: this.oneDimensionalParent.label?.ref.shortUserName,
         typeParent: typeParent
       })

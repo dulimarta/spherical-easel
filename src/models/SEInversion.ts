@@ -6,7 +6,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import SETTINGS from "@/global-settings";
-
+const {t} = i18n.global
 export class SEInversion extends SETransformation {
   private _circleOfInversion: SECircle;
   private perpVector = new Vector3();
@@ -111,7 +111,7 @@ export class SEInversion extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.invertOverCircle`, {
+      t(`objectTree.invertOverCircle`, {
         circle: this._circleOfInversion.label?.ref.shortUserName
       })
     );

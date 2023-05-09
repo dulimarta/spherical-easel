@@ -762,8 +762,8 @@ export abstract class SENodule implements Visitable {
 
           if (
             zeroTVal !== false &&
-            interval[0] - SETTINGS.tolerance <= zeroTVal &&
-            zeroTVal <= interval[1] + SETTINGS.tolerance
+            interval[0] - SETTINGS.tolerance <= (zeroTVal as number) &&
+            (zeroTVal as number) <= interval[1] + SETTINGS.tolerance
           ) {
             zeros.push(zeroTVal as number);
           } else {

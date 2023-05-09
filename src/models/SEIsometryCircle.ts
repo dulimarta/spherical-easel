@@ -7,7 +7,7 @@ import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
-
+const{t} = i18n.global
 export class SEIsometryCircle extends SECircle {
   /**
    * The parents of this SEIsometryCircle
@@ -33,13 +33,13 @@ export class SEIsometryCircle extends SECircle {
     this._seParentCircle = seParentCircle;
     this._seParentIsometry = seParentIsometry;
     if (this._seParentIsometry instanceof SETranslation) {
-      this.transType = i18n.tc("objects.translations", 3);
+      this.transType = t("objects.translations", 3);
     } else if (this._seParentIsometry instanceof SERotation) {
-      this.transType = i18n.tc("objects.rotations", 3);
+      this.transType = t("objects.rotations", 3);
     } else if (this._seParentIsometry instanceof SEReflection) {
-      this.transType = i18n.tc("objects.reflections", 3);
+      this.transType = t("objects.reflections", 3);
     } else if (this._seParentIsometry instanceof SEPointReflection) {
-      this.transType = i18n.tc("objects.pointReflections", 3);
+      this.transType = t("objects.pointReflections", 3);
     }
   }
   get parentCircle(): SECircle {
@@ -53,8 +53,8 @@ export class SEIsometryCircle extends SECircle {
   public get noduleDescription(): string {
     // "The image of {object} {name} under {transType} {trans}.",
     return String(
-      i18n.t(`objectTree.transformationObject`, {
-        object: i18n.tc(`objects.circles`, 3),
+      t(`objectTree.transformationObject`, {
+        object: t(`objects.circles`, 3),
         name: this._seParentCircle.label?.ref.shortUserName,
         trans: this._seParentIsometry.name,
         transType: this.transType

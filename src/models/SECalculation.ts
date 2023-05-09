@@ -3,6 +3,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
+const {t} = i18n.global
 import { useSEStore } from "@/stores/se";
 
 const emptySet = new Set<string>();
@@ -102,7 +103,7 @@ export class SECalculation extends SEExpression {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.calculationDescription`, {
+      t(`objectTree.calculationDescription`, {
         str: this.exprText,
         val: this.value
       })
@@ -111,7 +112,7 @@ export class SECalculation extends SEExpression {
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.calculationValue`, {
+      t(`objectTree.calculationValue`, {
         token: this.name,
         val: this.prettyValue
       })

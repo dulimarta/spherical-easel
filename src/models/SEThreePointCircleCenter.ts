@@ -5,6 +5,7 @@ import i18n from "@/i18n";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+const {t} = i18n.global
 
 export class SEThreePointCircleCenter extends SEPoint {
   /**
@@ -39,7 +40,7 @@ export class SEThreePointCircleCenter extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.centerOfThreePointCircle`, {
+      t(`objectTree.centerOfThreePointCircle`, {
         pt1: this._sePointParent1.label?.ref.shortUserName,
         pt2: this._sePointParent2.label?.ref.shortUserName,
         pt3: this._sePointParent3.label?.ref.shortUserName

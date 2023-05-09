@@ -5,6 +5,7 @@ import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
+const {t} = i18n.global
 
 export class SEPointReflection extends SETransformation {
   private _pointOfReflection: SEPoint;
@@ -81,7 +82,7 @@ export class SEPointReflection extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.reflectOverPoint`, {
+      t(`objectTree.reflectOverPoint`, {
         pt: this._pointOfReflection.label?.ref.shortUserName
       })
     );

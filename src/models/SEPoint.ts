@@ -16,7 +16,7 @@ import { SELabel } from "./SELabel";
 // => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
-
+const {t} = i18n.global
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
@@ -126,7 +126,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
 
   public get noduleDescription(): string {
-    return String(i18n.t(`objectTree.freePoint`));
+    return t(`objectTree.freePoint`)
   }
 
   public get noduleItemText(): string {

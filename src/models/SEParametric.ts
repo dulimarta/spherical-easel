@@ -49,6 +49,8 @@ type TCurve = {
   index: number; // index into the TSample array
   curvature: number; // local curvature at the sample point
 };
+const {t} = i18n.global
+
 
 export class SEParametric
   extends SENodule
@@ -674,7 +676,7 @@ export class SEParametric
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.parametricDescription`, {
+      t(`objectTree.parametricDescription`, {
         xExpression: this.coordinateExpressions.x,
         yExpression: this.coordinateExpressions.y,
         zExpression: this.coordinateExpressions.z,

@@ -4,6 +4,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 const emptySet = new Set<string>();
+const {t} = i18n.global
 
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
@@ -33,7 +34,7 @@ export class SESegmentLength extends SEExpression {
   public get noduleDescription(): string {
     // const val = ;
     return String(
-      i18n.t(`objectTree.segmentLength`, {
+      t(`objectTree.segmentLength`, {
         seg: this.seSegment.label?.ref.shortUserName,
         val: this.value
       })

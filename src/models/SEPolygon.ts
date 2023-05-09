@@ -16,6 +16,7 @@ import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
 import { SEExpression } from "./SEExpression";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const {t} = i18n.global
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
@@ -123,21 +124,21 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     edgeNames = edgeNames.substring(0, edgeNames.length - 2);
     if (this._seEdgeSegments.length === 2) {
       return String(
-        i18n.t(`objectTree.bigonWithEdges`, {
+        t(`objectTree.bigonWithEdges`, {
           edges: edgeNames,
           val: this._area
         })
       );
     } else if (this._seEdgeSegments.length === 3) {
       return String(
-        i18n.t(`objectTree.triangleWithEdges`, {
+        t(`objectTree.triangleWithEdges`, {
           edges: edgeNames,
           val: this._area
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.polygonWithEdges`, {
+        t(`objectTree.polygonWithEdges`, {
           edges: edgeNames,
           val: this._area
         })

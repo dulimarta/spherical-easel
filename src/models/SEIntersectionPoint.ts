@@ -15,7 +15,7 @@ import {
   rank_of_type
 } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
-
+const {t} = i18n.global
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point
@@ -122,26 +122,26 @@ export class SEIntersectionPoint extends SEPoint {
   public get noduleDescription(): string {
     let typeParent1;
     if (this.sePrincipleParent1 instanceof SESegment) {
-      typeParent1 = i18n.tc("objects.segments", 3);
+      typeParent1 = t("objects.segments", 3);
     } else if (this.sePrincipleParent1 instanceof SELine) {
-      typeParent1 = i18n.tc("objects.lines", 3);
+      typeParent1 = t("objects.lines", 3);
     } else if (this.sePrincipleParent1 instanceof SECircle) {
-      typeParent1 = i18n.tc("objects.circles", 3);
+      typeParent1 = t("objects.circles", 3);
     } else if (this.sePrincipleParent1 instanceof SEEllipse) {
-      typeParent1 = i18n.tc("objects.ellipses", 3);
+      typeParent1 = t("objects.ellipses", 3);
     }
     let typeParent2;
     if (this.sePrincipleParent2 instanceof SESegment) {
-      typeParent2 = i18n.tc("objects.segments", 3);
+      typeParent2 = t("objects.segments", 3);
     } else if (this.sePrincipleParent2 instanceof SELine) {
-      typeParent2 = i18n.tc("objects.lines", 3);
+      typeParent2 = t("objects.lines", 3);
     } else if (this.sePrincipleParent2 instanceof SECircle) {
-      typeParent2 = i18n.tc("objects.circles", 3);
+      typeParent2 = t("objects.circles", 3);
     } else if (this.sePrincipleParent2 instanceof SEEllipse) {
-      typeParent2 = i18n.tc("objects.ellipses", 3);
+      typeParent2 = t("objects.ellipses", 3);
     }
     return String(
-      i18n.t(`objectTree.intersectionPoint`, {
+      t(`objectTree.intersectionPoint`, {
         parent1: this.sePrincipleParent1.label?.ref.shortUserName,
         typeParent1: typeParent1,
         parent2: this.sePrincipleParent2.label?.ref.shortUserName,

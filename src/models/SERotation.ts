@@ -6,6 +6,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
 import { SEExpression } from "./SEExpression";
+const {t} = i18n.global
 
 export class SERotation extends SETransformation {
   private _rotationPoint: SEPoint;
@@ -92,7 +93,7 @@ export class SERotation extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.rotationAboutPoint`, {
+      t(`objectTree.rotationAboutPoint`, {
         pt: this._rotationPoint.label?.ref.shortUserName,
         angle: this._rotationAngleExpression.name
       })

@@ -8,7 +8,7 @@ import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEAngleMarker } from "./SEAngleMarker";
-
+const {t} = i18n.global
 export class SENSectLine extends SELine {
   /**
    * The angle parent of this SENSectLine
@@ -43,13 +43,13 @@ export class SENSectLine extends SELine {
   public get noduleDescription(): string {
     if (this._N === 2) {
       return String(
-        i18n.t(`objectTree.aMidLineOf`, {
+        t(`objectTree.aMidLineOf`, {
           angle: this._seAngleParent.label?.ref.shortUserName
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.anNsectLineOf`, {
+        t(`objectTree.anNsectLineOf`, {
           angle: this._seAngleParent.label?.ref.shortUserName,
           index: this._index,
           N: this._N

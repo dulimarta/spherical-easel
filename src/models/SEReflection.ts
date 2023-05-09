@@ -5,6 +5,7 @@ import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
+const {t} = i18n.global
 
 export class SEReflection extends SETransformation {
   private _lineOrSegment: SESegment | SELine;
@@ -72,7 +73,7 @@ export class SEReflection extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.reflectionOverLine`, {
+      t(`objectTree.reflectionOverLine`, {
         line: this._lineOrSegment.label?.ref.shortUserName
       })
     );

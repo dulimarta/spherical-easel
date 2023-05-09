@@ -3,6 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
+const {t} = i18n.global
 const emptySet = new Set<string>();
 
 export class SEPointDistance extends SEExpression {
@@ -17,7 +18,7 @@ export class SEPointDistance extends SEExpression {
   public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.distanceBetweenPts`, {
+      t(`objectTree.distanceBetweenPts`, {
         pt1: this.secondSEPoint.label?.ref.shortUserName,
         pt2: this.firstSEPoint.label?.ref.shortUserName,
         val: this.value
@@ -27,7 +28,7 @@ export class SEPointDistance extends SEExpression {
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.distanceValue`, {
+      t(`objectTree.distanceValue`, {
         token: this.name,
         val: this.prettyValue
       })

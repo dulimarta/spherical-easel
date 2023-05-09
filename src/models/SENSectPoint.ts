@@ -6,6 +6,7 @@ import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
+const {t} = i18n.global
 
 export class SENSectPoint extends SEPoint {
   /**
@@ -37,13 +38,13 @@ export class SENSectPoint extends SEPoint {
   public get noduleDescription(): string {
     if (this._N === 2) {
       return String(
-        i18n.t(`objectTree.aMidPointOf`, {
+        t(`objectTree.aMidPointOf`, {
           segment: this._seSegmentParent.label?.ref.shortUserName
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.anNsectPointOf`, {
+        t(`objectTree.anNsectPointOf`, {
           segment: this._seSegmentParent.label?.ref.shortUserName,
           index: this._index,
           N: this._N
