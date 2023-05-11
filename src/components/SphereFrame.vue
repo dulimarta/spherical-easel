@@ -1,10 +1,33 @@
 <template>
-  <div id="sphereContainer">
-    <div id="canvas" ref="canvas"></div>
-    <!--div class="anchored top left">TL</div>
-    <div class="anchored top right">TR</div>
-    <div class="anchored bottom right">BR</div>
-    <div class="anchored bottom left">BL</div-->
+  <div>
+    <!-- <CurrentToolSelection /> -->
+    <div id="sphereContainer">
+      <div id="canvas" ref="canvas"></div>
+      <div class="anchored top left">
+        <div
+          v-for="(shortcut, index) in topLeftShortcuts"
+          :key="index"
+          :style="listItemStyle(index, 'left', 'top')">
+          <ShortcutIcon :model="shortcut" />
+        </div>
+      </div>
+      <div class="anchored bottom left">
+        <div
+          v-for="(shortcut, index) in bottomLeftShortcuts"
+          :key="index"
+          :style="listItemStyle(index, 'left', 'bottom')">
+          <ShortcutIcon :model="shortcut" />
+        </div>
+      </div>
+      <div class="anchored bottom right">
+        <div
+          v-for="(shortcut, index) in bottomRightShortcuts"
+          :key="index"
+          :style="listItemStyle(index, 'right', 'bottom')">
+          <ShortcutIcon :model="shortcut" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -15,13 +38,15 @@ import {
   onMounted,
   ref,
   Ref,
-  watch
+  watch,
+  computed
 } from "vue";
 import SETTINGS, { LAYER } from "@/global-settings";
+import ShortcutIcon from "./ShortcutIcon.vue";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
-
+import CurrentToolSelection from "./CurrentToolSelection.vue";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -53,7 +78,7 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode } from "@/types";
+import { ActionMode, ShortcutIconType } from "@/types";
 import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -90,6 +115,86 @@ const props = withDefaults(defineProps<{ canvasSize: number }>(), {
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
 
+const topLeftShortcuts = computed((): ShortcutIconType[] => {
+  return [
+    {
+      tooltipMessage: "main.UndoLastAction",
+      icon: SETTINGS.icons.undo.props.mdiIcon,
+      clickFunc: Command.undo,
+      iconColor: "blue",
+      disableBtn: false //&& !stylePanelMinified.value || !undoEnabled
+    },
+    {
+      tooltipMessage: "main.RedoLastAction",
+      icon: SETTINGS.icons.redo.props.mdiIcon,
+      clickFunc: Command.redo,
+      iconColor: "blue",
+      disableBtn: false // !stylePanelMinified.value || !undoEnabled
+    }
+  ];
+});
+const bottomLeftShortcuts = computed((): ShortcutIconType[] => {
+  return [
+    {
+      tooltipMessage: "buttons.CreatePointToolTipMessage",
+      icon: "$point",
+      iconColor: "blue",
+      disableBtn: false,
+      action: "point"
+    },
+
+    {
+      tooltipMessage: "buttons.CreateLineToolTipMessage",
+      icon: "$line",
+      iconColor: "blue",
+      disableBtn: false,
+      action: "line"
+    },
+
+    {
+      tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
+      icon: "$segment",
+      iconColor: "blue",
+      disableBtn: false,
+      action: "segment"
+    },
+
+    {
+      tooltipMessage: "buttons.CreateCircleToolTipMessage",
+      icon: "$circle",
+      iconColor: "blue",
+      disableBtn: false,
+      action: "circle"
+    }
+  ];
+});
+
+const bottomRightShortcuts = computed((): ShortcutIconType[] => {
+  return [
+    {
+      tooltipMessage: "buttons.PanZoomInToolTipMessage",
+      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
+      iconColor: "blue",
+      disableBtn: false,
+      action: "zoomIn"
+    },
+
+    {
+      tooltipMessage: "buttons.PanZoomOutToolTipMessage",
+      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
+      iconColor: "blue",
+      disableBtn: false,
+      action: "zoomOut"
+    },
+    {
+      tooltipMessage: "buttons.ZoomFitToolTipMessage",
+      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
+      iconColor: "blue",
+      disableBtn: false,
+      action: "zoomFit"
+    }
+  ];
+});
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
  * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -988,6 +1093,31 @@ watch(
     currentTool?.activate();
   }
 );
+function listItemStyle(idx: number, xLoc: string, yLoc: string) {
+  //xLoc determines left or right, yLoc determines top or bottom
+  const style: any = {};
+  let r = 0
+  let c = 0
+  let startCol = 0
+  // Place by moving in the "south-west" direction
+  while (idx > 0) {
+    if (c > 0) {
+      c -- // Move west
+      r ++ // Move south
+    } else {
+      // if we hit the edge, move over to the next column
+      startCol++
+      c = startCol
+      r = 0
+    }
+    idx--
+  }
+
+  style.position = 'absolute'
+  style[xLoc] = `${c*36}px`
+  style[yLoc] = `${r*36}px`
+  return style;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1007,6 +1137,7 @@ watch(
   position: relative;
 }
 .anchored {
+  margin: 4px;
   position: absolute;
 }
 .left {

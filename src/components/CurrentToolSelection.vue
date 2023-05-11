@@ -56,7 +56,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["pointOnObject", "CreatePointOnOneDimDisplayedName"],
   ["polar", "CreatePolarDisplayedName"],
   ["rotate", "RotateDisplayedName"],
-  ["segment", "CreateSegmentDisplayedName"],
+  ["segment", "CreateLineSegmentDisplayedName"],
   ["segmentLength", "CreateSegmentLengthDisplayedName"],
   ["select", "SelectDisplayedName"],
   ["toggleLabelDisplay", "ToggleLabelDisplayedName"],

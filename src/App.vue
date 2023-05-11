@@ -14,8 +14,8 @@
     <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
-    <v-app-bar color="primary" :title="t('main.SphericalEaselMainTitle')">
-      <div class="d-flex align-center">
+    <v-app-bar color="primary" density="compact">
+      <template #prepend>
         <router-link to="/">
           <v-img
             alt="Spherical Easel Logo"
@@ -26,20 +26,21 @@
             aspect-ratio="1"
             :width="40" />
         </router-link>
+        <a href="/docs/">
+          <v-icon class="ml-2" color="white">mdi-help-circle</v-icon>
+          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
+        </a>
+      </template>
+      <v-app-bar-title>{{t('main.SphericalEaselMainTitle')}}</v-app-bar-title>
         <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-        <a href="/docs/">
-          <v-icon class="ml-2">mdi-help-circle</v-icon>
-          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
-        </a>
         <!-- Use <a> For GitLab -->
         <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
                 v-bind="props">mdi-help-circle</v-icon>
             </a-->
-      </div>
 
       <v-spacer></v-spacer>
 
@@ -73,7 +74,7 @@
         </v-icon>
       </template>
       <router-link to="/settings/">
-        <v-icon>mdi-cog</v-icon>
+        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
 

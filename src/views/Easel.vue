@@ -21,22 +21,6 @@
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
               <SphereFrame :canvas-size="currentCanvasSize" />
-              <div class="anchored top left">
-                <div
-                v-for="(shortcut, index) in topLeftShortcuts"
-                :key="index"
-                :style="listItemStyle(index, 'left', 'top')">
-                <ShortcutIcon :model="shortcut" />
-              </div>
-              </div>
-              <div class="anchored bottom left">
-                <div
-                  v-for="(shortcut, index) in bottomLeftShortcuts"
-                  :key="index"
-                  :style="listItemStyle(index, 'left', 'bottom')">
-                  <ShortcutIcon :model="shortcut" />
-                </div>
-              </div>
               <div class="anchored top right">
                 <div
                   v-for="(shortcut, index) in topRightShortcuts"
@@ -45,14 +29,7 @@
                   <ShortcutIcon :model="shortcut"/>
                 </div>
               </div>
-              <div class="anchored bottom right">
-                <div
-                  v-for="(shortcut, index) in bottomRightShortcuts"
-                  :key="index"
-                  :style="listItemStyle(index, 'right', 'bottom')">
-                  <ShortcutIcon :model="shortcut" />
-                </div>
-              </div>
+
             </div>
           </v-row>
         </v-container>
@@ -126,7 +103,7 @@ import EventBus from "../eventHandlers/EventBus";
 
 // import buttonList from "@/components/ToolGroups.vue";
 // import ToolButton from "@/components/ToolButton.vue";
-// Temporaryly exclude Style.vue
+// Temporarily exclude Style.vue
 // import StylePanel from "@/components/Style.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
@@ -210,26 +187,7 @@ let authSubscription!: Unsubscribe;
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
-// };
 
-const topLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "main.UndoLastAction",
-      icon: SETTINGS.icons.undo.props.mdiIcon,
-      clickFunc: Command.undo,
-      iconColor: "blue",
-      disableBtn: !stylePanelMinified.value || !undoEnabled
-    },
-    {
-      tooltipMessage: "main.RedoLastAction",
-      icon: SETTINGS.icons.redo.props.mdiIcon,
-      clickFunc: Command.redo,
-      iconColor: "blue",
-      disableBtn: !stylePanelMinified.value || !undoEnabled
-    }
-  ];
-});
 const topRightShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
@@ -240,69 +198,6 @@ const topRightShortcuts = computed((): ShortcutIconType[] => {
       },
       iconColor: "blue",
       disableBtn: false
-    }
-  ];
-});
-
-const bottomRightShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.PanZoomInToolTipMessage",
-      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomIn"
-    },
-
-    {
-      tooltipMessage: "buttons.PanZoomOutToolTipMessage",
-      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomOut"
-    },
-    {
-      tooltipMessage: "buttons.ZoomFitToolTipMessage",
-      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomFit"
-    }
-  ];
-});
-
-const bottomLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.CreatePointToolTipMessage",
-      icon: "$point",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "point"
-    },
-
-    {
-      tooltipMessage: "buttons.CreateLineToolTipMessage",
-      icon: "$line",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "line"
-    },
-
-    {
-      tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
-      icon: "$segment",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "segment"
-    },
-
-    {
-      tooltipMessage: "buttons.CreateCircleToolTipMessage",
-      icon: "$circle",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "circle"
     }
   ];
 });
@@ -499,15 +394,11 @@ function doLeave(): void {
   if (attemptedToRoute) router.replace({ path: attemptedToRoute.path });
 }
 
-function listItemStyle(i: number, xLoc: string, yLoc: string) {
+function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
   const style: any = {};
 
-  if (i !== 0) {
-    style.position = "absolute";
-  }
-
-  switch (i) {
+  switch (idx) {
     case 1:
       style[yLoc] = "0px";
       style[xLoc] = "36px";
@@ -605,10 +496,6 @@ onBeforeRouteLeave(
   position: absolute;
   margin: 4px;
 }
-.left {
-  left: 0;
-}
-
 .right {
   right: 0;
 }
@@ -617,7 +504,4 @@ onBeforeRouteLeave(
   top: 0;
 }
 
-.bottom {
-  bottom: 0;
-}
 </style>
