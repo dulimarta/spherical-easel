@@ -18,7 +18,7 @@ import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 
 export default defineConfig({
   test: {
-    include: ["src/expression/__tests__/expression-parser.spec.ts"],
+    include: ["src/expression/__tests__/differential.spec.ts"],
     exclude: ["node_modules"],
     deps: { inline: ["element-plus"] }
   },
