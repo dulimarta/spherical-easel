@@ -107,7 +107,7 @@
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
-        <v-sheet rounded
+        <!--v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"

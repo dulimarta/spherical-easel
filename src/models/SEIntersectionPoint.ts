@@ -15,7 +15,7 @@ import {
   rank_of_type
 } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
-
+const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point

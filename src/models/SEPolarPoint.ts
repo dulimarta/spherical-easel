@@ -5,6 +5,7 @@ import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import NonFreePoint from "@/plottables/NonFreePoint";
+const { t } = i18n.global;
 
 export class SEPolarPoint extends SEPoint {
   /**

@@ -49,6 +49,7 @@ type TCurve = {
   index: number; // index into the TSample array
   curvature: number; // local curvature at the sample point
 };
+const { t } = i18n.global;
 
 export class SEParametric
   extends SENodule

@@ -6,6 +6,7 @@ import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
+const { t } = i18n.global;
 
 export class SEPolarLine
   extends SELine

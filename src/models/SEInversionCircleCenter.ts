@@ -9,7 +9,7 @@ import { SEInversion } from "./SEInversion";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { SECircle } from "./SECircle";
 import { SELine } from "./SELine";
-
+const { t } = i18n.global;
 export class SEInversionCircleCenter extends SEPoint {
   /**
    * The circle parent of this SEInversionCircleCenter

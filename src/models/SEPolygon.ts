@@ -16,6 +16,7 @@ import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
 import { SEExpression } from "./SEExpression";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),

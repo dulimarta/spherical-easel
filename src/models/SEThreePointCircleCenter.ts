@@ -5,6 +5,7 @@ import i18n from "@/i18n";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+const { t } = i18n.global;
 
 export class SEThreePointCircleCenter extends SEPoint {
   /**

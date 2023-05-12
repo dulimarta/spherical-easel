@@ -18,6 +18,7 @@ import {
 } from "@/types/Styles";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),

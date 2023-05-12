@@ -6,6 +6,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
 import { SEExpression } from "./SEExpression";
+const { t } = i18n.global;
 
 export class SERotation extends SETransformation {
   private _rotationPoint: SEPoint;

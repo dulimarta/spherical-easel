@@ -24,7 +24,7 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
-
+const { t } = i18n.global;
 export class SELine
   extends SENodule
   implements Visitable, OneDimensional, Labelable

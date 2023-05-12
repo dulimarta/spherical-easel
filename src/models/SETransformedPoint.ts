@@ -8,7 +8,7 @@ import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
 import { SEInversion } from "./SEInversion";
-
+const { t } = i18n.global;
 export class SETransformedPoint extends SEPoint {
   /**
    * The parents of this SETransformationPoint

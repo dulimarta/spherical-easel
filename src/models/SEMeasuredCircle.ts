@@ -7,6 +7,7 @@ import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import { SEExpression } from "./SEExpression";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
+const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
   /**

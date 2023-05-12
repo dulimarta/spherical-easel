@@ -8,7 +8,7 @@ import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEAngleMarker } from "./SEAngleMarker";
-
+const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**
    * The angle parent of this SENSectLine

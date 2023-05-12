@@ -8,6 +8,7 @@ import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
+const { t } = i18n.global;
 
 export class SETangentLineThruPoint extends SELine {
   /**

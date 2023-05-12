@@ -3,6 +3,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
+const { t } = i18n.global;
 import { useSEStore } from "@/stores/se";
 
 const emptySet = new Set<string>();

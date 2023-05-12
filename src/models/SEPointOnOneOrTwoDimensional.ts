@@ -7,6 +7,7 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
+const { t } = i18n.global;
 
 export class SEPointOnOneOrTwoDimensional extends SEPoint {
   /**

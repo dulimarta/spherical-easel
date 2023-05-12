@@ -12,6 +12,7 @@ import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
+const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),

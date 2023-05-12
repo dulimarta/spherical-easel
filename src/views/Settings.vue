@@ -1,11 +1,11 @@
 <template>
   <v-container>
-    <v-tabs centered :model-value="selectedTab">
+    <v-tabs centered v-model="selectedTab">
       <v-tab v-if="profileEnabled">User Profile</v-tab>
       <v-tab>App Preferences</v-tab>
     </v-tabs>
-    <v-tabs-items :model-value="selectedTab">
-      <v-tab-item v-if="profileEnabled">
+    <v-window v-model="selectedTab">
+      <v-window-item v-if="profileEnabled">
         <v-sheet elevation="2" class="pa-2">
           <div
             id="profileInfo"
@@ -23,14 +23,19 @@
             </div>
             <div class="px-2">
               <v-text-field label="Email" readonly :model-value="userEmail" />
-              <v-text-field :model-value="userDisplayName" label="Display Name" />
+              <v-text-field
+                :model-value="userDisplayName"
+                label="Display Name" />
               <v-text-field :model-value="userLocation" label="Location" />
 
               <v-select
                 label="Role"
                 :model-value="userRole"
-                :items="['Student', 'Instructor', 'Community Member']">
-              </v-select>
+                :items="[
+                  'Student',
+                  'Instructor',
+                  'Community Member'
+                ]"></v-select>
               <v-row justify="center">
                 <v-col cols="auto">
                   <v-btn @click="doSave">Save</v-btn>
@@ -39,9 +44,9 @@
                   <v-btn
                     class="mx-2"
                     :disabled="!userEmail"
-                    @click="doChangePassword"
-                    >Change Password</v-btn
-                  >
+                    @click="doChangePassword">
+                    Change Password
+                  </v-btn>
                 </v-col>
                 <v-col cols="auto">
                   <v-btn color="red lighten-2">Delete Account</v-btn>
@@ -55,56 +60,55 @@
             </v-overlay> -->
           </div>
         </v-sheet>
-      </v-tab-item>
-      <v-tab-item
-        >Second
+      </v-window-item>
+      <v-window-item>
         <v-sheet elevation="2" class="pa-2">
           <h3 v-t="'settings.title'"></h3>
-          <div id="appSetting">
-            <label>Language</label>
-            <v-select v-model="selectedLanguage"
-              outlined
-              :items="languages"
-              item-text="name"
-              item-value="locale"
-              label="Language">
-            </v-select>
-            <label>Decimal Precision</label>
-            <v-radio-group :model-value="decimalPrecision" row>
-              <v-radio label="3" value="3"></v-radio>
-              <v-radio label="5" value="5"></v-radio>
-              <v-radio label="7" value="7"></v-radio>
-            </v-radio-group>
-            <labeL>Selection Precision</labeL>
-            <v-radio-group row>
-              <v-radio label="Less">Less</v-radio>
-              <v-radio label="More">More</v-radio>
-            </v-radio-group>
-            <h3>Label options</h3>
-            <span></span>
-            <label>Initial display</label>
-            <v-radio-group row>
-              <v-radio label="None"></v-radio>
-              <v-radio label="All"></v-radio>
-              <v-radio label="Default"></v-radio>
-            </v-radio-group>
-            <span></span>
-            <v-checkbox label="Hide objects/labels" />
-            <span></span>
-            <v-checkbox label="Show objects/labels" />
-            <h3>Hints</h3>
-            <span></span>
-            <span></span>
-            <v-checkbox label="Display Tooltips" />
-            <span></span>
-            <v-checkbox label="Display use messages" />
-          </div>
+          <v-container fluid>
+            <v-row>
+              <v-col cols="4">
+                <v-select
+                  v-model="selectedLanguage"
+                  outlined
+                  :items="languages"
+                  item-title="name"
+                  item-value="locale"
+                  label="Language"></v-select>
+              </v-col>
+              <v-col cols="4">
+                <v-sheet rounded="lg" elevation="2">
+                  <v-radio-group
+                    v-model="decimalPrecision"
+                    inline
+                    label="Decimal Precision">
+                    <v-radio label="3" value="3"></v-radio>
+                    <v-radio label="5" value="5"></v-radio>
+                    <v-radio label="7" value="7"></v-radio>
+                  </v-radio-group>
+                </v-sheet>
+              </v-col>
+              <v-col cols="4">
+              <v-sheet rounded="lg" elevation="2">
+                <v-radio-group inline label="Selection Precision">
+                  <v-radio label="Less"></v-radio>
+                  <v-radio label="More"></v-radio>
+                </v-radio-group>
+              </v-sheet>
+            </v-col>
+            </v-row>
+          </v-container>
+          <h3>Label options</h3>
+          <v-radio-group label="Object Label" inline>
+            <v-radio label="None"></v-radio>
+            <v-radio label="All"></v-radio>
+            <v-radio label="Default"></v-radio>
+          </v-radio-group>
         </v-sheet>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
 
     <v-row>
-      <v-col cols="12" sm="6"> </v-col>
+      <v-col cols="12" sm="6"></v-col>
     </v-row>
   </v-container>
 </template>
@@ -134,22 +138,34 @@ div#appSetting {
 <script lang="ts" setup>
 import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
-import { getAuth, User, sendPasswordResetEmail, Unsubscribe } from "firebase/auth";
-import { DocumentSnapshot, getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  getAuth,
+  User,
+  sendPasswordResetEmail,
+  Unsubscribe
+} from "firebase/auth";
+import {
+  DocumentSnapshot,
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "firebase/firestore";
 import { UserProfile } from "@/types";
 
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
 
 type LocaleName = {
-  locale: string, name:string
-}
-const appAuth = getAuth()
-const appDB = getFirestore()
+  locale: string;
+  name: string;
+};
+const appAuth = getAuth();
+const appDB = getFirestore();
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const updatingPicture = ref(false);
-const selectedLanguage: Ref<LocaleName> = ref({locale: "", name: ""});
-const languages = SETTINGS.supportedLanguages;
+const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
+const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const decimalPrecision = ref(3);
 const userEmail = ref("");
 const userDisplayName = ref("");
@@ -165,16 +181,15 @@ const userUid = computed((): string | undefined => {
 
 onMounted((): void => {
   if (userUid.value) {
-    getDoc(doc(appDB, "users", userUid.value))
-      .then((ds: DocumentSnapshot) => {
-        if (ds.exists()) {
-          const uProfile = ds.data() as UserProfile;
-          // console.log("From Firestore", uProfile);
-          userDisplayName.value = uProfile.displayName ?? "N/A";
-          userLocation.value = uProfile.location ?? "N/A";
-          if (uProfile.role) userRole.value = uProfile.role;
-        }
-      });
+    getDoc(doc(appDB, "users", userUid.value)).then((ds: DocumentSnapshot) => {
+      if (ds.exists()) {
+        const uProfile = ds.data() as UserProfile;
+        // console.log("From Firestore", uProfile);
+        userDisplayName.value = uProfile.displayName ?? "N/A";
+        userLocation.value = uProfile.location ?? "N/A";
+        if (uProfile.role) userRole.value = uProfile.role;
+      }
+    });
   }
   authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
     profileEnabled.value = u !== null;
@@ -202,14 +217,13 @@ function doSave(): void {
     location: userLocation.value,
     role: userRole.value
   };
-  const profileDoc = doc(appDB, "users",userUid.value!)
-    setDoc(profileDoc, newProf, { merge: true })
-    .then(() => {
-      EventBus.fire("show-alert", {
-        key: "Your profile has been update",
-        type: "info"
-      });
+  const profileDoc = doc(appDB, "users", userUid.value!);
+  setDoc(profileDoc, newProf, { merge: true }).then(() => {
+    EventBus.fire("show-alert", {
+      key: "Your profile has been update",
+      type: "info"
     });
+  });
 }
 
 function doChangePassword(): void {

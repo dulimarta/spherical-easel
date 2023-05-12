@@ -6,6 +6,7 @@ import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
+const { t } = i18n.global;
 
 export class SENSectPoint extends SEPoint {
   /**

@@ -7,7 +7,7 @@ import { SETranslation } from "./SETranslation";
 import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
-
+const { t } = i18n.global;
 export class SEIsometryCircle extends SECircle {
   /**
    * The parents of this SEIsometryCircle

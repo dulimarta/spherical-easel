@@ -13,7 +13,7 @@ import {
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
-
+const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)

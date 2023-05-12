@@ -6,7 +6,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEExpression } from "./SEExpression";
 import { SELine } from "./SELine";
-
+const { t } = i18n.global;
 export class SETranslation extends SETransformation {
   private _lineOrSegment: SESegment | SELine;
   private _translationDistanceExpression: SEExpression;

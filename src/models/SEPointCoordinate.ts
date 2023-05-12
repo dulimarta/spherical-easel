@@ -5,6 +5,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const emptySet = new Set<string>();
+const { t } = i18n.global;
 
 export enum CoordinateSelection {
   X_VALUE,

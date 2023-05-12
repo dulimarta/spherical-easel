@@ -3,6 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
+const { t } = i18n.global;
 const emptySet = new Set<string>();
 
 export class SEPointDistance extends SEExpression {
