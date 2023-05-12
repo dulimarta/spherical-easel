@@ -118,8 +118,8 @@
 import Vue, { computed, onMounted, Ref, ref, watch } from "vue";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import i18n from "../i18n";
-
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
 export interface MessageType {
   key: string;
   keyOptions?: any;
@@ -181,9 +181,8 @@ function getMsgColor(m: MessageType) {
 }
 
 function addMessage(m: MessageType): void {
-  m.translatedKey = i18n.t(m.key, m.keyOptions).toString(); // Place translation in the messages
-  m.translationSecondKey = i18n
-    .t(m.secondaryMsg, m.secondaryMsgKeyOptions) // Translate the secondary message (this is the informational message)
+  m.translatedKey = t(m.key, m.keyOptions).toString(); // Place translation in the messages
+  m.translationSecondKey = t(m.secondaryMsg, m.secondaryMsgKeyOptions) // Translate the secondary message (this is the informational message)
     .toString();
   const msgColor = getMsgColor(m);
   m.msgColor = msgColor;

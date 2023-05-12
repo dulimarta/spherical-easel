@@ -61,13 +61,13 @@ export class SEIsometrySegment extends SESegment {
     this._seParentSegment = parentSegment;
     this._seParentIsometry = parentTransformation;
     if (this._seParentIsometry instanceof SETranslation) {
-      this.transType = i18n.tc("objects.translations", 3);
+      this.transType = i18n.global.t("objects.translations", 3);
     } else if (this._seParentIsometry instanceof SERotation) {
-      this.transType = i18n.tc("objects.rotations", 3);
+      this.transType = i18n.global.t("objects.rotations", 3);
     } else if (this._seParentIsometry instanceof SEReflection) {
-      this.transType = i18n.tc("objects.reflections", 3);
+      this.transType = i18n.global.t("objects.reflections", 3);
     } else if (this._seParentIsometry instanceof SEPointReflection) {
-      this.transType = i18n.tc("objects.pointReflections", 3);
+      this.transType = i18n.global.t("objects.pointReflections", 3);
     } else {
       this.transType = "";
     }
@@ -83,8 +83,8 @@ export class SEIsometrySegment extends SESegment {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.transformationObject`, {
-        object: i18n.tc(`objects.segments`, 3),
+      i18n.global.t(`objectTree.transformationObject`, {
+        object: i18n.global.t(`objects.segments`, 3),
         name: this._seParentSegment.label?.ref.shortUserName,
         trans: this._seParentIsometry.name,
         transType: this.transType

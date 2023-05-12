@@ -17,7 +17,7 @@ export class SEPointDistance extends SEExpression {
   public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.distanceBetweenPts`, {
+      i18n.global.t(`objectTree.distanceBetweenPts`, {
         pt1: this.secondSEPoint.label?.ref.shortUserName,
         pt2: this.firstSEPoint.label?.ref.shortUserName,
         val: this.value
@@ -27,7 +27,7 @@ export class SEPointDistance extends SEExpression {
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.distanceValue`, {
+      i18n.global.t(`objectTree.distanceValue`, {
         token: this.name,
         val: this.prettyValue
       })

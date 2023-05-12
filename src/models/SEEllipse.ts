@@ -144,7 +144,7 @@ export class SEEllipse
   }
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.ellipseThrough`, {
+      i18n.global.t(`objectTree.ellipseThrough`, {
         focus1: this._focus1SEPoint.label?.ref.shortUserName,
         focus2: this._focus2SEPoint.label?.ref.shortUserName,
         through: this._ellipseSEPoint.label?.ref.shortUserName

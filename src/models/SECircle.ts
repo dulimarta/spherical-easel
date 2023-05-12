@@ -103,7 +103,7 @@ export class SECircle
       ) {
         // this circle is a three point circle
         return String(
-          i18n.t(`objectTree.threePointCircleThrough`, {
+          i18n.global.t(`objectTree.threePointCircleThrough`, {
             pt1: this._centerSEPoint.seParentPoint1.label?.ref.shortUserName,
             pt2: this._centerSEPoint.seParentPoint2.label?.ref.shortUserName,
             pt3: this._centerSEPoint.seParentPoint3.label?.ref.shortUserName
@@ -115,10 +115,10 @@ export class SECircle
       //   "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
       const geometricParentType =
         this._centerSEPoint.seParentCircleOrLine instanceof SELine
-          ? i18n.tc(`objects.lines`, 3)
-          : i18n.tc(`objects.circles`, 3);
+          ? i18n.global.t(`objects.lines`, 3)
+          : i18n.global.t(`objects.circles`, 3);
       return String(
-        i18n.t(`objectTree.inversionImageOfACircle`, {
+        i18n.global.t(`objectTree.inversionImageOfACircle`, {
           circleOrLine: geometricParentType,
           circleOrLineParentName:
             this._centerSEPoint.seParentCircleOrLine.label?.ref.shortUserName,
@@ -127,7 +127,7 @@ export class SECircle
       );
     }
     return String(
-      i18n.t(`objectTree.circleThrough`, {
+      i18n.global.t(`objectTree.circleThrough`, {
         center: this._centerSEPoint.label?.ref.shortUserName,
         through: this._circleSEPoint.label?.ref.shortUserName
       })

@@ -81,7 +81,7 @@ export class SEPointReflection extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.reflectOverPoint`, {
+      i18n.global.t(`objectTree.reflectOverPoint`, {
         pt: this._pointOfReflection.label?.ref.shortUserName
       })
     );

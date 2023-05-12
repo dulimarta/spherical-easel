@@ -31,7 +31,7 @@ export class SEPolarPoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.aPolarPointOf`, {
+      i18n.global.t(`objectTree.aPolarPointOf`, {
         line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
         index: this.index
       })

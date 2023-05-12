@@ -23,15 +23,15 @@ export class SETransformedPoint extends SEPoint {
     this._seParentPoint = sePoint;
     this._seParentTransformation = seTransformation;
     if (this._seParentTransformation instanceof SETranslation) {
-      this.transType = i18n.tc("objects.translations", 3);
+      this.transType = i18n.global.t("objects.translations", 3);
     } else if (this._seParentTransformation instanceof SERotation) {
-      this.transType = i18n.tc("objects.rotations", 3);
+      this.transType = i18n.global.t("objects.rotations", 3);
     } else if (this._seParentTransformation instanceof SEReflection) {
-      this.transType = i18n.tc("objects.reflections", 3);
+      this.transType = i18n.global.t("objects.reflections", 3);
     } else if (this._seParentTransformation instanceof SEPointReflection) {
-      this.transType = i18n.tc("objects.pointReflections", 3);
+      this.transType = i18n.global.t("objects.pointReflections", 3);
     } else if (this._seParentTransformation instanceof SEInversion) {
-      this.transType = i18n.tc("objects.inversions", 3);
+      this.transType = i18n.global.t("objects.inversions", 3);
     }
   }
   get parentPoint(): SEPoint {
@@ -43,8 +43,8 @@ export class SETransformedPoint extends SEPoint {
   public get noduleDescription(): string {
     // "The image of {object} {name} under {transType} {trans}.",
     return String(
-      i18n.t(`objectTree.transformationObject`, {
-        object: i18n.tc(`objects.points`, 3),
+      i18n.global.t(`objectTree.transformationObject`, {
+        object: i18n.global.t(`objects.points`, 3),
         name: this._seParentPoint.label?.ref.shortUserName,
         trans: this._seParentTransformation.name,
         transType: this.transType

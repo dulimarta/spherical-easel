@@ -284,7 +284,9 @@ export default class RotateHandler extends Highlighter {
             key: `handlers.rotationObjectUpdate`,
             keyOptions: {
               type: String(
-                i18n.tc(rotationObjectTypeKey, 2, { name: rotationObjectName })
+                i18n.global.t(rotationObjectTypeKey, {
+                  name: rotationObjectName
+                })
               ),
               name: rotationObjectName
             },
@@ -686,7 +688,9 @@ export default class RotateHandler extends Highlighter {
           key: `handlers.rotationObjectUpdate`,
           keyOptions: {
             type: String(
-              i18n.tc(rotationObjectTypeKey, 2, { name: rotationObjectName })
+              i18n.global.t(rotationObjectTypeKey, {
+                name: rotationObjectName
+              })
             ),
             name: rotationObjectName
           },

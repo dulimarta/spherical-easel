@@ -41,7 +41,7 @@ export class SEPolarLine
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.polarLine`, {
+      i18n.global.t(`objectTree.polarLine`, {
         pt: this.polarPointParent.label?.ref.shortUserName,
         normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),
         normalY: this._normalVector.y.toFixed(SETTINGS.decimalPrecision),

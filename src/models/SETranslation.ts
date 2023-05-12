@@ -96,7 +96,7 @@ export class SETranslation extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.translationAlongLineSegment`, {
+      i18n.global.t(`objectTree.translationAlongLineSegment`, {
         along: this._lineOrSegment.label?.ref.shortUserName,
         angle: this._translationDistanceExpression.name
       })

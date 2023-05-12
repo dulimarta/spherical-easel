@@ -58,7 +58,7 @@ export class SEParametricTracePoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.tracePointOfParametric`, {
+      i18n.global.t(`objectTree.tracePointOfParametric`, {
         parent: this._parametricParent.label?.ref.shortUserName
       })
     );

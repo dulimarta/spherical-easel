@@ -111,7 +111,7 @@ export class SEInversion extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.invertOverCircle`, {
+      i18n.global.t(`objectTree.invertOverCircle`, {
         circle: this._circleOfInversion.label?.ref.shortUserName
       })
     );

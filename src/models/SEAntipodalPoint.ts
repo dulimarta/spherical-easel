@@ -39,7 +39,7 @@ export class SEAntipodalPoint extends SEPoint {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.antipodeOf`, {
+      i18n.global.t(`objectTree.antipodeOf`, {
         pt: this._antipodalPointParent.label?.ref.shortUserName
       })
     );

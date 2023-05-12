@@ -43,13 +43,13 @@ export class SENSectLine extends SELine {
   public get noduleDescription(): string {
     if (this._N === 2) {
       return String(
-        i18n.t(`objectTree.aMidLineOf`, {
+        i18n.global.t(`objectTree.aMidLineOf`, {
           angle: this._seAngleParent.label?.ref.shortUserName
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.anNsectLineOf`, {
+        i18n.global.t(`objectTree.anNsectLineOf`, {
           angle: this._seAngleParent.label?.ref.shortUserName,
           index: this._index,
           N: this._N

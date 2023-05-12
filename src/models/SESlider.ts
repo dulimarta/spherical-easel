@@ -41,12 +41,12 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   }
   public customStyles = (): Set<string> => emptySet;
   public get noduleDescription(): string {
-    return String(i18n.t(`objectTree.slider`));
+    return String(i18n.global.t(`objectTree.slider`));
   }
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.sliderValue`, {
+      i18n.global.t(`objectTree.sliderValue`, {
         token: this.name,
         val: this.prettyValue
       })

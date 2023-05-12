@@ -102,7 +102,7 @@ export class SECalculation extends SEExpression {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.calculationDescription`, {
+      i18n.global.t(`objectTree.calculationDescription`, {
         str: this.exprText,
         val: this.value
       })
@@ -111,7 +111,7 @@ export class SECalculation extends SEExpression {
 
   public get noduleItemText(): string {
     return String(
-      i18n.t(`objectTree.calculationValue`, {
+      i18n.global.t(`objectTree.calculationValue`, {
         token: this.name,
         val: this.prettyValue
       })

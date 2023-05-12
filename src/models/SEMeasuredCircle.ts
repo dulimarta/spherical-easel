@@ -36,7 +36,7 @@ export class SEMeasuredCircle extends SECircle {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.measuredCircle`, {
+      i18n.global.t(`objectTree.measuredCircle`, {
         center: this._centerSEPoint.label?.ref.shortUserName,
         measurementToken: this._radiusMeasurementSEExpression.name
       })

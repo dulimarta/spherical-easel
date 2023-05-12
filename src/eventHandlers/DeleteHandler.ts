@@ -54,39 +54,39 @@ export default class DeleteHandler extends Highlighter {
         ) {
           this.victim = this.hitSEPoints[0];
           this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
-          this.victimType = i18n.tc(`objects.points`, 3);
+          this.victimType = i18n.global.t(`objects.points`, 3);
         }
       } else if (this.hitSELines.length > 0) {
         this.victim = this.hitSELines[0];
         this.victimName = this.hitSELines[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.lines`, 3);
+        this.victimType = i18n.global.t(`objects.lines`, 3);
       } else if (this.hitSESegments.length > 0) {
         this.victim = this.hitSESegments[0];
         this.victimName = this.hitSESegments[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.segments`, 3);
+        this.victimType = i18n.global.t(`objects.segments`, 3);
       } else if (this.hitSECircles.length > 0) {
         this.victim = this.hitSECircles[0];
         this.victimName = this.hitSECircles[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.circles`, 3);
+        this.victimType = i18n.global.t(`objects.circles`, 3);
       } else if (this.hitSEEllipses.length > 0) {
         this.victim = this.hitSEEllipses[0];
         this.victimName = this.hitSEEllipses[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.ellipses`, 3);
+        this.victimType = i18n.global.t(`objects.ellipses`, 3);
       } else if (this.hitSEParametrics.length > 0) {
         this.victim = this.hitSEParametrics[0];
         this.victimName = this.hitSEParametrics[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.parametrics`, 3);
+        this.victimType = i18n.global.t(`objects.parametrics`, 3);
       } else if (this.hitSELabels.length > 0) {
         // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
         new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
       } else if (this.hitSEAngleMarkers.length > 0) {
         this.victim = this.hitSEAngleMarkers[0];
         this.victimName = this.hitSEAngleMarkers[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.angleMarkers`, 3);
+        this.victimType = i18n.global.t(`objects.angleMarkers`, 3);
       } else if (this.hitSEPolygons.length > 0) {
         this.victim = this.hitSEPolygons[0];
         this.victimName = this.hitSEPolygons[0].label?.ref.shortUserName;
-        this.victimType = i18n.tc(`objects.polygons`, 3);
+        this.victimType = i18n.global.t(`objects.polygons`, 3);
       }
       if (this.victim != null) {
         // Do the deletion
@@ -100,8 +100,8 @@ export default class DeleteHandler extends Highlighter {
             number: deletedNodeIds.length - 1,
             objects:
               deletedNodeIds.length === 2
-                ? i18n.tc(`objects.objects`, 4)
-                : i18n.tc(`objects.objects`, 3)
+                ? i18n.global.t(`objects.objects`, 4)
+                : i18n.global.t(`objects.objects`, 3)
           },
           type: "success"
         });
@@ -186,8 +186,8 @@ export default class DeleteHandler extends Highlighter {
           number: deletedObjectIDs.length,
           objects:
             deletedObjectIDs.length === 1
-              ? i18n.tc(`objects.objects`, 4)
-              : i18n.tc(`objects.objects`, 3)
+              ? i18n.global.t(`objects.objects`, 4)
+              : i18n.global.t(`objects.objects`, 3)
         },
         type: "success"
       });

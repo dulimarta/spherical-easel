@@ -142,7 +142,7 @@ export class SESegment
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.segmentThrough`, {
+      i18n.global.t(`objectTree.segmentThrough`, {
         pt1: this._startSEPoint.label?.ref.shortUserName,
         pt2: this._endSEPoint.label?.ref.shortUserName,
         normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),

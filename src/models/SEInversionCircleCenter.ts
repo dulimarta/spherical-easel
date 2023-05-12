@@ -43,11 +43,11 @@ export class SEInversionCircleCenter extends SEPoint {
   public get noduleDescription(): string {
     //    "Point that is the center of the image of {circleOrLine} {circleOrLineName} under inversion {inversionName}.",
     return String(
-      i18n.t(`objectTree.centerOfTransformedCircleUnderInversion`, {
+      i18n.global.t(`objectTree.centerOfTransformedCircleUnderInversion`, {
         circleOrLine:
           this._seCircleOrLineParent instanceof SELine
-            ? i18n.tc(`objects.lines`, 3)
-            : i18n.tc(`objects.circles`, 3),
+            ? i18n.global.t(`objects.lines`, 3)
+            : i18n.global.t(`objects.circles`, 3),
         circleOrLineName: this._seCircleOrLineParent.label?.ref.shortUserName,
         inversionName: this._seInversion.name
       })

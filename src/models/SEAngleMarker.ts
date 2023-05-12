@@ -187,7 +187,7 @@ export class SEAngleMarker
   public get noduleDescription(): string {
     if (this._thirdSEParent !== undefined) {
       return String(
-        i18n.t(`objectTree.anglePoints`, {
+        i18n.global.t(`objectTree.anglePoints`, {
           p1: this._firstSEParent.label?.ref.shortUserName,
           p2: this._secondSEParent.label?.ref.shortUserName,
           p3: this._thirdSEParent.label?.ref.shortUserName,
@@ -200,7 +200,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SESegment
       ) {
         return String(
-          i18n.t(`objectTree.angleSegments`, {
+          i18n.global.t(`objectTree.angleSegments`, {
             seg1: this._firstSEParent.label?.ref.shortUserName,
             seg2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -211,7 +211,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SELine
       ) {
         return String(
-          i18n.t(`objectTree.angleLines`, {
+          i18n.global.t(`objectTree.angleLines`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -222,7 +222,7 @@ export class SEAngleMarker
         this._secondSEParent instanceof SESegment
       ) {
         return String(
-          i18n.t(`objectTree.angleLineSegment`, {
+          i18n.global.t(`objectTree.angleLineSegment`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure
@@ -230,7 +230,7 @@ export class SEAngleMarker
         );
       } else {
         return String(
-          i18n.t(`objectTree.angleSegmentLine`, {
+          i18n.global.t(`objectTree.angleSegmentLine`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName,
             val: this._measure

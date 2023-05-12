@@ -39,7 +39,7 @@
             i18LabelKey="objects.points"
             :children="sePoints"></SENoduleList>
         </v-sheet>
-        <!--v-sheet
+        <v-sheet
           rounded
           color="accent"
           :elevation="4"
@@ -49,7 +49,7 @@
             i18LabelKey="objects.lines"
             :children="seLines"></SENoduleList>
         </v-sheet>
-        <v-sheet
+        <!--v-sheet
           rounded
           color="accent"
           :elevation="4"

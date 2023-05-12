@@ -39,13 +39,13 @@ import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import i18n from "@/i18n";
+// import i18n from "@/i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-
+import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { expressions } = storeToRefs(seStore);
-
+const {t} = useI18n()
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
@@ -112,7 +112,7 @@ function onKeyPressed(): void {
           ? parser.evaluateWithVars(tValueExpression.value, varMap)
           : 0;
       currentValueString.value =
-        i18n.t(`objectTree.currentTValue`) +
+        t(`objectTree.currentTValue`) +
         tValueResult.toFixed(SETTINGS.decimalPrecision);
 
       EventBus.fire("parametric-data-update", {

@@ -72,7 +72,7 @@ export class SEReflection extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.reflectionOverLine`, {
+      i18n.global.t(`objectTree.reflectionOverLine`, {
         line: this._lineOrSegment.label?.ref.shortUserName
       })
     );

@@ -37,13 +37,13 @@ export class SENSectPoint extends SEPoint {
   public get noduleDescription(): string {
     if (this._N === 2) {
       return String(
-        i18n.t(`objectTree.aMidPointOf`, {
+        i18n.global.t(`objectTree.aMidPointOf`, {
           segment: this._seSegmentParent.label?.ref.shortUserName
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.anNsectPointOf`, {
+        i18n.global.t(`objectTree.anNsectPointOf`, {
           segment: this._seSegmentParent.label?.ref.shortUserName,
           index: this._index,
           N: this._N

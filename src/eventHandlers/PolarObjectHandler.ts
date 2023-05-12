@@ -161,7 +161,7 @@ export default class PolarObjectHandler extends Highlighter {
           this.oneDimensionalContainingParentPoint = null;
           this.parentPoint = null;
         } else {
-          const object = i18n.tc(`objects.lines`, 3);
+          const object = i18n.global.t(`objects.lines`, 3);
           EventBus.fire("show-alert", {
             key: `handlers.polarPointDuplicate`,
             keyOptions: { object },

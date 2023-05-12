@@ -123,21 +123,21 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     edgeNames = edgeNames.substring(0, edgeNames.length - 2);
     if (this._seEdgeSegments.length === 2) {
       return String(
-        i18n.t(`objectTree.bigonWithEdges`, {
+        i18n.global.t(`objectTree.bigonWithEdges`, {
           edges: edgeNames,
           val: this._area
         })
       );
     } else if (this._seEdgeSegments.length === 3) {
       return String(
-        i18n.t(`objectTree.triangleWithEdges`, {
+        i18n.global.t(`objectTree.triangleWithEdges`, {
           edges: edgeNames,
           val: this._area
         })
       );
     } else {
       return String(
-        i18n.t(`objectTree.polygonWithEdges`, {
+        i18n.global.t(`objectTree.polygonWithEdges`, {
           edges: edgeNames,
           val: this._area
         })

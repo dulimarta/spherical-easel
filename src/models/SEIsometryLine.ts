@@ -45,13 +45,13 @@ export class SEIsometryLine extends SELine {
     this._seParentLine = seParentLine;
     this._seParentIsometry = seParentIsometry;
     if (this._seParentIsometry instanceof SETranslation) {
-      this.transType = i18n.tc("objects.translations", 3);
+      this.transType = i18n.global.t("objects.translations", 3);
     } else if (this._seParentIsometry instanceof SERotation) {
-      this.transType = i18n.tc("objects.rotations", 3);
+      this.transType = i18n.global.t("objects.rotations", 3);
     } else if (this._seParentIsometry instanceof SEReflection) {
-      this.transType = i18n.tc("objects.reflections", 3);
+      this.transType = i18n.global.t("objects.reflections", 3);
     } else if (this._seParentIsometry instanceof SEPointReflection) {
-      this.transType = i18n.tc("objects.pointReflections", 3);
+      this.transType = i18n.global.t("objects.pointReflections", 3);
     }
   }
   get parentLine(): SELine {
@@ -64,8 +64,8 @@ export class SEIsometryLine extends SELine {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.transformationObject`, {
-        object: i18n.tc(`objects.lines`, 3),
+      i18n.global.t(`objectTree.transformationObject`, {
+        object: i18n.global.t(`objects.lines`, 3),
         name: this._seParentLine.label?.ref.shortUserName,
         trans: this._seParentIsometry.name,
         transType: this.transType

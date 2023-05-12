@@ -674,7 +674,7 @@ export class SEParametric
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.parametricDescription`, {
+      i18n.global.t(`objectTree.parametricDescription`, {
         xExpression: this.coordinateExpressions.x,
         yExpression: this.coordinateExpressions.y,
         zExpression: this.coordinateExpressions.z,

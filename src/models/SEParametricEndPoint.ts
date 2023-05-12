@@ -81,7 +81,7 @@ export class SEParametricEndPoint extends SEPoint {
       endPoint = "end";
     }
     return String(
-      i18n.t(`objectTree.endPointOfParametric`, {
+      i18n.global.t(`objectTree.endPointOfParametric`, {
         parent: this._parametricParent.label?.ref.shortUserName,
         end: endPoint
       })

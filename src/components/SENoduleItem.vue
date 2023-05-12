@@ -16,7 +16,7 @@
             $parametric
           </v-icon-->
         </v-col>
-        <!--v-col class="text-truncate">
+        <v-col class="text-truncate">
           <v-tooltip location="end">
             <template v-slot:activator="{ props }">
               <div
@@ -34,7 +34,7 @@
             </template>
             <span>{{ definitionText }}</span>
           </v-tooltip>
-        </v-col-->
+        </v-col>
         <!--v-col justify="end">
           <v-row align="center" no-gutters>
             <v-col>

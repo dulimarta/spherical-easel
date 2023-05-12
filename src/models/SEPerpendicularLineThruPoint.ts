@@ -163,19 +163,19 @@ export class SEPerpendicularLineThruPoint extends SELine {
   public get noduleDescription(): string {
     let oneDimensionalParentType;
     if (this.seParentOneDimensional instanceof SESegment) {
-      oneDimensionalParentType = i18n.tc("objects.segments", 3);
+      oneDimensionalParentType = i18n.global.t("objects.segments", 3);
     } else if (this.seParentOneDimensional instanceof SELine) {
-      oneDimensionalParentType = i18n.tc("objects.lines", 3);
+      oneDimensionalParentType = i18n.global.t("objects.lines", 3);
     } else if (this.seParentOneDimensional instanceof SECircle) {
-      oneDimensionalParentType = i18n.tc("objects.circles", 3);
+      oneDimensionalParentType = i18n.global.t("objects.circles", 3);
     } else if (this.seParentOneDimensional instanceof SEEllipse) {
-      oneDimensionalParentType = i18n.tc("objects.ellipses", 3);
+      oneDimensionalParentType = i18n.global.t("objects.ellipses", 3);
     } else if (this.seParentOneDimensional instanceof SEParametric) {
-      oneDimensionalParentType = i18n.tc("objects.parametrics", 3);
+      oneDimensionalParentType = i18n.global.t("objects.parametrics", 3);
     }
 
     return String(
-      i18n.t(`objectTree.perpendicularLineThru`, {
+      i18n.global.t(`objectTree.perpendicularLineThru`, {
         pt: this.seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
         oneDimensionalParent:

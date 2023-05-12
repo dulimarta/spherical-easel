@@ -60,24 +60,24 @@ export class SEPointCoordinate extends SEExpression {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.x`)),
+          i18n.global.t(`objectTree.coordinateOf`, {
+            axisName: String(i18n.global.t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.y`)),
+          i18n.global.t(`objectTree.coordinateOf`, {
+            axisName: String(i18n.global.t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
-          i18n.t(`objectTree.coordinateOf`, {
-            axisName: String(i18n.t(`objectTree.z`)),
+          i18n.global.t(`objectTree.coordinateOf`, {
+            axisName: String(i18n.global.t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.value
           })
@@ -91,27 +91,27 @@ export class SEPointCoordinate extends SEExpression {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.x`)),
+            axisName: String(i18n.global.t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.y`)),
+            axisName: String(i18n.global.t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
-          i18n.t(`objectTree.coordOf`, {
+          i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
-            axisName: String(i18n.t(`objectTree.z`)),
+            axisName: String(i18n.global.t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })

@@ -142,15 +142,15 @@ export class SETangentLineThruPoint extends SELine {
   public get noduleDescription(): string {
     let oneDimensionalParentType;
     if (this._seParentOneDimensional instanceof SECircle) {
-      oneDimensionalParentType = i18n.tc("objects.circles", 3);
+      oneDimensionalParentType = i18n.global.t("objects.circles", 3);
     } else if (this._seParentOneDimensional instanceof SEEllipse) {
-      oneDimensionalParentType = i18n.tc("objects.ellipses", 3);
+      oneDimensionalParentType = i18n.global.t("objects.ellipses", 3);
     } else if (this._seParentOneDimensional instanceof SEParametric) {
-      oneDimensionalParentType = i18n.tc("objects.parametrics", 3);
+      oneDimensionalParentType = i18n.global.t("objects.parametrics", 3);
     }
 
     return String(
-      i18n.t(`objectTree.tangentLineThru`, {
+      i18n.global.t(`objectTree.tangentLineThru`, {
         pt: this._seParentPoint.label?.ref.shortUserName,
         oneDimensionalParentType: oneDimensionalParentType,
         oneDimensionalParent:

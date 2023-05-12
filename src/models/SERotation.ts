@@ -92,7 +92,7 @@ export class SERotation extends SETransformation {
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.rotationAboutPoint`, {
+      i18n.global.t(`objectTree.rotationAboutPoint`, {
         pt: this._rotationPoint.label?.ref.shortUserName,
         angle: this._rotationAngleExpression.name
       })

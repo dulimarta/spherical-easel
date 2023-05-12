@@ -153,7 +153,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             EventBus.fire("show-alert", {
               key: `handlers.duplicateTransformedObject`,
               keyOptions: {
-                object: i18n.tc(`objects.points`, 3),
+                object: i18n.global.t(`objects.points`, 3),
                 name: this.hitSEPoints[0].label?.ref.shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name
@@ -303,7 +303,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.segments`, 3),
+                  object: i18n.global.t(`objects.segments`, 3),
                   name: this.hitSESegments[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -357,7 +357,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.lines`, 3),
+                  object: i18n.global.t(`objects.lines`, 3),
                   name: this.hitSELines[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -403,7 +403,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.circles`, 3),
+                  object: i18n.global.t(`objects.circles`, 3),
                   name: this.hitSECircles[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -474,7 +474,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.ellipses`, 3),
+                  object: i18n.global.t(`objects.ellipses`, 3),
                   name: this.hitSEEllipses[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -535,7 +535,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //   EventBus.fire("show-alert", {
             //     key: `handlers.duplicateTransformedObject`,
             //     keyOptions: {
-            //       object: i18n.tc(`objects.segments`, 3),
+            //       object: i18n.global.t(`objects.segments`, 3),
             //       name: this.hitSESegments[0].label?.ref.shortUserName,
             //       type: this.transformationType,
             //       trans: this.transformationSEParent.name
@@ -581,7 +581,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.lines`, 3),
+                  object: i18n.global.t(`objects.lines`, 3),
                   name: this.hitSELines[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -647,7 +647,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               EventBus.fire("show-alert", {
                 key: `handlers.duplicateTransformedObject`,
                 keyOptions: {
-                  object: i18n.tc(`objects.circles`, 3),
+                  object: i18n.global.t(`objects.circles`, 3),
                   name: this.hitSECircles[0].label?.ref.shortUserName,
                   type: this.transformationType,
                   trans: this.transformationSEParent.name
@@ -719,7 +719,7 @@ export default class ApplyTransformationHandler extends Highlighter {
             //   EventBus.fire("show-alert", {
             //     key: `handlers.duplicateTransformedObject`,
             //     keyOptions: {
-            //       object: i18n.tc(`objects.ellipses`, 3),
+            //       object: i18n.global.t(`objects.ellipses`, 3),
             //       name: this.hitSEEllipses[0].label?.ref.shortUserName,
             //       type: this.transformationType,
             //       trans: this.transformationSEParent.name
@@ -1421,7 +1421,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     this.transformationSEParent = null;
     this.transformationType = "";
     EventBus.fire("set-apply-transformation-footer-text", {
-      text: i18n.t(`objects.selectTransformation`)
+      text: i18n.global.t(`objects.selectTransformation`)
     });
   }
 
@@ -1432,42 +1432,42 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     //console.debug("apply transformation: set transform", transformation.name);
     if (this.transformationSEParent instanceof SETranslation) {
-      this.transformationType = i18n.tc(`objects.translations`, 3);
+      this.transformationType = i18n.global.t(`objects.translations`, 3);
       EventBus.fire("set-apply-transformation-footer-text", {
         text:
-          i18n.tc(`objects.translations`, 1) +
+          i18n.global.t(`objects.translations`, 1) +
           " " +
           this.transformationSEParent.name
       });
     } else if (this.transformationSEParent instanceof SEPointReflection) {
-      this.transformationType = i18n.tc(`objects.pointReflections`, 3);
+      this.transformationType = i18n.global.t(`objects.pointReflections`, 3);
       EventBus.fire("set-apply-transformation-footer-text", {
         text:
-          i18n.tc(`objects.pointReflections`, 1) +
+          i18n.global.t(`objects.pointReflections`, 1) +
           " " +
           this.transformationSEParent.name
       });
     } else if (this.transformationSEParent instanceof SEReflection) {
-      this.transformationType = i18n.tc(`objects.reflections`, 3);
+      this.transformationType = i18n.global.t(`objects.reflections`, 3);
       EventBus.fire("set-apply-transformation-footer-text", {
         text:
-          i18n.tc(`objects.reflections`, 1) +
+          i18n.global.t(`objects.reflections`, 1) +
           " " +
           this.transformationSEParent.name
       });
     } else if (this.transformationSEParent instanceof SERotation) {
-      this.transformationType = i18n.tc(`objects.rotations`, 3);
+      this.transformationType = i18n.global.t(`objects.rotations`, 3);
       EventBus.fire("set-apply-transformation-footer-text", {
         text:
-          i18n.tc(`objects.rotations`, 1) +
+          i18n.global.t(`objects.rotations`, 1) +
           " " +
           this.transformationSEParent.name
       });
     } else if (this.transformationSEParent instanceof SEInversion) {
-      this.transformationType = i18n.tc(`objects.inversions`, 3);
+      this.transformationType = i18n.global.t(`objects.inversions`, 3);
       EventBus.fire("set-apply-transformation-footer-text", {
         text:
-          i18n.tc(`objects.inversions`, 1) +
+          i18n.global.t(`objects.inversions`, 1) +
           " " +
           this.transformationSEParent.name
       });
