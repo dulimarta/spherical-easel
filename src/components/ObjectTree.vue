@@ -106,7 +106,7 @@
           v-show="showExpressionSheet">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
-        </v-sheet>
+        </v-sheet-->>
         <!--v-sheet rounded
           color="accent"
           :elevation="4"

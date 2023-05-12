@@ -9,7 +9,7 @@
     "test:jest": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "app:build": "vite build",
-    "build": "npm run app:build & npm run docs:build",
+    "build": "npm run app:build",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug",
@@ -68,7 +68,6 @@
     "vite": "~4.0.3",
     "vite-plugin-vuetify": "^1.0.1",
     "vue-i18n-extract": "^2.0.7",
-    "vuepress": "^1.9.9",
     "vuepress-plugin-check-md": "^0.0.2",
     "vuepress-plugin-mathjax": "^1.2.8"
   },
