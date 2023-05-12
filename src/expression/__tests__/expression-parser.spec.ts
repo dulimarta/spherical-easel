@@ -291,7 +291,7 @@ describe("SEExpression", () => {
       try {
         parser.evaluate("20 **");
       } catch (e) {
-        expect(e.message).toContain("end of input");
+        expect(e.message).toContain("end of input"); // change this to end of input rather than unxpected input
       }
     });
     it("detects missing parenthesis", () => {
