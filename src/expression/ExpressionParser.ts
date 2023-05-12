@@ -70,7 +70,7 @@ class Lexer {
   }
 
   lastToken(): string {
-    return this.prev?.text ?? String(i18n.t(`objectTree.startOfInput`)); //"Start of input";
+    return this.prev?.text ?? String(i18n.global.t(`objectTree.startOfInput`)); //"Start of input";
   }
   skipWhiteSpaces(): void {
     // \s is Regex for whitespace
@@ -227,7 +227,7 @@ export class ExpressionParser {
 
     function throwError(msg: string, info: Lexicon): never {
       if (info.kind === TokenType.EOF)
-        throw new SyntaxError(String(i18n.t(`objectTree.parserError`)));
+        throw new SyntaxError(String(i18n.global.t(`objectTree.parserError`)));
       else throw new SyntaxError(msg);
     }
     function atom(): SyntaxTree {
@@ -242,7 +242,7 @@ export class ExpressionParser {
         } else
           return throwError(
             String(
-              i18n.t(`objectTree.expectedRightParenthesis`, {
+              i18n.global.t(`objectTree.expectedRightParenthesis`, {
                 text: `${token.value.text}`
               })
             ),
@@ -277,7 +277,7 @@ export class ExpressionParser {
         if (token.value.kind !== TokenType.LEFT_PAREN)
           return throwError(
             String(
-              i18n.t(`objectTree.expectedLeftParenthesis`, {
+              i18n.global.t(`objectTree.expectedLeftParenthesis`, {
                 text: `${lexer.lastToken()}`
               })
             ),
@@ -298,7 +298,7 @@ export class ExpressionParser {
         } else
           return throwError(
             String(
-              i18n.t(`objectTree.expectedRightButParenthesis`, {
+              i18n.global.t(`objectTree.expectedRightButParenthesis`, {
                 text: `${token.value.text}`
               })
             ),
@@ -307,7 +307,7 @@ export class ExpressionParser {
       } else
         return throwError(
           String(
-            i18n.t(`objectTree.unexpectedInput`, {
+            i18n.global.t(`objectTree.unexpectedInput`, {
               text: `${token.value.text}`
             })
           ),
@@ -380,7 +380,7 @@ export class ExpressionParser {
     else
       throw new SyntaxError(
         String(
-          i18n.t(`objectTree.unexpectedToken`, {
+          i18n.global.t(`objectTree.unexpectedToken`, {
             text: `${token.value.text}`
           })
         )
@@ -866,7 +866,7 @@ export class ExpressionParser {
           default:
             throw new SyntaxError(
               String(
-                i18n.t(`objectTree.unknownFunction`, {
+                i18n.global.t(`objectTree.unknownFunction`, {
                   text: `${input.node.text}`
                 })
               )
@@ -876,7 +876,7 @@ export class ExpressionParser {
       default:
         throw new Error(
           String(
-            i18n.t(`objectTree.unhandledTokenType`, {
+            i18n.global.t(`objectTree.unhandledTokenType`, {
               text: `${TokenType[input.node.kind]}`,
               text2: `${input.node.text}`
             })
@@ -901,7 +901,7 @@ export class ExpressionParser {
           else
             throw new Error(
               String(
-                i18n.t(`objectTree.undefinedVariable`, {
+                i18n.global.t(`objectTree.undefinedVariable`, {
                   text: `${measureName}`
                 })
               )
@@ -917,7 +917,7 @@ export class ExpressionParser {
           if (Math.abs(numValue) > 1e-4)
             return valueOf(t.leftChild ?? null) / valueOf(t.rightChild ?? null);
           else {
-            console.error(String(i18n.t(`objectTree.divideByZero`)));
+            console.error(String(i18n.global.t(`objectTree.divideByZero`)));
             return NaN;
           }
         case TokenType.POW:
@@ -970,7 +970,7 @@ export class ExpressionParser {
             default:
               throw new SyntaxError(
                 String(
-                  i18n.t(`objectTree.unknownFunction`, {
+                  i18n.global.t(`objectTree.unknownFunction`, {
                     text: `${t.node.text}`
                   })
                 )

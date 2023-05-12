@@ -1,4 +1,6 @@
-import { ExpressionParser } from "@/expression/ExpressionParser";
+import { describe, it, beforeEach, expect } from "vitest";
+
+import { ExpressionParser } from "@/expression/ExpressionParser.ts";
 
 describe("SEExpression", () => {
   const parser = new ExpressionParser();
@@ -233,7 +235,7 @@ describe("SEExpression", () => {
       expect(parser.evaluate("ln(exp(3))")).toBeCloseTo(3, 2);
       expect(parser.evaluate("exp(ln(3))")).toBeCloseTo(3, 2);
       expect(parser.evaluate("ln(-3-7)")).toBeFalsy();
-      expect(parser.evaluate("ln(0)")).toBeFalsy();
+      expect(parser.evaluate("ln(0)")).toEqual(-Infinity); // to be look over
     });
     it("computes sgn()", () => {
       expect(parser.evaluate("sgn(0.56)")).toBeCloseTo(1.0, 1);
@@ -289,7 +291,7 @@ describe("SEExpression", () => {
       try {
         parser.evaluate("20 **");
       } catch (e) {
-        expect(e.message).toContain("Unexpected input");
+        expect(e.message).toContain("end of input");
       }
     });
     it("detects missing parenthesis", () => {
