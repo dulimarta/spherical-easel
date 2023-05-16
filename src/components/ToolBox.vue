@@ -8,7 +8,7 @@
       <v-container>
         <v-row align="center">
           <v-btn icon size="small">
-            <v-icon @click="minified = !minified">mdi-arrow-left</v-icon>
+            <v-icon @click="toggleMinify">mdi-arrow-left</v-icon>
           </v-btn>
           <CurrentToolSelection />
         </v-row>
@@ -60,7 +60,7 @@
       class="mini-icons"
       key="partial">
       <v-btn icon size="small">
-        <v-icon @click="minified = !minified">mdi-arrow-right</v-icon>
+        <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
       </v-btn>
       <div class="mini-icons px-3">
       <v-icon>$toolsTab</v-icon>
@@ -91,6 +91,7 @@ const { actionMode } = storeToRefs(seStore);
 // ('layers')')
 
 const minified = ref(false);
+const emit = defineEmits(['minifyToggled'])
 /* Copy global setting to local variable */
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -126,6 +127,10 @@ function setActiveTab(e: { tabNumber: number }): void {
   activeLeftDrawerTab.value = e.tabNumber;
 }
 
+function toggleMinify() {
+  minified.value = !minified.value
+  emit("minifyToggled", minified.value)
+}
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");
 });

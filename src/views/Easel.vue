@@ -7,7 +7,7 @@
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
       <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
-        <Toolbox id="toolbox" ref="toolbox" />
+        <Toolbox id="toolbox" ref="toolbox" @minify-toggled="handleToolboxMinify"/>
       </Pane>
       <Pane :size="centerWidth">
         <!-- Use the right pane mainly for the canvas and style panel -->
@@ -36,7 +36,7 @@
       </Pane>
 
       <Pane min-size="5" :max-size="25" :size="panelSize">
-        <!--v-card class="pt-2">
+        <v-card class="pt-2">
           <div id="styleContainer">
             <v-btn
               icon
@@ -48,17 +48,17 @@
                 }
               ">
               <v-icon>mdi-arrow-right</v-icon>
-            </v-btn-->
+            </v-btn>
 
-        <!--StylePanel
-              :minified="stylePanelMinified"
-              v-on:toggle-style-panel="minifyStylePanel" /-->
+        <StylePanel
+              :minified="stylePanelMinified" />
+              <!-- v-on:toggle-style-panel="minifyStylePanel" /-->
 
         <!--MessageBox
               :minified="notificationsPanelMinified"
-              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
           </div>
-        </v-card-->
+        </v-card>
       </Pane>
     </Splitpanes>
     <Dialog
@@ -104,7 +104,7 @@ import EventBus from "../eventHandlers/EventBus";
 // import buttonList from "@/components/ToolGroups.vue";
 // import ToolButton from "@/components/ToolButton.vue";
 // Temporarily exclude Style.vue
-// import StylePanel from "@/components/Style.vue";
+import StylePanel from "@/components/Style.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -211,7 +211,7 @@ onBeforeMount(() => {
 //#endregion magnificationUpdate
 
 const centerWidth = computed((): number => {
-  return 100 - (toolboxMinified ? 5 : 25) - (stylePanelMinified.value ? 5 : 25);
+  return 100 - (toolboxMinified.value ? 5 : 25) - (stylePanelMinified.value ? 5 : 25);
 });
 
 function setUndoEnabled(e: { value: boolean }): void {
@@ -439,6 +439,10 @@ onBeforeRouteLeave(
     }
   }
 );
+
+function handleToolboxMinify(state: boolean) {
+  toolboxMinified.value = state
+}
 </script>
 <style scoped lang="scss">
 .splitpanes__pane {
