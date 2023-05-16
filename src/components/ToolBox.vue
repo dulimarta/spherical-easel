@@ -48,15 +48,13 @@
           <ObjectTree id="objtree"> </ObjectTree>
         </v-window-item>
         <v-window-item>
-          Group 3
-          <!--ConstructionLoader id="loader"></ConstructionLoader-->
+          <ConstructionLoader id="loader"></ConstructionLoader>
         </v-window-item>
       </v-window>
     </div>
 
     <div
       v-else
-      v-on:click="$emit('toggle-tool-box-panel')"
       class="mini-icons"
       key="partial">
       <v-btn icon size="small">

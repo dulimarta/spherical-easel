@@ -80,7 +80,8 @@ import {
   onSnapshot,
   collection,
   doc,
-  deleteDoc
+  deleteDoc,
+  getDoc
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import {
@@ -104,7 +105,11 @@ import {
   ref as storageRef,
   getDownloadURL
 } from "firebase/storage";
-
+import { parse } from "@vue/compiler-sfc";
+type PublicConstructionReferencee = {
+  author: string;
+  constructionDocId: string;
+};
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { hasUnsavedNodules } = storeToRefs(seStore);
@@ -129,7 +134,7 @@ const firebaseUid = computed((): string => {
 });
 
 onMounted((): void => {
-  if (firebaseUid) {
+  if (firebaseUid.value.length > 0) {
     const privateColl = collection(
       appDB,
       "users",
@@ -154,7 +159,61 @@ onBeforeUnmount((): void => {
     unsubscribeFn();
   });
 });
+async function parseDocument(
+  id: string,
+  remoteDoc: ConstructionInFirestore
+): Promise<SphericalConstruction | null> {
+  let parsedScript: ConstructionScript | undefined = undefined;
+  const trimmedScript = remoteDoc.script.trim();
+  if (trimmedScript.length === 0) return null;
+  if (trimmedScript.startsWith("https")) {
+    // Fetch the actual script from Firebase Storagee
+    const scriptText = await getDownloadURL(
+      storageRef(appStorage, trimmedScript)
+    )
+      .then((url: string) => axios.get(url))
+      .then((r: AxiosResponse) => r.data);
 
+    parsedScript = scriptText as ConstructionScript;
+  } else {
+    // Parse the script directly from the Firestore document
+    parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
+  }
+  if (parsedScript && parsedScript.length > 0) {
+    // we care only for non-empty script
+    let svgData: string | undefined;
+    if (remoteDoc.preview?.startsWith("https:")) {
+      svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
+        .then((url: string) => axios.get(url))
+        .then((r: AxiosResponse) => r.data);
+    } else svgData = remoteDoc.preview;
+    const objectCount = parsedScript
+      // A simple command contributes 1 object
+      // A CommandGroup contributes N objects (as many elements in its subcommands)
+      .map((z: string | Array<string>) =>
+        typeof z === "string" ? 1 : z.length
+      )
+      .reduce((prev: number, curr: number) => prev + curr);
+    let sphereRotationMatrix = new Matrix4();
+    if (remoteDoc.rotationMatrix) {
+      const matrixData = JSON.parse(remoteDoc.rotationMatrix);
+      sphereRotationMatrix.fromArray(matrixData);
+    }
+    return {
+      id,
+      script: trimmedScript,
+      parsedScript,
+      objectCount,
+      author: remoteDoc.author,
+      dateCreated: remoteDoc.dateCreated,
+      description: remoteDoc.description,
+      sphereRotationMatrix,
+      previewData: svgData ?? "",
+      tools: remoteDoc.tools ?? undefined
+    };
+  }
+  return null;
+}
 function populateData(
   qs: QuerySnapshot,
   targetArr: Array<SphericalConstruction>
@@ -162,59 +221,30 @@ function populateData(
   console.debug(`Here in populateData in Construction Loader .vue`);
   targetArr.splice(0);
   qs.forEach(async (qd: QueryDocumentSnapshot) => {
-    const doc = qd.data() as ConstructionInFirestore;
-    let parsedScript: ConstructionScript | undefined = undefined;
-
-    // Ignore constructions with empty script
-    if (doc.script.trim().length === 0) return;
-    const trimmedScript = doc.script.trim();
-    if (trimmedScript.startsWith("https:")) {
-      // Fetch the script from Firebase Storage
-      const scriptText = await getDownloadURL(
-        storageRef(appStorage, doc.script)
-      )
-        .then((url: string) => axios.get(url))
-        .then((r: AxiosResponse) => r.data);
-
-      parsedScript = scriptText as ConstructionScript;
+    const remoteData = qd.data();
+    let out: SphericalConstruction | null = null;
+    if (remoteData["constructionDocId"]) {
+      // In a neew format defined by Capstone group Fall 2022
+      // public constructions are simply a reference to
+      // constructions owned by a particular user
+      const constructionRef = remoteData as PublicConstructionReferencee;
+      const ownedDocRef = doc(
+        appDB,
+        "users",
+        constructionRef.author,
+        "constructions",
+        constructionRef.constructionDocId
+      );
+      const ownedDoc = await getDoc(ownedDocRef);
+      out = await parseDocument(
+        constructionRef.constructionDocId,
+        ownedDoc.data() as ConstructionInFirestore
+      );
     } else {
-      // Parse the script directly from the Firestore document
-      parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
+      out = await parseDocument(qd.id, remoteData as ConstructionInFirestore);
     }
-
-    if (parsedScript && parsedScript.length > 0) {
-      // we care only for non-empty script
-      let svgData: string | undefined;
-      if (doc.preview?.startsWith("https:")) {
-        svgData = await getDownloadURL(storageRef(appStorage, doc.preview))
-          .then((url: string) => axios.get(url))
-          .then((r: AxiosResponse) => r.data);
-      } else svgData = doc.preview;
-      const objectCount = parsedScript
-        // A simple command contributes 1 object
-        // A CommandGroup contributes N objects (as many elements in its subcommands)
-        .map((z: string | Array<string>) =>
-          typeof z === "string" ? 1 : z.length
-        )
-        .reduce((prev: number, curr: number) => prev + curr);
-      let sphereRotationMatrix = new Matrix4();
-      if (doc.rotationMatrix) {
-        const matrixData = JSON.parse(doc.rotationMatrix);
-        sphereRotationMatrix.fromArray(matrixData);
-      }
-      targetArr.push({
-        id: qd.id,
-        script: doc.script,
-        parsedScript,
-        objectCount,
-        author: doc.author,
-        dateCreated: doc.dateCreated,
-        description: doc.description,
-        sphereRotationMatrix,
-        previewData: svgData ?? "",
-        tools: doc.tools ?? undefined
-      });
-    }
+    if (out) targetArr.push(out);
+    else console.error("Failed to parse", qd.id);
   });
   // Sort by creation date
   targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
@@ -306,9 +336,15 @@ function shouldDeleteConstruction(event: { docId: string }): void {
 
 function doDeleteConstruction(): void {
   constructionDeleteDialog.value?.hide();
-  const doc1 = doc(appDB, "constructions", selectedDocId.value)
+  const doc1 = doc(appDB, "constructions", selectedDocId.value);
   const task1 = deleteDoc(doc1);
-  const doc2 = doc(appDB, "users", firebaseUid.value, "constructions",selectedDocId.value)
+  const doc2 = doc(
+    appDB,
+    "users",
+    firebaseUid.value,
+    "constructions",
+    selectedDocId.value
+  );
   const task2 = deleteDoc(doc2);
   Promise.any([task1, task2])
     .then(() => {

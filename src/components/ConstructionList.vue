@@ -2,32 +2,30 @@
   <div @mouseenter="onListEnter" @mouseleave="onListLeave">
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
-    <v-list three-line>
+    <v-list lines="three">
       <template v-for="(r, pos) in items" :key="pos">
         <v-hover v-slot:default="{ hover }">
           <!-- the class "listitem" is used for testing. Do not remove it -->
-          <v-list-item
+          <v-list-item prepend-avatar=""
             class="_test_constructionItem"
             @mouseover.capture="onItemHover(r)">
-            <v-list-item-avatar size="64">
-              <img :src="previewOrDefault(r.previewData)" alt="preview" />
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title class="text-truncate">
-                {{ r.description || "N/A" }}
-              </v-list-item-title>
-              <v-list-item-subtitle
-                ><code>{{ r.id.substring(0, 5) }}</code>
-                <span class="text-truncate">
-                  {{ r.objectCount }} objects,
-                  {{ r.dateCreated.substring(0, 10) }}
-                  {{ r.author }}</span
-                >
-              </v-list-item-subtitle>
-              <v-divider />
-            </v-list-item-content>
+            <template #prepend>
+              <img :src="previewOrDefault(r.previewData)" alt="preview" width="64"/>
+            </template>
+            <v-list-item-title class="text-truncate">
+              {{ r.description || "N/A" }}
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              <code>{{ r.id.substring(0, 5) }}</code>
+              <span class="text-truncate">
+                {{ r.objectCount }} objects,
+                {{ r.dateCreated.substring(0, 10) }}
+                {{ r.author }}
+              </span>
+            </v-list-item-subtitle>
+            <v-divider />
             <!--- show a Load button as an overlay when the mouse hovers -->
-            <v-overlay
+            <!--v-overlay
               absolute
               class="_test_constructionOverlay"
               opacity="0.3"
@@ -50,9 +48,9 @@
                     @click="$emit('share-requested', { docId: r.id })">
                     <v-icon>$shareConstruction</v-icon>
                   </v-btn>
-                </v-col>
-                <!-- show delete button only for its owner -->
-                <v-col v-if="r.author === userEmail">
+                </v-col-->
+            <!-- show delete button only for its owner -->
+            <!--v-col v-if="r.author === userEmail">
                   <v-btn
                     rounded
                     id="_test_deletefab"
@@ -64,7 +62,7 @@
                   </v-btn>
                 </v-col>
               </v-row>
-            </v-overlay>
+            </v-overlay-->
           </v-list-item>
         </v-hover>
       </template>
@@ -84,11 +82,11 @@ const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing?: boolean;
 }>();
-const emit = defineEmits(["load-requested"])
+const emit = defineEmits(["load-requested"]);
 
 const seStore = useSEStore();
-const appAuth = getAuth()
-const { svgCanvas } =  storeToRefs(seStore);
+const appAuth = getAuth();
+const { svgCanvas } = storeToRefs(seStore);
 let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
 let svgParent: HTMLDivElement | null = null;
@@ -128,38 +126,34 @@ function onListEnter(/*ev:MouseEvent*/): void {
 // There is a potential race-condition when the mouse moves too fast
 // or when the mouse moves while a new construction is being loaded
 async function onItemHover(s: SphericalConstruction): Promise<void> {
-  if (lastDocId === s.id) return; // Prevent double hovers?
-
-  lastDocId = s.id;
-  let aDoc: Document | undefined = undefined;
-
-  if (s.previewData.startsWith("data:")) {
-    const regex = /^data:.+\/(.+);base64,(.*)$/;
-    const parts = s.previewData.match(regex);
-    if (parts) {
-      const buff = Buffer.from(parts[2], "base64");
-      aDoc = domParser.parseFromString(buff.toString(), "image/svg+xml");
-    }
-  } else {
-    aDoc = await axios
-      .get(s.previewData, { responseType: "text" })
-      .then((r: AxiosResponse) => r.data)
-      .then((svgString: string) => {
-        const newDoc = domParser.parseFromString(svgString, "image/svg+xml");
-        return newDoc; // .querySelector("svg") as SVGElement;
-      });
-  }
-  if (aDoc) {
-    const newSvg = aDoc.querySelector("svg") as SVGElement;
-
-    // If we are previewing a construction replace that with the new one
-    // Otherwise replace the current top-level SVG with the new one
-
-    if (previewSVG !== null) previewSVG.replaceWith(newSvg);
-    else svgRoot.replaceWith(newSvg);
-    // console.debug("onItemHover:", previewSVG);
-    previewSVG = newSvg;
-  }
+  // if (lastDocId === s.id) return; // Prevent double hovers?
+  // lastDocId = s.id;
+  // let aDoc: Document | undefined = undefined;
+  // if (s.previewData.startsWith("data:")) {
+  //   const regex = /^data:.+\/(.+);base64,(.*)$/;
+  //   const parts = s.previewData.match(regex);
+  //   if (parts) {
+  //     const buff = Buffer.from(parts[2], "base64");
+  //     aDoc = domParser.parseFromString(buff.toString(), "image/svg+xml");
+  //   }
+  // } else {
+  //   aDoc = await axios
+  //     .get(s.previewData, { responseType: "text" })
+  //     .then((r: AxiosResponse) => r.data)
+  //     .then((svgString: string) => {
+  //       const newDoc = domParser.parseFromString(svgString, "image/svg+xml");
+  //       return newDoc; // .querySelector("svg") as SVGElement;
+  //     });
+  // }
+  // if (aDoc) {
+  //   const newSvg = aDoc.querySelector("svg") as SVGElement;
+  //   // If we are previewing a construction replace that with the new one
+  //   // Otherwise replace the current top-level SVG with the new one
+  //   if (previewSVG !== null) previewSVG.replaceWith(newSvg);
+  //   else svgRoot.replaceWith(newSvg);
+  //   // console.debug("onItemHover:", previewSVG);
+  //   previewSVG = newSvg;
+  // }
 }
 
 function onListLeave(/*_ev: MouseEvent*/): void {
