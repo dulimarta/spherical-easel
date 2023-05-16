@@ -1,5 +1,5 @@
 <template>
-  <div @mouseenter="onListEnter" @mouseleave="onListLeave">
+  <div @mouseleave="onListLeave">
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list lines="three">
@@ -74,7 +74,6 @@
 
 <script lang="ts" setup>
 import { SphericalConstruction } from "@/types";
-import { Matrix4 } from "three";
 import { useSEStore } from "@/stores/se";
 import { getAuth } from "firebase/auth";
 import { computed, onBeforeMount, onMounted } from "vue";
@@ -91,25 +90,16 @@ const appAuth = getAuth();
 // const { svgCanvas } = storeToRefs(seStore);
 let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
-let originalSphereMatrix!: Matrix4;
+// let originalSphereMatrix!: Matrix4;
 let lastDocId: string | null = null;
-onBeforeMount((): void => {
-  originalSphereMatrix = new Matrix4();
-});
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
 });
 
 function previewOrDefault(dataUrl: string | undefined): string {
-  if (!dataUrl) {
-
-  }
-  return dataUrl ? dataUrl : "@/assets/logo.png";
+  return dataUrl ? dataUrl : "/logo.png";
 }
 
-function onListEnter(/*ev:MouseEvent*/): void {
-  originalSphereMatrix.copy(inverseTotalRotationMatrix.value);
-}
 
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
@@ -123,8 +113,6 @@ async function onItemHover(s: SphericalConstruction): Promise<void> {
 function onListLeave(/*_ev: MouseEvent*/): void {
   EventBus.fire("preview-construction", "")
 
-  // Restore the rotation matrix
-  inverseTotalRotationMatrix.value = originalSphereMatrix;
   /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
   //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
   // setTimeout(() => {

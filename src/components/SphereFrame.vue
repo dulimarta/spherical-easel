@@ -1152,11 +1152,4 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 .bottom {
   bottom: 0;
 }
-.absolute-center {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: white;
-  transform: translate(50%, 50%);
-}
 </style>
