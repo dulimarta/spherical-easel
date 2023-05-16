@@ -75,11 +75,11 @@
 <script lang="ts" setup>
 import { SphericalConstruction } from "@/types";
 import { Matrix4 } from "three";
-import axios, { AxiosResponse } from "axios";
 import { useSEStore } from "@/stores/se";
 import { getAuth } from "firebase/auth";
 import { computed, onBeforeMount, onMounted } from "vue";
 import { storeToRefs } from "pinia";
+import EventBus from "@/eventHandlers/EventBus";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing?: boolean;
@@ -88,39 +88,26 @@ const emit = defineEmits(["load-requested"]);
 
 const seStore = useSEStore();
 const appAuth = getAuth();
-const { svgCanvas } = storeToRefs(seStore);
+// const { svgCanvas } = storeToRefs(seStore);
 let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
-let svgParent: HTMLDivElement | null = null;
-let svgRoot!: SVGElement;
-let previewSVG: SVGElement | null = null;
-let selectedSVG: SVGElement | null = null;
-// svgRootClone: SVGElement | null = null;
 let originalSphereMatrix!: Matrix4;
-let domParser!: DOMParser;
 let lastDocId: string | null = null;
-
 onBeforeMount((): void => {
-  domParser = new DOMParser();
   originalSphereMatrix = new Matrix4();
 });
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
 });
 
-onMounted((): void => {
-  // To use `innerHTML` we have to get a reference to the parent of
-  // the <svg> tree
-  svgParent = svgCanvas.value as HTMLDivElement;
-  svgRoot = svgParent.querySelector("svg") as SVGElement;
-});
-
 function previewOrDefault(dataUrl: string | undefined): string {
-  return dataUrl ? dataUrl : require("@/assets/SphericalEaselLogo.gif");
+  if (!dataUrl) {
+
+  }
+  return dataUrl ? dataUrl : "@/assets/logo.png";
 }
 
 function onListEnter(/*ev:MouseEvent*/): void {
-  previewSVG = null;
   originalSphereMatrix.copy(inverseTotalRotationMatrix.value);
 }
 
@@ -128,39 +115,14 @@ function onListEnter(/*ev:MouseEvent*/): void {
 // There is a potential race-condition when the mouse moves too fast
 // or when the mouse moves while a new construction is being loaded
 async function onItemHover(s: SphericalConstruction): Promise<void> {
-  // if (lastDocId === s.id) return; // Prevent double hovers?
-  // lastDocId = s.id;
-  // let aDoc: Document | undefined = undefined;
-  // if (s.previewData.startsWith("data:")) {
-  //   const regex = /^data:.+\/(.+);base64,(.*)$/;
-  //   const parts = s.previewData.match(regex);
-  //   if (parts) {
-  //     const buff = Buffer.from(parts[2], "base64");
-  //     aDoc = domParser.parseFromString(buff.toString(), "image/svg+xml");
-  //   }
-  // } else {
-  //   aDoc = await axios
-  //     .get(s.previewData, { responseType: "text" })
-  //     .then((r: AxiosResponse) => r.data)
-  //     .then((svgString: string) => {
-  //       const newDoc = domParser.parseFromString(svgString, "image/svg+xml");
-  //       return newDoc; // .querySelector("svg") as SVGElement;
-  //     });
-  // }
-  // if (aDoc) {
-  //   const newSvg = aDoc.querySelector("svg") as SVGElement;
-  //   // If we are previewing a construction replace that with the new one
-  //   // Otherwise replace the current top-level SVG with the new one
-  //   if (previewSVG !== null) previewSVG.replaceWith(newSvg);
-  //   else svgRoot.replaceWith(newSvg);
-  //   // console.debug("onItemHover:", previewSVG);
-  //   previewSVG = newSvg;
-  // }
+  if (lastDocId === s.id) return; // Prevent double hovers?
+  lastDocId = s.id;
+  EventBus.fire("preview-construction", s.previewData)
 }
 
 function onListLeave(/*_ev: MouseEvent*/): void {
-  // Restore the canvas ** THIS CAUSES PROBLEMS WITH THE *styling (i.e. anything other than the default)* DISPLAY OF THE LABELS
-  svgParent?.replaceChild(svgRoot, svgParent.firstChild as SVGElement);
+  EventBus.fire("preview-construction", "")
+
   // Restore the rotation matrix
   inverseTotalRotationMatrix.value = originalSphereMatrix;
   /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
@@ -172,10 +134,8 @@ function onListLeave(/*_ev: MouseEvent*/): void {
 }
 
 function loadPreview(docId: string): void {
-  selectedSVG = previewSVG;
   emit("load-requested", { docId });
 }
-// }
 </script>
 
 <style scoped>

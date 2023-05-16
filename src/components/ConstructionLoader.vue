@@ -1,22 +1,38 @@
 <template>
   <div>
-    <div class="text-h6" v-if="firebaseUid.length > 0">
+    <!-- <div class="text-h6" v-if="firebaseUid.length > 0">
       {{ $t(`constructions.privateConstructions`) }}
-    </div>
+    </div> -->
     <!--- WARNING: the "id" attribs below are needed for testing -->
-    <ConstructionList
-      id="privateList"
-      :items="privateConstructions"
-      v-on:load-requested="shouldLoadConstruction"
-      v-on:delete-requested="shouldDeleteConstruction" />
-    <div class="text-h6">{{ $t(`constructions.publicConstructions`) }}</div>
-    <ConstructionList
-      id="publicList"
-      :items="publicConstructions"
-      :allow-sharing="true"
-      v-on:load-requested="shouldLoadConstruction"
-      v-on:share-requested="doShareConstruction"
-      v-on:delete-requested="shouldDeleteConstruction" />
+    <v-expansion-panels>
+      <v-expansion-panel>
+        <v-expansion-panel-title>
+          {{ t(`constructions.privateConstructions`) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ConstructionList
+            id="privateList"
+            :items="privateConstructions"
+            v-on:load-requested="shouldLoadConstruction"
+            v-on:delete-requested="shouldDeleteConstruction"/>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-title>
+          {{ t(`constructions.publicConstructions`) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ConstructionList
+            id="publicList"
+            :items="publicConstructions"
+            :allow-sharing="true"
+            v-on:load-requested="shouldLoadConstruction"
+            v-on:share-requested="doShareConstruction"
+            v-on:delete-requested="shouldDeleteConstruction" />
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
+    <!-- <div class="text-h6">{{ $t(`constructions.publicConstructions`) }}</div> -->
 
     <Dialog
       ref="constructionShareDialog"
@@ -81,7 +97,9 @@ import {
   collection,
   doc,
   deleteDoc,
-  getDoc
+  getDoc,
+  CollectionReference,
+  getDocs
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import {
@@ -105,18 +123,19 @@ import {
   ref as storageRef,
   getDownloadURL
 } from "firebase/storage";
-import { parse } from "@vue/compiler-sfc";
+import { useI18n } from "vue-i18n";
 type PublicConstructionReferencee = {
   author: string;
   constructionDocId: string;
 };
 const acctStore = useAccountStore();
 const seStore = useSEStore();
+const { t } = useI18n();
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const appAuth = getAuth();
 const appDB = getFirestore();
 const appStorage = getStorage();
-let snapshotListener: Array<() => void> = [];
+// let snapshotListener: Array<() => void> = [];
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const privateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const shareURL = ref("");
@@ -141,24 +160,12 @@ onMounted((): void => {
       firebaseUid.value,
       "constructions"
     );
-    const listener = onSnapshot(privateColl, (qs: QuerySnapshot) => {
-      populateData(qs, privateConstructions.value);
-    });
-    snapshotListener.push(listener);
+    populateData(privateColl, privateConstructions.value);
   }
   const publicColl = collection(appDB, "constructions");
-  const listener = onSnapshot(publicColl, (qs: QuerySnapshot) => {
-    populateData(qs, publicConstructions.value);
-  });
-  snapshotListener.push(listener);
+  populateData(publicColl, publicConstructions.value);
 });
 
-onBeforeUnmount((): void => {
-  // Unregister the update function
-  snapshotListener.forEach(unsubscribeFn => {
-    unsubscribeFn();
-  });
-});
 async function parseDocument(
   id: string,
   remoteDoc: ConstructionInFirestore
@@ -186,7 +193,14 @@ async function parseDocument(
       svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
         .then((url: string) => axios.get(url))
         .then((r: AxiosResponse) => r.data);
-    } else svgData = remoteDoc.preview;
+      console.debug(
+        "SVG preview from Firebase Storage ",
+        svgData?.substring(0, 70)
+      );
+    } else {
+      svgData = remoteDoc.preview;
+      console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
+    }
     const objectCount = parsedScript
       // A simple command contributes 1 object
       // A CommandGroup contributes N objects (as many elements in its subcommands)
@@ -215,41 +229,50 @@ async function parseDocument(
   return null;
 }
 function populateData(
-  qs: QuerySnapshot,
+  constructionCollection: CollectionReference,
   targetArr: Array<SphericalConstruction>
 ): void {
   console.debug(`Here in populateData in Construction Loader .vue`);
   targetArr.splice(0);
-  qs.forEach(async (qd: QueryDocumentSnapshot) => {
-    const remoteData = qd.data();
-    let out: SphericalConstruction | null = null;
-    if (remoteData["constructionDocId"]) {
-      // In a neew format defined by Capstone group Fall 2022
-      // public constructions are simply a reference to
-      // constructions owned by a particular user
-      const constructionRef = remoteData as PublicConstructionReferencee;
-      const ownedDocRef = doc(
-        appDB,
-        "users",
-        constructionRef.author,
-        "constructions",
-        constructionRef.constructionDocId
+
+  getDocs(constructionCollection)
+    .then((qs: QuerySnapshot) => {
+      qs.forEach(async (qd: QueryDocumentSnapshot) => {
+        const remoteData = qd.data();
+        let out: SphericalConstruction | null = null;
+        if (remoteData["constructionDocId"]) {
+          // In a neew format defined by Capstone group Fall 2022
+          // public constructions are simply a reference to
+          // constructions owned by a particular user
+          const constructionRef = remoteData as PublicConstructionReferencee;
+          const ownedDocRef = doc(
+            appDB,
+            "users",
+            constructionRef.author,
+            "constructions",
+            constructionRef.constructionDocId
+          );
+          const ownedDoc = await getDoc(ownedDocRef);
+          out = await parseDocument(
+            constructionRef.constructionDocId,
+            ownedDoc.data() as ConstructionInFirestore
+          );
+        } else {
+          out = await parseDocument(
+            qd.id,
+            remoteData as ConstructionInFirestore
+          );
+        }
+        if (out) targetArr.push(out);
+        else console.error("Failed to parse", qd.id);
+      });
+    })
+    .finally(() => {
+      // Sort by creation date
+      targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
+        a.dateCreated.localeCompare(b.dateCreated)
       );
-      const ownedDoc = await getDoc(ownedDocRef);
-      out = await parseDocument(
-        constructionRef.constructionDocId,
-        ownedDoc.data() as ConstructionInFirestore
-      );
-    } else {
-      out = await parseDocument(qd.id, remoteData as ConstructionInFirestore);
-    }
-    if (out) targetArr.push(out);
-    else console.error("Failed to parse", qd.id);
-  });
-  // Sort by creation date
-  targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
-    a.dateCreated.localeCompare(b.dateCreated)
-  );
+    });
 }
 
 function shouldLoadConstruction(event: { docId: string }): void {
@@ -358,4 +381,9 @@ function doDeleteConstruction(): void {
       console.debug("Unable to delete", selectedDocId.value, err);
     });
 }
+
+// function previewConstruction(svgString: string) {
+//   console.debug("About to preview", svgString)
+
+// }
 </script>

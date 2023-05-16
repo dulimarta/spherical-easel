@@ -1,31 +1,29 @@
 <template>
-  <div>
-    <!-- <CurrentToolSelection /> -->
-    <div id="sphereContainer">
-      <div id="canvas" ref="canvas"></div>
-      <div class="anchored top left">
-        <div
-          v-for="(shortcut, index) in topLeftShortcuts"
-          :key="index"
-          :style="listItemStyle(index, 'left', 'top')">
-          <ShortcutIcon :model="shortcut" />
-        </div>
+  <!-- <CurrentToolSelection /> -->
+  <div id="sphereContainer">
+    <div id="canvas" ref="canvas"></div>
+    <div class="anchored top left">
+      <div
+        v-for="(shortcut, index) in topLeftShortcuts"
+        :key="index"
+        :style="listItemStyle(index, 'left', 'top')">
+        <ShortcutIcon :model="shortcut" />
       </div>
-      <div class="anchored bottom left">
-        <div
-          v-for="(shortcut, index) in bottomLeftShortcuts"
-          :key="index"
-          :style="listItemStyle(index, 'left', 'bottom')">
-          <ShortcutIcon :model="shortcut" />
-        </div>
+    </div>
+    <div class="anchored bottom left">
+      <div
+        v-for="(shortcut, index) in bottomLeftShortcuts"
+        :key="index"
+        :style="listItemStyle(index, 'left', 'bottom')">
+        <ShortcutIcon :model="shortcut" />
       </div>
-      <div class="anchored bottom right">
-        <div
-          v-for="(shortcut, index) in bottomRightShortcuts"
-          :key="index"
-          :style="listItemStyle(index, 'right', 'bottom')">
-          <ShortcutIcon :model="shortcut" />
-        </div>
+    </div>
+    <div class="anchored bottom right">
+      <div
+        v-for="(shortcut, index) in bottomRightShortcuts"
+        :key="index"
+        :style="listItemStyle(index, 'right', 'bottom')">
+        <ShortcutIcon :model="shortcut" />
       </div>
     </div>
   </div>
@@ -114,7 +112,6 @@ const props = withDefaults(defineProps<{ canvasSize: number }>(), {
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-
 const topLeftShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
@@ -1096,26 +1093,26 @@ watch(
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
   const style: any = {};
-  let r = 0
-  let c = 0
-  let startCol = 0
+  let r = 0;
+  let c = 0;
+  let startCol = 0;
   // Place by moving in the "south-west" direction
   while (idx > 0) {
     if (c > 0) {
-      c -- // Move west
-      r ++ // Move south
+      c--; // Move west
+      r++; // Move south
     } else {
       // if we hit the edge, move over to the next column
-      startCol++
-      c = startCol
-      r = 0
+      startCol++;
+      c = startCol;
+      r = 0;
     }
-    idx--
+    idx--;
   }
 
-  style.position = 'absolute'
-  style[xLoc] = `${c*36}px`
-  style[yLoc] = `${r*36}px`
+  style.position = "absolute";
+  style[xLoc] = `${c * 36}px`;
+  style[yLoc] = `${r * 36}px`;
   return style;
 }
 </script>
@@ -1154,5 +1151,12 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 
 .bottom {
   bottom: 0;
+}
+.absolute-center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  transform: translate(50%, 50%);
 }
 </style>

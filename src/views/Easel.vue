@@ -7,7 +7,10 @@
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
       <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
-        <Toolbox id="toolbox" ref="toolbox" @minify-toggled="handleToolboxMinify"/>
+        <Toolbox
+          id="toolbox"
+          ref="toolbox"
+          @minify-toggled="handleToolboxMinify" />
       </Pane>
       <Pane :size="centerWidth">
         <!-- Use the right pane mainly for the canvas and style panel -->
@@ -21,15 +24,23 @@
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
               <SphereFrame :canvas-size="currentCanvasSize" />
+              <v-overlay
+                contained
+                class="align-center justify-center"
+                :model-value="svgDataImage.length > 0">
+                <img
+                  :src="svgDataImage"
+                  style="background: hsla(0, 100%, 100%, 1)"
+                  :width="currentCanvasSize" :height="currentCanvasSize"/>
+              </v-overlay>
               <div class="anchored top right">
                 <div
                   v-for="(shortcut, index) in topRightShortcuts"
                   :key="index"
                   :style="listItemStyle(index, 'right', 'top')">
-                  <ShortcutIcon :model="shortcut"/>
+                  <ShortcutIcon :model="shortcut" />
                 </div>
               </div>
-
             </div>
           </v-row>
         </v-container>
@@ -50,11 +61,10 @@
               <v-icon>mdi-arrow-right</v-icon>
             </v-btn>
 
-        <StylePanel
-              :minified="stylePanelMinified" />
-              <!-- v-on:toggle-style-panel="minifyStylePanel" /-->
+            <StylePanel :minified="stylePanelMinified" />
+            <!-- v-on:toggle-style-panel="minifyStylePanel" /-->
 
-        <!--MessageBox
+            <!--MessageBox
               :minified="notificationsPanelMinified"
               v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
           </div>
@@ -187,7 +197,7 @@ let authSubscription!: Unsubscribe;
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
-
+const svgDataImage = ref("");
 const topRightShortcuts = computed((): ShortcutIconType[] => {
   return [
     {
@@ -207,11 +217,16 @@ onBeforeMount(() => {
   EventBus.listen("magnification-updated", resizePlottables);
   EventBus.listen("undo-enabled", setUndoEnabled);
   EventBus.listen("redo-enabled", setRedoEnabled);
+  EventBus.listen("preview-construction", (s: string) => {
+    svgDataImage.value = s;
+  });
 });
 //#endregion magnificationUpdate
 
 const centerWidth = computed((): number => {
-  return 100 - (toolboxMinified.value ? 5 : 25) - (stylePanelMinified.value ? 5 : 25);
+  return (
+    100 - (toolboxMinified.value ? 5 : 25) - (stylePanelMinified.value ? 5 : 25)
+  );
 });
 
 function setUndoEnabled(e: { value: boolean }): void {
@@ -441,7 +456,7 @@ onBeforeRouteLeave(
 );
 
 function handleToolboxMinify(state: boolean) {
-  toolboxMinified.value = state
+  toolboxMinified.value = state;
 }
 </script>
 <style scoped lang="scss">
@@ -507,5 +522,4 @@ function handleToolboxMinify(state: boolean) {
 .top {
   top: 0;
 }
-
 </style>
