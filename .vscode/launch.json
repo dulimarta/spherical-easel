@@ -5,44 +5,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Edge",
+      "request": "launch",
+      "type": "msedge",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}"
+    },
+
+    {
       "type": "chrome",
       "request": "launch",
-      "name": "Vue@localhost (Chrome)",
+      "name": "Launch Chrome against localhost",
       "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}",
-      "breakOnLoad": true,
-      "sourceMapPathOverrides": {
-        "webpack:///./*": "${webRoot}/*",
-        "webpack:///src/*": "${webRoot}/*",
-        "webpack:///*": "*",
-        "webpack:///./~/*": "${webRoot}/node_modules/*",
-        "meteor://💻app/*": "${webRoot}/*"
-      }
-    },
-    {
-      "type": "firefox",
-      "request": "launch",
-      "name": "Vue@localhost (Firefox)",
-      "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}",
-      "breakOnLoad": true,
-      "sourceMapPathOverrides": {
-        "webpack:///./*": "${webRoot}/*",
-        "webpack:///src/*": "${webRoot}/*",
-        "webpack:///*": "*",
-        "webpack:///./~/*": "${webRoot}/node_modules/*",
-        "meteor://💻app/*": "${webRoot}/*"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch SEExpression",
-      "program": "${workspaceFolder}/ts-out/src/expression/SEExpression.js",
-      "preLaunchTask": "tsc: build - tsconfig.json",
-      "smartStep": true,
-      "runtimeVersion": "12.16.3",
-      "outFiles": ["${workspaceFolder}/ts-out/*.js"]
+      "webRoot": "${workspaceFolder}"
     }
   ]
 }
