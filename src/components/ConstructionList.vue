@@ -4,66 +4,68 @@
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list lines="three">
       <template v-for="(r, pos) in items" :key="pos">
-        <v-hover v-slot:default="{ hover }">
-          <!-- the class "listitem" is used for testing. Do not remove it -->
-          <v-list-item prepend-avatar=""
-            class="_test_constructionItem"
-            @mouseover.capture="onItemHover(r)">
-            <template #prepend>
-              <img :src="previewOrDefault(r.previewData)" alt="preview" width="64"/>
-            </template>
-            <v-list-item-title class="text-truncate">
-              {{ r.description || "N/A" }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              <code>{{ r.id.substring(0, 5) }}</code>
-              <span class="text-truncate">
-                {{ r.objectCount }} objects,
-                {{ r.dateCreated.substring(0, 10) }}
-                {{ r.author }}
-              </span>
-            </v-list-item-subtitle>
-            <v-divider />
-            <!--- show a Load button as an overlay when the mouse hovers -->
-            <!--v-overlay
-              absolute
-              class="_test_constructionOverlay"
-              opacity="0.3"
-              :value="hover">
-              <v-row align="center">
-                <v-col>
-                  <v-btn rounded id="_test_loadfab" fab small color="secondary">
-                    <v-icon @click="loadPreview(r.id)">
-                      $downloadConstruction</v-icon
-                    >
-                  </v-btn>
-                </v-col>
-                <v-col v-if="allowSharing">
+        <v-hover>
+          <template v-slot:default="{ isHovering, props }">
+            <!-- the class "constructionItem" is used for testing. Do not remove it -->
+            <v-list-item
+              v-bind="props"
+              class="_test_constructionItem"
+              @mouseover.capture="onItemHover(r)">
+              <template #prepend>
+                <img
+                  :src="previewOrDefault(r.previewData)"
+                  class="mr-1"
+                  alt="preview"
+                  width="64" />
+              </template>
+              <v-list-item-title class="text-truncate">
+                {{ r.description || "N/A" }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                <code>{{ r.id.substring(0, 5) }}</code>
+                <span class="text-truncate">
+                  {{ r.objectCount }} objects,
+                  {{ r.dateCreated.substring(0, 10) }}
+                  {{ r.author }}
+                </span>
+              </v-list-item-subtitle>
+              <v-divider />
+              <!--- show a Load button as an overlay when the mouse hovers -->
+              <v-overlay
+                contained
+                :model-value="isHovering"
+                class="_test_constructionOverlay align-center justify-center"
+                scrim="#00007F">
+                <div class="constructionItem">
                   <v-btn
-                    rounded
-                    id="_test_sharefab"
-                    fab
-                    small
+                    id="_test_loadfab"
+                    class="mx-1"
+                    size="small"
                     color="secondary"
-                    @click="$emit('share-requested', { docId: r.id })">
-                    <v-icon>$shareConstruction</v-icon>
-                  </v-btn>
-                </v-col-->
-            <!-- show delete button only for its owner -->
-            <!--v-col v-if="r.author === userEmail">
+                    icon="$downloadConstruction"
+                    @click="loadPreview(r.id)"></v-btn>
                   <v-btn
-                    rounded
+                    v-if="allowSharing"
+                    id="_test_sharefab"
+                    class="mx-1"
+                    size="small"
+                    color="secondary"
+                    icon="$shareConstruction"
+                    @click="$emit('share-requested', { docId: r.id })"></v-btn>
+                  <!-- show delete button only for its owner -->
+                  <v-btn
+                    v-if="r.author === userEmail"
                     id="_test_deletefab"
-                    fab
-                    small
+                    class="mx-1"
+                    size="small"
+                    icon="$deleteConstruction"
                     color="red"
                     @click="$emit('delete-requested', { docId: r.id })">
-                    <v-icon>$deleteConstruction</v-icon>
                   </v-btn>
-                </v-col>
-              </v-row>
-            </v-overlay-->
-          </v-list-item>
+                </div>
+              </v-overlay>
+            </v-list-item>
+          </template>
         </v-hover>
       </template>
     </v-list>
@@ -176,4 +178,12 @@ function loadPreview(docId: string): void {
 // }
 </script>
 
-<style scoped></style>
+<style scoped>
+.constructionItem {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  /* width: 100%; */
+  /* background-color: red; */
+}
+</style>

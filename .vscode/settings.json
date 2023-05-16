@@ -35,11 +35,7 @@
     "sash.hoverBorder": "#aa83d3",
     "statusBarItem.remoteBackground": "#905dc6",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "commandCenter.border": "#e7e7e799",
-    "editorGroup.border": "#aa83d3",
-    "panel.border": "#aa83d3",
-    "sideBar.border": "#aa83d3",
-    "tab.activeBorder": "#aa83d3"
+    "commandCenter.border": "#e7e7e799"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -64,6 +60,7 @@
     "**/*.wasm": true
   },
   "cSpell.words": [
+    "endregion",
     "Labelable",
     "LINEANDSEGMENT",
     "linewidth",
@@ -73,6 +70,7 @@
     "ONLYPOINTS",
     "Parametrics",
     "perp",
+    "pinia",
     "plottable",
     "plottables",
     "preimage",
