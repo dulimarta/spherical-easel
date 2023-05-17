@@ -18,29 +18,39 @@
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-        <v-container fluid ref="mainPanel">
+        <v-container ref="mainPanel">
           <v-row justify="center">
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
-              <SphereFrame :canvas-size="currentCanvasSize" />
-              <v-overlay
-                contained
-                class="align-center justify-center"
-                :model-value="svgDataImage.length > 0">
-                <img
-                  :src="svgDataImage"
-                  style="background: hsla(0, 100%, 100%, 1)"
-                  :width="currentCanvasSize" :height="currentCanvasSize"/>
-              </v-overlay>
-              <div class="anchored top right">
+              <SphereFrame
+                :canvas-size="currentCanvasSize"
+                v-show="svgDataImage.length === 0" />
+              <!--div
+                class="anchored top right"
+                v-show="svgDataImage.length === 0">
                 <div
                   v-for="(shortcut, index) in topRightShortcuts"
                   :key="index"
                   :style="listItemStyle(index, 'right', 'top')">
                   <ShortcutIcon :model="shortcut" />
                 </div>
-              </div>
+              </!--div-->
+              <v-overlay
+                contained
+                :class="['justify-center', previewClass]"
+                :model-value="svgDataImage.length > 0">
+                <div class="previewText">
+                  {{ constructionInfo.count }} objects. Created by:
+                  {{ constructionInfo.author }}
+                </div>
+                <img
+                  id="previewImage"
+                  class="previewImage"
+                  :src="svgDataImage"
+                  :width="currentCanvasSize"
+                  :height="currentCanvasSize" />
+              </v-overlay>
             </div>
           </v-row>
         </v-container>
@@ -123,7 +133,10 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, ToolButtonType } from "@/types";
+import {
+  ConstructionInFirestore,
+  SphericalConstruction,
+} from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -144,9 +157,7 @@ import {
 } from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
 import { storeToRefs } from "pinia";
-import { toolGroups } from "@/components/toolgroups";
 import { useI18n } from "vue-i18n";
-// import { getCurrentInstance } from "vue";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalized,
@@ -185,7 +196,8 @@ const currentCanvasSize = ref(0); // Result of height calculation will be passed
 const toolboxMinified = ref(false);
 const stylePanelMinified = ref(true);
 const notificationsPanelMinified = ref(true);
-
+const previewClass = ref("");
+const constructionInfo = ref<any>({});
 let undoEnabled = false;
 let redoEnabled = false;
 
@@ -217,9 +229,7 @@ onBeforeMount(() => {
   EventBus.listen("magnification-updated", resizePlottables);
   EventBus.listen("undo-enabled", setUndoEnabled);
   EventBus.listen("redo-enabled", setRedoEnabled);
-  EventBus.listen("preview-construction", (s: string) => {
-    svgDataImage.value = s;
-  });
+  EventBus.listen("preview-construction", showConstructionPreview);
 });
 //#endregion magnificationUpdate
 
@@ -229,6 +239,17 @@ const centerWidth = computed((): number => {
   );
 });
 
+const showConstructionPreview = (s: SphericalConstruction | null) => {
+  if (s !== null) {
+    if (svgDataImage.value === "") previewClass.value = "preview-fadein";
+    svgDataImage.value = s.previewData;
+    constructionInfo.value.author = s.author;
+    constructionInfo.value.count = s.objectCount;
+  } else {
+    previewClass.value = "preview-fadeout";
+    svgDataImage.value = "";
+  }
+};
 function setUndoEnabled(e: { value: boolean }): void {
   undoEnabled = e.value;
 }
@@ -521,5 +542,46 @@ function handleToolboxMinify(state: boolean) {
 
 .top {
   top: 0;
+}
+
+.previewText {
+  position: absolute;
+  background-color: #FFFD;
+  z-index: 30;
+  transform: translateX(-50%);
+  padding: 0.25em;
+  margin: 0.5em;
+}
+.previewImage {
+  position: absolute;
+  z-index: 20;
+  transform: translateX(-50%);
+  border: 2px solid black;
+}
+.preview-fadein {
+  animation-duration: 500ms;
+  animation-name: preview-expand;
+}
+.preview-fadeout {
+  animation-duration: 500ms;
+  animation-name: preview-shrink;
+}
+
+@keyframes preview-expand {
+  0% {
+    transform: scale(0.3) translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%) scale(1);
+  }
+}
+
+@keyframes preview-shrink {
+  0% {
+    transform: translateX(0%) scale(1);
+  }
+  100% {
+    transform: translateX(-100%) scale(0.3);
+  }
 }
 </style>
