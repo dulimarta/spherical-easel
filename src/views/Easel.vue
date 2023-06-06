@@ -23,6 +23,7 @@
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
+              <EarthComp :canvas-size="currentCanvasSize" />
               <SphereFrame :canvas-size="currentCanvasSize" />
               <v-overlay
                 contained
@@ -105,6 +106,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
+import EarthComp from "@/components/EarthComp.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
