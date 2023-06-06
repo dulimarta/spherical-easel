@@ -18,9 +18,11 @@ import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 
 export default defineConfig({
   test: {
-    include: ["src/expression/__tests__/differential.spec.ts"],
+    environment: "jsdom",
+    include: ["src/components/__tests__/se-nodule-item.spec.ts"],
     exclude: ["node_modules"],
-    deps: { inline: ["element-plus"] }
+    globals: true,
+    deps: { inline: ["vuetify", "pinia", "vue-i18n"] }
   },
   resolve: {
     alias: {
