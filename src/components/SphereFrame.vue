@@ -386,9 +386,12 @@ onMounted((): void => {
   );
   watch(()=>props.isEarthMode,()=>{
     if(!props.isEarthMode){
-      seStore.layers[Number(LAYER.background)].visible = true;
+      (seStore.layers[Number(LAYER.background)] as any).visible = true;
+      // seStore.layers[Number(LAYER.midground)].visible = true;
     }else{
-      seStore.layers[Number(LAYER.background)].visible = false;
+      (seStore.layers[Number(LAYER.background)] as any).visible = false;
+      // seStore.layers[Number(LAYER.midground)].visible = false;
+
     }
   })
   // Make the canvas accessible to other components which need
@@ -1142,7 +1145,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   position: relative;
 }
 .anchored {
-  margin: 4px;
+  margin: 0px;
   position: absolute;
 }
 .left {

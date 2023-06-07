@@ -25,7 +25,6 @@
             <div style="position: relative">
 
               <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
-
               <SphereFrame :canvas-size="currentCanvasSize" :is-earth-mode="isEarthMode" />
               <button @click="isEarthMode=!isEarthMode" id="earthTogger">Earth Mode</button>
               <v-overlay

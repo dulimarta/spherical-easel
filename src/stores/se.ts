@@ -110,7 +110,7 @@ export const useSEStore = defineStore({
     svgCanvas: null,
     hasUnsavedNodules: false,
     zoomMagnificationFactor: 1, // the initial zoom factor
-    zoomTranslation: [0, 0],
+    zoomTranslation: [0, 0], // [x , y]
     canvasWidth: 0,
     sePointIds: [],
     seLineIds: [],
