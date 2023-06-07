@@ -23,8 +23,11 @@
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
-              <EarthComp :canvas-size="currentCanvasSize" />
+
+              <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
+
               <SphereFrame :canvas-size="currentCanvasSize" />
+              <button @click="isEarthMode=!isEarthMode" id="earthTogger">Earth Mode</button>
               <v-overlay
                 contained
                 class="align-center justify-center"
@@ -170,7 +173,7 @@ const seStore = useSEStore();
 const router = useRouter();
 const { seNodules, temporaryNodules, hasObjects, actionMode } =
   storeToRefs(seStore);
-
+const isEarthMode = ref(false)
 const props = defineProps<{
   documentId?: string;
 }>();
@@ -523,5 +526,13 @@ function handleToolboxMinify(state: boolean) {
 
 .top {
   top: 0;
+}
+#earthTogger{
+position: absolute;
+top: 0;
+color: white;
+background-color: blue;
+border-radius: 10px;
+padding:5px;
 }
 </style>
