@@ -26,7 +26,7 @@
 
               <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
 
-              <SphereFrame :canvas-size="currentCanvasSize" />
+              <SphereFrame :canvas-size="currentCanvasSize" :is-earth-mode="isEarthMode" />
               <button @click="isEarthMode=!isEarthMode" id="earthTogger">Earth Mode</button>
               <v-overlay
                 contained
@@ -532,7 +532,7 @@ position: absolute;
 top: 0;
 color: white;
 background-color: blue;
-border-radius: 10px;
-padding:5px;
+border-radius: 20px;
+padding:10px;
 }
 </style>

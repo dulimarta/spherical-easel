@@ -4,8 +4,9 @@
 <style>
  #earth{
     position:absolute;
-    width:100px;
-    height:100px;
+    margin: 0;
+    /* width:100px;
+    height:100px; */
  }
 </style>
 <script setup lang="ts">

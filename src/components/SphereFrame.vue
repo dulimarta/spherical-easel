@@ -93,6 +93,7 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
+import ToolGroups from "./ToolGroups.vue";
 // import i18n from "@/i18n";
 
 const seStore = useSEStore();
@@ -107,8 +108,9 @@ const {
 } = storeToRefs(seStore);
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<{ canvasSize: number }>(), {
-  canvasSize: 240
+const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean }>(), {
+  canvasSize: 240,
+  isEarthMode: false
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
@@ -382,7 +384,13 @@ onMounted((): void => {
   canvas.value?.addEventListener("contextmenu", event =>
     event.preventDefault()
   );
-
+  watch(()=>props.isEarthMode,()=>{
+    if(!props.isEarthMode){
+      seStore.layers[Number(LAYER.background)].visible = true;
+    }else{
+      seStore.layers[Number(LAYER.background)].visible = false;
+    }
+  })
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
   seStore.setCanvas(canvas.value!);
