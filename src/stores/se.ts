@@ -91,7 +91,7 @@ const sePencils: Array<SEPencil> = [];
 const layers: Array<Two.Group> = [];
 const selectedSENodules: Map<number, SENodule> = new Map();
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
-const inverseTotalRotationMatrix = new Matrix4();
+// const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();
@@ -166,7 +166,7 @@ export const useSEStore = defineStore({
       // defaultStyleStates.splice(0);
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
-      inverseTotalRotationMatrix.identity();
+      this.inverseTotalRotationMatrix.identity();
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -185,7 +185,7 @@ export const useSEStore = defineStore({
       this.canvasWidth = w;
     },
     setRotationMatrix(mat: Matrix4): void {
-      inverseTotalRotationMatrix.copy(mat);
+      this.inverseTotalRotationMatrix.copy(mat);
     },
     // setSphereRadius(r: number): void {
     //   // TODO
@@ -551,7 +551,7 @@ export const useSEStore = defineStore({
       // so to undo that action we find the inverse which is
       //  inverseTotalRotationMatrix*(inverse of rotationMat)
       tmpMatrix.copy(rotationMat).invert();
-      inverseTotalRotationMatrix.multiply(tmpMatrix);
+      this.inverseTotalRotationMatrix.multiply(tmpMatrix);
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
@@ -1331,7 +1331,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectLineWithParametric(
             newLine,
             oldParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -1883,7 +1883,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectSegmentWithParametric(
             newSegment,
             oldParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -2429,7 +2429,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectCircleWithParametric(
             newCircle,
             oldParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -2980,7 +2980,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectEllipseWithParametric(
             newEllipse,
             oldParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -3138,7 +3138,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectLineWithParametric(
             oldLine,
             newParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -3236,7 +3236,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectSegmentWithParametric(
             oldSegment,
             newParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -3334,7 +3334,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectCircleWithParametric(
             oldCircle,
             newParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
@@ -3432,7 +3432,7 @@ export const useSEStore = defineStore({
           const intersectionInfo = intersectEllipseWithParametric(
             oldEllipse,
             newParametric,
-            inverseTotalRotationMatrix
+            this.inverseTotalRotationMatrix
           );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;

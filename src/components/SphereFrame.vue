@@ -102,8 +102,7 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  expressions,
-  buttonSelection
+  buttonSelection,
 } = storeToRefs(seStore);
 const { t } = useI18n();
 
