@@ -85,8 +85,10 @@ onMounted(()=>{
         camera.setViewOffset(prop.canvasSize,prop.canvasSize,x,y,prop.canvasSize,prop.canvasSize);
     },{deep:true})
     watch(()=>(inverseTotalRotationMatrix.value.elements),()=>{
-        earth.setRotationFromMatrix(inverseTotalRotationMatrix.value
-        );
+        const rotationMatrix = new THREE.Matrix4();
+        rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+
+        earth.setRotationFromMatrix(rotationMatrix);
     },{deep:true})
 
 })
