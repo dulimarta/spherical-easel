@@ -26,13 +26,13 @@ const prop = defineProps({
     }
 })
 const store = useSEStore();
-const {zoomMagnificationFactor,zoomTranslation} = storeToRefs(store);
+const {zoomMagnificationFactor,zoomTranslation, inverseTotalRotationMatrix} = storeToRefs(store);
 onMounted(()=>{
     const scene = new THREE.Scene();
     const num = 240 * zoomMagnificationFactor.value;
     const camera = new THREE.OrthographicCamera(-num,num,num,-num,0.1,1000);
-    // const camera = new THREE.OrthographicCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 430;
+    //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = SETTINGS.boundaryCircle.radius+10;
     const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('earth') as HTMLCanvasElement
     });
@@ -45,24 +45,24 @@ onMounted(()=>{
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(0x000000, 0);
 
-    const geometry = new THREE.SphereGeometry(SETTINGS.boundaryCircle.radius,100,100);
+    const geometry = new THREE.SphereGeometry(SETTINGS.boundaryCircle.radius,250,250);
     const material = new THREE.MeshStandardMaterial({
         map: new THREE.TextureLoader().load("/earth/earth.jpg"),
         bumpMap: new THREE.TextureLoader().load("/earth/elevate.jpg"),
-        bumpScale: 0.5,
+        bumpScale: 10,
     });
     const earth = new THREE.Mesh(geometry, material);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     const light = new THREE.PointLight(0xffffff, 1);
-    light.position.set(50, 50, 50);
+    light.position.set(num, num, num);
 
     scene.add(earth);
     scene.add(ambientLight);
     scene.add(light);
     function animate() {
         requestAnimationFrame(animate);
-        earth.rotation.y += 0.001;
+        // earth.rotation.y += 0.001;
         renderer.render(scene, camera);
     }
     animate();
@@ -79,10 +79,14 @@ onMounted(()=>{
         camera.updateProjectionMatrix();
     })
     watch(()=>(zoomTranslation.value),()=>{
-        console.log(zoomTranslation.value);
+        // console.log(zoomTranslation.value);
         const x = -zoomTranslation.value[0]
         const y = -zoomTranslation.value[1]
         camera.setViewOffset(prop.canvasSize,prop.canvasSize,x,y,prop.canvasSize,prop.canvasSize);
+    },{deep:true})
+    watch(()=>(inverseTotalRotationMatrix.value.elements),()=>{
+        earth.setRotationFromMatrix(inverseTotalRotationMatrix.value
+        );
     },{deep:true})
 
 })

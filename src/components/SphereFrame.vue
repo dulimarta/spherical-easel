@@ -386,13 +386,30 @@ onMounted((): void => {
   );
   watch(()=>props.isEarthMode,()=>{
     if(!props.isEarthMode){
-      (seStore.layers[Number(LAYER.background)] as any).visible = true;
-      // seStore.layers[Number(LAYER.midground)].visible = true;
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
+        if((layer as string).includes("background")){
+          (seStore.layers[i] as any).visible = true;
+        }
+        i++;
+      }
     }else{
-      (seStore.layers[Number(LAYER.background)] as any).visible = false;
+
+      // console.log(Object.values(LAYER));
+      // (seStore.layers[Number(LAYER.background)] as any).visible = false;
+      // (seStore.layers[Number(LAYER.backgroundAngleMarkers)] as any).visible = false;
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
+        if((layer as string).includes("background")){
+          (seStore.layers[i] as any).visible = false;
+        }
+        i++;
+      }
+    }
+
       // seStore.layers[Number(LAYER.midground)].visible = false;
 
-    }
+
   })
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
@@ -633,6 +650,7 @@ function handleMouseLeave(e: MouseEvent): void {
 //#region handleSphereRotation
 function handleSphereRotation(e: unknown): void {
   seStore.rotateSphere((e as any).transform);
+  // console.log(seStore.inverseTotalRotationMatrix.elements);
 }
 //#endregion handleSphereRotation
 
