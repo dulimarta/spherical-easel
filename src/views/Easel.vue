@@ -23,9 +23,10 @@
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
-
-              <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
-              <SphereFrame :canvas-size="currentCanvasSize" :is-earth-mode="isEarthMode" />
+              <div id="earthAndCircle">
+                <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
+                <SphereFrame :canvas-size="currentCanvasSize" :is-earth-mode="isEarthMode" />
+              </div>
               <button @click="isEarthMode=!isEarthMode" id="earthTogger">Earth Mode</button>
               <v-overlay
                 contained
@@ -533,5 +534,10 @@ color: white;
 background-color: blue;
 border-radius: 20px;
 padding:10px;
+}
+#earthAndCircle{
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 </style>

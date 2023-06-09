@@ -1,5 +1,5 @@
 <template>
-    <canvas id="earth" width="100" height="100"></canvas>
+    <canvas id="earth"></canvas>
 </template>
 <style>
  #earth{
@@ -29,10 +29,10 @@ const store = useSEStore();
 const {zoomMagnificationFactor,zoomTranslation, inverseTotalRotationMatrix} = storeToRefs(store);
 onMounted(()=>{
     const scene = new THREE.Scene();
-    const num = 240 * zoomMagnificationFactor.value;
+    const num = prop.canvasSize / (zoomMagnificationFactor.value*2);
     const camera = new THREE.OrthographicCamera(-num,num,num,-num,0.1,1000);
     //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = SETTINGS.boundaryCircle.radius+10;
+    camera.position.z = (SETTINGS.boundaryCircle.radius/zoomMagnificationFactor.value)+10;
     const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('earth') as HTMLCanvasElement
     });
@@ -62,32 +62,42 @@ onMounted(()=>{
     scene.add(light);
     function animate() {
         requestAnimationFrame(animate);
-        // earth.rotation.y += 0.001;
+        earth.rotation.y += 0.0001;
         renderer.render(scene, camera);
     }
     animate();
     // watch change of prop.canvasSize
-    watch(() => (prop.canvasSize), () => {
-        renderer.setSize(prop.canvasSize, prop.canvasSize);
-    })
-    watch(()=>(zoomMagnificationFactor.value),()=>{
-        const num = prop.canvasSize / (zoomMagnificationFactor.value*2);
+
+    watch( [()=>(prop.canvasSize),()=>(zoomMagnificationFactor.value)], ([canvasSize,zoomMagnificationFactor]) => {
+        renderer.setSize(canvasSize,canvasSize);
+        const num = canvasSize / (zoomMagnificationFactor*2);
         camera.left = -num;
         camera.right = num;
         camera.top = num;
         camera.bottom = -num;
         camera.updateProjectionMatrix();
+        // camera.setViewOffset(prop.canvasSize,prop.canvasSize,0,0,prop.canvasSize,prop.canvasSize);
     })
+
+    // watch(()=>(zoomMagnificationFactor.value),()=>{
+    //     const num = prop.canvasSize / (zoomMagnificationFactor.value*2);
+    //     camera.left = -num;
+    //     camera.right = num;
+    //     camera.top = num;
+    //     camera.bottom = -num;
+    //     camera.updateProjectionMatrix();
+    // })
+    // zoom translate
     watch(()=>(zoomTranslation.value),()=>{
         // console.log(zoomTranslation.value);
         const x = -zoomTranslation.value[0]
         const y = -zoomTranslation.value[1]
         camera.setViewOffset(prop.canvasSize,prop.canvasSize,x,y,prop.canvasSize,prop.canvasSize);
     },{deep:true})
+
     watch(()=>(inverseTotalRotationMatrix.value.elements),()=>{
         const rotationMatrix = new THREE.Matrix4();
         rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-
         earth.setRotationFromMatrix(rotationMatrix);
     },{deep:true})
 
