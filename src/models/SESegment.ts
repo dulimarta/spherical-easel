@@ -3,7 +3,7 @@ import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SELabel } from "./internal";
 import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
@@ -11,7 +11,7 @@ import {
   NormalVectorAndTValue,
   ObjectState
 } from "@/types";
-import { SELabel } from "@/models/SELabel";
+// import { SELabel } from "@/models/SELabel";
 import {
   DEFAULT_SEGMENT_BACK_STYLE,
   DEFAULT_SEGMENT_FRONT_STYLE

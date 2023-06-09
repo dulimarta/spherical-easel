@@ -23,14 +23,14 @@
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
-              <SphereFrame :canvas-size="currentCanvasSize" />
+              <SphereFrame :canvas-size="currentCanvasSize" v-show="svgDataImage.length === 0"/>
               <v-overlay
                 contained
                 class="align-center justify-center"
                 :model-value="svgDataImage.length > 0">
                 <img
                   :src="svgDataImage"
-                  style="background: hsla(0, 100%, 100%, 1)"
+                  style="background: hsla(0, 100%, 100%, 1.0)"
                   :width="currentCanvasSize" :height="currentCanvasSize"/>
               </v-overlay>
               <div class="anchored top right">

@@ -1,9 +1,9 @@
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SEParametric } from "./internal";
 import Point from "@/plottables/Point";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import { SEParametric } from "./SEParametric";
+// import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const MIN = true;
 const { t } = i18n.global;

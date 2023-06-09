@@ -10,9 +10,9 @@ import {
 import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
-import { SEParametric } from "./SEParametric";
-import { SEPerpendicularLineThruPoint } from "./SEPerpendicularLineThruPoint";
-import { SEPoint } from "./SEPoint";
+import { SEParametric, SEPerpendicularLineThruPoint, SEPoint } from "./internal";
+// import { SEPerpendicularLineThruPoint } from "./SEPerpendicularLineThruPoint";
+// import { SEPoint } from "./SEPoint";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)

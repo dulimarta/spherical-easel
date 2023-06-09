@@ -1,17 +1,24 @@
 import Line from "@/plottables/Line";
 import { Vector3 } from "three";
-import { SEPoint } from "./SEPoint";
+import {
+  SEPoint,
+  SELine,
+  SETranslation,
+  SERotation,
+  SEReflection,
+  SEPointReflection
+} from "./internal";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
-import { SELine } from "./SELine";
-import { SETranslation } from "./SETranslation";
-import { SERotation } from "./SERotation";
-import { SEReflection } from "./SEReflection";
-import { SEPointReflection } from "./SEPointReflection";
+// import { SELine } from "./SELine";
+// import { SETranslation } from "./SETranslation";
+// import { SERotation } from "./SERotation";
+// import { SEReflection } from "./SEReflection";
+// import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 
 const styleSet = new Set([

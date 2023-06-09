@@ -9,12 +9,12 @@ import {
 } from "@/types/Styles";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
-import { SESegment } from "./SESegment";
-import { SEAngleMarker } from "./SEAngleMarker";
+// import { SESegment } from "./SESegment";
+// import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
-import { SEExpression } from "./SEExpression";
+// import { SEExpression } from "./SEExpression";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const { t } = i18n.global;
 

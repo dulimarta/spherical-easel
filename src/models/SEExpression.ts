@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import { ValueDisplayMode } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
+// import { SEOneOrTwoDimensional } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";

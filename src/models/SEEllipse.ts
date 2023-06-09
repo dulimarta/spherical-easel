@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SELabel } from "./internal";
 import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -11,7 +11,7 @@ import {
   DEFAULT_ELLIPSE_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
+// import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
 const { t } = i18n.global;
 const styleSet = new Set([

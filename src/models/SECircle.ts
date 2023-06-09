@@ -1,5 +1,11 @@
 import { SENodule } from "./SENodule";
-import { SEPoint } from "./SEPoint";
+import {
+  SEPoint,
+  SELabel,
+  SELine,
+  SEThreePointCircleCenter,
+  SEInversionCircleCenter
+} from "./internal";
 import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -11,13 +17,12 @@ import {
   DEFAULT_CIRCLE_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
-import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
-import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
-import { SELine } from "./SELine";
+// import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+// import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+// import { SELine } from "./SELine";
 const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),

@@ -3,7 +3,7 @@ import Line from "@/plottables/Line";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { SEPoint } from "./SEPoint";
+// import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
@@ -11,7 +11,7 @@ import {
   NormalVectorAndTValue,
   ObjectState
 } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel, SEPoint } from "./internal";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
 import i18n from "@/i18n";

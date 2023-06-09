@@ -2,7 +2,7 @@ import { ObjectState } from "@/types";
 import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
-import { SEParametric } from "./SEParametric";
+import { SEParametric } from "./internal";
 
 export class SEParametricGroup extends SENodule {
   private curves: Array<SEParametric> = [];

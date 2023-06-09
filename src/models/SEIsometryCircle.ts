@@ -1,12 +1,19 @@
-import { SEPoint } from "./SEPoint";
+import {
+  SEPoint,
+  SECircle,
+  SETranslation,
+  SERotation,
+  SEReflection,
+  SEPointReflection
+} from "./internal";
 import Circle from "@/plottables/Circle";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-import { SECircle } from "./SECircle";
-import { SETranslation } from "./SETranslation";
-import { SERotation } from "./SERotation";
-import { SEReflection } from "./SEReflection";
-import { SEPointReflection } from "./SEPointReflection";
+// import { SECircle } from "./SECircle";
+// import { SETranslation } from "./SETranslation";
+// import { SERotation } from "./SERotation";
+// import { SEReflection } from "./SEReflection";
+// import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 export class SEIsometryCircle extends SECircle {
   /**

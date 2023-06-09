@@ -1,5 +1,4 @@
-import { SEExpression } from "./SEExpression";
-import { SESegment } from "./SESegment";
+import { SEExpression, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";

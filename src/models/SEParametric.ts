@@ -15,18 +15,22 @@ import {
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import {
+  SELabel,
+  SEParametricEndPoint,
+  SEParametricTracePoint,
+  SEExpression
+} from "./internal";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
-import { SEParametricEndPoint } from "./SEParametricEndPoint";
+// import { SEParametricEndPoint } from "./SEParametricEndPoint";
 import {
   DEFAULT_PARAMETRIC_BACK_STYLE,
   DEFAULT_PARAMETRIC_FRONT_STYLE
 } from "@/types/Styles";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import { SEExpression } from "./SEExpression";
+// import { SEExpression } from "./SEExpression";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { SEParametricTracePoint } from "./SEParametricTracePoint";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
