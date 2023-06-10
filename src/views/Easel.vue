@@ -57,28 +57,10 @@
       </Pane>
 
       <Pane min-size="5" :max-size="25" :size="panelSize">
-        <v-card class="pt-2">
-          <div id="styleContainer">
-            <v-btn
-              icon
-              v-if="!stylePanelMinified || !notificationsPanelMinified"
-              @click="
-                () => {
-                  stylePanelMinified = true;
-                  notificationsPanelMinified = true;
-                }
-              ">
-              <v-icon>mdi-arrow-right</v-icon>
-            </v-btn>
-
-            <StylePanel :minified="stylePanelMinified" />
-            <!-- v-on:toggle-style-panel="minifyStylePanel" /-->
-
-            <!--MessageBox
+        <StylePanel @minify-toggled="handleStylePanelMinify" />
+        <!--MessageBox
               :minified="notificationsPanelMinified"
               v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
-          </div>
-        </v-card>
       </Pane>
     </Splitpanes>
     <Dialog
@@ -133,10 +115,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import {
-  ConstructionInFirestore,
-  SphericalConstruction,
-} from "@/types";
+import { ConstructionInFirestore, SphericalConstruction } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -479,6 +458,9 @@ onBeforeRouteLeave(
 function handleToolboxMinify(state: boolean) {
   toolboxMinified.value = state;
 }
+function handleStylePanelMinify(state: boolean) {
+  stylePanelMinified.value = state;
+}
 </script>
 <style scoped lang="scss">
 .splitpanes__pane {
@@ -546,7 +528,7 @@ function handleToolboxMinify(state: boolean) {
 
 .previewText {
   position: absolute;
-  background-color: #FFFD;
+  background-color: #fffd;
   z-index: 30;
   transform: translateX(-50%);
   padding: 0.25em;
