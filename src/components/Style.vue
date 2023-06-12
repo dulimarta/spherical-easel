@@ -1,5 +1,4 @@
 <template>
-      {{ minified }}
   <transition name="slide-out" mode="out-in">
     <div
       v-if="!minified"
@@ -72,10 +71,11 @@
           <v-expansion-panel-text
             :color="panelBackgroundColor(idx)">
             Content for {{ $t(p.i18n_key) }}
-            <!---component
+            {{ p }}
+            <component
               :is="p.component"
               :panel="p.panel"
-              :active-panel="activePanel"></!---component-->
+              :active-panel="activePanel"></component>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -93,6 +93,7 @@
 
 <script setup lang="ts">
 import Vue, { ref, onMounted } from "vue";
+import LabelStyle from "./LabelStyle.vue";
 // import Component from "vue-class-component";
 import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -244,19 +245,19 @@ function updateSelectedItemArray(): void {
 const panels = [
   {
     i18n_key: "style.labelStyle",
-    component: () => import("@/components/LabelStyle.vue"),
+    component: "LabelStyle",
     panel: StyleEditPanels.Label
   },
-  {
-    i18n_key: "style.foregroundStyle",
-    component: () => import("@/components/FrontBackStyle.vue"),
-    panel: StyleEditPanels.Front
-  },
-  {
-    i18n_key: "style.backgroundStyle",
-    component: () => import("@/components/FrontBackStyle.vue"),
-    panel: StyleEditPanels.Back
-  }
+  // {
+  //   i18n_key: "style.foregroundStyle",
+  //   component: () => import("@/components/FrontBackStyle.vue"),
+  //   panel: StyleEditPanels.Front
+  // },
+  // {
+  //   i18n_key: "style.backgroundStyle",
+  //   component: () => import("@/components/FrontBackStyle.vue"),
+  //   panel: StyleEditPanels.Back
+  // }
   // {
   //   i18n_key: "style.advancedStyle",
   //   component: () => import("@/components/AdvancedStyle.vue"),

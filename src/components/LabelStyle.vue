@@ -1,29 +1,28 @@
 <template>
+  LabelStyle here
   <div>
-    <StyleEditor :panel="panel"
+    <!--StyleEditor :panel="panel"
       :nodule-filter-function="labelFilter"
-      :nodule-map-function="labelMapper">
-      <div
-        slot-scope="{dataAgreement, styleOptions, selectionCount, forceDataAgreement, conflictingProps}">
+      :nodule-map-function="labelMapper"-->
         <!-- For debugging -->
         <!--ul>
           <li>Style Opt: {{styleOptions}}</li>
         </ul-->
 
         <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-        <OverlayWithFixButton v-if="!allLabelsShowing"
+        <!--OverlayWithFixButton v-if="!allLabelsShowing"
           z-index="100"
           i18n-title-line="style.labelNotVisible"
           i18n-subtitle-line="style.clickToMakeLabelsVisible"
           i18n-button-label="style.makeLabelsVisible"
           i18n-button-tool-tip="style.labelsNotShowingToolTip"
           @click="toggleAllLabelsVisibility">
-        </OverlayWithFixButton>
-        <InputGroup :numSelected="selectionCount"
+        </!--OverlayWithFixButton-->
+        <!--InputGroup :numSelected="selectionCount"
           :panel="panel"
-          input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration">
+          input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration"-->
           <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-          <OverlayWithFixButton
+          <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -31,15 +30,15 @@
             i18n-button-tool-tip="style.differentValuesToolTip"
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
-          </OverlayWithFixButton>
+          </!--OverlayWithFixButton-->
           <!-- Label Text Options -->
-          <span
-            class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
-          <span v-if="selectedSENodules.length > 1"
+          <!--span
+            class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</!--span>
+          <span-- v-if="selectedSENodules.length > 1"
             class="text-subtitle-2"
-            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span-->
           <!-- Label Text Selections -->
-          <v-tooltip location="bottom"
+          <!--v-tooltip location="bottom"
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
@@ -61,10 +60,10 @@
               </span>
             </template>
             {{selectionCount>1 ? $t('style.multiLabelTextToolTip'):$t('style.singleLabelTextToolTip')}}
-          </v-tooltip>
+          </!--v-tooltip-->
           <!-- Label Display Mode Selections -->
 
-          <v-select :model-value.lazy="styleOptions.labelDisplayMode"
+          <!--v-select :model-value.lazy="styleOptions.labelDisplayMode"
             :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelDisplayMode}]"
             :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
             ref="labelDisplayMode"
@@ -74,9 +73,9 @@
             filled
             outlined
             dense>
-          </v-select>
+          </!--v-select>
           <div v-show="showMoreLabelStyles">
-            <v-text-field :model-value.lazy="styleOptions.labelDisplayCaption"
+            <v-text-field-- :model-value.lazy="styleOptions.labelDisplayCaption"
               v-bind:label="$t('style.labelCaption')"
               :counter="maxLabelDisplayCaptionLength"
               :placeholder="placeHolderText(selectionCount, true)"
@@ -88,9 +87,9 @@
               @keypress="conflictItems.labelDisplayCaption=false"
               v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
               :rules="[labelDisplayCaptionCheck,labelDisplayCaptionTruncate(styleOptions)]">
-            </v-text-field>
+            </v-text-field-->
             <!-- Label Text Family Selections -->
-            <v-select :model-value.lazy="styleOptions.labelTextFamily"
+            <!--v-select :model-value.lazy="styleOptions.labelTextFamily"
               v-bind:label="$t('style.labelTextFamily')"
               :items="labelTextFamilyItems"
               ref="labelTextFamily"
@@ -99,7 +98,7 @@
               filled
               outlined
               dense>
-            </v-select>
+            </!--v-select>
             <v-select :model-value.lazy="styleOptions.labelTextStyle"
               v-bind:label="$t('style.labelTextStyle')"
               :items="labelTextStyleItems"
@@ -194,7 +193,7 @@
             :data.sync="styleOptions.labelFrontFillColor">
           </SimpleColorSelector>
         </InputGroup>
-        <InputGroup :numSelected="selectionCount"
+        <InputGroup-- :numSelected="selectionCount"
           :panel="panel"
           input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
@@ -233,9 +232,8 @@
             style-name="labelBackFillColor"
             :data.sync="styleOptions.labelBackFillColor">
           </SimpleColorSelector>
-        </InputGroup>
-      </div>
-    </StyleEditor>
+        </InputGroup-->
+    <!-- </StyleEditor> -->
 
     <!-- Show more or less styling options -->
     <v-tooltip location="bottom"
@@ -261,26 +259,26 @@
   </div>
 
 </template>
-<script lang="ts">
-import Vue from "vue";
+<script setup lang="ts">
+import {computed, ref,onMounted,onBeforeUnmount } from "vue";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "../types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
-import FadeInCard from "@/components/FadeInCard.vue";
-import InputGroup from "@/components/InputGroupWithReset.vue";
+// import FadeInCard from "@/components/FadeInCard.vue";
+// import InputGroup from "@/components/InputGroupWithReset.vue";
 import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
-import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
+// import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
+// import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 import i18n from "../i18n";
-import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import StyleEditor from "@/components/StyleEditor.vue";
+// import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
+// import StyleEditor from "@/components/StyleEditor.vue";
 import Label from "@/plottables/Label";
-import { mapState } from "pinia";
+import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-
+import {useStyleEditor } from "./StyleEditor"
 // import UI from "@/store/ui-styles";
 type labelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
@@ -312,41 +310,54 @@ type ConflictItems = {
   labelBackFillColor: boolean;
   labelFrontFillColor: boolean;
 };
-@Component({
-  components: {
-    FadeInCard,
-    SimpleNumberSelector,
-    SimpleColorSelector,
-    OverlayWithFixButton,
-    StyleEditor,
-    InputGroup
-  },
-  computed: {
-    ...mapState(useSEStore, ["selectedSENodules"])
-  }
-})
-export default class LabelStyle extends Vue {
-  @Prop() readonly panel!: StyleEditPanels;
+type LabelStyleProps = {
+  panel: StyleEditPanels,
+  noduleFilterFunction: () => void,
+}
+// @Component({
+//   components: {
+//     FadeInCard,
+//     SimpleNumberSelector,
+//     SimpleColorSelector,
+//     OverlayWithFixButton,
+//     StyleEditor,
+//     InputGroup
+//   },
+//   computed: {
+//     ...mapState(useSEStore, ["selectedSENodules"])
+//   }
+// })
+// export default class LabelStyle extends Vue {
+
+const props = defineProps<LabelStyleProps>()
+const seStore = useSEStore()
+const { selectionCount, dataAgreement, conflictingProps, forceDataAgreement,
+styleOptions} = useStyleEditor(props.panel, labelFilter, labelMapper)
+  // @Prop() readonly panel!: StyleEditPanels;
 
   // You are not allow to style labels  directly  so remove them from the selection and warn the user
-  readonly selectedSENodules!: SENodule[];
+  const {selectedSENodules} = storeToRefs(seStore)
 
-  @Watch("selectedSENodules")
-  resetAllItemsFromConflict(): void {
+  // $refs
+const labelDisplayText = ref(null)
+const labelDisplayCaption = ref(null)
+
+  // @Watch("selectedSENodules")
+  function resetAllItemsFromConflict(): void {
     // console.log("here");
-    const key = Object.keys(this.conflictItems);
+    const key = Object.keys(conflictItems);
     key.forEach(prop => {
-      (this.conflictItems as any)[prop] = false;
+      (conflictItems as any)[prop] = false;
     });
   }
 
   // Include only those objects that have SELabel
-  labelFilter(n: SENodule): boolean {
+  function labelFilter(n: SENodule): boolean {
     return n.isLabelable();
   }
 
   // Map each object to its plotabble label
-  labelMapper(n: SENodule): Nodule {
+  function labelMapper(n: SENodule): Nodule {
     return (n as unknown as Labelable).label!.ref!;
   }
 
@@ -355,11 +366,11 @@ export default class LabelStyle extends Vue {
   // usingAutomaticBackStyle = true means the program is setting the style of the back objects
   // private usingAutomaticBackStyle = true;
 
-  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+  const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   // shakes the input a bit if there is a conflict on that particular input
-  private animatedInput: Animatable = {
+  const animatedInput: Animatable = {
     labelDisplayText: false,
     labelDisplayMode: false,
     labelDisplayCaption: false,
@@ -370,7 +381,7 @@ export default class LabelStyle extends Vue {
     labelTextRotation: false
   };
   // change the background color of the input if there is a conflict on that particular input
-  private conflictItems: ConflictItems = {
+  const conflictItems: ConflictItems = {
     labelDisplayText: false,
     labelDisplayMode: false,
     labelDisplayCaption: false,
@@ -383,130 +394,130 @@ export default class LabelStyle extends Vue {
     labelFrontFillColor: false
   };
 
-  private conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
+  const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
-  private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
-  private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
+  const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
+  const minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
   //step is 20 from 60 to 200 is 8 steps
-  private textScaleSelectorThumbStrings: Array<string> = [];
+  const textScaleSelectorThumbStrings: Array<string> = [];
 
   //Many of the label style will not be commonly modified so create a button/variable for
   // the user to click to show more of the Label Styling options
-  private showMoreLabelStyles = false;
-  private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
+  const showMoreLabelStyles = ref(false);
+  const moreOrLessText = ref(i18n.global.t("style.moreStyleOptions")); // The text for the button to toggle between less/more options
 
-  private maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
-  private labelDisplayTextErrorMessageKey = "";
-  private labelDisplayTestResults = [true, true];
-  private lastValidDisplayText = "";
+  const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
+  const labelDisplayTextErrorMessageKey = "";
+  const labelDisplayTestResults = [true, true];
+  const lastValidDisplayText = ref("");
 
-  private maxLabelDisplayCaptionLength =
+  const maxLabelDisplayCaptionLength =
     SETTINGS.label.maxLabelDisplayCaptionLength;
-  private labelDisplayCaptionErrorMessageKey = "";
-  private labelDisplayCaptionTestResults = [true, true];
+  const labelDisplayCaptionErrorMessageKey = "";
+  const labelDisplayCaptionTestResults = [true, true];
 
-  private labelDisplayModeItems: labelDisplayModeItem[] = [
+  const labelDisplayModeItems: labelDisplayModeItem[] = [
     {
-      text: i18n.t("style.labelDisplayModes.nameOnly"),
+      text: i18n.global.t("style.labelDisplayModes.nameOnly"),
       value: LabelDisplayMode.NameOnly,
       optionRequiresMeasurementValueToExist: false,
       optionRequiresCaptionToExist: false
     },
     {
-      text: i18n.t("style.labelDisplayModes.captionOnly"),
+      text: i18n.global.t("style.labelDisplayModes.captionOnly"),
       value: LabelDisplayMode.CaptionOnly,
       optionRequiresMeasurementValueToExist: false,
       optionRequiresCaptionToExist: true
     },
     {
-      text: i18n.t("style.labelDisplayModes.valueOnly"),
+      text: i18n.global.t("style.labelDisplayModes.valueOnly"),
       value: LabelDisplayMode.ValueOnly,
       optionRequiresMeasurementValueToExist: true,
       optionRequiresCaptionToExist: false
     },
     {
-      text: i18n.t("style.labelDisplayModes.nameAndCaption"),
+      text: i18n.global.t("style.labelDisplayModes.nameAndCaption"),
       value: LabelDisplayMode.NameAndCaption,
       optionRequiresMeasurementValueToExist: false,
       optionRequiresCaptionToExist: true
     },
     {
-      text: i18n.t("style.labelDisplayModes.nameAndValue"),
+      text: i18n.global.t("style.labelDisplayModes.nameAndValue"),
       value: LabelDisplayMode.NameAndValue,
       optionRequiresMeasurementValueToExist: true,
       optionRequiresCaptionToExist: false
     }
   ];
 
-  private labelTextFamilyItems = [
+  const labelTextFamilyItems = [
     {
-      text: i18n.t("style.genericSanSerif"),
+      text: i18n.global.t("style.genericSanSerif"),
       value: "sans/-serif"
     },
     {
-      text: i18n.t("style.genericSerif"),
+      text: i18n.global.t("style.genericSerif"),
       value: "serif"
     },
     {
-      text: i18n.t("style.monospace"),
+      text: i18n.global.t("style.monospace"),
       value: "monospace"
     },
     {
-      text: i18n.t("style.cursive"),
+      text: i18n.global.t("style.cursive"),
       value: "cursive"
     },
     {
-      text: i18n.t("style.fantasy"),
+      text: i18n.global.t("style.fantasy"),
       value: "fantasy"
     }
   ];
 
-  private labelTextStyleItems = [
+  const labelTextStyleItems = [
     {
-      text: i18n.t("style.normal"),
+      text: i18n.global.t("style.normal"),
       value: "normal"
     },
     {
-      text: i18n.t("style.italic"),
+      text: i18n.global.t("style.italic"),
       value: "italic"
     },
     {
-      text: i18n.t("style.bold"),
+      text: i18n.global.t("style.bold"),
       value: "bold"
     }
   ];
 
-  private labelTextDecorationItems = [
+  const labelTextDecorationItems = [
     {
-      text: i18n.t("style.none"),
+      text: i18n.global.t("style.none"),
       value: "none"
     },
     {
-      text: i18n.t("style.underline"),
+      text: i18n.global.t("style.underline"),
       value: "underline"
     },
     {
-      text: i18n.t("style.strikethrough"),
+      text: i18n.global.t("style.strikethrough"),
       value: "strikethrough"
     },
     {
-      text: i18n.t("style.overline"),
+      text: i18n.global.t("style.overline"),
       value: "overline"
     }
   ];
 
   //step is Pi/8 from -pi to pi is 17 steps
-  private textRotationSelectorThumbStrings: Array<string> = [];
+  const textRotationSelectorThumbStrings: Array<string> = [];
 
-  created(): void {
+  function created(): void {
     for (
       let s = SETTINGS.style.minLabelTextScalePercent;
       s <= SETTINGS.style.maxLabelTextScalePercent;
       s += 20
     )
-      this.textScaleSelectorThumbStrings.push(s.toFixed(0) + "%");
+      textScaleSelectorThumbStrings.push(s.toFixed(0) + "%");
     for (let angle = -180; angle <= 180; angle += 22.5) {
-      this.textRotationSelectorThumbStrings.push(
+      textRotationSelectorThumbStrings.push(
         angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
       );
     }
@@ -515,10 +526,10 @@ export default class LabelStyle extends Vue {
     //   this.textRotationSelectorThumbStrings
     // );
   }
-  mounted(): void {
+  onMounted((): void => {
     EventBus.listen(
       "style-label-conflict-color-reset",
-      this.resetAndRestoreConflictItemss
+      resetAndRestoreConflictItemss
     );
     EventBus.listen(
       "style-update-conflicting-props",
@@ -526,63 +537,63 @@ export default class LabelStyle extends Vue {
         // this.conflictingPropNames.forEach(name =>
         //   console.log("old prop", name)
         // );
-        this.conflictingPropNames.splice(0);
-        names.propNames.forEach(name => this.conflictingPropNames.push(name));
+        conflictingPropNames.splice(0);
+        names.propNames.forEach(name => conflictingPropNames.push(name));
         // this.conflictingPropNames.forEach(name =>
         //   console.log("new prop", name)
         // );
       }
     );
+  })
+
+  function resetAndRestoreConflictItemss(): void {
+    resetAllItemsFromConflict();
+    distinguishConflictingItems(conflictingPropNames);
   }
 
-  resetAndRestoreConflictItemss(): void {
-    this.resetAllItemsFromConflict();
-    this.distinguishConflictingItems(this.conflictingPropNames);
-  }
-
-  beforeDestroy(): void {
+  onBeforeUnmount((): void =>{
     EventBus.unlisten("style-label-conflict-color-reset");
     EventBus.unlisten("style-update-conflicting-props");
-  }
+  })
 
-  get allLabelsShowing(): boolean {
-    return this.selectedSENodules.every(node => {
+  const allLabelsShowing = computed((): boolean => {
+    return selectedSENodules.value.every(node => {
       if (node.isLabelable()) {
         return (node as unknown as Labelable).label!.showing;
       } else {
         return true;
       }
     });
-  }
+  })
 
-  toggleShowMoreLabelStyles(): void {
-    this.showMoreLabelStyles = !this.showMoreLabelStyles;
-    if (!this.showMoreLabelStyles) {
-      this.moreOrLessText = i18n.t("style.moreStyleOptions");
+  function toggleShowMoreLabelStyles(): void {
+    showMoreLabelStyles.value = !showMoreLabelStyles.value;
+    if (!showMoreLabelStyles.value) {
+      moreOrLessText.value = i18n.global.t("style.moreStyleOptions");
     } else {
-      this.moreOrLessText = i18n.t("style.lessStyleOptions");
+      moreOrLessText.value = i18n.global.t("style.lessStyleOptions");
     }
   }
-  toggleAllLabelsVisibility(): void {
+  function toggleAllLabelsVisibility(): void {
     EventBus.fire("toggle-label-visibility", { fromPanel: true });
   }
 
   // These methods are linked to the Style Data fade-in-card
-  labelDisplayTextCheck(txt: string | undefined): boolean | string {
+  function labelDisplayTextCheck(txt: string | undefined): boolean | string {
     if (txt !== undefined && txt !== null) {
       if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
-        return this.$t("style.maxLabelDisplayTextLengthWarning", {
+        return i18n.global.t("style.maxLabelDisplayTextLengthWarning", {
           max: SETTINGS.label.maxLabelDisplayTextLength
         }) as string;
       } else if (txt.length === 0) {
         // console.log("here");
-        return this.$t("style.minLabelDisplayTextLengthWarning", {}) as string;
+        return i18n.global.t("style.minLabelDisplayTextLengthWarning", {}) as string;
       }
     }
     return true;
   }
 
-  labelDisplayTextTruncate(opt: StyleOptions): boolean {
+  function labelDisplayTextTruncate(opt: StyleOptions): boolean {
     if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
       if (
         opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
@@ -593,23 +604,23 @@ export default class LabelStyle extends Vue {
           SETTINGS.label.maxLabelDisplayTextLength
         );
       } else if (opt.labelDisplayText.length === 0) {
-        opt.labelDisplayText = this.lastValidDisplayText;
+        opt.labelDisplayText = lastValidDisplayText.value;
       } else {
-        this.lastValidDisplayText = opt.labelDisplayText;
+        lastValidDisplayText.value = opt.labelDisplayText;
       }
     }
     return true;
   }
 
-  labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
+  function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
     if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
-      return this.$t("style.maxLabelDisplayCaptionLengthWarning", {
+      return i18n.global.t("style.maxLabelDisplayCaptionLengthWarning", {
         max: SETTINGS.label.maxLabelDisplayCaptionLength
       }) as string;
     }
     return true;
   }
-  labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
+  function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
     if (opt.labelDisplayCaption !== undefined) {
       if (
         opt.labelDisplayCaption.length >
@@ -631,22 +642,22 @@ export default class LabelStyle extends Vue {
 
   //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
   // and if the caption is empty, NameAndCaption and Caption Only are not options
-  labelDisplayModeValueFilter(
+  function labelDisplayModeValueFilter(
     opt: StyleOptions
     // items: labelDisplayModeItem[]
   ): labelDisplayModeItem[] {
     const returnItems: labelDisplayModeItem[] = [];
-    const allLabels = this.selectedSENodules
-      .filter(this.labelFilter)
-      .map(this.labelMapper)
+    const allLabels = selectedSENodules.value
+      .filter(labelFilter)
+      .map(labelMapper)
       .map((n: Nodule) => n as Label);
     if (allLabels.every((lab: Label) => lab.value.length !== 0)) {
       // value is present in all labels so pass long all options in labelDisplayModeItems
-      returnItems.push(...this.labelDisplayModeItems);
+      returnItems.push(...labelDisplayModeItems);
     } else {
       // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
       returnItems.push(
-        ...this.labelDisplayModeItems.filter(
+        ...labelDisplayModeItems.filter(
           item => !item.optionRequiresMeasurementValueToExist
         )
       );
@@ -661,7 +672,7 @@ export default class LabelStyle extends Vue {
     }
   }
 
-  placeHolderText(numSelected: number, caption: boolean): string {
+  function placeHolderText(numSelected: number, caption: boolean): string {
     if (numSelected > 1) {
       if (caption) {
         return "Common Caption Text";
@@ -677,21 +688,21 @@ export default class LabelStyle extends Vue {
     }
   }
 
-  distinguishConflictingItems(conflictingProps: string[]): void {
+  function distinguishConflictingItems(conflictingProps: string[]): void {
     conflictingProps.forEach(conflictPropName => {
       switch (conflictPropName) {
         case "labelDisplayText":
           // clear the display of the labels
-          if (this.$refs.labelDisplayText !== undefined) {
-            (this.$refs.labelDisplayText as any).$el.getElementsByTagName(
+          if (labelDisplayText !== undefined) {
+            (labelDisplayText as any).$el.getElementsByTagName(
               "input"
             )[0].value = "";
           }
           break;
         case "labelDisplayCaption":
           // clear the display of the captions
-          if (this.$refs.labelDisplayCaption !== undefined) {
-            (this.$refs.labelDisplayCaption as any).$el.getElementsByTagName(
+          if (labelDisplayCaption !== undefined) {
+            (labelDisplayCaption as any).$el.getElementsByTagName(
               "input"
             )[0].value = "";
           }
@@ -700,9 +711,9 @@ export default class LabelStyle extends Vue {
       // console.log(this.$refs);
       // (this.animatedInput as any)[conflictPropName] = true;
       if (conflictPropName.search(/Color/) === -1) {
-        (this.conflictItems as any)[conflictPropName] = "error";
+        (conflictItems as any)[conflictPropName] = "error";
       } else {
-        (this.conflictItems as any)[conflictPropName] = "red";
+        (conflictItems as any)[conflictPropName] = "red";
       }
       // setTimeout(() => {
       //   (this.animatedInput as any)[conflictPropName] = false;
@@ -710,7 +721,7 @@ export default class LabelStyle extends Vue {
       // }, 1000);
     });
   }
-}
+// }
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
