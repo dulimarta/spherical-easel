@@ -93,7 +93,6 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
-// import i18n from "@/i18n";
 
 const seStore = useSEStore();
 const {
@@ -102,8 +101,7 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  expressions,
-  buttonSelection
+  buttonSelection,
 } = storeToRefs(seStore);
 const { t } = useI18n();
 

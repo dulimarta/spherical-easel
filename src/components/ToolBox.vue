@@ -7,7 +7,7 @@
     <div v-if="!minified" key="full">
       <v-container>
         <v-row align="center">
-          <v-btn icon size="small">
+          <v-btn icon size="x-small">
             <v-icon @click="toggleMinify">mdi-arrow-left</v-icon>
           </v-btn>
           <CurrentToolSelection />
@@ -57,7 +57,7 @@
       v-else
       class="mini-icons"
       key="partial">
-      <v-btn icon size="small">
+      <v-btn icon size="x-small">
         <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
       </v-btn>
       <div class="mini-icons px-3">

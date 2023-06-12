@@ -6,10 +6,11 @@
       style="height: 100%; overflow: auto"
       @mouseenter="setSelectTool"
       @mouseleave="saveStyleState">
-      <v-divider></v-divider>
-
+      <v-btn icon size="x-small">
+        <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
+      </v-btn>
       <!-- Switches for show/hide label(s) and object(s)-->
-      <v-card flat class="ma-0 pa-0">
+      <!--v-card flat class="ma-0 pa-0">
         <v-card-text class="ma-0 pa-0">
           <v-container fluid class="ma-0 pa-0">
             <v-row no-gutters justify="center">
@@ -38,9 +39,9 @@
             </v-row>
           </v-container>
         </v-card-text>
-      </v-card>
+      </!--v-card-->
 
-      <v-divider></v-divider>
+      <!-- <v-divider></v-divider> -->
 
       <!-- Type and number list of objects that are selected-->
       <div class="text-center">
@@ -61,39 +62,38 @@
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')"></OverlayWithFixButton-->
 
-      <!--v-expansion-panels :model-value="activePanel">
+      <v-expansion-panels>
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-header
-            color="blue lighten-3"
-            :key="`header${idx}`"
-            class="body-1 text-h6 ps-6 pe-0 pt-n4 pb-n4 pm-0">
+          <v-expansion-panel-title
+            class="ps-6 pe-0 pt-n4 pb-n4 pm-0">
             {{ $t(p.i18n_key) }}
-          </v-expansion-panel-header>
-          <v-expansion-panel-content
-            :color="panelBackgroundColor(idx)"
-            :key="`content${idx}`">
+          </v-expansion-panel-title>
+          <v-expansion-panel-text
+            :color="panelBackgroundColor(idx)">
+            Content for {{ $t(p.i18n_key) }}
+            {{ p }}
             <component
               :is="p.component"
               :panel="p.panel"
               :active-panel="activePanel"></component>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
-      </v-expansion-panels-->
+      </v-expansion-panels>
     </div>
-    <v-btn
-      v-else
-      v-on:click="$emit('toggle-style-panel')"
-      key="partial"
-      plain
-      depressed
-      class="pa-0 mx-0">
-      <v-icon>$stylePanel</v-icon>
-    </v-btn>
+    <div v-else class="mini-icons">
+      <v-btn key="partial" icon size="x-small" class="pa-0 mx-0">
+        <v-icon @click="toggleMinify">mdi-arrow-left</v-icon>
+      </v-btn>
+      <div class="mini-icons">
+        <v-icon>$stylePanel</v-icon>
+      </div>
+    </div>
   </transition>
 </template>
 
 <script setup lang="ts">
 import Vue, { ref, onMounted } from "vue";
+import LabelStyle from "./LabelStyle.vue";
 // import Component from "vue-class-component";
 import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -111,23 +111,11 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
 import { watch } from "vue";
 
-// @Component({
-//   components: { BasicFrontBackStyle, OverlayWithFixButton },
-//   computed: {
-//     ...mapState(useSEStore, ["selectedSENodules"])
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);
-//   }
-// })
-// export default class Style extends Vue {
-type StyleProps = {
-  minified: boolean;
-};
-// @Prop()
-// readonly minified!: boolean;
-const props = defineProps<StyleProps>();
 
-// readonly selectedSENodules!: SENodule[];
+const minified = ref(true);
+const emit = defineEmits(["minifyToggled"]);
 
 const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
 const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
@@ -166,10 +154,10 @@ function buttonListItems(): string[] {
   }
 }
 
-watch(
-  () => props.minified,
-  () => closeAllPanels
-);
+// watch(
+//   () => props.minified,
+//   () => closeAllPanels
+// );
 
 function closeAllPanels(): void {
   activePanel.value = undefined;
@@ -255,11 +243,11 @@ function updateSelectedItemArray(): void {
 
 // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
 const panels = [
-  // {
-  //   i18n_key: "style.labelStyle",
-  //   component: () => import("@/components/LabelStyle.vue"),
-  //   panel: StyleEditPanels.Label
-  // },
+  {
+    i18n_key: "style.labelStyle",
+    component: "LabelStyle",
+    panel: StyleEditPanels.Label
+  },
   // {
   //   i18n_key: "style.foregroundStyle",
   //   component: () => import("@/components/FrontBackStyle.vue"),
@@ -269,7 +257,7 @@ const panels = [
   //   i18n_key: "style.backgroundStyle",
   //   component: () => import("@/components/FrontBackStyle.vue"),
   //   panel: StyleEditPanels.Back
-  // },
+  // }
   // {
   //   i18n_key: "style.advancedStyle",
   //   component: () => import("@/components/AdvancedStyle.vue"),
@@ -343,13 +331,18 @@ function toggleObjectsShowing(fromPanel: unknown): void {
   //  SETTIGNS.showObjectShowsLabel)
   allLabelsShowingCheck();
 }
+
+function toggleMinify() {
+  minified.value = !minified.value;
+  emit("minifyToggled", minified.value);
+}
 </script>
 
 <style scoped>
-#mini-icons {
+.mini-icons {
   display: flex;
   flex-direction: column;
-  height: 80vh;
+  height: 100%;
   align-items: center;
   justify-content: center;
 }
