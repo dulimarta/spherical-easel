@@ -3,7 +3,6 @@
       Be sure NOT to place it as the last attr -->
   <v-btn
     v-bind="$attrs"
-    @click="$listeners.click"
     class="text-subtitle-2"
     ripple
     right
@@ -18,16 +17,18 @@
       :open-delay="toolTipOpenDelay"
       activator="parent"
       :close-delay="toolTipCloseDelay">
-      {{ i18nTooltip }}
+      {{ t(i18nTooltip) }}
     </v-tooltip>
   </v-btn>
 </template>
 
 <script lang="ts" setup>
-import Vue, { computed } from "vue";
+import { computed } from "vue";
+import {useI18n} from "vue-i18n"
 import SETTINGS from "@/global-settings";
 const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
 const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+const {t} = useI18n()
 const props = defineProps<{
   i18nTooltip: string;
   i18nLabel: string;

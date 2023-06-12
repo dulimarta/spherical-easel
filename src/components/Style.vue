@@ -39,12 +39,13 @@
             </v-row>
           </v-container>
         </v-card-text>
-      </!--v-card-->
+      </v-card-->
 
       <!-- <v-divider></v-divider> -->
 
       <!-- Type and number list of objects that are selected-->
       <div class="text-center">
+        Target for styling:
         <v-chip v-for="item in selectedItemArray" :key="item" x-small>
           {{ item }}
         </v-chip>
@@ -70,8 +71,6 @@
           </v-expansion-panel-title>
           <v-expansion-panel-text
             :color="panelBackgroundColor(idx)">
-            Content for {{ $t(p.i18n_key) }}
-            {{ p }}
             <component
               :is="p.component"
               :panel="p.panel"
@@ -245,7 +244,7 @@ function updateSelectedItemArray(): void {
 const panels = [
   {
     i18n_key: "style.labelStyle",
-    component: "LabelStyle",
+    component: LabelStyle,
     panel: StyleEditPanels.Label
   },
   // {

@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <v-card v-show="showWhen" color="color" elevation="8" class="content">
+    <v-card v-show="showWhen || true" color="color" elevation="8" class="content">
       <slot></slot>
     </v-card>
   </transition>

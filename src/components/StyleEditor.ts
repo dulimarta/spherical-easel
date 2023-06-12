@@ -1,5 +1,3 @@
-
-
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
@@ -18,8 +16,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { onBeforeUnmount, onMounted, computed, ref} from "vue";
-import { watch } from "vue";
+import { onBeforeUnmount, onMounted, computed, ref, Ref, watch } from "vue";
 
 type StyleOptionDiff = {
   prop: string;
@@ -52,14 +49,16 @@ export function useStyleEditor(
   // automaticBackState is controlled by user
   // automaticBackStyle : FALSE means she wants to customize back style
   // automaticBackStyle : TRUE means the program will customize back style
-  automaticBackStyle: boolean = true) {
-
+  automaticBackStyle: boolean = true
+) {
   // You are not allow to style labels directly so remove them from the selection and warn the user
-  const seStore = useSEStore()
+  const seStore = useSEStore();
   const {
-    selectedSENodules, oldStyleSelections,
-    initialStyleStatesMap, defaultStyleStatesMap
-  } = storeToRefs(seStore)
+    selectedSENodules,
+    oldStyleSelections,
+    initialStyleStatesMap,
+    defaultStyleStatesMap
+  } = storeToRefs(seStore);
   // readonly selectedSENodules!: SENodule[];
   // readonly setSelectedSENodules!: (_: Array<SENodule>) => void;
   // readonly setOldSelection!: (_: Array<SENodule>) => void;
@@ -73,7 +72,7 @@ export function useStyleEditor(
 
   const commonStyleProperties: Array<string> = [];
   let conflictingPropNames = ref<Array<string>>([]);
-  const selectedNodules: Array<Nodule> = [];
+  const filteredNodules: Ref<Array<Nodule>> = ref([]);
   const previousSelectedNodules: Array<Nodule> = [];
   const activeStyleOptions = ref<StyleOptions>({});
   let previousStyleOptions: StyleOptions = {};
@@ -123,7 +122,7 @@ export function useStyleEditor(
       selectedSENodules.value.filter(seNod => seNod instanceof SEAngleMarker)
         .length > 0
     );
-  })
+  });
   const oneDimensionalIsSelected = computed((): boolean => {
     return (
       selectedSENodules.value.filter(
@@ -135,7 +134,7 @@ export function useStyleEditor(
           seNod instanceof SEParametric
       ).length > 0
     );
-  })
+  });
   function hasStyle(prop: RegExp): boolean {
     return commonStyleProperties.some((x: string) => x.match(prop));
   }
@@ -152,15 +151,15 @@ export function useStyleEditor(
     EventBus.listen("style-data-clear", undo);
     EventBus.listen("style-data-to-default", restoreDefault);
     EventBus.listen("save-style-state", saveStyleState);
-  })
+  });
   onBeforeUnmount((): void => {
     EventBus.unlisten("style-data-clear");
     EventBus.unlisten("style-data-to-default");
-  })
+  });
 
   function restoreTo(propNames: string[], styleData: StyleOptions[]): void {
     console.debug("Style data to apply", styleData);
-    selectedNodules.forEach((n: Nodule, k: number) => {
+    filteredNodules.value.forEach((n: Nodule, k: number) => {
       const updatePayload: StyleOptions = {};
       propNames.forEach((p: string) => {
         // if (p === "dashArray") {
@@ -195,7 +194,10 @@ export function useStyleEditor(
     // set the color of the conflicting inputs in the style panel to normal
     EventBus.fire("style-label-conflict-color-reset", {});
   }
-  function restoreDefault(ev: { selector: string; panel: StyleEditPanels }): void {
+  function restoreDefault(ev: {
+    selector: string;
+    panel: StyleEditPanels;
+  }): void {
     // console.log("ev selector", ev.selector);
     const styleData = defaultStyleStatesMap.value.get(panel);
     if (styleData) {
@@ -216,175 +218,192 @@ export function useStyleEditor(
     EventBus.fire("style-label-conflict-color-reset", {});
   }
 
-  watch(() => panel, (): void => {
-    console.debug("Panel changed?");
-  })
-
-  watch(() => automaticBackStyle, (newVal: boolean): void => {
-    if (panel === StyleEditPanels.Back) {
-      propDynamicBackStyleCommonValue.value = newVal;
+  watch(
+    () => panel,
+    (): void => {
+      console.debug("Panel changed?");
     }
-  })
+  );
 
-  watch(selectedSENodules.value, (newSelection: SENodule[]): void => {
-    console.debug("StyleEditor: object selection changed", newSelection.length);
-
-    saveStyleState();
-    commonStyleProperties.splice(0);
-    // this.dataAgreement = true;
-    if (newSelection.length === 0) {
-      return;
+  watch(
+    () => automaticBackStyle,
+    (newVal: boolean): void => {
+      if (panel === StyleEditPanels.Back) {
+        propDynamicBackStyleCommonValue.value = newVal;
+      }
     }
-    activeStyleOptions.value = {};
+  );
 
-    // console.debug("***********************");
-    seStore.setSelectedSENodules(newSelection.filter(noduleFilterFunction));
-    selectedNodules.splice(0);
-    selectedNodules.push(...selectedSENodules.value.map(noduleMapFunction));
-    // console.debug("Selected SENodules", this.selectedSENodules);
-    // console.debug("Selected plottables", this.selectedNodules);
-    seStore.setOldSelection(selectedSENodules.value);
+  watch(
+    () => selectedSENodules.value,
+    (newSelection: SENodule[]): void => {
+      console.debug(
+        "StyleEditor: object selection changed",
+        newSelection.length
+      );
 
-    // Save current state so we can reset to this state if needed to
-    const styleOptionsOfSelected = selectedNodules.map((n: Nodule) => {
-      // console.debug("current style state", n.currentStyleState(this.panel));
-      return n.currentStyleState(panel);
-    });
-    // console.log(
-    //   "styleOptionsOfSelected",
-    //   styleOptionsOfSelected[0]
-    // );
-    seStore.recordStyleState({
-      panel: panel,
-      selected: selectedNodules
-    });
+      saveStyleState();
+      commonStyleProperties.splice(0);
+      // this.dataAgreement = true;
+      if (newSelection.length === 0) {
+        return;
+      }
+      activeStyleOptions.value = {};
 
-    // Use the style of the first selected object as the initial value
-    activeStyleOptions.value = { ...styleOptionsOfSelected[0] };
-    // console.log(
-    //   "active style options",
-    //   this.activeStyleOptions
-    // );
-    // Use flatmap (1-to-many mapping) to compile all the styling properties
-    // of all the selected objects
-    const unionOfAllProps = styleOptionsOfSelected.flatMap(
-      (opt: StyleOptions) =>
+      // console.debug("***********************");
+      seStore.setSelectedSENodules(newSelection.filter(noduleFilterFunction));
+      filteredNodules.value.splice(0);
+      filteredNodules.value.push(
+        ...selectedSENodules.value.map(noduleMapFunction)
+      );
+      // console.debug("Selected SENodules", this.selectedSENodules);
+      // console.debug("Selected plottables", this.selectedNodules);
+      seStore.setOldSelection(selectedSENodules.value);
+
+      // Save current state so we can reset to this state if needed to
+      const styleOptionsOfSelected = filteredNodules.value.map((n: Nodule) => {
+        // console.debug("current style state", n.currentStyleState(this.panel));
+        return n.currentStyleState(panel);
+      });
+      // console.log(
+      //   "styleOptionsOfSelected",
+      //   styleOptionsOfSelected[0]
+      // );
+      seStore.recordStyleState({
+        panel: panel,
+        selected: filteredNodules.value
+      });
+
+      // Use the style of the first selected object as the initial value
+      activeStyleOptions.value = { ...styleOptionsOfSelected[0] };
+      // console.log(
+      //   "active style options",
+      //   this.activeStyleOptions
+      // );
+      // Use flatmap (1-to-many mapping) to compile all the styling properties
+      // of all the selected objects
+      const unionOfAllProps = styleOptionsOfSelected.flatMap(
+        (opt: StyleOptions) =>
+          Object.getOwnPropertyNames(opt).filter(
+            (s: string) => !s.startsWith("__")
+          )
+      );
+
+      const unDuplicatedUnionOfAllProps = new Set(unionOfAllProps); // Convert to set to remove duplicates
+      // console.log("undup", unDuplicatedUnionOfAllProps);
+
+      const listOfAllProps = styleOptionsOfSelected.map((opt: StyleOptions) =>
         Object.getOwnPropertyNames(opt).filter(
           (s: string) => !s.startsWith("__")
         )
-    );
-
-    const unDuplicatedUnionOfAllProps = new Set(unionOfAllProps); // Convert to set to remove duplicates
-    // console.log("undup", unDuplicatedUnionOfAllProps);
-
-    const listOfAllProps = styleOptionsOfSelected.map((opt: StyleOptions) =>
-      Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
-    );
-    // console.log("list of common props", listOfAllProps);
-
-    unDuplicatedUnionOfAllProps.forEach(prop => {
-      // make sure that prop is on every list of properties, if so it is a common prop (i.e. in the intersection)
-      if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
-        commonStyleProperties.push(prop);
-      }
-    });
-
-    // console.log("common props", this.commonStyleProperties);
-
-    // Use destructuring (...) to convert back from set to array
-    //this.commonStyleProperties.push(...uniqueProps);
-
-    if (selectedNodules.length > 1) {
-      propDynamicBackStyleCommonValue.value = false;
-      // When multiple plottables are selected, check for possible conflict
-      conflictingPropNames.value = commonStyleProperties.filter(
-        (propName: string) => {
-          // Confirm that the values of common style property are the same accross
-          // all selected plottables
-          const refStyleOption = selectedNodules[0].currentStyleState(
-            panel
-          );
-          const refValue = (refStyleOption as any)[propName];
-          if (propName === "dynamicBackStyle")
-            propDynamicBackStyleCommonValue.value = refValue;
-          else if (propName === "dashArray") {
-            // Replace missing values in dash array with zeroes
-            if (Array.isArray(refValue) && refValue.length === 0)
-              refValue.push(0, 0);
-          }
-
-          // Style data is in agreement if all the selected object shared
-          // the same value for all the common style properties
-          const agreement = selectedNodules.every((obj: Nodule) => {
-            const thisStyleOption = obj.currentStyleState(panel);
-            const thisValue = (thisStyleOption as any)[propName];
-            // console.log("prop & name", propName, propName.search(/Color/), obj);
-            // console.log("ref value", refValue);
-            // console.log("this value", thisValue);
-
-            if (Array.isArray(thisValue) || Array.isArray(refValue)) {
-              if (thisValue.length === 0) {
-                thisValue.push(0, 0);
-              }
-              return dashArrayCompare(thisValue, refValue);
-            } else if (propName.search(/Color/) > -1) {
-              // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
-              return hslaCompare(thisValue, refValue);
-            } else return thisValue === refValue;
-          });
-          // If values do not agree, include its property name into the conflict array
-          return !agreement;
-        }
       );
-      if (conflictingPropNames.value.length > 0) {
-        conflictingPropNames.value.forEach(prop => {
-          console.error("Disagreement in property value", prop);
+      // console.log("list of common props", listOfAllProps);
+
+      unDuplicatedUnionOfAllProps.forEach(prop => {
+        // make sure that prop is on every list of properties, if so it is a common prop (i.e. in the intersection)
+        if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
+          commonStyleProperties.push(prop);
+        }
+      });
+
+      // console.log("common props", this.commonStyleProperties);
+
+      // Use destructuring (...) to convert back from set to array
+      //this.commonStyleProperties.push(...uniqueProps);
+
+      if (filteredNodules.value.length > 1) {
+        propDynamicBackStyleCommonValue.value = false;
+        // When multiple plottables are selected, check for possible conflict
+        conflictingPropNames.value = commonStyleProperties.filter(
+          (propName: string) => {
+            // Confirm that the values of common style property are the same accross
+            // all selected plottables
+            const refStyleOption =
+              filteredNodules.value[0].currentStyleState(panel);
+            const refValue = (refStyleOption as any)[propName];
+            if (propName === "dynamicBackStyle")
+              propDynamicBackStyleCommonValue.value = refValue;
+            else if (propName === "dashArray") {
+              // Replace missing values in dash array with zeroes
+              if (Array.isArray(refValue) && refValue.length === 0)
+                refValue.push(0, 0);
+            }
+
+            // Style data is in agreement if all the selected object shared
+            // the same value for all the common style properties
+            const agreement = filteredNodules.value.every((obj: Nodule) => {
+              const thisStyleOption = obj.currentStyleState(panel);
+              const thisValue = (thisStyleOption as any)[propName];
+              // console.log("prop & name", propName, propName.search(/Color/), obj);
+              // console.log("ref value", refValue);
+              // console.log("this value", thisValue);
+
+              if (Array.isArray(thisValue) || Array.isArray(refValue)) {
+                if (thisValue.length === 0) {
+                  thisValue.push(0, 0);
+                }
+                return dashArrayCompare(thisValue, refValue);
+              } else if (propName.search(/Color/) > -1) {
+                // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+                return hslaCompare(thisValue, refValue);
+              } else return thisValue === refValue;
+            });
+            // If values do not agree, include its property name into the conflict array
+            return !agreement;
+          }
+        );
+        if (conflictingPropNames.value.length > 0) {
+          conflictingPropNames.value.forEach(prop => {
+            console.error("Disagreement in property value", prop);
+          });
+        }
+        //update the conflicting properties
+        const newConflictProps: string[] = [];
+        conflictingPropNames.value.forEach(name => newConflictProps.push(name));
+        EventBus.fire("style-update-conflicting-props", {
+          propNames: newConflictProps
+        });
+        // this.dataAgreement = false;
+      } else {
+        // If we reach this point we have EXACTLY ONE object selected
+        conflictingPropNames.value.splice(0);
+        const opt = filteredNodules.value[0].currentStyleState(panel);
+        if (opt.dashArray && opt.dashArray.length === 0)
+          opt.dashArray.push(0, 0);
+        propDynamicBackStyleCommonValue.value =
+          (opt as any)["dynamicBackStyle"] ?? false;
+        console.debug("Only one object is selected");
+
+        //update the conflicting properties
+        const newConflictProps: string[] = [];
+        conflictingPropNames.value.forEach(name => newConflictProps.push(name));
+        EventBus.fire("style-update-conflicting-props", {
+          propNames: newConflictProps
         });
       }
-      //update the conflicting properties
-      const newConflictProps: string[] = [];
-      conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-      EventBus.fire("style-update-conflicting-props", {
-        propNames: newConflictProps
-      });
-      // this.dataAgreement = false;
-    } else {
-      // If we reach this point we have EXACTLY ONE object selected
-      conflictingPropNames.value.splice(0);
-      const opt = selectedNodules[0].currentStyleState(panel);
-      if (opt.dashArray && opt.dashArray.length === 0) opt.dashArray.push(0, 0);
-      propDynamicBackStyleCommonValue.value =
-        (opt as any)["dynamicBackStyle"] ?? false;
-      console.debug("Only one object is selected");
 
-      //update the conflicting properties
-      const newConflictProps: string[] = [];
-      conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-      EventBus.fire("style-update-conflicting-props", {
-        propNames: newConflictProps
-      });
-    }
+      previousBackstyleContrast = Nodule.getBackStyleContrast();
+      // console.log("record previous contrast", this.previousBackstyleContrast);
+      previousSelectedNodules.splice(0);
+      previousSelectedNodules.push(...filteredNodules.value);
 
-    previousBackstyleContrast = Nodule.getBackStyleContrast();
-    // console.log("record previous contrast", this.previousBackstyleContrast);
-    previousSelectedNodules.splice(0);
-    previousSelectedNodules.push(...selectedNodules);
-
-    if (hasStyle(/dashArray/)) {
-      let value: boolean;
-      if (activeStyleOptions.value.dashArray) {
-        if (
-          activeStyleOptions.value.dashArray[0] === 0 &&
-          activeStyleOptions.value.dashArray[1] === 0
-        ) {
-          value = true;
-        } else {
-          value = false;
+      if (hasStyle(/dashArray/)) {
+        let value: boolean;
+        if (activeStyleOptions.value.dashArray) {
+          if (
+            activeStyleOptions.value.dashArray[0] === 0 &&
+            activeStyleOptions.value.dashArray[1] === 0
+          ) {
+            value = true;
+          } else {
+            value = false;
+          }
+          EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
         }
-        EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
       }
-    }
-  }, {immediate: true})
+    },
+    { immediate: true }
+  );
 
   /**
    * In the following function: undefined, [], [0,0] are equivalent
@@ -430,7 +449,10 @@ export function useStyleEditor(
     return false;
   }
 
-  watch(activeStyleOptions, onStyleOptionsChanged, { deep: true, immediate: true })
+  watch(() => activeStyleOptions.value, onStyleOptionsChanged, {
+    deep: true,
+    immediate: true
+  });
   function onStyleOptionsChanged(z: StyleOptions): void {
     // console.log(
     //   "onStyleOpCha in styleEditor",
@@ -479,7 +501,7 @@ export function useStyleEditor(
     });
 
     /* If multiple objects are selected do not update the label text */
-    if (selectedNodules.length > 1) delete updatePayload.labelDisplayText;
+    if (filteredNodules.value.length > 1) delete updatePayload.labelDisplayText;
 
     // if (this.panel == StyleEditPanels.Back) {
     //   // if (!this.automaticBackStyle)
@@ -497,7 +519,7 @@ export function useStyleEditor(
       //   });
       //   delete updatePayload.backStyleContrast;
       // }
-      selectedNodules.forEach((n: Nodule) => {
+      filteredNodules.value.forEach((n: Nodule) => {
         console.debug("Updating style of", n, "payload", updatePayload);
         n.updateStyle(panel, updatePayload);
       });
@@ -627,10 +649,10 @@ export function useStyleEditor(
       );
       console.debug(
         "Number of currently selected object? ",
-        selectedNodules.length
+        filteredNodules.value.length
       );
       const prev = initialStyleStatesMap.value.get(panel) ?? [];
-      const curr = selectedNodules.map((n: Nodule) =>
+      const curr = filteredNodules.value.map((n: Nodule) =>
         n.currentStyleState(panel)
       );
       if (!areEquivalentStyles(prev, curr)) {
@@ -638,7 +660,7 @@ export function useStyleEditor(
         console.debug("Previous style", prev);
         console.debug("Next style", curr);
         const styleCommand = new StyleNoduleCommand(
-          selectedNodules,
+          filteredNodules.value,
           panel,
           curr,
           prev
@@ -655,19 +677,19 @@ export function useStyleEditor(
     // }
     if (subCommandCount > 0) cmdGroup.push();
   }
+  const selectionCount = computed(() => filteredNodules.value.length);
 
-      return {
-        agreement: dataAgreement,
-        styleOptions: activeStyleOptions,
-        selectionCount: selectedNodules.length,
-        conflictingProps: conflictingPropNames,
-  //       // enableBackStyleEdit: this.enableBackStyleEdit,
-        automaticBackStyleCommonValue: propDynamicBackStyleCommonValue,
-        angleMarkersSelected: anAngleMarkerIsSelected,
-        oneDimensionSelected: oneDimensionalIsSelected,
-        forceDataAgreement,
-        hasStyle,
-        dataAgreement
-      }
-
+  return {
+    agreement: dataAgreement,
+    styleOptions: activeStyleOptions,
+    selectionCount,
+    conflictingProps: conflictingPropNames,
+    //       // enableBackStyleEdit: this.enableBackStyleEdit,
+    automaticBackStyleCommonValue: propDynamicBackStyleCommonValue,
+    angleMarkersSelected: anAngleMarkerIsSelected,
+    oneDimensionSelected: oneDimensionalIsSelected,
+    forceDataAgreement,
+    hasStyle,
+    dataAgreement
+  };
 }

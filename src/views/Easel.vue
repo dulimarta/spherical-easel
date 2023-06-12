@@ -40,7 +40,7 @@
                   :style="listItemStyle(index, 'right', 'top')">
                   <ShortcutIcon :model="shortcut" />
                 </div>
-              </!--div-->
+              </div>
               <v-overlay
                 contained
                 :class="['justify-center', previewClass]"

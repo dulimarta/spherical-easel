@@ -1,28 +1,29 @@
 <template>
-  LabelStyle here
   <div>
     <!--StyleEditor :panel="panel"
       :nodule-filter-function="labelFilter"
       :nodule-map-function="labelMapper"-->
-        <!-- For debugging -->
-        <!--ul>
-          <li>Style Opt: {{styleOptions}}</li>
-        </ul-->
+    <!-- For debugging -->
+    <ul>
+      <li>Style Opt: {{ styleOptions }}</li>
+      <li>Selection count {{ selectionCount }}</li>
+    </ul>
 
-        <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-        <!--OverlayWithFixButton v-if="!allLabelsShowing"
+    <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
+    <!--OverlayWithFixButton v-if="!allLabelsShowing"
           z-index="100"
           i18n-title-line="style.labelNotVisible"
           i18n-subtitle-line="style.clickToMakeLabelsVisible"
           i18n-button-label="style.makeLabelsVisible"
           i18n-button-tool-tip="style.labelsNotShowingToolTip"
           @click="toggleAllLabelsVisibility">
-        </!--OverlayWithFixButton-->
-        <!--InputGroup :numSelected="selectionCount"
-          :panel="panel"
-          input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration"-->
-          <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-          <!--OverlayWithFixButton
+        </OverlayWithFixButton-->
+    <InputGroup
+      :numSelected="selectionCount"
+      :panel="panel"
+      input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration">
+      <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+      <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -31,103 +32,132 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
           </!--OverlayWithFixButton-->
-          <!-- Label Text Options -->
-          <!--span
-            class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</!--span>
-          <span-- v-if="selectedSENodules.length > 1"
-            class="text-subtitle-2"
-            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span-->
-          <!-- Label Text Selections -->
-          <!--v-tooltip location="bottom"
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px">
-            <template v-slot:activator="{ props }">
-              <span v-bind="props">
-                <v-text-field :model-value="styleOptions.labelDisplayText"
-                  :disabled="selectionCount !== 1"
-                  v-bind:label="$t('style.labelText')"
-                  :counter="maxLabelDisplayTextLength"
-                  ref="labelDisplayText"
-                  :class="{shake: animatedInput.labelDisplayText, conflict: conflictItems.labelDisplayText}"
-                  filled
-                  outlined
-                  dense
-                  :placeholder="placeHolderText(selectionCount, false)"
-                  v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
-                  :rules="[labelDisplayTextCheck,labelDisplayTextTruncate(styleOptions)]">
-                </v-text-field>
-              </span>
-            </template>
-            {{selectionCount>1 ? $t('style.multiLabelTextToolTip'):$t('style.singleLabelTextToolTip')}}
-          </!--v-tooltip-->
-          <!-- Label Display Mode Selections -->
-
-          <!--v-select :model-value.lazy="styleOptions.labelDisplayMode"
-            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelDisplayMode}]"
-            :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
-            ref="labelDisplayMode"
-            v-bind:label="$t('style.labelDisplayMode')"
-            :items="labelDisplayModeValueFilter(styleOptions)"
-            @change="conflictItems.labelDisplayMode = false"
-            filled
-            outlined
-            dense>
-          </!--v-select>
-          <div v-show="showMoreLabelStyles">
-            <v-text-field-- :model-value.lazy="styleOptions.labelDisplayCaption"
-              v-bind:label="$t('style.labelCaption')"
-              :counter="maxLabelDisplayCaptionLength"
-              :placeholder="placeHolderText(selectionCount, true)"
-              ref="labelDisplayCaption"
-              :class="{shake: animatedInput.labelDisplayCaption, conflict: conflictItems.labelDisplayCaption}"
-              filled
-              outlined
-              dense
-              @keypress="conflictItems.labelDisplayCaption=false"
-              v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
-              :rules="[labelDisplayCaptionCheck,labelDisplayCaptionTruncate(styleOptions)]">
-            </v-text-field-->
-            <!-- Label Text Family Selections -->
-            <!--v-select :model-value.lazy="styleOptions.labelTextFamily"
-              v-bind:label="$t('style.labelTextFamily')"
-              :items="labelTextFamilyItems"
-              ref="labelTextFamily"
-              :class="{shake: animatedInput.labelTextFamily, conflict: conflictItems.labelTextFamily}"
-              @change="conflictItems.labelTextFamily = false"
-              filled
-              outlined
-              dense>
-            </!--v-select>
-            <v-select :model-value.lazy="styleOptions.labelTextStyle"
-              v-bind:label="$t('style.labelTextStyle')"
-              :items="labelTextStyleItems"
-              ref="labelTextStyle"
-              :class="{shake: animatedInput.labelTextStyle, conflict: conflictItems.labelTextStyle}"
-              @change="conflictItems.labelTextStyle=false"
-              filled
-              outlined
-              dense>
-            </v-select>
-            <v-select :model-value.lazy="styleOptions.labelTextDecoration"
-              v-bind:label="$t('style.labelTextDecoration')"
-              :items="labelTextDecorationItems"
-              ref="labelTextDecorations"
-              :class="{shake: animatedInput.labelTextDecoration, conflict: conflictItems.labelTextDecoration}"
-              @change="conflictItems.labelTextDecoration= false"
-              filled
-              outlined
-              dense>
-            </v-select>
-
-          </div>
-        </InputGroup>
-
-        <InputGroup :numSelected="selectionCount"
-          :panel="panel"
-          input-selector="labelTextScalePercent,labelTextRotation"
-          v-if="showMoreLabelStyles">
-          <OverlayWithFixButton
+      <!-- Label Text Options -->
+      <span class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
+      <span
+        v-if="selectedSENodules.length > 1"
+        class="text-subtitle-2"
+        style="color: red">
+        {{ " " + $t("style.labelStyleOptionsMultiple") }}
+      </span>
+      <!-- Label Text Selections -->
+      <span v-bind="props">
+        <v-text-field
+          :model-value="styleOptions.labelDisplayText"
+          :disabled="selectionCount !== 1"
+          v-bind:label="$t('style.labelText')"
+          :counter="maxLabelDisplayTextLength"
+          ref="labelDisplayText"
+          :class="{
+            shake: animatedInput.labelDisplayText,
+            conflict: conflictItems.labelDisplayText
+          }"
+          variant="outlined"
+          density="compact"
+          :placeholder="placeHolderText(selectionCount, false)"
+          v-bind:error-messages="
+            $t(labelDisplayTextErrorMessageKey, {
+              max: maxLabelDisplayTextLength
+            })
+          "
+          :rules="[
+            labelDisplayTextCheck,
+            labelDisplayTextTruncate(styleOptions)
+          ]"></v-text-field>
+      </span>
+      <!-- Label Display Mode Selections -->
+      <v-select
+        :model-value.lazy="styleOptions.labelDisplayMode"
+        :class="[
+          showMoreLabelStyles ? '' : 'pa-0',
+          {
+            shake: animatedInput.labelDisplayMode,
+            conflict: conflictItems.labelDisplayMode
+          }
+        ]"
+        :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
+        ref="labelDisplayMode"
+        v-bind:label="$t('style.labelDisplayMode')"
+        :items="labelDisplayModeValueFilter(styleOptions)"
+        item-title="text"
+        item-value="value"
+        @change="conflictItems.labelDisplayMode = false"
+        variant="outlined"
+        density="compact"></v-select>
+      <div v-show="showMoreLabelStyles">
+        <v-text-field
+          :model-value.lazy="styleOptions.labelDisplayCaption"
+          v-bind:label="$t('style.labelCaption')"
+          :counter="maxLabelDisplayCaptionLength"
+          :placeholder="placeHolderText(selectionCount, true)"
+          ref="labelDisplayCaption"
+          :class="{
+            shake: animatedInput.labelDisplayCaption,
+            conflict: conflictItems.labelDisplayCaption
+          }"
+          variant="outlined"
+          density="compact"
+          @keypress="conflictItems.labelDisplayCaption = false"
+          v-bind:error-messages="
+            $t(labelDisplayCaptionErrorMessageKey, {
+              max: maxLabelDisplayCaptionLength
+            })
+          "
+          :rules="[
+            labelDisplayCaptionCheck,
+            labelDisplayCaptionTruncate(styleOptions)
+          ]"></v-text-field>
+        <!-- Label Text Family Selections -->
+        <v-select
+          :model-value.lazy="styleOptions.labelTextFamily"
+          v-bind:label="$t('style.labelTextFamily')"
+          :items="labelTextFamilyItems"
+          item-title="text"
+          item-value="value"
+          ref="labelTextFamily"
+          :class="{
+            shake: animatedInput.labelTextFamily,
+            conflict: conflictItems.labelTextFamily
+          }"
+          @change="conflictItems.labelTextFamily = false"
+          variant="outlined"
+          density="compact"></v-select>
+        <v-select
+          :model-value.lazy="styleOptions.labelTextStyle"
+          v-bind:label="$t('style.labelTextStyle')"
+          :items="labelTextStyleItems"
+          item-title="text"
+          item-value="value"
+          ref="labelTextStyle"
+          :class="{
+            shake: animatedInput.labelTextStyle,
+            conflict: conflictItems.labelTextStyle
+          }"
+          @change="conflictItems.labelTextStyle = false"
+          variant="outlined"
+          density="compact"></v-select>
+        <v-select
+          :model-value.lazy="styleOptions.labelTextDecoration"
+          v-bind:label="$t('style.labelTextDecoration')"
+          :items="labelTextDecorationItems"
+          item-title="text"
+          item-value="value"
+          ref="labelTextDecorations"
+          :class="{
+            shake: animatedInput.labelTextDecoration,
+            conflict: conflictItems.labelTextDecoration
+          }"
+          @change="conflictItems.labelTextDecoration = false"
+          variant="outlined"
+          density="compact"></v-select>
+      </div>
+    </InputGroup>
+    <InputGroup
+      :numSelected="selectionCount"
+      :panel="panel"
+      input-selector="labelTextScalePercent,labelTextRotation"
+      v-if="showMoreLabelStyles">
+      <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelTextScalePercent|labelTextRotation/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -135,47 +165,53 @@
             i18n-button-tool-tip="style.differentValuesToolTip"
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelTextScalePercent`,`labelTextRotation`])">
-          </OverlayWithFixButton>
-          {{ $t("style.labelTextScalePercent")}} &
-          {{$t("style.labelTextRotation")}} <span
-            v-if="selectedSENodules.length > 1"
-            class="text-subtitle-2"
-            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
-          <v-divider></v-divider>
-          <SimpleNumberSelector class="pa-2"
-            :numSelected="selectionCount"
-            v-bind:data.sync="styleOptions.labelTextScalePercent"
-            title-key="style.labelTextScalePercent"
-            ref="labelTextScalePercent"
-            :color="conflictItems.labelTextScalePercent?'red':''"
-            :conflict="conflictItems.labelTextScalePercent"
-            v-on:resetColor="conflictItems.labelTextScalePercent=false"
-            :class="{'shake' : animatedInput.labelTextScalePercent}"
-            :min="minLabelTextScalePercent"
-            :max="maxLabelTextScalePercent"
-            :step="20"
-            :thumb-string-values="textScaleSelectorThumbStrings" />
-          <v-divider></v-divider>
-          <SimpleNumberSelector class="pa-2"
-            :numSelected="selectionCount"
-            v-bind:data.sync="styleOptions.labelTextRotation"
-            ref="labelTextRotation"
-            :conflict="conflictItems.labelTextRotation"
-            :class="{'shake' : animatedInput.labelTextRotation}"
-            title-key="style.labelTextRotation"
-            :color="conflictItems.labelTextRotation?'red':''"
-            v-on:resetColor="conflictItems.labelTextRotation=false"
-            :min="-3.14159"
-            :max="3.14159"
-            :step="0.39269875"
-            :thumb-string-values="textRotationSelectorThumbStrings">
-          </SimpleNumberSelector>
-        </InputGroup>
-        <InputGroup :numSelected="selectionCount"
+          </OverlayWithFixButton-->
+      {{ $t("style.labelTextScalePercent") }} &
+      {{ $t("style.labelTextRotation") }}
+      <span
+        v-if="selectedSENodules.length > 1"
+        class="text-subtitle-2"
+        style="color: red">
+        {{ " " + $t("style.labelStyleOptionsMultiple") }}
+      </span>
+      <v-divider></v-divider>
+      <SimpleNumberSelector
+        class="pa-2"
+        :numSelected="selectionCount"
+        v-model="styleOptions.labelTextScalePercent"
+        title-key="style.labelTextScalePercent"
+        ref="labelTextScalePercent"
+        :color="conflictItems.labelTextScalePercent ? 'red' : ''"
+        :conflict="conflictItems.labelTextScalePercent"
+        v-on:resetColor="conflictItems.labelTextScalePercent = false"
+        :class="{ shake: animatedInput.labelTextScalePercent }"
+        :min="minLabelTextScalePercent"
+        :max="maxLabelTextScalePercent"
+        :step="20"
+        :thumb-string-values="textScaleSelectorThumbStrings" />
+      <v-divider></v-divider>
+      <SimpleNumberSelector
+        class="pa-2"
+        :numSelected="selectionCount"
+        v-model="styleOptions.labelTextRotation"
+        ref="labelTextRotation"
+        :conflict="conflictItems.labelTextRotation"
+        :class="{ shake: animatedInput.labelTextRotation }"
+        title-key="style.labelTextRotation"
+        :color="conflictItems.labelTextRotation ? 'red' : ''"
+        v-on:resetColor="conflictItems.labelTextRotation = false"
+        :min="-3.14159"
+        :max="3.14159"
+        :step="0.39269875"
+        :thumb-string-values="
+          textRotationSelectorThumbStrings
+        "></SimpleNumberSelector>
+    </InputGroup>
+    <InputGroup :numSelected="selectionCount"
           :panel="panel"
           input-selector="labelFrontFillColor"
           v-if="showMoreLabelStyles">
-          <OverlayWithFixButton
+          <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelFrontFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -183,21 +219,21 @@
             i18n-button-tool-tip="style.differentValuesToolTip"
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelFrontFillColor`])">
-          </OverlayWithFixButton>
+          </OverlayWithFixButton-->
           <SimpleColorSelector title-key="style.labelFrontFillColor"
             :numSelected="selectionCount"
             ref="labelFrontFillColor"
             style-name="labelFrontFillColor"
             :conflict="conflictItems.labelFrontFillColor"
             v-on:resetColor="conflictItems.labelFrontFillColor=false"
-            :data.sync="styleOptions.labelFrontFillColor">
+            v-model="styleOptions.labelFrontFillColor">
           </SimpleColorSelector>
         </InputGroup>
-        <InputGroup-- :numSelected="selectionCount"
+        <InputGroup :numSelected="selectionCount"
           :panel="panel"
           input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
-          <OverlayWithFixButton
+          <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDynamicBackStyle/)"
             z-index="100"
             i18n-title-line="style.backStyleDisagreement"
@@ -221,7 +257,7 @@
             i18n-button-tool-tip="style.differentValuesToolTip"
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelBackFillColor`])">
-          </OverlayWithFixButton>
+          </OverlayWithFixButton-->
 
           <SimpleColorSelector class="pa-2"
             :numSelected="selectionCount"
@@ -230,55 +266,56 @@
             v-on:resetColor="conflictItems.labelBackFillColor=false"
             ref="labelBackFillColor"
             style-name="labelBackFillColor"
-            :data.sync="styleOptions.labelBackFillColor">
+            v-model="styleOptions.labelBackFillColor">
           </SimpleColorSelector>
-        </InputGroup-->
+        </InputGroup>
     <!-- </StyleEditor> -->
 
     <!-- Show more or less styling options -->
-    <v-tooltip location="bottom"
+    <v-tooltip
+      location="bottom"
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
       max-width="400px"
       class="pa-0 pm-0">
       <template v-slot:activator="{ props }">
-        <v-btn v-bind="props"
+        <v-btn
+          v-bind="props"
           @click="toggleShowMoreLabelStyles"
           class="text-subtitle-2"
           text
           plain
           ripple
           x-small>
-          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-          </v-icon>
-          <v-icon v-else>mdi-chevron-down </v-icon>
+          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
+          <v-icon v-else>mdi-chevron-down</v-icon>
         </v-btn>
       </template>
-      {{$t('style.toggleStyleOptionsToolTip')}}
+      {{ t("style.toggleStyleOptionsToolTip") }}
     </v-tooltip>
   </div>
-
 </template>
 <script setup lang="ts">
-import {computed, ref,onMounted,onBeforeUnmount } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "../types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 // import FadeInCard from "@/components/FadeInCard.vue";
-// import InputGroup from "@/components/InputGroupWithReset.vue";
+import InputGroup from "@/components/InputGroupWithReset.vue";
 import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
-// import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
-// import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
-import i18n from "../i18n";
+import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
+import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
+import {useI18n} from "vue-i18n";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 // import StyleEditor from "@/components/StyleEditor.vue";
 import Label from "@/plottables/Label";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import {useStyleEditor } from "./StyleEditor"
+import { useStyleEditor } from "./StyleEditor";
+import { onBeforeMount } from "vue";
 // import UI from "@/store/ui-styles";
 type labelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
@@ -311,417 +348,409 @@ type ConflictItems = {
   labelFrontFillColor: boolean;
 };
 type LabelStyleProps = {
-  panel: StyleEditPanels,
-  noduleFilterFunction: () => void,
+  panel: StyleEditPanels;
+  // noduleFilterFunction: () => void,
+};
+const props = defineProps<LabelStyleProps>();
+const seStore = useSEStore();
+const {t} = useI18n()
+const {
+  selectionCount,
+  dataAgreement,
+  conflictingProps,
+  forceDataAgreement,
+  styleOptions
+} = useStyleEditor(props.panel, labelFilter, labelMapper);
+
+// You are not allow to style labels  directly  so remove them from the selection and warn the user
+const { selectedSENodules } = storeToRefs(seStore);
+
+// $refs
+const labelDisplayText = ref(null);
+const labelDisplayCaption = ref(null);
+
+watch(() => selectedSENodules.value, resetAllItemsFromConflict)
+function resetAllItemsFromConflict(): void {
+  // console.log("here");
+  const key = Object.keys(conflictItems);
+  key.forEach(prop => {
+    (conflictItems as any)[prop] = false;
+  });
 }
-// @Component({
-//   components: {
-//     FadeInCard,
-//     SimpleNumberSelector,
-//     SimpleColorSelector,
-//     OverlayWithFixButton,
-//     StyleEditor,
-//     InputGroup
-//   },
-//   computed: {
-//     ...mapState(useSEStore, ["selectedSENodules"])
-//   }
-// })
-// export default class LabelStyle extends Vue {
 
-const props = defineProps<LabelStyleProps>()
-const seStore = useSEStore()
-const { selectionCount, dataAgreement, conflictingProps, forceDataAgreement,
-styleOptions} = useStyleEditor(props.panel, labelFilter, labelMapper)
-  // @Prop() readonly panel!: StyleEditPanels;
+// Include only those objects that have SELabel
+function labelFilter(n: SENodule): boolean {
+  return n.isLabelable();
+}
 
-  // You are not allow to style labels  directly  so remove them from the selection and warn the user
-  const {selectedSENodules} = storeToRefs(seStore)
+// Map each object to its plotabble label
+function labelMapper(n: SENodule): Nodule {
+  return (n as unknown as Labelable).label!.ref!;
+}
 
-  // $refs
-const labelDisplayText = ref(null)
-const labelDisplayCaption = ref(null)
+// usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
+// *not* using the contrast (i.e. not using the dynamic back styling)
+// usingAutomaticBackStyle = true means the program is setting the style of the back objects
+// private usingAutomaticBackStyle = true;
 
-  // @Watch("selectedSENodules")
-  function resetAllItemsFromConflict(): void {
-    // console.log("here");
-    const key = Object.keys(conflictItems);
-    key.forEach(prop => {
-      (conflictItems as any)[prop] = false;
-    });
+const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+
+// shakes the input a bit if there is a conflict on that particular input
+const animatedInput: Animatable = {
+  labelDisplayText: false,
+  labelDisplayMode: false,
+  labelDisplayCaption: false,
+  labelTextFamily: false,
+  labelTextStyle: false,
+  labelTextDecoration: false,
+  labelTextScalePercent: false,
+  labelTextRotation: false
+};
+// change the background color of the input if there is a conflict on that particular input
+const conflictItems: ConflictItems = {
+  labelDisplayText: false,
+  labelDisplayMode: false,
+  labelDisplayCaption: false,
+  labelTextFamily: false,
+  labelTextStyle: false,
+  labelTextDecoration: false,
+  labelTextScalePercent: false,
+  labelTextRotation: false,
+  labelBackFillColor: false,
+  labelFrontFillColor: false
+};
+
+const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
+
+const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
+const minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
+//step is 20 from 60 to 200 is 8 steps
+const textScaleSelectorThumbStrings: Array<string> = [];
+
+//Many of the label style will not be commonly modified so create a button/variable for
+// the user to click to show more of the Label Styling options
+const showMoreLabelStyles = ref(false);
+const moreOrLessText = ref(t("style.moreStyleOptions")); // The text for the button to toggle between less/more options
+
+const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
+const labelDisplayTextErrorMessageKey = "";
+const labelDisplayTestResults = [true, true];
+const lastValidDisplayText = ref("");
+
+const maxLabelDisplayCaptionLength =
+  SETTINGS.label.maxLabelDisplayCaptionLength;
+const labelDisplayCaptionErrorMessageKey = "";
+const labelDisplayCaptionTestResults = [true, true];
+
+const labelDisplayModeItems: labelDisplayModeItem[] = [
+  {
+    text: t("style.labelDisplayModes.nameOnly"),
+    value: LabelDisplayMode.NameOnly,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: false
+  },
+  {
+    text: t("style.labelDisplayModes.captionOnly"),
+    value: LabelDisplayMode.CaptionOnly,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: true
+  },
+  {
+    text: t("style.labelDisplayModes.valueOnly"),
+    value: LabelDisplayMode.ValueOnly,
+    optionRequiresMeasurementValueToExist: true,
+    optionRequiresCaptionToExist: false
+  },
+  {
+    text: t("style.labelDisplayModes.nameAndCaption"),
+    value: LabelDisplayMode.NameAndCaption,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: true
+  },
+  {
+    text: t("style.labelDisplayModes.nameAndValue"),
+    value: LabelDisplayMode.NameAndValue,
+    optionRequiresMeasurementValueToExist: true,
+    optionRequiresCaptionToExist: false
   }
+];
 
-  // Include only those objects that have SELabel
-  function labelFilter(n: SENodule): boolean {
-    return n.isLabelable();
+const labelTextFamilyItems = [
+  {
+    text: t("style.genericSanSerif"),
+    value: "sans/-serif"
+  },
+  {
+    text: t("style.genericSerif"),
+    value: "serif"
+  },
+  {
+    text: t("style.monospace"),
+    value: "monospace"
+  },
+  {
+    text: t("style.cursive"),
+    value: "cursive"
+  },
+  {
+    text: t("style.fantasy"),
+    value: "fantasy"
   }
+];
 
-  // Map each object to its plotabble label
-  function labelMapper(n: SENodule): Nodule {
-    return (n as unknown as Labelable).label!.ref!;
+const labelTextStyleItems = [
+  {
+    text: t("style.normal"),
+    value: "normal"
+  },
+  {
+    text: t("style.italic"),
+    value: "italic"
+  },
+  {
+    text: t("style.bold"),
+    value: "bold"
   }
+];
 
-  // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
-  // *not* using the contrast (i.e. not using the dynamic back styling)
-  // usingAutomaticBackStyle = true means the program is setting the style of the back objects
-  // private usingAutomaticBackStyle = true;
-
-  const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-
-  // shakes the input a bit if there is a conflict on that particular input
-  const animatedInput: Animatable = {
-    labelDisplayText: false,
-    labelDisplayMode: false,
-    labelDisplayCaption: false,
-    labelTextFamily: false,
-    labelTextStyle: false,
-    labelTextDecoration: false,
-    labelTextScalePercent: false,
-    labelTextRotation: false
-  };
-  // change the background color of the input if there is a conflict on that particular input
-  const conflictItems: ConflictItems = {
-    labelDisplayText: false,
-    labelDisplayMode: false,
-    labelDisplayCaption: false,
-    labelTextFamily: false,
-    labelTextStyle: false,
-    labelTextDecoration: false,
-    labelTextScalePercent: false,
-    labelTextRotation: false,
-    labelBackFillColor: false,
-    labelFrontFillColor: false
-  };
-
-  const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
-
-  const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
-  const minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
-  //step is 20 from 60 to 200 is 8 steps
-  const textScaleSelectorThumbStrings: Array<string> = [];
-
-  //Many of the label style will not be commonly modified so create a button/variable for
-  // the user to click to show more of the Label Styling options
-  const showMoreLabelStyles = ref(false);
-  const moreOrLessText = ref(i18n.global.t("style.moreStyleOptions")); // The text for the button to toggle between less/more options
-
-  const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
-  const labelDisplayTextErrorMessageKey = "";
-  const labelDisplayTestResults = [true, true];
-  const lastValidDisplayText = ref("");
-
-  const maxLabelDisplayCaptionLength =
-    SETTINGS.label.maxLabelDisplayCaptionLength;
-  const labelDisplayCaptionErrorMessageKey = "";
-  const labelDisplayCaptionTestResults = [true, true];
-
-  const labelDisplayModeItems: labelDisplayModeItem[] = [
-    {
-      text: i18n.global.t("style.labelDisplayModes.nameOnly"),
-      value: LabelDisplayMode.NameOnly,
-      optionRequiresMeasurementValueToExist: false,
-      optionRequiresCaptionToExist: false
-    },
-    {
-      text: i18n.global.t("style.labelDisplayModes.captionOnly"),
-      value: LabelDisplayMode.CaptionOnly,
-      optionRequiresMeasurementValueToExist: false,
-      optionRequiresCaptionToExist: true
-    },
-    {
-      text: i18n.global.t("style.labelDisplayModes.valueOnly"),
-      value: LabelDisplayMode.ValueOnly,
-      optionRequiresMeasurementValueToExist: true,
-      optionRequiresCaptionToExist: false
-    },
-    {
-      text: i18n.global.t("style.labelDisplayModes.nameAndCaption"),
-      value: LabelDisplayMode.NameAndCaption,
-      optionRequiresMeasurementValueToExist: false,
-      optionRequiresCaptionToExist: true
-    },
-    {
-      text: i18n.global.t("style.labelDisplayModes.nameAndValue"),
-      value: LabelDisplayMode.NameAndValue,
-      optionRequiresMeasurementValueToExist: true,
-      optionRequiresCaptionToExist: false
-    }
-  ];
-
-  const labelTextFamilyItems = [
-    {
-      text: i18n.global.t("style.genericSanSerif"),
-      value: "sans/-serif"
-    },
-    {
-      text: i18n.global.t("style.genericSerif"),
-      value: "serif"
-    },
-    {
-      text: i18n.global.t("style.monospace"),
-      value: "monospace"
-    },
-    {
-      text: i18n.global.t("style.cursive"),
-      value: "cursive"
-    },
-    {
-      text: i18n.global.t("style.fantasy"),
-      value: "fantasy"
-    }
-  ];
-
-  const labelTextStyleItems = [
-    {
-      text: i18n.global.t("style.normal"),
-      value: "normal"
-    },
-    {
-      text: i18n.global.t("style.italic"),
-      value: "italic"
-    },
-    {
-      text: i18n.global.t("style.bold"),
-      value: "bold"
-    }
-  ];
-
-  const labelTextDecorationItems = [
-    {
-      text: i18n.global.t("style.none"),
-      value: "none"
-    },
-    {
-      text: i18n.global.t("style.underline"),
-      value: "underline"
-    },
-    {
-      text: i18n.global.t("style.strikethrough"),
-      value: "strikethrough"
-    },
-    {
-      text: i18n.global.t("style.overline"),
-      value: "overline"
-    }
-  ];
-
-  //step is Pi/8 from -pi to pi is 17 steps
-  const textRotationSelectorThumbStrings: Array<string> = [];
-
-  function created(): void {
-    for (
-      let s = SETTINGS.style.minLabelTextScalePercent;
-      s <= SETTINGS.style.maxLabelTextScalePercent;
-      s += 20
-    )
-      textScaleSelectorThumbStrings.push(s.toFixed(0) + "%");
-    for (let angle = -180; angle <= 180; angle += 22.5) {
-      textRotationSelectorThumbStrings.push(
-        angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
-      );
-    }
-    // console.log(
-    //   "rotation angle thumb labels",
-    //   this.textRotationSelectorThumbStrings
-    // );
+const labelTextDecorationItems = [
+  {
+    text: t("style.none"),
+    value: "none"
+  },
+  {
+    text: t("style.underline"),
+    value: "underline"
+  },
+  {
+    text: t("style.strikethrough"),
+    value: "strikethrough"
+  },
+  {
+    text: t("style.overline"),
+    value: "overline"
   }
-  onMounted((): void => {
-    EventBus.listen(
-      "style-label-conflict-color-reset",
-      resetAndRestoreConflictItemss
+];
+
+//step is Pi/8 from -pi to pi is 17 steps
+const textRotationSelectorThumbStrings: Array<string> = [];
+
+onBeforeMount((): void => {
+  for (
+    let s = SETTINGS.style.minLabelTextScalePercent;
+    s <= SETTINGS.style.maxLabelTextScalePercent;
+    s += 20
+  )
+    textScaleSelectorThumbStrings.push(s.toFixed(0) + "%");
+  for (let angle = -180; angle <= 180; angle += 22.5) {
+    textRotationSelectorThumbStrings.push(
+      angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
     );
-    EventBus.listen(
-      "style-update-conflicting-props",
-      (names: { propNames: string[] }): void => {
-        // this.conflictingPropNames.forEach(name =>
-        //   console.log("old prop", name)
-        // );
-        conflictingPropNames.splice(0);
-        names.propNames.forEach(name => conflictingPropNames.push(name));
-        // this.conflictingPropNames.forEach(name =>
-        //   console.log("new prop", name)
-        // );
-      }
-    );
-  })
-
-  function resetAndRestoreConflictItemss(): void {
-    resetAllItemsFromConflict();
-    distinguishConflictingItems(conflictingPropNames);
   }
+  // console.log(
+  //   "rotation angle thumb labels",
+  //   this.textRotationSelectorThumbStrings
+  // );
+});
 
-  onBeforeUnmount((): void =>{
-    EventBus.unlisten("style-label-conflict-color-reset");
-    EventBus.unlisten("style-update-conflicting-props");
-  })
+onMounted((): void => {
+  EventBus.listen(
+    "style-label-conflict-color-reset",
+    resetAndRestoreConflictItemss
+  );
+  EventBus.listen(
+    "style-update-conflicting-props",
+    (names: { propNames: string[] }): void => {
+      // this.conflictingPropNames.forEach(name =>
+      //   console.log("old prop", name)
+      // );
+      conflictingPropNames.splice(0);
+      names.propNames.forEach(name => conflictingPropNames.push(name));
+      // this.conflictingPropNames.forEach(name =>
+      //   console.log("new prop", name)
+      // );
+    }
+  );
+});
 
-  const allLabelsShowing = computed((): boolean => {
-    return selectedSENodules.value.every(node => {
-      if (node.isLabelable()) {
-        return (node as unknown as Labelable).label!.showing;
-      } else {
-        return true;
-      }
-    });
-  })
+function resetAndRestoreConflictItemss(): void {
+  resetAllItemsFromConflict();
+  distinguishConflictingItems(conflictingPropNames);
+}
 
-  function toggleShowMoreLabelStyles(): void {
-    showMoreLabelStyles.value = !showMoreLabelStyles.value;
-    if (!showMoreLabelStyles.value) {
-      moreOrLessText.value = i18n.global.t("style.moreStyleOptions");
+onBeforeUnmount((): void => {
+  EventBus.unlisten("style-label-conflict-color-reset");
+  EventBus.unlisten("style-update-conflicting-props");
+});
+
+const allLabelsShowing = computed((): boolean => {
+  return selectedSENodules.value.every(node => {
+    if (node.isLabelable()) {
+      return (node as unknown as Labelable).label!.showing;
     } else {
-      moreOrLessText.value = i18n.global.t("style.lessStyleOptions");
+      return true;
     }
-  }
-  function toggleAllLabelsVisibility(): void {
-    EventBus.fire("toggle-label-visibility", { fromPanel: true });
-  }
+  });
+});
 
-  // These methods are linked to the Style Data fade-in-card
-  function labelDisplayTextCheck(txt: string | undefined): boolean | string {
-    if (txt !== undefined && txt !== null) {
-      if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
-        return i18n.global.t("style.maxLabelDisplayTextLengthWarning", {
-          max: SETTINGS.label.maxLabelDisplayTextLength
-        }) as string;
-      } else if (txt.length === 0) {
-        // console.log("here");
-        return i18n.global.t("style.minLabelDisplayTextLengthWarning", {}) as string;
-      }
-    }
-    return true;
+function toggleShowMoreLabelStyles(): void {
+  showMoreLabelStyles.value = !showMoreLabelStyles.value;
+  if (!showMoreLabelStyles.value) {
+    moreOrLessText.value = t("style.moreStyleOptions");
+  } else {
+    moreOrLessText.value = t("style.lessStyleOptions");
   }
+}
+function toggleAllLabelsVisibility(): void {
+  EventBus.fire("toggle-label-visibility", { fromPanel: true });
+}
 
-  function labelDisplayTextTruncate(opt: StyleOptions): boolean {
-    if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
-      if (
-        opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
-      ) {
-        const txt = opt.labelDisplayText;
-        opt.labelDisplayText = txt.slice(
-          0,
-          SETTINGS.label.maxLabelDisplayTextLength
-        );
-      } else if (opt.labelDisplayText.length === 0) {
-        opt.labelDisplayText = lastValidDisplayText.value;
-      } else {
-        lastValidDisplayText.value = opt.labelDisplayText;
-      }
-    }
-    return true;
-  }
-
-  function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
-    if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
-      return i18n.global.t("style.maxLabelDisplayCaptionLengthWarning", {
-        max: SETTINGS.label.maxLabelDisplayCaptionLength
+// These methods are linked to the Style Data fade-in-card
+function labelDisplayTextCheck(txt: string | undefined): boolean | string {
+  if (txt !== undefined && txt !== null) {
+    if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
+      return t("style.maxLabelDisplayTextLengthWarning", {
+        max: SETTINGS.label.maxLabelDisplayTextLength
       }) as string;
+    } else if (txt.length === 0) {
+      // console.log("here");
+      return t(
+        "style.minLabelDisplayTextLengthWarning",
+        {}
+      ) as string;
     }
-    return true;
   }
-  function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
-    if (opt.labelDisplayCaption !== undefined) {
-      if (
-        opt.labelDisplayCaption.length >
-        SETTINGS.label.maxLabelDisplayCaptionLength
-      ) {
-        const txt = opt.labelDisplayCaption;
-        opt.labelDisplayCaption = txt.slice(
-          0,
-          SETTINGS.label.maxLabelDisplayCaptionLength
-        );
-      }
-      // else if (opt.labelDisplayCaption.length === 0) {
-      //   // the label mode should be set to name only
-      //   opt.labelDisplayMode = LabelDisplayMode.NameOnly;
-      // }
-    }
-    return true;
-  }
+  return true;
+}
 
-  //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
-  // and if the caption is empty, NameAndCaption and Caption Only are not options
-  function labelDisplayModeValueFilter(
-    opt: StyleOptions
-    // items: labelDisplayModeItem[]
-  ): labelDisplayModeItem[] {
-    const returnItems: labelDisplayModeItem[] = [];
-    const allLabels = selectedSENodules.value
-      .filter(labelFilter)
-      .map(labelMapper)
-      .map((n: Nodule) => n as Label);
-    if (allLabels.every((lab: Label) => lab.value.length !== 0)) {
-      // value is present in all labels so pass long all options in labelDisplayModeItems
-      returnItems.push(...labelDisplayModeItems);
+function labelDisplayTextTruncate(opt: StyleOptions): boolean {
+  if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
+    if (
+      opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
+    ) {
+      const txt = opt.labelDisplayText;
+      opt.labelDisplayText = txt.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayTextLength
+      );
+    } else if (opt.labelDisplayText.length === 0) {
+      opt.labelDisplayText = lastValidDisplayText.value;
     } else {
-      // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
-      returnItems.push(
-        ...labelDisplayModeItems.filter(
-          item => !item.optionRequiresMeasurementValueToExist
-        )
+      lastValidDisplayText.value = opt.labelDisplayText;
+    }
+  }
+  return true;
+}
+
+function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
+  if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
+    return t("style.maxLabelDisplayCaptionLengthWarning", {
+      max: SETTINGS.label.maxLabelDisplayCaptionLength
+    }) as string;
+  }
+  return true;
+}
+function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
+  if (opt.labelDisplayCaption !== undefined) {
+    if (
+      opt.labelDisplayCaption.length >
+      SETTINGS.label.maxLabelDisplayCaptionLength
+    ) {
+      const txt = opt.labelDisplayCaption;
+      opt.labelDisplayCaption = txt.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayCaptionLength
       );
     }
+    // else if (opt.labelDisplayCaption.length === 0) {
+    //   // the label mode should be set to name only
+    //   opt.labelDisplayMode = LabelDisplayMode.NameOnly;
+    // }
+  }
+  return true;
+}
 
-    if (opt.labelDisplayCaption && opt.labelDisplayCaption.length > 0) {
-      // caption is present in all labels
-      return returnItems;
+//This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
+// and if the caption is empty, NameAndCaption and Caption Only are not options
+function labelDisplayModeValueFilter(
+  opt: StyleOptions
+  // items: labelDisplayModeItem[]
+): labelDisplayModeItem[] {
+  const returnItems: labelDisplayModeItem[] = [];
+  const allLabels = selectedSENodules.value
+    .filter(labelFilter)
+    .map(labelMapper)
+    .map((n: Nodule) => n as Label);
+  if (allLabels.every((lab: Label) => lab.value.length !== 0)) {
+    // value is present in all labels so pass long all options in labelDisplayModeItems
+    returnItems.push(...labelDisplayModeItems);
+  } else {
+    // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
+    returnItems.push(
+      ...labelDisplayModeItems.filter(
+        item => !item.optionRequiresMeasurementValueToExist
+      )
+    );
+  }
+
+  if (opt.labelDisplayCaption && opt.labelDisplayCaption.length > 0) {
+    // caption is present in all labels
+    return returnItems;
+  } else {
+    // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
+    return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
+  }
+}
+
+function placeHolderText(numSelected: number, caption: boolean): string {
+  if (numSelected > 1) {
+    if (caption) {
+      return "Common Caption Text";
     } else {
-      // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
-      return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
+      return "Common Label Text";
+    }
+  } else {
+    if (caption) {
+      return "Caption Text";
+    } else {
+      return "Label Text";
     }
   }
+}
 
-  function placeHolderText(numSelected: number, caption: boolean): string {
-    if (numSelected > 1) {
-      if (caption) {
-        return "Common Caption Text";
-      } else {
-        return "Common Label Text";
-      }
-    } else {
-      if (caption) {
-        return "Caption Text";
-      } else {
-        return "Label Text";
-      }
+function distinguishConflictingItems(conflictingProps: string[]): void {
+  conflictingProps.forEach(conflictPropName => {
+    switch (conflictPropName) {
+      case "labelDisplayText":
+        // clear the display of the labels
+        if (labelDisplayText !== undefined) {
+          (labelDisplayText as any).$el.getElementsByTagName("input")[0].value =
+            "";
+        }
+        break;
+      case "labelDisplayCaption":
+        // clear the display of the captions
+        if (labelDisplayCaption !== undefined) {
+          (labelDisplayCaption as any).$el.getElementsByTagName(
+            "input"
+          )[0].value = "";
+        }
+        break;
     }
-  }
-
-  function distinguishConflictingItems(conflictingProps: string[]): void {
-    conflictingProps.forEach(conflictPropName => {
-      switch (conflictPropName) {
-        case "labelDisplayText":
-          // clear the display of the labels
-          if (labelDisplayText !== undefined) {
-            (labelDisplayText as any).$el.getElementsByTagName(
-              "input"
-            )[0].value = "";
-          }
-          break;
-        case "labelDisplayCaption":
-          // clear the display of the captions
-          if (labelDisplayCaption !== undefined) {
-            (labelDisplayCaption as any).$el.getElementsByTagName(
-              "input"
-            )[0].value = "";
-          }
-          break;
-      }
-      // console.log(this.$refs);
-      // (this.animatedInput as any)[conflictPropName] = true;
-      if (conflictPropName.search(/Color/) === -1) {
-        (conflictItems as any)[conflictPropName] = "error";
-      } else {
-        (conflictItems as any)[conflictPropName] = "red";
-      }
-      // setTimeout(() => {
-      //   (this.animatedInput as any)[conflictPropName] = false;
-      //   // (this.conflictItems as any)[conflictPropName] = undefined;
-      // }, 1000);
-    });
-  }
-// }
+    // console.log(this.$refs);
+    // (this.animatedInput as any)[conflictPropName] = true;
+    if (conflictPropName.search(/Color/) === -1) {
+      (conflictItems as any)[conflictPropName] = "error";
+    } else {
+      (conflictItems as any)[conflictPropName] = "red";
+    }
+    // setTimeout(() => {
+    //   (this.animatedInput as any)[conflictPropName] = false;
+    //   // (this.conflictItems as any)[conflictPropName] = undefined;
+    // }, 1000);
+  });
+}
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";

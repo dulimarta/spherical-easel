@@ -3,7 +3,7 @@
     <div>
       <span class="text-subtitle-2"
         :style="{'color' : conflict?'red':''}">{{ $t(titleKey)+" " }}</span>
-      <v-icon :color="conflict !== 'red' ? internalColor.hexa : `#ffffff`"
+      <v-icon :color="conflict? internalColor.hexa : `#ffffff`"
         small>mdi-checkbox-blank</v-icon>
       <span v-if="numSelected > 1"
         class="text-subtitle-2"
@@ -66,8 +66,9 @@
 
 
 
-<script lang="ts">
-import Vue from "vue";
+<script setup lang="ts">
+import {ref, watch, onMounted,onBeforeUpdate } from "vue";
+
 import SETTINGS from "@/global-settings";
 // import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
@@ -76,94 +77,102 @@ import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import i18n from "../i18n";
 
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
-@Component({ components: { HintButton, OverlayWithFixButton } })
-export default class SimpleColorSelector extends Vue {
-  @Prop() readonly titleKey!: string;
-  @Prop() conflict!: boolean;
+// @Component({ components: { HintButton, OverlayWithFixButton } })
+// export default class SimpleColorSelector extends Vue {
+  type ComponentProps = {
+    titleKey: string,
+    conflict: boolean,
+    styleName: string,
+    numSelected: number,
+    modelValue:string
+  }
+  // @Prop() readonly titleKey!: string;
+  // @Prop() conflict!: boolean;
   // external representation: hsla in CSS
-  @PropSync("data") hslaColor!: string;
-  @Prop({ required: true }) readonly styleName!: string;
-  @Prop() readonly numSelected!: number;
-
+  // @PropSync("data") hslaColor!: string;
+  // @Prop({ required: true }) readonly styleName!: string;
+  // @Prop() readonly numSelected!: number;
+  const props = defineProps<ComponentProps>()
+  const emit = defineEmits(["resetColor", "update:modelValue"])
   // Internal representation is an object with multiple color representations
-  internalColor: any = {};
-  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+  let internalColor: any = {};
+  const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  private noData = false; // no data means noFill or noStroke
-  private preNoColor: string = NO_HSLA_DATA;
+  const noData = ref(false); // no data means noFill or noStroke
+  let preNoColor: string = NO_HSLA_DATA;
 
-  private isOnLabelPanel = false;
+  const isOnLabelPanel = ref(false);
 
   // private boxSampleColor: string = "";
 
   // For TwoJS
   // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
-  private showColorInputs = false;
+  const showColorInputs = ref(false);
 
-  private colorSwatches = SETTINGS.style.swatches;
-  private noDataStr = "";
-  private noDataUILabel = i18n.t("style.noFill");
+  const colorSwatches = ref(SETTINGS.style.swatches);
+  let noDataStr = "";
+  const noDataUILabel = ref(i18n.global.t("style.noFill"));
 
-  changeEvent(): void {
+  function changeEvent(): void {
     // console.log("emit!");
-    this.$emit("resetColor");
+    emit("resetColor");
   }
   // Vue component life cycle hook
-  mounted(): void {
-    // console.log("mounting!", this.hslaColor);
-    if (this.hslaColor !== undefined && this.hslaColor !== null) {
-      this.calculateInternalColorFrom(this.hslaColor);
+  onMounted((): void => {
+    // console.log("mounting!", hslaColor);
+    if (props.modelValue !== undefined && props.modelValue !== null) {
+      calculateInternalColorFrom(props.modelValue);
       // set the noData flag
       if (
-        this.internalColor.hsla.h === 0 &&
-        this.internalColor.hsla.s === 0 &&
-        this.internalColor.hsla.l === 0 &&
-        this.internalColor.hsla.a === 0
+        internalColor.hsla.h === 0 &&
+        internalColor.hsla.s === 0 &&
+        internalColor.hsla.l === 0 &&
+        internalColor.hsla.a === 0
       ) {
-        this.noData = true;
+        noData.value = true;
       }
     }
-    // this.boxSampleColor = this.internalColor.hexa;
+    // boxSampleColor = internalColor.hexa;
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
-    const propName = this.styleName.replace("Color", "");
-    const firstLetter = this.styleName.charAt(0);
+    const propName = props.styleName.replace("Color", "");
+    const firstLetter = props.styleName.charAt(0);
     const inTitleCase = firstLetter.toUpperCase() + propName.substring(1);
-    this.noDataStr = `no${inTitleCase}`;
+    noDataStr = `no${inTitleCase}`;
     var re = /fill/gi;
-    this.noDataUILabel =
-      this.styleName.search(re) === -1
-        ? i18n.t("style.noStroke")
-        : i18n.t("style.noFill"); // the noStroke/noFill option
+    noDataUILabel.value =
+      props.styleName.search(re) === -1
+        ? i18n.global.t("style.noStroke")
+        : i18n.global.t("style.noFill"); // the noStroke/noFill option
 
     var re2 = /label/gi;
-    this.isOnLabelPanel = this.titleKey.search(re2) !== -1;
-    //this.noDataUILabel = `No ${inTitleCase}`;
-    // console.log("style name", this.styleName);
-    // console.log("noStrData", this.noDataStr);
-  }
+    isOnLabelPanel.value = props.titleKey.search(re2) !== -1;
+    //noDataUILabel = `No ${inTitleCase}`;
+    // console.log("style name", styleName);
+    // console.log("noStrData", noDataStr);
+  })
 
-  beforeUpdate(): void {
+  onBeforeUpdate((): void =>{
     // console.log("before update Simple color selector");
-    const col = this.internalColor.hsla;
+    const col = internalColor.hsla;
     //   // console.debug("Color changed to", col);
     const hue = col.h.toFixed(0);
     const sat = (col.s * 100).toFixed(0) + "%";
     const lum = (col.l * 100).toFixed(0) + "%";
     const alpha = col.a.toFixed(3);
-    this.hslaColor = `hsla(${hue},${sat},${lum},${alpha})`;
-  }
+    emit("update:modelValue", `hsla(${hue},${sat},${lum},${alpha})`);
+  })
 
-  toggleColorInputs(): void {
-    // if (!this.noData) {
-    this.showColorInputs = !this.showColorInputs;
+  function toggleColorInputs(): void {
+    // if (!noData) {
+    showColorInputs.value = !showColorInputs.value;
     // } else {
-    //   this.showColorInputs = false;
+    //   showColorInputs = false;
     // }
   }
 
-  convertColorToRGBAString(colorObject: hslaColorType): string {
+  function convertColorToRGBAString(colorObject: hslaColorType): string {
     // THANK YOU INTERNET!
     const hue = colorObject.h;
     const sat = colorObject.s * 100;
@@ -179,8 +188,8 @@ export default class SimpleColorSelector extends Vue {
     return `#${f(0)}${f(8)}${f(4)}`;
   }
 
-  @Watch("hslaColor")
-  calculateInternalColorFrom(hslaString: string): void {
+  watch(() => props.modelValue, calculateInternalColorFrom)
+  function calculateInternalColorFrom(hslaString: string): void {
     // console.debug("HSLA string changed", hslaString);
     if (hslaString === undefined) return;
 
@@ -189,57 +198,57 @@ export default class SimpleColorSelector extends Vue {
       .replace(/hsla *\(/, "")
       .replace(")", "")
       .split(",");
-    this.internalColor.hsla = {
+    internalColor.hsla = {
       h: Number(parts[0]),
       s: Number(parts[1].replace("%", "")) / 100,
       l: Number(parts[2].replace("%", "")) / 100,
       a: Number(parts[3])
     };
 
-    if (this.noData) {
-      this.internalColor.hexa = this.convertColorToRGBAString({
+    if (noData) {
+      internalColor.hexa = convertColorToRGBAString({
         h: 0,
         s: 1,
         l: 1,
         a: 0
       });
     } else {
-      this.internalColor.hexa = this.convertColorToRGBAString(
-        this.internalColor.hsla
+      internalColor.hexa = convertColorToRGBAString(
+        internalColor.hsla
       );
     }
   }
 
-  @Watch("noData")
-  setNoData(): void {
+  watch(() => noData.value, setNoData)
+  function setNoData(): void {
     // console.debug(
     //   "Saved HSLA",
-    //   this.preNoColor,
+    //   preNoColor,
     //   "current HSLA",
-    //   this.hslaColor
+    //   hslaColor
     // );
-    if (this.noData) {
+    if (noData) {
       if (
-        this.internalColor.hsla.h !== 0 ||
-        this.internalColor.hsla.s !== 0 ||
-        this.internalColor.hsla.l !== 0 ||
-        this.internalColor.hsla.a !== 0
+        internalColor.hsla.h !== 0 ||
+        internalColor.hsla.s !== 0 ||
+        internalColor.hsla.l !== 0 ||
+        internalColor.hsla.a !== 0
       ) {
-        this.preNoColor = this.hslaColor;
+        preNoColor = props.modelValue;
       }
-      //this.preNoColor = this.hslaColor;
-      this.hslaColor = NO_HSLA_DATA;
-      this.showColorInputs = false;
-      this.colorSwatches = SETTINGS.style.greyedOutSwatches;
+      //preNoColor = hslaColor;
+      emit('update:modelValue', NO_HSLA_DATA);
+      showColorInputs.value = false;
+      colorSwatches.value = SETTINGS.style.greyedOutSwatches;
     } else {
-      this.hslaColor = this.preNoColor;
-      this.colorSwatches = SETTINGS.style.swatches;
-      // this.showColorInputs = true;
-      //   // this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
+      emit("update:modelValue", preNoColor)
+      colorSwatches.value = SETTINGS.style.swatches;
+      // showColorInputs = true;
+      //   // colorData = Nodule.convertStringToHSLAObject(colorString);
     }
-    // If this color selector is on the label panel, then all changes are directed at the label(s).
+    // If color selector is on the label panel, then all changes are directed at the label(s).
   }
-}
+
 </script>
 
 <style lang="scss" scoped>
