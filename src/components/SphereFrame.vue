@@ -316,6 +316,8 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
+  boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
+
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
 
@@ -1167,6 +1169,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 
 #sphereContainer {
   border: 3px solid black;
+
   position: relative;
 }
 .anchored {

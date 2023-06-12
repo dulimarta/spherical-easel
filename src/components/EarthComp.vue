@@ -28,10 +28,14 @@ const store = useSEStore();
 const {zoomMagnificationFactor,zoomTranslation, inverseTotalRotationMatrix} = storeToRefs(store);
 onMounted(()=>{
     const scene = new THREE.Scene();
-    const num = prop.canvasSize / (zoomMagnificationFactor.value*2.015);
+    const num = prop.canvasSize / (zoomMagnificationFactor.value*2.02);
     const camera = new THREE.OrthographicCamera(-num,num,num,-num,0.1,1000);
     //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = prop.canvasSize / (zoomMagnificationFactor.value*2) +10;
+    const x = -zoomTranslation.value[0]
+    const y = -zoomTranslation.value[1]
+    camera.setViewOffset(prop.canvasSize,prop.canvasSize,x,y,prop.canvasSize,prop.canvasSize);
+
     const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('earth') as HTMLCanvasElement
     });
@@ -69,7 +73,7 @@ onMounted(()=>{
 
     watch( [()=>(prop.canvasSize),()=>(zoomMagnificationFactor.value)], ([canvasSize,zoomMagnificationFactor]) => {
         renderer.setSize(canvasSize,canvasSize);
-        const num = canvasSize / (zoomMagnificationFactor*2.015);
+        const num = canvasSize / (zoomMagnificationFactor*2.02);
         camera.left = -num;
         camera.right = num;
         camera.top = num;
