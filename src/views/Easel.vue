@@ -299,6 +299,8 @@ onMounted((): void => {
     if (u !== null) uid = u.uid;
   });
   window.addEventListener("keydown", handleKeyDown);
+
+
 });
 
 onBeforeUnmount((): void => {
@@ -538,6 +540,6 @@ padding:10px;
 #earthAndCircle{
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  align-items: center;
 }
 </style>

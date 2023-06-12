@@ -5,7 +5,6 @@
  #earth{
  border: 5px solid #a46e6e;
     position:absolute;
-    margin: auto;
 
     /* width:100px;
     height:100px; */
@@ -29,10 +28,10 @@ const store = useSEStore();
 const {zoomMagnificationFactor,zoomTranslation, inverseTotalRotationMatrix} = storeToRefs(store);
 onMounted(()=>{
     const scene = new THREE.Scene();
-    const num = prop.canvasSize / (zoomMagnificationFactor.value*2);
+    const num = prop.canvasSize / (zoomMagnificationFactor.value*2.015);
     const camera = new THREE.OrthographicCamera(-num,num,num,-num,0.1,1000);
     //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = (SETTINGS.boundaryCircle.radius/zoomMagnificationFactor.value)+10;
+    camera.position.z = prop.canvasSize / (zoomMagnificationFactor.value*2) +10;
     const renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('earth') as HTMLCanvasElement
     });
@@ -62,7 +61,7 @@ onMounted(()=>{
     scene.add(light);
     function animate() {
         requestAnimationFrame(animate);
-        earth.rotation.y += 0.0001;
+        // earth.rotation.y += 0.0001;
         renderer.render(scene, camera);
     }
     animate();
@@ -70,7 +69,7 @@ onMounted(()=>{
 
     watch( [()=>(prop.canvasSize),()=>(zoomMagnificationFactor.value)], ([canvasSize,zoomMagnificationFactor]) => {
         renderer.setSize(canvasSize,canvasSize);
-        const num = canvasSize / (zoomMagnificationFactor*2);
+        const num = canvasSize / (zoomMagnificationFactor*2.015);
         camera.left = -num;
         camera.right = num;
         camera.top = num;

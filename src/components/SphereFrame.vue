@@ -113,6 +113,7 @@ const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean
   isEarthMode: false
 });
 
+
 const canvas: Ref<HTMLDivElement | null> = ref(null);
 const topLeftShortcuts = computed((): ShortcutIconType[] => {
   return [
@@ -384,6 +385,7 @@ onMounted((): void => {
   canvas.value?.addEventListener("contextmenu", event =>
     event.preventDefault()
   );
+
   watch(()=>props.isEarthMode,()=>{
     if(!props.isEarthMode){
       let i = 0;
@@ -406,13 +408,18 @@ onMounted((): void => {
         i++;
       }
     }
-
       // seStore.layers[Number(LAYER.midground)].visible = false;
 
-
   })
+  // canvas.value!.style.width = twoInstance.width.toString() + "px";
+  // canvas.value!.style.height = twoInstance.height.toString() + "px";
+  // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
+  watch(()=>(seStore.canvasWidth),()=>{
+    canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
+    canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
+  })
   seStore.setCanvas(canvas.value!);
   updateView();
 });
