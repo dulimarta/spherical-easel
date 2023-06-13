@@ -11,40 +11,38 @@
       </v-btn>
       <!-- Switches for show/hide label(s) and object(s)-->
       <!--v-card flat class="ma-0 pa-0">
-        <v-card-text class="ma-0 pa-0">
+        <v-card-text class="ma-0 pa-0"-->
           <v-container fluid class="ma-0 pa-0">
-            <v-row no-gutters justify="center">
-              <v-col cols="12" sm="4" md="4" class="ma-0 pl-0 pb-0 pt-0 pr-0">
+            <v-row justify="center">
+              <v-col cols="auto" class="ma-0 py-0">
                 <v-switch
-                  :model-value="allLabelsShowing"
+                  v-model="allLabelsShowing"
                   @change="toggleLabelsShowing"
+                  persistent-hint
                   :label="$t('style.showLabels')"
                   color="primary"
-                  hide-details
-                  class="ma-0 pl-0 pb-0 pt-0 pr-0"
                   :disabled="
                     !(selectedSENodules.length > 0) || !allObjectsShowing
                   "></v-switch>
               </v-col>
-              <v-col cols="12" sm="4" md="4" class="ma-0 pl-0 pb-0 pt-0 pr-0">
+              <v-col cols="auto" class="ma-0 pa-0">
                 <v-switch
-                  :model-value="allObjectsShowing"
+                  v-model="allObjectsShowing"
                   @change="toggleObjectsShowing"
                   :label="$t('style.showObjects')"
                   color="primary"
                   hide-details
-                  class="ma-0 pl-0 pb-0 pt-0 pr-0"
                   :disabled="!(selectedSENodules.length > 0)"></v-switch>
               </v-col>
             </v-row>
           </v-container>
-        </v-card-text>
+        <!--/v-card-text>
       </v-card-->
 
       <!-- <v-divider></v-divider> -->
 
       <!-- Type and number list of objects that are selected-->
-      <div class="text-center">
+      <div class="text-center" v-if="selectedItemArray.length > 0">
         Target for styling:
         <v-chip v-for="item in selectedItemArray" :key="item" x-small>
           {{ item }}
@@ -283,11 +281,11 @@ function panelBackgroundColor(idx: number): string {
   }
 }
 
-function toggleLabelsShowing(fromPanel: unknown): void {
-  // if this method is being called from a panel, then we need to toogle allLabelsShowing
+function toggleLabelsShowing(source: any): void {
+  // if this method is being called from a panel, then we need to toggle allLabelsShowing
   // if this method is being called from the html (i.e. from the switch) then all LabelsShowing is
   //  automatically toggled
-  if ((fromPanel as any).fromPanel !== undefined) {
+  if (source.fromPanel !== undefined) {
     allLabelsShowing.value = !allLabelsShowing.value;
   }
   const toggleLabelDisplayCommandGroup = new CommandGroup();
@@ -309,11 +307,11 @@ function toggleLabelsShowing(fromPanel: unknown): void {
   }
 }
 
-function toggleObjectsShowing(fromPanel: unknown): void {
-  // if this method is being called from a panel, then we need to toogle allObjectssShowing
+function toggleObjectsShowing(source: any): void {
+  // if this method is being called from a panel, then we need to toggle allObjectsShowing
   // if this method is being called from the html (i.e. from the switch) then allObjectsShowing is
   //  automatically toggled
-  if ((fromPanel as any).fromPanel !== undefined) {
+  if (source.fromPanel !== undefined) {
     allObjectsShowing.value = !allObjectsShowing.value;
   }
 

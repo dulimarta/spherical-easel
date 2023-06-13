@@ -4,10 +4,10 @@
       :nodule-filter-function="labelFilter"
       :nodule-map-function="labelMapper"-->
     <!-- For debugging -->
-    <ul>
+    <!--ul>
       <li>Style Opt: {{ styleOptions }}</li>
       <li>Selection count {{ selectionCount }}</li>
-    </ul>
+    </ul-->
 
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
     <!--OverlayWithFixButton v-if="!allLabelsShowing"
@@ -43,7 +43,7 @@
       <!-- Label Text Selections -->
       <span v-bind="props">
         <v-text-field
-          :model-value="styleOptions.labelDisplayText"
+          v-model="styleOptions.labelDisplayText"
           :disabled="selectionCount !== 1"
           v-bind:label="$t('style.labelText')"
           :counter="maxLabelDisplayTextLength"
@@ -67,7 +67,7 @@
       </span>
       <!-- Label Display Mode Selections -->
       <v-select
-        :model-value.lazy="styleOptions.labelDisplayMode"
+        v-model.lazy="styleOptions.labelDisplayMode"
         :class="[
           showMoreLabelStyles ? '' : 'pa-0',
           {
@@ -86,7 +86,7 @@
         density="compact"></v-select>
       <div v-show="showMoreLabelStyles">
         <v-text-field
-          :model-value.lazy="styleOptions.labelDisplayCaption"
+          v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="$t('style.labelCaption')"
           :counter="maxLabelDisplayCaptionLength"
           :placeholder="placeHolderText(selectionCount, true)"
@@ -109,7 +109,7 @@
           ]"></v-text-field>
         <!-- Label Text Family Selections -->
         <v-select
-          :model-value.lazy="styleOptions.labelTextFamily"
+          v-model.lazy="styleOptions.labelTextFamily"
           v-bind:label="$t('style.labelTextFamily')"
           :items="labelTextFamilyItems"
           item-title="text"
@@ -123,7 +123,7 @@
           variant="outlined"
           density="compact"></v-select>
         <v-select
-          :model-value.lazy="styleOptions.labelTextStyle"
+          v-model.lazy="styleOptions.labelTextStyle"
           v-bind:label="$t('style.labelTextStyle')"
           :items="labelTextStyleItems"
           item-title="text"
@@ -137,7 +137,7 @@
           variant="outlined"
           density="compact"></v-select>
         <v-select
-          :model-value.lazy="styleOptions.labelTextDecoration"
+          v-model.lazy="styleOptions.labelTextDecoration"
           v-bind:label="$t('style.labelTextDecoration')"
           :items="labelTextDecorationItems"
           item-title="text"
