@@ -114,8 +114,8 @@ const { selectedSENodules } = storeToRefs(seStore);
 const minified = ref(true);
 const emit = defineEmits(["minifyToggled"]);
 
-const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
-const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
+// const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
+// const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
 
 const activePanel = ref<number | undefined>(0); // Default selection is the Label panel
 
@@ -245,16 +245,16 @@ const panels = [
     component: LabelStyle,
     panel: StyleEditPanels.Label
   },
-  // {
-  //   i18n_key: "style.foregroundStyle",
-  //   component: () => import("@/components/FrontBackStyle.vue"),
-  //   panel: StyleEditPanels.Front
-  // },
-  // {
-  //   i18n_key: "style.backgroundStyle",
-  //   component: () => import("@/components/FrontBackStyle.vue"),
-  //   panel: StyleEditPanels.Back
-  // }
+  {
+    i18n_key: "style.foregroundStyle",
+    component: BasicFrontBackStyle,
+    panel: StyleEditPanels.Front
+  },
+  {
+    i18n_key: "style.backgroundStyle",
+    component: BasicFrontBackStyle,
+    panel: StyleEditPanels.Back
+  }
   // {
   //   i18n_key: "style.advancedStyle",
   //   component: () => import("@/components/AdvancedStyle.vue"),
