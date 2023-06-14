@@ -6,7 +6,7 @@
         $t(i18LabelKey, 1)
       }}</span>
       <span v-else class="text-subtitle-1">{{ $t(i18LabelKey, 0) }}</span>
-      <v-btn small v-show="hasExistingChildren" @click="expanded = !expanded">
+      <v-btn size="small" v-show="hasExistingChildren" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
       </v-btn>

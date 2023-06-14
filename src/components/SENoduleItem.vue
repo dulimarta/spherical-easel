@@ -4,7 +4,7 @@
       class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-      <v-row dense justify="start" class="pa-0">
+      <v-row density="compact" justify="start" class="pa-0">
         <v-col cols="auto">
           <v-icon
             size="medium"
@@ -43,7 +43,7 @@
                     v-if="isMeasurement && supportsClipboard"
                     v-bind="props"
                     @click="copyToClipboard">
-                    <v-icon small>
+                    <v-icon size="small">
                       $copyToClipboard
                     </v-icon>
                   </div>
@@ -59,7 +59,7 @@
                 v-if="isExpressionAndNotCoordinate"
                 v-bind="props"
                 @click="cycleValueDisplayMode">
-                <v-icon small>$cycleNodeValueDisplayMode</v-icon>
+                <v-icon size="small">$cycleNodeValueDisplayMode</v-icon>
               </div>
             </template>
             <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
@@ -112,7 +112,7 @@
         <v-col cols="auto"> t = {{ parametricTime.toFixed(3) }} </v-col>
         <v-col>
           <v-slider
-            :model-value="parametricTime"
+            v-model="parametricTime"
             :min="parametricTMin"
             :max="parametricTMax"
             :step="parametricTStep" />

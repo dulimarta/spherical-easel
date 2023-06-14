@@ -4,7 +4,7 @@
     :z-index="zIndex">
     <v-card class="mx-auto"
       max-width="344"
-      outlined
+     variant="outlined"
       z-index="100">
       <v-list-item three-line
         class="pb-0">

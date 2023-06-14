@@ -22,15 +22,15 @@
                 @photo-captured="setUpdatingPicture(false)"></router-view>
             </div>
             <div class="px-2">
-              <v-text-field label="Email" readonly :model-value="userEmail" />
+              <v-text-field label="Email" readonly v-model="userEmail" />
               <v-text-field
-                :model-value="userDisplayName"
+                v-model="userDisplayName"
                 label="Display Name" />
-              <v-text-field :model-value="userLocation" label="Location" />
+              <v-text-field v-model="userLocation" label="Location" />
 
               <v-select
                 label="Role"
-                :model-value="userRole"
+                v-model="userRole"
                 :items="[
                   'Student',
                   'Instructor',
@@ -69,7 +69,7 @@
               <v-col cols="4">
                 <v-select
                   v-model="selectedLanguage"
-                  outlined
+                  variant="outlined"
                   :items="languages"
                   item-title="name"
                   item-value="locale"

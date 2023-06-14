@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row>
@@ -12,14 +12,14 @@
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-text-field
-                    :model-value="tValueExpression"
+                    v-model="tValueExpression"
                     v-bind="props"
-                    dense
+                    density="compact"
                     :label="$t(i18nLabelKey)"
                     :placeholder="placeholder"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
-                    outlined
+                    variant="outlined"
                     clearable
                     :hint="currentValueString"
                     persistent-hint></v-text-field>

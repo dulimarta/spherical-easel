@@ -3,7 +3,7 @@
     elevation="2"
     v-if="userRole && userRole === 'instructor'"
     fab
-    small
+    size="small"
     color="primary"
     @click="toggleEditMode">
     <v-icon v-if="inEditMode">mdi-check</v-icon>

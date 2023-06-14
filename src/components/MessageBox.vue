@@ -13,7 +13,7 @@
         style="max-height: 400px"
         class="scroll-y">
         <v-row>
-          <v-select dense :model-value="selectedMessageType" :items="messageTypes">
+          <v-select density="compact" v-model="selectedMessageType" :items="messageTypes">
             <template v-slot:selection="{ item }">
               {{ $t(`notifications.${item}`) }}
             </template>
@@ -24,7 +24,7 @@
         </v-row>
         <v-row cols="12" justify="end">
           <v-col md="12">
-            <v-btn color="error" @click="filterMessage" small>{{
+            <v-btn color="error" @click="filterMessage" size="small">{{
               $t(`notifications.deleteMsg`, {
                 msgType: $t(`notifications.${selectedMessageType}`).toString()
               })
@@ -82,7 +82,7 @@
       </v-btn>
       <v-snackbar
         v-if="currentMsg"
-        :model-value="showMe"
+        v-model="showMe"
         top
         right
         :color="`${currentMsg.msgColor}`"

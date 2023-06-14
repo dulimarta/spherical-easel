@@ -1,5 +1,6 @@
 <template>
   <transition name="slide-out" mode="out-in">
+
     <div
       v-if="!minified"
       key="full"
@@ -12,31 +13,32 @@
       <!-- Switches for show/hide label(s) and object(s)-->
       <!--v-card flat class="ma-0 pa-0">
         <v-card-text class="ma-0 pa-0"-->
-          <v-container fluid class="ma-0 pa-0">
-            <v-row justify="center">
-              <v-col cols="auto" class="ma-0 py-0">
-                <v-switch
-                  v-model="allLabelsShowing"
-                  @change="toggleLabelsShowing"
-                  persistent-hint
-                  :label="$t('style.showLabels')"
-                  color="primary"
-                  :disabled="
-                    !(selectedSENodules.length > 0) || !allObjectsShowing
-                  "></v-switch>
-              </v-col>
-              <v-col cols="auto" class="ma-0 pa-0">
-                <v-switch
-                  v-model="allObjectsShowing"
-                  @change="toggleObjectsShowing"
-                  :label="$t('style.showObjects')"
-                  color="primary"
-                  hide-details
-                  :disabled="!(selectedSENodules.length > 0)"></v-switch>
-              </v-col>
-            </v-row>
-          </v-container>
-        <!--/v-card-text>
+      <v-container fluid class="ma-0 pa-0">
+
+        <v-row justify="center">
+          <v-col cols="auto" class="ma-0 py-0">
+            <v-switch
+              v-model="allLabelsShowing"
+              @change="toggleLabelsShowing"
+              persistent-hint
+              :label="$t('style.showLabels')"
+              color="primary"
+              :disabled="
+                !(selectedSENodules.length > 0) || !allObjectsShowing
+              "></v-switch>
+          </v-col>
+          <v-col cols="auto" class="ma-0 pa-0">
+            <v-switch
+              v-model="allObjectsShowing"
+              @change="toggleObjectsShowing"
+              :label="$t('style.showObjects')"
+              color="primary"
+              hide-details
+              :disabled="!(selectedSENodules.length > 0)"></v-switch>
+          </v-col>
+        </v-row>
+      </v-container>
+      <!--/v-card-text>
       </v-card-->
 
       <!-- <v-divider></v-divider> -->
@@ -44,31 +46,17 @@
       <!-- Type and number list of objects that are selected-->
       <div class="text-center" v-if="selectedItemArray.length > 0">
         Target for styling:
-        <v-chip v-for="item in selectedItemArray" :key="item" x-small>
+        <v-chip v-for="item in selectedItemArray" :key="item" size="x-small">
           {{ item }}
         </v-chip>
       </div>
 
-      <!-- Nothing Selected Overlay-->
-      <!---OverlayWithFixButton
-        v-if="!(selectedSENodules.length > 0)"
-        z-index="100"
-        i18n-title-line="style.selectAnObject"
-        i18n-subtitle-line="style.closeOrSelect"
-        i18n-list-title="style.toSelectObjects"
-        :i18n-list-items="buttonListItems()"
-        i18n-button-label="style.closeStylingPanel"
-        i18n-button-tool-tip="style.noSelectionToolTip"
-        @click="$emit('toggle-style-panel')"></OverlayWithFixButton-->
-
       <v-expansion-panels>
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-title
-            class="ps-6 pe-0 pt-n4 pb-n4 pm-0">
+          <v-expansion-panel-title class="ps-6 pe-0 pt-n4 pb-n4 pm-0">
             {{ $t(p.i18n_key) }}
           </v-expansion-panel-title>
-          <v-expansion-panel-text
-            :color="panelBackgroundColor(idx)">
+          <v-expansion-panel-text :color="panelBackgroundColor(idx)">
             <component
               :is="p.component"
               :panel="p.panel"
@@ -86,34 +74,82 @@
       </div>
     </div>
   </transition>
+  <!-- Nothing Selected Dialog -->
+  <Dialog
+    ref="selectObjectsDialog"
+    yes-text="OK"
+    width="50%"
+    :title="t('style.selectAnObject')">
+    <div>
+    <p>{{ t("style.closeOrSelect") }}</p>
+    <p>{{ t("style.toSelectObjects") }}</p>
+    <ul>
+      <li v-for="(text,pos) in buttonListItems" :key="pos">
+        {{ t(text) }}
+      </li>
+    </ul>
+  </div>
+  </Dialog>
+
+  <!---OverlayWithFixButton
+        v-if="!(selectedSENodules.length > 0)"
+        z-index="100"
+        i18n-subtitle-line="style.closeOrSelect"
+        i18n-list-title="style.toSelectObjects"
+        :i18n-list-items="buttonListItems()"
+        i18n-button-label="style.closeStylingPanel"
+        i18n-button-tool-tip="style.noSelectionToolTip"
+        @click="$emit('toggle-style-panel')"></OverlayWithFixButton-->
 </template>
 
 <script setup lang="ts">
-import Vue, { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import LabelStyle from "./LabelStyle.vue";
-// import Component from "vue-class-component";
 import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { Labelable } from "@/types";
-import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import i18n from "../i18n";
-import { mapState, storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
-import { watch } from "vue";
 
+const { t } = useI18n();
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);
+// The order of these panels *must* match the order of the StyleEditPanels in Style.ts
+const panels = [
+  {
+    i18n_key: "style.labelStyle",
+    component: LabelStyle,
+    panel: StyleEditPanels.Label
+  },
+  {
+    i18n_key: "style.foregroundStyle",
+    component: BasicFrontBackStyle,
+    panel: StyleEditPanels.Front
+  },
+  {
+    i18n_key: "style.backgroundStyle",
+    component: BasicFrontBackStyle,
+    panel: StyleEditPanels.Back
+  }
+  // {
+  //   i18n_key: "style.advancedStyle",
+  //   component: () => import("@/components/AdvancedStyle.vue"),
+  //   panel: StyleEditPanels.Advanced
+  // }
+];
 
 const minified = ref(true);
 const emit = defineEmits(["minifyToggled"]);
-
+const selectObjectsDialog = ref<DialogAction | null>(null);
 // const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
 // const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
 
@@ -121,7 +157,6 @@ const activePanel = ref<number | undefined>(0); // Default selection is the Labe
 
 const allLabelsShowing = ref(false);
 const allObjectsShowing = ref(false);
-
 // A string list of the number of items and type of them in the current selection
 const selectedItemArray = ref<string[]>([]);
 
@@ -131,38 +166,33 @@ onMounted((): void => {
   EventBus.listen("toggle-object-visibility", toggleObjectsShowing);
   EventBus.listen("toggle-label-visibility", toggleLabelsShowing);
 });
-function buttonListItems(): string[] {
-  if (navigator.userAgent.indexOf("Mac OS X") === -1) {
-    // the user is on a PC
-    return [
-      "style.selectionDirection1",
-      "style.selectionDirection2",
-      "style.selectionDirection3",
-      "style.selectionDirection4PC"
-    ];
-  } else {
-    // the user is on a Mac
-    return [
-      "style.selectionDirection1",
-      "style.selectionDirection2",
-      "style.selectionDirection3",
-      "style.selectionDirection4Mac"
-    ];
-  }
-}
 
-// watch(
-//   () => props.minified,
-//   () => closeAllPanels
-// );
+const buttonListItems = computed((): string[] => {
+  return [
+    "style.selectionDirection1",
+    "style.selectionDirection2",
+    "style.selectionDirection3",
+    // the user is on a PC or Mac
+    navigator.userAgent.indexOf("Mac OS X") === -1
+      ? "style.selectionDirection4Mac"
+      : "style.selectionDirection4PC"
+  ];
+});
 
 function closeAllPanels(): void {
   activePanel.value = undefined;
   // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
   EventBus.fire("save-style-state", {});
 }
+watch(
+  [() => selectedSENodules.value, () => minified.value],
+  ([selectedObjs, isMinified]) => {
+    if (selectedObjs.length === 0 && !isMinified)
+      selectObjectsDialog.value?.show();
+  }
+);
 
-watch(selectedSENodules, allLabelsShowingCheck);
+watch(() => selectedSENodules.value, allLabelsShowingCheck);
 function allLabelsShowingCheck(): void {
   console.log("Style All Labels: onSelectionChanged");
   allLabelsShowing.value = selectedSENodules.value.every(node => {
@@ -174,7 +204,7 @@ function allLabelsShowingCheck(): void {
   });
 }
 
-watch(selectedSENodules, allObjectsShowingCheck);
+watch(() => selectedSENodules.value, allObjectsShowingCheck);
 function allObjectsShowingCheck(): void {
   // console.log("Style All Objects: onSelectionChanged");
   allObjectsShowing.value = selectedSENodules.value.every(node => {
@@ -183,7 +213,7 @@ function allObjectsShowingCheck(): void {
 }
 
 //Convert the selections into a short list of the type (and number) of the objects in the selection
-watch(selectedSENodules, updateSelectedItemArray);
+watch(() => selectedSENodules.value, updateSelectedItemArray);
 function updateSelectedItemArray(): void {
   console.log("Style update selected item array: onSelectionChanged");
 
@@ -226,41 +256,15 @@ function updateSelectedItemArray(): void {
   selectedItemArray.value = countList
     .map((num, index) => {
       if (num > 1) {
-        return String(
-          i18n.global.t(elementListi18nKeys[index], { count: num })
-        );
+        return t(elementListi18nKeys[index], { count: num });
       } else if (num === 1) {
-        return String(i18n.global.t(elementListi18nKeys[index], 1));
+        return t(elementListi18nKeys[index], 1);
       } else {
         return "0";
       }
     })
     .filter(str => !str.startsWith("0"));
 }
-
-// The order of these panels *must* match the order of the StyleEditPanels in Style.ts
-const panels = [
-  {
-    i18n_key: "style.labelStyle",
-    component: LabelStyle,
-    panel: StyleEditPanels.Label
-  },
-  {
-    i18n_key: "style.foregroundStyle",
-    component: BasicFrontBackStyle,
-    panel: StyleEditPanels.Front
-  },
-  {
-    i18n_key: "style.backgroundStyle",
-    component: BasicFrontBackStyle,
-    panel: StyleEditPanels.Back
-  }
-  // {
-  //   i18n_key: "style.advancedStyle",
-  //   component: () => import("@/components/AdvancedStyle.vue"),
-  //   panel: StyleEditPanels.Advanced
-  // }
-];
 
 //When ever the mouse enters the style panel, set the active tool to select because it is likely that the
 // user is going to style objects.
@@ -323,7 +327,7 @@ function toggleObjectsShowing(source: any): void {
   });
   toggleObjectDisplayCommandGroup.execute();
 
-  // update the this.allLabelsShowing varaible, because hiding an object hide the label (depending on
+  // update the this.allLabelsShowing variable, because hiding an object hide the label (depending on
   //  SETTINGS.hideObjectHidesLabel) and similarly showing an object shows the label (depending
   //  SETTIGNS.showObjectShowsLabel)
   allLabelsShowingCheck();

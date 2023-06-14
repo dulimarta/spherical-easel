@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row>
@@ -8,15 +8,15 @@
               <v-textarea
                 id="_test_input_expr"
                 auto-grow
-                dense
+                density="compact"
                 full-width
-                outlined
+               variant="outlined"
                 clearable
                 rows="3"
                 v-bind:label="$t('objectTree.calculationExpression')"
                 placeholder="cos(pi/2)*M1"
                 class="ma-0"
-                :model-value="calcExpression"
+                v-model="calcExpression"
                 :error-messages="parsingError"
                 @keydown="onKeyPressed"
                 @click:clear="reset">
@@ -25,12 +25,12 @@
           </v-row>
           <v-text-field
             id="_test_output_result"
-            dense
-            outlined
+            density="compact"
+           variant="outlined"
             readonly
             v-bind:label="$t('objectTree.result')"
             placeholder="0"
-            :model-value="calcResult">
+            v-model="calcResult">
           </v-text-field>
         </v-container>
       </v-card-text>
@@ -40,7 +40,7 @@
           there is a syntax error -->
         <v-btn
           id="_test_add_expr"
-          small
+         size="small"
           fab
           right
           color="accent"

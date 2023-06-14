@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row>
@@ -14,13 +14,13 @@
                   <v-textarea
                     v-bind:label="$t(i18nKey)"
                     v-bind="props"
-                    auto-growdense
-                    outlined
+                    auto-growdensity="compact"
+                    variant="outlined"
                     clearable
                     rows="2"
                     :placeholder="placeholder"
                     class="ma-0"
-                    :model-value="coordinateExpression"
+                    v-model="coordinateExpression"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
                     @click:clear="reset">

@@ -1,35 +1,35 @@
 <template>
-  <v-form :model-value="isValid">
+  <v-form v-model="isValid">
     <div id="dataEntry">
       <v-text-field
         id="_test_input_min"
         v-bind:label="$t('objectTree.min')"
         class="field _test_input"
-        outlined
-        dense
-        :model-value.number="sliderMin"
+        variant="outlined"
+        density="compact"
+        v-model.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
       <v-text-field
         id="_test_input_step"
         v-bind:label="$t('objectTree.step')"
         class="field _test_input"
-        outlined
-        dense
-        :model-value.number="sliderStep"
+        variant="outlined"
+        density="compact"
+        v-model.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
       <v-text-field
         id="_test_input_max"
         v-bind:label="$t('objectTree.max')"
         class="field _test_input"
-        outlined
-        dense
-        :model-value.number="sliderMax"
+        variant="outlined"
+        density="compact"
+        v-model.number="sliderMax"
         :error="sliderMax < sliderMin"></v-text-field>
     </div>
     <v-slider
       id="_test_slider"
-      :model-value="sliderValue"
+      v-model="sliderValue"
       :min="sliderMin"
       :max="sliderMax"
       :step="sliderStep"

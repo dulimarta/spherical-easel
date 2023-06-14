@@ -116,7 +116,7 @@
 
       <v-text-field
         type="text"
-        dense
+        density="compact"
         clearable
         counter
         persistent-hint

@@ -1,8 +1,5 @@
 <template>
   <div>
-    <!--StyleEditor :panel="panel"
-      :nodule-filter-function="labelFilter"
-      :nodule-map-function="labelMapper"-->
     <!-- For debugging -->
     <!--ul>
       <li>Style Opt: {{ styleOptions }}</li>
@@ -41,30 +38,28 @@
         {{ " " + $t("style.labelStyleOptionsMultiple") }}
       </span>
       <!-- Label Text Selections -->
-      <span v-bind="props">
-        <v-text-field
-          v-model="styleOptions.labelDisplayText"
-          :disabled="selectionCount !== 1"
-          v-bind:label="$t('style.labelText')"
-          :counter="maxLabelDisplayTextLength"
-          ref="labelDisplayText"
-          :class="{
-            shake: animatedInput.labelDisplayText,
-            conflict: conflictItems.labelDisplayText
-          }"
-          variant="outlined"
-          density="compact"
-          :placeholder="placeHolderText(selectionCount, false)"
-          v-bind:error-messages="
-            $t(labelDisplayTextErrorMessageKey, {
-              max: maxLabelDisplayTextLength
-            })
-          "
-          :rules="[
-            labelDisplayTextCheck,
-            labelDisplayTextTruncate(styleOptions)
-          ]"></v-text-field>
-      </span>
+      <v-text-field
+        v-model="styleOptions.labelDisplayText"
+        :disabled="selectionCount !== 1"
+        v-bind:label="$t('style.labelText')"
+        :counter="maxLabelDisplayTextLength"
+        ref="labelDisplayText"
+        :class="{
+          shake: animatedInput.labelDisplayText,
+          conflict: conflictItems.labelDisplayText
+        }"
+        variant="outlined"
+        density="compact"
+        :placeholder="placeHolderText(selectionCount, false)"
+        v-bind:error-messages="
+          $t(labelDisplayTextErrorMessageKey, {
+            max: maxLabelDisplayTextLength
+          })
+        "
+        :rules="[
+          labelDisplayTextCheck,
+          labelDisplayTextTruncate(styleOptions)
+        ]"></v-text-field>
       <!-- Label Display Mode Selections -->
       <v-select
         v-model.lazy="styleOptions.labelDisplayMode"
@@ -176,7 +171,6 @@
       </span>
       <v-divider></v-divider>
       <SimpleNumberSelector
-        class="pa-2"
         :numSelected="selectionCount"
         v-model="styleOptions.labelTextScalePercent"
         title-key="style.labelTextScalePercent"
@@ -191,7 +185,6 @@
         :thumb-string-values="textScaleSelectorThumbStrings" />
       <v-divider></v-divider>
       <SimpleNumberSelector
-        class="pa-2"
         :numSelected="selectionCount"
         v-model="styleOptions.labelTextRotation"
         ref="labelTextRotation"
@@ -207,11 +200,12 @@
           textRotationSelectorThumbStrings
         "></SimpleNumberSelector>
     </InputGroup>
-    <InputGroup :numSelected="selectionCount"
-          :panel="panel"
-          input-selector="labelFrontFillColor"
-          v-if="showMoreLabelStyles">
-          <!--OverlayWithFixButton
+    <InputGroup
+      :numSelected="selectionCount"
+      :panel="panel"
+      input-selector="labelFrontFillColor"
+      v-if="showMoreLabelStyles">
+      <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelFrontFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -220,20 +214,21 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelFrontFillColor`])">
           </OverlayWithFixButton-->
-          <SimpleColorSelector title-key="style.labelFrontFillColor"
-            :numSelected="selectionCount"
-            ref="labelFrontFillColor"
-            style-name="labelFrontFillColor"
-            :conflict="conflictItems.labelFrontFillColor"
-            v-on:resetColor="conflictItems.labelFrontFillColor=false"
-            v-model="styleOptions.labelFrontFillColor">
-          </SimpleColorSelector>
-        </InputGroup>
-        <InputGroup :numSelected="selectionCount"
-          :panel="panel"
-          input-selector="labelBackFillColor"
-          v-if="showMoreLabelStyles">
-          <!--OverlayWithFixButton
+      <SimpleColorSelector
+        title-key="style.labelFrontFillColor"
+        :numSelected="selectionCount"
+        ref="labelFrontFillColor"
+        style-name="labelFrontFillColor"
+        :conflict="conflictItems.labelFrontFillColor"
+        v-on:resetColor="conflictItems.labelFrontFillColor = false"
+        :hsla-color="styleOptions.labelFrontFillColor"></SimpleColorSelector>
+    </InputGroup>
+    <InputGroup
+      :numSelected="selectionCount"
+      :panel="panel"
+      input-selector="labelBackFillColor"
+      v-if="showMoreLabelStyles">
+      <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDynamicBackStyle/)"
             z-index="100"
             i18n-title-line="style.backStyleDisagreement"
@@ -259,17 +254,15 @@
             forceDataAgreement([`labelBackFillColor`])">
           </OverlayWithFixButton-->
 
-          <SimpleColorSelector class="pa-2"
-            :numSelected="selectionCount"
-            title-key="style.labelBackFillColor"
-            :conflict="conflictItems.labelBackFillColor"
-            v-on:resetColor="conflictItems.labelBackFillColor=false"
-            ref="labelBackFillColor"
-            style-name="labelBackFillColor"
-            v-model="styleOptions.labelBackFillColor">
-          </SimpleColorSelector>
-        </InputGroup>
-    <!-- </StyleEditor> -->
+      <SimpleColorSelector
+        :numSelected="selectionCount"
+        title-key="style.labelBackFillColor"
+        :conflict="conflictItems.labelBackFillColor"
+        v-on:resetColor="conflictItems.labelBackFillColor = false"
+        ref="labelBackFillColor"
+        style-name="labelBackFillColor"
+        :hsla-color="styleOptions.labelBackFillColor"></SimpleColorSelector>
+    </InputGroup>
 
     <!-- Show more or less styling options -->
     <v-tooltip
@@ -286,7 +279,7 @@
           text
           plain
           ripple
-          x-small>
+         size="x-small">
           <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
           <v-icon v-else>mdi-chevron-down</v-icon>
         </v-btn>
@@ -308,7 +301,7 @@ import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
-import {useI18n} from "vue-i18n";
+import { useI18n } from "vue-i18n";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 // import StyleEditor from "@/components/StyleEditor.vue";
 import Label from "@/plottables/Label";
@@ -353,7 +346,7 @@ type LabelStyleProps = {
 };
 const props = defineProps<LabelStyleProps>();
 const seStore = useSEStore();
-const {t} = useI18n()
+const { t } = useI18n();
 const {
   selectionCount,
   dataAgreement,
@@ -369,7 +362,7 @@ const { selectedSENodules } = storeToRefs(seStore);
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
 
-watch(() => selectedSENodules.value, resetAllItemsFromConflict)
+watch(() => selectedSENodules.value, resetAllItemsFromConflict);
 function resetAllItemsFromConflict(): void {
   // console.log("here");
   const key = Object.keys(conflictItems);
@@ -615,10 +608,7 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
       }) as string;
     } else if (txt.length === 0) {
       // console.log("here");
-      return t(
-        "style.minLabelDisplayTextLengthWarning",
-        {}
-      ) as string;
+      return t("style.minLabelDisplayTextLengthWarning", {}) as string;
     }
   }
   return true;

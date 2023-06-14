@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-bind="$attrs" :model-value="visible" transition="dialog-transition">
+  <v-dialog v-bind="$attrs" v-model="visible" transition="dialog-transition">
     <v-card elevation="2">
       <v-card-title id="_test_title">{{ title }}</v-card-title>
       <v-divider />
