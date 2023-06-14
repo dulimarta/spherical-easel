@@ -1,17 +1,10 @@
 <template>
-  <div>
-    <!--ul>
+  <!--ul>
           <li>Conclict list: {{conflictingProps}}</li>
           <li>Style Opt: {{styleOptions}}</li>
-          <li>Enable Back Style edit?
-            {{enableBackStyleEdit}}</li>
-          <li>Automatic Back Style Common Value
-            {{automaticBackStyleCommonValue}}---</li>
-          <li>User request automatic back style?
-            {{usingAutomaticBackStyle}}</li>
         </ul-->
-    <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
-    <!--OverlayWithFixButton
+  <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
+  <!--OverlayWithFixButton
       v-if="!allObjectsShowing"
       z-index="100"
       i18n-title-line="style.objectNotVisible"
@@ -19,9 +12,9 @@
       i18n-button-label="style.makeObjectsVisible"
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility"></!--OverlayWithFixButton-->
-    <FadeInCard v-if="editModeIsBack">
-      <!-- Enable the Dynamic Back Style Overlay -->
-      <!--OverlayWithFixButton
+  <FadeInCard v-if="editModeIsBack">
+    <!-- Enable the Dynamic Back Style Overlay -->
+    <!--OverlayWithFixButton
         v-if="
           !styleOptions.dynamicBackStyle && dataAgreement(/dynamicBackStyle/)
         "
@@ -32,53 +25,53 @@
         @click="
           toggleUsingAutomaticBackStyle(styleOptions)
         "></!--OverlayWithFixButton-->
-      <!-- Global contrast slider -->
-      <span class="text-subtitle-2" style="color: red">
-        {{ $t("style.globalBackStyleContrast") + " " }}
-      </span>
-      <span class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
-      <span>
-        {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
-      </span>
-      <v-tooltip
-        location="bottom"
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ props }">
-          <span v-bind="props">
-            <v-slider
-              v-model="backStyleContrast"
-              :min="0"
-              step="0.1"
-              :max="1"
-              type="range"
-              :disabled="
-                !styleOptions.dynamicBackStyle &&
-                !dataAgreement(/dynamicBackStyle/)
-              "
-              @change="setBackStyleContrast"
-              density="compact">
-              <template v-slot:prepend>
-                <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon>
-              </template>
-              <template v-slot:thumb-label="{ value }">
-                {{
-                  backStyleContrastSelectorThumbStrings[Math.floor(value * 10)]
-                }}
-              </template>
-              <template v-slot:append>
-                <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon>
-              </template>
-            </v-slider>
-          </span>
-        </template>
-        <span>{{ $t("style.backStyleContrastToolTip") }}</span>
-      </v-tooltip>
-    </FadeInCard>
-    <v-card>
-      <!-- Disable the Dynamic Back Style Overlay -->
-      <!--OverlayWithFixButton
+    <!-- Global contrast slider -->
+    <span class="text-subtitle-2" style="color: red">
+      {{ $t("style.globalBackStyleContrast") + " " }}
+    </span>
+    <span class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
+    <span>
+      {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
+    </span>
+    <v-tooltip
+      location="bottom"
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px">
+      <template v-slot:activator="{ props }">
+        <span v-bind="props">
+          <v-slider
+            v-model="backStyleContrast"
+            :min="0"
+            step="0.1"
+            :max="1"
+            type="range"
+            :disabled="
+              !styleOptions.dynamicBackStyle &&
+              !dataAgreement(/dynamicBackStyle/)
+            "
+            @change="setBackStyleContrast"
+            density="compact">
+            <template v-slot:prepend>
+              <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon>
+            </template>
+            <template v-slot:thumb-label="{ value }">
+              {{
+                backStyleContrastSelectorThumbStrings[Math.floor(value * 10)]
+              }}
+            </template>
+            <template v-slot:append>
+              <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon>
+            </template>
+          </v-slider>
+        </span>
+      </template>
+      <span>{{ $t("style.backStyleContrastToolTip") }}</span>
+    </v-tooltip>
+  </FadeInCard>
+  <v-card>
+    <!-- Disable the Dynamic Back Style Overlay -->
+    <!--OverlayWithFixButton
         v-if="!dataAgreement(/dynamicBackStyle/)"
         z-index="100"
         i18n-title-line="style.backStyleDisagreement"
@@ -97,12 +90,12 @@
         @click="
           toggleUsingAutomaticBackStyle(styleOptions)
         "></OverlayWithFixButton-->
-      <InputGroup
-        :numSelected="selectionCount"
-        input-selector="strokeColor,strokeWidthPercent,fillColor"
-        :panel="panel"
-        v-if="hasStyle(/strokeColor|strokeWidthPercent|fillColor/)">
-        <!--OverlayWithFixButton
+    <InputGroup
+      :numSelected="selectionCount"
+      input-selector="strokeColor,strokeWidthPercent,fillColor"
+      :panel="panel"
+      v-if="hasStyle(/strokeColor|strokeWidthPercent|fillColor/)">
+      <!--OverlayWithFixButton
           v-if="!dataAgreement(/strokeColor|strokeWidthPercent|fillColor/)"
           z-index="1"
           i18n-title-line="style.styleDisagreement"
@@ -116,42 +109,42 @@
               `fillColor`
             ]);
           "></!--OverlayWithFixButton-->
-        <!-- Front/Back Stroke Color Selector-->
-        <SimpleColorSelector
-          :numSelected="selectionCount"
-          titleKey="style.strokeColor"
-          v-if="hasStyle(/strokeColor/)"
-          :conflict="conflictItems.strokeColor"
-          v-on:resetColor="conflictItems.strokeColor = false"
-          style-name="strokeColor"
-          :hsla-color="styleOptions.strokeColor" />
-        <SimpleNumberSelector
-          v-if="hasStyle(/strokeWidthPercent/)"
-          :numSelected="selectionCount"
-          :conflict="conflictItems.strokeWidthPercent"
-          v-model="styleOptions.strokeWidthPercent"
-          title-key="style.strokeWidthPercent"
-          :min="minStrokeWidthPercent"
-          :max="maxStrokeWidthPercent"
-          :color="conflictItems.strokeWidthPercent ? 'red' : ''"
-          v-on:resetColor="conflictItems.strokeWidthPercent = false"
-          :step="20"
-          :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
-        <SimpleColorSelector
-          title-key="style.fillColor"
-          :numSelected="selectionCount"
-          :conflict="conflictItems.fillColor"
-          v-on:resetColor="conflictItems.fillColor = false"
-          v-if="hasStyle(/fillColor/)"
-          style-name="fillColor"
-          :hsla-color="styleOptions.fillColor" />
-      </InputGroup>
-      <InputGroup
-        input-selector="pointRadiusPercent"
-        :panel="panel"
+      <!-- Front/Back Stroke Color Selector-->
+      <SimpleColorSelector
         :numSelected="selectionCount"
-        v-if="hasStyle(/pointRadiusPercent/)">
-        <!--OverlayWithFixButton
+        titleKey="style.strokeColor"
+        v-if="hasStyle(/strokeColor/)"
+        :conflict="conflictItems.strokeColor"
+        v-on:resetColor="conflictItems.strokeColor = false"
+        style-name="strokeColor"
+        v-model="styleOptions.strokeColor" />
+      <SimpleNumberSelector
+        v-if="hasStyle(/strokeWidthPercent/)"
+        :numSelected="selectionCount"
+        :conflict="conflictItems.strokeWidthPercent"
+        v-model="styleOptions.strokeWidthPercent"
+        title-key="style.strokeWidthPercent"
+        :min="minStrokeWidthPercent"
+        :max="maxStrokeWidthPercent"
+        :color="conflictItems.strokeWidthPercent ? 'red' : ''"
+        v-on:resetColor="conflictItems.strokeWidthPercent = false"
+        :step="20"
+        :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
+      <SimpleColorSelector
+        title-key="style.fillColor"
+        :numSelected="selectionCount"
+        :conflict="conflictItems.fillColor"
+        v-on:resetColor="conflictItems.fillColor = false"
+        v-if="hasStyle(/fillColor/)"
+        style-name="fillColor"
+        v-model="styleOptions.fillColor" />
+    </InputGroup>
+    <InputGroup
+      input-selector="pointRadiusPercent"
+      :panel="panel"
+      :numSelected="selectionCount"
+      v-if="hasStyle(/pointRadiusPercent/)">
+      <!--OverlayWithFixButton
           v-if="!dataAgreement(/pointRadiusPercent/)"
           z-index="1"
           i18n-title-line="style.styleDisagreement"
@@ -161,30 +154,30 @@
             distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`pointRadiusPercent`]);
           "></!--OverlayWithFixButton-->
-        <!--- Front/Back Point Radius Number Selector -->
+      <!--- Front/Back Point Radius Number Selector -->
 
-        <SimpleNumberSelector
-          :numSelected="selectionCount"
-          v-model="styleOptions.pointRadiusPercent"
-          :color="conflictItems.pointRadiusPercent ? 'red' : ''"
-          :conflict="conflictItems.pointRadiusPercent"
-          v-on:resetColor="conflictItems.pointRadiusPercent = false"
-          title-key="style.pointRadiusPercent"
-          :min="minPointRadiusPercent"
-          :max="maxPointRadiusPercent"
-          :step="20"
-          :thumb-string-values="
-            pointRadiusSelectorThumbStrings
-          "></SimpleNumberSelector>
-      </InputGroup>
-    </v-card>
-    <div v-show="showMoreLabelStyles">
-      <InputGroup
+      <SimpleNumberSelector
         :numSelected="selectionCount"
-        :panel="panel"
-        input-selector="angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads"
-        v-if="editModeIsFront && hasStyle(/angleMarker/)">
-        <!--OverlayWithFixButton
+        v-model="styleOptions.pointRadiusPercent"
+        :color="conflictItems.pointRadiusPercent ? 'red' : ''"
+        :conflict="conflictItems.pointRadiusPercent"
+        v-on:resetColor="conflictItems.pointRadiusPercent = false"
+        title-key="style.pointRadiusPercent"
+        :min="minPointRadiusPercent"
+        :max="maxPointRadiusPercent"
+        :step="20"
+        :thumb-string-values="
+          pointRadiusSelectorThumbStrings
+        "></SimpleNumberSelector>
+    </InputGroup>
+  </v-card>
+  <div v-show="showMoreLabelStyles">
+    <InputGroup
+      :numSelected="selectionCount"
+      :panel="panel"
+      input-selector="angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads"
+      v-if="editModeIsFront && hasStyle(/angleMarker/)">
+      <!--OverlayWithFixButton
           v-if="
             !dataAgreement(
               /angleMarkerRadiusPercent|angleMarkerTickMark|angleMarkerDoubleArc|angleMarkerArrowHeads/
@@ -203,102 +196,102 @@
               `angleMarkerArrowHeads`
             ]);
           "></!--OverlayWithFixButton-->
-        <span class="text-subtitle-2">
-          {{ $t(`style.angleMarkerOptions`) }}
-        </span>
+      <span class="text-subtitle-2">
+        {{ $t(`style.angleMarkerOptions`) }}
+      </span>
 
-        <SimpleNumberSelector
-          :numSelected="selectionCount"
-          :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
-          :conflict="conflictItems.angleMarkerRadiusPercent"
-          v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
-          v-model="styleOptions.angleMarkerRadiusPercent"
-          title-key="style.angleMarkerRadiusPercent"
-          :min="minAngleMarkerRadiusPercent"
-          :max="maxAngleMarkerRadiusPercent"
-          :step="20"
-          :thumb-string-values="
-            angleMarkerRadiusSelectorThumbStrings
-          "></SimpleNumberSelector>
-        <!-- Angle Marker Decoration Selector -->
-        <v-row justify="space-around">
-          <v-col>
-            <v-switch
-              v-model="styleOptions.angleMarkerTickMark"
-              :color="conflictItems.angleMarkerTickMark ? 'red' : ''"
-              @change="
-                updateInputGroup(
-                  'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'
-                );
-                conflictItems.angleMarkerTickMark = false;
-              ">
-              <template v-slot:label>
-                <span
-                  :style="{
-                    color: conflictItems.angleMarkerTickMark ? 'red' : ``
-                  }">
-                  {{ $t("style.angleMarkerTickMark") }}
-                </span>
-              </template>
-            </v-switch>
-          </v-col>
-          <v-col>
-            <v-switch
-              v-model="styleOptions.angleMarkerDoubleArc"
-              :color="conflictItems.angleMarkerDoubleArc ? 'red' : ''"
-              @change="
-                updateInputGroup(
-                  'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'
-                ),
-                  (conflictItems.angleMarkerDoubleArc = false)
-              ">
-              <template v-slot:label>
-                <span
-                  :style="{
-                    color: conflictItems.angleMarkerDoubleArc ? 'red' : ``
-                  }">
-                  {{ $t("style.angleMarkerDoubleArc") }}
-                </span>
-              </template>
-            </v-switch>
-
-            <v-switch
-              v-model="styleOptions.angleMarkerArrowHeads"
-              :color="conflictItems.angleMarkerArrowHeads ? 'red' : ''"
-              @change="
-                updateInputGroup(
-                  'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'
-                ),
-                  (conflictItems.angleMarkerArrowHeads = false)
-              ">
-              <template v-slot:label>
-                <span
-                  :style="{
-                    color: conflictItems.angleMarkerArrowHeads ? 'red' : ``
-                  }">
-                  {{ $t("style.angleMarkerArrowHeads") }}
-                </span>
-              </template>
-            </v-switch>
-          </v-col>
-        </v-row>
-      </InputGroup>
-      <InputGroup
-        input-selector="dashArray"
-        :key="dashPanelKey"
-        :panel="panel"
+      <SimpleNumberSelector
         :numSelected="selectionCount"
-        v-if="
-          (editModeIsFront &&
-            hasStyle(/dashArray/) &&
-            ((!angleMarkersSelected && oneDimensionSelected) ||
-              (angleMarkersSelected && !oneDimensionSelected))) ||
-          (editModeIsBack &&
-            hasStyle(/dashArray/) &&
-            ((!angleMarkersSelected && oneDimensionSelected) ||
-              (angleMarkersSelected && !oneDimensionSelected)))
-        ">
-        <!--OverlayWithFixButton
+        :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
+        :conflict="conflictItems.angleMarkerRadiusPercent"
+        v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
+        v-model="styleOptions.angleMarkerRadiusPercent"
+        title-key="style.angleMarkerRadiusPercent"
+        :min="minAngleMarkerRadiusPercent"
+        :max="maxAngleMarkerRadiusPercent"
+        :step="20"
+        :thumb-string-values="
+          angleMarkerRadiusSelectorThumbStrings
+        "></SimpleNumberSelector>
+      <!-- Angle Marker Decoration Selector -->
+      <v-row justify="space-around">
+        <v-col>
+          <v-switch
+            v-model="styleOptions.angleMarkerTickMark"
+            :color="conflictItems.angleMarkerTickMark ? 'red' : ''"
+            @change="
+              updateInputGroup(
+                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'
+              );
+              conflictItems.angleMarkerTickMark = false;
+            ">
+            <template v-slot:label>
+              <span
+                :style="{
+                  color: conflictItems.angleMarkerTickMark ? 'red' : ``
+                }">
+                {{ $t("style.angleMarkerTickMark") }}
+              </span>
+            </template>
+          </v-switch>
+        </v-col>
+        <v-col>
+          <v-switch
+            v-model="styleOptions.angleMarkerDoubleArc"
+            :color="conflictItems.angleMarkerDoubleArc ? 'red' : ''"
+            @change="
+              updateInputGroup(
+                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'
+              ),
+                (conflictItems.angleMarkerDoubleArc = false)
+            ">
+            <template v-slot:label>
+              <span
+                :style="{
+                  color: conflictItems.angleMarkerDoubleArc ? 'red' : ``
+                }">
+                {{ $t("style.angleMarkerDoubleArc") }}
+              </span>
+            </template>
+          </v-switch>
+
+          <v-switch
+            v-model="styleOptions.angleMarkerArrowHeads"
+            :color="conflictItems.angleMarkerArrowHeads ? 'red' : ''"
+            @change="
+              updateInputGroup(
+                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'
+              ),
+                (conflictItems.angleMarkerArrowHeads = false)
+            ">
+            <template v-slot:label>
+              <span
+                :style="{
+                  color: conflictItems.angleMarkerArrowHeads ? 'red' : ``
+                }">
+                {{ $t("style.angleMarkerArrowHeads") }}
+              </span>
+            </template>
+          </v-switch>
+        </v-col>
+      </v-row>
+    </InputGroup>
+    <InputGroup
+      input-selector="dashArray"
+      :key="dashPanelKey"
+      :panel="panel"
+      :numSelected="selectionCount"
+      v-if="
+        (editModeIsFront &&
+          hasStyle(/dashArray/) &&
+          ((!angleMarkersSelected && oneDimensionSelected) ||
+            (angleMarkersSelected && !oneDimensionSelected))) ||
+        (editModeIsBack &&
+          hasStyle(/dashArray/) &&
+          ((!angleMarkersSelected && oneDimensionSelected) ||
+            (angleMarkersSelected && !oneDimensionSelected)))
+      ">
+      <!--OverlayWithFixButton
           v-if="!dataAgreement(/dashArray|reverseDashArray/)"
           z-index="1"
           i18n-title-line="style.styleDisagreement"
@@ -309,163 +302,162 @@
             forceDataAgreement([`dashArray`, `reverseDashArray`]);
           "></!--OverlayWithFixButton-->
 
-        <span v-show="editModeIsFront" class="text-subtitle-2">
-          {{ $t("style.front") }}
-        </span>
-        <span v-show="editModeIsBack" class="text-subtitle-2">
-          {{ $t("style.back") }}
-        </span>
+      <span v-show="editModeIsFront" class="text-subtitle-2">
+        {{ $t("style.front") }}
+      </span>
+      <span v-show="editModeIsBack" class="text-subtitle-2">
+        {{ $t("style.back") }}
+      </span>
 
-        <span class="text-subtitle-2">{{ " " + $t("style.dashPattern") }}</span>
-        <span
-          v-if="selectedSENodules.length > 1"
-          class="text-subtitle-2"
-          style="color: red">
-          {{ " " + $t("style.labelStyleOptionsMultiple") }}
-        </span>
-        <span v-show="!emptyDashPattern">
-          {{ activeDashPattern(styleOptions) }}
-        </span>
-        <!-- The dash property slider -->
-        <v-range-slider
-          v-model="styleOptions.dashArray"
-          :key="dashArrayKey"
-          min="0"
-          :step="setStep(hasStyle(/angleMarker/))"
-          :disabled="emptyDashPattern"
-          :max="setMax(hasStyle(/angleMarker/))"
-          :color="conflictItems.dashArray ? 'red' : ''"
-          @change="
-            updateLocalGapDashVariables(
-              styleOptions,
-              styleOptions?.dashArray ?? []
-            );
-            conflictItems.dashArray = false;
-          "
-          density="compact">
-          <template v-slot:prepend>
-            <v-icon
-              @click="
-                decrementDashPattern(styleOptions, hasStyle(/angleMarker/))
-              ">
-              mdi-minus
-            </v-icon>
-          </template>
+      <span class="text-subtitle-2">{{ " " + $t("style.dashPattern") }}</span>
+      <span
+        v-if="selectedSENodules.length > 1"
+        class="text-subtitle-2"
+        style="color: red">
+        {{ " " + $t("style.labelStyleOptionsMultiple") }}
+      </span>
+      <span v-show="!emptyDashPattern">
+        {{ activeDashPattern(styleOptions) }}
+      </span>
+      <!-- The dash property slider -->
+      <v-range-slider
+        v-model="styleOptions.dashArray"
+        :key="dashArrayKey"
+        min="0"
+        :step="setStep(hasStyle(/angleMarker/))"
+        :disabled="emptyDashPattern"
+        :max="setMax(hasStyle(/angleMarker/))"
+        :color="conflictItems.dashArray ? 'red' : ''"
+        @change="
+          updateLocalGapDashVariables(
+            styleOptions,
+            styleOptions?.dashArray ?? []
+          );
+          conflictItems.dashArray = false;
+        "
+        density="compact">
+        <template v-slot:prepend>
+          <v-icon
+            @click="
+              decrementDashPattern(styleOptions, hasStyle(/angleMarker/))
+            ">
+            mdi-minus
+          </v-icon>
+        </template>
 
-          <template v-slot:append>
-            <v-icon
-              @click="
-                incrementDashPattern(styleOptions, hasStyle(/angleMarker/))
-              ">
-              mdi-plus
-            </v-icon>
-          </template>
-        </v-range-slider>
-        <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
-        <v-container class="pa-0 ma-0">
-          <v-row justify="space-around" no-gutters>
-            <v-col>
-              <v-tooltip
-                location="bottom"
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-                max-width="400px">
-                <template v-slot:activator="{ props }">
-                  <span v-on="props">
-                    <v-checkbox
-                      v-model="emptyDashPattern"
-                      :key="activeDashPatternKey"
-                      :false-value="true"
-                      :true-value="false"
-                      :label="$t('style.dashPattern')"
-                      :color="conflictItems.dashArray ? 'red' : ''"
-                      @click="
-                        toggleDashPatternSliderAvailbility(styleOptions);
-                        conflictItems.dashArray = false;
-                      "
-                      hide-details
-                      density="compact">
-                      <template v-slot:label>
-                        <span
-                          :style="{
-                            color: conflictItems.dashArray ? 'red' : ``
-                          }">
-                          {{ $t("style.dashPattern") }}
-                        </span>
-                      </template>
-                    </v-checkbox>
-                  </span>
-                </template>
-                {{ $t("style.dashPatternCheckBoxToolTip") }}
-              </v-tooltip>
-            </v-col>
-            <v-col>
-              <v-tooltip
-                location="bottom"
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-                max-width="400px">
-                <template v-slot:activator="{ props }">
-                  <span v-on="props">
-                    <v-checkbox
-                      v-model="styleOptions.reverseDashArray"
-                      :key="activeReverseDashPatternKey"
-                      :disabled="emptyDashPattern"
-                      :color="conflictItems.reverseDashArray ? `red` : ''"
-                      @click="
-                        toggleDashPatternReverse(styleOptions);
-                        conflictItems.reverseDashArray = false;
-                      "
-                      hide-details
-                      density="compact">
-                      <template v-slot:label>
-                        <span
-                          :style="{
-                            color: conflictItems.reverseDashArray ? 'red' : ``
-                          }">
-                          {{ $t("style.dashArrayReverse") }}
-                        </span>
-                      </template>
-                    </v-checkbox>
-                  </span>
-                </template>
-                {{ $t("style.dashPatternReverseArrayToolTip") }}
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-container>
-      </InputGroup>
-    </div>
-
-    <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
-    <v-container class="pa-0 ma-0">
-      <v-row no-gutters>
-        <v-col cols="auto">
-          <v-tooltip
-            location="bottom"
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px"
-            class="pa-0 pm-0">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                v-bind="props"
-                @click="toggleShowMoreLabelStyles"
-                class="text-subtitle-2"
-                text
-                plain
-                ripple
-               size="x-small">
-                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
-                <v-icon v-else>mdi-chevron-down</v-icon>
-              </v-btn>
-            </template>
-            {{ $t("style.toggleStyleOptionsToolTip") }}
-          </v-tooltip>
-        </v-col>
-      </v-row>
-    </v-container>
+        <template v-slot:append>
+          <v-icon
+            @click="
+              incrementDashPattern(styleOptions, hasStyle(/angleMarker/))
+            ">
+            mdi-plus
+          </v-icon>
+        </template>
+      </v-range-slider>
+      <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
+      <v-container class="pa-0 ma-0">
+        <v-row justify="space-around" no-gutters>
+          <v-col>
+            <v-tooltip
+              location="bottom"
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ props }">
+                <span v-on="props">
+                  <v-checkbox
+                    v-model="emptyDashPattern"
+                    :key="activeDashPatternKey"
+                    :false-value="true"
+                    :true-value="false"
+                    :label="$t('style.dashPattern')"
+                    :color="conflictItems.dashArray ? 'red' : ''"
+                    @click="
+                      toggleDashPatternSliderAvailbility(styleOptions);
+                      conflictItems.dashArray = false;
+                    "
+                    hide-details
+                    density="compact">
+                    <template v-slot:label>
+                      <span
+                        :style="{
+                          color: conflictItems.dashArray ? 'red' : ``
+                        }">
+                        {{ $t("style.dashPattern") }}
+                      </span>
+                    </template>
+                  </v-checkbox>
+                </span>
+              </template>
+              {{ $t("style.dashPatternCheckBoxToolTip") }}
+            </v-tooltip>
+          </v-col>
+          <v-col>
+            <v-tooltip
+              location="bottom"
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ props }">
+                <span v-on="props">
+                  <v-checkbox
+                    v-model="styleOptions.reverseDashArray"
+                    :key="activeReverseDashPatternKey"
+                    :disabled="emptyDashPattern"
+                    :color="conflictItems.reverseDashArray ? `red` : ''"
+                    @click="
+                      toggleDashPatternReverse(styleOptions);
+                      conflictItems.reverseDashArray = false;
+                    "
+                    hide-details
+                    density="compact">
+                    <template v-slot:label>
+                      <span
+                        :style="{
+                          color: conflictItems.reverseDashArray ? 'red' : ``
+                        }">
+                        {{ $t("style.dashArrayReverse") }}
+                      </span>
+                    </template>
+                  </v-checkbox>
+                </span>
+              </template>
+              {{ $t("style.dashPatternReverseArrayToolTip") }}
+            </v-tooltip>
+          </v-col>
+        </v-row>
+      </v-container>
+    </InputGroup>
   </div>
+
+  <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
+  <v-container class="pa-0 ma-0">
+    <v-row no-gutters>
+      <v-col cols="auto">
+        <v-tooltip
+          location="bottom"
+          :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay"
+          max-width="400px"
+          class="pa-0 pm-0">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              @click="toggleShowMoreLabelStyles"
+              class="text-subtitle-2"
+              text
+              plain
+              ripple
+              size="x-small">
+              <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
+              <v-icon v-else>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          {{ $t("style.toggleStyleOptionsToolTip") }}
+        </v-tooltip>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
@@ -498,20 +490,11 @@ type ConflictItems = {
   dashArray: boolean;
   reverseDashArray: boolean;
 };
-//   computed: {
-//     ...mapState(useSEStore, [
-//       "selectedSENodules",
-//       "oldStyleSelections",
-//       "styleSavedFromPanel"
-//     ])
-//   }
-// })
 type ComponentProps = {
   panel: StyleEditPanels;
 };
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
-// readonly panel!: StyleEditPanels; // This is a constant in each copy of the BasicFrontBackStyle
 
 const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
   storeToRefs(seStore);

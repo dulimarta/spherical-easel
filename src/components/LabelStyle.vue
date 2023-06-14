@@ -221,7 +221,7 @@
         style-name="labelFrontFillColor"
         :conflict="conflictItems.labelFrontFillColor"
         v-on:resetColor="conflictItems.labelFrontFillColor = false"
-        :hsla-color="styleOptions.labelFrontFillColor"></SimpleColorSelector>
+        v-model="styleOptions.labelFrontFillColor"></SimpleColorSelector>
     </InputGroup>
     <InputGroup
       :numSelected="selectionCount"
@@ -261,7 +261,7 @@
         v-on:resetColor="conflictItems.labelBackFillColor = false"
         ref="labelBackFillColor"
         style-name="labelBackFillColor"
-        :hsla-color="styleOptions.labelBackFillColor"></SimpleColorSelector>
+        v-model="styleOptions.labelBackFillColor"></SimpleColorSelector>
     </InputGroup>
 
     <!-- Show more or less styling options -->

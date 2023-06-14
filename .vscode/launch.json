@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Edge",
+      "name": "Launch Edge (Windows Only)",
       "request": "launch",
       "type": "msedge",
       "url": "http://localhost:8080",
