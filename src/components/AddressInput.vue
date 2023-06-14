@@ -1,5 +1,6 @@
 <template>
-<div class="inputAddress"><input type="text" id="autocomplete" placeholder="Enter your address" />
+<div class="inputAddress">
+    <input type="text" id="autocomplete" placeholder="Enter your address" />
 <h2>Lat : {{ lat }} Lng: {{ lng }}</h2>
 </div>
 
@@ -44,7 +45,7 @@ import { onMounted,ref } from 'vue';
     onMounted(()=>{
         let script = document.createElement('script');
         script.async = true;
-        const apikey = import.meta.env.VITE_GOOGLE_MAP_API
+        const apikey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap`
         document.head.appendChild(script);
     })

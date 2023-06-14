@@ -1,6 +1,6 @@
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDNA-9m5KvjcxAeTE6ixr_bhXr2Hs2zNys",
+  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY,
   authDomain: "spherical-easel.firebaseapp.com",
   projectId: "spherical-easel",
   storageBucket: "spherical-easel.appspot.com",
