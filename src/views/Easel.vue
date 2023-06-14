@@ -20,6 +20,7 @@
       -->
         <v-container fluid ref="mainPanel">
           <v-row justify="center">
+            <AddressInput />
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
@@ -108,6 +109,8 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
+import AddressInput from "@/components/AddressInput.vue";
+
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthComp from "@/components/EarthComp.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
