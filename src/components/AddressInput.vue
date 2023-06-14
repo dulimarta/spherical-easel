@@ -44,7 +44,7 @@ import { onMounted,ref } from 'vue';
     onMounted(()=>{
         let script = document.createElement('script');
         script.async = true;
-        const apikey = import.meta.env.local.VITE_GOOGLE_MAP_API
+        const apikey = import.meta.env.VITE_GOOGLE_MAP_API
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap`
         document.head.appendChild(script);
     })
