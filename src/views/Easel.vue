@@ -1,4 +1,45 @@
 <template>
+  <v-navigation-drawer location="end" color="black" permanent width="80">
+    <div class="vertical-nav-drawer">
+      <PopOverTabs icon-name="mdi-tag">
+        <template #tabs>
+          <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
+          <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
+          <v-tab><v-icon>mdi-palette</v-icon></v-tab>
+        </template>
+        <template #pages>
+          <v-window-item>
+            Label editor
+          </v-window-item>
+          <v-window-item>
+            Label font style
+          </v-window-item>
+          <v-window-item>
+            Label color
+          </v-window-item>
+        </template>
+      </PopOverTabs>
+      <PopOverTabs icon-name="mdi-arrange-bring-forward">
+        <template #tabs>
+          <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>
+          <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
+        </template>
+      </PopOverTabs>
+      <PopOverTabs icon-name="mdi-arrange-send-backward">
+        Background styles
+      </PopOverTabs>
+      <div id="visibility-control">
+        <span>
+          Label
+          <v-icon>mdi-eye</v-icon>
+        </span>
+        <span>
+          Object
+          <v-icon>mdi-eye</v-icon>
+        </span>
+      </div>
+    </div>
+  </v-navigation-drawer>
   <div>
     <Splitpanes
       :style="contentHeightStyle"
@@ -23,15 +64,18 @@
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
-              <SphereFrame :canvas-size="currentCanvasSize" v-show="svgDataImage.length === 0"/>
+              <SphereFrame
+                :canvas-size="currentCanvasSize"
+                v-show="svgDataImage.length === 0" />
               <v-overlay
                 contained
                 class="align-center justify-center"
                 :model-value="svgDataImage.length > 0">
                 <img
                   :src="svgDataImage"
-                  style="background: hsla(0, 100%, 100%, 1.0)"
-                  :width="currentCanvasSize" :height="currentCanvasSize"/>
+                  style="background: hsla(0, 100%, 100%, 1)"
+                  :width="currentCanvasSize"
+                  :height="currentCanvasSize" />
               </v-overlay>
               <div class="anchored top right">
                 <div
@@ -61,12 +105,12 @@
         </v-container>
       </Pane>
 
-      <Pane min-size="5" :max-size="25" :size="panelSize">
+      <!--Pane min-size="5" :max-size="25" :size="panelSize">
         <StylePanel @minify-toggled="handleStylePanelMinify" />
-        <!--MessageBox
+        <MessageBox
               :minified="notificationsPanelMinified"
-              v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
-      </Pane>
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+      </Pane-->
     </Splitpanes>
     <Dialog
       ref="unsavedWorkDialog"
@@ -103,6 +147,7 @@ import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import PopOverTabs from "@/components/PopOverTabs.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
@@ -182,6 +227,7 @@ const stylePanelMinified = ref(true);
 const notificationsPanelMinified = ref(true);
 const previewClass = ref("");
 const constructionInfo = ref<any>({});
+const labelTab = ref(0);
 let undoEnabled = false;
 let redoEnabled = false;
 
@@ -570,5 +616,19 @@ function handleStylePanelMinify(state: boolean) {
   100% {
     transform: translateX(-100%) scale(0.3);
   }
+}
+
+.vertical-nav-drawer {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+#visibility-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
