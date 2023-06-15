@@ -77,7 +77,7 @@
   <!-- Nothing Selected Dialog -->
   <Dialog
     ref="selectObjectsDialog"
-    yes-text="OK"
+    :yes-text="t('style.closeStylingPanel')"
     width="50%"
     :title="t('style.selectAnObject')">
     <div>
@@ -119,10 +119,12 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
-
+import { useDialogSequencer } from "./DialogSequencer";
 const { t } = useI18n();
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);
+const dialogSequencer = useDialogSequencer()
+
 // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
 const panels = [
   {
@@ -187,8 +189,8 @@ function closeAllPanels(): void {
 watch(
   [() => selectedSENodules.value, () => minified.value],
   ([selectedObjs, isMinified]) => {
-    if (selectedObjs.length === 0 && !isMinified)
-      selectObjectsDialog.value?.show();
+    if (true || selectedObjs.length === 0 && !isMinified)
+      dialogSequencer.showDialog(selectObjectsDialog.value!)
   }
 );
 

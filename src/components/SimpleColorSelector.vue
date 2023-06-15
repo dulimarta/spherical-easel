@@ -123,7 +123,7 @@ function colorChanged(arg: string) {
   const toks = newColor.split(",");
   // Note: the Color function does not product the alpha value
   // we have to insert the alpha value manually
-  if (toks.length == 3) {
+  if (toks.length == 3) { // only three tokens, missing the alpha value
     newColor = newColor.replace(/\)$/, ", 1.0)").replace(/^hsl/, "hsla");
   }
   console.log("Color changed to", arg, newColor);
