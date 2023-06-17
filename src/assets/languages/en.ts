@@ -1,5 +1,12 @@
 
 export default {
+  headingNames: {
+    allToolsName: "All Tools",
+    topLeftCorner: "Top-Left Corner",
+    topRightCorner: "Top-Right Corner",
+    bottomLeftCorner: "Bottom-Left Corner",
+    bottomRightCorner: "Bottom-Right Corner"
+  },
   account: {
     createError: "Unable to create a new account: {error}",
     emailNotVeified:
@@ -11,10 +18,10 @@ export default {
   main: {
     ConstructionsTabToolTip: "Saved Constructions",
     ObjectsTabToolTip: "Objects",
-    RedoLastAction: "Redo last action",
+    // RedoLastAction: "Redo last action",
     SphericalEaselMainTitle: "Spherical Easel",
-    ToolsTabToolTip: "Tools",
-    UndoLastAction: "Undo last action"
+    ToolsTabToolTip: "Tools"
+    // UndoLastAction: "Undo last action"
   },
   toolGroups: {
     EditTools: "Edit Tools",
@@ -31,6 +38,14 @@ export default {
   buttons: {
     CurrentTool: "Current Tool",
     NoToolSelected: "No Tool Selected",
+
+    RedoLastActionDisplayedName: "Redo Action",
+    RedoLastActionToolTipMessage: "Redo the last action",
+    RedoLastActionToolUseMessage: "Click to redo your last action",
+
+    UndoLastActionDisplayedName: "Undo Action",
+    UndoLastActionToolTipMessage: "Undo the last action",
+    UndoLastActionToolUseMessage: "Click to undo your last action",
 
     MeasureTriangleDisplayedName: "Measure Triangle",
     MeasureTriangleToolTipMessage:
@@ -228,7 +243,11 @@ export default {
     CreateIconDisplayedName: "Create Icon",
     CreateIconToolTipMessage: "Create Icon SVG Paths",
     CreateIconToolUseMessage:
-      "Click to create an the SVG paths for an icon from current view."
+      "Click to create an the SVG paths for an icon from current view.",
+
+    ResetSphereActionDisplayedName: "Clear Canvas",
+    ResetSphereActionToolTipMessage: "Clear the canvas",
+    ResetSphereActionToolUseMessage: "Click to clear the canvas of all drawings"
   },
   settings: {
     title: "Preferences"

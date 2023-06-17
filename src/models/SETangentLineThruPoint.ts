@@ -72,7 +72,7 @@ export class SETangentLineThruPoint extends SELine {
       );
 
       if (normals[this._index] !== undefined) {
-        this._normalVector.copy(normals[this._index]);
+        this._normalVector.copy(normals[this._index].normal);
 
         // Given this.startPoint (in SELine)=this._seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToTangentLinesThru *never* returns a point with

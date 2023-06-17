@@ -246,7 +246,8 @@ const developerButtonList: ToolButtonType[] = [
     icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",
     toolUseMessage: "CreateIconToolUseMessage",
-    displayToolUseMessage: false
+    displayToolUseMessage: false,
+    disabledIcon: '?????'
   }
 ];
 </script>

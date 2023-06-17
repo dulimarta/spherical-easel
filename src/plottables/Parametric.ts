@@ -228,7 +228,7 @@ export default class Parametric extends Nodule {
         .reduce((total: number, currLen: number) => total + currLen);
       const delta = numAnchors - (frontVertexCount + backVertexCount);
       if (delta > 0) {
-        console.debug("*** Adding", delta, "more anchor points!!!");
+        // console.debug("*** Adding", delta, "more anchor points!!!");
         // We have to add more anchor points
         let anchor: Two.Anchor;
         // Clone from an existing Anchor (either from frontPart or backPart)
@@ -255,9 +255,9 @@ export default class Parametric extends Nodule {
    * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
-    const frontCount = this.frontParts.map(z => z.vertices.length).join(",");
-    const backCount = this.backParts.map(z => z.vertices.length).join(",");
-    console.debug(`Front parts:  ${frontCount}     Back parts:${backCount}`);
+    // const frontCount = this.frontParts.map(z => z.vertices.length).join(",");
+    // const backCount = this.backParts.map(z => z.vertices.length).join(",");
+    // console.debug(`Front parts:  ${frontCount}     Back parts:${backCount}`);
 
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
     // the one in the target desired (updated) position (i.e. the target parametric).
@@ -525,8 +525,12 @@ export default class Parametric extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    this.frontParts.forEach(part => (part.visible = true));
-    this.glowingFrontParts.forEach(part => (part.visible = false));
+    this.frontParts.forEach(part => {
+      part.visible = true;
+    });
+    this.glowingFrontParts.forEach(part => {
+      part.visible = false;
+    });
   }
   backNormalDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
@@ -539,11 +543,19 @@ export default class Parametric extends Nodule {
 
   public setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontParts.forEach(part => (part.visible = false));
-      this.backParts.forEach(part => (part.visible = false));
+      this.frontParts.forEach(part => {
+        part.visible = false;
+      });
+      this.backParts.forEach(part => {
+        part.visible = false;
+      });
 
-      this.glowingBackParts.forEach(part => (part.visible = false));
-      this.glowingFrontParts.forEach(part => (part.visible = false));
+      this.glowingBackParts.forEach(part => {
+        part.visible = false;
+      });
+      this.glowingFrontParts.forEach(part => {
+        part.visible = false;
+      });
     } else {
       this.normalDisplay();
     }
@@ -577,7 +589,7 @@ export default class Parametric extends Nodule {
     this.glowingFgLayer = layers[LAYER.foregroundGlowing];
     this.glowingBgLayer = layers[LAYER.backgroundGlowing];
     // TODO: Uncomment the following line to show sample point makers
-    //this.markers.addTo(this.foregroundLayer);
+    // this.markers.addTo(this.foregroundLayer);
     this.frontParts.forEach(part => part.addTo(layers[LAYER.foreground]));
     this.glowingFrontParts.forEach(part =>
       part.addTo(layers[LAYER.foregroundGlowing])

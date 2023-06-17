@@ -131,6 +131,8 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+// import {ActionMode, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
+// import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -204,6 +206,10 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 let accountEnabled = false;
 let uid = "";
 let authSubscription!: Unsubscribe;
+const userUid = computed((): string | undefined => {
+    return appAuth.currentUser?.uid;
+  })
+
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -499,7 +505,7 @@ function handleStylePanelMinify(state: boolean) {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #currentTool {
@@ -512,7 +518,7 @@ function handleStylePanelMinify(state: boolean) {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 #tool {
@@ -530,7 +536,7 @@ function handleStylePanelMinify(state: boolean) {
   padding-bottom: 0;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
+  sans-serif;
 }
 
 .anchored {

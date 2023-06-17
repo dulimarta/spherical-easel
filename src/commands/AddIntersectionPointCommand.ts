@@ -27,13 +27,13 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   do(): void {
-    console.debug(
-      `Add intersection point ${this.seIntersectionPoint.name} with parents ${
-        this.principleParent1.name
-      } and ${
-        this.principleParent2.name
-      } at ${this.seIntersectionPoint.locationVector.toFixed(2)}`
-    );
+    // console.debug(
+    //   `Add intersection point ${this.seIntersectionPoint.name} with parents ${
+    //     this.principleParent1.name
+    //   } and ${
+    //     this.principleParent2.name
+    //   } at ${this.seIntersectionPoint.locationVector.toFixed(2)}`
+    // );
     this.principleParent1.registerChild(this.seIntersectionPoint);
     this.principleParent2.registerChild(this.seIntersectionPoint);
     this.seIntersectionPoint.registerChild(this.seLabel);
@@ -63,9 +63,9 @@ export class AddIntersectionPointCommand extends Command {
     // });
     // intersectionPointParentArrayNameList =
     //   intersectionPointParentArrayNameList.slice(0, -1);
-    console.debug(
-      `Intersection point ${this.seIntersectionPoint.name}, principle parent1 ${this.principleParent1.name}, principle parent 2 ${this.principleParent2.name}`
-    );
+    // console.debug(
+    //   `Intersection point ${this.seIntersectionPoint.name}, principle parent1 ${this.principleParent1.name}, principle parent 2 ${this.principleParent2.name}`
+    // );
     return [
       "AddIntersectionPoint",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec

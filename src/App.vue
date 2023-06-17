@@ -726,6 +726,28 @@ function copyShareLink(): void {
   border-radius: 50%;
 }
 
+.pulse-enter-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+}
+.pulse-leave-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+  animation-direction: reverse;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .shareConstructionClass {
   width: 300px;
   margin-top: 50px;

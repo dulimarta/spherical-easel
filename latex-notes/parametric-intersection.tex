@@ -1,0 +1,218 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amsfonts}
+\begin{document}
+Given two parametric curves $P(s)$ and $Q(t)$ we want to find the points of intersections
+between the two curves.
+
+However, since in our app parametric curves are discretized into sample points connected by poly lines, evaluating the curves
+on the sample points may fail to find the actual true solutions. As an alternative, calculating the intersection
+points is implemented as a 2-step process:
+
+\begin{enumerate}
+  \item Find all pairs of discretized $(s,t)$ such that the distance between $P(s)$ and $Q(t)$ is very close (below some threshold)
+  \item Use the approximate $(s,t)$ to locate the actual solution using an iterative method
+\end{enumerate}
+
+\section*{Option 1: Finding Zeros}
+The first option of solving this problem can be formulated as finding the zeros of the following function
+$$f(s,t) = P(s) - Q(t) = \begin{bmatrix}
+    P_x(s) - Q_x(t) \\
+    P_y(s) - Q_y(t) \\
+    P_z(s) - Q_z(t)
+  \end{bmatrix}$$
+which is a function from $\mathbb{R}^2$ to $\mathbb{R}^3$.
+
+When the $z$-component is dropped (to be verified manually after finding the $(s,t)$ solution),
+the modified function becomes
+$$\hat f(s,t) = P_{xy}(s) - Q_{xy}(t) = \begin{bmatrix}
+    P_x(s) - Q_x(t) \\
+    P_y(s) - Q_y(t)
+  \end{bmatrix}$$
+
+With the Jacobian matrix:
+
+$$
+  J =
+  \begin{bmatrix}
+    \frac{\partial f_x}{\partial s} & \frac{\partial f_x}{\partial t} \\
+    \frac{\partial f_y}{\partial s} & \frac{\partial f_y}{\partial t} \\
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    P'_x(s) & -Q_x'(t) \\
+    P'_y(s) & -Q_y'(t)
+  \end{bmatrix}
+$$
+the Newton's method iteration to update $(s,t)$ is given by
+
+\begin{align*}
+  \begin{bmatrix}
+    s_{k+1} \\t_{k+1}
+  \end{bmatrix}
+   &
+  =
+  \begin{bmatrix}
+    s_{k} \\t_{k}
+  \end{bmatrix}
+  -
+  J^{-1} \hat f(s_k, t_k) \\
+   &
+  =
+  \begin{bmatrix}
+    s_{k} \\t_{k}
+  \end{bmatrix}
+  -
+  \frac{1}{-P'_x(s) Q'_y(t) + P'_y(s)Q'_x(t)}
+  \begin{bmatrix}
+    -Q'_y(t) & Q'_x(t) \\
+    -P'_y(s) & P'_x(s) \\
+  \end{bmatrix} \hat f(s_k, t_k)
+\end{align*}
+
+
+% But since $J$ is not a square matrix, we have to compute $J^{-1}$ using a pseudo inverse
+% which can be derived as follows:
+
+% \begin{align*}
+%   J
+%   \begin{bmatrix}
+%     s_{k+1} \\t_{k+1}
+%   \end{bmatrix}
+%    & =
+%   J
+%   \begin{bmatrix}
+%     s_{k} \\t_{k}
+%   \end{bmatrix}
+%   -
+%   f(s_k, t_k)                                                        \qquad\text{Multiply both sides by $J$} \\
+%   J^t
+%   J
+%   \begin{bmatrix}
+%     s_{k+1} \\t_{k+1}
+%   \end{bmatrix}
+%    & =
+%   J^t
+%   J
+%   \begin{bmatrix}
+%     s_{k} \\t_{k}
+%   \end{bmatrix}
+%   -
+%   J^t
+%   f(s_k, t_k)         \qquad\text{Multiply both sides by $J^t$ to get a square matrix}                       \\
+%   \begin{bmatrix}
+%     s_{k+1} \\t_{k+1}
+%   \end{bmatrix}
+%    & =
+%   \begin{bmatrix}
+%     s_{k} \\t_{k}
+%   \end{bmatrix}
+%   -
+%   \underbrace{(J^tJ)^{-1}J^t}_\text{pseudo inverse of J} f(s_k, t_k)                                         \\
+% \end{align*}
+
+% Pseudo-inverse of Jacobian
+% \begin{align*}
+%   J^{-1} & =
+%   \begin{pmatrix}
+%     \begin{bmatrix}
+%       P'(s) & Q'(t)
+%     \end{bmatrix}^t
+%     \begin{bmatrix}
+%       P'(s) & Q'(t)
+%     \end{bmatrix}
+%   \end{pmatrix}^{-1}
+%   \begin{bmatrix}
+%     P'(s) & Q'(t)
+%   \end{bmatrix}^t
+%   \\
+%          & =
+%   \begin{pmatrix}
+%     P'(s) \cdot P'(s) & P'(s) \cdot Q'(t) \\
+%     P'(s) \cdot Q'(t) & Q'(t) \cdot Q'(t)
+%   \end{pmatrix}^{-1}
+%   \begin{bmatrix}
+%     P'(s) & Q'(t)
+%   \end{bmatrix}^t
+% \end{align*}
+
+% Updating $(s,t)$ becomes
+% \begin{align*}
+%   \begin{bmatrix}
+%     s_{k+1} \\t_{k+1}
+%   \end{bmatrix}
+%    & =
+%   \begin{bmatrix}
+%     s_{k} \\t_{k}
+%   \end{bmatrix}
+%   -
+%   \begin{pmatrix}
+%     P'(s) \cdot P'(s) & P'(s) \cdot Q'(t) \\
+%     P'(s) \cdot Q'(t) & Q'(t) \cdot Q'(t)
+%   \end{pmatrix}^{-1}
+%   \begin{bmatrix}
+%     P'(s) & Q'(t)
+%   \end{bmatrix}^t
+%   f(s,t) \\
+%    & =
+%   \begin{bmatrix}
+%     s_{k} \\t_{k}
+%   \end{bmatrix}
+%   -
+%   \begin{pmatrix}
+%     P'(s) \cdot P'(s) & P'(s) \cdot Q'(t) \\
+%     P'(s) \cdot Q'(t) & Q'(t) \cdot Q'(t)
+%   \end{pmatrix}^{-1}
+%   \begin{bmatrix}
+%     P'(s) \cdot f(s,t) \\
+%     Q'(t) \cdot f(s,t)
+%   \end{bmatrix}
+% \end{align*}
+
+\clearpage
+\section*{Option 2: Minimization}
+The second option is to formulate the problem as minimization of the following distance
+
+$$d(s,t) = \sqrt{(P(s) - Q(t)) \cdot (P(s)-Q(t))}$$
+a function from $\mathbb{R}^2$ to $\mathbb{R}$.
+
+In order to have an easier function to work with, we can use the squared distance instead
+
+$$D(s,t) = (P(s) - Q(t)) \cdot (P(s)-Q(t))$$
+and we are interested in finding the zeros of $D'(s,t)$. Applying Newton's iteration again,
+the Jacobian of $D'(s,t)$ is the Hessian of $D(s,t)$.
+
+The first partial derivatives of the above function are:
+
+\begin{align*}
+  \frac{\partial D}{\partial s} & = 2(P(s) - Q(t)) \cdot P'(s) = 2(P(s) \cdot P'(s) - Q(t) \cdot P'(s)) = -2 P'(s) \cdot Q(t) \\
+  \frac{\partial D}{\partial t} & = -2(P(s) - Q(t)) \cdot Q'(t) = -2(P(s)\cdot Q'(t) - Q(t)\cdot Q'(t)) = -2 P(s) \cdot Q'(t)
+\end{align*}
+(because $P(s)\cdot P'(s) = Q(t) \cdot Q'(t) = 0$ for spherical curves). The second partial derivatives of the above function are:
+
+\begin{align*}
+  \frac{\partial^2 D}{\partial s^2}          & = -2\left[P''(s) \cdot Q(t)\right]     \\
+  \frac{\partial^2 D}{\partial t^2}          & = -2\left[P(s)  \cdot Q''(t)\right]    \\
+  \frac{\partial^2 D}{\partial s \partial t} =
+  \frac{\partial^2 D}{\partial t \partial s} & = -2\left[(P'(s)  \cdot  Q'(t))\right] \\
+\end{align*}
+
+and the Newton's method iteration to update $(s,t)$ is given by
+$$
+  \begin{bmatrix}
+    s_{k+1} \\t_{k+1}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    s_{k} \\t_{k}
+  \end{bmatrix}
+  -
+  \begin{bmatrix}
+    \frac{\partial^2 D}{\partial s^2}          & \frac{\partial^2 D}{\partial s \partial t} \\
+    \frac{\partial^2 D}{\partial t \partial s} & \frac{\partial^2 D}{\partial t^2}
+  \end{bmatrix}^{-1}
+  \begin{bmatrix}
+    \frac{\partial D}{\partial s} \\
+    \frac{\partial D}{\partial t}
+  \end{bmatrix}
+$$
+\end{document}
