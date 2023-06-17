@@ -35,7 +35,7 @@
       :step="sliderStep"
       thumb-label="always"
       background-color="accent lighten-2"
-      ticks="always"
+      show-ticks="always"
       tick-size="4"></v-slider>
     <v-divider> </v-divider>
     <div id="action">

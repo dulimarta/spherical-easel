@@ -7,8 +7,6 @@
             <v-col cols="12">
               <v-tooltip
                 bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-textarea
@@ -40,7 +38,6 @@ import { onMounted, ref } from "vue";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 
@@ -58,8 +55,6 @@ const props = defineProps<{
 }>();
 
 //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 let parser = new ExpressionParser();
 

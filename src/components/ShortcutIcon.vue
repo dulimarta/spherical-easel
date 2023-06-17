@@ -7,8 +7,7 @@
     <v-icon v-bind="$attrs" :color="model.iconColor">{{ model.icon }}</v-icon>
     <v-tooltip
       activator="parent"
-      location="bottom"
-      :open-delay="toolTipOpenDelay">
+      location="bottom">
       {{ $t(model.tooltipMessage) }}
     </v-tooltip>
   </v-btn>
@@ -24,9 +23,6 @@ const seStore = useSEStore();
 const props = defineProps<{
   model:ShortcutIconType
 }>();
-
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 function invokeAction(): void {
   if (props.model.clickFunc)

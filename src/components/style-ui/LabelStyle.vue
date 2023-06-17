@@ -275,7 +275,7 @@
         @click="toggleShowMoreLabelStyles"
         class="text-subtitle-2"
         text
-        plain
+        variant="plain"
         ripple
         size="x-small">
         <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
@@ -442,9 +442,6 @@ function labelMapper(n: SENodule): Nodule {
 // *not* using the contrast (i.e. not using the dynamic back styling)
 // usingAutomaticBackStyle = true means the program is setting the style of the back objects
 // private usingAutomaticBackStyle = true;
-
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 // shakes the input a bit if there is a conflict on that particular input
 const animatedInput: Animatable = {

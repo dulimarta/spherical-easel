@@ -20,8 +20,6 @@
       <v-col cols="auto">
         <v-tooltip
           location="bottom"
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
           max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-bind="props">
@@ -95,8 +93,6 @@ const props = defineProps<ComponentProps>();
 const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
 const internalColor: Ref<string> = ref("#FF00FF00");
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 const noColorData = ref(false); // no data means noFill or noStroke
 let preNoColor: string = NO_HSLA_DATA;

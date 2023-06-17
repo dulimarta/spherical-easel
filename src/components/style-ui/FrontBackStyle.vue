@@ -15,8 +15,6 @@
           <!-- Global contrast slider -->
           <v-tooltip
             location="bottom"
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
             max-width="400px">
             <template v-slot:activator="{ props }">
               <p v-bind="props">
@@ -149,8 +147,6 @@
         After slider
         <v-tooltip
           location="bottom"
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
           max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-on="props">
@@ -182,8 +178,6 @@
         </v-tooltip>
         <v-tooltip
           location="bottom"
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
           max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-on="props">
@@ -413,8 +407,6 @@ function objectMapper(n: SENodule): Nodule {
   return n.ref!;
 }
 
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 /**
  * There are many style options. In the case that there
  * are more than one object selected, the XXXAgreement boolean indicates if the XXX property is *initially* the

@@ -152,8 +152,6 @@ const panels = [
 const minified = ref(true);
 const emit = defineEmits(["minifyToggled"]);
 const selectObjectsDialog = ref<DialogAction | null>(null);
-// const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
-// const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
 
 const activePanel = ref<number | undefined>(0); // Default selection is the Label panel
 

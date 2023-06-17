@@ -25,6 +25,13 @@ export default createVuetify({
       // }
     }
   },
+  defaults: {
+    VTooltip: {
+      openDelay: 500,
+      closeDelay: 0,
+      disabled: false
+    }
+  },
   theme: {
     themes: {
       light: {

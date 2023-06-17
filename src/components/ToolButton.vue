@@ -27,9 +27,7 @@
     </v-overlay>
     <v-tooltip
       location="bottom"
-      activator="parent"
-      :open-delay="toolTipOpenDelay"
-      :disabled="displayToolTips">
+      activator="parent">
       <span class="tooltip">{{ t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
   </v-card>
@@ -38,7 +36,6 @@
 <script lang="ts" setup>
 import { Ref, ref, computed, onUpdated } from "vue";
 import { ToolButtonType } from "@/types";
-import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
 import { StyleValue } from "vue";
@@ -53,11 +50,6 @@ type ToolButtonProps = {
 const seStore = useSEStore();
 const { t } = useI18n();
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-const displayToolTips = ref(SETTINGS.toolTip.disableDisplay);
-// const toolUseMessageDelay = SETTINGS.toolUse.delay;
-// const displayToolUseMessages = SETTINGS.toolUse.display;
 
 /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
 child */

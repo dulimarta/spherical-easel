@@ -7,8 +7,6 @@
             <v-col cols="12">
               <v-tooltip
                 bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-text-field
@@ -46,8 +44,6 @@ import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { expressions } = storeToRefs(seStore);
 const {t} = useI18n()
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 const props = defineProps<{
   i18nToolTip: string;

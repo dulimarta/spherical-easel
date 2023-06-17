@@ -14,9 +14,7 @@
     <v-icon v-else-if="type === 'colorInput'">mdi-dots-horizontal </v-icon>
     <v-tooltip
       bottom
-      :open-delay="toolTipOpenDelay"
-      activator="parent"
-      :close-delay="toolTipCloseDelay">
+      activator="parent">
       {{ t(i18nTooltip) }}
     </v-tooltip>
   </v-btn>
@@ -26,8 +24,6 @@
 import { computed } from "vue";
 import {useI18n} from "vue-i18n"
 import SETTINGS from "@/global-settings";
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 const {t} = useI18n()
 const props = defineProps<{
   i18nTooltip: string;
