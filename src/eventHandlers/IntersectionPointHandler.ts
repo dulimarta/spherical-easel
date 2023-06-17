@@ -248,7 +248,7 @@ export default class IntersectionPointHandler extends Highlighter {
       (rank1 === rank2 && oneDimensional2.name > oneDimensional1.name) ||
       rank2 < rank1
     ) {
-      // console.debug("switch");
+      // TODO: Avoid computing intersection of the same pair twice
       const tmp = oneDimensional1;
       oneDimensional1 = oneDimensional2;
       oneDimensional2 = tmp;

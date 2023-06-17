@@ -6,7 +6,8 @@ import { SELabel } from "@/models/SELabel";
 import {
   SEOneDimensionalNotStraight,
   SEOneOrTwoDimensional,
-  SEIntersectionReturnType
+  SEIntersectionReturnType,
+  NormalAndTangentPoint
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
@@ -32,16 +33,18 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
-type TemporaryLine = {
+type TemporaryPlottables = {
   line: Line;
+  point: Point;
   exist: boolean;
   tmpNormal: Vector3;
 };
+
 export default class TangentLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
-  private tempLines: TemporaryLine[] = [];
+  private tempPlots: TemporaryPlottables[] = [];
   // private temporaryLinesAdded: boolean[] = [];
   // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
@@ -90,13 +93,17 @@ export default class TangentLineThruPointHandler extends Highlighter {
     super(layers);
 
     // Create and style the temporary lines (initially allocate one)
-    this.tempLines.push({
+    this.tempPlots.push({
       line: new Line(),
+      point: new Point(),
       exist: false,
       tmpNormal: new Vector3()
     });
     TangentLineThruPointHandler.store.addTemporaryNodule(
-      this.tempLines[0].line
+      this.tempPlots[0].line
+    );
+    TangentLineThruPointHandler.store.addTemporaryNodule(
+      this.tempPlots[0].point
     );
 
     // Create and style the temporary point marking the point on the tangent being created
@@ -289,8 +296,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
         this.temporaryPointMarker.removeFromLayers();
         this.temporaryPointAdded = false;
 
-        this.tempLines.forEach((z: TemporaryLine) => {
+        this.tempPlots.forEach((z: TemporaryPlottables) => {
           z.line.removeFromLayers();
+          z.point.removeFromLayers();
           z.exist = false;
         });
 
@@ -432,29 +440,37 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
 
         // Add more temporary line as needed
-        while (this.tempLines.length < normalList.length) {
+        while (this.tempPlots.length < normalList.length) {
           const newLine = new Line();
-          this.tempLines.push({
+          const newPoint = new Point();
+          this.tempPlots.push({
             line: newLine,
+            point: newPoint,
             exist: false,
             tmpNormal: new Vector3()
           });
           newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
           TangentLineThruPointHandler.store.addTemporaryNodule(newLine);
+          newPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
+          TangentLineThruPointHandler.store.addTemporaryNodule(newPoint);
         }
 
         //set the display of the normals and the vectors
-        this.tempLines.forEach((z: TemporaryLine, ind: number) => {
-          if (ind < normalList.length) {
-            z.exist = true;
-            z.tmpNormal.copy(normalList[ind]);
-            z.line.normalVector = z.tmpNormal;
-            z.line.addToLayers(this.layers);
-          } else {
-            z.exist = false;
-            z.line.removeFromLayers();
-          }
+        normalList.forEach((z: NormalAndTangentPoint, ind) => {
+          const plot = this.tempPlots[ind];
+          plot.exist = true;
+
+          plot.tmpNormal.copy(normalList[ind].normal);
+          plot.line.normalVector = normalList[ind].normal;
+          plot.line.addToLayers(this.layers);
+          plot.point.positionVector = normalList[ind].tangentAt;
+          plot.point.addToLayers(this.layers);
         });
+        for (let k = normalList.length; k < this.tempPlots.length; k++) {
+          this.tempPlots[k].line.removeFromLayers();
+          this.tempPlots[k].point.removeFromLayers();
+          this.tempPlots[k].exist = false;
+        }
       }
     }
   }
@@ -480,9 +496,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.tempLines.forEach((z: TemporaryLine) => {
+    this.tempPlots.forEach((z: TemporaryPlottables) => {
       z.exist = false;
       z.line.removeFromLayers();
+      z.point.removeFromLayers();
     });
 
     this.sePointVector.set(0, 0, 0);
@@ -589,7 +606,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     }
 
     // For each type of oneDimensional compute the normal vectors and copy them into normalVectors
-    let normalVectors: Vector3[] = [];
+    let normalVectors: NormalAndTangentPoint[] = [];
 
     if (
       oneDimensional instanceof SECircle ||
@@ -599,16 +616,14 @@ export default class TangentLineThruPointHandler extends Highlighter {
       this.numberOfTangents = 2;
     } else if (oneDimensional instanceof SEParametric) {
       // There are upto N tangents, determine the actual count from the temporary lines used so far
-      this.numberOfTangents = this.tempLines.filter(
-        (z: TemporaryLine) => z.exist
+      this.numberOfTangents = this.tempPlots.filter(
+        (z: TemporaryPlottables) => z.exist
       ).length;
     }
-    normalVectors = oneDimensional
-      .getNormalsToTangentLinesThru(
-        sePointVector,
-        TangentLineThruPointHandler.store.zoomMagnificationFactor
-      )
-      .map(vec => vec.normalize());
+    normalVectors = oneDimensional.getNormalsToTangentLinesThru(
+      sePointVector,
+      TangentLineThruPointHandler.store.zoomMagnificationFactor
+    );
     // normals is the array of normal vector to the plane containing the line tangent to the one Dimensional through the point
     // create a number of such lines (not the number of normals in normalVector because if the user creates the tangent when there
     // are only two tangents, then moves the point to a place where there are four, the other two tangents are not created)
@@ -616,7 +631,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // set the tangent vector
       let vec: Vector3;
       if (normalVectors[index] !== undefined) {
-        vec = normalVectors[index];
+        vec = normalVectors[index].normal;
       } else {
         vec = new Vector3(0, 0, 1); // use the north pole vector and make sure that the tangent doesn't exist
       }

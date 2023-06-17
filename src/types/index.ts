@@ -101,6 +101,7 @@ export type SavedNames =
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
+  | "inverseRotationMatrix"
   | "pointOnOneOrTwoDimensionalParentName"
   | "pointOnOneOrTwoDimensionalVector"
   | "parametricXCoordinateExpression"
@@ -329,11 +330,16 @@ export type ParametricVectorAndTValue = {
   vector: Vector3;
   tVal: number;
 };
-export type NormalVectorAndTValue = {
-  normal: Vector3;
-  tVal: number;
+// The following type is used for calculating perpendicular lines from a point
+export type NormalAndPerpendicularPoint = {
+  normal: Vector3; // The normal vector of the perpendicular line
+  normalAt: Vector3; // The intersection between the perpendicular line and the target
 };
 
+export type NormalAndTangentPoint = {
+  normal: Vector3; // The normal vector of the tangent line
+  tangentAt: Vector3; // The location of the tangent point
+};
 export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
@@ -351,7 +357,7 @@ export interface OneDimensional {
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalVectorAndTValue>;
+  ): Array<NormalAndPerpendicularPoint>;
 }
 
 export interface Labelable {

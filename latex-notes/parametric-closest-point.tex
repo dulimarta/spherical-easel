@@ -1,0 +1,50 @@
+\documentclass[]{article}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\begin{document}
+\section*{Closest Point To Parametric Curve}
+Given a parametric curve $P(t)$ a point $Q$ outside the curve, sample points $L$, $M$, and $R$ where their associated time value are in
+in the following order $t_L < t_M < t_R$). Point $M$ is the closest sample point to $Q$.
+
+\begin{tikzpicture}
+  \draw[domain=0:6,blue,smooth, thick] plot ({\x}, {8*\x/3 - \x^2 + \x^3/12});
+  \coordinate (L) at (2,2);
+  \coordinate (M) at (3,1.25);
+  \coordinate (R) at (4,0);
+  \coordinate (Q) at (3.1, 0.5);
+  \draw [fill] (L) circle(2pt);
+  \draw [fill] (M) circle(2pt);
+  \draw [fill] (R) circle(2pt);
+  \draw [fill, red] (Q) circle(2pt);
+  \node [above] at (M) {M};
+  \node [right] at (L) {L};
+  \node [right] at (R) {R};
+  \node [left,red] at (Q) {Q};
+\end{tikzpicture}
+
+the \textbf{true} closest point on $P(t)$ from $Q$ is computed using the following steps:
+\begin{enumerate}
+  \item Find the closest sample point on $P(t)$ from $Q$ (which is point $M$ in the illustration)
+  \item Determine the left neighbor ($L$) and right neighbor ($R$) of $M$ (if they exist).
+  Here, ``left''/``right'' is implied by their $t$ ordering (not by the coordinates)
+  \item Form the following 3D vectors: $\vec{MQ}$, $\vec{MR}$, and $\vec{ML}$.
+  \item If $\alpha = \angle (MQ, MR)$ is acute (determined by positive dot product),
+  then the true closest point is somewhere between $M$ and $R$
+  \begin{itemize}
+    \item Use dot product to determine $MQ'$ the projection of $MQ$ along $MR$
+    \item Calculate $f$ the ratio of lengths between $MQ'$ and $MR$,
+    $$f = \frac{|MQ'|}{|MR|}= \frac{|MQ| \cos\alpha}{|MR|} = \frac{|MQ||MR| \cos\alpha}{|MR|^2} = \frac{\vec{MQ}\cdot \vec{MR}}{|MR|^2}$$
+    \item Calculate the time value associated with point $Q'$ using linear interpolation
+    $t_{Q'} = (1-f)t_M + ft_R$
+    \item The true closest point on the curve from $Q$ is $P(t_{Q'})$
+    \item Stop
+  \end{itemize}
+  \item If $\beta = \angle (MQ, ML)$ is acute (determined by positive dot product),
+  then the true closest point is somewhere between $L$ and $M$
+  \begin{itemize}
+    \item Repeat similar steps above
+  \end{itemize}
+
+\end{enumerate}
+
+\end{document}

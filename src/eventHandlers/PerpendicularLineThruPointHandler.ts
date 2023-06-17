@@ -9,7 +9,7 @@ import {
   SEOneDimensional,
   SEOneOrTwoDimensional,
   SEIntersectionReturnType,
-  NormalVectorAndTValue
+  NormalAndPerpendicularPoint
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
@@ -37,16 +37,18 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
-type TemporaryLine = {
+type TemporaryPlottable = {
   line: Line;
+  point: Point;
   exist: boolean;
   tmpNormal: Vector3;
 };
+
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
-  private tempLines: TemporaryLine[] = [];
+  private tempPlots: TemporaryPlottable[] = [];
   // private temporaryLinesAdded: boolean[] = [];
   // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
@@ -95,14 +97,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     super(layers);
 
     // Create and style the temporary line (initially allocate one)
-    this.tempLines.push({
+    this.tempPlots.push({
       line: new Line(),
+      point: new Point(),
       exist: false,
       tmpNormal: new Vector3()
     });
     PerpendicularLineThruPointHandler.store.addTemporaryNodule(
-      this.tempLines[0].line
+      this.tempPlots[0].line
     );
+    PerpendicularLineThruPointHandler.store.addTemporaryNodule(
+      this.tempPlots[0].point
+    );
+
     // this.temporaryLinesAdded.push(false);
     // this.temporaryNormals.push(new Vector3());
 
@@ -338,27 +345,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePoint
         );
         // Reset the oneDimensional and point in preparation for another perpendicular.
-        this.oneDimensional.selected = false;
-        this.oneDimensional = null;
-        this.sePointOneDimensionalParent = null;
-        if (this.sePoint !== null) {
-          this.sePoint.selected = false;
-        }
-        this.sePoint = null;
-        if (this.temporaryPointAdded) {
-          this.temporaryPointMarker.removeFromLayers();
-          this.temporaryPointAdded = false;
-        }
-        this.temporaryPointMarker.removeFromLayers();
-        this.temporaryPointAdded = false;
-
-        // this.temporaryLinesAdded = [];
-        this.tempLines.forEach((z: TemporaryLine) => {
-          z.line.removeFromLayers();
-          z.exist = false; //.temporaryLinesAdded.push(false);
-        });
-
-        this.sePointVector.set(0, 0, 0);
+        this.cleanup();
       }
     }
   }
@@ -497,41 +484,42 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         const normalList =
           this.oneDimensional.getNormalsToPerpendicularLinesThru(
             vectorLocation,
-            this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
+            this.tempPlots[0].tmpNormal // In Ellipses/Parametrics this is ignored
           );
 
-        // Add new temporary lines as needed
-        while (this.tempLines.length < normalList.length) {
-          console.debug(
-            "Adding new temporary line to match normalList",
-            this.tempLines.length,
-            normalList.length
-          );
+        // Add new temporary lines and points as needed
+        while (this.tempPlots.length < normalList.length) {
           const newLine = new Line();
-          this.tempLines.push({
+          const newPoint = new Point();
+          this.tempPlots.push({
             line: newLine,
+            point: newPoint,
             exist: false,
             tmpNormal: new Vector3()
           });
           PerpendicularLineThruPointHandler.store.addTemporaryNodule(newLine);
+          PerpendicularLineThruPointHandler.store.addTemporaryNodule(newPoint);
           // this.temporaryLinesAdded.push(false);
           // this.temporaryNormals.push(new Vector3());
         }
 
-        //set the display of the normals and the vectors
-        this.tempLines.forEach((z: TemporaryLine, ind: number) => {
-          // console.log("index", ind, normalList[ind]);
+        normalList.forEach((z: NormalAndPerpendicularPoint, ind: number) => {
+          const tmpPlot = this.tempPlots[ind];
+          tmpPlot.exist = true;
+          tmpPlot.tmpNormal.copy(z.normal);
+          tmpPlot.line.normalVector = z.normal;
+          tmpPlot.line.addToLayers(this.layers);
+          tmpPlot.point.addToLayers(this.layers);
+          tmpPlot.point.positionVector = z.normalAt;
 
-          if (ind < normalList.length) {
-            z.exist = true;
-            z.tmpNormal.copy(normalList[ind].normal);
-            z.line.normalVector = z.tmpNormal;
-            z.line.addToLayers(this.layers);
-          } else {
-            z.exist = false;
-            z.line.removeFromLayers();
-          }
+          // TODO: update point location?
         });
+        //set the display of the normals and the vectors
+        for (let k = normalList.length; k < this.tempPlots.length; k++) {
+          this.tempPlots[k].exist = false;
+          this.tempPlots[k].line.removeFromLayers();
+          this.tempPlots[k].point.removeFromLayers();
+        }
       }
     }
   }
@@ -539,10 +527,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}
 
-  // eslint-disable-next-line
-  mouseLeave(event: MouseEvent): void {
-    super.mouseLeave(event);
-    // Reset all the variables in preparation for another perpendicular
+  private cleanup() {
     if (this.oneDimensional !== null) {
       this.oneDimensional.selected = false;
       this.oneDimensional = null;
@@ -557,15 +542,22 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.tempLines.forEach((ln: TemporaryLine) => {
+    this.tempPlots.forEach((ln: TemporaryPlottable) => {
       ln.exist = false;
       ln.line.removeFromLayers();
+      ln.point.removeFromLayers();
     });
 
     this.sePointVector.set(0, 0, 0);
 
     this.snapToTemporaryOneDimensional = null;
     this.snapToTemporaryPoint = null;
+  }
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
+    // Reset all the variables in preparation for another perpendicular
+    this.cleanup();
   }
 
   createPerpendicular(
@@ -688,16 +680,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // "active" temporary lines
       usePencil = true;
       this.numberOfPerpendiculars = Math.max(
-        this.tempLines.filter((ln: TemporaryLine) => ln.exist).length,
+        this.tempPlots.filter((ln: TemporaryPlottable) => ln.exist).length,
         1
       ); // there must be at least one perpendicular to make the pencil command work correctly
     }
     normalVectors = oneDimensional
       .getNormalsToPerpendicularLinesThru(
         sePointVector,
-        this.tempLines[0].tmpNormal // ignored in the case of SEEllipse
+        this.tempPlots[0].tmpNormal // ignored in the case of SEEllipse
       )
-      .map((pair: NormalVectorAndTValue) => pair.normal.normalize());
+      .map((pair: NormalAndPerpendicularPoint) => pair.normal.normalize());
     // console.log("number of normals in handler", normalVectors.length);
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
     // create a number of such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
@@ -784,6 +776,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            console.debug(
+              "PerpendicularHandler: new command AddIntersectionPointOtherParent"
+            );
             const addIntersectionCmd = new AddIntersectionPointOtherParent(
               item.SEIntersectionPoint,
               item.parent1
@@ -816,6 +811,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               item.parent1,
               item.parent2,
               newSELabel
+            );
+            console.debug(
+              "PerpendicularHandler: new command AddIntersectionPointCommand"
             );
 
             if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);

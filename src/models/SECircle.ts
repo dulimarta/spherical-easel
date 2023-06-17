@@ -4,7 +4,12 @@ import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
+import {
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
+  ObjectState,
+  OneDimensional
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_CIRCLE_BACK_STYLE,
@@ -14,7 +19,6 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 import { SELine } from "./SELine";
@@ -280,11 +284,16 @@ export class SECircle
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalVectorAndTValue[] {
-    this.tmpVector.crossVectors(
-      sePointVector,
-      this._centerSEPoint.locationVector
-    );
+  ): NormalAndPerpendicularPoint[] {
+    this.tmpVector
+      .crossVectors(sePointVector, this._centerSEPoint.locationVector)
+      .normalize();
+    // To obtain the two intersection points, rotate (CW and CCW) the circle center
+    // on the plane whose normal just computed
+    this.tmpVector1.copy(this._centerSEPoint.locationVector);
+    this.tmpVector1.applyAxisAngle(this.tmpVector, this.circleRadius);
+    this.tmpVector2.copy(this._centerSEPoint.locationVector);
+    this.tmpVector2.applyAxisAngle(this.tmpVector, -this.circleRadius);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
     if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
@@ -295,7 +304,16 @@ export class SECircle
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
+    return [
+      {
+        normal: this.tmpVector,
+        normalAt: this.tmpVector1.normalize()
+      },
+      {
+        normal: this.tmpVector,
+        normalAt: this.tmpVector2.normalize()
+      }
+    ];
   }
 
   /**
@@ -308,7 +326,7 @@ export class SECircle
     sePointVector: Vector3,
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     const distanceFromCenterToVector = sePointVector.angleTo(
       this._centerSEPoint.locationVector
     );
@@ -329,7 +347,7 @@ export class SECircle
       tmpVector.crossVectors(sePointVector, this._centerSEPoint.locationVector);
       tmpVector.cross(sePointVector);
       // console.log("SECircle here 1", tmpVector.x, tmpVector.y, tmpVector.z);
-      return [tmpVector.normalize()];
+      return [{ normal: tmpVector.normalize(), tangentAt: sePointVector }];
     }
 
     // If the vector is inside the circle or the antipode of the circle there is no tangent or if the circle has radius PI/2
@@ -373,8 +391,14 @@ export class SECircle
       this._centerSEPoint.locationVector
     );
     return [
-      this.tmpVector.cross(intersections[0].vector).normalize(),
-      this.tmpVector1.cross(intersections[1].vector).normalize()
+      {
+        normal: this.tmpVector.cross(intersections[0].vector).normalize(),
+        tangentAt: intersections[0].vector
+      },
+      {
+        normal: this.tmpVector1.cross(intersections[1].vector).normalize(),
+        tangentAt: intersections[1].vector
+      }
     ];
   }
 
