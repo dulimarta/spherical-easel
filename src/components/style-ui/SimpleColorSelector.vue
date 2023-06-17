@@ -73,7 +73,7 @@ import SETTINGS from "@/global-settings";
 import { hslaColorType } from "@/types";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
-import i18n from "../i18n";
+import i18n from "@/i18n";
 
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 // @Component({ components: { HintButton, OverlayWithFixButton } })

@@ -1,44 +1,7 @@
 <template>
   <v-navigation-drawer location="end" color="black" permanent width="80">
-    <div class="vertical-nav-drawer">
-      <PopOverTabs icon-name="mdi-tag">
-        <template #tabs>
-          <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
-          <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
-          <v-tab><v-icon>mdi-palette</v-icon></v-tab>
-        </template>
-        <template #pages>
-          <v-window-item>
-            Label editor
-          </v-window-item>
-          <v-window-item>
-            Label font style
-          </v-window-item>
-          <v-window-item>
-            Label color
-          </v-window-item>
-        </template>
-      </PopOverTabs>
-      <PopOverTabs icon-name="mdi-arrange-bring-forward">
-        <template #tabs>
-          <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>
-          <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
-        </template>
-      </PopOverTabs>
-      <PopOverTabs icon-name="mdi-arrange-send-backward">
-        Background styles
-      </PopOverTabs>
-      <div id="visibility-control">
-        <span>
-          Label
-          <v-icon>mdi-eye</v-icon>
-        </span>
-        <span>
-          Object
-          <v-icon>mdi-eye</v-icon>
-        </span>
-      </div>
-    </div>
+<StyleDrawer></StyleDrawer>
+    <!--Style3></Style3-->
   </v-navigation-drawer>
   <div>
     <Splitpanes
@@ -156,7 +119,9 @@ import EventBus from "../eventHandlers/EventBus";
 // import buttonList from "@/components/ToolGroups.vue";
 // import ToolButton from "@/components/ToolButton.vue";
 // Temporarily exclude Style.vue
-import StylePanel from "@/components/Style.vue";
+// import StylePanel from "@/components/Style.vue";
+// import Style3 from "@/components/Style3.vue";
+// import LabelStyle from "@/components/LabelStyle.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -193,6 +158,8 @@ import {
   useRouter
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
+import LabelStyle from "@/components/style-ui/LabelStyle.vue";
+import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 
 const appDB = getFirestore();
 const appAuth = getAuth();
@@ -226,6 +193,7 @@ const toolboxMinified = ref(false);
 const stylePanelMinified = ref(true);
 const notificationsPanelMinified = ref(true);
 const previewClass = ref("");
+const me = ref(null)
 const constructionInfo = ref<any>({});
 const labelTab = ref(0);
 let undoEnabled = false;
@@ -618,17 +586,4 @@ function handleStylePanelMinify(state: boolean) {
   }
 }
 
-.vertical-nav-drawer {
-  height: 90vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-#visibility-control {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 </style>

@@ -57,16 +57,6 @@ export function useStyleEditor(
     initialStyleStatesMap,
     defaultStyleStatesMap
   } = storeToRefs(seStore);
-  // readonly selectedSENodules!: SENodule[];
-  // readonly setSelectedSENodules!: (_: Array<SENodule>) => void;
-  // readonly setOldSelection!: (_: Array<SENodule>) => void;
-  // readonly recordStyleState!: (_: {
-  //   panel: StyleEditPanels;
-  //   selected: Nodule[];
-  // }) => void;
-  // readonly oldStyleSelections!: Array<SENodule>;
-  // readonly initialStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
-  // readonly defaultStyleStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
   const commonStyleProperties: Array<string> = [];
   let conflictingPropNames = ref<Array<string>>([]);
@@ -216,12 +206,12 @@ export function useStyleEditor(
     EventBus.fire("style-label-conflict-color-reset", {});
   }
 
-  watch(
-    () => panel,
-    (): void => {
-      console.debug("Panel changed?");
-    }
-  );
+  // watch(
+  //   () => panel,
+  //   (): void => {
+  //     console.debug("Panel changed?");
+  //   }
+  // );
 
   watch(
     () => automaticBackStyle,
