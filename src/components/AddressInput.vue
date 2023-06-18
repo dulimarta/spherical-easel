@@ -2,6 +2,7 @@
 <div class="inputAddress">
     <input type="text" id="autocomplete" placeholder="Enter your address" />
 <h2>Lat : {{ lat }} Lng: {{ lng }}</h2>
+<h2>X: {{ xcor }} Y: {{ ycor }} Z: {{ zcor }}</h2>
 </div>
 
 </template>
@@ -25,8 +26,21 @@
 </style>
 <script setup lang="ts">
 import { onMounted,ref } from 'vue';
+import axios from 'axios';
+import { onUnmounted } from 'vue';
+import { SEPoint } from '@/models/SEPoint';
+import Point from '@/plottables/Point';
+import { Vector } from 'two.js';
+import { Vector3 } from 'three';
+import { SELabel } from '@/models/SELabel';
+import Label from '@/plottables/Label';
+import { CommandGroup } from '@/commands/CommandGroup';
+import { AddPointCommand } from '@/commands/AddPointCommand';
     const lat = ref(0)
     const lng = ref(0)
+    const xcor = ref(0)
+    const ycor = ref(0)
+    const zcor = ref(0)
     declare global {
     interface Window {
         initMap: () => void;
@@ -40,13 +54,28 @@ import { onMounted,ref } from 'vue';
         const place = autocomplete.getPlace();
         lat.value = place.geometry.location.lat();
         lng.value = place.geometry.location.lng();
+        xcor.value = 6378137*Math.cos(lat.value) * Math.cos(lng.value)
+        ycor.value = 6378137*Math.cos(lat.value) * Math.sin(lng.value)
+        zcor.value = 6378137*Math.sin(lat.value)
+        const newPoint = new Point();
+        const vtx = new SEPoint(newPoint);
+        vtx.locationVector = new Vector3(xcor.value, ycor.value, zcor.value);
+        const newSELabel = new SELabel(new Label("point"),vtx);
+        const pointCommandGroup = new CommandGroup();
+        pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
+        pointCommandGroup.execute();
         });
     };
     onMounted(()=>{
-        let script = document.createElement('script');
-        script.async = true;
+            let script = document.createElement('script');
+            script.async = true;
+            const apikey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap`
+            document.head.appendChild(script);
+    })
+    onUnmounted(()=>{
         const apikey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap`
-        document.head.appendChild(script);
+        let script = document.querySelector(`script[src="https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap"]`)
+        document.head.removeChild(script!);
     })
 </script>
