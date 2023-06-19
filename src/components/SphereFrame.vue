@@ -4,7 +4,7 @@
     <div id="canvas" ref="canvas"></div>
     <div class="anchored top left">
       <div
-        v-for="(shortcut, index) in shortCuts[0]"
+        v-for="(shortcut, index) in shortCutIcons[0]"
         :key="index"
         :style="listItemStyle(index, 'left', 'top')">
         <ShortcutIcon :model="shortcut" />
@@ -12,7 +12,7 @@
     </div>
     <div class="anchored top right">
       <div
-        v-for="(shortcut, index) in shortCuts[1]"
+        v-for="(shortcut, index) in shortCutIcons[1]"
         :key="index"
         :style="listItemStyle(index, 'right', 'top')">
         <ShortcutIcon :model="shortcut" />
@@ -20,7 +20,7 @@
     </div>
     <div class="anchored bottom left">
       <div
-        v-for="(shortcut, index) in shortCuts[2]"
+        v-for="(shortcut, index) in shortCutIcons[2]"
         :key="index"
         :style="listItemStyle(index, 'left', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -28,7 +28,7 @@
     </div>
     <div class="anchored bottom right">
       <div
-        v-for="(shortcut, index) in shortCuts[3]"
+        v-for="(shortcut, index) in shortCutIcons[3]"
         :key="index"
         :style="listItemStyle(index, 'right', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -86,7 +86,7 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, ShortcutIconType } from "@/types";
+import { ActionMode } from "@/types";
 
 import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
@@ -105,6 +105,7 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
+import { ToolButtonType } from "@/types";
 
 const seStore = useSEStore();
 const {
@@ -124,28 +125,16 @@ const props = withDefaults(defineProps<{ canvasSize: number }>(), {
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-const shortCuts: Ref<Array<Array<ShortcutIconType>>> = ref([]);
 
-watch(() => favoriteTools.value, updateShortcutTools, { deep: true });
-
-function updateShortcutTools() {
+const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   console.debug("Updating shortcut icons");
-  shortCuts.value = favoriteTools.value.map(
-    (corner: Array<ActionMode>): Array<ShortcutIconType> =>
-      corner.map((act: ActionMode): ShortcutIconType => {
-        const tb = TOOL_DICTIONARY.get(act);
-        if (tb === undefined) {
-          alert("Missing entry in TOOL_DICTINARY: " + act);
-        }
-        return {
-          action: tb!.action,
-          tooltipMessage: tb!.toolTipMessage,
-          clickFunc: tb!.clickFunc,
-          icon: tb!.icon ?? "$" + tb!.action
-        };
-      })
+  return favoriteTools.value.map(
+    (corner: Array<ActionMode>): Array<ToolButtonType> =>
+      corner.map((act: ActionMode): ToolButtonType =>
+        TOOL_DICTIONARY.get(act)!
+      )
   );
-}
+})
 
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
@@ -341,7 +330,7 @@ onMounted((): void => {
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
   seStore.setCanvas(canvas.value!);
-  updateShortcutTools();
+  // updateShortcutTools();
   updateView();
 });
 

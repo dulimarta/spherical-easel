@@ -52,15 +52,6 @@ export type ToolButtonType = {
   toolTipMessage: string;
 };
 
-export type ShortcutIconType = {
-  /* action and clickFunc should be mutually exclusive,
-     clickFunc should have precedence over action */
-  action?: ActionMode
-  clickFunc?: () => void;
-  icon?: string;
-  tooltipMessage: string;
-};
-
 export interface FavoriteTool {
   actionModeValue: ActionMode;
   btnColor?: string;

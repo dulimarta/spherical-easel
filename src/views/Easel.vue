@@ -40,14 +40,6 @@
                   :width="currentCanvasSize"
                   :height="currentCanvasSize" />
               </v-overlay>
-              <div class="anchored top right">
-                <div
-                  v-for="(shortcut, index) in topRightShortcuts"
-                  :key="index"
-                  :style="listItemStyle(index, 'right', 'top')">
-                  <ShortcutIcon :model="shortcut" />
-                </div>
-              </div>
               <v-overlay
                 contained
                 :class="['justify-center', previewClass]"
@@ -139,7 +131,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
-import { ConstructionScript, ShortcutIconType } from "@/types";
+import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
@@ -212,19 +204,6 @@ const userUid = computed((): string | undefined => {
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const svgDataImage = ref("");
-const topRightShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "constructions.resetSphere",
-      icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
-      clickFunc: () => {
-        clearConstructionDialog.value?.show();
-      },
-      // iconColor: "blue",
-      // disableBtn: false
-    }
-  ];
-});
 
 //#region magnificationUpdate
 onBeforeMount(() => {

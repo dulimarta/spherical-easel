@@ -4,23 +4,23 @@
     icon size="x-small"
     tile
     @click="invokeAction">
-    <v-icon v-bind="$attrs">{{ model.icon }}</v-icon>
+    <v-icon v-bind="$attrs">{{ model.icon ?? '$' + model.action }}</v-icon>
     <v-tooltip
       activator="parent"
       location="bottom">
-      {{ $t(model.tooltipMessage) }}
+      {{ $t(model.toolTipMessage) }}
     </v-tooltip>
   </v-btn>
 </template>
 
 <script lang="ts" setup>
 import { useSEStore } from "@/stores/se";
-import { ShortcutIconType } from "@/types";
+import { ToolButtonType } from "@/types";
 
 const seStore = useSEStore();
 
 const props = defineProps<{
-  model:ShortcutIconType
+  model:ToolButtonType
 }>();
 
 function invokeAction(): void {
