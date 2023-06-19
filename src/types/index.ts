@@ -42,7 +42,7 @@ export type ToolButtonType = {
   action: ActionMode;
   displayToolUseMessage: boolean;
   displayedName: string;
-  icon: string;
+  // icon: string;
   toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;

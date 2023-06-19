@@ -120,7 +120,6 @@ import EventBus from "../eventHandlers/EventBus";
 // import ToolButton from "@/components/ToolButton.vue";
 // Temporarily exclude Style.vue
 // import StylePanel from "@/components/Style.vue";
-// import Style3 from "@/components/Style3.vue";
 // import LabelStyle from "@/components/LabelStyle.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
@@ -131,7 +130,6 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, SphericalConstruction } from "@/types";
-// import {ActionMode, FavoriteTool, ToolButtonType, UserProfile} from "@/types";
 // import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import {

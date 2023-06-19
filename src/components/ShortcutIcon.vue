@@ -17,7 +17,7 @@
 <script lang="ts" setup>
 import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
-import { ShortcutIconType, ToolButtonType } from "@/types";
+import { ShortcutIconType } from "@/types";
 
 const seStore = useSEStore();
 

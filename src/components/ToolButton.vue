@@ -11,7 +11,7 @@
     width="80px"
     height="100px">
     <div class="toolbutton" v-bind="props">
-      <v-icon class="toolicon">{{ button.icon }}</v-icon>
+      <v-icon class="toolicon" :icon="vuetifyIconAlias"></v-icon>
       <span class="tooltext" :style="myStyle">
         {{ t("buttons." + button.displayedName) }}
       </span>
@@ -72,6 +72,7 @@ const myStyle = computed((): StyleValue => {
     fontWeight: weight.value
   };
 });
+const vuetifyIconAlias = computed(() => '$' + props.button.action)
 
 onUpdated(() => {
   isEditing.value = props.editing;

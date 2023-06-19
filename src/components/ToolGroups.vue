@@ -243,7 +243,7 @@ const developerButtonList: ToolButtonType[] = [
     id: 0,
     action: "iconFactory",
     displayedName: "CreateIconDisplayedName",
-    icon: "$iconFactory",
+    // icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",
     toolUseMessage: "CreateIconToolUseMessage",
     displayToolUseMessage: false,
