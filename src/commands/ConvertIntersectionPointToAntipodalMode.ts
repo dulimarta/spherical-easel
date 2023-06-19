@@ -26,9 +26,9 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
   }
 
   do(): void {
-    console.debug(
-      `DO: Convert intersection point ${this.seIntersectionPoint.name} to antipodal mode with parent ${this.seIntersectionParent.name}`
-    );
+    // console.debug(
+    //   `DO: Convert intersection point ${this.seIntersectionPoint.name} to antipodal mode with parent ${this.seIntersectionParent.name}`
+    // );
     this.seIntersectionPoint.antipodalPointId = this.seIntersectionParent.id;
     this.seIntersectionPoint.shallowUpdate();
     // Set the display to the default values
@@ -52,9 +52,9 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      `RestoreSate: Convert intersection point ${this.seIntersectionPoint.name} to not antipodal mode`
-    );
+    // console.debug(
+    //   `RestoreSate: Convert intersection point ${this.seIntersectionPoint.name} to not antipodal mode`
+    // );
     this.seIntersectionPoint.antipodalPointId = -1;
     this.seIntersectionPoint.shallowUpdate();
     // hide the label

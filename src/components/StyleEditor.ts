@@ -21,23 +21,6 @@ type StyleOptionDiff = {
   oldValue: string | number | Array<number> | undefined;
   newValue: string | number | Array<number> | undefined;
 };
-// @Component({
-//   computed: {
-//     ...mapState(useSEStore, [
-//       "selectedSENodules",
-//       "initialStyleStatesMap",
-//       "defaultStyleStatesMap",
-//       "oldStyleSelections"
-//     ])
-//   },
-//   methods: {
-//     ...mapActions(useSEStore, [
-//       "setSelectedSENodules",
-//       "setOldSelection",
-//       "recordStyleState"
-//     ])
-//   }
-// })
 export function useStyleEditor(
   panel: StyleEditPanels,
   // @Prop({ required: true }) readonly styleData!: StyleOptions | null;

@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
   Labelable,
-  NormalVectorAndTValue,
+  NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
 // import { SELabel } from "@/models/SELabel";
@@ -68,6 +68,7 @@ export class SESegment
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
   private desiredZAxis = new Vector3();
   private toVector = new Vector3();
   private store: SEStoreType;
@@ -298,16 +299,34 @@ export class SESegment
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalVectorAndTValue[] {
-    this.tmpVector.crossVectors(sePointVector, this._normalVector);
+  ): NormalAndPerpendicularPoint[] {
+    this.tmpVector1.crossVectors(sePointVector, this._normalVector);
+    // The intersection point is the cross product between the plane containing
+    // the line and the plane containing the segment
+    this.tmpVector2.crossVectors(this.tmpVector1, this._normalVector);
+    this.tmpVector3.copy(this.tmpVector2).multiplyScalar(-1);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+    if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case any line containing the sePoint will be perpendicular to the segment, but
       //  we want to choose one line whose normal is near the oldNormal
-      this.tmpVector.copy(oldNormal);
+      this.tmpVector1.copy(oldNormal);
     }
-    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
+    const normalOut: Array<NormalAndPerpendicularPoint> = [];
+    // CAUTION: Calling onSegment will destroy this.tmpVector
+    if (this.onSegment(this.tmpVector2)) {
+      normalOut.push({
+        normal: this.tmpVector1.normalize(),
+        normalAt: this.tmpVector2.normalize()
+      });
+    }
+    if (this.onSegment(this.tmpVector3)) {
+      normalOut.push({
+        normal: this.tmpVector1.normalize(),
+        normalAt: this.tmpVector3.normalize()
+      });
+    }
+    return normalOut;
   }
 
   public shallowUpdate(): void {

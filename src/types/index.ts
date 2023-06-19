@@ -42,10 +42,13 @@ export type ToolButtonType = {
   action: ActionMode;
   displayToolUseMessage: boolean;
   displayedName: string;
-  icon: string;
-  // toolGroup: string;
+  // icon: string;
+  toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;
+  disabledIcon: string;
+  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
+  clickFunc?: () => void;
 };
 export type ShortcutIconType = {
   clickFunc?: () => void;
@@ -107,6 +110,7 @@ export type SavedNames =
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
+  | "inverseRotationMatrix"
   | "pointOnOneOrTwoDimensionalParentName"
   | "pointOnOneOrTwoDimensionalVector"
   | "parametricXCoordinateExpression"
@@ -270,7 +274,10 @@ export type ActionMode =
   | "reflection"
   | "pointReflection"
   | "inversion"
-  | "applyTransformation";
+  | "applyTransformation"
+  | "undoAction"
+  | "redoAction"
+  | "resetAction";
 
 export type IconNames =
   | ActionMode
@@ -332,11 +339,16 @@ export type ParametricVectorAndTValue = {
   vector: Vector3;
   tVal: number;
 };
-export type NormalVectorAndTValue = {
-  normal: Vector3;
-  tVal: number;
+// The following type is used for calculating perpendicular lines from a point
+export type NormalAndPerpendicularPoint = {
+  normal: Vector3; // The normal vector of the perpendicular line
+  normalAt: Vector3; // The intersection between the perpendicular line and the target
 };
 
+export type NormalAndTangentPoint = {
+  normal: Vector3; // The normal vector of the tangent line
+  tangentAt: Vector3; // The location of the tangent point
+};
 export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
@@ -354,7 +366,7 @@ export interface OneDimensional {
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalVectorAndTValue>;
+  ): Array<NormalAndPerpendicularPoint>;
 }
 
 export interface Labelable {
@@ -568,12 +580,29 @@ export interface ConstructionInFirestore {
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
 }
+
+/* Reference to a user's favorite tool in settings */
+export interface FavoriteTool {
+  actionModeValue: ActionMode;
+  displayedName: string;
+  icon: string;
+  disabled?: boolean;
+  // All below are only used in Easel.vue for casting to a ShortcutIcon
+  labelMsg?: string;
+  clickFunc?: () => void;
+  iconColor?: string;
+  btnColor?: string;
+  disableBtn: boolean;
+  button?: ToolButtonType;
+}
+
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
   displayName?: string;
   location?: string;
   role?: string;
+  favoriteTools?: string;
 }
 
 export enum AngleMode {

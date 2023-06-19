@@ -87,10 +87,7 @@ const emit = defineEmits(["load-requested"]);
 
 const seStore = useSEStore();
 const appAuth = getAuth();
-// const { svgCanvas } = storeToRefs(seStore);
-let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
-// let originalSphereMatrix!: Matrix4;
 let lastDocId: string | null = null;
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
