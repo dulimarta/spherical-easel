@@ -16,14 +16,24 @@ function insertAscending(newItem: string, arr: string[]): void {
   else arr.splice(k, 0, newItem); // insert in the middle somewhere
 }
 
+const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
+  ["undoAction", "redoAction"],
+  ["resetAction"],
+  ["point"],
+  ["zoomIn", "zoomOut", "zoomFit"],
+];
+
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", {
   state: (): AccountState => ({
     temporaryProfilePicture: "",
+    userDisplayedName: undefined,
+    userProfilePictureURL: undefined,
     userRole: undefined,
     /** @type { ActionMode[]} */
-    includedTools: [] as ActionMode[],
-    excludedTools: []
+    includedTools: [],
+    excludedTools: [],
+    favoriteTools: DEFAULT_TOOL_NAMES
   }),
   actions: {
     resetToolset(includeAll = true): void {
@@ -51,37 +61,27 @@ export const useAccountStore = defineStore("acct", {
         insertAscending(name, this.excludedTools);
         this.includedTools.splice(pos, 1);
       }
+    },
+    setUserDetails(
+      name: string | undefined,
+      pictureURL: string | undefined,
+      favTools: string
+    ) {
+      this.userDisplayedName = name;
+      this.userProfilePictureURL = pictureURL;
+      console.debug("Favorite tools", this.favoriteTools);
+      if (favTools.trim().length > 0)
+        this.favoriteTools = favTools
+          .split("\n")
+          .map((fav: string) => fav.split(",") as ActionMode[]);
     }
   }
 });
-// @Module({ name: "acct", namespaced: true })
-// export default class Acct extends VuexModule implements AccountState {
-// temporaryProfilePicture = "";
-// userRole: string | undefined = undefined;
-// includedTools: ActionMode[] = [];
-// excludedTools: ActionMode[] = [];
 
-// @Mutation
-// setTemporaryProfilePicture(imageHexString: string): void {
-//   this.temporaryProfilePicture = imageHexString;
-// }
-
-// @Mutation
-// setUserRole(role: string | undefined): void {
-//   this.userRole = role;
-// }
-
-// @Mutation
-// resetToolset(includeAll = true): void {}
-
-// @Mutation
-// @Mutation
-// }
-
-export type AccountStoreType = StoreActions<
-  ReturnType<typeof useAccountStore>
-> &
-  StoreGetters<ReturnType<typeof useAccountStore>> &
-  StoreState<ReturnType<typeof useAccountStore>>;
+// export type AccountStoreType = StoreActions<
+//   ReturnType<typeof useAccountStore>
+// > &
+//   StoreGetters<ReturnType<typeof useAccountStore>> &
+//   StoreState<ReturnType<typeof useAccountStore>>;
 
 // export const useAccountStore = (): ReachableStore => useDef();

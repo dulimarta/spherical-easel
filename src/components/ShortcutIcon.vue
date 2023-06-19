@@ -4,7 +4,7 @@
     icon size="x-small"
     tile
     @click="invokeAction">
-    <v-icon v-bind="$attrs" :color="model.iconColor">{{ model.icon }}</v-icon>
+    <v-icon v-bind="$attrs">{{ model.icon }}</v-icon>
     <v-tooltip
       activator="parent"
       location="bottom">
@@ -14,7 +14,6 @@
 </template>
 
 <script lang="ts" setup>
-import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import { ShortcutIconType } from "@/types";
 

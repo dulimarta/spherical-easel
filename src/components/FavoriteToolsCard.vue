@@ -35,8 +35,7 @@
         <v-list-item-group v-model="selectedIndex">
           <v-list-item
             v-for="item in itemList"
-            :key="item.icon"
-            :disabled="item.disabled">
+            :key="item.icon">
             <v-list-item-icon>
               <v-icon v-text="item.icon"></v-icon>
             </v-list-item-icon>
@@ -66,62 +65,65 @@
 import { FavoriteTool } from "@/types";
 import { Ref, ref } from "vue";
 
+const mainListIndex = ref(0)
+const listTitle = ref("Hans")
 type ToolProps = {
-  itemList: FavoriteTool[];
-  itemListBackend: FavoriteTool[];
-  mainList: FavoriteTool[];
-  listTitle: string | undefined;
-  mainListIndex: number | null;
-  maxFavoriteToolsLimit: number;
+  // itemList: FavoriteTool[];
+  // itemListBackend: FavoriteTool[];
+  // mainList: FavoriteTool[];
+  // listTitle: string | undefined;
+  // mainListIndex: number | null;
+  // maxFavoriteToolsLimit: number;
 };
-const props = defineProps<ToolProps>();
+// const props = defineProps<ToolProps>();
 const emit = defineEmits(["update:DeselectTool"]);
 const selectedIndex: Ref<number | null> = ref(null);
 const addDisabled = ref(false);
 const removeDisabled = ref(false);
+const itemList: Ref<Array<FavoriteTool>> = ref([])
 
 function addToolToFavorites(index: number | null): void {
-  if (index === null) return;
-  if (props.itemList.length >= props.maxFavoriteToolsLimit) {
-    removeDisabled.value = false;
-    addDisabled.value = true;
-    return;
-  }
+//   if (index === null) return;
+//   if (props.itemList.length >= props.maxFavoriteToolsLimit) {
+//     removeDisabled.value = false;
+//     addDisabled.value = true;
+//     return;
+//   }
 
-  props.itemList.push(Object.assign({}, props.mainList[index]));
-  props.itemListBackend.push(Object.assign({}, props.mainList[index]));
+//   props.itemList.push(Object.assign({}, props.mainList[index]));
+//   props.itemListBackend.push(Object.assign({}, props.mainList[index]));
 
-  props.mainList[index].disabled = true;
-  props.itemList[props.itemList.length - 1].disabled = false;
+//   props.mainList[index].disabled = true;
+//   props.itemList[props.itemList.length - 1].disabled = false;
 
-  removeDisabled.value = false;
-  emit("update:DeselectTool");
+//   removeDisabled.value = false;
+//   // emit("deselectTool");
 }
 
 function removeToolFromFavorites(index: number | null): void {
-  if (index === null) {
-    if (props.itemListBackend.length <= 0) {
-      removeDisabled.value = true;
-      addDisabled.value = false;
-      return;
-    }
-    return;
-  }
+//   if (index === null) {
+//     if (props.itemListBackend.length <= 0) {
+//       removeDisabled.value = true;
+//       addDisabled.value = false;
+//       return;
+//     }
+//     return;
+//   }
 
-  let toolName = props.itemList[index].actionModeValue;
+//   let toolName = props.itemList[index].actionModeValue;
 
-  let indexDelta = props.itemList.length - props.itemListBackend.length;
-  let userFavoriteToolsIndex = index - indexDelta;
+//   let indexDelta = props.itemList.length - props.itemListBackend.length;
+//   let userFavoriteToolsIndex = index - indexDelta;
 
-  props.itemList.splice(index, 1);
-  props.itemListBackend.splice(userFavoriteToolsIndex, 1);
+//   props.itemList.splice(index, 1);
+//   props.itemListBackend.splice(userFavoriteToolsIndex, 1);
 
-  let allToolsListIndex = props.mainList.findIndex(
-    tool => tool.actionModeValue === toolName
-  );
-  props.mainList[allToolsListIndex].disabled = false;
+//   let allToolsListIndex = props.mainList.findIndex(
+//     tool => tool.actionModeValue === toolName
+//   );
+//   props.mainList[allToolsListIndex].disabled = false;
 
-  addDisabled.value = false;
-  selectedIndex.value = null;
+//   addDisabled.value = false;
+//   selectedIndex.value = null;
 }
 </script>

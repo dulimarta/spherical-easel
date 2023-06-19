@@ -49,8 +49,7 @@
                             <v-list-item-group v-model="allListSelectedIndex">
                               <v-list-item
                                 v-for="(item, i) in allToolsList"
-                                :key="i"
-                                :disabled="item.disabled">
+                                :key="i">
                                 <v-list-item-icon>
                                   <v-icon v-text="item.icon"></v-icon>
                                 </v-list-item-icon>
@@ -82,12 +81,12 @@
                             @update:DeselectTool="
                               allListSelectedIndex = $event
                             " />
-                          <div v-else>
+                          <!--div v-else>
                             <p>loading</p>
-                          </div>
+                          </!--div-->
                         </v-col>
                         <v-col cols="6">
-                          <FavoriteToolsCard
+                          <!--FavoriteToolsCard
                             v-if="dataReceived"
                             :itemList="displayedFavoriteTools[1]"
                             :itemListBackend="userFavoriteTools[1]"
@@ -98,12 +97,12 @@
                             @update:DeselectTool="
                               allListSelectedIndex = $event
                             " />
-                          <div v-else>
+                          <div-- v-else>
                             <p>loading</p>
-                          </div>
+                          </div-->
                         </v-col>
                         <v-col cols="6">
-                          <FavoriteToolsCard
+                          <!--FavoriteToolsCard
                             v-if="dataReceived"
                             :itemList="displayedFavoriteTools[3]"
                             :itemListBackend="userFavoriteTools[3]"
@@ -114,12 +113,12 @@
                             @update:DeselectTool="
                               allListSelectedIndex = $event
                             " />
-                          <div v-else>
+                          <div-- v-else>
                             <p>loading</p>
-                          </div>
+                          </div-->
                         </v-col>
                         <v-col cols="6">
-                          <FavoriteToolsCard
+                          <!--FavoriteToolsCard
                             v-if="dataReceived"
                             :itemList="displayedFavoriteTools[2]"
                             :itemListBackend="userFavoriteTools[2]"
@@ -130,9 +129,9 @@
                             @update:DeselectTool="
                               allListSelectedIndex = $event
                             " />
-                          <div v-else>
+                          <div-- v-else>
                             <p>loading</p>
-                          </div>
+                          </div-->
                         </v-col>
                       </v-row>
                     </v-container>
@@ -269,7 +268,7 @@ import { FavoriteTool } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { toolDictionary } from "@/components/tooldictionary";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
 type LocaleName = {
   locale: string;
@@ -342,26 +341,27 @@ onMounted((): void => {
 function initializeToolLists(): void {
   // Create a dictionary with actionModeValues as the keys, and references to the tool definition.
   // Set up master list of all tools for favorites selection
-  let compList = Array.from(toolDictionary.values()).map(child => ({
-    actionModeValue: child.action,
-    displayedName: child.displayedName,
-    icon: child.icon,
-    disabled: false,
-    langName: t("buttons." + child.displayedName)
+  let compList = Array.from(TOOL_DICTIONARY.values()).map(child => ({
+    // actionModeValue: child.action,
+    // displayedName: child.displayedName,
+    // icon: child.icon,
+    // disabled: false,
+    // langName: t("buttons." + child.displayedName)
   }));
 
   // Sort the temp List
   compList.sort((a, b) =>
-    a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0
+    // a.langName < b.langName ? -1 : a.langName > b.langName ? 1 : 0
+    0
   );
   // Redefine the allToolsList
-  allToolsList.value = compList.map(tool => ({
-    actionModeValue: tool.actionModeValue,
-    displayedName: tool.displayedName,
-    icon: tool.icon,
-    disableBtn: false,
-    disabled: false
-  }));
+  // allToolsList.value = compList.map(tool => ({
+  //   actionModeValue: tool.actionModeValue,
+  //   displayedName: tool.displayedName,
+  //   // icon: tool.icon,
+  //   // disableBtn: false,
+  //   disabled: false
+  // }));
   // Add default tools to displayedFavoriteTools
   for (let i = 0; i < defaultToolNames.length; i++) {
     for (let j = 0; j < defaultToolNames[i].length; j++) {
@@ -369,7 +369,7 @@ function initializeToolLists(): void {
         tl => defaultToolNames[i][j] === tl.actionModeValue
       );
       if (temp_tool.length > 0) {
-        temp_tool[0].disabled = true;
+        // temp_tool[0].disabled = true;
         // temp_tool[0] is passed by reference, so we create a copy of it
         let tool = Object.assign({}, temp_tool[0]);
         displayedFavoriteTools.value[i].push(tool);
@@ -436,7 +436,7 @@ function decodeFavoriteTools(favoritesListStr: string): FavoriteTool[][] {
           tool.actionModeValue ===
           displayedFavoriteTools.value[i][j].actionModeValue
       );
-      allToolsList.value[index].disabled = true;
+      // allToolsList.value[index].disabled = true;
     }
   }
   return finalToolsList;

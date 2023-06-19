@@ -90,13 +90,17 @@ import {
   sendPasswordResetEmail,
   GoogleAuthProvider
 } from "firebase/auth";
-import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
+import { useAccountStore } from "@/stores/account";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import { getDoc, getFirestore, doc, DocumentSnapshot } from "firebase/firestore";
+import { UserProfile } from "@/types";
 
 const appAuth = getAuth();
+const appDB = getFirestore()
 const router = useRouter();
+const acctStore = useAccountStore()
 const userEmail = ref("");
 const userPassword = ref("");
 const emailRules = [
@@ -132,6 +136,15 @@ function doSignup(): void {
         keyOptions: { emailAddr: cred.user?.email },
         type: "info"
       });
+      return getDoc(doc(appDB, "users", cred.user.uid))
+    })
+    .then((ds: DocumentSnapshot) => {
+      if (ds.exists()) {
+        const uProfile = ds.data() as UserProfile
+        console.debug("User Profile Details from Firestore", uProfile)
+        const {favoriteTools, displayName, profilePictureURL} = uProfile
+        acctStore.setUserDetails(displayName, profilePictureURL, favoriteTools ?? "\n\n\n")
+      }
     })
     .catch((error: any) => {
       EventBus.fire("show-alert", {
@@ -164,6 +177,7 @@ function doSignIn(): void {
       });
     });
 }
+
 function doReset(): void {
   console.debug("Sending password reset email to", userEmail.value);
   sendPasswordResetEmail(appAuth, userEmail.value).then(() => {

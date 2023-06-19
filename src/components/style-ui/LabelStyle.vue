@@ -265,8 +265,6 @@
   <!-- Show more or less styling options -->
   <!--v-tooltip
     location="bottom"
-    :open-delay="toolTipOpenDelay"
-    :close-delay="toolTipCloseDelay"
     max-width="400px"
     class="pa-0 pm-0">
     <template v-slot:activator="{ props }">

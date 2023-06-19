@@ -220,8 +220,8 @@ const topRightShortcuts = computed((): ShortcutIconType[] => {
       clickFunc: () => {
         clearConstructionDialog.value?.show();
       },
-      iconColor: "blue",
-      disableBtn: false
+      // iconColor: "blue",
+      // disableBtn: false
     }
   ];
 });

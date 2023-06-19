@@ -4,15 +4,23 @@
     <div id="canvas" ref="canvas"></div>
     <div class="anchored top left">
       <div
-        v-for="(shortcut, index) in topLeftShortcuts"
+        v-for="(shortcut, index) in shortCuts[0]"
         :key="index"
         :style="listItemStyle(index, 'left', 'top')">
         <ShortcutIcon :model="shortcut" />
       </div>
     </div>
+    <div class="anchored top right">
+      <div
+        v-for="(shortcut, index) in shortCuts[1]"
+        :key="index"
+        :style="listItemStyle(index, 'right', 'top')">
+        <ShortcutIcon :model="shortcut" />
+      </div>
+    </div>
     <div class="anchored bottom left">
       <div
-        v-for="(shortcut, index) in bottomLeftShortcuts"
+        v-for="(shortcut, index) in shortCuts[2]"
         :key="index"
         :style="listItemStyle(index, 'left', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -20,7 +28,7 @@
     </div>
     <div class="anchored bottom right">
       <div
-        v-for="(shortcut, index) in bottomRightShortcuts"
+        v-for="(shortcut, index) in shortCuts[3]"
         :key="index"
         :style="listItemStyle(index, 'right', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -44,7 +52,9 @@ import ShortcutIcon from "./ShortcutIcon.vue";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
-import CurrentToolSelection from "./CurrentToolSelection.vue";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
+
+// import CurrentToolSelection from "./CurrentToolSelection.vue";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -77,12 +87,14 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { ActionMode, ShortcutIconType } from "@/types";
+
 import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { useAccountStore } from "@/stores/account";
 import Two from "two.js";
 import { SEExpression } from "@/models/SEExpression";
 import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
@@ -101,8 +113,10 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  buttonSelection,
+  buttonSelection
 } = storeToRefs(seStore);
+const acctStore = useAccountStore();
+const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
 const props = withDefaults(defineProps<{ canvasSize: number }>(), {
@@ -110,86 +124,29 @@ const props = withDefaults(defineProps<{ canvasSize: number }>(), {
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-const topLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "main.UndoLastAction",
-      icon: SETTINGS.icons.undo.props.mdiIcon,
-      clickFunc: Command.undo,
-      iconColor: "blue",
-      disableBtn: false //&& !stylePanelMinified.value || !undoEnabled
-    },
-    {
-      tooltipMessage: "main.RedoLastAction",
-      icon: SETTINGS.icons.redo.props.mdiIcon,
-      clickFunc: Command.redo,
-      iconColor: "blue",
-      disableBtn: false // !stylePanelMinified.value || !undoEnabled
-    }
-  ];
-});
-const bottomLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.CreatePointToolTipMessage",
-      icon: "$point",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "point"
-    },
+const shortCuts: Ref<Array<Array<ShortcutIconType>>> = ref([]);
 
-    {
-      tooltipMessage: "buttons.CreateLineToolTipMessage",
-      icon: "$line",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "line"
-    },
+watch(() => favoriteTools.value, updateShortcutTools, { deep: true });
 
-    {
-      tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
-      icon: "$segment",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "segment"
-    },
+function updateShortcutTools() {
+  console.debug("Updating shortcut icons");
+  shortCuts.value = favoriteTools.value.map(
+    (corner: Array<ActionMode>): Array<ShortcutIconType> =>
+      corner.map((act: ActionMode): ShortcutIconType => {
+        const tb = TOOL_DICTIONARY.get(act);
+        if (tb === undefined) {
+          alert("Missing entry in TOOL_DICTINARY: " + act);
+        }
+        return {
+          action: tb!.action,
+          tooltipMessage: tb!.toolTipMessage,
+          clickFunc: tb!.clickFunc,
+          icon: tb!.icon ?? "$" + tb!.action
+        };
+      })
+  );
+}
 
-    {
-      tooltipMessage: "buttons.CreateCircleToolTipMessage",
-      icon: "$circle",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "circle"
-    }
-  ];
-});
-
-const bottomRightShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.PanZoomInToolTipMessage",
-      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomIn"
-    },
-
-    {
-      tooltipMessage: "buttons.PanZoomOutToolTipMessage",
-      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomOut"
-    },
-    {
-      tooltipMessage: "buttons.ZoomFitToolTipMessage",
-      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomFit"
-    }
-  ];
-});
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
  * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -384,6 +341,7 @@ onMounted((): void => {
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
   seStore.setCanvas(canvas.value!);
+  updateShortcutTools();
   updateView();
 });
 

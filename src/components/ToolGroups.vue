@@ -191,18 +191,6 @@ function switchActionMode(): void {
 //   return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
 // }
 
-/* This turns off all other snackbar/toolUseMessage displays so that multiple
-  snackbar/toolUseMessages are not displayed at the same time.  */
-function displayOnlyThisToolUseMessageFunc(action: string): void {
-  // Alternative solution: use Array high-order functions
-  buttonGroup.value
-    .flatMap(group => group.children)
-    .filter(btn => btn.action !== action)
-    .forEach(btn => {
-      btn.displayToolUseMessage = !btn.displayToolUseMessage;
-    });
-}
-
 function toggleEditMode(): void {
   inEditMode.value = !inEditMode.value;
   buttonGroup.value.splice(0);
@@ -242,8 +230,7 @@ const developerButtonList: ToolButtonType[] = [
     // icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",
     toolUseMessage: "CreateIconToolUseMessage",
-    displayToolUseMessage: false,
-    disabledIcon: '?????'
+    // disabledIcon: '?????'
   }
 ];
 </script>

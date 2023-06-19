@@ -26,9 +26,12 @@ export interface Selectable {
 
 export interface AccountState {
   temporaryProfilePicture: string;
+  userProfilePictureURL: string | undefined;
+  userDisplayedName: string | undefined;
   userRole: string | undefined;
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
+  favoriteTools: Array<Array<ActionMode>>;
 }
 
 /* This interface lists all the properties that each tool/button must have. */
@@ -40,26 +43,36 @@ export type ToolButtonGroup = {
 export type ToolButtonType = {
   id: number;
   action: ActionMode;
-  displayToolUseMessage: boolean;
+  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
+  clickFunc?: () => void;
   displayedName: string;
-  // icon: string;
+  icon?: string;
   toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;
-  disabledIcon: string;
-  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
-  clickFunc?: () => void;
 };
+
 export type ShortcutIconType = {
-  clickFunc?: () => void;
+  /* action and clickFunc should be mutually exclusive,
+     clickFunc should have precedence over action */
   action?: ActionMode
+  clickFunc?: () => void;
+  icon?: string;
   tooltipMessage: string;
-  icon: string;
-  iconColor: string;
-  disableBtn: boolean;
 };
 
-
+export interface FavoriteTool {
+  actionModeValue: ActionMode;
+  btnColor?: string;
+  button?: ToolButtonType;
+  clickFunc?: () => void;
+  // disabled?: boolean;
+  // disableBtn: boolean;
+  displayedName: string;
+  icon: string;
+  iconColor?: string;
+  labelMsg?: string;
+}
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
 
 //type ToString<T extends string | number | boolean | bigint> = `${T}`;
@@ -582,19 +595,7 @@ export interface ConstructionInFirestore {
 }
 
 /* Reference to a user's favorite tool in settings */
-export interface FavoriteTool {
-  actionModeValue: ActionMode;
-  displayedName: string;
-  icon: string;
-  disabled?: boolean;
-  // All below are only used in Easel.vue for casting to a ShortcutIcon
-  labelMsg?: string;
-  clickFunc?: () => void;
-  iconColor?: string;
-  btnColor?: string;
-  disableBtn: boolean;
-  button?: ToolButtonType;
-}
+
 
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {

@@ -1,90 +1,80 @@
-import { ToolButtonGroup } from "@/types";
-import {toolDictionary} from "@/components/tooldictionary";
+import { ActionMode, ToolButtonGroup } from "@/types";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
-export const toolGroups: Array<ToolButtonGroup> = [
-  /* Note: the group names below must match the identifier of
+/* Note: the group names below must match the identifier of
      toolgroups.XXXXXX defined in the I18N translation files */
-  {
-    group: "EditTools",
-    children: [
-        toolDictionary.get("select")!,
-        toolDictionary.get("delete")!
-    ]
-  },
+type ToolGroup = {
+  group: string;
+  tools: Array<ActionMode>;
+};
+const toolGroupInternal: Array<ToolGroup> = [
+  { group: "EditTools", tools: ["select", "delete"] },
   {
     group: "DisplayTools",
-    children: [
-        toolDictionary.get("hide")!,
-        toolDictionary.get("toggleLabelDisplay")!,
-        toolDictionary.get("move")!,
-        toolDictionary.get("rotate")!,
-        toolDictionary.get("zoomIn")!,
-        toolDictionary.get("zoomOut")!,
-        toolDictionary.get("zoomFit")!
+    tools: [
+      "hide",
+      "toggleLabelDisplay",
+      "move",
+      "rotate",
+      "zoomIn",
+      "zoomOut",
+      "zoomFit"
     ]
   },
   {
     group: "BasicTools",
-    children: [
-        toolDictionary.get("point")!,
-        toolDictionary.get("line")!,
-        toolDictionary.get("segment")!,
-        toolDictionary.get("circle")!
-    ]
+    tools: ["point", "line", "segment", "circle"]
   },
   {
     group: "ConstructionTools",
-    children: [
-        toolDictionary.get("antipodalPoint")!,
-        toolDictionary.get("polar")!,
-        toolDictionary.get("midpoint")!,
-        toolDictionary.get("angleBisector")!,
-        toolDictionary.get("tangent")!,
-        toolDictionary.get("perpendicular")!,
-        toolDictionary.get("intersect")!,
-        toolDictionary.get("pointOnObject")!
+    tools: [
+      "antipodalPoint",
+      "polar",
+      "midpoint",
+      "angleBisector",
+      "tangent",
+      "perpendicular",
+      "intersect",
+      "pointOnObject"
     ]
   },
   {
     group: "MeasurementTools",
-    children: [
-        toolDictionary.get("angle")!,
-        toolDictionary.get("pointDistance")!,
-        toolDictionary.get("segmentLength")!,
-        toolDictionary.get("coordinate")!,
-        toolDictionary.get("measureTriangle")!,
-        toolDictionary.get("measurePolygon")!
+    tools: [
+      "angle",
+      "pointDistance",
+      "segmentLength",
+      "coordinate",
+      "measureTriangle",
+      "measurePolygon"
     ]
   },
   {
     group: "ConicTools",
-    children: [
-        toolDictionary.get("ellipse")!
-    ]
+    tools: ["ellipse"]
   },
   {
     group: "AdvancedTools",
-    children: [
-        toolDictionary.get("threePointCircle")!,
-        toolDictionary.get("nSectPoint")!,
-        toolDictionary.get("nSectLine")!
-    ]
+    tools: ["threePointCircle", "nSectPoint", "nSectLine"]
   },
   {
     group: "TransformationTools",
-    children: [
-        toolDictionary.get("pointReflection")!,
-        toolDictionary.get("reflection")!,
-        toolDictionary.get("rotation")!,
-        toolDictionary.get("translation")!,
-        toolDictionary.get("inversion")!,
-        toolDictionary.get("applyTransformation")!
+    tools: [
+      "pointReflection",
+      "reflection",
+      "rotation",
+      "translation",
+      "inversion",
+      "applyTransformation"
     ]
   },
   {
     group: "MeasuredObjectTools",
-    children: [
-        toolDictionary.get("measuredCircle")!
-    ]
+    tools: ["measuredCircle"]
   }
 ];
+
+export const toolGroups: Array<ToolButtonGroup> = toolGroupInternal.map(x => ({
+  group: x.group,
+  children: x.tools.map((t: ActionMode) => TOOL_DICTIONARY.get(t)!)
+}));
