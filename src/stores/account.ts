@@ -74,6 +74,8 @@ export const useAccountStore = defineStore("acct", {
         this.favoriteTools = favTools
           .split("\n")
           .map((fav: string) => fav.split(",") as ActionMode[]);
+      else
+        this.favoriteTools = DEFAULT_TOOL_NAMES
     }
   }
 });

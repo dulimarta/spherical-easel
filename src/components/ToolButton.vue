@@ -13,7 +13,7 @@
     <div class="toolbutton" v-bind="props">
       <v-icon class="toolicon" :icon="vuetifyIconAlias"></v-icon>
       <span class="tooltext" :style="myStyle">
-        {{ t("buttons." + button.displayedName) }}
+        {{ t(button.displayedName) }}
       </span>
     </div>
     <v-overlay
@@ -28,7 +28,7 @@
     <v-tooltip
       location="bottom"
       activator="parent">
-      <span class="tooltip">{{ t("buttons." + button.toolTipMessage) }}</span>
+      <span class="tooltip">{{ t(button.toolTipMessage) }}</span>
     </v-tooltip>
   </v-card>
 </template>
@@ -47,7 +47,6 @@ type ToolButtonProps = {
   included: boolean;
 };
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
-const seStore = useSEStore();
 const { t } = useI18n();
 /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
 

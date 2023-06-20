@@ -102,7 +102,10 @@ onMounted(() => {
 })
 
 function toolSortFunc(a: ToolButtonType, b: ToolButtonType): number {
-  return t(a.displayedName).localeCompare(b.displayedName)
+  const aText = t(a.displayedName)
+  const bText = t(b.displayedName)
+  console.debug(`Comparing [${aText}] vs. [${bText}]`)
+  return aText.localeCompare(bText)
 }
 
 function onToolAdded() {

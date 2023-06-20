@@ -115,8 +115,6 @@
 </template>
 
 <style lang="scss" scoped>
-
-
 div#container {
   padding: 1rem;
 }
@@ -158,11 +156,15 @@ import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue"
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
 type LocaleName = {
   locale: string;
   name: string;
 };
 const { t } = useI18n();
+const acctStore = useAccountStore()
+const { favoriteTools} = storeToRefs(acctStore)
 const appAuth = getAuth();
 const appDB = getFirestore();
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
@@ -224,10 +226,13 @@ function doSave(): void {
     displayName: userDisplayName.value,
     location: userLocation.value,
     role: userRole.value,
-    // favoriteTools: encodeFavoriteTools()
+    favoriteTools: favoriteTools.value
+      .map(arr => arr.join(','))
+      .join("\n")
   };
   const profileDoc = doc(appDB, "users", userUid.value!);
   setDoc(profileDoc, newProf, { merge: true }).then(() => {
+    alert("New profile saved")
     EventBus.fire("show-alert", {
       key: "Your profile has been update",
       type: "info"
