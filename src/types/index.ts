@@ -52,18 +52,6 @@ export type ToolButtonType = {
   toolTipMessage: string;
 };
 
-export interface FavoriteTool {
-  actionModeValue: ActionMode;
-  btnColor?: string;
-  button?: ToolButtonType;
-  clickFunc?: () => void;
-  // disabled?: boolean;
-  // disableBtn: boolean;
-  displayedName: string;
-  icon: string;
-  iconColor?: string;
-  labelMsg?: string;
-}
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
 
 //type ToString<T extends string | number | boolean | bigint> = `${T}`;
