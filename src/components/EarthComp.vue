@@ -54,7 +54,8 @@ onMounted(()=>{
         bumpScale: 10,
     });
     const earth = new THREE.Mesh(geometry, material);
-
+    earth.rotation.x = Math.PI/2;
+    const matrixMulti = new THREE.Matrix4().makeRotationX(Math.PI/2)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     const light = new THREE.PointLight(0xffffff, 1);
     light.position.set(num, num, num);
@@ -101,6 +102,7 @@ onMounted(()=>{
     watch(()=>(inverseTotalRotationMatrix.value.elements),()=>{
         const rotationMatrix = new THREE.Matrix4();
         rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+        rotationMatrix.multiply(matrixMulti);
         earth.setRotationFromMatrix(rotationMatrix);
     },{deep:true})
 

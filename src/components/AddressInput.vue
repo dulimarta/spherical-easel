@@ -31,11 +31,18 @@ import { onUnmounted } from 'vue';
 import { SEPoint } from '@/models/SEPoint';
 import Point from '@/plottables/Point';
 import { Vector } from 'two.js';
-import { Vector3 } from 'three';
+import * as THREE from 'three';
 import { SELabel } from '@/models/SELabel';
 import Label from '@/plottables/Label';
 import { CommandGroup } from '@/commands/CommandGroup';
 import { AddPointCommand } from '@/commands/AddPointCommand';
+import globalSettings from '@/global-settings';
+import { useSEStore } from '@/stores/se';
+import { storeToRefs } from "pinia";
+
+const store = useSEStore();
+const { inverseTotalRotationMatrix} = storeToRefs(store);
+
     const lat = ref(0)
     const lng = ref(0)
     const xcor = ref(0)
@@ -54,12 +61,26 @@ import { AddPointCommand } from '@/commands/AddPointCommand';
         const place = autocomplete.getPlace();
         lat.value = place.geometry.location.lat();
         lng.value = place.geometry.location.lng();
-        xcor.value = 6378137*Math.cos(lat.value) * Math.cos(lng.value)
-        ycor.value = 6378137*Math.cos(lat.value) * Math.sin(lng.value)
-        zcor.value = 6378137*Math.sin(lat.value)
+        const latRad = lat.value * Math.PI / 180;
+        const lngRad = lng.value * Math.PI / 180;
+        const radius = 1;
+        xcor.value = radius*Math.cos(latRad) * Math.cos(lngRad)
+        ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
+        zcor.value = radius*Math.sin(latRad)
         const newPoint = new Point();
         const vtx = new SEPoint(newPoint);
-        vtx.locationVector = new Vector3(xcor.value, ycor.value, zcor.value);
+        const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
+        pointVector.normalize();
+        const rotationMatrix = new THREE.Matrix4();
+        rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+        pointVector.applyMatrix4(rotationMatrix);
+        vtx.locationVector = pointVector;
+
+        // const matrixMulti = new THREE.Matrix4().makeRotationX(Math.PI/2)
+        // rotationMatrix.multiply(matrixMulti)
+        // vtx.locationVector.applyMatrix4(rotationMatrix);
+
+
         const newSELabel = new SELabel(new Label("point"),vtx);
         const pointCommandGroup = new CommandGroup();
         pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
