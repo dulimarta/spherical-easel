@@ -63,7 +63,10 @@ const myStyle = computed((): StyleValue => {
     fontWeight: weight.value
   };
 });
-const vuetifyIconAlias = computed(() => '$' + props.button.action)
+const vuetifyIconAlias = computed(() =>
+  // Use the icon property (if defined)
+  // otherwise use the action name as the Vuetify icon alias
+  props.button.icon ?? '$' + props.button.action)
 
 onUpdated(() => {
   isEditing.value = props.editing;
