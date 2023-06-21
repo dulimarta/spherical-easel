@@ -44,3 +44,7 @@ latex-notes/_minted*
 
 # Generated files
 docs/.vuepress/dist
+
+# Cache
+.yarn/cache
+/yarn.lock

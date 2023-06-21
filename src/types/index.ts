@@ -26,9 +26,12 @@ export interface Selectable {
 
 export interface AccountState {
   temporaryProfilePicture: string;
+  userProfilePictureURL: string | undefined;
+  userDisplayedName: string | undefined;
   userRole: string | undefined;
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
+  favoriteTools: Array<Array<ActionMode>>;
 }
 
 /* This interface lists all the properties that each tool/button must have. */
@@ -40,22 +43,14 @@ export type ToolButtonGroup = {
 export type ToolButtonType = {
   id: number;
   action: ActionMode;
-  displayToolUseMessage: boolean;
+  // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
+  clickFunc?: () => void;
   displayedName: string;
-  icon: string;
-  // toolGroup: string;
+  icon?: string;
+  toolGroup?: string;
   toolUseMessage: string;
   toolTipMessage: string;
 };
-export type ShortcutIconType = {
-  clickFunc?: () => void;
-  action?: ActionMode
-  tooltipMessage: string;
-  icon: string;
-  iconColor: string;
-  disableBtn: boolean;
-};
-
 
 //type Concat<S1 extends string, S2 extends string> = `${S1}${S2}`;
 
@@ -107,6 +102,7 @@ export type SavedNames =
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
+  | "inverseRotationMatrix"
   | "pointOnOneOrTwoDimensionalParentName"
   | "pointOnOneOrTwoDimensionalVector"
   | "parametricXCoordinateExpression"
@@ -270,7 +266,10 @@ export type ActionMode =
   | "reflection"
   | "pointReflection"
   | "inversion"
-  | "applyTransformation";
+  | "applyTransformation"
+  | "undoAction"
+  | "redoAction"
+  | "resetAction";
 
 export type IconNames =
   | ActionMode
@@ -332,11 +331,16 @@ export type ParametricVectorAndTValue = {
   vector: Vector3;
   tVal: number;
 };
-export type NormalVectorAndTValue = {
-  normal: Vector3;
-  tVal: number;
+// The following type is used for calculating perpendicular lines from a point
+export type NormalAndPerpendicularPoint = {
+  normal: Vector3; // The normal vector of the perpendicular line
+  normalAt: Vector3; // The intersection between the perpendicular line and the target
 };
 
+export type NormalAndTangentPoint = {
+  normal: Vector3; // The normal vector of the tangent line
+  tangentAt: Vector3; // The location of the tangent point
+};
 export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
@@ -354,7 +358,7 @@ export interface OneDimensional {
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Array<NormalVectorAndTValue>;
+  ): Array<NormalAndPerpendicularPoint>;
 }
 
 export interface Labelable {
@@ -568,12 +572,17 @@ export interface ConstructionInFirestore {
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
 }
+
+/* Reference to a user's favorite tool in settings */
+
+
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
   displayName?: string;
   location?: string;
   role?: string;
+  favoriteTools?: string;
 }
 
 export enum AngleMode {

@@ -134,9 +134,9 @@ export class AddPointOnOneDimensionalCommand extends Command {
 
     const positionVector = new Vector3();
     positionVector.from(propMap.get("pointOnOneOrTwoDimensionalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
-    console.debug(
-      `point on one or two dim vector ${positionVector.toFixed(2)}`
-    );
+    // console.debug(
+    //   `point on one or two dim vector ${positionVector.toFixed(2)}`
+    // );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
       const point = new Point();

@@ -31,13 +31,13 @@
           <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
         </a>
       </template>
-      <v-app-bar-title>{{t('main.SphericalEaselMainTitle')}}</v-app-bar-title>
-        <!--- TODO: Change the URL to match the hosting site
+      <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title>
+      <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-        <!-- Use <a> For GitLab -->
-        <!--a :href="`${baseURL}/docs`">
+      <!-- Use <a> For GitLab -->
+      <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
                 v-bind="props">mdi-help-circle</v-icon>
             </a-->
@@ -59,19 +59,36 @@
           @click="doLoginOrCheck"></v-img>
         <v-icon v-else class="mx-2" @click="doLoginOrCheck">mdi-account</v-icon>
         <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-        <v-icon
-          v-show="showExport"
-          class="pr-3"
-          @click="showShareConstructionDialog">
-          mdi-application-export</v-icon
-        >
-        <v-icon
-          v-if="whoami !== ''"
-          :disabled="!hasObjects"
-          class="mr-2"
-          @click="showSaveConstructionDialog"
-          >mdi-share
-        </v-icon>
+        <!--v-btn icon variant="text" size="medium">
+          <v-tooltip location="bottom" activator="parent">
+            Logout
+          </v-tooltip>
+          <v-icon
+            @click="showShareConstructionDialog">
+            mdi-location-exit
+          </v-icon>
+        </!--v-btn>
+        <v-btn icon variant="text" size="medium">
+          <v-tooltip location="bottom" activator="parent">
+            Share Construction
+          </v-tooltip>
+          <v-icon
+            v-show="showExport"
+            @click="showShareConstructionDialog">
+            mdi-share
+          </v-icon>
+        </--v-btn>
+        <v-btn-- icon variant="text">
+          <v-tooltip location="bottom" activator="parent">
+            Save Construction
+          </v-tooltip>
+          <v-icon
+            v-if="whoami !== ''"
+            :disabled="!hasObjects"
+            @click="showSaveConstructionDialog">
+            mdi-content-save
+          </v-icon>
+        </v-btn-->
       </template>
       <router-link to="/settings/">
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
@@ -90,20 +107,20 @@
     </v-main>
   </v-app>
 
-  <!--Dialog
+  <Dialog
       ref="logoutDialog"
-      :title="i18nText('constructions.confirmLogout')"
-      :yes-text="i18nText('constructions.proceed')"
+      :title="t('constructions.confirmLogout')"
+      :yes-text="t('constructions.proceed')"
       :yes-action="() => doLogout()"
-      :no-text="i18nText('constructions.cancel')"
+      :no-text="t('constructions.cancel')"
       style=""
       max-width="40%">
       <p>
-        {{ i18nText("constructions.logoutDialog") }}
+        {{ t("constructions.logoutDialog") }}
       </p>
     </Dialog>
 
-    <Dialog
+    <!--Dialog
       ref="saveConstructionDialog"
       :title="i18nText('constructions.saveConstruction')"
       :yes-text="i18nText('constructions.save')"
@@ -128,7 +145,7 @@
         v-model="publicConstruction"
         :disabled="uid.length === 0"
         :label="i18nText('constructions.makePublic')"></v-switch>
-    </Dialog>
+    </!--Dialog>
     <Dialog
       ref="shareConstructionDialog"
       :title="i18nText('constructions.shareConstructionDialog')"
@@ -213,14 +230,30 @@ import {
   onBeforeUnmount,
   nextTick
 } from "vue";
-import MessageBox from "@/components/MessageBox.vue";
+// import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { User, getAuth, Unsubscribe } from "firebase/auth";
-import { DocumentReference, DocumentSnapshot, getFirestore, doc, collection, getDoc, addDoc, updateDoc } from "firebase/firestore";
-import { FirebaseStorage, UploadTaskSnapshot, getStorage, ref as storageRef, uploadString, getDownloadURL } from "firebase/storage";
+import {
+  DocumentReference,
+  DocumentSnapshot,
+  getFirestore,
+  doc,
+  collection,
+  getDoc,
+  addDoc,
+  updateDoc
+} from "firebase/firestore";
+import {
+  FirebaseStorage,
+  UploadTaskSnapshot,
+  getStorage,
+  ref as storageRef,
+  uploadString,
+  getDownloadURL
+} from "firebase/storage";
 import { Command } from "./commands/Command";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
@@ -231,9 +264,9 @@ import FileSaver from "file-saver";
 import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import { useI18n } from "vue-i18n";
-const appAuth = getAuth()
-const appDB = getFirestore()
-const appStorage = getStorage()
+const appAuth = getAuth();
+const appDB = getFirestore();
+const appStorage = getStorage();
 import { useRouter } from "vue-router";
 
 // Register vue router in-component navigation guard functions
@@ -248,11 +281,8 @@ const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { includedTools, userRole } = storeToRefs(acctStore);
 
-const {
-  svgCanvas,
-  inverseTotalRotationMatrix,
-  hasObjects
-} = storeToRefs(seStore);
+const { svgCanvas, inverseTotalRotationMatrix, hasObjects } =
+  storeToRefs(seStore);
 
 const router = useRouter();
 
@@ -344,21 +374,20 @@ onMounted((): void => {
       showExport.value = true;
       whoami.value = u.email ?? "unknown email";
       uid.value = u.uid;
-      const userDoc = doc(appDB,"users", uid.value)
-        getDoc(userDoc)
-        .then((ds: DocumentSnapshot) => {
-          if (ds.exists()) {
-            accountEnabled.value = true;
-            console.debug("User data", ds.data());
-            const { profilePictureURL, role } = ds.data() as any;
-            if (profilePictureURL) {
-              profilePicUrl.value = profilePictureURL;
-            }
-            if (role) {
-              userRole.value = role.toLowerCase();
-            }
+      const userDoc = doc(appDB, "users", uid.value);
+      getDoc(userDoc).then((ds: DocumentSnapshot) => {
+        if (ds.exists()) {
+          accountEnabled.value = true;
+          console.debug("User data", ds.data());
+          const { profilePictureURL, role } = ds.data() as any;
+          if (profilePictureURL) {
+            profilePicUrl.value = profilePictureURL;
           }
-        });
+          if (role) {
+            userRole.value = role.toLowerCase();
+          }
+        }
+      });
     } else {
       whoami.value = "";
       profilePicUrl.value = "";
@@ -386,6 +415,7 @@ async function doLogout(): Promise<void> {
   userRole.value = undefined;
   uid.value = "";
   whoami.value = "";
+  acctStore.setUserDetails(undefined, undefined, "")
 }
 
 // additionalFooterText(e: { text: string }): void {
@@ -647,8 +677,10 @@ async function doShare(): Promise<void> {
        Task 2: Upload the script to Firebase Storage (for large script)
        Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
     */
-  addDoc( // Task #1
-    collection(appDB, collectionPath), {
+  addDoc(
+    // Task #1
+    collection(appDB, collectionPath),
+    {
       version: "1",
       dateCreated: new Date().toISOString(),
       author: whoami.value,
@@ -656,15 +688,17 @@ async function doShare(): Promise<void> {
       rotationMatrix: JSON.stringify(rotationMat.value.elements),
       tools: includedTools.value,
       script: "" // Use an empty string (for type checking only)
-    } as ConstructionInFirestore)
+    } as ConstructionInFirestore
+  )
     .then((constructionDoc: DocumentReference) => {
       /* Task #2 */
       const scriptPromise: Promise<string> =
         scriptOut.length < FIELD_SIZE_LIMIT
           ? Promise.resolve(scriptOut)
-          : uploadString(storageRef(appStorage, `scripts/${constructionDoc.id}`),
-  scriptOut)
-              .then(t => getDownloadURL(t.ref));
+          : uploadString(
+              storageRef(appStorage, `scripts/${constructionDoc.id}`),
+              scriptOut
+            ).then(t => getDownloadURL(t.ref));
 
       /* Task #3 */
       const svgPromise: Promise<string> =
@@ -672,14 +706,14 @@ async function doShare(): Promise<void> {
           ? Promise.resolve(svgPreviewData)
           : uploadString(
               storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              svgPreviewData)
-              .then(t => getDownloadURL(t.ref));
+              svgPreviewData
+            ).then(t => getDownloadURL(t.ref));
 
       /* Wrap the result from the three tasks as a new Promise */
       return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
     })
     .then(([docId, scriptData, svgData]) => {
-      const constructionDoc = doc(appDB,collectionPath,docId)
+      const constructionDoc = doc(appDB, collectionPath, docId);
       updateDoc(constructionDoc, { script: scriptData, preview: svgData });
       // Pass on the document ID to be included in the alert message
       return docId;
@@ -724,6 +758,28 @@ function copyShareLink(): void {
 
 #profilePic {
   border-radius: 50%;
+}
+
+.pulse-enter-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+}
+.pulse-leave-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+  animation-direction: reverse;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .shareConstructionClass {

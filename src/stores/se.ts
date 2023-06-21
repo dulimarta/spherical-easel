@@ -1,5 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEExpression } from "@/models/SEExpression";
@@ -19,7 +20,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { ActionMode, SEIntersectionReturnType, ToolButtonType } from "@/types";
+import { ActionMode, plottableType, SEIntersectionReturnType, ToolButtonType } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
@@ -73,6 +74,7 @@ type PiniaAppState = {
   seTransformationIds: Array<number>;
   selectedSENoduleIds: Array<number>;
   oldSelectedSENoduleIDs: Array<number>;
+  disabledTools: Array<ActionMode>;
 };
 
 const seNodules: Array<SENodule> = [];
@@ -91,13 +93,294 @@ const sePencils: Array<SEPencil> = [];
 const layers: Array<Two.Group> = [];
 const selectedSENodules: Map<number, SENodule> = new Map();
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
-// const inverseTotalRotationMatrix = new Matrix4();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
+
+function removeElements(
+  removeItems: Array<ActionMode>,
+  array: Array<ActionMode>
+): void {
+  removeItems.forEach(item => {
+    const index = array.findIndex(arrayItem => arrayItem === item);
+    if (index > -1) {
+      array.splice(index, 1);
+    }
+  });
+}
+
+function addElements(
+  addItems: Array<ActionMode>,
+  array: Array<ActionMode>
+): void {
+  addItems.forEach(item => {
+    const index = array.findIndex(arrayItem => arrayItem === item);
+    if (index === -1) {
+      array.push(item);
+    }
+  });
+}
+
+// depth first search for cycles among all the line segments
+function findCycles(): number[] {
+  const graph: Array<[number, number]> = [];
+  let fakeVertexNum = -1;
+  seSegments.forEach(seg => {
+    if (
+      graph.some(
+        existingSeg =>
+          (existingSeg[0] === seg.startSEPoint.id &&
+            existingSeg[1] === seg.endSEPoint.id) ||
+          (existingSeg[0] === seg.endSEPoint.id &&
+            existingSeg[1] === seg.startSEPoint.id)
+      )
+    ) {
+      // there is a second edge between two vertices
+      // add a fake vertex and decrement the fake vertex number
+      graph.push([seg.startSEPoint.id, fakeVertexNum]);
+      graph.push([fakeVertexNum, seg.endSEPoint.id]);
+      fakeVertexNum -= 1;
+    } else {
+      graph.push([seg.startSEPoint.id, seg.endSEPoint.id]);
+    }
+  });
+  //console.debug(`graph length ${graph.length} graph ${graph}`);
+  const cycles: Array<number[]> = [];
+  const cycleLengths: number[] = [];
+
+  function findNewCycles(path: number[]): void {
+    const start_node = path[0];
+    let next_node: null | number = null;
+    let sub = [];
+    //visit each edge and each node of each edge
+    for (const edge of graph) {
+      const node1 = edge[0];
+      const node2 = edge[1];
+      if (start_node === node1 || start_node == node2) {
+        if (node1 == start_node) {
+          next_node = node2;
+        } else {
+          next_node = node1;
+        }
+        if (!visited(next_node, path)) {
+          // # neighbor node not on path yet
+          sub = [next_node];
+          sub.push(...path); // sub.extend(path)
+          // # explore extended path
+          findNewCycles(sub);
+        } else if (path.length > 2 && next_node === path[path.length - 1]) {
+          // # cycle found
+          const p = rotate_to_smallest(path);
+          const inv = invert(p);
+          if (isNew(p) && isNew(inv)) {
+            //console.debug(`new cycle added ${p}`);
+            cycles.push(p);
+          }
+        }
+      }
+    }
+  }
+
+  function invert(path: number[]): number[] {
+    const returnPath: number[] = [];
+    path.forEach(num => returnPath.unshift(num));
+    return rotate_to_smallest(returnPath);
+  }
+
+  // rotate cycle path such that it begins with the smallest node
+  function rotate_to_smallest(path: number[]): number[] {
+    const min = Math.min(...path);
+    const minIndex = path.findIndex(ind => ind === min);
+    return path.rotate(minIndex);
+  }
+
+  function isNew(path: number[]): boolean {
+    if (path.length === 0) {
+      return false; // empty paths are not new
+    }
+    return cycles.every(cycle => {
+      if (cycle.length !== path.length) {
+        // the length of the cycle and path are different so the cycle and path are different
+        return true;
+      } else {
+        const startIndex = cycle.findIndex(num => num === path[0]);
+        if (startIndex === -1) {
+          // the start of the path is not in the cycle so the cycle and path are different
+          return true;
+        } else {
+          let theSame = true;
+          path.forEach((num, ind) => {
+            let checkIndex = ind + startIndex;
+            if (checkIndex >= path.length) {
+              checkIndex = checkIndex - path.length;
+            }
+            theSame = theSame && num === cycle[checkIndex];
+          });
+          return !theSame;
+        }
+      }
+    });
+    //     return not path in cycles
+  }
+  function visited(nodeId: number, path: number[]) {
+    return path.includes(nodeId);
+  }
+
+  for (const edge of graph) {
+    //console.debug(`examine edge ${edge}`);
+    for (const node of edge) {
+      //console.debug(`start with node ${node}`);
+      findNewCycles([node]);
+    }
+  }
+  for (const c of cycles) {
+    //console.debug(`cycle ${c}`);
+    // the filter removes any fake vertices (which have negative value) in the cycle
+    cycleLengths.push(c.filter(num => num > -1).length);
+  }
+  //console.debug(`cycle lengths:`, cycleLengths);
+  return cycleLengths;
+  // from https://stackoverflow.com/questions/12367801/finding-all-cycles-in-undirected-graphs#:~:text=The%20standard%20baseline%20algorithm%20for,be%20part%20of%20the%20tree.
+  // graph = [[1, 2], [1, 3], [1, 4], [2, 3], [3, 4], [2, 6], [4, 6], [8, 7], [8, 9], [9, 7]]
+  // cycles = []
+
+  // def main():
+  //     global graph
+  //     global cycles
+  //     for edge in graph:
+  //         for node in edge:
+  //             findNewCycles([node])
+  //     for cy in cycles:
+  //         path = [str(node) for node in cy]
+  //         s = ",".join(path)
+  //         print(s)
+
+  // def findNewCycles(path):
+  //     start_node = path[0]
+  //     next_node= None
+  //     sub = []
+
+  //     #visit each edge and each node of each edge
+  //     for edge in graph:
+  //         node1, node2 = edge
+  //         if start_node in edge:
+  //                 if node1 == start_node:
+  //                     next_node = node2
+  //                 else:
+  //                     next_node = node1
+  //                 if not visited(next_node, path):
+  //                         # neighbor node not on path yet
+  //                         sub = [next_node]
+  //                         sub.extend(path)
+  //                         # explore extended path
+  //                         findNewCycles(sub);
+  //                 elif len(path) > 2  and next_node == path[-1]:
+  //                         # cycle found
+  //                         p = rotate_to_smallest(path);
+  //                         inv = invert(p)
+  //                         if isNew(p) and isNew(inv):
+  //                             cycles.append(p)
+
+  // def invert(path):
+  //     return rotate_to_smallest(path[::-1])
+
+  // #  rotate cycle path such that it begins with the smallest node
+  // def rotate_to_smallest(path):
+  //     n = path.index(min(path))
+  //     return path[n:]+path[:n]
+
+  // def isNew(path):
+  //     return not path in cycles
+
+  // def visited(node, path):
+  //     return node in path
+}
+
+// Search the segments for the longest closed chain and return its length
+// this is only called if there are two or more segments in seSegments
+// function findClosedSegmentChainLength(): number[] {
+//   const maxChainLengths: number[] = [];
+//   seSegments.forEach(startSegment => {
+//     // Check for chains starting with startSegment
+//     // We must do this for all segments because of P like arrangements of line segments
+//     // For example
+//     //    p1p2 to p2p3 to p3p4 to p4p2
+//     // contains a chain of length three
+//     const unCheckedSegments: Array<SESegment> = [];
+//     seSegments.forEach(seg => {
+//       // add all segments expect the start to the unchecked list
+//       if (seg.name !== startSegment.name) {
+//         unCheckedSegments.push(seg);
+//       }
+//     });
+
+//     let initialSegment: SESegment | undefined = startSegment;
+
+//     // search for chains that contain the initial segment
+//     while (initialSegment !== undefined) {
+//       let lengthOfChain = 1;
+//       const chainStartPointName = initialSegment.startSEPoint.name;
+//       let freeEndPointName = initialSegment.endSEPoint.name;
+//       let anotherSegmentInChainFound = true;
+//       while (anotherSegmentInChainFound) {
+//         anotherSegmentInChainFound = false;
+//         // search for the next element in the chain among the unchecked segments
+//         for (const potentialNextSegment of unCheckedSegments) {
+//           if (potentialNextSegment.startSEPoint.name === freeEndPointName) {
+//             lengthOfChain += 1;
+//             anotherSegmentInChainFound = true;
+//             if (potentialNextSegment.endSEPoint.name === chainStartPointName) {
+//               // the chain is closed so add to the max length array
+//               maxChainLengths.push(lengthOfChain);
+//               anotherSegmentInChainFound = false; //stop searching for more segments in this chain because it is closed
+//               break;
+//             } else {
+//               // the chain is open, remove the potential segment from the unchecked and update freeEndPoint and break the search of unchecked segments
+//               freeEndPointName = potentialNextSegment.endSEPoint.name;
+//               const index = unCheckedSegments.findIndex(
+//                 seg => seg.name === potentialNextSegment.name
+//               );
+//               if (index > -1) {
+//                 unCheckedSegments.splice(index, 1);
+//               }
+//               break;
+//             }
+//           } else if (
+//             potentialNextSegment.endSEPoint.name === freeEndPointName
+//           ) {
+//             lengthOfChain += 1;
+//             anotherSegmentInChainFound = true;
+//             if (
+//               potentialNextSegment.startSEPoint.name === chainStartPointName
+//             ) {
+//               // the chain is closed so add to the max length array
+//               maxChainLengths.push(lengthOfChain);
+//               anotherSegmentInChainFound = false; //stop searching for more segments in this chain because it is closed
+//               break;
+//             } else {
+//               // the chain is open, remove the potential segment from the unchecked and update freeEndPoint and break the search of unchecked segments
+//               freeEndPointName = potentialNextSegment.startSEPoint.name;
+//               const index = unCheckedSegments.findIndex(
+//                 seg => seg.name === potentialNextSegment.name
+//               );
+//               if (index > -1) {
+//                 unCheckedSegments.splice(index, 1);
+//               }
+//               break;
+//             }
+//           }
+//           // the potential segment doesn't connect to the existing chain continue searching uncheck segments
+//         }
+//       }
+//       // restart the search for chains with the next unchecked segment if any
+//       initialSegment = unCheckedSegments.pop(); // check for chains starting with initialSegment
+//     }
+//   });
+//   return maxChainLengths;
+// }
 
 export const useSEStore = defineStore({
   id: "se",
@@ -125,8 +408,9 @@ export const useSEStore = defineStore({
     seTransformationIds: [],
     oldSelectedSENoduleIDs: [],
     styleSavedFromPanel: StyleEditPanels.Label,
+    selectedSENoduleIds: [],
+    disabledTools: [],
     inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
-    selectedSENoduleIds: []
   }),
   actions: {
     init(): void {
@@ -198,7 +482,7 @@ export const useSEStore = defineStore({
     setActionMode(mode: ActionMode): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (
-        !(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")
+        !(this.actionMode === "zoomFit" || this.actionMode === "iconFactory")
       ) {
         this.previousActionMode = this.actionMode;
         // this.previousActiveToolName = this.activeToolName;
@@ -247,6 +531,7 @@ export const useSEStore = defineStore({
           // console.log("name", obj.name, "show", obj.showing, "exist", obj.exists);
         });
     },
+    //#region magnificationUpdate
     setZoomMagnificationFactor(mag: number): void {
       //console.debug(`setZoomMagFactor ${mag}`);
       EventBus.fire("magnification-updated", {
@@ -267,6 +552,7 @@ export const useSEStore = defineStore({
       seNodules.push(point);
       point.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("point");
     },
     //#endregion addPoint
     removePoint(pointId: number): void {
@@ -281,6 +567,7 @@ export const useSEStore = defineStore({
         seNodules.splice(pos2, 1);
         sePoints.delete(pointId);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("point");
       }
     },
     movePoint(move: { pointId: number; location: Vector3 }): void {
@@ -299,6 +586,7 @@ export const useSEStore = defineStore({
       seNodules.push(line as SENodule);
       line.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("line");
     },
     removeLine(lineId: number): void {
       const victimLine = seLines.get(lineId)!;
@@ -311,6 +599,7 @@ export const useSEStore = defineStore({
         this.seLineIds.splice(pos, 1); // Remove the line from the list
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("line");
       }
     },
     addCircle(circle: SECircle): void {
@@ -319,6 +608,7 @@ export const useSEStore = defineStore({
       seNodules.push(circle);
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("circle");
     },
     removeCircle(circleId: number): void {
       const victimCircle = seCircles.get(circleId);
@@ -333,6 +623,7 @@ export const useSEStore = defineStore({
         seNodules.splice(pos, 1);
         seCircles.delete(circleId);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("circle");
       }
     },
     addTransformation(transformation: SETransformation): void {
@@ -340,6 +631,7 @@ export const useSEStore = defineStore({
       seTransformations.set(transformation.id, transformation);
       seNodules.push(transformation);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("transformation");
     },
     removeTransformation(transformationId: number): void {
       const victimTransformation = seTransformations.get(transformationId);
@@ -353,6 +645,7 @@ export const useSEStore = defineStore({
         seNodules.splice(pos, 1);
         seTransformations.delete(transformationId);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("transformation");
       }
     },
     addSegment(segment: SESegment): void {
@@ -361,6 +654,7 @@ export const useSEStore = defineStore({
       seNodules.push(segment);
       segment.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("segment");
     },
     removeSegment(segId: number): void {
       const victimSegment = seSegments.get(segId);
@@ -372,6 +666,7 @@ export const useSEStore = defineStore({
         seSegments.delete(segId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("segment");
       }
     },
     addEllipse(ellipse: SEEllipse): void {
@@ -380,6 +675,7 @@ export const useSEStore = defineStore({
       seNodules.push(ellipse);
       ellipse.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("ellipse");
     },
     removeEllipse(ellipseId: number): void {
       const victimEllipse = seEllipses.get(ellipseId)!;
@@ -394,6 +690,7 @@ export const useSEStore = defineStore({
         seEllipses.delete(ellipseId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("ellipse");
       }
     },
     addLabel(label: SELabel): void {
@@ -402,6 +699,7 @@ export const useSEStore = defineStore({
       seNodules.push(label);
       label.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
     },
     removeLabel(labelId: number): void {
       const victimLabel = seLabels.get(labelId);
@@ -414,6 +712,7 @@ export const useSEStore = defineStore({
         seLabels.delete(labelId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
       }
     },
     moveLabel(move: { labelId: number; location: Vector3 }): void {
@@ -430,6 +729,7 @@ export const useSEStore = defineStore({
       seNodules.push(angleMarker);
       angleMarker.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("angleMarker");
     },
     removeAngleMarkerAndExpression(angleMarkerId: number): void {
       const victimAngleMarker = seAngleMarkers.get(angleMarkerId);
@@ -454,6 +754,7 @@ export const useSEStore = defineStore({
         seNodules.splice(pos2, 1);
         this.seExpressionIds.splice(pos3, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("angleMarker");
       }
     },
     addParametric(parametric: SEParametric): void {
@@ -467,6 +768,7 @@ export const useSEStore = defineStore({
       //   ptr = ptr.next;
       // }
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("parametric");
     },
     removeParametric(parametricId: number): void {
       const victimParametric = seParametrics.get(parametricId);
@@ -487,10 +789,11 @@ export const useSEStore = defineStore({
         seParametrics.delete(parametricId);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("parametric");
       }
     },
     addPolygonAndExpression(polygon: SEPolygon): void {
-      console.debug(`add polygon with id ${polygon.id}`);
+      // console.debug(`add polygon with id ${polygon.id}`);
       this.seExpressionIds.push(polygon.id);
       seExpressions.set(polygon.id, polygon);
       this.sePolygonIds.push(polygon.id);
@@ -498,12 +801,13 @@ export const useSEStore = defineStore({
       seNodules.push(polygon);
       polygon.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("polygon");
     },
     removePolygonAndExpression(polygonId: number): void {
-      console.debug(`Remove polygon with id ${polygonId}`);
+      // console.debug(`Remove polygon with id ${polygonId}`);
       const victimPolygon = sePolygons.get(polygonId);
       if (victimPolygon) {
-        console.debug(`Polygon found`);
+        // console.debug(`Polygon found`);
         const polygonPos = this.sePolygonIds.findIndex(
           (id: number) => id === polygonId
         );
@@ -523,6 +827,7 @@ export const useSEStore = defineStore({
         this.seExpressionIds.splice(pos3, 1);
         seExpressions.delete(polygonId);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("polygon");
       }
     },
     addExpression(measurement: SEExpression): void {
@@ -530,6 +835,7 @@ export const useSEStore = defineStore({
       seExpressions.set(measurement.id, measurement);
       seNodules.push(measurement);
       this.hasUnsavedNodules = true;
+      this.updateDisabledTools("expression");
     },
     removeExpression(measId: number): void {
       const victimExpr = seExpressions.get(measId);
@@ -542,6 +848,7 @@ export const useSEStore = defineStore({
         this.seExpressionIds.splice(pos, 1);
         seNodules.splice(pos2, 1);
         this.hasUnsavedNodules = true;
+        this.updateDisabledTools("expression");
       }
     },
     //#region rotateSphere
@@ -583,10 +890,10 @@ export const useSEStore = defineStore({
         const accepted = target.accept(rotationVisitor);
         // console.debug(`What's going on with ${target.name}?`, accepted);
         if (!accepted) {
-          console.debug(
-            target.name,
-            "does not accept rotation visitor, try its shallowUpdate"
-          );
+          // console.debug(
+          //   target.name,
+          //   "does not accept rotation visitor, try its shallowUpdate"
+          // );
           target.shallowUpdate();
         }
         target.setOutOfDate(false);
@@ -694,7 +1001,7 @@ export const useSEStore = defineStore({
           payload
         )
       ) {
-        console.debug("Selected nodules differ");
+        // console.debug("Selected nodules differ");
         //reset previous selection glowing color to usual
         this.selectedSENodules.forEach(n => {
           n.ref?.setSelectedColoring(false);
@@ -745,7 +1052,6 @@ export const useSEStore = defineStore({
       );
       // this.initialBackStyleContrast = data.backContrast;
     },
-
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
       seNodules.forEach(p => {
@@ -753,6 +1059,203 @@ export const useSEStore = defineStore({
           p.glowing = false;
         }
       });
+    },
+    updateDisabledTools(
+      change: plottableType | "transformation" | "expression"
+    ): void {
+      switch (change) {
+        case "point": {
+          // "coordinate",// need one point
+          // "pointDistance", // need two points
+          const numPoints = this.sePoints.filter(
+            pt =>
+              !(
+                pt instanceof SEAntipodalPoint ||
+                pt instanceof SEIntersectionPoint
+              ) || pt.isUserCreated
+          ).length;
+          if (numPoints === 1) {
+            removeElements(
+              ["coordinate", "pointReflection"],
+              this.disabledTools
+            );
+            addElements(["pointDistance"], this.disabledTools);
+          } else if (numPoints > 1) {
+            removeElements(
+              ["pointDistance", "coordinate", "pointReflection"],
+              this.disabledTools
+            );
+          } else {
+            addElements(
+              ["pointDistance", "coordinate", "pointReflection"],
+              this.disabledTools
+            );
+          }
+          break;
+        }
+        case "angleMarker": {
+          // "angleBisector", // need an angle
+          // "nSectLine", // need an angle
+          if (this.seAngleMarkers.length > 0) {
+            removeElements(["angleBisector", "nSectLine"], this.disabledTools);
+          } else {
+            addElements(["angleBisector", "nSectLine"], this.disabledTools);
+          }
+          break;
+        }
+        case "transformation": {
+          // "applyTransformation", // need a transformation
+          if (this.seTransformations.length > 0) {
+            removeElements(["applyTransformation"], this.disabledTools);
+          } else {
+            addElements(["applyTransformation"], this.disabledTools);
+          }
+          break;
+        }
+        case "circle":
+        case "segment":
+        case "line":
+        case "ellipse":
+        case "parametric":
+        case "expression": {
+          const numCircles = this.seCircles.length;
+          const numSegments = this.seSegments.length;
+          const numLines = this.seLines.length;
+          const numEllipses = this.seEllipses.length;
+          const numParametrics = this.seParametrics.length;
+          const numExpressions = this.expressions.length;
+
+          // "inversion", // need a circle
+          if (numCircles > 0) {
+            removeElements(["inversion"], this.disabledTools);
+          } else {
+            addElements(["inversion"], this.disabledTools);
+          }
+
+          // "measuredCircle", // need an expression
+          if (numExpressions > 0) {
+            removeElements(["measuredCircle"], this.disabledTools);
+          } else {
+            addElements(["measuredCircle"], this.disabledTools);
+          }
+
+          // "midpoint", // need a line segment
+          // "nSectPoint", // need a line segment
+          // "segmentLength", // need a line segment
+          if (numSegments > 0) {
+            removeElements(
+              ["midpoint", "nSectPoint", "segmentLength"],
+              this.disabledTools
+            );
+          } else {
+            addElements(
+              ["midpoint", "nSectPoint", "segmentLength"],
+              this.disabledTools
+            );
+          }
+
+          // "perpendicular", // need a one dimensional object
+          // "pointOnObject", // need a one dimensional object
+          // "intersect", // need two one dimensional objects
+          if (
+            numCircles > 0 ||
+            numSegments > 0 ||
+            numLines > 0 ||
+            numEllipses > 0 ||
+            numParametrics > 0
+          ) {
+            // there is at least one one dimensional
+            removeElements(
+              ["perpendicular", "pointOnObject"],
+              this.disabledTools
+            );
+            if (
+              numCircles +
+                numSegments +
+                numLines +
+                numEllipses +
+                numParametrics >
+              1
+            ) {
+              removeElements(["intersect"], this.disabledTools);
+            } else {
+              addElements(["intersect"], this.disabledTools);
+            }
+          } else {
+            addElements(
+              ["perpendicular", "pointOnObject", "intersect"],
+              this.disabledTools
+            );
+          }
+
+          // "tangent", // need a non-straight one dimensional
+          if (numCircles > 0 || numEllipses > 0 || numParametrics > 0) {
+            removeElements(["tangent"], this.disabledTools);
+          } else {
+            addElements(["tangent"], this.disabledTools);
+          }
+
+          // "rotation", //need a line segment, circle or expression
+          if (numSegments + numCircles + numExpressions > 0) {
+            removeElements(["rotation"], this.disabledTools);
+          } else {
+            addElements(["rotation"], this.disabledTools);
+          }
+
+          // "reflection", // need a line or segment
+          if (numSegments + numLines > 0) {
+            removeElements(["reflection"], this.disabledTools);
+          } else {
+            addElements(["reflection"], this.disabledTools);
+          }
+
+          // "translation" //need a line segment or (expression and (line or segment))
+          if (
+            numSegments > 0 ||
+            (numExpressions > 0 && (numLines > 0 || numSegments > 0))
+          ) {
+            removeElements(["translation"], this.disabledTools);
+          } else {
+            addElements(["translation"], this.disabledTools);
+          }
+
+          // "measurePolygon", // need a closed chain of four or more line segments or closed chain of two segments both of length pi
+          // "measureTriangle", // need a closed chain of three or more line segments
+          if (numSegments > 1) {
+            //console.log("find cycles", findCycles());
+            const lengths = findCycles(); //findClosedSegmentChainLength();
+            //console.debug(`number of cycles ${lengths.length}`);
+            if (lengths.length === 0) {
+              addElements(
+                ["measurePolygon", "measureTriangle"],
+                this.disabledTools
+              );
+            }
+            if (lengths.includes(2) || Math.max(...lengths) > 3) {
+              removeElements(["measurePolygon"], this.disabledTools);
+            } else {
+              addElements(["measurePolygon"], this.disabledTools);
+            }
+            if (lengths.includes(3)) {
+              removeElements(["measureTriangle"], this.disabledTools);
+            } else {
+              addElements(["measureTriangle"], this.disabledTools);
+            }
+          } else {
+            addElements(
+              ["measurePolygon", "measureTriangle"],
+              this.disabledTools
+            );
+          }
+
+          break;
+        }
+        default: {
+          console.debug(
+            `updateDisabledTools fell through to default. Change was ${change}`
+          );
+        }
+      }
     }
   },
   getters: {
@@ -881,7 +1384,7 @@ export const useSEStore = defineStore({
      *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipse), (SESegment, SESegment),
      *      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle), (SECircle, SEEllipse)
      *      (SEEllipse, SEEllipse)
-     * If they have the same type put them in alphabetical order.
+     * If they have the same type put them in alphabetical order. (old then new)
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
     createAllIntersectionsWithLine(
@@ -1037,9 +1540,9 @@ export const useSEStore = defineStore({
             oldSegment,
             true // this is the first time these two objects have been intersected
           );
-          console.debug(
-            `Intersecting ${newLine.name}, and seg ${oldSegment.name}`
-          );
+          // console.debug(
+          //   `Intersecting ${newLine.name}, and seg ${oldSegment.name}`
+          // );
           let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
           let indexOfExistingSEIntersectionPoint = -1;
           intersectionInfo.forEach((info, index) => {
@@ -1624,8 +2127,8 @@ export const useSEStore = defineStore({
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newSegment,
                 oldSegment,
+                newSegment,
                 index,
                 false
               );
@@ -3567,8 +4070,8 @@ export const useSEStore = defineStore({
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newParametric,
                 oldParametric,
+                newParametric,
                 index,
                 false
               );

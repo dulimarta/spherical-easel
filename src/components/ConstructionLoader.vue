@@ -5,7 +5,7 @@
     </div> -->
     <!--- WARNING: the "id" attribs below are needed for testing -->
     <v-expansion-panels>
-      <v-expansion-panel>
+      <v-expansion-panel v-if="firebaseUid && firebaseUid.length > 0">
         <v-expansion-panel-title>
           {{ t(`constructions.privateConstructions`) }}
         </v-expansion-panel-title>
@@ -39,8 +39,9 @@
       id="_test_constructionShareDialog"
       class="dialog"
       title="Share Construction"
-      :yes-text="`Copy URL`"
+      yes-text="Copy URL"
       :yes-action="doCopyURL"
+      no-text="OK"
       max-width="50%">
       <p>Share this URL</p>
       <textarea
@@ -82,18 +83,16 @@
 </style>
 
 <script lang="ts" setup>
-import VueComponent, {
+import {
   computed,
   Ref,
   ref,
-  onMounted,
-  onBeforeUnmount
+  onMounted
 } from "vue";
 import {
   QuerySnapshot,
   QueryDocumentSnapshot,
   getFirestore,
-  onSnapshot,
   collection,
   doc,
   deleteDoc,
@@ -141,12 +140,10 @@ const privateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const shareURL = ref("");
 const selectedDocId = ref("");
 
-// $refs!: {
 const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const constructionLoadDialog: Ref<DialogAction | null> = ref(null);
 const constructionDeleteDialog: Ref<DialogAction | null> = ref(null);
 const docURL: Ref<HTMLSpanElement | null> = ref(null);
-// };
 
 const firebaseUid = computed((): string => {
   return appAuth.currentUser?.uid ?? "";
@@ -165,6 +162,7 @@ onMounted((): void => {
   const publicColl = collection(appDB, "constructions");
   populateData(publicColl, publicConstructions.value);
 });
+
 
 async function parseDocument(
   id: string,
@@ -186,6 +184,7 @@ async function parseDocument(
     // Parse the script directly from the Firestore document
     parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
   }
+  const sphereRotationMatrix = new Matrix4();
   if (parsedScript && parsedScript.length > 0) {
     // we care only for non-empty script
     let svgData: string | undefined;
@@ -208,7 +207,7 @@ async function parseDocument(
         typeof z === "string" ? 1 : z.length
       )
       .reduce((prev: number, curr: number) => prev + curr);
-    let sphereRotationMatrix = new Matrix4();
+
     if (remoteDoc.rotationMatrix) {
       const matrixData = JSON.parse(remoteDoc.rotationMatrix);
       sphereRotationMatrix.fromArray(matrixData);
@@ -228,6 +227,7 @@ async function parseDocument(
   }
   return null;
 }
+
 function populateData(
   constructionCollection: CollectionReference,
   targetArr: Array<SphericalConstruction>
@@ -381,9 +381,4 @@ function doDeleteConstruction(): void {
       console.debug("Unable to delete", selectedDocId.value, err);
     });
 }
-
-// function previewConstruction(svgString: string) {
-//   console.debug("About to preview", svgString)
-
-// }
 </script>

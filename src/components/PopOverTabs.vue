@@ -1,5 +1,6 @@
 <template>
-  <v-menu v-model="menu" location="start" :close-on-content-click="false">
+  <!-- Add 40-pixel offset so the menu box does not overlap the navigation drawer -->
+  <v-menu v-model="menu" location="start" :close-on-content-click="false" :offset="40">
     <template #activator="{ props }">
       <v-icon v-bind="props" :icon="iconName"></v-icon>
     </template>
@@ -7,7 +8,7 @@
       <v-tabs v-model="currentTab">
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
-        <v-tab :value="LAST_TAB_MARKER"><v-icon>mdi-chevron-double-right</v-icon></v-tab>
+        <v-tab :value="LAST_TAB_MARKER"><v-icon @click="menu=false">mdi-chevron-double-right</v-icon></v-tab>
       </v-tabs>
       <v-window v-model="currentTab">
         <slot name="pages"></slot>

@@ -104,11 +104,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
-import LabelStyle from "./LabelStyle.vue";
-import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
+import LabelStyle from "@/components/style-ui/LabelStyle.vue";
+import BasicFrontBackStyle from "@/components/style-ui/FrontBackStyle.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 // import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import EventBus from "../eventHandlers/EventBus";
+import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { Labelable } from "@/types";
@@ -119,7 +119,7 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
-import { useDialogSequencer } from "./DialogSequencer";
+import { useDialogSequencer } from "@/components/DialogSequencer";
 const { t } = useI18n();
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);
@@ -152,8 +152,6 @@ const panels = [
 const minified = ref(true);
 const emit = defineEmits(["minifyToggled"]);
 const selectObjectsDialog = ref<DialogAction | null>(null);
-// const toolTipOpenDelay = ref(SETTINGS.toolTip.openDelay);
-// const toolTipCloseDelay = ref(SETTINGS.toolTip.closeDelay);
 
 const activePanel = ref<number | undefined>(0); // Default selection is the Label panel
 

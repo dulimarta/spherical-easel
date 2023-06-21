@@ -20,8 +20,6 @@
       <v-col cols="auto">
         <v-tooltip
           location="bottom"
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
           max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-bind="props">
@@ -73,7 +71,7 @@ import SETTINGS from "@/global-settings";
 import { hslaColorType } from "@/types";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
-import i18n from "../i18n";
+import i18n from "@/i18n";
 
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 // @Component({ components: { HintButton, OverlayWithFixButton } })
@@ -95,8 +93,6 @@ const props = defineProps<ComponentProps>();
 const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
 const internalColor: Ref<string> = ref("#FF00FF00");
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 const noColorData = ref(false); // no data means noFill or noStroke
 let preNoColor: string = NO_HSLA_DATA;

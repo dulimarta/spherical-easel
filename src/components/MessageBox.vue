@@ -75,7 +75,7 @@
       <v-btn
         v-on:click="$emit('toggle-notifications-panel')"
         key="partial"
-        plain
+        variant="plain"
         depressed
         class="pa-0 mx-0">
         <v-icon>$notifications </v-icon>
@@ -148,7 +148,6 @@ const selectedMessageType = ref(messageTypes.value[0]);
 
 // //eslint-disable-next-line // Declare messageTimer as any or disable the linter
 // private messageTimer: NodeJS.Timer | null = null;
-// private toolUseMessageDelay = SETTINGS.toolUse.delay;
 
 onMounted((): void => {
   EventBus.listen("show-alert", addMessage);

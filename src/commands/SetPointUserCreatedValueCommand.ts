@@ -33,9 +33,9 @@ export class SetPointUserCreatedValueCommand extends Command {
   }
 
   do(): void {
-    console.debug(
-      `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
-    );
+    // console.debug(
+    //   `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
+    // );
     // if (this.userCreatedValue) {
     this.seIntersectionOrAntipodePoint.isUserCreated = this.userCreatedValue;
     // Set the display to the default values
@@ -81,11 +81,11 @@ export class SetPointUserCreatedValueCommand extends Command {
   }
 
   restoreState(): void {
-    console.debug(
-      `SetPointUserCreated: RESTORE changed ${
-        this.seIntersectionOrAntipodePoint.name
-      } to user created: ${!this.userCreatedValue}`
-    );
+    // console.debug(
+    //   `SetPointUserCreated: RESTORE changed ${
+    //     this.seIntersectionOrAntipodePoint.name
+    //   } to user created: ${!this.userCreatedValue}`
+    // );
     if (this.userCreatedValue) {
       if (
         this.seIntersectionOrAntipodePoint.label &&

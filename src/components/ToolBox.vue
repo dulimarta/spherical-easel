@@ -14,7 +14,7 @@
         </v-row>
       </v-container>
       <v-tabs v-model="activeLeftDrawerTab" centered grow @change="switchTab">
-        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
+        <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
               <v-icon>$toolsTab</v-icon>
@@ -23,7 +23,7 @@
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
+        <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
               <v-icon>$objectsTab</v-icon>
@@ -31,7 +31,7 @@
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
         </v-tooltip>
-        <v-tooltip location="bottom" :open-delay="toolTipOpenDelay">
+        <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
             <v-tab class="mt-3" v-bind="props">
               <v-icon>$constructionsTab</v-icon>
@@ -45,7 +45,7 @@
           <ToolGroups />
         </v-window-item>
         <v-window-item>
-          <ObjectTree id="objtree"> </ObjectTree>
+          <ObjectTree id="objtree"></ObjectTree>
         </v-window-item>
         <v-window-item>
           <ConstructionLoader id="loader"></ConstructionLoader>
@@ -53,31 +53,27 @@
       </v-window>
     </div>
 
-    <div
-      v-else
-      class="mini-icons"
-      key="partial">
+    <div v-else class="mini-icons" key="partial">
       <v-btn icon size="x-small">
         <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
       </v-btn>
       <div class="mini-icons px-3">
-      <v-icon>$toolsTab</v-icon>
-      <v-icon>$objectsTab</v-icon>
-      <v-icon>$constructionsTab</v-icon>
+        <v-icon>$toolsTab</v-icon>
+        <v-icon>$objectsTab</v-icon>
+        <v-icon>$constructionsTab</v-icon>
       </div>
     </div>
   </transition>
 </template>
 
 <script lang="ts" setup>
-import Vue, { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 
-import SETTINGS from "@/global-settings";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
@@ -89,10 +85,8 @@ const { actionMode } = storeToRefs(seStore);
 // ('layers')')
 
 const minified = ref(false);
-const emit = defineEmits(['minifyToggled'])
+const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 const activeLeftDrawerTab = ref(0);
 
 onBeforeMount((): void => {
@@ -126,8 +120,8 @@ function setActiveTab(e: { tabNumber: number }): void {
 }
 
 function toggleMinify() {
-  minified.value = !minified.value
-  emit("minifyToggled", minified.value)
+  minified.value = !minified.value;
+  emit("minifyToggled", minified.value);
 }
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");

@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, ref, onBeforeMount } from "vue";
+import { Ref, ref, onBeforeMount, watch } from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import ToolButton from "@/components/ToolButton.vue";
 import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
@@ -71,14 +71,7 @@ import { storeToRefs } from "pinia";
 const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
-const { expressions, seTransformations } = storeToRefs(seStore);
-
-/* Controls the selection of the actionMode using the buttons. The default is segment. */
-const actionMode:  Ref<ActionMode> =  ref("rotate")
-
-/* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
-// private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-// private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+const { expressions, seTransformations, actionMode } = storeToRefs(seStore);
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
@@ -102,36 +95,13 @@ onBeforeMount((): void => {
   currentToolset.push(...includedTools.value);
 });
 
-function toolSelectionChanged() {
-  // Warning: when the same tool button is clicked in succession,
-  // selectedTool.value toggles from someValue to undefined
-  if (!inEditMode.value) {
-    const whichButton = buttonGroup.value
-      .flatMap((group: ToolButtonGroup) => group.children)
-      .find(
-        (toolBtn: ToolButtonType) =>
-          toolBtn.action == selectedTool.value
-      );
-    // console.log("Toolbutton handler, found the button", whichButton);
-    if (whichButton) {
-      seStore.setButton(whichButton);
-      seStore.setActionMode(selectedTool.value!);
-    }
-  } else {
-    const toolCheck = selectedTool.value
-      ? selectedTool.value
-      : lastSelectedTool!;
-    if (includedTools.value.includes(toolCheck))
-      acctStore.excludeToolName(toolCheck);
-    else acctStore.includeToolName(toolCheck);
-  }
-  // Remember the last selection
-  if (selectedTool.value)
-    lastSelectedTool = selectedTool.value
-}
+watch(() => actionMode.value, (act) => {
+  if (selectedTool.value !== act)
+    selectedTool.value = act
+  doTransformationEffect()
+})
 
-/* Writes the current state/edit mode to the store, where the Easel view can read it. */
-function switchActionMode(): void {
+function doTransformationEffect(): void {
   switch (actionMode.value) {
     case "measuredCircle":
       if (expressions.value.length > 0) {
@@ -186,26 +156,42 @@ function switchActionMode(): void {
     default:
       break;
   }
-
-  seStore.setActionMode(actionMode.value);
 }
+
+function toolSelectionChanged() {
+  // Warning: when the same tool button is clicked in succession,
+  // selectedTool.value toggles from someValue to undefined
+  if (!inEditMode.value) {
+    const whichButton = buttonGroup.value
+      .flatMap((group: ToolButtonGroup) => group.children)
+      .find(
+        (toolBtn: ToolButtonType) =>
+          toolBtn.action == selectedTool.value
+      );
+    // console.log("Toolbutton handler, found the button", whichButton);
+    if (whichButton) {
+      seStore.setButton(whichButton);
+      seStore.setActionMode(selectedTool.value!);
+    }
+  } else {
+    const toolCheck = selectedTool.value
+      ? selectedTool.value
+      : lastSelectedTool!;
+    if (includedTools.value.includes(toolCheck))
+      acctStore.excludeToolName(toolCheck);
+    else acctStore.includeToolName(toolCheck);
+  }
+  // Remember the last selection
+  if (selectedTool.value)
+    lastSelectedTool = selectedTool.value
+}
+
+
 
 /* This returns true only if there is at least one tool that needs to be displayed in the group. */
 // nonEmptyGroup(groupName: string): boolean {
 //   return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
 // }
-
-/* This turns off all other snackbar/toolUseMessage displays so that multiple
-  snackbar/toolUseMessages are not displayed at the same time.  */
-function displayOnlyThisToolUseMessageFunc(action: string): void {
-  // Alternative solution: use Array high-order functions
-  buttonGroup.value
-    .flatMap(group => group.children)
-    .filter(btn => btn.action !== action)
-    .forEach(btn => {
-      btn.displayToolUseMessage = !btn.displayToolUseMessage;
-    });
-}
 
 function toggleEditMode(): void {
   inEditMode.value = !inEditMode.value;
@@ -243,10 +229,10 @@ const developerButtonList: ToolButtonType[] = [
     id: 0,
     action: "iconFactory",
     displayedName: "CreateIconDisplayedName",
-    icon: "$iconFactory",
+    // icon: "$iconFactory",
     toolTipMessage: "CreateIconToolTipMessage",
     toolUseMessage: "CreateIconToolUseMessage",
-    displayToolUseMessage: false
+    // disabledIcon: '?????'
   }
 ];
 </script>

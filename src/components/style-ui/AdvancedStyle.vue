@@ -3,7 +3,7 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import { SENodule } from "../models/SENodule";
+import { SENodule } from "@/models/SENodule";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";

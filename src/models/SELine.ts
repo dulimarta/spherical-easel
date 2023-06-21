@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
   Labelable,
-  NormalVectorAndTValue,
+  NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
 import { SELabel, SEPoint } from "./internal";
@@ -206,9 +206,14 @@ export class SELine
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): NormalVectorAndTValue[] {
-    this.tmpVector3.set(0, 0, 0);
+  ): NormalAndPerpendicularPoint[] {
     this.tmpVector3.crossVectors(sePointVector, this._normalVector);
+
+    // The perpendicular point is the intersection between the plain containing the (new) line and
+    // the plane of THIS line
+    this.tmpVector2.crossVectors(this.tmpVector3, this._normalVector);
+
+    if (this.tmpVector2.z < 0) this.tmpVector2.multiplyScalar(-1); // Two possible points, pick the foreground
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
     // nearly antipodal or in the same direction)
 
@@ -222,8 +227,9 @@ export class SELine
         .normalize();
     }
     this.tmpVector3.normalize();
+    this.tmpVector2.normalize();
 
-    return [{ normal: this.tmpVector3, tVal: NaN }];
+    return [{ normal: this.tmpVector3, normalAt: this.tmpVector2 }];
   }
 
   public shallowUpdate(): void {

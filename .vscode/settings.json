@@ -35,11 +35,7 @@
     "sash.hoverBorder": "#aa83d3",
     "statusBarItem.remoteBackground": "#905dc6",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "commandCenter.border": "#e7e7e799",
-    "editorGroup.border": "#aa83d3",
-    "panel.border": "#aa83d3",
-    "sideBar.border": "#aa83d3",
-    "tab.activeBorder": "#aa83d3"
+    "commandCenter.border": "#e7e7e799"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -90,18 +86,33 @@
     "vuetify"
   ],
   "i18n-ally.localesPaths": [
-    "docs/languages",
-    "src/languages",
-    "src/assets/languages",
-    "../../../../../../Users/Hans/source/repos/sphericalgeometryvue/src/assets/languages",
-    "../../../../../../Users/Hans/source/repos/sphericalgeometryvue/src/assets/langs"
+    "./src/assets/languages"
   ],
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
-  "i18n-ally.enabledFrameworks": ["vue"],
-  "i18n-ally.localPaths": ["./src/assets/languages"],
   "files.readonlyFromPermissions": false,
   "files.readonlyInclude": {
     "node_modules/**": true
-  }
+  },
+  "i18n-ally.annotations": true,
+  "i18n-ally.autoDetection": true,
+  "i18n-ally.disablePathParsing": false,
+  "i18n-ally.displayLanguage": "en",
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.extract.autoDetect": true,
+  "i18n-ally.extract.keyMaxLength": 50,
+  "i18n-ally.frameworks.ruby-rails.scopeRoot": "",
+  "i18n-ally.fullReloadOnChanged": true,
+  "i18n-ally.pathMatcher": "*.ts",
+  "i18n-ally.dirStructure": "dir",
+  "i18n-ally.enabledParsers": [
+    "ts"
+  ],
+  "i18n-ally.enabledFrameworks": [
+    "vue-sfc",
+    "vue"
+  ],
+  "i18n-ally.extract.keygenStyle": "camelCase",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.editor.preferEditor": false
 }

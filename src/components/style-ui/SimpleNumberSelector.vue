@@ -1,9 +1,8 @@
 <template>
   <div>
-  Type {{ typeof props.modelValue }}
-  <div v-if="typeof props.modelValue === 'number'">
+  <div v-if="true || typeof props.modelValue === 'number'">
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ $t(titleKey) + " (" + thumbMap(props.modelValue) + ")" }}
+      {{ $t(titleKey) + " (" + thumbMap(props.modelValue ?? 0) + ")" }}
     </span>
     <span v-if="numSelected > 1" class="text-subtitle-2" style="color: red">
       {{ " " + $t("style.labelStyleOptionsMultiple") }}
@@ -11,7 +10,7 @@
     <br />
 
     <!-- The number selector slider -->
-    <v-slider
+    <v-slider :disabled="(typeof modelValue !== 'number')"
       @update:model-value="valueChanged"
       v-bind="attrs"
       type="range"
@@ -65,13 +64,9 @@ function thumbMap(val: number): string {
   ) {
     const min = Number(attrs?.min ?? 0);
     const step = Number(attrs?.step ?? 1);
-    return props.thumbStringValues[Math.floor((val - min) / step)];
+    return props.thumbStringValues[Math.floor((val - min) / step)] ?? "NaN";
   } else {
-    if (val) {
-      return String(val);
-    } else {
-      return String(props.modelValue);
-    }
+    return String(val);
   }
 }
 
