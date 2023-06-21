@@ -482,7 +482,7 @@ export const useSEStore = defineStore({
     setActionMode(mode: ActionMode): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
       if (
-        !(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")
+        !(this.actionMode === "zoomFit" || this.actionMode === "iconFactory")
       ) {
         this.previousActionMode = this.actionMode;
         // this.previousActiveToolName = this.activeToolName;

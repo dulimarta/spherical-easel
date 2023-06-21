@@ -70,10 +70,13 @@ export const useAccountStore = defineStore("acct", {
       this.userDisplayedName = name;
       this.userProfilePictureURL = pictureURL;
       console.debug("Favorite tools", this.favoriteTools);
-      if (favTools.trim().length > 0)
+      if (favTools.trim().length > 0) {
         this.favoriteTools = favTools
-          .split("\n")
-          .map((fav: string) => fav.split(",") as ActionMode[]);
+          .split("#")
+          .map((fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[])
+        if (this.favoriteTools.length !== 4)
+          this.favoriteTools = DEFAULT_TOOL_NAMES
+      }
       else
         this.favoriteTools = DEFAULT_TOOL_NAMES
     }

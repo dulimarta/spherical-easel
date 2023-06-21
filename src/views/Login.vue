@@ -169,7 +169,7 @@ function parseUserProfile(uid: string) {
       acctStore.setUserDetails(
         displayName,
         profilePictureURL,
-        favoriteTools ?? "\n\n\n"
+        favoriteTools ?? "###" /* Use '#' as separator among groups */
       );
     }
   });

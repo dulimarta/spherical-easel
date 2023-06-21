@@ -194,7 +194,7 @@ onMounted((): void => {
         userDisplayName.value = uProfile.displayName ?? "N/A";
         userLocation.value = uProfile.location ?? "N/A";
         // userFavoriteTools.value = decodeFavoriteTools(
-        //   uProfile.favoriteTools ?? "\n\n\n"
+        //   uProfile.favoriteTools ?? "###"
         // );
         if (uProfile.role) userRole.value = uProfile.role;
       }
@@ -227,8 +227,8 @@ function doSave(): void {
     location: userLocation.value,
     role: userRole.value,
     favoriteTools: favoriteTools.value
-      .map(arr => arr.join(','))
-      .join("\n")
+      .map(arr => arr.map(s => s.trim()).join(','))
+      .join("#")
   };
   const profileDoc = doc(appDB, "users", userUid.value!);
   setDoc(profileDoc, newProf, { merge: true }).then(() => {
