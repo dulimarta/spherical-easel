@@ -1,4 +1,3 @@
-
 export default {
   account: {
     createError: "Unable to create a new account: {error}",
@@ -218,7 +217,7 @@ export default {
     SelectDisplayedName: "Select Objects",
     SelectToolTipMessage: "Select Objects",
     SelectToolUseMessage:
-      "Click on objects to select them, hold the Alt key to add to your selection.",
+      "Click on objects to select them, hold the Alt/Option key to add to your selection.",
 
     ToggleLabelDisplayedName: "Toggle Label Display",
     ToggleLabelToolTipMessage: "Toggle Display Of Labels",
@@ -852,6 +851,5 @@ export default {
     all: "all",
 
     deleteMsg: "Delete {msgType} messages"
-
   }
-}
+};

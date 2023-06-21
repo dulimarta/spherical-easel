@@ -11,7 +11,7 @@
     width="80px"
     height="100px">
     <div class="toolbutton" v-bind="props">
-      <v-icon class="toolicon">{{ button.icon }}</v-icon>
+      <v-icon class="toolicon" size="tiny">{{ button.icon }}</v-icon>
       <span class="tooltext" :style="myStyle">
         {{ t("buttons." + button.displayedName) }}
       </span>
