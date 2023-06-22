@@ -61,7 +61,7 @@
             labelDisplayCaptionCheck,
             labelDisplayCaptionTruncate(styleOptions)
           ]"></v-text-field>
-          Scale % {{ styleOptions.labelTextScalePercent }}
+          {{ styleOptions.labelTextScalePercent }}
         <SimpleNumberSelector
           :numSelected="selectionCount"
           v-model="styleOptions.labelTextScalePercent"
@@ -75,7 +75,7 @@
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
-          Rotation {{ styleOptions.labelTextRotation }}
+          {{ styleOptions.labelTextRotation }}
         <SimpleNumberSelector
           :numSelected="selectionCount"
           v-model="styleOptions.labelTextRotation"
@@ -756,7 +756,7 @@ function labelDisplayModeValueFilter(
 function placeHolderText(numSelected: number, caption: boolean): string {
   if (numSelected > 1) {
     if (caption) {
-      return "Common Caption Text";
+      return t('style.commonCaptionText');
     } else {
       return "Common Label Text";
     }

@@ -1,7 +1,6 @@
 import { createI18n } from "vue-i18n";
-import messagesEn from "@/assets/languages/en";
-import messagedId from "@/assets/languages/id";
-// import messages from "@intlify/unplugin-vue-i18n/messages"
+import messagesEn from "@/assets/languages/en.json";
+import messagedId from "@/assets/languages/id.json";
 
 export default createI18n({
   locale: import.meta.env.VITE_APP_I18N_LOCALE || "en",
