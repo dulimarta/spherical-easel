@@ -15,10 +15,7 @@
     "baseUrl": ".",
     "outDir": "ts-out",
     "types": [
-      "vuetify",
       "jest",
-      "@intlify/unplugin-vue-i18n/messages",
-      "vite/client"
     ],
     "typeRoots": [
       "./node_modules/@types",

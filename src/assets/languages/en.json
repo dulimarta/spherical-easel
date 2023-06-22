@@ -162,7 +162,8 @@
     "CreateIconToolUseMessage": "Click to create an the SVG paths for an icon from current view.",
     "ResetSphereActionDisplayedName": "Clear Canvas",
     "ResetSphereActionToolTipMessage": "Clear the canvas",
-    "ResetSphereActionToolUseMessage": "Click to clear the canvas of all drawings"
+    "ResetSphereActionToolUseMessage": "Click to clear the canvas of all drawings",
+    "": ""
   },
   "settings": {
     "title": "Preferences"
@@ -579,12 +580,14 @@
     "constructionNotFound": "Construction {docId} not found."
   },
   "notifications": {
-    "directive": "directive",
-    "info": "info",
-    "warning": "warning",
-    "error": "error",
-    "success": "success",
-    "all": "all",
+    "directive": "Directive",
+    "info": "Informational",
+    "warning": "Warning",
+    "error": "Error",
+    "success": "Success",
+    "all": "All",
     "deleteMsg": "Delete {msgType} messages"
-  }
+  },
+  "key": "",
+  "i18nListTitle": ""
 }

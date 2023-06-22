@@ -100,10 +100,10 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
+      <!-- <MessageHub></MessageHub> -->
       <router-view />
-      <!-- this is the spot where the views controlled by Vue Router will be rendered v-html="$t('buttons.' + button.displayedName )"-->
+      <!-- this is the spot where the views controlled by Vue Router will be rendered -->
 
-      <!-- <MessageBox></MessageBox>-->
     </v-main>
   </v-app>
 
@@ -230,7 +230,7 @@ import {
   onBeforeUnmount,
   nextTick
 } from "vue";
-// import MessageBox from "@/components/MessageBox.vue";
+import MessageHub from "@/components/MessageHub.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { ConstructionInFirestore } from "./types";

@@ -431,7 +431,7 @@ function labelFilter(n: SENodule): boolean {
   return n.isLabelable();
 }
 
-// Map each object to its plotabble label
+// Map each object to its plottable label
 function labelMapper(n: SENodule): Nodule {
   return (n as unknown as Labelable).label!.ref!;
 }
@@ -602,7 +602,7 @@ onBeforeMount((): void => {
 onMounted((): void => {
   EventBus.listen(
     "style-label-conflict-color-reset",
-    resetAndRestoreConflictItemss
+    resetAndRestoreConflictItems
   );
   EventBus.listen(
     "style-update-conflicting-props",
@@ -619,7 +619,7 @@ onMounted((): void => {
   );
 });
 
-function resetAndRestoreConflictItemss(): void {
+function resetAndRestoreConflictItems(): void {
   resetAllItemsFromConflict();
   distinguishConflictingItems(conflictingPropNames);
 }

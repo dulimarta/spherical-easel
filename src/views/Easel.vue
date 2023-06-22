@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer location="end" color="black" permanent width="80">
-<StyleDrawer></StyleDrawer>
+    <StyleDrawer></StyleDrawer>
     <!--Style3></Style3-->
   </v-navigation-drawer>
   <div>
@@ -23,10 +23,10 @@
         When expanded, it takes 30% of the remaining width
       -->
         <v-container ref="mainPanel">
-          <v-row justify="center">
+          <v-row align="center">
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-            <div style="position: relative">
+            <v-col cols="12" >
               <SphereFrame
                 :canvas-size="currentCanvasSize"
                 v-show="svgDataImage.length === 0" />
@@ -55,7 +55,10 @@
                   :width="currentCanvasSize"
                   :height="currentCanvasSize" />
               </v-overlay>
-            </div>
+            </v-col>
+            <v-col>
+              <MessageHub ref="msghub" />
+            </v-col>
           </v-row>
         </v-container>
       </Pane>
@@ -101,11 +104,9 @@ import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
-import ShortcutIcon from "@/components/ShortcutIcon.vue";
-import PopOverTabs from "@/components/PopOverTabs.vue";
+import MessageHub from "@/components/MessageHub.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
-import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
 
 // import buttonList from "@/components/ToolGroups.vue";
@@ -156,6 +157,7 @@ import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 const appDB = getFirestore();
 const appAuth = getAuth();
 const appStorage = getStorage();
+const msghub = ref(null);
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -171,13 +173,13 @@ const { seNodules, temporaryNodules, hasObjects, actionMode } =
 const props = defineProps<{
   documentId?: string;
 }>();
-const { mainRect } = useLayout();
+const { mainRect, getLayoutItem } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
-let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
+// let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
 const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
@@ -185,9 +187,9 @@ const toolboxMinified = ref(false);
 const stylePanelMinified = ref(true);
 const notificationsPanelMinified = ref(true);
 const previewClass = ref("");
-const me = ref(null)
+// const me = ref(null)
 const constructionInfo = ref<any>({});
-const labelTab = ref(0);
+// const labelTab = ref(0);
 let undoEnabled = false;
 let redoEnabled = false;
 
@@ -197,9 +199,8 @@ let accountEnabled = false;
 let uid = "";
 let authSubscription!: Unsubscribe;
 const userUid = computed((): string | undefined => {
-    return appAuth.currentUser?.uid;
-  })
-
+  return appAuth.currentUser?.uid;
+});
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -238,14 +239,19 @@ function setRedoEnabled(e: { value: boolean }): void {
   redoEnabled = e.value;
 }
 
+const what: Ref<any> = ref({});
+
 function adjustSize(): void {
-  availHeight =
-    window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
-  console.debug(
-    "adjustSize() available height is ",
-    window.innerHeight,
-    mainRect.value
-  );
+  what.value = getLayoutItem("msg-hub");
+  // what.value =  (msghub.value! as HTMLElement).getBoundingClientRect()
+  console.debug("Layout Item", what);
+  const availHeight =
+    display.height.value - mainRect.value.bottom - mainRect.value.top - 144; // quick hack (-24) to leave room at the bottom
+  // console.debug(
+  //   "adjustSize() available height is ",
+  //   window.innerHeight,
+  //   mainRect.value
+  // );
   currentCanvasSize.value = availHeight;
 }
 
@@ -285,8 +291,9 @@ function loadDocument(docId: string): void {
 
 /** mounted() is part of VueJS lifecycle hooks */
 onMounted((): void => {
-  window.addEventListener("resize", onWindowResized);
+  window.addEventListener("resize", adjustSize);
   adjustSize(); // Why do we need this?  onWindowResized just calls adjustSize() but if you remove it the app doesn't work -- strange!
+
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   EventBus.listen("secret-key-detected", () => {
@@ -312,11 +319,12 @@ onBeforeUnmount((): void => {
 function dividerMoved(
   event: Array<{ min: number; max: number; size: number }>
 ): void {
+  alert("Divider moved");
   const availableWidth =
     ((100 - event[0].size - event[2].size) / 100) *
     (window.innerWidth - mainRect.value.left - mainRect.value.right);
-  availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom;
-  currentCanvasSize.value = Math.min(availableWidth, availHeight);
+  // availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom - 90;
+  // currentCanvasSize.value = Math.min(availableWidth, availHeight);
 }
 
 const panelSize = computed((): number => {
@@ -482,7 +490,7 @@ function handleStylePanelMinify(state: boolean) {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-  sans-serif;
+    sans-serif;
 }
 
 #currentTool {
@@ -495,7 +503,7 @@ function handleStylePanelMinify(state: boolean) {
   height: 100%;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-  sans-serif;
+    sans-serif;
 }
 
 #tool {
@@ -513,7 +521,7 @@ function handleStylePanelMinify(state: boolean) {
   padding-bottom: 0;
   color: #000;
   font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-  sans-serif;
+    sans-serif;
 }
 
 .anchored {
@@ -568,5 +576,4 @@ function handleStylePanelMinify(state: boolean) {
     transform: translateX(-100%) scale(0.3);
   }
 }
-
 </style>

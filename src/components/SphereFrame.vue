@@ -749,8 +749,8 @@ watch(
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     const directiveMsg = {
-      key: "buttons." + buttonSelection.value.displayedName,
-      secondaryMsg: "buttons." + buttonSelection.value.toolUseMessage,
+      key: buttonSelection.value.displayedName,
+      secondaryMsg: buttonSelection.value.toolUseMessage,
       keyOptions: {},
       secondaryMsgKeyOptions: {},
       type: "directive"

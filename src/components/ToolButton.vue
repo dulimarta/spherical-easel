@@ -74,30 +74,6 @@ onUpdated(() => {
   weight.value = props.selected ? "bold" : "normal";
 });
 
-const buttonLabel1 = computed((): string => {
-  return "label1";
-  // return (
-  //   $t(`buttons.${props.button.displayedName}`).split("<br>").join("/").trim() +
-  //   ": "
-  // );
-});
-
-const buttonLabel2 = computed((): string => {
-  return "label2";
-  // $t('buttons.' + button.displayedName)
-  //             .split('<br>')
-  //             .join('')
-  //             .slice(0, -6) + ': '
-  // "
-});
-const buttonLabel3 = computed((): string => {
-  return "label3";
-  // $t('buttons.' + button.displayedName)
-  //   .split('<br>')
-  //   .join(' ')
-  //   .trim() + ': '
-  // "
-});
 </script>
 
 <style lang="scss" scoped>
