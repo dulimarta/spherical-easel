@@ -41,6 +41,8 @@ import { useSEStore } from '@/stores/se';
 import { storeToRefs } from "pinia";
 import { LabelDisplayMode } from '@/types';
 import { StyleEditPanels } from '@/types/Styles';
+import { SEEarthPoint } from '@/models/SEEarthPoint';
+import NonFreePoint from '@/plottables/NonFreePoint';
 
 const store = useSEStore();
 const { inverseTotalRotationMatrix} = storeToRefs(store);
@@ -70,30 +72,30 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
         xcor.value = radius*Math.cos(latRad) * Math.cos(lngRad)
         ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
         zcor.value = radius*Math.sin(latRad)
-        const newPoint = new Point();
+        const newPoint = new NonFreePoint();
 
         // caption
-        const vtx = new SEPoint(newPoint);
+        const vtx = new SEEarthPoint(newPoint,lngRad,latRad);
         const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
         pointVector.normalize();
         const rotationMatrix = new THREE.Matrix4();
         rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
         pointVector.applyMatrix4(rotationMatrix);
         vtx.locationVector = pointVector;
-
+        let placeCaption = place.formatted_address;
         // const matrixMulti = new THREE.Matrix4().makeRotationX(Math.PI/2)
         // rotationMatrix.multiply(matrixMulti)
         // vtx.locationVector.applyMatrix4(rotationMatrix);
 
         //caption change here
         const pointLabel = new Label("point");
-        pointLabel.caption = "...";
+        pointLabel.caption = placeCaption;
         const newSELabel = new SELabel(pointLabel,vtx);
         const pointCommandGroup = new CommandGroup();
         pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
         pointCommandGroup.execute();
         pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
-
+        newSELabel.update();
         });
     };
     onMounted(()=>{

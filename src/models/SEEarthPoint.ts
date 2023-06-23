@@ -3,12 +3,10 @@ import { SEPoint } from "./SEPoint";
 export class SEEarthPoint extends SEPoint {
     private _longitude: number;
     private _latitude: number;
-    private _coordinate: number[]; // [x,y,z]
-    constructor(point: Point,longitude:number,latitude:number,coordinate:number[]){
+    constructor(point: Point,longitude:number,latitude:number){
         super(point);
         this._longitude = longitude;
         this._latitude = latitude;
-        this._coordinate = coordinate;
         point.updateDisplay();
     }
     get longitude():number{
@@ -17,8 +15,12 @@ export class SEEarthPoint extends SEPoint {
     get latitude():number{
         return this._latitude;
     }
-    get coordinate():number[]{
-        return this._coordinate;
+    public isNonFreePoint(): boolean {
+        return true;
     }
+    public isFreePoint(): boolean {
+        return false;
+    }
+
 
 }

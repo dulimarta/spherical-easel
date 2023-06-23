@@ -48,6 +48,7 @@ import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
 
 type PiniaAppState = {
+  isEarthMode: boolean;
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   buttonSelection: any;
@@ -102,6 +103,7 @@ const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 export const useSEStore = defineStore({
   id: "se",
   state: (): PiniaAppState => ({
+    isEarthMode: false,
     actionMode: "rotate",
     previousActionMode: "rotate",
     // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode

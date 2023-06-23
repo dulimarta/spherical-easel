@@ -20,7 +20,7 @@
       -->
         <v-container fluid ref="mainPanel">
           <v-row justify="center">
-            <AddressInput />
+            <AddressInput v-if="isEarthMode"/>
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
             <div style="position: relative">
@@ -174,9 +174,8 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode } =
+const { seNodules, temporaryNodules, hasObjects, actionMode,isEarthMode } =
   storeToRefs(seStore);
-const isEarthMode = ref(false)
 const props = defineProps<{
   documentId?: string;
 }>();
