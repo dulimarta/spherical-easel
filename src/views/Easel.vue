@@ -26,23 +26,13 @@
           <v-row align="center">
             <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-            <v-col cols="12" >
-              <SphereFrame
+            <v-col cols="12" style="position:relative">
+              <SphereFrame style="position:relative"
                 :canvas-size="currentCanvasSize"
                 v-show="svgDataImage.length === 0" />
               <v-overlay
                 contained
-                class="align-center justify-center"
-                :model-value="svgDataImage.length > 0">
-                <img
-                  :src="svgDataImage"
-                  style="background: hsla(0, 100%, 100%, 1)"
-                  :width="currentCanvasSize"
-                  :height="currentCanvasSize" />
-              </v-overlay>
-              <v-overlay
-                contained
-                :class="['justify-center', previewClass]"
+                :class="['justify-center', 'align-center', previewClass]"
                 :model-value="svgDataImage.length > 0">
                 <div class="previewText">
                   {{ constructionInfo.count }} objects. Created by:
@@ -56,7 +46,7 @@
                   :height="currentCanvasSize" />
               </v-overlay>
             </v-col>
-            <v-col>
+            <v-col cols="12">
               <MessageHub ref="msghub" />
             </v-col>
           </v-row>
@@ -547,15 +537,15 @@ function handleStylePanelMinify(state: boolean) {
   position: absolute;
   z-index: 20;
   transform: translateX(-50%);
-  border: 2px solid black;
+  // border: 2px solid black;
 }
 .preview-fadein {
   animation-duration: 500ms;
   animation-name: preview-expand;
 }
 .preview-fadeout {
-  animation-duration: 500ms;
-  animation-name: preview-shrink;
+  // animation-duration: 500ms;
+  // animation-name: preview-shrink;
 }
 
 @keyframes preview-expand {
@@ -569,10 +559,10 @@ function handleStylePanelMinify(state: boolean) {
 
 @keyframes preview-shrink {
   0% {
-    transform: translateX(0%) scale(1);
+    // transform: scale(1) translateX(0%);
   }
   100% {
-    transform: translateX(-100%) scale(0.3);
+    // transform: translateX(100%);
   }
 }
 </style>

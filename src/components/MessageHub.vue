@@ -257,10 +257,8 @@ function cancelDeleteMessages() {
   overflow-y: auto;
 }
 #msghub {
-  position: fixed;
-  bottom: 4px;
-  width: 64%;
-  margin: auto;
+  width: 80%;
+  margin: auto; /* place this center in its parent */
   padding: 0;
   border: 1px solid gray;
 }
