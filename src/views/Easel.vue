@@ -22,35 +22,32 @@
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-        <v-container ref="mainPanel">
-          <v-row align="center">
-            <!-- Shortcut icons are placed using absolute positioning. CSS requires
+        <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-            <v-col cols="12" style="position:relative">
-              <SphereFrame style="position:relative"
-                :canvas-size="currentCanvasSize"
-                v-show="svgDataImage.length === 0" />
-              <v-overlay
-                contained
-                :class="['justify-center', 'align-center', previewClass]"
-                :model-value="svgDataImage.length > 0">
-                <div class="previewText">
-                  {{ constructionInfo.count }} objects. Created by:
-                  {{ constructionInfo.author }}
-                </div>
-                <img
-                  id="previewImage"
-                  class="previewImage"
-                  :src="svgDataImage"
-                  :width="currentCanvasSize"
-                  :height="currentCanvasSize" />
-              </v-overlay>
-            </v-col>
-            <v-col cols="12">
-              <MessageHub ref="msghub" />
-            </v-col>
-          </v-row>
-        </v-container>
+        <div id="sphere-and-msghub">
+          <div id="msghub">
+            <MessageHub />
+          </div>
+          <SphereFrame
+            style="position: relative"
+            :canvas-size="currentCanvasSize"
+            v-show="svgDataImage.length === 0" />
+          <v-overlay
+            contained
+            :class="['justify-center', 'align-center', previewClass]"
+            :model-value="svgDataImage.length > 0">
+            <div class="previewText">
+              {{ constructionInfo.count }} objects. Created by:
+              {{ constructionInfo.author }}
+            </div>
+            <img
+              id="previewImage"
+              class="previewImage"
+              :src="svgDataImage"
+              :width="currentCanvasSize"
+              :height="currentCanvasSize" />
+          </v-overlay>
+        </div>
       </Pane>
 
       <!--Pane min-size="5" :max-size="25" :size="panelSize">
@@ -147,7 +144,6 @@ import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 const appDB = getFirestore();
 const appAuth = getAuth();
 const appStorage = getStorage();
-const msghub = ref(null);
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -232,11 +228,9 @@ function setRedoEnabled(e: { value: boolean }): void {
 const what: Ref<any> = ref({});
 
 function adjustSize(): void {
-  what.value = getLayoutItem("msg-hub");
-  // what.value =  (msghub.value! as HTMLElement).getBoundingClientRect()
-  console.debug("Layout Item", what);
+  // The MessageHub height is set to 80 pixels
   const availHeight =
-    display.height.value - mainRect.value.bottom - mainRect.value.top - 96; // quick hack (-24) to leave room at the bottom
+    display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
   // console.debug(
   //   "adjustSize() available height is ",
   //   window.innerHeight,
@@ -469,6 +463,20 @@ function handleStylePanelMinify(state: boolean) {
   // align-items: center;
   // font-size: 5em;
 }
+
+#sphere-and-msghub {
+  // position: relative is required for the parent of v-overlay
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
+#msghub {
+  align-self: center;
+  position: fixed;
+  bottom: 4px;
+}
 #container {
   display: flex;
   flex-direction: column;
@@ -544,8 +552,8 @@ function handleStylePanelMinify(state: boolean) {
   animation-name: preview-expand;
 }
 .preview-fadeout {
-  // animation-duration: 500ms;
-  // animation-name: preview-shrink;
+  animation-duration: 500ms;
+  animation-name: preview-shrink;
 }
 
 @keyframes preview-expand {
@@ -559,10 +567,10 @@ function handleStylePanelMinify(state: boolean) {
 
 @keyframes preview-shrink {
   0% {
-    // transform: scale(1) translateX(0%);
+    transform: scale(1) translateX(0%);
   }
   100% {
-    // transform: translateX(100%);
+    transform: translateX(100%);
   }
 }
 </style>
