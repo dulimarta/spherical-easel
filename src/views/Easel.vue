@@ -319,7 +319,6 @@ onBeforeUnmount((): void => {
 function dividerMoved(
   event: Array<{ min: number; max: number; size: number }>
 ): void {
-  alert("Divider moved");
   const availableWidth =
     ((100 - event[0].size - event[2].size) / 100) *
     (window.innerWidth - mainRect.value.left - mainRect.value.right);

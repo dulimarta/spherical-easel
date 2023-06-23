@@ -48,6 +48,7 @@
         </v-col>
         <v-col id="msg-display-area" class="pa-0">
           <template v-if="notifyMe">
+            <v-slide-x-transition>
             <v-alert
               v-if="currentMsg"
               :key="currentMsg.key"
@@ -62,8 +63,9 @@
               :text="pretty(currentMsg)"
               v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
             <v-alert v-else text="No messages"></v-alert>
+          </v-slide-x-transition>
           </template>
-          <v-alert
+          <v-alert transition="fade-transition"
             v-else
             color="grey"
             text="(Messages disabled)"

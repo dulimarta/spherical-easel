@@ -1075,8 +1075,11 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 }
 
 #sphereContainer {
-  border: 3px solid black;
+  // border: 3px solid black;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 .anchored {
   margin: 4px;
