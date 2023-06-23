@@ -246,7 +246,7 @@ function adjustSize(): void {
   // what.value =  (msghub.value! as HTMLElement).getBoundingClientRect()
   console.debug("Layout Item", what);
   const availHeight =
-    display.height.value - mainRect.value.bottom - mainRect.value.top - 144; // quick hack (-24) to leave room at the bottom
+    display.height.value - mainRect.value.bottom - mainRect.value.top - 96; // quick hack (-24) to leave room at the bottom
   // console.debug(
   //   "adjustSize() available height is ",
   //   window.innerHeight,

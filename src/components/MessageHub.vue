@@ -6,44 +6,73 @@
         <!-- <v-col cols="auto">Message filter {{ selectedMessageType }}</v-col> -->
         <v-col cols="auto">
           <v-icon id="filter-menu-popup">mdi-filter</v-icon>
+          <v-chip
+            v-if="selectedMessageType !== 'all'"
+            size="small">
+            {{ t(`notifications.${selectedMessageType}`) }}
+          </v-chip>
           <v-menu
+            v-model="filterMenuVisible"
             activator="#filter-menu-popup"
             :close-on-content-click="false"
             location="top"
             offset="32">
-            <v-sheet class="bg-yellow pa-2">
-              Select message type to show
-              <v-select
-                dense
-                v-model="selectedMessageType"
-                label="Message filter"
-                :items="messageTypes"
-                item-value="value"></v-select>
-              <v-btn>OK</v-btn>
-            </v-sheet>
+            <v-card class="pa-1">
+              <v-card-text>
+                Select message type to show
+                <v-select
+                  density="compact"
+                  v-model="selectedMessageType"
+                  label="Message filter"
+                  :items="messageTypes"
+                  item-title="title"
+                  item-value="value"></v-select>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  variant="outlined"
+                  density="comfortable"
+                  @click="filterMenuVisible = false">
+                  OK
+                </v-btn>
+              </v-card-actions>
+            </v-card>
           </v-menu>
         </v-col>
         <v-col cols="auto">
-          <v-icon>mdi-bell</v-icon>
+          <v-btn icon size="small" variant="text" @click="notifyMe = !notifyMe">
+            <v-icon v-if="notifyMe">mdi-bell</v-icon>
+            <v-icon v-else>mdi-bell-off</v-icon>
+          </v-btn>
         </v-col>
         <v-col id="msg-display-area" class="pa-0">
+          <template v-if="notifyMe">
+            <v-alert
+              v-if="currentMsg"
+              :key="currentMsg.key"
+              class="my-1 py-0"
+              border="end"
+              variant="outlined"
+              :border-color="alertType(currentMsg)"
+              :type="alertType(currentMsg)"
+              density="compact"
+              closable
+              :icon="currentMsg.type"
+              :text="pretty(currentMsg)"
+              v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
+            <v-alert v-else text="No messages"></v-alert>
+          </template>
           <v-alert
-            v-if="currentMsg"
-            class="my-1 py-0"
-            border="start"
-            variant="outlined"
-            :border-color="alertType(currentMsg)"
-            density="compact"
-            closable
-            :icon="currentMsg.type"
-            :text="pretty(currentMsg)"
-            v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
-          <v-alert v-else text="No messages"></v-alert>
+            v-else
+            color="grey"
+            text="(Messages disabled)"
+            class="text-white"></v-alert>
         </v-col>
         <v-col cols="auto">
           <v-menu
+            v-model="msgPopupVisible"
             activator="#msg-popup"
-
             :close-on-content-click="false"
             location="top"
             contained>
@@ -51,14 +80,14 @@
               <v-card-text>
                 <v-alert
                   class="my-1 py-0"
-                  border="start"
+                  border="end"
                   variant="outlined"
                   :border-color="alertType(msg)"
-                  v-for="(msg, index) in messages"
+                  v-for="(msg, index) in filteredMessages"
                   :key="`${msg.key}-${index}`"
                   density="compact"
                   closable
-                  :icon="msg.type"
+                  :type="alertType(msg)"
                   :text="pretty(msg)"
                   v-on:update:model-value="
                     deleteMessageByIndex(index)
@@ -70,64 +99,41 @@
             id="msg-popup"
             flat
             icon
-            :disabled="messages.length == 0"
+            :disabled="filteredMessages.length == 0"
             size="small">
-            <v-icon v-if="expanded">mdi-triangle-down</v-icon>
-            <v-badge v-else-if="messages.length > 1" :content="messages.length">
+            <v-icon v-if="msgPopupVisible">mdi-triangle-down</v-icon>
+            <v-badge
+              v-else-if="filteredMessages.length > 1"
+              :content="filteredMessages.length">
               <v-icon>mdi-triangle</v-icon>
             </v-badge>
             <v-icon v-else>mdi-triangle</v-icon>
           </v-btn>
         </v-col>
-      </v-row>
-      <!--v-row justify="end">
-        <v-col md="12">
-          <v-btn small @click="deleteAllMessages" color="error">
-            {{
-              $t("notifications.deleteMsg", {
-                msgType: $t(`notifications.${selectedMessageType}`).toString()
-              })
-            }}
-            ({{ filteredMessages.length }})
+        <v-col cols="auto">
+          <v-btn flat icon size="small" :disabled="messages.length === 0" @click="tryDeleteMessages">
+            <v-badge :content="messages.length">
+              <v-icon>mdi-trash-can</v-icon>
+            </v-badge>
           </v-btn>
         </v-col>
-      </!--v-row-->
+      </v-row>
       <!--/Teleport-->
-      <!--v-layout-- column>
-        <v-card
-          dismissible
-          dense
-          class="my-1"
-          v-for="(notif, index) in filteredMessages"
-          :key="index">
-          <v-container>
-            <v-row>
-              <v-col cols="10">
-                {{ notif.translatedKey }}
-                <span v-if="notif.translationSecondKey">
-                  : {{ notif.translationSecondKey }}
-                </span>
-              </v-col>
-              <v-col cols="1">
-                <v-btn icon @click="deleteMessageByIndex(index)">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card>
-      </!--v-layout-->
     </v-container>
   </div>
+  <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
+    Messages will be deleted
+    <template #actions>
+      <v-btn @click="cancelDeleteMessages" color="warning">Undo</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script setup lang="ts">
 import EventBus from "@/eventHandlers/EventBus";
 import Vue, { ref, Ref, computed, onMounted } from "vue";
 import SETTINGS from "@/global-settings";
-// import EventBus from "@/eventHandlers/EventBus";
 import { useI18n } from "vue-i18n";
-import { nextTick } from "vue";
 
 type MessageType = {
   key: string;
@@ -135,38 +141,30 @@ type MessageType = {
   secondaryMsg: string;
   secondaryMsgKeyOptions: string;
   type: string;
-  // translatedKey?: string;
-  // translationSecondKey?: string;
-
-  // msgColor: string | null;
-  // index: number;
   timestamp: number;
 };
 type AlertType = "success" | "info" | "error" | "warning";
 // const props = defineProps<{ minified: boolean }>();
 
+const DELETE_DELAY = 3000
 const { t } = useI18n();
-const expanded = ref(false);
-// const showMe = ref(false);
-const messageTypes = [
-  "all",
-  ...SETTINGS.messageTypes.map(s => t(`notifications.${s}`))
-];
-// const currentMsg: Ref<MessageType | null> = ref(null);
-// const msgDisplayQueue: MessageType[] = []; // Queue of messages that are displayed when notifications panel is minified
+const filterMenuVisible = ref(false);
+const notifyMe = ref(true);
+const msgPopupVisible = ref(false);
+const showPurgeMessages = ref(false)
+const messageTypes = ["all", ...SETTINGS.messageTypes].map((s: string) => ({
+  value: s,
+  title: t(`notifications.${s}`)
+}));
 const messages: Ref<MessageType[]> = ref([]);
-const selectedMessageType = ref(messageTypes[0]);
-// let messageTimer: any | null = null;
-
+const selectedMessageType = ref("all");
+let deleteTimer: any
 onMounted((): void => {
   EventBus.listen("show-alert", addMessage);
-  // EventBus.listen("show-alert", (arg:any  ) => {
-  //   alert(arg)
-  // })
 });
 
 const currentMsg = computed((): MessageType | null =>
-  messages.value.length > 0 ? messages.value[0] : null
+  filteredMessages.value.length > 0 ? filteredMessages.value[0] : null
 );
 
 function shortMessage(m: MessageType): string {
@@ -182,11 +180,14 @@ function pretty(m: MessageType): string {
     str = str.concat(": " + t(m.secondaryMsg, m.secondaryMsgKeyOptions));
   return str;
 }
-// const filteredMessages = computed((): Array<MessageType> => {
-//   if (expanded.value) return messages.value;
-//   else if (messages.value.length > 0) return messages.value.slice(0, 1);
-//   else return [];
-// });
+const filteredMessages = computed(
+  (): Array<MessageType> =>
+    selectedMessageType.value === "all"
+      ? messages.value
+      : messages.value.filter(
+          (m: MessageType) => m.type === selectedMessageType.value
+        )
+);
 
 function addMessage(m: MessageType): void {
   // alert(`Type: ${m.type}: ${m.key}`);
@@ -226,11 +227,24 @@ async function swapMessages(): Promise<void> {
 **/
 function deleteMessageByIndex(pos: number) {
   messages.value.splice(pos, 1);
-  // await nextTick() // Remove individual message from notifications list
+
+  if (msgPopupVisible.value && messages.value.length === 0)
+    msgPopupVisible.value = false;
 }
 
-function deleteAllMessages() {
-  messages.value.splice(0);
+function tryDeleteMessages() {
+  showPurgeMessages.value = true
+  deleteTimer = setTimeout(() => {
+    messages.value.splice(0)
+    deleteTimer = null
+  }, DELETE_DELAY)
+}
+function cancelDeleteMessages() {
+  if (deleteTimer) {
+    clearTimeout(deleteTimer)
+    deleteTimer = null
+  }
+  showPurgeMessages.value = false
 }
 </script>
 <style scoped>
@@ -243,7 +257,7 @@ function deleteAllMessages() {
 #msghub {
   position: fixed;
   bottom: 4px;
-  width: 60%;
+  width: 64%;
   margin: auto;
   padding: 0;
   border: 1px solid gray;
