@@ -39,6 +39,8 @@ import { AddPointCommand } from '@/commands/AddPointCommand';
 import globalSettings from '@/global-settings';
 import { useSEStore } from '@/stores/se';
 import { storeToRefs } from "pinia";
+import { LabelDisplayMode } from '@/types';
+import { StyleEditPanels } from '@/types/Styles';
 
 const store = useSEStore();
 const { inverseTotalRotationMatrix} = storeToRefs(store);
@@ -61,6 +63,7 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
         const place = autocomplete.getPlace();
         lat.value = place.geometry.location.lat();
         lng.value = place.geometry.location.lng();
+        console.log(place)
         const latRad = lat.value * Math.PI / 180;
         const lngRad = lng.value * Math.PI / 180;
         const radius = 1;
@@ -68,6 +71,8 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
         ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
         zcor.value = radius*Math.sin(latRad)
         const newPoint = new Point();
+
+        // caption
         const vtx = new SEPoint(newPoint);
         const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
         pointVector.normalize();
@@ -80,11 +85,15 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
         // rotationMatrix.multiply(matrixMulti)
         // vtx.locationVector.applyMatrix4(rotationMatrix);
 
-
-        const newSELabel = new SELabel(new Label("point"),vtx);
+        //caption change here
+        const pointLabel = new Label("point");
+        pointLabel.caption = "...";
+        const newSELabel = new SELabel(pointLabel,vtx);
         const pointCommandGroup = new CommandGroup();
         pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
         pointCommandGroup.execute();
+        pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
+
         });
     };
     onMounted(()=>{

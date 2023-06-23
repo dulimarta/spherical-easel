@@ -268,6 +268,7 @@ export default class Label extends Nodule {
     });
     // this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+    console.log("Label initialLabelDisplayMode", mode);
   }
   get labelDisplayMode(): LabelDisplayMode {
     const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
