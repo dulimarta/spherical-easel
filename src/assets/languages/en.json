@@ -440,7 +440,7 @@
     "expression": "Expression",
     "parserError": "Reached end of input while parsing expression",
     "expectedRightParenthesis": "Expected ')' at {text}",
-    "expectedLeftParenthesis": "Expected '(' at function name {text}}",
+    "expectedLeftParenthesis": "Expected '(' at function name {text}",
     "expectedRightButParenthesis": "Expected ')', but received {text}",
     "unexpectedInput": "Unexpected input at {text}",
     "unexpectedToken": "Unexpected token at {text}",
@@ -547,7 +547,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "keep": "Keep",
-    "discard": "discard",
+    "discard": "Discard",
     "description": "Description",
     "proceed": "Proceed",
     "resetSphere": "Reset Sphere",
@@ -587,7 +587,5 @@
     "success": "Success",
     "all": "All",
     "deleteMsg": "Delete {msgType} messages"
-  },
-  "key": "",
-  "i18nListTitle": ""
+  }
 }

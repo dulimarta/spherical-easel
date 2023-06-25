@@ -45,7 +45,7 @@
     "vuetify": "3"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^0.8.1",
+    "@intlify/vite-plugin-vue-i18n": "^7.0.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/jest": "~24.0.25",

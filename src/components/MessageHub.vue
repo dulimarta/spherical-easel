@@ -11,11 +11,15 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-badge :content="selectedMessageType.length" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-badge
+            :content="selectedMessageType.length"
+            v-if="selectedMessageType.length !== messageTypes.length">
             <v-icon id="filter-menu-popup">mdi-filter</v-icon>
           </v-badge>
           <v-icon v-else id="filter-menu-popup">mdi-filter</v-icon>
-          <v-tooltip activator="#filter-menu-popup" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-tooltip
+            activator="#filter-menu-popup"
+            v-if="selectedMessageType.length !== messageTypes.length">
             {{ selectedMessageType.map(s => s.toUpperCase()).join(", ") }}
           </v-tooltip>
           <v-menu
@@ -24,10 +28,9 @@
             :close-on-content-click="false"
             location="top"
             offset="32">
-            <v-card class="pa-1">
+            <v-card class="pa-1" >
               <v-card-title>Select message types</v-card-title>
               <v-card-text>
-                {{ selectedMessageType }}
                 <v-checkbox
                   label="Select All"
                   v-model="showAllType"
@@ -149,13 +152,22 @@
     </v-container>
   </div>
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
-    Messages will be deleted
+    {{ t("deleteWarning") }}
     <template #actions>
       <v-btn @click="cancelDeleteMessages" color="warning">Undo</v-btn>
     </template>
   </v-snackbar>
 </template>
-
+<i18n>
+{
+  "en": {
+    "deleteWarning": "Messages will be deleted"
+  },
+  "id": {
+    "deleteWarning": "Pesan-pesan akan dihapus"
+  }
+}
+</i18n>
 <script setup lang="ts">
 import EventBus from "@/eventHandlers/EventBus";
 import { ref, Ref, computed, onMounted } from "vue";

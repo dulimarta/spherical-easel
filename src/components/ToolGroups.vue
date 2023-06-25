@@ -42,7 +42,6 @@
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
       <v-item v-slot="{ isSelected, toggle }">
-        {{ isSelected }}
         <ToolButton
           @click="toggle"
           v-for="(button, pos) in developerButtonList"
@@ -77,7 +76,7 @@ const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
 const currentToolset: Array<ActionMode> = [];
-const selectedTool: Ref<ActionMode | null> = ref(null);
+const selectedTool: Ref<ActionMode | null> = ref("rotate");
 let lastSelectedTool: ActionMode | null = null;
 
 /* This is a variable that does NOT belong in the global settings but I don't know where else to

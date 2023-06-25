@@ -1,7 +1,7 @@
 <template>
   <PopOverTabs
     :icon-name="
-      editModeIsBack ? 'mdi-arrange-bring-forward' : 'mdi-arrange-send-backward'
+      editModeIsBack ? 'mdi-arrange-send-backward' : 'mdi-arrange-bring-forward'
     ">
     <template #tabs>
       <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>

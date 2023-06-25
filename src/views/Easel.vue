@@ -89,11 +89,7 @@ import MessageHub from "@/components/MessageHub.vue";
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
 
-// import buttonList from "@/components/ToolGroups.vue";
-// import ToolButton from "@/components/ToolButton.vue";
 // Temporarily exclude Style.vue
-// import StylePanel from "@/components/Style.vue";
-// import LabelStyle from "@/components/LabelStyle.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -163,13 +159,8 @@ const currentCanvasSize = ref(0); // Result of height calculation will be passed
 
 // function buttonList = buttonList;
 const toolboxMinified = ref(false);
-const notificationsPanelMinified = ref(true);
 const previewClass = ref("");
-// const me = ref(null)
 const constructionInfo = ref<any>({});
-// const labelTab = ref(0);
-let undoEnabled = false;
-let redoEnabled = false;
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -187,8 +178,6 @@ const svgDataImage = ref("");
 //#region magnificationUpdate
 onBeforeMount(() => {
   EventBus.listen("magnification-updated", resizePlottables);
-  EventBus.listen("undo-enabled", setUndoEnabled);
-  EventBus.listen("redo-enabled", setRedoEnabled);
   EventBus.listen("preview-construction", showConstructionPreview);
 });
 //#endregion magnificationUpdate
@@ -204,12 +193,6 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
     svgDataImage.value = "";
   }
 };
-function setUndoEnabled(e: { value: boolean }): void {
-  undoEnabled = e.value;
-}
-function setRedoEnabled(e: { value: boolean }): void {
-  redoEnabled = e.value;
-}
 
 const what: Ref<any> = ref({});
 

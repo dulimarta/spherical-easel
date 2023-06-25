@@ -18,7 +18,7 @@
       <template #prepend>
         <router-link to="/">
           <v-img
-            alt="Spherical Easel Logo"
+            :alt="t('selogo')"
             class="shrink mr-2"
             contain
             src="@/assets/SphericalEaselLogo.gif"
@@ -28,7 +28,7 @@
         </router-link>
         <a href="/docs/">
           <v-icon class="ml-2" color="white">mdi-help-circle</v-icon>
-          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
+          <v-tooltip location="bottom" activator="parent">{{ t('opendoc') }}</v-tooltip>
         </a>
       </template>
       <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title>
@@ -90,6 +90,7 @@
           </v-icon>
         </v-btn-->
       </template>
+      <LangageSelector/>
       <router-link to="/settings/">
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
@@ -214,7 +215,14 @@
       </v-row>
     </Dialog-->
 </template>
-
+<i18n>
+{
+  "en": {
+    "selogo": "Spherical Easel Logo",
+    "opendoc": "Open Documentation"
+  }
+}
+</i18n>
 <!--
   This section is for Typescript code (note lang="ts") for binding the output of the user
   actions to desired changes in the display and the rest of the app.
@@ -232,7 +240,8 @@ import {
 } from "vue";
 import MessageHub from "@/components/MessageHub.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
-import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue"
+import LangageSelector from "./components/LangageSelector.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { User, getAuth, Unsubscribe } from "firebase/auth";
@@ -276,7 +285,7 @@ import { useRouter } from "vue-router";
 //   "beforeRouteUpdate"
 // ]);
 
-const { t, locale } = useI18n({ inheritLocale: true });
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { includedTools, userRole } = storeToRefs(acctStore);

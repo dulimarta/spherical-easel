@@ -231,12 +231,12 @@
   },
   "style": {
     "DIFFERINGSTYLESDETECTED": "Gaya tampilan",
-    "advancedStyle": "",
+    "advancedStyle": "Gaya tampilan lanjut",
     "advancedstyle": "Gaya Tampilan Lanjut",
     "back": "Latar Belakang",
     "backStyleContrast": "Kontras Latar Belakang",
     "backStyleContrastToolTip": "Gaya tampilan latar belakang ditentukan oleh gaya tampilan latar muka dan besarnya nilai Kontras Latar Belakang. Nilai kontras 1 menyatakan tidak ada perbedaan warna antara latar muka dan latar belakang. Dengan nilai kontras 0 objek akan tampak hampir hilang",
-    "backStyleDisagreement": "",
+    "backStyleDisagreement": "Gaya tampilan latar belakang ",
     "backgroundStyle": "Gaya Tampilan Latar Belakang",
     "basicStyle": "Basic Style",
     "bold": "Bold",
@@ -360,10 +360,10 @@
   },
   "key": "key",
   "constructions": {
-    "confirmLogout": "constructions.confirmLogout",
-    "proceed": "constructions.proceed",
-    "cancel": "constructions.cancel",
-    "logoutDialog": "constructions.logoutDialog",
+    "confirmLogout": "Logout?",
+    "proceed": "Lanjutkan",
+    "cancel": "Batal",
+    "logoutDialog": "Anda akan segera logout, suntingan yang belum tersimpan akan hilang",
     "privateConstructions": "constructions.privateConstructions",
     "publicConstructions": "constructions.publicConstructions",
     "unsavedObjectsMsg": "constructions.unsavedObjectsMsg",
@@ -383,6 +383,5 @@
   },
   "notifications": {
     "deleteMsg": "notifications.deleteMsg"
-  },
-  "i18nListTitle": "i18nListTitle"
+  }
 }
