@@ -15,7 +15,7 @@
     "baseUrl": ".",
     "outDir": "ts-out",
     "types": [
-      "jest",
+      "jest", "vuetify"
     ],
     "typeRoots": [
       "./node_modules/@types",

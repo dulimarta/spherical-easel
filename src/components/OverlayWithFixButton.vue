@@ -45,11 +45,6 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
-import SETTINGS from "@/global-settings";
-// import { Prop, Component } from "vue-property-decorator";
-
-// @Component({})
-// export default class OverlayWithFixButton extends Vue {
 
 type ComponentProps = {
   i18nButtonToolTip: string;
