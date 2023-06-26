@@ -1,8 +1,6 @@
 <template>
 <div class="inputAddress">
     <input type="text" id="autocomplete" placeholder="Enter your address" />
-<h2>Lat : {{ lat }} Lng: {{ lng }}</h2>
-<h2>X: {{ xcor }} Y: {{ ycor }} Z: {{ zcor }}</h2>
 </div>
 
 </template>
@@ -25,8 +23,7 @@
     }
 </style>
 <script setup lang="ts">
-import { onMounted,ref } from 'vue';
-import { onUnmounted } from 'vue';
+import { onMounted } from 'vue';
 import * as THREE from 'three';
 import { SELabel } from '@/models/SELabel';
 import Label from '@/plottables/Label';
@@ -36,20 +33,11 @@ import globalSettings from '@/global-settings';
 import { useSEStore } from '@/stores/se';
 import { storeToRefs } from "pinia";
 import { LabelDisplayMode } from '@/types';
-import { StyleEditPanels } from '@/types/Styles';
 import { SEEarthPoint } from '@/models/SEEarthPoint';
 import NonFreePoint from '@/plottables/NonFreePoint';
 import { Loader } from "@googlemaps/js-api-loader"
-import { GoogleAuthProvider } from 'firebase/auth';
 const store = useSEStore();
 const { inverseTotalRotationMatrix} = storeToRefs(store);
-
-    const lat = ref(0)
-    const lng = ref(0)
-    const xcor = ref(0)
-    const ycor = ref(0)
-    const zcor = ref(0)
-
 
     onMounted(()=>{
         const api = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
@@ -62,20 +50,18 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
             const autocomplete = new Autocomplete(input);
             autocomplete.addListener("place_changed", () => {
                 const place = autocomplete.getPlace();
-                lat.value = place.geometry.location.lat();
-                lng.value = place.geometry.location.lng();
                 console.log(place)
-                const latRad = lat.value * Math.PI / 180;
-                const lngRad = lng.value * Math.PI / 180;
+                const latRad = place.geometry.location.lat() * Math.PI / 180;
+                const lngRad = place.geometry.location.lng() * Math.PI / 180;
                 const radius = 1;
-                xcor.value = radius*Math.cos(latRad) * Math.cos(lngRad)
-                ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
-                zcor.value = radius*Math.sin(latRad)
+                const xcor = radius*Math.cos(latRad) * Math.cos(lngRad)
+                const ycor = radius*Math.cos(latRad) * Math.sin(lngRad)
+                const zcor = radius*Math.sin(latRad)
                 const newPoint = new NonFreePoint();
 
                 // caption
                 const vtx = new SEEarthPoint(newPoint,lngRad,latRad);
-                const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
+                const pointVector = new THREE.Vector3(xcor, ycor, zcor);
                 pointVector.normalize();
                 const rotationMatrix = new THREE.Matrix4();
                 rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
