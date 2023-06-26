@@ -17,16 +17,6 @@
     </v-card>
   </v-menu>
 </template>
-<i18n>
-{
-    "en": {
-        "selectLanguage": "Select Your Language"
-    },
-    "id": {
-        "selectLanguage": "Pilih Bahasa"
-    }
-}
-</i18n>
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -37,3 +27,13 @@ const availabelLanguages = ref([
   { value: "id", title: "🇮🇩 Bahasa Indonesia" }
 ]);
 </script>
+<i18n lang="json">
+{
+  "en": {
+    "selectLanguage": "Select Your Language"
+  },
+  "id": {
+    "selectLanguage": "Pilih Bahasa"
+  }
+}
+</i18n>

@@ -6,16 +6,28 @@
 
     <div id="visibility-control">
       <span>
-        Label
+        {{ t("label") }}
         <v-icon>mdi-eye</v-icon>
       </span>
       <span>
-        Object
+        {{ t("object") }}
         <v-icon>mdi-eye</v-icon>
       </span>
     </div>
   </div>
 </template>
+<i18n lang="json">
+{
+  "en": {
+    "label": "Label",
+    "object": "Object"
+  },
+  "id": {
+    "label": "Label",
+    "object": "Objek"
+  }
+}
+</i18n>
 <style scoped>
 .vertical-nav-drawer {
   height: 90vh;
@@ -33,7 +45,8 @@
 </style>
 <script setup lang="ts">
 import { StyleEditPanels } from "@/types/Styles";
-import PopOverTabs from "../PopOverTabs.vue";
 import LabelStyle from "./LabelStyle.vue";
 import FrontBackStyle from "./FrontBackStyle.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 </script>

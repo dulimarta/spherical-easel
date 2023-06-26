@@ -81,7 +81,7 @@
                 :icon="currentMsg.type"
                 :text="pretty(currentMsg)"
                 v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
-              <v-alert v-else text="No messages"></v-alert>
+              <v-alert v-else :text="t('noMessages')"></v-alert>
             </v-slide-x-transition>
           </template>
           <v-alert
@@ -158,36 +158,7 @@
     </template>
   </v-snackbar>
 </template>
-<i18n>
-{
-  "en": {
-    "directive": "Directive",
-    "info": "Informational",
-    "warning": "Warning",
-    "error": "Error",
-    "success": "Success",
-    "all": "All",
-    "selectAll": "Select All Type",
-    "selectMsgType": "Select Message Type",
-    "deleteMsg": "Delete {msgType} messages",
-    "deleteWarning": "Messages will be deleted",
-    "undo": "Undo"
-  },
-  "id": {
-    "directive": "Petunjuk",
-    "info": "Informasional",
-    "warning": "Peringatan",
-    "error": "Kesalahan",
-    "success": "Sukses",
-    "all": "Semua Pesan",
-    "selectAll": "Pilih semua jenis pesan",
-    "selectMsgType": "Pilih Jenis Pesan",
-    "deleteMsg": "Hapus Pesan Jenis {msgType}",
-    "deleteWarning": "Pesan-pesan akan dihapus",
-    "undo": "Urung"
-  }
-}
-</i18n>
+
 <script setup lang="ts">
 import EventBus from "@/eventHandlers/EventBus";
 import { ref, Ref, computed, onMounted } from "vue";
@@ -311,3 +282,31 @@ function cancelDeleteMessages() {
   border: 1px solid gray;
 }
 </style>
+<i18n lang="yaml">
+en:
+  all: "All"
+  deleteMsg: "Delete {msgType} messages"
+  deleteWarning: "Messages will be deleted"
+  directive: "Directive"
+  error: "Error"
+  info: "Informational"
+  noMessages: "No messages"
+  selectAll: "Select All Type"
+  selectMsgType: "Select Message Type"
+  success: "Success"
+  undo: "Undo"
+  warning: "Warning"
+id:
+  all: "Semua Pesan"
+  deleteMsg: "Hapus Pesan Jenis {msgType}"
+  deleteWarning: "Pesan-pesan akan dihapus"
+  directive: "Petunjuk"
+  error: "Kesalahan"
+  info: "Informasional"
+  noMessages: "Tidak ada pesan"
+  selectAll: "Pilih semua jenis pesan"
+  selectMsgType: "Pilih Jenis Pesan"
+  success: "Sukses"
+  undo: "Urung"
+  warning: "Peringatan"
+</i18n>
