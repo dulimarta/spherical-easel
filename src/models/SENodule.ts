@@ -1,7 +1,8 @@
 import { Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
 import {
-  NormalVectorAndTValue,
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
   ObjectState,
   ParametricVectorAndTValue
 } from "@/types";
@@ -406,6 +407,7 @@ export abstract class SENodule implements Visitable {
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
+    console.debug("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
     if (!this._showing) return;
     this._selected = b;
@@ -462,7 +464,7 @@ export abstract class SENodule implements Visitable {
       dpp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(dp, tValues, [], dpp);
+    const zeros = this.findZerosParametrically(dp, tValues, dpp);
 
     if (zeros.length > 0) {
       // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
@@ -523,24 +525,33 @@ export abstract class SENodule implements Visitable {
     f: (t: number) => number,
     t1: number,
     t2: number
-  ): number {
-    if (Math.abs(f(t1)) < SETTINGS.tolerance / 1000) {
-      return t1;
-    }
-    if (Math.abs(f(t2)) < SETTINGS.tolerance / 1000) {
-      return t2;
-    }
-    const mid = (t1 + t2) / 2;
-    if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
-      return mid;
-    } else {
-      if (f(t1) * f(mid) < 0) {
-        return SENodule.bisection(f, t1, mid);
+  ): number | undefined {
+    let f1 = f(t1);
+    let f2 = f(t2);
+    let mid;
+    // console.debug("Start bisection");
+    while (Math.abs(t2 - t1) >= SETTINGS.parameterization.bisectionMinSize) {
+      mid = (t1 + t2) / 2;
+      const fmid = f(mid);
+      if (Math.abs(fmid) < SETTINGS.tolerance / 1000) {
+        return mid;
+      }
+      // console.debug(
+      //   `Bisection Zero crossing updated to f(${t1.toFixed(6)})=${f1.toFixed(
+      //     6
+      //   )}` + ` and f(${t2.toFixed(6)})=${f2.toFixed(6)}`
+      // );
+      if (f1 * fmid < 0) {
+        t2 = mid;
+        f2 = fmid;
       } else {
-        return SENodule.bisection(f, mid, t2);
+        t1 = mid;
+        f1 = fmid;
       }
     }
+    return (t1 + t2) / 2;
   }
+
   /**
    * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
    * pass though unitVec
@@ -553,13 +564,12 @@ export abstract class SENodule implements Visitable {
    * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
    */
   protected static getNormalsToPerpendicularLinesThruParametrically(
-    // P: (t: number) => Vector3,
+    P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
-  ): NormalVectorAndTValue[] {
+  ): NormalAndPerpendicularPoint[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
@@ -580,53 +590,18 @@ export abstract class SENodule implements Visitable {
     const zeros = this.findZerosParametrically(
       d,
       tValues,
-      avoidTheseTValues,
+      // avoidTheseTValues,
       dp
     );
 
     // console.debug("Zeros for perpendicular lines", zeros);
 
-    const returnVectors: Array<NormalVectorAndTValue> = zeros
-      .map(tVal => {
-        const tempNormal = new Vector3();
-        tempNormal.copy(PPrime(tVal));
-        tempNormal.normalize();
-        // const tempLocation = new Vector3();
-        // tempLocation.copy(P(tVal));
-        // console.debug("At t=", tVal, "normal is", temp.toFixed(3));
-        // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
-        // also check that that vec is perpendicular to the given unitVector
-        // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
-        //   console.log("through point in SENodule");
-        // } else {
-        //   console.log("not through point in SENodule");
-        // }
-        return {
-          normal: tempNormal,
-          tVal
-        };
-
-        // }
-      })
-      .filter((pair: NormalVectorAndTValue) => !pair.normal.isZero());
-    // remove duplicates from the list
-    // const uniqueNormals: Vector3[] = [];
-    // returnVectors.forEach(vec => {
-    //   if (
-    //     uniqueNormals.every(
-    //       nor => !nor.cross(vec).isZero(SETTINGS.nearlyAntipodalIdeal)
-    //     )
-    //   ) {
-    //     uniqueNormals.push(vec);
-    //   }
-    // });
-    // console.log(
-    //   "returnVectors list 0",
-    //   returnVectors.length,
-    //   returnVectors[1].x,
-    //   returnVectors[1].y,
-    //   returnVectors[1].z
-    // );
+    const returnVectors: Array<NormalAndPerpendicularPoint> = zeros
+      .map(tVal => ({
+        normal: PPrime(tVal).clone().normalize(),
+        normalAt: P(tVal).clone().normalize()
+      }))
+      .filter((pair: NormalAndPerpendicularPoint) => !pair.normal.isZero());
 
     return returnVectors;
   }
@@ -645,9 +620,9 @@ export abstract class SENodule implements Visitable {
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
+    // avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
 
@@ -672,81 +647,49 @@ export abstract class SENodule implements Visitable {
     const zeros = this.findZerosParametrically(
       d,
       tValues,
-      avoidTheseTValues,
+      // avoidTheseTValues,
       dp
     );
 
-    const returnVectors: Vector3[] = [];
-    zeros.forEach(tVal => {
-      const temp = new Vector3();
+    return zeros.map(tVal => {
+      const vec = new Vector3();
 
-      temp.copy(P(tVal).cross(unitVec));
-      returnVectors.push(temp.normalize());
+      vec.copy(P(tVal).cross(unitVec));
+      return { normal: vec, tangentAt: P(tVal).clone() };
     });
-    return returnVectors;
   }
 
+  // Assumption: along the provided T-values, the curve is C1-continuous.
+  // TODO: do we need to check for open or close curves?
   public static findZerosParametrically(
     f: (t: number) => number,
     tValues: Array<number>,
-    avoidTheseTValues: number[],
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
-    const signChanges = [];
-    const zeros: number[] = [];
+    const signChangeIndices = [];
+    const tZeroes: number[] = [];
 
-    // const tMin = tValues[0];
-    // const tMax = tValues[tLen - 1];
+    // Locate the zeros and zero-crossings
+    if (Math.abs(f(tValues[0])) < SETTINGS.tolerance / 1000)
+      tZeroes.push(tValues[0]);
 
-    // if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
-    //   // make sure that tMin is not on the avoid list
-    //   if (
-    //     avoidTheseTValues.every(
-    //       num => Math.abs(num - tMin) > SETTINGS.tolerance
-    //     )
-    //   ) {
-    //     zeros.push(tMin);
-    //   }
-    //   // else {
-    //   //   console.log("Excluded value", tMin);
-    //   // }
-    //   // console.log("Actual zero! tMin", tMin, f(tMin));
-    // }
-    const filteredTValues = tValues.filter(t =>
-      avoidTheseTValues.every(num => Math.abs(num - t) > SETTINGS.tolerance)
-    );
-    const tLen = filteredTValues.length;
-    let lastTVal = filteredTValues[tLen - 1];
-
-    for (let i = 0; i < filteredTValues.length; i++) {
-      const tVal = filteredTValues[i];
-      // console.debug(`Checking for zero at T=${tVal}`);
-      if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
-        // make sure that tVal is not on the avoid list
-        zeros.push(tVal);
-        // else {
-        //   console.log("Excluded value", tVal);
-        // }
-        // console.log("Actual zero!", tVal, f(tVal));
-      } else if (f(tVal) * f(lastTVal) < 0) {
-        // make sure that tMin is not on the avoid list
-        // if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
-        // console.log("sign Change", tVal, f(tVal));
-        signChanges.push([lastTVal, tVal]);
-        // }
-        // else {
-        //   console.log("Excluded Interval", lastTVal, tVal);
-        // }
+    // If a sample point itself is not a zero of the function
+    // all the zero-crossings must occur between two successive sample points
+    for (let i = 1; i < tValues.length; i++) {
+      if (Math.abs(f(tValues[i])) < SETTINGS.tolerance / 1000) {
+        tZeroes.push(tValues[i]);
+        // console.log("Actual zero!", tValues[i], f(tValues[i]));
+      } else if (f(tValues[i - 1]) * f(tValues[i]) < 0) {
+        signChangeIndices.push(i - 1);
       }
-
-      lastTVal = tVal;
     }
-    if (signChanges.length === 0 && zeros.length === 0) {
+    // If nothing found so far, returns an empty array
+    if (signChangeIndices.length === 0 && tZeroes.length === 0) {
       return [];
     }
 
-    signChanges.forEach(interval => {
+    signChangeIndices.forEach(index => {
       try {
         if (
           SETTINGS.parameterization.useNewtonsMethod &&
@@ -756,33 +699,40 @@ export abstract class SENodule implements Visitable {
           const zeroTVal: number | boolean = newton(
             f,
             fPrime,
-            (interval[0] + interval[1]) / 2
+            (tValues[index] + tValues[index + 1]) / 2
             // { verbose: true }
           );
 
           if (
             zeroTVal !== false &&
-            interval[0] - SETTINGS.tolerance <= (zeroTVal as number) &&
-            (zeroTVal as number) <= interval[1] + SETTINGS.tolerance
+            tValues[0] - SETTINGS.tolerance <= (zeroTVal as number) &&
+            (zeroTVal as number) <= tValues[1] + SETTINGS.tolerance
+            // tValues[index] - SETTINGS.tolerance <= zeroTVal &&
+            // zeroTVal <= tValues[index + 1] + SETTINGS.tolerance
           ) {
-            zeros.push(zeroTVal as number);
+            tZeroes.push(zeroTVal as number);
           } else {
             console.log(
               "Newton's method failed to converge in interval",
-              interval[0],
-              interval[1],
+              tValues[index],
+              tValues[index + 1],
               zeroTVal
             );
           }
         } else {
           // Bisection Method
-          const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
-          zeros.push(zeroTVal as number);
+          const zeroTVal = SENodule.bisection(
+            f,
+            tValues[index],
+            tValues[index + 1]
+          );
+          if (typeof zeroTVal === "number") tZeroes.push(zeroTVal);
         }
       } catch (err) {
         console.debug("Newton's method error", err);
       }
     });
-    return zeros;
+    // console.log("Possible zeroes", tZeroes.length);
+    return tZeroes;
   }
 }

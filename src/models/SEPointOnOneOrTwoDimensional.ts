@@ -1,12 +1,12 @@
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SESegment, SELine, SECircle, SEEllipse } from "./internal";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";
-import { SESegment } from "./SESegment";
-import { SELine } from "./SELine";
-import { SECircle } from "./SECircle";
-import { SEEllipse } from "./SEEllipse";
+// import { SESegment } from "./SESegment";
+// import { SELine } from "./SELine";
+// import { SECircle } from "./SECircle";
+// import { SEEllipse } from "./SEEllipse";
 const { t } = i18n.global;
 
 export class SEPointOnOneOrTwoDimensional extends SEPoint {

@@ -3,12 +3,12 @@
     <v-row justify="center">
       <v-col cols="5">
         <v-sheet elevation="4" class="pa-4">
-          <v-form :model-value="validEntries">
+          <v-form v-model="validEntries">
             <v-row class="flex-column mb-2">
               <v-col cols="auto">
                 <v-text-field
                   label="UserId/Email"
-                  :model-value="userEmail"
+                  v-model="userEmail"
                   :rules="emailRules"
                   required
                   prepend-icon="mdi-account"></v-text-field>
@@ -16,7 +16,7 @@
               <v-col cols="auto">
                 <v-text-field
                   label="Password"
-                  :model-value="userPassword"
+                  v-model="userPassword"
                   type="password"
                   :rules="passwordRules"
                   prepend-icon="mdi-lock"></v-text-field>
@@ -24,51 +24,60 @@
               <v-col cols="auto">
                 <v-row>
                   <v-col cols="auto">
-                    <v-btn @click="doSignup" :disabled="!validEntries"
-                      >Signup</v-btn
-                    >
+                    <v-btn @click="doSignup" :disabled="!validEntries">
+                      Signup
+                    </v-btn>
                   </v-col>
                   <v-col cols="auto">
-                    <v-btn :disabled="!isValidEmail" @click="doReset"
-                      >Reset Password</v-btn
-                    >
+                    <v-btn :disabled="!isValidEmail" @click="doReset">
+                      Reset Password
+                    </v-btn>
                   </v-col>
                   <v-col cols="auto">
                     <v-btn
                       color="primary"
                       @click="doSignIn"
-                      :disabled="!validEntries"
-                      >Signin</v-btn
-                    >
+                      :disabled="!validEntries">
+                      Signin
+                    </v-btn>
                   </v-col>
                 </v-row>
               </v-col>
             </v-row>
             <v-divider />
             <v-row>
-              <v-col cols="auto"> or use other account providers </v-col>
+              <v-col cols="auto">or use other account providers</v-col>
             </v-row>
             <v-row>
               <v-col cols="4">
                 <v-btn @click="doGoogleLogin">
-                  <v-icon left>mdi-google</v-icon>Google
-                </v-btn>
-              </v-col>
-              <v-col cols="4">
-                <v-btn disabled> <v-icon left>mdi-yahoo</v-icon>Yahoo </v-btn>
-              </v-col>
-              <v-col cols="4">
-                <v-btn disabled>
-                  <v-icon left>mdi-facebook</v-icon>Facebook
+                  <v-icon left>mdi-google</v-icon>
+                  Google
                 </v-btn>
               </v-col>
               <v-col cols="4">
                 <v-btn disabled>
-                  <v-icon left>mdi-twitter</v-icon>Twitter
+                  <v-icon left>mdi-yahoo</v-icon>
+                  Yahoo
                 </v-btn>
               </v-col>
               <v-col cols="4">
-                <v-btn disabled> <v-icon left>mdi-github</v-icon>GitHub </v-btn>
+                <v-btn disabled>
+                  <v-icon left>mdi-facebook</v-icon>
+                  Facebook
+                </v-btn>
+              </v-col>
+              <v-col cols="4">
+                <v-btn disabled>
+                  <v-icon left>mdi-twitter</v-icon>
+                  Twitter
+                </v-btn>
+              </v-col>
+              <v-col cols="4">
+                <v-btn disabled>
+                  <v-icon left>mdi-github</v-icon>
+                  GitHub
+                </v-btn>
               </v-col>
             </v-row>
           </v-form>
@@ -90,13 +99,22 @@ import {
   sendPasswordResetEmail,
   GoogleAuthProvider
 } from "firebase/auth";
-import firebase from "firebase/app";
 import EventBus from "@/eventHandlers/EventBus";
+import { useAccountStore } from "@/stores/account";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import {
+  getDoc,
+  getFirestore,
+  doc,
+  DocumentSnapshot
+} from "firebase/firestore";
+import { UserProfile } from "@/types";
 
 const appAuth = getAuth();
+const appDB = getFirestore();
 const router = useRouter();
+const acctStore = useAccountStore();
 const userEmail = ref("");
 const userPassword = ref("");
 const emailRules = [
@@ -141,10 +159,27 @@ function doSignup(): void {
       });
     });
 }
+
+function parseUserProfile(uid: string) {
+  getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
+    if (ds?.exists()) {
+      const uProfile = ds.data() as UserProfile;
+      console.debug("User Profile Details from Firestore", uProfile);
+      const { favoriteTools, displayName, profilePictureURL } = uProfile;
+      acctStore.setUserDetails(
+        displayName,
+        profilePictureURL,
+        favoriteTools ?? "###" /* Use '#' as separator among groups */
+      );
+    }
+  });
+}
+
 function doSignIn(): void {
   signInWithEmailAndPassword(appAuth, userEmail.value, userPassword.value)
     .then((cred: UserCredential) => {
       if (cred.user?.emailVerified) {
+        parseUserProfile(cred.user.uid);
         router.replace({
           path: "/"
         });
@@ -164,6 +199,7 @@ function doSignIn(): void {
       });
     });
 }
+
 function doReset(): void {
   console.debug("Sending password reset email to", userEmail.value);
   sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
@@ -177,11 +213,22 @@ function doReset(): void {
 
 function doGoogleLogin(): void {
   const provider = new GoogleAuthProvider();
+  // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  signInWithPopup(appAuth, provider).then((cred: UserCredential) => {
-    router.replace({
-      path: "/"
+  signInWithPopup(appAuth, provider)
+    .then((cred: UserCredential) => {
+      parseUserProfile(cred.user.uid);
+      router.replace({
+        path: "/"
+      });
+    })
+    .catch((error: any) => {
+      console.debug("Error attempting to login with Google account", error);
+      EventBus.fire("show-alert", {
+        key: "account.loginError",
+        keyOptions: { error },
+        type: "error"
+      });
     });
-  });
 }
 </script>

@@ -1,14 +1,22 @@
 import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
-import { SEPoint } from "./SEPoint";
+import {
+  SEPoint,
+  SESegment,
+  SETransformation,
+  SETranslation,
+  SERotation,
+  SEReflection,
+  SEPointReflection
+} from "./internal";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-import { SESegment } from "./SESegment";
-import { SETransformation } from "./SETransformation";
-import { SETranslation } from "./SETranslation";
-import { SERotation } from "./SERotation";
-import { SEReflection } from "./SEReflection";
-import { SEPointReflection } from "./SEPointReflection";
+// import { SESegment } from "./SESegment";
+// import { SETransformation } from "./SETransformation";
+// import { SETranslation } from "./SETranslation";
+// import { SERotation } from "./SERotation";
+// import { SEReflection } from "./SEReflection";
+// import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 
 export class SEIsometrySegment extends SESegment {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row v-if="!inProductionMode">
@@ -66,7 +66,7 @@
         <!--- Disable the FAB when either any expression coordinate  or tMin/tMax text is empty or
           there is a syntax error on any coordinates or tMin/tMax -->
         <v-btn
-          small
+          size="small"
           fab
           right
           color="accent"

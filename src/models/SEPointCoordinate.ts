@@ -1,5 +1,5 @@
-import { SEExpression } from "./SEExpression";
-import { SEPoint } from "./SEPoint";
+import { SEExpression, SEPoint } from "./internal";
+// import { SEPoint } from "./SEPoint";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";

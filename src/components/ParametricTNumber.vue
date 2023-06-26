@@ -2,19 +2,17 @@
   <div>
     <v-tooltip
       bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
       max-width="400px">
       <template v-slot:activator="{ props }">
         <v-text-field
-          :model-value="tValueExpression"
+          v-model="tValueExpression"
           v-bind="props"
-          dense
+          density="compact"
           :label="$t(i18nLabelKey)"
           :placeholder="placeholder"
           :error-messages="parsingError"
           @keydown="onKeyPressed"
-          outlined
+          variant="outlined"
           clearable></v-text-field>
       </template>
       {{ $t(i18nToolTip) }}
@@ -27,9 +25,6 @@ import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 const props = defineProps<{
   i18nToolTip: string;

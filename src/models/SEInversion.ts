@@ -1,10 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SETransformation } from "./SETransformation";
-import { SESegment } from "./SESegment";
+import { SETransformation, SECircle } from "./internal";
+// import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import { SECircle } from "./SECircle";
+// import { SECircle } from "./SECircle";
 import SETTINGS from "@/global-settings";
 const { t } = i18n.global;
 export class SEInversion extends SETransformation {

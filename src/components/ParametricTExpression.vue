@@ -1,25 +1,23 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12">
               <v-tooltip
                 bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-text-field
-                    :model-value="tValueExpression"
+                    v-model="tValueExpression"
                     v-bind="props"
-                    dense
+                    density="compact"
                     :label="$t(i18nLabelKey)"
                     :placeholder="placeholder"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
-                    outlined
+                    variant="outlined"
                     clearable
                     :hint="currentValueString"
                     persistent-hint></v-text-field>
@@ -46,8 +44,6 @@ import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { expressions } = storeToRefs(seStore);
 const {t} = useI18n()
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 const props = defineProps<{
   i18nToolTip: string;

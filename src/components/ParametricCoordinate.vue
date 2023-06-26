@@ -1,26 +1,24 @@
 <template>
   <div>
-    <v-card raised outlined>
+    <v-card raised variant="outlined">
       <v-card-text>
         <v-container>
           <v-row>
             <v-col cols="12">
               <v-tooltip
                 bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-textarea
                     v-bind:label="$t(i18nKey)"
                     v-bind="props"
-                    auto-growdense
-                    outlined
+                    auto-growdensity="compact"
+                    variant="outlined"
                     clearable
                     rows="2"
                     :placeholder="placeholder"
                     class="ma-0"
-                    :model-value="coordinateExpression"
+                    v-model="coordinateExpression"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
                     @click:clear="reset">
@@ -40,7 +38,6 @@ import { onMounted, ref } from "vue";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 
@@ -58,8 +55,6 @@ const props = defineProps<{
 }>();
 
 //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
-const toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-const toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
 let parser = new ExpressionParser();
 

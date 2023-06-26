@@ -10,8 +10,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
-import Segment from "./Segment";
-import { SEPolygon } from "@/models/SEPolygon";
+// import Segment from "./Segment";
 import { SESegment } from "@/models/SESegment";
 import Two from "two.js";
 // import { Path } from "two.js/src/path";
@@ -24,7 +23,7 @@ const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points
 
 export default class Polygon extends Nodule {
   /** The model object of this plottable. Included so that we can use isHitAt to determine if a point is inside or outside of P */
-  private _sePolgon: SEPolygon | null = null;
+  // private _sePolgon: SEPolygon | null = null;
 
   /**
    * The Segments that are the boundary of this polygon are stored in edgeSegments
@@ -42,7 +41,7 @@ export default class Polygon extends Nodule {
    *  edgeSegments[i].startSEPoint to edgeSegments[i].endSEPoint is the positive direction in edge edgeSegments[i]
    *
    */
-  private edgeSegments: Segment[] = [];
+  // private edgeSegments: Segment[] = [];
   private segmentIsFlipped: boolean[] = [];
   private seEdgeSegments: SESegment[] = [];
   /**
@@ -116,7 +115,7 @@ export default class Polygon extends Nodule {
   constructor(segmentList: SESegment[], segmentFlippedList: boolean[]) {
     super();
     this.seEdgeSegments.push(...segmentList);
-    this.edgeSegments.push(...segmentList.map(seg => seg.ref));
+    // this.edgeSegments.push(...segmentList.map(seg => seg.ref));
     this.segmentIsFlipped.push(...segmentFlippedList);
 
     // There are this.edgeSegment.length number of straight lines in the polygon so the polygon can
@@ -130,7 +129,7 @@ export default class Polygon extends Nodule {
     for (
       let k = 0;
       k <
-      SETTINGS.segment.numPoints * this.edgeSegments.length +
+      SETTINGS.segment.numPoints * this.seEdgeSegments.length +
         BOUNDARYSUBDIVISIONS +
         1;
       k++
@@ -144,7 +143,7 @@ export default class Polygon extends Nodule {
     );
 
     // now create, record ids, and set noStroke (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
-    for (let i = 0; i < this.edgeSegments.length; i++) {
+    for (let i = 0; i < this.seEdgeSegments.length; i++) {
       // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
       this.backFills[i] = this.frontFills[0].clone();
 
@@ -197,7 +196,8 @@ export default class Polygon extends Nodule {
     // console.log("pool size", this.pool.length);
     // Bring all the locations of the vertices in the correct order in one array
     const locationArray: location[] = [];
-    this.edgeSegments.forEach((seg, index) => {
+    this.seEdgeSegments.map(z => z.ref).
+      forEach((seg, index) => {
       // console.log("seg flipped", index, this.segmentIsFlipped[index]);
       // console.log("first vertex on front", seg.firstVertexIsOnFront);
       // console.log("last vertex on front", seg.lastVertexIsOnFront);
@@ -503,7 +503,7 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = this.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(BOUNDARYSUBDIVISIONS / this.edgeSegments.length),
+            Math.floor(BOUNDARYSUBDIVISIONS / this.seEdgeSegments.length),
             toVector,
             angularWidth
           );
@@ -636,7 +636,7 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = this.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(BOUNDARYSUBDIVISIONS / this.edgeSegments.length),
+            Math.floor(BOUNDARYSUBDIVISIONS / this.seEdgeSegments.length),
             toVector,
             angularWidth
           );
@@ -901,9 +901,9 @@ export default class Polygon extends Nodule {
   set area(newArea: number) {
     this._area = newArea;
   }
-  set SEPolygon(sePolygon: SEPolygon) {
-    this._sePolgon = sePolygon;
-  }
+  // set SEPolygon(sePolygon: SEPolygon) {
+    // this._sePolgon = sePolygon;
+  // }
 
   frontGlowingDisplay(): void {
     this.frontFills.forEach(part => (part.visible = true));
@@ -958,7 +958,7 @@ export default class Polygon extends Nodule {
 
   setSelectedColoring(flag: boolean): void {
     //set the new colors into the variables of each segment
-    this.edgeSegments.forEach(seg => seg.setSelectedColoring(flag));
+    this.seEdgeSegments.map(z => z.ref).forEach(seg => seg.setSelectedColoring(flag));
   }
 
   /**

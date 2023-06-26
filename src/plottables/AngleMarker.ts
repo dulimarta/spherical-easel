@@ -3074,7 +3074,7 @@ export default class AngleMarker extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug("Update style of Angle Marker using", options);
+    // console.debug("Update style of Angle Marker using", options);
     super.updateStyle(mode, options);
     this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
   }

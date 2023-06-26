@@ -1,12 +1,12 @@
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SESegment, SELine, SECircle, SEEllipse } from "./internal";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
-import { SESegment } from "./SESegment";
-import { SELine } from "./SELine";
-import { SECircle } from "./SECircle";
-import { SEEllipse } from "./SEEllipse";
+// import { SESegment } from "./SESegment";
+// import { SELine } from "./SELine";
+// import { SECircle } from "./SECircle";
+// import { SEEllipse } from "./SEEllipse";
 import { Vector3 } from "three";
 import { useSEStore } from "@/stores/se";
 import {
@@ -205,7 +205,7 @@ export class SEIntersectionPoint extends SEPoint {
 
     //adding a parent can make the intersection point exist
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     //console.debug(this.name + " intersection point other parents");
     //this.otherSEParents.forEach(par => console.debug(par.name + " "));
   }
@@ -227,7 +227,7 @@ export class SEIntersectionPoint extends SEPoint {
     }
     //removing a parent can make the intersection point exist or not
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     //console.debug(this.name + " intersection point other parents");
     //this.otherSEParents.forEach(par => console.debug(par.name + " "));
   }
@@ -334,7 +334,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
 
       //update the existence as the parents have changed
-      this.setExistence();
+      this.updateExistenceWithParentChange();
       // console.debug(
       //   `Removed principle parent ${n.name} from intersection point ${this.name}`
       // );
@@ -478,7 +478,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     });
     //update the existence as the parents have changed
-    this.setExistence();
+    this.updateExistenceWithParentChange();
     // console.debug(
     //   `Added principle parent ${newPrincipleParent.name} to intersection point ${this.name}`
     // );
@@ -489,62 +489,66 @@ export class SEIntersectionPoint extends SEPoint {
     }
   }
   //check to see if the new location is on two existing parents (principle or other)
-  private setExistence(): void {
+  private updateExistenceWithParentChange(): void {
     const parentList = [
       this.sePrincipleParent1,
       this.sePrincipleParent2,
       ...this.otherSEParents
     ];
-    // check all pairs of parents for existence
-    // for (let i = 0; i < parentList.length; i++) {
-    //   for (let j = i + 1; j < parentList.length; j++) {
-    //     let object1 = parentList[i];
-    //     let object2 = parentList[j];
-    //     const rank1 = rank_of_type(object1);
-    //     const rank2 = rank_of_type(object2);
-    //     if ((rank1 === rank2 && object2.name > object1.name) || rank2 < rank1) {
-    //       const temp = object1;
-    //       object1 = object2;
-    //       object2 = temp;
-    //     }
-    //     const updatedIntersectionInfo: IntersectionReturnType[] =
-    //       intersectTwoObjects(
-    //         object1,
-    //         object2,
-    //         useSEStore().inverseTotalRotationMatrix
-    //       );
-    //     if (updatedIntersectionInfo[this.order] !== undefined) {
-    //       console.debug(
-    //         `Check existence ${
-    //           updatedIntersectionInfo[this.order].exists
-    //         }, z component of intersection ${
-    //           updatedIntersectionInfo[this.order].vector.z
-    //         }`
-    //       );
-    //       this._exists = updatedIntersectionInfo[this.order].exists;
-    //       if (this._exists) {
-    //         //As soon as this exists, exit all the loops checking the existence
-    //         return;
-    //       }
-    //     }
-    //   }
-    // }
-
-    let sum = 0;
-    parentList.forEach(parent => {
-      if (
-        parent.exists &&
-        parent.isHitAt(
-          this.locationVector, // this is the current location
-          useSEStore().zoomMagnificationFactor,
-          100000
-        )
-      ) {
-        sum += 1;
+    //check all pairs of parents for existence
+    for (let i = 0; i < parentList.length; i++) {
+      for (let j = i + 1; j < parentList.length; j++) {
+        let object1 = parentList[i];
+        let object2 = parentList[j];
+        const rank1 = rank_of_type(object1);
+        const rank2 = rank_of_type(object2);
+        if ((rank1 === rank2 && object2.name > object1.name) || rank2 < rank1) {
+          const temp = object1;
+          object1 = object2;
+          object2 = temp;
+        }
+        const updatedIntersectionInfo: IntersectionReturnType[] =
+          intersectTwoObjects(
+            object1,
+            object2,
+            useSEStore().inverseTotalRotationMatrix
+          );
+        if (updatedIntersectionInfo[this.order] !== undefined) {
+          console.debug(
+            `Check existence ${
+              updatedIntersectionInfo[this.order].exists
+            }, z component of intersection ${
+              updatedIntersectionInfo[this.order].vector.z
+            } order ${this.order}`
+          );
+          this._exists = updatedIntersectionInfo[this.order].exists;
+          if (this._exists) {
+            //As soon as this exists, exit all the loops checking the existence
+            return;
+          }
+        }
       }
-    });
+    }
+
+    // This doesn't work because if you create a line AB and then create two segments CD and EF on the line so that
+    //  C A E D B F is the order when seen from the front and then create a segment GH so that initially GH intersects
+    //  ED, create a point at the intersection and then shrink GH so that it doesn't visually intersect the line but if
+    // continued would intersect between E and D, it will continue to exist
+    // let sum = 0;
+    // parentList.forEach(parent => {
+    //   if (
+    //     parent.exists &&
+    //     parent.isHitAt(
+    //       this.locationVector, // this is the current location
+    //       useSEStore().zoomMagnificationFactor,
+    //       100000
+    //     )
+    //   ) {
+    //     sum += 1;
+    //   }
+    // });
     //console.debug("intersection point sum", sum);
-    this._exists = sum > 1; // you must be on at least two existing parents
+    // this._exists = sum > 1; // you must be on at least two existing parents
   }
 
   public shallowUpdate(): void {
@@ -560,6 +564,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
+      console.debug(`shallow update intersection`);
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
           this.sePrincipleParent1,
@@ -576,8 +581,9 @@ export class SEIntersectionPoint extends SEPoint {
         ) {
           // if the new angle is less than Pi/2 from the old, accept the new angle
           this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+          this._exists = updatedIntersectionInfo[this.order].exists;
         } else {
-          // if the new angle is more than Pi/2 from the old, search the intersection info for a closer one
+          // if the new angle is more than Pi/2 from the old, search the intersections info for a closer one
           let minIndex = -1;
           let minAngle = Math.PI;
           updatedIntersectionInfo.forEach((item, index) => {
@@ -589,9 +595,10 @@ export class SEIntersectionPoint extends SEPoint {
           });
           this.order = minIndex;
           this.locationVector = updatedIntersectionInfo[this.order].vector;
+          this._exists = updatedIntersectionInfo[this.order].exists;
         }
         //check to see if the new location is on two existing parents (principle or other)
-        this.setExistence();
+        //this.setExistence();
       } else {
         this._exists = false;
       }

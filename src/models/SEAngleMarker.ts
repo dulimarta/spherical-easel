@@ -1,20 +1,14 @@
-import { SEExpression } from "./SEExpression";
-import { SEPoint } from "./SEPoint";
-import { SELine } from "./SELine";
-import { SESegment } from "./SESegment";
+import { SEExpression, SEPoint, SELine, SESegment, SELabel } from "./internal";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { ObjectState, ValueDisplayMode } from "@/types";
+import { ObjectState, ValueDisplayMode, Labelable, AngleMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
-import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { AngleMode } from "@/types";
 import i18n from "@/i18n";
 
 const styleSet = new Set([

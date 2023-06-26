@@ -1,12 +1,12 @@
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SELine, SECircle, SEEllipse, SEParametric } from "./internal";
 import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
-import { SELine } from "./SELine";
+// import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import { SECircle } from "./SECircle";
-import { SEEllipse } from "./SEEllipse";
-import { SEParametric } from "./SEParametric";
+// import { SECircle } from "./SECircle";
+// import { SEEllipse } from "./SEEllipse";
+// import { SEParametric } from "./SEParametric";
 import { SEStoreType, useSEStore } from "@/stores/se";
 const { t } = i18n.global;
 
@@ -72,7 +72,7 @@ export class SETangentLineThruPoint extends SELine {
       );
 
       if (normals[this._index] !== undefined) {
-        this._normalVector.copy(normals[this._index]);
+        this._normalVector.copy(normals[this._index].normal);
 
         // Given this.startPoint (in SELine)=this._seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToTangentLinesThru *never* returns a point with

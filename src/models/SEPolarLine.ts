@@ -1,10 +1,10 @@
 import Line from "@/plottables/Line";
 import { Visitable } from "@/visitors/Visitable";
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SELine } from "./internal";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
-import { SELine } from "./SELine";
+// import { SELine } from "./SELine";
 import { Vector3 } from "three";
 const { t } = i18n.global;
 

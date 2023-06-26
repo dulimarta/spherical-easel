@@ -1,13 +1,13 @@
-import { SEPoint } from "./SEPoint";
-import Point from "@/plottables/Point";
+import { SEPoint, SELine, SEAngleMarker } from "./internal";
+// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import { SELine } from "./SELine";
-import { SESegment } from "./SESegment";
+// import { SELine } from "./SELine";
+// import { SESegment } from "./SESegment";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
 import NonFreeLine from "@/plottables/NonFreeLine";
-import { SEAngleMarker } from "./SEAngleMarker";
+// import { SEAngleMarker } from "./SEAngleMarker";
 const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**

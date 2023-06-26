@@ -1,5 +1,5 @@
-import { SEPoint } from "./SEPoint";
-import Point from "@/plottables/Point";
+import { SEPoint } from "./internal";
+// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";

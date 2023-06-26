@@ -1,14 +1,14 @@
-import { SEPoint } from "./SEPoint";
-import Point from "@/plottables/Point";
+import { SEPoint, SECircle, SELine, SEInversion } from "./internal";
+// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
-import { SEInversion } from "./SEInversion";
+// import SETTINGS from "@/global-settings";
+// import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+// import { SEInversion } from "./SEInversion";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { SECircle } from "./SECircle";
-import { SELine } from "./SELine";
+// import { SECircle } from "./SECircle";
+// import { SELine } from "./SELine";
 const { t } = i18n.global;
 export class SEInversionCircleCenter extends SEPoint {
   /**

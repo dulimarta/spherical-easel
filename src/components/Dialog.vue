@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-bind="$attrs" :model-value="visible" transition="dialog-transition">
+  <v-dialog v-bind="$attrs" v-model="visible" transition="dialog-transition">
     <v-card elevation="2">
       <v-card-title id="_test_title">{{ title }}</v-card-title>
       <v-divider />
@@ -12,26 +12,14 @@
         <v-btn
           id="_test_posButton"
           :disabled="isDisabled"
-          v-if="yesAction"
           color="primary"
-          @click="yesAction"
-          >{{ yesLabel }}</v-btn
-        >
-        <v-btn id="_test_posButton" v-else color="primary" @click="hide()">{{
-          yesLabel
-        }}</v-btn>
-        <v-btn
-          id="_test_negButton"
-          v-if="noAction && noText"
-          color="secondary"
-          @click="noAction"
-          >{{ noText }}</v-btn
+          @click="doYes()">{{ yesLabel }}</v-btn
         >
         <v-btn
           id="_test_negButton"
-          v-else-if="noText"
+          v-if="noText"
           color="secondary"
-          @click="hide()"
+          @click="doNo()"
           >{{ noText }}</v-btn
         >
       </v-card-actions>
@@ -41,6 +29,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
+import { useDialogSequencer } from "./DialogSequencer";
 
 export interface DialogAction {
   hide: () => void;
@@ -49,6 +38,7 @@ export interface DialogAction {
 
 type DialogFunc = () => void;
 
+const sequencer = useDialogSequencer()
 const props = defineProps<{
   title: string;
   yesText?: string;
@@ -77,5 +67,19 @@ function show(): void {
 function hide(): void {
   visible.value = false;
   // EventBus.fire("dialog-box-is-active", { active: false });
+}
+
+function hideLast(): void {
+  console.debug("Calling hideLast()")
+  sequencer.hideLastDialog()
+}
+function doYes() {
+  hideLast()
+  if (props.yesAction) props.yesAction()
+}
+
+function doNo() {
+  hideLast()
+  if (props.noAction) props.noAction()
 }
 </script>

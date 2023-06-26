@@ -9,11 +9,11 @@
         <span
           class="text-body-1 ml-1"
           v-if="actionMode != 'applyTransformation'">
-          {{ $t(`buttons.${activeToolName}`, {}).toString() }}
+          {{ $t(`buttons.${activeToolName}`, {}) }}
         </span>
         <template v-else>
           <div class="text-body-1">
-            {{ $t(`buttons.${activeToolName}`, {}).toString() }}
+            {{ $t(`buttons.${activeToolName}`, {}) }}
           </div>
           <div class="text-body-2">
             {{ t("objects.selectTransformation") }}

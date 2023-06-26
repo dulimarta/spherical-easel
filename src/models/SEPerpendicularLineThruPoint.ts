@@ -1,15 +1,23 @@
-import { SEPoint } from "./SEPoint";
+import {
+  SEPoint,
+  SELine,
+  SESegment,
+  SECircle,
+  SEEllipse,
+  SEParametric,
+  SEPencil
+} from "./internal";
 import { ObjectState, SEOneDimensional } from "@/types";
 
-import { SELine } from "./SELine";
+// import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import { SESegment } from "./SESegment";
-import { SECircle } from "./SECircle";
-import { SEEllipse } from "./SEEllipse";
-import { SEParametric } from "./SEParametric";
-import { SEPencil } from "./SEPencil";
+// import { SESegment } from "./SESegment";
+// import { SECircle } from "./SECircle";
+// import { SEEllipse } from "./SEEllipse";
+// import { SEParametric } from "./SEParametric";
+// import { SEPencil } from "./SEPencil";
 const { t } = i18n.global;
 export class SEPerpendicularLineThruPoint extends SELine {
   /**

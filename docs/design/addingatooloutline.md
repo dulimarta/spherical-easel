@@ -20,7 +20,7 @@ This section is an outline of the steps need to add a tool that takes a collecti
       - <span class="variable">displayedName</span> A short name for the tool displayed in footer. If this contains a non-breaking space, to make sure the tool tip is displayed correctly, add it to the list of displayNames that have this removed in <span class="file">ToolButton.vue</span>
       - <span class="variable">toolTipMessage</span> A short message to describe the tools use when the button is moused over.
       - <span class="variable">toolUseMessage</span> A longer message to describe more fully the use of the tool.
-    - <span class="variable">displayToolUseMessage</span>: A flag to control the display of the tool use message.
+    - <span class="variable">displayToolUseMessage</span>: A flag to control the display of the tool use message. (deprecated?)
 
 2.  If necessary, write a new <span class="class">Nodule</span> file by **extending** an existing [plottable type](/design/#plottables-directory). If you are not extending an existing class, then you are writing a New Object Tool and you should follow the [directions below first](/design/addingatooloutline.html#adding-a-new-object-tool).
 

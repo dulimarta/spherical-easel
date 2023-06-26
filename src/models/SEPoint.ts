@@ -9,7 +9,7 @@ import {
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable, ObjectState } from "@/types";
-import { SELabel } from "./SELabel";
+import { SELabel } from "./internal";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
 // SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts

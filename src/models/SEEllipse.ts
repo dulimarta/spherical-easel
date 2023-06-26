@@ -1,17 +1,22 @@
 import { SENodule } from "./SENodule";
-import { SEPoint } from "./SEPoint";
+import { SEPoint, SELabel } from "./internal";
 import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
+import {
+  NormalAndPerpendicularPoint,
+  NormalAndTangentPoint,
+  ObjectState,
+  OneDimensional
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
   DEFAULT_ELLIPSE_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable } from "@/types";
-import { SELabel } from "@/models/SELabel";
+// import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
 const { t } = i18n.global;
 const styleSet = new Set([
@@ -55,10 +60,17 @@ export class SEEllipse
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
   /** Use in the rotation matrix during a move event */
   private desiredZAxis = new Vector3();
-  private tmpVector = new Vector3();
+  private tmpVector0 = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
   private tmpMatrix = new Matrix4();
+
+  /**
+   * The vector E'(t) and E''(t), tMin and tMax for tMin <= t <= tMax E(t)= first and second derivatives of the ellipse
+   */
+  private parameterizationPrime = new Vector3();
+  private parameterizationDoublePrime = new Vector3();
 
   /**
    * Create a model SEEllipse using:
@@ -154,6 +166,71 @@ export class SEEllipse
 
   public get noduleItemText(): string {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SEEllipse";
+  }
+
+  /**
+   * The parameterization of the derivative of the ellipse on the sphere in standard position.
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Ep(t: number): Vector3 {
+    return this.parameterizationPrime.set(
+      -Math.sin(this._a) * Math.sin(t),
+      Math.sin(this._b) * Math.cos(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        (2 *
+          Math.sqrt(
+            Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)
+          ))) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        Math.sin(2 * t)
+    );
+  }
+
+  /**
+   * The parameterization of the second derivative of the ellipse on the sphere.
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Epp(t: number): Vector3 {
+    return this.parameterizationDoublePrime.set(
+      -Math.sin(this._a) * Math.cos(t),
+      -Math.sin(this._b) * Math.sin(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        Math.sqrt(
+          (Math.cos(this._a) * Math.cos(this._a) +
+            Math.sin(this._a - this._b) *
+              Math.sin(this._a + this._b) *
+              Math.sin(t) *
+              Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t))
+        )) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        (Math.cos(this._a) * Math.cos(this._a) * Math.cos(2 * t) -
+          Math.sin(this._a - this._b) *
+            Math.sin(this._a + this._b) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t))
+    );
   }
 
   public isHitAt(
@@ -300,12 +377,12 @@ export class SEEllipse
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.Ep method is this.ref
+        this.Ep.bind(this), // bind the this.ref so that this in the this.ref.Ep method is this.ref
         transformedToStandard,
         tValues, //[0 - SETTINGS.tolerance, 2 * Math.PI + SETTINGS.tolerance], // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
@@ -365,26 +442,28 @@ export class SEEllipse
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
-  ): NormalVectorAndTValue[] {
+  ): NormalAndPerpendicularPoint[] {
     // first check to see if the sePointVector is antipodal or the same as the center of the ellipse
     // First set tmpVector to the center of the ellipse
-    this.tmpVector
+    this.tmpVector0
       .addVectors(
         this._focus1SEPoint.locationVector,
         this._focus2SEPoint.locationVector
       )
       .normalize();
     // Cross the center with the ideanUnitSphereVector
-    this.tmpVector.crossVectors(this.tmpVector, sePointVector);
+    this.tmpVector0.crossVectors(this.tmpVector0, sePointVector);
 
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+    if (this.tmpVector0.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case there are two lines containing the sePoint will be perpendicular to the ellipse,
-      this.tmpVector1.crossVectors(
-        this._focus1SEPoint.locationVector,
-        this._focus2SEPoint.locationVector
-      ).normalize; // one possible normal vector
+      this.tmpVector1
+        .crossVectors(
+          this._focus1SEPoint.locationVector,
+          this._focus2SEPoint.locationVector
+        )
+        .normalize(); // one possible normal vector
 
       // First set tmpVector1 to the center of the ellipse
       this.tmpVector2
@@ -394,7 +473,7 @@ export class SEEllipse
         )
         .normalize();
 
-      this.tmpVector.crossVectors(this.tmpVector1, this.tmpVector2);
+      this.tmpVector0.crossVectors(this.tmpVector1, this.tmpVector2);
       // // now set tmpVector1 to the other possible normal vector
       // this.tmpVector1.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // if (
@@ -402,9 +481,10 @@ export class SEEllipse
       // ) {
       //   return [this.tmpVector];
       // } else {
+      // TODO: Compute the perpendicular intersection point
       return [
-        { normal: this.tmpVector1, tVal: NaN },
-        { normal: this.tmpVector, tVal: NaN }
+        { normal: this.tmpVector1, normalAt: this.tmpVector3 },
+        { normal: this.tmpVector0, normalAt: this.tmpVector2 }
       ];
       // }
     } else {
@@ -419,14 +499,13 @@ export class SEEllipse
       }
       const normalList =
         SENodule.getNormalsToPerpendicularLinesThruParametrically(
-          // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-          this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
           transformedToStandard,
           tValues, // FIXME
           // this.ref.tMin,
           // this.ref.tMax,
-          [], // Avoid these t values
-          this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+          this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
         );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
       // const minAngle = Math.min(
@@ -436,8 +515,9 @@ export class SEEllipse
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
       // console.log("normal list length", normalList.length);
-      normalList.map((pair: NormalVectorAndTValue) => {
+      normalList.forEach((pair: NormalAndPerpendicularPoint) => {
         pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
+        pair.normalAt.applyMatrix4(this.ref.ellipseFrame).normalize();
       });
       return normalList;
     }
@@ -453,15 +533,15 @@ export class SEEllipse
     sePointVector: Vector3,
     zoomMagnificationFactor: number,
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
-  ): Vector3[] {
+  ): NormalAndTangentPoint[] {
     const sumOfDistancesToFoci =
       sePointVector.angleTo(this._focus1SEPoint.locationVector) +
       sePointVector.angleTo(this._focus2SEPoint.locationVector);
 
-    this.tmpVector.copy(this._focus1SEPoint.locationVector);
+    this.tmpVector0.copy(this._focus1SEPoint.locationVector);
     this.tmpVector1.copy(this._focus2SEPoint.locationVector);
     const sumOfDistancesToAntipodesOfFoci =
-      sePointVector.angleTo(this.tmpVector.multiplyScalar(-1)) +
+      sePointVector.angleTo(this.tmpVector0.multiplyScalar(-1)) +
       sePointVector.angleTo(this.tmpVector1.multiplyScalar(-1));
 
     // If the vector is on the Ellipse or its antipode then there is one tangent
@@ -489,22 +569,22 @@ export class SEEllipse
       for (let i = 0; i <= 100; i++) {
         tValues.push((i * 2 * Math.PI) / 100);
       }
-      const coorespondingTVal = SENodule.closestVectorParametrically(
+      const closest = SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.Ep.bind(this), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
         tValues, // FIXME
         // this.ref.tMin,
         // this.ref.tMax,
-        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
-      ).tVal;
+        this.Epp.bind(this) // bind the this.ref so that this in the this.ref.E method is this.ref
+      );
       // console.log("coord t val", coorespondingTVal);
       const tangentVector = new Vector3();
-      tangentVector.copy(this.ref.Ep(coorespondingTVal));
+      tangentVector.copy(this.Ep(closest.tVal));
       tangentVector.applyMatrix4(this.ref.ellipseFrame);
       tangentVector.cross(sePointVector);
-      // console.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
-      return [tangentVector.normalize()];
+      // conso{le.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
+      return [{ normal: tangentVector.normalize(), tangentAt: closest.vector }];
     }
     // If the vector is inside the Ellipse or the antipode of the Ellipse there is no tangent or the ellipse is a great circle (a=Pi/2)
     if (
@@ -530,18 +610,19 @@ export class SEEllipse
     }
     const normalList = SENodule.getNormalsToTangentLinesThruParametrically(
       this.ref.E.bind(this.ref),
-      this.ref.Ep.bind(this.ref),
+      this.Ep.bind(this),
       transformedToStandard,
       tValues, // FIXME
       // this.ref.tMin,
       // this.ref.tMax,
-      [], // Avoid these t values
-      this.ref.Epp.bind(this.ref)
+      this.Epp.bind(this)
     );
+    normalList.forEach(pair => {
+      pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
+      pair.tangentAt.applyMatrix4(this.ref.ellipseFrame).normalize();
+    });
 
-    return normalList.map(vec =>
-      vec.applyMatrix4(this.ref.ellipseFrame).normalize()
-    );
+    return normalList;
   }
 
   /**
@@ -576,10 +657,10 @@ export class SEEllipse
         .copy(this.focus2SEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.focus2SEPoint.locationVector = this.tmpVector1;
-      this.tmpVector
+      this.tmpVector0
         .copy(this.ellipseSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.ellipseSEPoint.locationVector = this.tmpVector;
+      this.ellipseSEPoint.locationVector = this.tmpVector0;
       // Update all points, because we might need to update their kids!
       // First mark the kids out of date so that the update method does a topological sort
       this.ellipseSEPoint.markKidsOutOfDate();

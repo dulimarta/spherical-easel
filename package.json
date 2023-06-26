@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "app:dev": "vite",
-    "serve": "npm run app:dev & npm run docs:serve",
+    "app:serve": "vite",
+    "serve": "npm run app:serve & npm run docs:serve",
     "test:unit": "vue-cli-service test:unit --watch",
     "test:jest": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
@@ -22,6 +22,7 @@
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
     "axios": "^0.27.2",
+    "color": "^4.2.3",
     "d3-svg-to-png": "^0.1.7",
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",

@@ -7,7 +7,7 @@ export const SETTINGS = {
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
-  messageTypes: ["success", "info", "error", "warning","directive"],
+  messageTypes: ["success", "info", "error", "warning", "directive"],
   style: {
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 200, // The maximum percent stroke width different from the scaled for zoom size
@@ -886,6 +886,13 @@ export const SETTINGS = {
     },
     // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
     // and not in vuetify.ts because these must be accessible to both the src code and VuePress.
+    blank: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: false,
+        filePath: "../../icons/iconBlankPaths.svg"
+      }
+    },
     point: {
       props: {
         emphasizeTypes: [["point", "front", "back"]],
@@ -1396,11 +1403,12 @@ export const SETTINGS = {
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
-  toolTip: {
-    openDelay: 500,
-    closeDelay: 1000,
-    disableDisplay: false // controls if all tooltips should be displayed
-  },
+  /* Set the default tooltip delay in createVuetify() */
+  // toolTip: {
+  // openDelay: 500,
+  // closeDelay: 1000,
+  // disableDisplay: false // controls if all tooltips should be displayed
+  // },
   /* Sets the length of time (in ms) that the tool use display message is displayed in a snackbar */
   toolUse: {
     delay: 3000,

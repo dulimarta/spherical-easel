@@ -4,15 +4,23 @@
     <div id="canvas" ref="canvas"></div>
     <div class="anchored top left">
       <div
-        v-for="(shortcut, index) in topLeftShortcuts"
+        v-for="(shortcut, index) in shortCutIcons[0]"
         :key="index"
         :style="listItemStyle(index, 'left', 'top')">
         <ShortcutIcon :model="shortcut" />
       </div>
     </div>
+    <div class="anchored top right">
+      <div
+        v-for="(shortcut, index) in shortCutIcons[1]"
+        :key="index"
+        :style="listItemStyle(index, 'right', 'top')">
+        <ShortcutIcon :model="shortcut" />
+      </div>
+    </div>
     <div class="anchored bottom left">
       <div
-        v-for="(shortcut, index) in bottomLeftShortcuts"
+        v-for="(shortcut, index) in shortCutIcons[2]"
         :key="index"
         :style="listItemStyle(index, 'left', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -20,7 +28,7 @@
     </div>
     <div class="anchored bottom right">
       <div
-        v-for="(shortcut, index) in bottomRightShortcuts"
+        v-for="(shortcut, index) in shortCutIcons[3]"
         :key="index"
         :style="listItemStyle(index, 'right', 'bottom')">
         <ShortcutIcon :model="shortcut" />
@@ -44,7 +52,9 @@ import ShortcutIcon from "./ShortcutIcon.vue";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
-import CurrentToolSelection from "./CurrentToolSelection.vue";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
+
+// import CurrentToolSelection from "./CurrentToolSelection.vue";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -76,13 +86,15 @@ import TranslationTransformationHandler from "@/eventHandlers/TranslationTransfo
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, ShortcutIconType } from "@/types";
+import { ActionMode } from "@/types";
+
 import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { useAccountStore } from "@/stores/account";
 import Two from "two.js";
 import { SEExpression } from "@/models/SEExpression";
 import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
@@ -93,8 +105,7 @@ import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
-import ToolGroups from "./ToolGroups.vue";
-// import i18n from "@/i18n";
+import { ToolButtonType } from "@/types";
 
 const seStore = useSEStore();
 const {
@@ -103,9 +114,10 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  expressions,
   buttonSelection
 } = storeToRefs(seStore);
+const acctStore = useAccountStore();
+const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
 const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean }>(), {
@@ -115,86 +127,17 @@ const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean
 
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-const topLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "main.UndoLastAction",
-      icon: SETTINGS.icons.undo.props.mdiIcon,
-      clickFunc: Command.undo,
-      iconColor: "blue",
-      disableBtn: false //&& !stylePanelMinified.value || !undoEnabled
-    },
-    {
-      tooltipMessage: "main.RedoLastAction",
-      icon: SETTINGS.icons.redo.props.mdiIcon,
-      clickFunc: Command.redo,
-      iconColor: "blue",
-      disableBtn: false // !stylePanelMinified.value || !undoEnabled
-    }
-  ];
-});
-const bottomLeftShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.CreatePointToolTipMessage",
-      icon: "$point",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "point"
-    },
 
-    {
-      tooltipMessage: "buttons.CreateLineToolTipMessage",
-      icon: "$line",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "line"
-    },
+const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
+  console.debug("Updating shortcut icons");
+  return favoriteTools.value.map(
+    (corner: Array<ActionMode>): Array<ToolButtonType> =>
+      corner.map((act: ActionMode): ToolButtonType =>
+        TOOL_DICTIONARY.get(act)!
+      )
+  );
+})
 
-    {
-      tooltipMessage: "buttons.CreateLineSegmentToolTipMessage",
-      icon: "$segment",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "segment"
-    },
-
-    {
-      tooltipMessage: "buttons.CreateCircleToolTipMessage",
-      icon: "$circle",
-      iconColor: "blue",
-      disableBtn: false,
-      action: "circle"
-    }
-  ];
-});
-
-const bottomRightShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "buttons.PanZoomInToolTipMessage",
-      icon: SETTINGS.icons.zoomIn.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomIn"
-    },
-
-    {
-      tooltipMessage: "buttons.PanZoomOutToolTipMessage",
-      icon: SETTINGS.icons.zoomOut.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomOut"
-    },
-    {
-      tooltipMessage: "buttons.ZoomFitToolTipMessage",
-      icon: SETTINGS.icons.zoomFit.props.mdiIcon,
-      iconColor: "blue",
-      disableBtn: false,
-      action: "zoomFit"
-    }
-  ];
-});
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
  * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -423,6 +366,7 @@ onMounted((): void => {
     canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
   })
   seStore.setCanvas(canvas.value!);
+  // updateShortcutTools();
   updateView();
 });
 
@@ -842,8 +786,8 @@ watch(
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     const directiveMsg = {
-      key: "buttons." + buttonSelection.value.displayedName,
-      secondaryMsg: "buttons." + buttonSelection.value.toolUseMessage,
+      key: buttonSelection.value.displayedName,
+      secondaryMsg: buttonSelection.value.toolUseMessage,
       keyOptions: {},
       secondaryMsgKeyOptions: {},
       type: "directive"
@@ -1169,8 +1113,10 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 
 #sphereContainer {
   border: 3px solid black;
-
   position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 .anchored {
   margin: 0px;

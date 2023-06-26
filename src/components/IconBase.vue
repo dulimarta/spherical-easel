@@ -6,8 +6,7 @@
     transform="matrix(1 0 0 -1 0 0)"
     viewBox="-250 -250 500 500"
     preserveAspectRatio="xMidYMid meet"
-    :width="iconSizeValue"
-    :height="iconSizeValue"
+    class="customIcon"
     :aria-labelledby="iconName"
     style="overflow: visible"
     vector-effect="non-scaling-stroke">
@@ -882,5 +881,9 @@ svg {
   display: inline-block;
   vertical-align: text-bottom;
   margin-bottom: -2px;
+}
+.customIcon {
+  width: 1.2em;
+  height: 1.2em;
 }
 </style>

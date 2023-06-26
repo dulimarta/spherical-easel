@@ -1,11 +1,11 @@
 module.exports = {
-  "vueFiles": "./src/**/*.vue",
-  "languageFiles": "./src/assets/langs/**/*.ts",
-  "exclude": ["./src/assets/langs/*.ts"],
-  "output": false,
-  "add": true,
-  "remove": false,
-  "ci": false,
-  "separator": ".",
-  "noEmptyTranslation": ""
+  vueFiles: "./src/**/*.?(ts|vue)",
+  languageFiles: "./src/assets/languages/*.json",
+  exclude: ["notifications", "toolGroups", "buttons"],
+  add: true,
+  remove: false,
+  ci: false,
+  separator: ".",
+  missingTranslationString: "Missing Translation",
+  noEmptyTranslation: "id"
 }

@@ -87,10 +87,7 @@ const emit = defineEmits(["load-requested"]);
 
 const seStore = useSEStore();
 const appAuth = getAuth();
-// const { svgCanvas } = storeToRefs(seStore);
-let { inverseTotalRotationMatrix } = storeToRefs(seStore);
 
-// let originalSphereMatrix!: Matrix4;
 let lastDocId: string | null = null;
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
@@ -107,11 +104,13 @@ function previewOrDefault(dataUrl: string | undefined): string {
 async function onItemHover(s: SphericalConstruction): Promise<void> {
   if (lastDocId === s.id) return; // Prevent double hovers?
   lastDocId = s.id;
-  EventBus.fire("preview-construction", s.previewData)
+  EventBus.fire("preview-construction", s)
 }
 
 function onListLeave(/*_ev: MouseEvent*/): void {
-  EventBus.fire("preview-construction", "")
+  EventBus.fire("preview-construction", null)
+  lastDocId = "";
+
 
   /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
   //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?

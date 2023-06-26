@@ -3,7 +3,7 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
       <span class="text-subtitle-1">{{ $t(i18LabelKey) }}</span>
-      <v-btn smalls @click="expanded = !expanded">
+      <v-btn size="small" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
       </v-btn>

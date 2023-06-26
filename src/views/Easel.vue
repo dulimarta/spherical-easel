@@ -1,4 +1,8 @@
 <template>
+  <v-navigation-drawer location="end" color="black" permanent width="80">
+    <StyleDrawer></StyleDrawer>
+    <!--Style3></Style3-->
+  </v-navigation-drawer>
   <div>
     <Splitpanes
       :style="contentHeightStyle"
@@ -18,63 +22,40 @@
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-        <v-container fluid ref="mainPanel">
-          <v-row justify="center">
-            <AddressInput v-if="isEarthMode"/>
-            <!-- Shortcut icons are placed using absolute positioning. CSS requires
+        <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-            <div style="position: relative">
-              <div id="earthAndCircle">
-                <EarthComp :canvas-size="currentCanvasSize" v-if="isEarthMode" />
-                <SphereFrame :canvas-size="currentCanvasSize" :is-earth-mode="isEarthMode" />
-              </div>
-              <button @click="isEarthMode=!isEarthMode" id="earthTogger">Earth Mode</button>
-              <v-overlay
-                contained
-                class="align-center justify-center"
-                :model-value="svgDataImage.length > 0">
-                <img
-                  :src="svgDataImage"
-                  style="background: hsla(0, 100%, 100%, 1)"
-                  :width="currentCanvasSize" :height="currentCanvasSize"/>
-              </v-overlay>
-              <div class="anchored top right">
-                <div
-                  v-for="(shortcut, index) in topRightShortcuts"
-                  :key="index"
-                  :style="listItemStyle(index, 'right', 'top')">
-                  <ShortcutIcon :model="shortcut" />
-                </div>
-              </div>
-            </div>
-          </v-row>
-        </v-container>
-      </Pane>
-
-      <Pane min-size="5" :max-size="25" :size="panelSize">
-        <v-card class="pt-2">
-          <div id="styleContainer">
-            <v-btn
-              icon
-              v-if="!stylePanelMinified || !notificationsPanelMinified"
-              @click="
-                () => {
-                  stylePanelMinified = true;
-                  notificationsPanelMinified = true;
-                }
-              ">
-              <v-icon>mdi-arrow-right</v-icon>
-            </v-btn>
-
-            <StylePanel :minified="stylePanelMinified" />
-            <!-- v-on:toggle-style-panel="minifyStylePanel" /-->
-
-            <!--MessageBox
-              :minified="notificationsPanelMinified"
-              v-on:toggle-notifications-panel="minifyNotificationsPanel" /-->
+        <div id="sphere-and-msghub">
+          <div id="msghub">
+            <MessageHub />
           </div>
-        </v-card>
+          <SphereFrame
+            style="position: relative"
+            :canvas-size="currentCanvasSize"
+            v-show="svgDataImage.length === 0" />
+          <v-overlay
+            contained
+            :class="['justify-center', 'align-center', previewClass]"
+            :model-value="svgDataImage.length > 0">
+            <div class="previewText">
+              {{ constructionInfo.count }} objects. Created by:
+              {{ constructionInfo.author }}
+            </div>
+            <img
+              id="previewImage"
+              class="previewImage"
+              :src="svgDataImage"
+              :width="currentCanvasSize"
+              :height="currentCanvasSize" />
+          </v-overlay>
+        </div>
       </Pane>
+
+      <!--Pane min-size="5" :max-size="25" :size="panelSize">
+        <StylePanel @minify-toggled="handleStylePanelMinify" />
+        <MessageBox
+              :minified="notificationsPanelMinified"
+              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
+      </Pane-->
     </Splitpanes>
     <Dialog
       ref="unsavedWorkDialog"
@@ -113,16 +94,16 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthComp from "@/components/EarthComp.vue";
-import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import MessageHub from "@/components/MessageHub.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
-import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
 
 // import buttonList from "@/components/ToolGroups.vue";
 // import ToolButton from "@/components/ToolButton.vue";
 // Temporarily exclude Style.vue
-import StylePanel from "@/components/Style.vue";
+// import StylePanel from "@/components/Style.vue";
+// import LabelStyle from "@/components/LabelStyle.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -131,7 +112,8 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, ToolButtonType } from "@/types";
+import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+// import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -140,7 +122,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
-import { ConstructionScript, ShortcutIconType } from "@/types";
+import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
@@ -152,15 +134,15 @@ import {
 } from "firebase/storage";
 import axios, { AxiosResponse } from "axios";
 import { storeToRefs } from "pinia";
-import { toolGroups } from "@/components/toolgroups";
 import { useI18n } from "vue-i18n";
-// import { getCurrentInstance } from "vue";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalized,
   useRouter
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
+import LabelStyle from "@/components/style-ui/LabelStyle.vue";
+import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 
 const appDB = getFirestore();
 const appAuth = getAuth();
@@ -179,20 +161,23 @@ const { seNodules, temporaryNodules, hasObjects, actionMode,isEarthMode } =
 const props = defineProps<{
   documentId?: string;
 }>();
-const { mainRect } = useLayout();
+const { mainRect, getLayoutItem } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
-let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
+// let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
 const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
 const toolboxMinified = ref(false);
 const stylePanelMinified = ref(true);
 const notificationsPanelMinified = ref(true);
-
+const previewClass = ref("");
+// const me = ref(null)
+const constructionInfo = ref<any>({});
+// const labelTab = ref(0);
 let undoEnabled = false;
 let redoEnabled = false;
 
@@ -201,32 +186,20 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 let accountEnabled = false;
 let uid = "";
 let authSubscription!: Unsubscribe;
+const userUid = computed((): string | undefined => {
+  return appAuth.currentUser?.uid;
+});
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const svgDataImage = ref("");
-const topRightShortcuts = computed((): ShortcutIconType[] => {
-  return [
-    {
-      tooltipMessage: "constructions.resetSphere",
-      icon: SETTINGS.icons.clearConstruction.props.mdiIcon,
-      clickFunc: () => {
-        clearConstructionDialog.value?.show();
-      },
-      iconColor: "blue",
-      disableBtn: false
-    }
-  ];
-});
 
 //#region magnificationUpdate
 onBeforeMount(() => {
   EventBus.listen("magnification-updated", resizePlottables);
   EventBus.listen("undo-enabled", setUndoEnabled);
   EventBus.listen("redo-enabled", setRedoEnabled);
-  EventBus.listen("preview-construction", (s: string) => {
-    svgDataImage.value = s;
-  });
+  EventBus.listen("preview-construction", showConstructionPreview);
 });
 //#endregion magnificationUpdate
 
@@ -236,6 +209,17 @@ const centerWidth = computed((): number => {
   );
 });
 
+const showConstructionPreview = (s: SphericalConstruction | null) => {
+  if (s !== null) {
+    if (svgDataImage.value === "") previewClass.value = "preview-fadein";
+    svgDataImage.value = s.previewData;
+    constructionInfo.value.author = s.author;
+    constructionInfo.value.count = s.objectCount;
+  } else {
+    previewClass.value = "preview-fadeout";
+    svgDataImage.value = "";
+  }
+};
 function setUndoEnabled(e: { value: boolean }): void {
   undoEnabled = e.value;
 }
@@ -243,14 +227,17 @@ function setRedoEnabled(e: { value: boolean }): void {
   redoEnabled = e.value;
 }
 
+const what: Ref<any> = ref({});
+
 function adjustSize(): void {
-  availHeight =
-    window.innerHeight - mainRect.value.bottom - mainRect.value.top - 24; // quick hack (-24) to leave room at the bottom
-  console.debug(
-    "adjustSize() available height is ",
-    window.innerHeight,
-    mainRect.value
-  );
+  // The MessageHub height is set to 80 pixels
+  const availHeight =
+    display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
+  // console.debug(
+  //   "adjustSize() available height is ",
+  //   window.innerHeight,
+  //   mainRect.value
+  // );
   currentCanvasSize.value = availHeight;
 }
 
@@ -290,8 +277,9 @@ function loadDocument(docId: string): void {
 
 /** mounted() is part of VueJS lifecycle hooks */
 onMounted((): void => {
-  window.addEventListener("resize", onWindowResized);
+  window.addEventListener("resize", adjustSize);
   adjustSize(); // Why do we need this?  onWindowResized just calls adjustSize() but if you remove it the app doesn't work -- strange!
+
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   EventBus.listen("secret-key-detected", () => {
@@ -322,8 +310,8 @@ function dividerMoved(
   const availableWidth =
     ((100 - event[0].size - event[2].size) / 100) *
     (window.innerWidth - mainRect.value.left - mainRect.value.right);
-  availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom;
-  currentCanvasSize.value = Math.min(availableWidth, availHeight);
+  // availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom - 90;
+  // currentCanvasSize.value = Math.min(availableWidth, availHeight);
 }
 
 const panelSize = computed((): number => {
@@ -467,6 +455,9 @@ onBeforeRouteLeave(
 function handleToolboxMinify(state: boolean) {
   toolboxMinified.value = state;
 }
+function handleStylePanelMinify(state: boolean) {
+  stylePanelMinified.value = state;
+}
 </script>
 <style scoped lang="scss">
 .splitpanes__pane {
@@ -475,6 +466,20 @@ function handleToolboxMinify(state: boolean) {
   // justify-content: center;
   // align-items: center;
   // font-size: 5em;
+}
+
+#sphere-and-msghub {
+  // position: relative is required for the parent of v-overlay
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
+#msghub {
+  align-self: center;
+  position: fixed;
+  bottom: 4px;
 }
 #container {
   display: flex;
@@ -530,6 +535,47 @@ function handleToolboxMinify(state: boolean) {
 
 .top {
   top: 0;
+}
+
+.previewText {
+  position: absolute;
+  background-color: #fffd;
+  z-index: 30;
+  transform: translateX(-50%);
+  padding: 0.25em;
+  margin: 0.5em;
+}
+.previewImage {
+  position: absolute;
+  z-index: 20;
+  transform: translateX(-50%);
+  // border: 2px solid black;
+}
+.preview-fadein {
+  animation-duration: 500ms;
+  animation-name: preview-expand;
+}
+.preview-fadeout {
+  animation-duration: 500ms;
+  animation-name: preview-shrink;
+}
+
+@keyframes preview-expand {
+  0% {
+    transform: scale(0.3) translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%) scale(1);
+  }
+}
+
+@keyframes preview-shrink {
+  0% {
+    transform: scale(1) translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 #earthTogger{
 position: absolute;

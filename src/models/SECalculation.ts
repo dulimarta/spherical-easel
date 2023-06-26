@@ -1,4 +1,4 @@
-import { SEExpression } from "./SEExpression";
+import { SEExpression } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
