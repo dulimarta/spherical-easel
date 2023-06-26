@@ -9,7 +9,7 @@
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
+      <Pane ref="leftPane" min-size="5" max-size="35" :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
         <Toolbox
           id="toolbox"
           ref="toolbox"
@@ -26,7 +26,8 @@
         <div id="sphere-and-msghub">
           <SphereFrame
             style="position: relative"
-            :canvas-size="currentCanvasSize"
+            :available-height="availHeight"
+            :available-width="availWidth"
             v-show="svgDataImage.length === 0" />
           <v-overlay
             contained
@@ -40,8 +41,8 @@
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
-              :width="currentCanvasSize"
-              :height="currentCanvasSize" />
+              :width="canvasWidth"
+              :height="canvasHeight" />
           </v-overlay>
           <div id="msghub">
             <MessageHub />
@@ -127,7 +128,6 @@ import {
   useRouter
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
-import LabelStyle from "@/components/style-ui/LabelStyle.vue";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 
 const LEFT_PANE_PERCENTAGE = 25
@@ -143,19 +143,20 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode } =
+const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth } =
   storeToRefs(seStore);
 
 const props = defineProps<{
   documentId?: string;
 }>();
-const { mainRect, getLayoutItem } = useLayout();
+const { mainRect } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
-const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
+const leftPane: Ref<HTMLElement|null> = ref(null)
+// const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
 const toolboxMinified = ref(false);
@@ -194,18 +195,19 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
   }
 };
 
-const what: Ref<any> = ref({});
-
+const availHeight = ref(100)
+const availWidth = ref(100)
 function adjustCanvasSize(): void {
   // The MessageHub height is set to 80 pixels
-  const availHeight =
+  availWidth.value = display.width.value * (1 - LEFT_PANE_PERCENTAGE/100) - mainRect.value.left - mainRect.value.right;
+  availHeight.value =
     display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
   // console.debug(
   //   "adjustCanvasSize() available height is ",
   //   window.innerHeight,
   //   mainRect.value
   // );
-  currentCanvasSize.value = availHeight;
+  // currentCanvasSize.value = availHeight.value;
 }
 
 function loadDocument(docId: string): void {
@@ -274,11 +276,10 @@ function dividerMoved(
 ): void {
   // event[0].size is the width of the left panel (in percentage)
   // 80px is the width of the right navigation drawer
-  const availableWidth =
-    ((100 - event[0].size) / 100) *
-    (display.width.value - mainRect.value.left - mainRect.value.right) - 80;
-  const availHeight = display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
-  currentCanvasSize.value = Math.min(availableWidth, availHeight);
+  availWidth.value =
+    display.width.value - mainRect.value.left - mainRect.value.right - 80;
+  availHeight.value = display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
+  // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
 }
 
 function setActionModeToSelectTool(): void {

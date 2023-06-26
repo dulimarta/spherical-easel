@@ -58,6 +58,7 @@ type PiniaAppState = {
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
+  canvasHeight: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
@@ -395,6 +396,7 @@ export const useSEStore = defineStore({
     zoomMagnificationFactor: 1, // the initial zoom factor
     zoomTranslation: [0, 0],
     canvasWidth: 0,
+    canvasHeight: 0,
     sePointIds: [],
     seLineIds: [],
     seSegmentIds: [],
@@ -410,7 +412,7 @@ export const useSEStore = defineStore({
     styleSavedFromPanel: StyleEditPanels.Label,
     selectedSENoduleIds: [],
     disabledTools: [],
-    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   }),
   actions: {
     init(): void {
@@ -465,8 +467,9 @@ export const useSEStore = defineStore({
     setCanvas(c: HTMLDivElement | null): void {
       this.svgCanvas = c;
     },
-    setCanvasWidth(w: number): void {
+    setCanvasDimension(w: number, h: number): void {
       this.canvasWidth = w;
+      this.canvasHeight = h;
     },
     setRotationMatrix(mat: Matrix4): void {
       this.inverseTotalRotationMatrix.copy(mat);

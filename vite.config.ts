@@ -6,7 +6,7 @@ import vue from "@vitejs/plugin-vue"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
 // import Components from "unplugin-vue-components/vite"
 
-import vueI18nPlugin from "@intlify/vite-plugin-vue-i18n";
+import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
   resolve: {
@@ -34,7 +34,7 @@ export default defineConfig({
     //   path: resolve(__dirname, "./src")
     // }),
     vuetify({ autoImport: true }),
-    vueI18nPlugin({})
+    VueI18nPlugin({})
   ],
   server: {
     port: 8080

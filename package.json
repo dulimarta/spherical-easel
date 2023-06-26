@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
@@ -45,7 +46,6 @@
     "vuetify": "3"
   },
   "devDependencies": {
-    "@intlify/vite-plugin-vue-i18n": "^7.0.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/jest": "~24.0.25",
