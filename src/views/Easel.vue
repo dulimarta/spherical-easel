@@ -25,16 +25,17 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
+          <AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
+
           <div id="msghub">
             <MessageHub />
           </div>
-          <AddressInput v-if="isEarthMode" style="z-index: 100;position: absolute;"/>
           <button @click="()=>{
             isEarthMode = !isEarthMode;
             console.log(isEarthMode);
-          }" style="z-index: 100;">Earth Mode</button>
+          }" id="earthTogger" style="z-index: 100;">Earth Mode</button>
           <div id="earthAndCircle">
-            <EarthComp v-if="isEarthMode"/>
+            <EarthComp v-if="isEarthMode" :canvas-size="currentCanvasSize"/>
             <SphereFrame
             style="position: relative"
             :canvas-size="currentCanvasSize"

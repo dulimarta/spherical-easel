@@ -1,7 +1,7 @@
 <template>
-<div class="inputAddress">
+
     <input type="text" id="autocomplete" placeholder="Enter your address" />
-</div>
+
 
 </template>
 <style>
@@ -13,14 +13,15 @@
         border: 1px solid #ddd;
         border-radius: 5px;
         margin-bottom: 10px;
+        background-color: white;
     }
-    .inputAddress {
+    /* .inputAddress {
         width: 100%;
         height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
+    } */
 </style>
 <script setup lang="ts">
 import { onMounted } from 'vue';
