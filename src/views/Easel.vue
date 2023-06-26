@@ -28,10 +28,20 @@
           <div id="msghub">
             <MessageHub />
           </div>
-          <SphereFrame
+          <AddressInput v-if="isEarthMode" style="z-index: 100;position: absolute;"/>
+          <button @click="()=>{
+            isEarthMode = !isEarthMode;
+            console.log(isEarthMode);
+          }" style="z-index: 100;">Earth Mode</button>
+          <div id="earthAndCircle">
+            <EarthComp v-if="isEarthMode"/>
+            <SphereFrame
             style="position: relative"
             :canvas-size="currentCanvasSize"
-            v-show="svgDataImage.length === 0" />
+            v-show="svgDataImage.length === 0"
+            :is-earth-mode="isEarthMode" />
+          </div>
+
           <v-overlay
             contained
             :class="['justify-center', 'align-center', previewClass]"
