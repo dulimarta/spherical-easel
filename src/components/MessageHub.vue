@@ -28,11 +28,11 @@
             :close-on-content-click="false"
             location="top"
             offset="32">
-            <v-card class="pa-1" >
-              <v-card-title>Select message types</v-card-title>
+            <v-card class="pa-1">
+              <v-card-title v-t="'selectMsgType'"></v-card-title>
               <v-card-text>
                 <v-checkbox
-                  label="Select All"
+                  :label="t('selectAll')"
                   v-model="showAllType"
                   @update:model-value="doSelectAllMessageType" />
                 <div style="display: flex">
@@ -154,17 +154,37 @@
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
-      <v-btn @click="cancelDeleteMessages" color="warning">Undo</v-btn>
+      <v-btn @click="cancelDeleteMessages" color="warning">{{t('undo')}}</v-btn>
     </template>
   </v-snackbar>
 </template>
 <i18n>
 {
   "en": {
-    "deleteWarning": "Messages will be deleted"
+    "directive": "Directive",
+    "info": "Informational",
+    "warning": "Warning",
+    "error": "Error",
+    "success": "Success",
+    "all": "All",
+    "selectAll": "Select All Type",
+    "selectMsgType": "Select Message Type",
+    "deleteMsg": "Delete {msgType} messages",
+    "deleteWarning": "Messages will be deleted",
+    "undo": "Undo"
   },
   "id": {
-    "deleteWarning": "Pesan-pesan akan dihapus"
+    "directive": "Petunjuk",
+    "info": "Informasional",
+    "warning": "Peringatan",
+    "error": "Kesalahan",
+    "success": "Sukses",
+    "all": "Semua Pesan",
+    "selectAll": "Pilih semua jenis pesan",
+    "selectMsgType": "Pilih Jenis Pesan",
+    "deleteMsg": "Hapus Pesan Jenis {msgType}",
+    "deleteWarning": "Pesan-pesan akan dihapus",
+    "undo": "Urung"
   }
 }
 </i18n>
@@ -192,12 +212,14 @@ const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
-const messageTypes = SETTINGS.messageTypes.map((s: string) => ({
-  value: s,
-  title: t(`notifications.${s}`)
-}));
+const messageTypes = computed(() =>
+  SETTINGS.messageTypes.map((s: string) => ({
+    value: s,
+    title: t(s)
+  }))
+);
 const selectedMessageType: Ref<Array<string>> = ref(
-  messageTypes.map(m => m.value)
+  messageTypes.value.map(m => m.value)
 );
 const messages: Ref<MessageType[]> = ref([]);
 let deleteTimer: any;

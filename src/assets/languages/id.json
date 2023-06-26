@@ -380,8 +380,5 @@
     "topRightCorner": "headingNames.topRightCorner",
     "bottomLeftCorner": "headingNames.bottomLeftCorner",
     "bottomRightCorner": "headingNames.bottomRightCorner"
-  },
-  "notifications": {
-    "deleteMsg": "notifications.deleteMsg"
   }
 }

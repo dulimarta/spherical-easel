@@ -24,9 +24,9 @@
               v-slot="{ isSelected, toggle }"
               :value="btn.action">
               <ToolButton
-                @click="toggle"
+                @click="toggle as () => void"
                 :button="btn"
-                :selected="isSelected"
+                :selected="isSelected!"
                 :included="toolIncluded(btn.action)"
                 :editing="inEditMode" />
             </v-item>
@@ -43,12 +43,12 @@
       </h3>
       <v-item v-slot="{ isSelected, toggle }">
         <ToolButton
-          @click="toggle"
+          @click="toggle as () => void"
           v-for="(button, pos) in developerButtonList"
           :key="pos"
           :button="button"
           :editing="inEditMode"
-          :selected="isSelected"
+          :selected="isSelected!"
           :included="true" />
       </v-item>
     </div>
@@ -227,11 +227,9 @@ const developerButtonList: ToolButtonType[] = [
   {
     id: 0,
     action: "iconFactory",
-    displayedName: "CreateIconDisplayedName",
-    // icon: "$iconFactory",
-    toolTipMessage: "CreateIconToolTipMessage",
-    toolUseMessage: "CreateIconToolUseMessage",
-    // disabledIcon: '?????'
+    displayedName: "buttons.CreateIconDisplayedName",
+    toolTipMessage: "buttons.CreateIconToolTipMessage",
+    toolUseMessage: "buttons.CreateIconToolUseMessage",
   }
 ];
 </script>

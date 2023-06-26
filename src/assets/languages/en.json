@@ -578,14 +578,5 @@
     "firestoreConstructionDeleted": "Construction {docId} successfully deleted.",
     "firestoreSaveError": "Construction was not saved.",
     "constructionNotFound": "Construction {docId} not found."
-  },
-  "notifications": {
-    "directive": "Directive",
-    "info": "Informational",
-    "warning": "Warning",
-    "error": "Error",
-    "success": "Success",
-    "all": "All",
-    "deleteMsg": "Delete {msgType} messages"
   }
 }
