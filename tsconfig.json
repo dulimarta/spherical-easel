@@ -14,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
-    "types": ["vuetify", "jest", "@intlify/unplugin-vue-i18n/messages"],
+    "types": ["vuetify", "jest", "@intlify/unplugin-vue-i18n/messages","google.maps"],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types",

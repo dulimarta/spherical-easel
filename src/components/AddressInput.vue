@@ -26,11 +26,7 @@
 </style>
 <script setup lang="ts">
 import { onMounted,ref } from 'vue';
-import axios from 'axios';
 import { onUnmounted } from 'vue';
-import { SEPoint } from '@/models/SEPoint';
-import Point from '@/plottables/Point';
-import { Vector } from 'two.js';
 import * as THREE from 'three';
 import { SELabel } from '@/models/SELabel';
 import Label from '@/plottables/Label';
@@ -43,7 +39,8 @@ import { LabelDisplayMode } from '@/types';
 import { StyleEditPanels } from '@/types/Styles';
 import { SEEarthPoint } from '@/models/SEEarthPoint';
 import NonFreePoint from '@/plottables/NonFreePoint';
-
+import { Loader } from "@googlemaps/js-api-loader"
+import { GoogleAuthProvider } from 'firebase/auth';
 const store = useSEStore();
 const { inverseTotalRotationMatrix} = storeToRefs(store);
 
@@ -52,62 +49,51 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
     const xcor = ref(0)
     const ycor = ref(0)
     const zcor = ref(0)
-    declare global {
-    interface Window {
-        initMap: () => void;
-    }
-    const google: any; // add this line to define the google object
-    }
-    window.initMap = ()=>{
-        const input = document.getElementById("autocomplete");
-        const autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        lat.value = place.geometry.location.lat();
-        lng.value = place.geometry.location.lng();
-        console.log(place)
-        const latRad = lat.value * Math.PI / 180;
-        const lngRad = lng.value * Math.PI / 180;
-        const radius = 1;
-        xcor.value = radius*Math.cos(latRad) * Math.cos(lngRad)
-        ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
-        zcor.value = radius*Math.sin(latRad)
-        const newPoint = new NonFreePoint();
 
-        // caption
-        const vtx = new SEEarthPoint(newPoint,lngRad,latRad);
-        const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
-        pointVector.normalize();
-        const rotationMatrix = new THREE.Matrix4();
-        rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-        pointVector.applyMatrix4(rotationMatrix);
-        vtx.locationVector = pointVector;
-        let placeCaption = place.formatted_address;
-        // const matrixMulti = new THREE.Matrix4().makeRotationX(Math.PI/2)
-        // rotationMatrix.multiply(matrixMulti)
-        // vtx.locationVector.applyMatrix4(rotationMatrix);
 
-        //caption change here
-        const pointLabel = new Label("point");
-        pointLabel.caption = placeCaption;
-        const newSELabel = new SELabel(pointLabel,vtx);
-        const pointCommandGroup = new CommandGroup();
-        pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
-        pointCommandGroup.execute();
-        pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
-        newSELabel.update();
-        });
-    };
     onMounted(()=>{
-            let script = document.createElement('script');
-            script.async = true;
-            const apikey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap`
-            document.head.appendChild(script);
+        const api = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
+        const loader = new Loader({
+            apiKey: api,
+            version: "weekly",})
+        loader.load().then(async () => {
+            const {Autocomplete} = await google.maps.importLibrary("places");
+            const input = document.getElementById("autocomplete");
+            const autocomplete = new Autocomplete(input);
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                lat.value = place.geometry.location.lat();
+                lng.value = place.geometry.location.lng();
+                console.log(place)
+                const latRad = lat.value * Math.PI / 180;
+                const lngRad = lng.value * Math.PI / 180;
+                const radius = 1;
+                xcor.value = radius*Math.cos(latRad) * Math.cos(lngRad)
+                ycor.value = radius*Math.cos(latRad) * Math.sin(lngRad)
+                zcor.value = radius*Math.sin(latRad)
+                const newPoint = new NonFreePoint();
+
+                // caption
+                const vtx = new SEEarthPoint(newPoint,lngRad,latRad);
+                const pointVector = new THREE.Vector3(xcor.value, ycor.value, zcor.value);
+                pointVector.normalize();
+                const rotationMatrix = new THREE.Matrix4();
+                rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+                pointVector.applyMatrix4(rotationMatrix);
+                vtx.locationVector = pointVector;
+                let placeCaption = place.formatted_address;
+
+                //caption change here
+                const pointLabel = new Label("point");
+                pointLabel.caption = placeCaption;
+                const newSELabel = new SELabel(pointLabel,vtx);
+                const pointCommandGroup = new CommandGroup();
+                pointCommandGroup.addCommand(new AddPointCommand(vtx,newSELabel));
+                pointCommandGroup.execute();
+                pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
+                newSELabel.update();
+            });
+        })
     })
-    onUnmounted(()=>{
-        const apikey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY
-        let script = document.querySelector(`script[src="https://maps.googleapis.com/maps/api/js?key=${apikey}&libraries=places&callback=initMap"]`)
-        document.head.removeChild(script!);
-    })
+
 </script>
