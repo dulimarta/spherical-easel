@@ -30,7 +30,6 @@ import { SELabel } from '@/models/SELabel';
 import Label from '@/plottables/Label';
 import { CommandGroup } from '@/commands/CommandGroup';
 import { AddPointCommand } from '@/commands/AddPointCommand';
-import globalSettings from '@/global-settings';
 import { useSEStore } from '@/stores/se';
 import { storeToRefs } from "pinia";
 import { LabelDisplayMode } from '@/types';
@@ -46,7 +45,7 @@ const { inverseTotalRotationMatrix} = storeToRefs(store);
             apiKey: api,
             version: "weekly",})
         loader.load().then(async () => {
-            const {Autocomplete} = await google.maps.importLibrary("places");
+            const { Autocomplete } = await google.maps.importLibrary("places");
             const input = document.getElementById("autocomplete");
             const autocomplete = new Autocomplete(input);
             autocomplete.addListener("place_changed", () => {

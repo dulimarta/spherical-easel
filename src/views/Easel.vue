@@ -27,9 +27,7 @@
         <div id="sphere-and-msghub">
           <AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
 
-          <div id="msghub">
-            <MessageHub />
-          </div>
+
           <button @click="()=>{
             isEarthMode = !isEarthMode;
             console.log(isEarthMode);
@@ -42,7 +40,9 @@
             v-show="svgDataImage.length === 0"
             :is-earth-mode="isEarthMode" />
           </div>
-
+          <div id="msghub">
+            <MessageHub />
+          </div>
           <v-overlay
             contained
             :class="['justify-center', 'align-center', previewClass]"
@@ -484,7 +484,7 @@ function handleStylePanelMinify(state: boolean) {
   position: relative;
   display: flex;
   justify-content: flex-start;
-  flex-direction: column-reverse;
+  flex-direction: column;
   align-items: stretch;
 }
 #msghub {
