@@ -96,7 +96,6 @@ import MessageHub from "@/components/MessageHub.vue";
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
 
-// Temporarily exclude Style.vue
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";

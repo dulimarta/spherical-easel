@@ -16,12 +16,10 @@
     <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle>
 
     <div id="visibility-control">
-      <span>
-        Label
+      <span v-t="'label'">
         <v-icon>mdi-eye</v-icon>
       </span>
-      <span>
-        Object
+      <span v-t="'object'">
         <v-icon>mdi-eye</v-icon>
       </span>
     </div>
@@ -34,8 +32,12 @@
 <i18n lang="yaml">
 en:
   showDrawer: "Show Style Drawer"
+  label: "Label"
+  object: "Object"
 id:
   showDrawer: "Tampilkan Panel Gaya Tampilan"
+  label: "Label"
+  object: "Objek"
 </i18n>
 <style scoped>
 .vertical-nav-drawer {
@@ -69,7 +71,6 @@ id:
 import { ref } from "vue";
 import { StyleEditPanels } from "@/types/Styles";
 import { useI18n } from "vue-i18n";
-import PopOverTabs from "../PopOverTabs.vue";
 import LabelStyle from "./LabelStyle.vue";
 import FrontBackStyle from "./FrontBackStyle.vue";
 const minified = ref(true);

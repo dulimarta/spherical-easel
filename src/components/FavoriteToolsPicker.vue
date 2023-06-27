@@ -1,11 +1,11 @@
 <template>
-  <h2>Favorite Tools Picker</h2>
+  <h2 v-t="'sectionHeading'"></h2>
   <v-container>
     <v-row>
       <v-col cols="3">
         <v-card>
           <v-card-title>
-            {{ $t("headingNames.allToolsName") }}
+            {{ $t("allTools") }}
           </v-card-title>
           <v-card-text>
             <v-list density="compact" id="mainToolsList">
@@ -34,7 +34,7 @@
                 v-model="favoriteTools[0]"
                 :tool-pick="selected"
                 :id="0"
-                :list-title="$t('headingNames.topLeftCorner')"
+                :list-title="$t('topLeft')"
                 v-on:tool-added="onToolAdded"
                 v-on:tool-removed="onToolRemoved"/>
             </v-col>
@@ -43,7 +43,7 @@
                 v-model="favoriteTools[1]"
                 :tool-pick="selected"
                 :id="1"
-                :list-title="$t('headingNames.topRightCorner')"
+                :list-title="$t('topRight')"
                 v-on:tool-added="onToolAdded"
                 v-on:tool-removed="onToolRemoved"/>
             </v-col>
@@ -52,7 +52,7 @@
                 v-model="favoriteTools[2]"
                 :tool-pick="selected"
                 :id="2"
-                :list-title="$t('headingNames.bottomLeftCorner')"
+                :list-title="$t('bottomLeft')"
                 v-on:tool-added="onToolAdded"
                 v-on:tool-removed="onToolRemoved"/>
             </v-col>
@@ -61,7 +61,7 @@
                 v-model="favoriteTools[3]"
                 :tool-pick="selected"
                 :id="3"
-                :list-title="$t('headingNames.bottomRightCorner')"
+                :list-title="$t('bottomRight')"
                 v-on:tool-added="onToolAdded"
                 v-on:tool-removed="onToolRemoved"/>
             </v-col>
@@ -83,7 +83,7 @@ import { TOOL_DICTIONARY } from "./tooldictionary";
 import { onMounted } from "vue";
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
-const {t} = useI18n()
+const {t} = useI18n({useScope: 'local'})
 const allToolsList: Ref<ToolButtonType[]> = ref([]);
 const selected: Ref<ActionMode | null> = ref(null);
 
@@ -130,3 +130,13 @@ function onToolRemoved(toolName: ActionMode) {
   overflow-y: auto;
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "allTools": "All Tools",
+  "topLeft": "Top-Left Corner",
+  "topRight": "Top-Right Corner",
+  "bottomLeft": "Bottom-Left Corner",
+  "bottomRight": "Bottom-Right Corner",
+  "sectionHeading": "Favorite Tool Selection"
+}
+</i18n>

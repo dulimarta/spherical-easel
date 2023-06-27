@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "outDir": "ts-out",
     "types": [
-      "jest", "vuetify"
+      "jest", "vuetify",
+      "@intlify/unplugin-vue-i18n/messages"
     ],
     "typeRoots": [
       "./node_modules/@types",

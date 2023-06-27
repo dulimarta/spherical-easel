@@ -187,11 +187,9 @@
     "reflections": "Reflections | Reflection | reflection | reflections",
     "pointReflections": "Point Reflections | Point Reflection | point reflection | point reflections",
     "inversions": "Inversions | Inversion | inversion | inversions",
-    "selectTransformation": "< Select A Transformation >"
+    "selectTransformation": "Select A Transformation"
   },
   "style": {
-    "dashArrayReverse": "Switch Dash and Gap",
-    "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
     "labelStyle": "Label Style",
     "foregroundStyle": "Foreground Style",
     "backgroundStyle": "Background Style",
@@ -253,22 +251,9 @@
     "enableBackStyleContrastSlider": "Click To Enable Dynamic Back Style For Selected Object(s)",
     "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
     "toggleStyleOptionsToolTip": "More/Less label styling options.",
-    "dashPattern": "Dash Pattern",
-    "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
-    "fillColor": "Fill Color",
-    "pointRadiusPercent": "Point Radius",
-    "angleMarkerRadiusPercent": "Angle Marker Radius",
     "angleMarkerOptions": "Angle Marker Options",
-    "angleMarkerDoubleArc": "Double Arc",
-    "angleMarkerTickMark": "Tick Mark",
-    "strokeColor": "Stroke Color",
-    "strokeWidthPercent": "Stroke Width",
     "dynamicBackStyle": "Dynamic Back Style",
-    "globalBackStyleContrast": "Global",
-    "backStyleContrast": "Back Style Contrast",
-    "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
     "labelStyleOptions": "Label Text Options",
-    "labelStyleOptionsMultiple": "(Multiple)",
     "renameLabels": "Rename All",
     "labelDisplayText": "Label Text",
     "labelDisplayCaption": "Label Caption",
@@ -277,7 +262,6 @@
     "labelVisible": "Label Visible",
     "objectVisible": "Object Visible",
     "cannotSelectLabels": "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel.",
-    "angleMarkerArrowHeads": "Arrow Head"
   },
   "handlers": {
     "transformCreatesSecondPoint": "Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",

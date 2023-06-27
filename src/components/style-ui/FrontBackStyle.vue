@@ -13,21 +13,19 @@
         <div v-if="editModeIsBack">
           <!-- Enable the Dynamic Back Style Overlay -->
           <!-- Global contrast slider -->
-          <v-tooltip
-            location="bottom"
-            max-width="400px">
+          <v-tooltip location="bottom" max-width="400px">
             <template v-slot:activator="{ props }">
               <p v-bind="props">
                 <span class="text-subtitle-2" style="color: red">
-                  {{ $t("style.globalBackStyleContrast") + " " }}
+                  {{ $t("globalBackStyleContrast") + " " }}
                 </span>
                 <span class="text-subtitle-2">
-                  {{ $t("style.backStyleContrast") }}
+                  {{ $t("backStyleContrast") }}
                   {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
                 </span>
               </p>
             </template>
-            <span>{{ $t("style.backStyleContrastToolTip") }}</span>
+            <span>{{ $t("backStyleContrastToolTip") }}</span>
           </v-tooltip>
           <v-slider
             v-model="backStyleContrast"
@@ -43,11 +41,13 @@
             <template v-slot:prepend>
               <!-- <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon> -->
             </template>
-            <template v-slot:thumb-label="{modelValue}">
+            <!--template v-slot:thumb-label="{ modelValue }">
               {{
-                backStyleContrastSelectorThumbStrings[Math.floor(modelValue * 10)]
+                backStyleContrastSelectorThumbStrings[
+                  Math.floor(modelValue * 10)
+                ]
               }}
-            </template>
+            </!--template-->
             <template v-slot:append>
               <!-- <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon> -->
             </template>
@@ -55,14 +55,14 @@
         </div>
         <SimpleColorSelector
           :numSelected="selectionCount"
-          :title="t('style.strokeColor')"
+          :title="t('strokeColor')"
           v-if="hasStyle(/strokeColor/) || true"
           :conflict="conflictItems.strokeColor"
           v-on:resetColor="conflictItems.strokeColor = false"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
         <SimpleColorSelector
-          :title="t('style.fillColor')"
+          :title="t('fillColor')"
           :numSelected="selectionCount"
           :conflict="conflictItems.fillColor"
           v-on:resetColor="conflictItems.fillColor = false"
@@ -76,7 +76,7 @@
           :numSelected="selectionCount"
           :conflict="conflictItems.strokeWidthPercent"
           v-model="strokeWidthPercentage"
-          :title="t('style.strokeWidthPercent')"
+          :title="t('strokeWidthPercent')"
           :min="minStrokeWidthPercent"
           :max="maxStrokeWidthPercent"
           :color="conflictItems.strokeWidthPercent ? 'red' : ''"
@@ -89,19 +89,19 @@
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
           :conflict="conflictItems.pointRadiusPercent"
           v-on:resetColor="conflictItems.pointRadiusPercent = false"
-          :title="t('style.pointRadiusPercent')"
+          :title="t('pointRadiusPercent')"
           :min="minPointRadiusPercent"
           :max="maxPointRadiusPercent"
           :step="20"
           :thumb-string-values="
             pointRadiusSelectorThumbStrings
           "></SimpleNumberSelector>
-        <span class="text-subtitle-2">{{ " " + $t("style.dashPattern") }}</span>
+        <span class="text-subtitle-2">{{ " " + $t("dashPattern") }}</span>
         <span
           v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
           style="color: red">
-          {{ " " + $t("style.labelStyleOptionsMultiple") }}
+          {{ " " + $t("labelStyleOptionsMultiple") }}
         </span>
         <span v-show="!emptyDashPattern">
           {{ activeDashPattern(styleOptions) }}
@@ -142,10 +142,7 @@
           </template>
         </v-range-slider>
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
-        After slider
-        <v-tooltip
-          location="bottom"
-          max-width="400px">
+        <v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-on="props">
               <v-checkbox
@@ -153,7 +150,7 @@
                 :key="activeDashPatternKey"
                 :false-value="true"
                 :true-value="false"
-                :label="$t('style.dashPattern')"
+                :label="$t('dashPattern')"
                 :color="conflictItems.dashArray ? 'red' : ''"
                 @click="
                   toggleDashPatternSliderAvailbility(styleOptions);
@@ -166,17 +163,15 @@
                     :style="{
                       color: conflictItems.dashArray ? 'red' : ``
                     }">
-                    {{ $t("style.dashPattern") }}
+                    {{ $t("dashPattern") }}
                   </span>
                 </template>
               </v-checkbox>
             </span>
           </template>
-          {{ $t("style.dashPatternCheckBoxToolTip") }}
+          {{ $t("dashPatternCheckBoxToolTip") }}
         </v-tooltip>
-        <v-tooltip
-          location="bottom"
-          max-width="400px">
+        <v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-on="props">
               <v-checkbox
@@ -195,13 +190,13 @@
                     :style="{
                       color: conflictItems.reverseDashArray ? 'red' : ``
                     }">
-                    {{ $t("style.dashArrayReverse") }}
+                    {{ $t("dashArrayReverse") }}
                   </span>
                 </template>
               </v-checkbox>
             </span>
           </template>
-          {{ $t("style.dashPatternReverseArrayToolTip") }}
+          {{ $t("dashPatternReverseArrayToolTip") }}
         </v-tooltip>
       </v-window-item>
       <v-window-item class="pa-2">
@@ -216,7 +211,7 @@
           :conflict="conflictItems.angleMarkerRadiusPercent"
           v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
           v-model="angleMarkerRadiusPercentage"
-          :title="t('style.angleMarkerRadiusPercent')"
+          :title="t('angleMarkerRadiusPercent')"
           :min="minAngleMarkerRadiusPercent"
           :max="maxAngleMarkerRadiusPercent"
           :step="20"
@@ -237,7 +232,7 @@
               :style="{
                 color: conflictItems.angleMarkerTickMark ? 'red' : ``
               }">
-              {{ $t("style.angleMarkerTickMark") }}
+              {{ $t("angleMarkerTickMark") }}
             </span>
           </template>
         </v-switch>
@@ -255,7 +250,7 @@
               :style="{
                 color: conflictItems.angleMarkerDoubleArc ? 'red' : ``
               }">
-              {{ $t("style.angleMarkerDoubleArc") }}
+              {{ $t("angleMarkerDoubleArc") }}
             </span>
           </template>
         </v-switch>
@@ -274,7 +269,7 @@
               :style="{
                 color: conflictItems.angleMarkerArrowHeads ? 'red' : ``
               }">
-              {{ $t("style.angleMarkerArrowHeads") }}
+              {{ $t("angleMarkerArrowHeads") }}
             </span>
           </template>
         </v-switch>
@@ -318,7 +313,7 @@ type ConflictItems = {
 type ComponentProps = {
   panel: StyleEditPanels;
 };
-const { attrs } = useAttrs()
+const { attrs } = useAttrs();
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
 
@@ -334,10 +329,12 @@ const {
   angleMarkersSelected,
   oneDimensionSelected
 } = useStyleEditor(props.panel, objectFilter, objectMapper);
-const { t } = useI18n()
-const strokeWidthPercentage = ref(styleOptions.value.strokeWidthPercent ?? 100)
-const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100)
-const angleMarkerRadiusPercentage = ref(styleOptions.value.angleMarkerRadiusPercent ?? 100)
+const { t } = useI18n({ useScope: "local" });
+const strokeWidthPercentage = ref(styleOptions.value.strokeWidthPercent ?? 100);
+const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100);
+const angleMarkerRadiusPercentage = ref(
+  styleOptions.value.angleMarkerRadiusPercent ?? 100
+);
 // @Watch("selectedSENodules")
 function resetAllItemsFromConflict(): void {
   // console.log("here reset input colors");
@@ -779,3 +776,23 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   font-size: 16px;
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "globalBackStyleContrast": "Global Back Style Contrast",
+  "backStyleContrast": "Back Style Contrast",
+  "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
+  "strokeColor": "Stroke Color",
+  "fillColor": "Fill Color",
+  "strokeWidthPercent": "Stroke Width (%)",
+  "pointRadiusPercent": "Point Radius (%)",
+  "dashPattern": "Dash Pattern",
+  "labelStyleOptionsMultiple": "(Multiple)",
+  "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
+  "dashArrayReverse": "Switch Dash and Gap",
+  "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
+  "angleMarkerRadiusPercent": "Angle Marker Radius",
+  "angleMarkerTickMark": "Tick Mark",
+  "angleMarkerDoubleArc": "Double Arc",
+  "angleMarkerArrowHeads": "Arrow Head"
+}
+</i18n>

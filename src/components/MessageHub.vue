@@ -206,7 +206,7 @@ type MessageType = {
 type AlertType = "success" | "info" | "error" | "warning";
 
 const DELETE_DELAY = 3000;
-const { t } = useI18n();
+const { t } = useI18n({useScope: 'local'});
 const filterMenuVisible = ref(false);
 const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
