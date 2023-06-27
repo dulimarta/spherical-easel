@@ -1,7 +1,13 @@
 <template>
-  <v-navigation-drawer location="end" color="black" permanent width="80">
-    <StyleDrawer></StyleDrawer>
-  </v-navigation-drawer>
+  <div style="position: fixed; right: 8px; width: 80px; top: 0; bottom: 0; display: flex; flex-direction: column;
+  justify-content: center;  z-index: 1">
+    <!-- <div style="height: 60%; background: white; border: 1px solid black; border-radius: 0.5em;"> -->
+      <StyleDrawer></StyleDrawer>
+    <!-- </div> -->
+  </div>
+  <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
+  background-color: transparent;">
+  </!--v-navigation-drawer-->
   <div>
     <Splitpanes
       :style="contentHeightStyle"

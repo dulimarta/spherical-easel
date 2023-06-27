@@ -30,12 +30,10 @@
             <span>{{ $t("style.backStyleContrastToolTip") }}</span>
           </v-tooltip>
           <v-slider
-            v-bind="props"
             v-model="backStyleContrast"
             :min="0"
-            step="0.1"
+            :step="0.1"
             :max="1"
-            type="range"
             :disabled="
               !styleOptions.dynamicBackStyle &&
               !dataAgreement(/dynamicBackStyle/)
@@ -43,28 +41,28 @@
             @change="setBackStyleContrast"
             density="compact">
             <template v-slot:prepend>
-              <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon>
+              <!-- <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon> -->
             </template>
-            <template v-slot:thumb-label="{ value }">
+            <template v-slot:thumb-label="{modelValue}">
               {{
-                backStyleContrastSelectorThumbStrings[Math.floor(value * 10)]
+                backStyleContrastSelectorThumbStrings[Math.floor(modelValue * 10)]
               }}
             </template>
             <template v-slot:append>
-              <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon>
+              <!-- <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon> -->
             </template>
           </v-slider>
         </div>
         <SimpleColorSelector
           :numSelected="selectionCount"
-          titleKey="style.strokeColor"
+          :title="t('style.strokeColor')"
           v-if="hasStyle(/strokeColor/) || true"
           :conflict="conflictItems.strokeColor"
           v-on:resetColor="conflictItems.strokeColor = false"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
         <SimpleColorSelector
-          title-key="style.fillColor"
+          :title="t('style.fillColor')"
           :numSelected="selectionCount"
           :conflict="conflictItems.fillColor"
           v-on:resetColor="conflictItems.fillColor = false"
@@ -77,8 +75,8 @@
           v-if="hasStyle(/strokeWidthPercent/) || true"
           :numSelected="selectionCount"
           :conflict="conflictItems.strokeWidthPercent"
-          v-model="styleOptions.strokeWidthPercent"
-          title-key="style.strokeWidthPercent"
+          v-model="strokeWidthPercentage"
+          :title="t('style.strokeWidthPercent')"
           :min="minStrokeWidthPercent"
           :max="maxStrokeWidthPercent"
           :color="conflictItems.strokeWidthPercent ? 'red' : ''"
@@ -87,11 +85,11 @@
           :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
         <SimpleNumberSelector
           :numSelected="selectionCount"
-          v-model="styleOptions.pointRadiusPercent"
+          v-model="pointRadiusPercentage"
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
           :conflict="conflictItems.pointRadiusPercent"
           v-on:resetColor="conflictItems.pointRadiusPercent = false"
-          title-key="style.pointRadiusPercent"
+          :title="t('style.pointRadiusPercent')"
           :min="minPointRadiusPercent"
           :max="maxPointRadiusPercent"
           :step="20"
@@ -217,8 +215,8 @@
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
           :conflict="conflictItems.angleMarkerRadiusPercent"
           v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
-          v-model="styleOptions.angleMarkerRadiusPercent"
-          title-key="style.angleMarkerRadiusPercent"
+          v-model="angleMarkerRadiusPercentage"
+          :title="t('style.angleMarkerRadiusPercent')"
           :min="minAngleMarkerRadiusPercent"
           :max="maxAngleMarkerRadiusPercent"
           :step="20"
@@ -290,7 +288,7 @@
   <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
 </template>
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, useAttrs } from "vue";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
@@ -298,8 +296,8 @@ import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/style-ui/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
-import i18n from "@/i18n";
-import { mapActions, mapState, storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useStyleEditor } from "@/components/StyleEditor";
 import { onBeforeMount } from "vue";
@@ -320,6 +318,7 @@ type ConflictItems = {
 type ComponentProps = {
   panel: StyleEditPanels;
 };
+const { attrs } = useAttrs()
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
 
@@ -335,7 +334,10 @@ const {
   angleMarkersSelected,
   oneDimensionSelected
 } = useStyleEditor(props.panel, objectFilter, objectMapper);
-
+const { t } = useI18n()
+const strokeWidthPercentage = ref(styleOptions.value.strokeWidthPercent ?? 100)
+const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100)
+const angleMarkerRadiusPercentage = ref(styleOptions.value.angleMarkerRadiusPercent ?? 100)
 // @Watch("selectedSENodules")
 function resetAllItemsFromConflict(): void {
   // console.log("here reset input colors");
@@ -418,7 +420,6 @@ const strokeWidthScaleSelectorThumbStrings: Array<string> = [];
 //Many of the label style will not be commonly modified so create a button/variable for
 // the user to click to show more of the Label Styling options
 const showMoreLabelStyles = ref(false);
-let moreOrLessText = i18n.global.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
 const maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
 const minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
@@ -484,7 +485,7 @@ function toggleUsingAutomaticBackStyle(opt: StyleOptions): void {
 
 // dbAgreement and udbCommonValue are computed by the program
 // useDB is set by user
-const backStyleContrast = Nodule.getBackStyleContrast();
+const backStyleContrast = ref(Nodule.getBackStyleContrast());
 const backStyleContrastSelectorThumbStrings = [
   "Min",
   "10%",
@@ -499,7 +500,7 @@ const backStyleContrastSelectorThumbStrings = [
   "Same"
 ];
 function setBackStyleContrast(): void {
-  seStore.changeBackContrast(backStyleContrast);
+  seStore.changeBackContrast(backStyleContrast.value);
 }
 
 const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
@@ -585,14 +586,6 @@ const allObjectsShowing = computed((): boolean => {
   return selectedSENodules.value.every(node => node.showing);
 });
 
-function toggleShowMoreLabelStyles(): void {
-  showMoreLabelStyles.value = !showMoreLabelStyles.value;
-  if (!showMoreLabelStyles) {
-    moreOrLessText = i18n.global.t("style.moreStyleOptions");
-  } else {
-    moreOrLessText = i18n.global.t("style.lessStyleOptions");
-  }
-}
 function toggleAllObjectsVisibility(): void {
   EventBus.fire("toggle-object-visibility", { fromPanel: true });
 }
