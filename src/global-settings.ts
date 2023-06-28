@@ -615,7 +615,7 @@ export const SETTINGS = {
     }
   },
   label: {
-    maxLabelDisplayCaptionLength: 15, // The maximum number of characters in the displayed label caption
+    maxLabelDisplayCaptionLength: 1000, // The maximum number of characters in the displayed label caption
     maxLabelDisplayTextLength: 8, // The maximum number of characters in the displayed label name
     //The scaling of the label relative to the scaled for zoom default size
     textScalePercent: 100,

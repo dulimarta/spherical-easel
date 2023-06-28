@@ -49,6 +49,7 @@ import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
 
 type PiniaAppState = {
+  isEarthMode: boolean;
   actionMode: ActionMode;
   previousActionMode: ActionMode;
   buttonSelection: any;
@@ -386,6 +387,7 @@ function findCycles(): number[] {
 export const useSEStore = defineStore({
   id: "se",
   state: (): PiniaAppState => ({
+    isEarthMode: false,
     actionMode: "rotate",
     previousActionMode: "rotate",
     // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
@@ -394,7 +396,7 @@ export const useSEStore = defineStore({
     svgCanvas: null,
     hasUnsavedNodules: false,
     zoomMagnificationFactor: 1, // the initial zoom factor
-    zoomTranslation: [0, 0],
+    zoomTranslation: [0, 0], // [x , y]
     canvasWidth: 0,
     canvasHeight: 0,
     sePointIds: [],
