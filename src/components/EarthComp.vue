@@ -1,5 +1,5 @@
 <template>
-    <canvas id="earth"></canvas>
+  <canvas id="earth"></canvas>
 </template>
 <style>
  #earth{
@@ -18,6 +18,7 @@ import { watch } from 'vue';
 import { onMounted } from 'vue';
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
+import { onBeforeUnmount } from "vue";
 const prop = defineProps({
     canvasSize: {
         type: Number,
@@ -26,6 +27,7 @@ const prop = defineProps({
 })
 const store = useSEStore();
 const {zoomMagnificationFactor,zoomTranslation, inverseTotalRotationMatrix} = storeToRefs(store);
+let requstAnimFrameHandle: number|null = null
 onMounted(()=>{
     const scene = new THREE.Scene();
     const num = prop.canvasSize / (zoomMagnificationFactor.value*2.010);
@@ -65,7 +67,7 @@ onMounted(()=>{
     scene.add(light);
     scene.background = new THREE.TextureLoader().load("/earth/starfield.jpg");
     function animate() {
-        requestAnimationFrame(animate);
+        requstAnimFrameHandle = requestAnimationFrame(animate);
         // earth.rotation.y += 0.0001;
         renderer.render(scene, camera);
     }
@@ -106,5 +108,11 @@ onMounted(()=>{
         earth.setRotationFromMatrix(rotationMatrix);
     },{deep:true})
 
+})
+
+onBeforeUnmount(() => {
+    if (requstAnimFrameHandle != null) {
+        cancelAnimationFrame(requstAnimFrameHandle)
+    }
 })
 </script>
