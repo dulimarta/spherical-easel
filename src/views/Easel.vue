@@ -29,7 +29,7 @@
       -->
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-        <div id="sphere-and-msghub" style="border: 3px dashed forestgreen">
+        <div id="sphere-and-msghub">
 
           <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
 
@@ -42,7 +42,7 @@
             <SphereFrame
             style="position: relative"
             :available-width="availWidth"
-            :available-height="availHeight - 10"
+            :available-height="availHeight"
             v-show="svgDataImage.length === 0"
             :is-earth-mode="isEarthMode" />
           </div>
