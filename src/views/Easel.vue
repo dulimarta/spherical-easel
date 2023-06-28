@@ -51,7 +51,13 @@
               :height="canvasHeight" />
           </v-overlay>
           <div id="msghub">
+            <ShortcutIcon class="mx-1" v-for="t in leftShortcutGroup" :model="t"/>
             <MessageHub />
+            <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomOut')!"/>
+            <!--span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</!--span>
+            <v-slider v-model="zoomMagnificationFactor" :min="0.1" :max="2" style="min-width: 100px;"/-->
+            <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomIn')!"/>
+            <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomFit')!"/>
           </div>
         </div>
       </Pane>
@@ -92,6 +98,7 @@ import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import MessageHub from "@/components/MessageHub.vue";
+import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
@@ -105,7 +112,6 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, SphericalConstruction } from "@/types";
-// import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -134,6 +140,7 @@ import {
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
 const LEFT_PANE_PERCENTAGE = 25
 const appDB = getFirestore();
@@ -148,7 +155,7 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth } =
+const { seNodules, temporaryNodules, hasObjects, zoomMagnificationFactor, canvasHeight, canvasWidth } =
   storeToRefs(seStore);
 
 const props = defineProps<{
@@ -160,6 +167,18 @@ const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
+
+const leftShortcutGroup = computed(() => [
+  TOOL_DICTIONARY.get("undoAction")!,
+  TOOL_DICTIONARY.get("redoAction")!,
+  TOOL_DICTIONARY.get("resetAction")!
+])
+const rightShortcutGroup = computed(() => [
+  TOOL_DICTIONARY.get("zoomOut")!,
+  TOOL_DICTIONARY.get("zoomIn")!,
+  TOOL_DICTIONARY.get("zoomFit")!
+])
+
 const leftPane: Ref<HTMLElement|null> = ref(null)
 // const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
@@ -437,6 +456,10 @@ function handleToolboxMinify(state: boolean) {
   align-self: center;
   position: fixed;
   bottom: 4px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center
 }
 #container {
   display: flex;

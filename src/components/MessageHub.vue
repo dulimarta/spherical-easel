@@ -300,7 +300,7 @@ function cancelDeleteMessages() {
 #msg-display-area {
   /* background-color: blue; */
   /* padding: 4px; */
-  width: 40em;
+  width: 25em;
   height: 60px;
   overflow-y: auto;
 }

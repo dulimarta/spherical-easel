@@ -18,22 +18,22 @@
         <ShortcutIcon :model="shortcut" />
       </div>
     </div>
-    <div class="anchored bottom left">
+    <!--div class="anchored bottom left">
       <div
         v-for="(shortcut, index) in shortCutIcons[2]"
         :key="index"
         :style="listItemStyle(index, 'left', 'bottom')">
         <ShortcutIcon :model="shortcut" />
       </div>
-    </div>
-    <div class="anchored bottom right">
+    </!--div>
+    <div-- class="anchored bottom right">
       <div
         v-for="(shortcut, index) in shortCutIcons[3]"
         :key="index"
         :style="listItemStyle(index, 'right', 'bottom')">
         <ShortcutIcon :model="shortcut" />
       </div>
-    </div>
+    </div-->
   </div>
 </template>
 
