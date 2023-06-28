@@ -1123,7 +1123,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 // }
 #sphereContainer {
   // border: 3px solid black;
-  background-color: hsla(33, 100%, 88%, 0.474);
+  // background-color: hsla(33, 100%, 88%, 0.474);
   position: relative;
   display: flex;
   flex-direction: row;

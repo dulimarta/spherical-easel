@@ -38,7 +38,7 @@
             console.log(isEarthMode);
           }" id="earthTogger" style="z-index: 100;">Earth Mode</button-->
           <div id="earthAndCircle">
-            <EarthComp v-if="isEarthMode" :canvas-size="availHeight"/>
+            <EarthComp v-if="isEarthMode" :available-height="availHeight" :available-width="availWidth"/>
             <SphereFrame
             style="position: relative"
             :available-width="availWidth"
