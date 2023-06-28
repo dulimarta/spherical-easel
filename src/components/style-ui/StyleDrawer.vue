@@ -18,16 +18,21 @@
       <FrontBackStyle :panel="StyleEditPanels.Front"></FrontBackStyle>
       <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle>
 
-    <div id="visibility-control">
-      <span>
-        {{ t('label') }}
-        <v-icon color="black">mdi-eye</v-icon>
-      </span>
-      <span>{{ t('object')}}
-        <v-icon color="black">mdi-eye</v-icon>
-      </span>
+      <div id="visibility-control">
+        <span>
+          {{ t("label") }}
+          <v-icon color="black">mdi-eye</v-icon>
+        </span>
+        <span>
+          {{ t("object") }}
+          <v-icon color="black">mdi-eye</v-icon>
+        </span>
+      </div>
+      <v-btn icon size="x-small" @click="minified = !minified">
+        <v-icon>mdi-chevron-double-right</v-icon>
+      </v-btn>
     </div>
-  </div>
+  </transition>
 </template>
 <i18n lang="json">
 {
@@ -80,5 +85,5 @@ import { useI18n } from "vue-i18n";
 import LabelStyle from "./LabelStyle.vue";
 import FrontBackStyle from "./FrontBackStyle.vue";
 const minified = ref(true);
-const {t} = useI18n()
+const { t } = useI18n();
 </script>

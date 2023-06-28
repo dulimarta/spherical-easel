@@ -35,7 +35,7 @@
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
       </Pane>
-      <Pane>
+      <Pane style="border: 4px dashed forestgreen; position: relative;">
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
         When minified, the style panel takes only 5% of the remaining width
@@ -43,25 +43,12 @@
       -->
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-        <div id="sphere-and-msghub">
-          <!--AddressInput
+        <!--div id="sphere-and-msghub">
+          <AddressInput
             v-if="isEarthMode"
-            style="position: absolute; bottom: 0; z-index: 100" /-->
+            style="position: absolute; bottom: 0; z-index: 100" />
 
-          <div id="earthAndCircle" :style="{ height: availHeight+'px' }">
-            <v-switch style="position: relative; top: 0; left:0"
-              label="Earth Mode"
-              v-model="isEarthMode"
-              id="earthTogger"></v-switch>
-            <EarthComp style="position: absolute; top: 0"
-              v-if="isEarthMode||true"
-              :available-height="availHeight"
-              :available-width="availWidth" />
-            <SphereFrame style="position: absolute; top: 0"
-              :available-height="availHeight"
-              :available-width="availWidth"
-              v-show="svgDataImage.length === 0"
-              :is-earth-mode="isEarthMode" />
+          <div id="earthAndCircle" :style="{ height: availHeight+'px', top: '20px' }">
           </div>
           <v-overlay
             contained
@@ -78,7 +65,17 @@
               :width="canvasWidth"
               :height="canvasHeight" />
           </v-overlay>
-          <div id="msghub">
+        </div-->
+        <!--EarthComp style="position: absolute; top: 0"
+              v-if="isEarthMode"
+              :available-height="availHeight"
+              :available-width="availWidth" /-->
+        <SphereFrame style="position: absolute"
+              :available-height="availHeight"
+              :available-width="availWidth"
+              v-show="svgDataImage.length === 0"
+              :is-earth-mode="isEarthMode" />
+        <div id="msghub">
             <ShortcutIcon
               class="mx-1"
               v-for="t in leftShortcutGroup"
@@ -87,8 +84,8 @@
             <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
-            <!--span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</!--span>
-            <v-slider v-model="zoomMagnificationFactor" :min="0.1" :max="2" style="min-width: 100px;"/-->
+            <!--span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</span-->
+            <v-slider v-model="zoomMagnificationFactor" :min="0.1" :max="2" style="min-width: 100px;"/>
             <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomIn')!" />
@@ -96,7 +93,10 @@
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomFit')!" />
           </div>
-        </div>
+        <v-switch style="position: absolute; bottom: 40px; left: 8px"
+          v-model="isEarthMode"
+              :label="`Earth Mode (${isEarthMode})`"
+              id="earthToggler"></v-switch>
       </Pane>
     </Splitpanes>
     <Dialog
@@ -201,6 +201,7 @@ const {
   actionMode,
   canvasHeight,
   canvasWidth,
+  zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore);
 const props = defineProps<{
@@ -503,8 +504,10 @@ function handleToolboxMinify(state: boolean) {
 }
 #msghub {
   align-self: center;
-  position: fixed;
+  position: absolute;
   bottom: 4px;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -603,17 +606,18 @@ function handleToolboxMinify(state: boolean) {
   }
 }
 
-#earthTogger {
+#earthToggler {
+  align-self: flex-start;
   position: absolute;
   top: 0;
 }
 
 #earthAndCircle {
   border: 3px solid darkorange;
-  // position: relative;
-  // display: flex;
-  // flex-direction: column;
+  // position: absolute;
+  display: flex;
+  flex-direction: column;
   // justify-content: center;
-  // align-items: center;
+  align-items: center;
 }
 </style>

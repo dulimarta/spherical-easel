@@ -337,30 +337,15 @@ onMounted((): void => {
     event.preventDefault()
   );
 
-  watch(()=>props.isEarthMode,()=>{
-    if(!props.isEarthMode){
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
-        if((layer as string).includes("background")){
-          (seStore.layers[i] as any).visible = true;
-        }
-        i++;
+  watch(()=>props.isEarthMode,(earthMode)=>{
+    let i = 0;
+    for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
+      if((layer as string).includes("background")){
+        (seStore.layers[i] as any).visible = !earthMode;
       }
-    }else{
-
-      // console.log(Object.values(LAYER));
-      // (seStore.layers[Number(LAYER.background)] as any).visible = false;
-      // (seStore.layers[Number(LAYER.backgroundAngleMarkers)] as any).visible = false;
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
-        if((layer as string).includes("background")){
-          (seStore.layers[i] as any).visible = false;
-        }
-        i++;
-      }
+      i++;
     }
       // seStore.layers[Number(LAYER.midground)].visible = false;
-
   })
   // canvas.value!.style.width = twoInstance.width.toString() + "px";
   // canvas.value!.style.height = twoInstance.height.toString() + "px";

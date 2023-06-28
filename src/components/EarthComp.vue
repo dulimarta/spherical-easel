@@ -1,7 +1,7 @@
 <template>
   <canvas id="earth" :width="availableWidth" style="border: 1px solid blue"></canvas>
 </template>
-<style>
+<style scoped>
 #earth {
   /* border: 5px solid #a46e6e; */
   position: absolute;
@@ -18,6 +18,7 @@ import * as THREE from "three";
 import { watch, onMounted } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
+import { onBeforeUnmount } from "vue";
 type EarhtModeProps = {
   availableHeight: number,
   availableWidth: number
@@ -26,6 +27,8 @@ const prop = defineProps<EarhtModeProps>();
 const store = useSEStore();
 const { zoomMagnificationFactor, zoomTranslation, inverseTotalRotationMatrix } =
   storeToRefs(store);
+let animFrameHandle:number|null = null
+
 onMounted(() => {
   const scene = new THREE.Scene();
   const scaledHalfHeight = prop.availableHeight / (zoomMagnificationFactor.value * 2.01);
@@ -78,7 +81,7 @@ onMounted(() => {
   scene.add(light);
   scene.background = new THREE.TextureLoader().load("/earth/starfield.jpg");
   function animate() {
-    requestAnimationFrame(animate);
+    animFrameHandle = requestAnimationFrame(animate);
     // earth.rotation.y += 0.0001;
     renderer.render(scene, camera);
   }
@@ -137,4 +140,10 @@ onMounted(() => {
     { deep: true }
   );
 });
+
+onBeforeUnmount(() => {
+  if (animFrameHandle !== null) {
+    cancelAnimationFrame(animFrameHandle)
+  }
+})
 </script>
