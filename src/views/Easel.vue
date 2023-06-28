@@ -44,25 +44,20 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <AddressInput
+          <!--AddressInput
             v-if="isEarthMode"
-            style="position: absolute; bottom: 0; z-index: 100" />
+            style="position: absolute; bottom: 0; z-index: 100" /-->
 
-          <button
-            @click="
-              () => {
-                isEarthMode = !isEarthMode;
-                console.log(isEarthMode);
-              }
-            "
-            id="earthTogger"
-            style="z-index: 100">
-            Earth Mode
-          </button>
-          <div id="earthAndCircle">
-            <EarthComp v-if="isEarthMode" :canvas-size="availHeight" />
-            <SphereFrame
-              style="position: relative"
+          <div id="earthAndCircle" :style="{ height: availHeight+'px' }">
+            <v-switch style="position: relative; top: 0; left:0"
+              label="Earth Mode"
+              v-model="isEarthMode"
+              id="earthTogger"></v-switch>
+            <EarthComp style="position: absolute; top: 0"
+              v-if="isEarthMode||true"
+              :available-height="availHeight"
+              :available-width="availWidth" />
+            <SphereFrame style="position: absolute; top: 0"
               :available-height="availHeight"
               :available-width="availWidth"
               v-show="svgDataImage.length === 0"
@@ -137,7 +132,7 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
-import AddressInput from "@/components/AddressInput.vue";
+// import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthComp from "@/components/EarthComp.vue";
@@ -607,17 +602,18 @@ function handleToolboxMinify(state: boolean) {
     transform: translateX(100%);
   }
 }
+
 #earthTogger {
   position: absolute;
   top: 0;
-  color: white;
-  background-color: blue;
-  border-radius: 20px;
-  padding: 10px;
 }
+
 #earthAndCircle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border: 3px solid darkorange;
+  // position: relative;
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: center;
+  // align-items: center;
 }
 </style>

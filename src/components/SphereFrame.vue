@@ -1120,7 +1120,6 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 //   border: 1px solid red;
 // }
 #sphereContainer {
-  border: 3px solid black;
   position: relative;
   display: flex;
   flex-direction: row;

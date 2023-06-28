@@ -93,10 +93,10 @@ const activeToolName = computed((): string => {
 });
 
 //The next 3 functions are for the text for the applied transformation.
-onBeforeMount((): void => {
-  console.debug("CurrentToolSelection: setting up event bus listener");
-  // EventBus.listen("set-apply-transformation-footer-text", additionalFooterText);
-});
+// onBeforeMount((): void => {
+//   console.debug("CurrentToolSelection: setting up event bus listener");
+//   // EventBus.listen("set-apply-transformation-footer-text", additionalFooterText);
+// });
 
 // function additionalFooterText(e: { text: string }): void {
 //   console.debug("apply transform", e.text);
