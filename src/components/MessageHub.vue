@@ -11,11 +11,15 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-badge :content="selectedMessageType.length" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-badge
+            :content="selectedMessageType.length"
+            v-if="selectedMessageType.length !== messageTypes.length">
             <v-icon id="filter-menu-popup">mdi-filter</v-icon>
           </v-badge>
           <v-icon v-else id="filter-menu-popup">mdi-filter</v-icon>
-          <v-tooltip activator="#filter-menu-popup" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-tooltip
+            activator="#filter-menu-popup"
+            v-if="selectedMessageType.length !== messageTypes.length">
             {{ selectedMessageType.map(s => s.toUpperCase()).join(", ") }}
           </v-tooltip>
           <v-menu
@@ -25,11 +29,10 @@
             location="top"
             offset="32">
             <v-card class="pa-1">
-              <v-card-title>Select message types</v-card-title>
+              <v-card-title v-t="'selectMsgType'"></v-card-title>
               <v-card-text>
-                {{ selectedMessageType }}
                 <v-checkbox
-                  label="Select All"
+                  :label="t('selectAll')"
                   v-model="showAllType"
                   @update:model-value="doSelectAllMessageType" />
                 <div style="display: flex">
@@ -149,13 +152,42 @@
     </v-container>
   </div>
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
-    Messages will be deleted
+    {{ t("deleteWarning") }}
     <template #actions>
-      <v-btn @click="cancelDeleteMessages" color="warning">Undo</v-btn>
+      <v-btn @click="cancelDeleteMessages" color="warning">{{t('undo')}}</v-btn>
     </template>
   </v-snackbar>
 </template>
-
+<i18n>
+{
+  "en": {
+    "directive": "Directive",
+    "info": "Informational",
+    "warning": "Warning",
+    "error": "Error",
+    "success": "Success",
+    "all": "All",
+    "selectAll": "Select All Type",
+    "selectMsgType": "Select Message Type",
+    "deleteMsg": "Delete {msgType} messages",
+    "deleteWarning": "Messages will be deleted",
+    "undo": "Undo"
+  },
+  "id": {
+    "directive": "Petunjuk",
+    "info": "Informasional",
+    "warning": "Peringatan",
+    "error": "Kesalahan",
+    "success": "Sukses",
+    "all": "Semua Pesan",
+    "selectAll": "Pilih semua jenis pesan",
+    "selectMsgType": "Pilih Jenis Pesan",
+    "deleteMsg": "Hapus Pesan Jenis {msgType}",
+    "deleteWarning": "Pesan-pesan akan dihapus",
+    "undo": "Urung"
+  }
+}
+</i18n>
 <script setup lang="ts">
 import EventBus from "@/eventHandlers/EventBus";
 import { ref, Ref, computed, onMounted } from "vue";
@@ -174,18 +206,20 @@ type MessageType = {
 type AlertType = "success" | "info" | "error" | "warning";
 
 const DELETE_DELAY = 3000;
-const { t } = useI18n();
+const { t } = useI18n({useScope: 'local'});
 const filterMenuVisible = ref(false);
 const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
-const messageTypes = SETTINGS.messageTypes.map((s: string) => ({
-  value: s,
-  title: t(`notifications.${s}`)
-}));
+const messageTypes = computed(() =>
+  SETTINGS.messageTypes.map((s: string) => ({
+    value: s,
+    title: t(s)
+  }))
+);
 const selectedMessageType: Ref<Array<string>> = ref(
-  messageTypes.map(m => m.value)
+  messageTypes.value.map(m => m.value)
 );
 const messages: Ref<MessageType[]> = ref([]);
 let deleteTimer: any;

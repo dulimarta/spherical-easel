@@ -28,7 +28,7 @@
         </router-link>
         <a href="/docs/">
           <v-icon class="ml-2" color="white">mdi-help-circle</v-icon>
-          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
+          <v-tooltip location="bottom" activator="parent">Open Documentation</v-tooltip>
         </a>
       </template>
       <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title>
@@ -90,6 +90,7 @@
           </v-icon>
         </v-btn-->
       </template>
+      <LanguageSelector/>
       <router-link to="/settings/">
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
@@ -232,7 +233,8 @@ import {
 } from "vue";
 import MessageHub from "@/components/MessageHub.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
-import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue"
+import LanguageSelector from "./components/LanguageSelector.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { User, getAuth, Unsubscribe } from "firebase/auth";
@@ -276,7 +278,7 @@ import { useRouter } from "vue-router";
 //   "beforeRouteUpdate"
 // ]);
 
-const { t, locale } = useI18n({ inheritLocale: true });
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { includedTools, userRole } = storeToRefs(acctStore);

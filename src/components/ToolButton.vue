@@ -1,18 +1,16 @@
 <template>
-  <!-- Displays a button only if the user has permission to see it. -->
-  <!--div class="pa-0 debugged" :id="button.action" :ref="button.action"-->
-  <!--v-if="(buttonDisplayList.indexOf(button.action) !== -1)"-->
   <!-- Initially tried v-sheet, but had problem with v-overlay covering larger
     area beyond the bound of v-sheet. Switched to v-card to solve the issue -->
   <v-card
     class="ma-1"
-    :elevation="elev"
+    :variant="selected ? 'outlined' : 'flat'"
+    elevation="2"
     rounded="lg"
     width="80px"
     height="100px">
     <div class="toolbutton" v-bind="props">
       <v-icon class="toolicon" :icon="vuetifyIconAlias"></v-icon>
-      <span class="tooltext" :style="myStyle">
+      <span class="tooltext" :style="myTextStyle">
         {{ t(button.displayedName) }}
       </span>
     </div>
@@ -34,10 +32,8 @@
 <script lang="ts" setup>
 import { Ref, ref, computed, onUpdated } from "vue";
 import { ToolButtonType } from "@/types";
-import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
 import { StyleValue } from "vue";
-
 type ToolButtonProps = {
   button: ToolButtonType;
   selected: boolean;
@@ -51,12 +47,11 @@ const { t } = useI18n();
 /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
 child */
 const props = defineProps<ToolButtonProps>();
-
-const elev = ref(1);
+const elev = ref(5);
 const weight: Ref<"bold" | "normal"> = ref("normal");
 const isEditing = ref(props.editing);
 
-const myStyle = computed((): StyleValue => {
+const myTextStyle = computed((): StyleValue => {
   return {
     fontWeight: weight.value
   };
@@ -70,7 +65,7 @@ const vuetifyIconAlias = computed(
 
 onUpdated(() => {
   isEditing.value = props.editing;
-  elev.value = props.selected ? 5 : 1;
+  elev.value = props.selected ? 1 : 5;
   weight.value = props.selected ? "bold" : "normal";
 });
 

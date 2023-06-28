@@ -18,6 +18,7 @@
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
     "@googlemaps/js-api-loader": "^1.16.2",
+    "@intlify/unplugin-vue-i18n": "^0.11.0",
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
@@ -43,10 +44,9 @@
     "vue-i18n": "^9.2.2",
     "vue-router": "~4.0.0",
     "vue-web-cam": "^1.9.0",
-    "vuetify": "3"
+    "vuetify": "3.3.5"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^0.8.1",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "~5.5.55",
     "@types/google.maps": "^3.53.4",

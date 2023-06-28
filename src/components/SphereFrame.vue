@@ -1,7 +1,7 @@
 <template>
   <!-- <CurrentToolSelection /> -->
   <div id="sphereContainer">
-    <div id="canvas" ref="canvas"></div>
+    <div id="canvas" ref="canvas" :width="availableWidth" :height="availableHeight"></div>
     <div class="anchored top left">
       <div
         v-for="(shortcut, index) in shortCutIcons[0]"
@@ -53,8 +53,6 @@ import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-
-// import CurrentToolSelection from "./CurrentToolSelection.vue";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -107,6 +105,12 @@ import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
 import { ToolButtonType } from "@/types";
 
+type ComponentProps = {
+  availableHeight: number,
+  availableWidth: number,
+  isEarthMode: boolean
+}
+
 const seStore = useSEStore();
 const {
   actionMode,
@@ -120,8 +124,10 @@ const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean }>(), {
-  canvasSize: 240,
+
+const props = withDefaults(defineProps<ComponentProps>(), {
+  availableHeight: 240,
+  availableWidth: 240,
   isEarthMode: false
 });
 
@@ -203,8 +209,8 @@ let applyTransformationTool: ApplyTransformationHandler | null = null;
 
 onBeforeMount((): void => {
   twoInstance = new Two({
-    width: props.canvasSize,
-    height: props.canvasSize,
+    width: props.availableWidth,
+    height: props.availableHeight,
     autostart: true
     // ratio: window.devicePixelRatio
   });
@@ -389,19 +395,18 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
-  // EventBus.unlisten("dialog-box-is-active");
 });
 
-watch(
-  () => props.canvasSize,
-  (size: number): void => {
-    twoInstance.width = size;
-    twoInstance.height = size;
+
+watch([() => props.availableWidth, () => props.availableHeight],
+  ([width, height]): void => {
+    twoInstance.width = width;
+    twoInstance.height = height;
     // layers.forEach(z => {
     //   z.translation.set(size / 2, size / 2);
     // });
 
-    const radius = size / 2 - 16; // 16-pixel gap
+    const radius = Math.min(width, height) / 2 - 16; // 16-pixel gap
     // setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
@@ -416,7 +421,7 @@ watch(
 
     updateView();
     // record the canvas width for the SELabel so that the bounding box of the text can be computed correctly
-    seStore.setCanvasWidth(size);
+    seStore.setCanvasDimension(width, height);
   }
 );
 
@@ -430,11 +435,12 @@ function updateView() {
   // Get the current maginification factor and translation vector
   const mag = zoomMagnificationFactor.value;
   const transVector = zoomTranslation;
-  const origin = props.canvasSize / 2;
+  const originX = props.availableWidth / 2;
+  const originY = props.availableHeight / 2
 
   twoInstance.scene.translation = new Two.Vector(
-    origin + transVector.value[0],
-    origin + transVector.value[1]
+    originX + transVector.value[0],
+    originY + transVector.value[1]
   );
   twoInstance.scene.scale = new Two.Vector(mag, -mag);
   // twoInstance.scene.matrix
@@ -828,7 +834,7 @@ watch(
           zoomTool = new PanZoomHandler(canvas.value!);
         }
 
-        zoomTool.doZoomFit(props.canvasSize);
+        zoomTool.doZoomFit(Math.min(props.availableHeight, props.availableWidth));
         zoomTool.activate(); // unglow any selected objects.
         zoomTool.deactivate(); // shut the tool down properly
         seStore.revertActionMode();
@@ -1110,7 +1116,9 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
     transform: rotate(180deg);
   }
 }
-
+// #canvas {
+//   border: 1px solid red;
+// }
 #sphereContainer {
   border: 3px solid black;
   position: relative;

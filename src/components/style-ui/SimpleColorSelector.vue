@@ -1,7 +1,7 @@
 <template>
   <div>
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ $t(titleKey) + " " }}
+      {{ title + " " }}
     </span>
     <v-icon
       :color="conflict ? '' : internalColor"
@@ -74,21 +74,13 @@ import HintButton from "@/components/HintButton.vue";
 import i18n from "@/i18n";
 
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
-// @Component({ components: { HintButton, OverlayWithFixButton } })
-// export default class SimpleColorSelector extends Vue {
 type ComponentProps = {
-  titleKey: string;
+  title: string;
   conflict: boolean;
   styleName: string;
   numSelected: number;
   modelValue?: string;
 };
-// @Prop() readonly titleKey!: string;
-// @Prop() conflict!: boolean;
-// external representation: hsla in CSS
-// @PropSync("data") hslaColor!: string;
-// @Prop({ required: true }) readonly styleName!: string;
-// @Prop() readonly numSelected!: number;
 const props = defineProps<ComponentProps>();
 const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
@@ -145,7 +137,7 @@ onMounted((): void => {
       : i18n.global.t("style.noFill"); // the noStroke/noFill option
 
   var re2 = /label/gi;
-  isOnLabelPanel.value = props.titleKey.search(re2) !== -1;
+  isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
 // onBeforeUpdate((): void => {

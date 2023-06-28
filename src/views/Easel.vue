@@ -1,8 +1,13 @@
 <template>
-  <v-navigation-drawer location="end" color="black" permanent width="80">
-    <StyleDrawer></StyleDrawer>
-    <!--Style3></Style3-->
-  </v-navigation-drawer>
+  <div style="position: fixed; right: 8px; width: 80px; top: 0; bottom: 0; display: flex; flex-direction: column;
+  justify-content: center;  z-index: 1">
+    <!-- <div style="height: 60%; background: white; border: 1px solid black; border-radius: 0.5em;"> -->
+      <StyleDrawer></StyleDrawer>
+    <!-- </div> -->
+  </div>
+  <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
+  background-color: transparent;">
+  </!--v-navigation-drawer-->
   <div>
     <Splitpanes
       :style="contentHeightStyle"
@@ -10,13 +15,13 @@
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane min-size="5" max-size="35" :size="toolboxMinified ? 5 : 25">
+      <Pane ref="leftPane" min-size="5" max-size="35" :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
         <Toolbox
           id="toolbox"
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
       </Pane>
-      <Pane :size="centerWidth">
+      <Pane>
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
         When minified, the style panel takes only 5% of the remaining width
@@ -25,8 +30,8 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
 
+          <AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
 
           <button @click="()=>{
             isEarthMode = !isEarthMode;
@@ -55,18 +60,15 @@
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
-              :width="currentCanvasSize"
-              :height="currentCanvasSize" />
+              :width="canvasWidth"
+              :height="canvasHeight" />
           </v-overlay>
+          <div id="msghub">
+            <MessageHub />
+          </div>
         </div>
       </Pane>
 
-      <!--Pane min-size="5" :max-size="25" :size="panelSize">
-        <StylePanel @minify-toggled="handleStylePanelMinify" />
-        <MessageBox
-              :minified="notificationsPanelMinified"
-              v-on:toggle-notifications-panel="minifyNotificationsPanel" />
-      </Pane-->
     </Splitpanes>
     <Dialog
       ref="unsavedWorkDialog"
@@ -110,11 +112,6 @@ import MessageHub from "@/components/MessageHub.vue";
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
 
-// import buttonList from "@/components/ToolGroups.vue";
-// import ToolButton from "@/components/ToolButton.vue";
-// Temporarily exclude Style.vue
-// import StylePanel from "@/components/Style.vue";
-// import LabelStyle from "@/components/LabelStyle.vue";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -152,9 +149,9 @@ import {
   useRouter
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
-import LabelStyle from "@/components/style-ui/LabelStyle.vue";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 
+const LEFT_PANE_PERCENTAGE = 25
 const appDB = getFirestore();
 const appAuth = getAuth();
 const appStorage = getStorage();
@@ -167,30 +164,24 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode,isEarthMode } =
+const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth, isEarthMode } =
   storeToRefs(seStore);
 const props = defineProps<{
   documentId?: string;
 }>();
-const { mainRect, getLayoutItem } = useLayout();
+const { mainRect } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
-// let availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
-const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
+const leftPane: Ref<HTMLElement|null> = ref(null)
+// const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
 const toolboxMinified = ref(false);
-const stylePanelMinified = ref(true);
-const notificationsPanelMinified = ref(true);
 const previewClass = ref("");
-// const me = ref(null)
 const constructionInfo = ref<any>({});
-// const labelTab = ref(0);
-let undoEnabled = false;
-let redoEnabled = false;
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -208,17 +199,9 @@ const svgDataImage = ref("");
 //#region magnificationUpdate
 onBeforeMount(() => {
   EventBus.listen("magnification-updated", resizePlottables);
-  EventBus.listen("undo-enabled", setUndoEnabled);
-  EventBus.listen("redo-enabled", setRedoEnabled);
   EventBus.listen("preview-construction", showConstructionPreview);
 });
 //#endregion magnificationUpdate
-
-const centerWidth = computed((): number => {
-  return (
-    100 - (toolboxMinified.value ? 5 : 25) - (stylePanelMinified.value ? 5 : 25)
-  );
-});
 
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
@@ -231,25 +214,20 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
     svgDataImage.value = "";
   }
 };
-function setUndoEnabled(e: { value: boolean }): void {
-  undoEnabled = e.value;
-}
-function setRedoEnabled(e: { value: boolean }): void {
-  redoEnabled = e.value;
-}
 
-const what: Ref<any> = ref({});
-
-function adjustSize(): void {
+const availHeight = ref(100)
+const availWidth = ref(100)
+function adjustCanvasSize(): void {
   // The MessageHub height is set to 80 pixels
-  const availHeight =
+  availWidth.value = display.width.value * (1 - LEFT_PANE_PERCENTAGE/100) - mainRect.value.left - mainRect.value.right;
+  availHeight.value =
     display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
   // console.debug(
-  //   "adjustSize() available height is ",
+  //   "adjustCanvasSize() available height is ",
   //   window.innerHeight,
   //   mainRect.value
   // );
-  currentCanvasSize.value = availHeight;
+  // currentCanvasSize.value = availHeight.value;
 }
 
 function loadDocument(docId: string): void {
@@ -288,8 +266,8 @@ function loadDocument(docId: string): void {
 
 /** mounted() is part of VueJS lifecycle hooks */
 onMounted((): void => {
-  window.addEventListener("resize", adjustSize);
-  adjustSize(); // Why do we need this?  onWindowResized just calls adjustSize() but if you remove it the app doesn't work -- strange!
+  window.addEventListener("resize", adjustCanvasSize);
+  adjustCanvasSize();
 
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
@@ -318,19 +296,13 @@ onBeforeUnmount((): void => {
 function dividerMoved(
   event: Array<{ min: number; max: number; size: number }>
 ): void {
-  const availableWidth =
-    ((100 - event[0].size - event[2].size) / 100) *
-    (window.innerWidth - mainRect.value.left - mainRect.value.right);
-  // availHeight = window.innerHeight - mainRect.value.top - mainRect.value.bottom - 90;
-  // currentCanvasSize.value = Math.min(availableWidth, availHeight);
+  // event[0].size is the width of the left panel (in percentage)
+  // 80px is the width of the right navigation drawer
+  availWidth.value =
+    display.width.value - mainRect.value.left - mainRect.value.right - 80;
+  availHeight.value = display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
+  // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
 }
-
-const panelSize = computed((): number => {
-  if (!stylePanelMinified.value || !notificationsPanelMinified) {
-    return 30;
-  }
-  return 5;
-});
 
 function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
@@ -338,16 +310,8 @@ function setActionModeToSelectTool(): void {
 
 function onWindowResized(): void {
   console.debug("onWindowResized()");
-  adjustSize();
+  adjustCanvasSize();
 }
-/* Undoes the last user action that changed the state of the sphere. */
-// function undoEdit(): void {
-//   Command.undo();
-// }
-// /* Redoes the last user action that changed the state of the sphere. */
-// function redoAction(): void {
-//   Command.redo();
-// }
 
 function resetSphere(): void {
   clearConstructionDialog.value?.hide();
@@ -466,24 +430,23 @@ onBeforeRouteLeave(
 function handleToolboxMinify(state: boolean) {
   toolboxMinified.value = state;
 }
-function handleStylePanelMinify(state: boolean) {
-  stylePanelMinified.value = state;
-}
 </script>
 <style scoped lang="scss">
-.splitpanes__pane {
+// .splitpanes__pane {
   // color: hsla(40, 50%, 50%, 0.6);
   // display: flex;
   // justify-content: center;
   // align-items: center;
   // font-size: 5em;
-}
+// }
 
 #sphere-and-msghub {
   // position: relative is required for the parent of v-overlay
   position: relative;
   display: flex;
   justify-content: flex-start;
+  // NOTE: DO NOT use column-reverse, otherwise the z-index of Vuetify
+  // v-card will be below the TwoJS SVG layers
   flex-direction: column;
   align-items: stretch;
 }
@@ -518,10 +481,6 @@ function handleStylePanelMinify(state: boolean) {
     sans-serif;
 }
 
-#tool {
-  font-size: 20px;
-}
-
 #toolbox {
   height: 100%;
   overflow: auto;
@@ -536,17 +495,17 @@ function handleStylePanelMinify(state: boolean) {
     sans-serif;
 }
 
-.anchored {
-  position: absolute;
-  margin: 4px;
-}
-.right {
-  right: 0;
-}
+// .anchored {
+//   position: absolute;
+//   margin: 4px;
+// }
+// .right {
+//   right: 0;
+// }
 
-.top {
-  top: 0;
-}
+// .top {
+//   top: 0;
+// }
 
 .previewText {
   position: absolute;
