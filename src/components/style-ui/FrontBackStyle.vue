@@ -2,7 +2,7 @@
   <PopOverTabs
     :icon-name="
       editModeIsBack ? 'mdi-arrange-send-backward' : 'mdi-arrange-bring-forward'
-    ">
+    " :tooltip="tooltipText" tooltip-location="left">
     <template #tabs>
       <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
@@ -17,15 +17,15 @@
             <template v-slot:activator="{ props }">
               <p v-bind="props">
                 <span class="text-subtitle-2" style="color: red">
-                  {{ $t("globalBackStyleContrast") + " " }}
+                  {{ t("globalBackStyleContrast") + " " }}
                 </span>
                 <span class="text-subtitle-2">
-                  {{ $t("backStyleContrast") }}
+                  {{ t("backStyleContrast") }}
                   {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
                 </span>
               </p>
             </template>
-            <span>{{ $t("backStyleContrastToolTip") }}</span>
+            <span>{{ t("backStyleContrastToolTip") }}</span>
           </v-tooltip>
           <v-slider
             v-model="backStyleContrast"
@@ -41,13 +41,13 @@
             <template v-slot:prepend>
               <!-- <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon> -->
             </template>
-            <!--template v-slot:thumb-label="{ modelValue }">
+            <template v-slot:thumb-label="...a">
               {{
                 backStyleContrastSelectorThumbStrings[
-                  Math.floor(modelValue * 10)
+                  Math.floor(a.modelValue * 10)
                 ]
               }}
-            </!--template-->
+            </template>
             <template v-slot:append>
               <!-- <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon> -->
             </template>
@@ -96,7 +96,7 @@
           :thumb-string-values="
             pointRadiusSelectorThumbStrings
           "></SimpleNumberSelector>
-        <span class="text-subtitle-2">{{ " " + $t("dashPattern") }}</span>
+        <span class="text-subtitle-2">{{ t("dashPattern") }}</span>
         <span
           v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
@@ -150,7 +150,6 @@
                 :key="activeDashPatternKey"
                 :false-value="true"
                 :true-value="false"
-                :label="$t('dashPattern')"
                 :color="conflictItems.dashArray ? 'red' : ''"
                 @click="
                   toggleDashPatternSliderAvailbility(styleOptions);
@@ -163,7 +162,7 @@
                     :style="{
                       color: conflictItems.dashArray ? 'red' : ``
                     }">
-                    {{ $t("dashPattern") }}
+                    {{ t("dashPattern") }}
                   </span>
                 </template>
               </v-checkbox>
@@ -190,7 +189,7 @@
                     :style="{
                       color: conflictItems.reverseDashArray ? 'red' : ``
                     }">
-                    {{ $t("dashArrayReverse") }}
+                    {{ t("dashArrayReverse") }}
                   </span>
                 </template>
               </v-checkbox>
@@ -232,7 +231,7 @@
               :style="{
                 color: conflictItems.angleMarkerTickMark ? 'red' : ``
               }">
-              {{ $t("angleMarkerTickMark") }}
+              {{ t("angleMarkerTickMark") }}
             </span>
           </template>
         </v-switch>
@@ -250,7 +249,7 @@
               :style="{
                 color: conflictItems.angleMarkerDoubleArc ? 'red' : ``
               }">
-              {{ $t("angleMarkerDoubleArc") }}
+              {{ t("angleMarkerDoubleArc") }}
             </span>
           </template>
         </v-switch>
@@ -269,7 +268,7 @@
               :style="{
                 color: conflictItems.angleMarkerArrowHeads ? 'red' : ``
               }">
-              {{ $t("angleMarkerArrowHeads") }}
+              {{ t("angleMarkerArrowHeads") }}
             </span>
           </template>
         </v-switch>
@@ -335,6 +334,7 @@ const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100);
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
+
 // @Watch("selectedSENodules")
 function resetAllItemsFromConflict(): void {
   // console.log("here reset input colors");
@@ -442,6 +442,8 @@ let oldDashLength = 0;
 const emptyDashPattern = ref(true);
 let alreadySet = false;
 //private reverseDashArray = true;
+
+const tooltipText = computed(() => editModeIsBack.value ? t('backgroundStyle') : t('foregroundStyle'))
 
 function setMax(angleMarker: boolean): number {
   if (angleMarker) {
@@ -778,21 +780,23 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
 </style>
 <i18n lang="json" locale="en">
 {
-  "globalBackStyleContrast": "Global Back Style Contrast",
-  "backStyleContrast": "Back Style Contrast",
-  "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
-  "strokeColor": "Stroke Color",
-  "fillColor": "Fill Color",
-  "strokeWidthPercent": "Stroke Width (%)",
-  "pointRadiusPercent": "Point Radius (%)",
-  "dashPattern": "Dash Pattern",
-  "labelStyleOptionsMultiple": "(Multiple)",
-  "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
-  "dashArrayReverse": "Switch Dash and Gap",
-  "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
+  "angleMarkerArrowHeads": "Arrow Head",
+  "angleMarkerDoubleArc": "Double Arc",
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
-  "angleMarkerDoubleArc": "Double Arc",
-  "angleMarkerArrowHeads": "Arrow Head"
+  "backgroundStyle": "Background Style",
+  "backStyleContrast": "Back Style Contrast",
+  "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
+  "dashArrayReverse": "Switch Dash and Gap",
+  "dashPattern": "Dash Pattern",
+  "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
+  "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
+  "fillColor": "Fill Color",
+  "foregroundStyle": "Foreground Style",
+  "globalBackStyleContrast": "Global Back Style Contrast",
+  "labelStyleOptionsMultiple": "(Multiple)",
+  "pointRadiusPercent": "Point Radius (%)",
+  "strokeColor": "Stroke Color",
+  "strokeWidthPercent": "Stroke Width (%)"
 }
 </i18n>

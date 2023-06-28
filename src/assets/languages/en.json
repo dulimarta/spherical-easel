@@ -190,10 +190,6 @@
     "selectTransformation": "Select A Transformation"
   },
   "style": {
-    "labelStyle": "Label Style",
-    "foregroundStyle": "Foreground Style",
-    "backgroundStyle": "Background Style",
-    "advancedStyle": "Advanced Style",
     "back": "Back",
     "front": "Front",
     "value": "Value",
@@ -261,7 +257,7 @@
     "selectObjectsToShow": "Select Objects to Show",
     "labelVisible": "Label Visible",
     "objectVisible": "Object Visible",
-    "cannotSelectLabels": "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel.",
+    "cannotSelectLabels": "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel."
   },
   "handlers": {
     "transformCreatesSecondPoint": "Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",

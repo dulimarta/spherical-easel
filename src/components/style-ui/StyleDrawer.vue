@@ -16,11 +16,12 @@
     <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle>
 
     <div id="visibility-control">
-      <span v-t="'label'">
-        <v-icon>mdi-eye</v-icon>
+      <span>
+        {{ t('label') }}
+        <v-icon color="black">mdi-eye</v-icon>
       </span>
-      <span v-t="'object'">
-        <v-icon>mdi-eye</v-icon>
+      <span>{{ t('object')}}
+        <v-icon color="black">mdi-eye</v-icon>
       </span>
     </div>
     <v-btn icon size="x-small" @click="minified = !minified">

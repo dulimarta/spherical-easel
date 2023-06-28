@@ -6,7 +6,7 @@
     </ul-->
 
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-  <PopOverTabs icon-name="mdi-tag">
+  <PopOverTabs icon-name="mdi-tag" :tooltip="t('labelStyle')" tooltip-location="left">
     <template #tabs>
       <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
@@ -135,7 +135,8 @@
         <!-- Label Display Mode Selections -->
         <v-select
           v-model.lazy="styleOptions.labelDisplayMode"
-          :class="['pa-0',
+          :class="[
+            'pa-0',
             {
               shake: animatedInput.labelDisplayMode,
               conflict: conflictItems.labelDisplayMode
@@ -172,8 +173,8 @@
     </template>
   </PopOverTabs>
 
-    <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-    <!--OverlayWithFixButton
+  <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -182,7 +183,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
           </!--OverlayWithFixButton-->
-    <!--OverlayWithFixButton
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelTextScalePercent|labelTextRotation/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -191,7 +192,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelTextScalePercent`,`labelTextRotation`])">
           </OverlayWithFixButton-->
-    <!--OverlayWithFixButton
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelFrontFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -200,7 +201,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelFrontFillColor`])">
           </OverlayWithFixButton-->
-    <!--
+  <!--
 
           <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
             z-index="10"
@@ -243,8 +244,7 @@
     width="50%"
     :yes-text="t('enableCommonStyle')"
     :yes-action="overrideDynamicBackStyleDisagreement">
-    {{t('message.multipleObjectDifferingStyles')}}
-
+    {{ t("message.multipleObjectDifferingStyles") }}
   </Dialog>
   <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDynamicBackStyle/)"
@@ -352,8 +352,10 @@ const labelNotVisibleDialog: Ref<DialogAction | null> = ref(null);
 // $refs
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
-const labelTextScalePercentage = ref(styleOptions.value.labelTextScalePercent ?? 100)
-const labelTextRotation = ref(styleOptions.value.labelTextRotation ?? 0)
+const labelTextScalePercentage = ref(
+  styleOptions.value.labelTextScalePercent ?? 100
+);
+const labelTextRotation = ref(styleOptions.value.labelTextRotation ?? 0);
 
 watch(() => selectedSENodules.value, resetAllItemsFromConflict);
 function resetAllItemsFromConflict(): void {
@@ -599,7 +601,6 @@ function overrideDynamicBackStyleDisagreement() {
   // dialogSequencer.hideDialog(backStyleDisagreementDialog.value!)
 }
 
-
 function toggleAllLabelsVisibility(): void {
   EventBus.fire("toggle-label-visibility", { fromPanel: true });
   // dialogSequencer.hideDialog(labelNotVisibleDialog.value!)
@@ -611,10 +612,10 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
     if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
       return t("message.maxLabelDisplayTextLength", {
         max: SETTINGS.label.maxLabelDisplayTextLength
-      })
+      });
     } else if (txt.length === 0) {
       // console.log("here");
-      return t("message.minLabelDisplayTextLength", {})
+      return t("message.minLabelDisplayTextLength", {});
     }
   }
   return true;
@@ -702,15 +703,15 @@ function labelDisplayModeValueFilter(
 function placeHolderText(numSelected: number, caption: boolean): string {
   if (numSelected > 1) {
     if (caption) {
-      return t('commonCaptionText');
+      return t("commonCaptionText");
     } else {
-      return t('commonLabelText');
+      return t("commonLabelText");
     }
   } else {
     if (caption) {
-      return t('captionText');
+      return t("captionText");
     } else {
-      return t('labelText');
+      return t("labelText");
     }
   }
 }
@@ -793,107 +794,108 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   }
 }
 </style>
-<i18n lang="json">
+<i18n lang="json" locale="en">
 {
-  "en": {
-    "backStyleDisagreement": "Back Styling Disagreement",
-    "clickToMakeLabelsVisible": "Click the button below to make labels visible",
-    "commonCaptionText": "Common Caption Text",
-    "commonLabelText": "Common Label Text",
-    "enableCommonStyle": "Enable Common Style",
-    "fonts": {
-      "cursive": "Cursive Font",
-      "fantasy": "Fantasy",
-      "genericSanSerif": "San Serif Font",
-      "genericSerif": "Serif Font",
-      "monospace": "Monospace Font"
-    },
-    "labelBackFillColor": "Label Back Fill Color",
-    "labelCaption": "Label Caption",
-    "labelDisplayMode": "Label Display Mode",
-    "labelDisplayModes": {
-      "captionOnly": "Caption Only",
-      "nameAndCaption": "Name & Caption",
-      "nameAndValue": "Name & Value",
-      "nameOnly": "Name Only",
-      "valueOnly": "Value Only"
-    },
-    "labelFrontFillColor": "Label Front Fill Color",
-    "labelNotVisible": "Labels Not Visible",
-    "labelText": "Label Text",
-    "labelTextDecoration": "Label Text Decoration",
-    "labelTextFamily": "Label Text Family",
-    "labelTextRotation": "Label Rotation ()",
-    "labelTextScale": "Label Scale (%)",
-    "labelTextStyle": "Label Text Style",
-    "makeLabelsVisible": "Make Labels Visible",
-    "message": {
-      "maxLabelDisplayTextLength": "Label cannot be longer than {max} characters",
-      "minLabelDisplayTextLength": "Label must have at least 1 character",
-      "maxCaptionLength": "Caption cannot be longer than {max} characters",
-      "multipleObjectDifferingStyles": "Multiple object(s) selected have differing label styles."
-    },
-    "textDecoration": {
-      "none": "No decoration",
-      "overline": "Overline",
-      "strikethrough": "Strikethrough",
-      "underline": "Underline"
-    },
-    "textStyle": {
-      "bold": "Bold",
-      "italic": "Italic",
-      "normal": "Normal"
-    }
+  "backStyleDisagreement": "Back Styling Disagreement",
+  "clickToMakeLabelsVisible": "Click the button below to make labels visible",
+  "commonCaptionText": "Common Caption Text",
+  "commonLabelText": "Common Label Text",
+  "enableCommonStyle": "Enable Common Style",
+  "fonts": {
+    "cursive": "Cursive Font",
+    "fantasy": "Fantasy",
+    "genericSanSerif": "San Serif Font",
+    "genericSerif": "Serif Font",
+    "monospace": "Monospace Font"
   },
-  "id": {
-    "backStyleDisagreement": "Gaya Tampilan Belakang Bertentangan",
-    "clickToMakeLabelsVisible": "Tekan tombol dibawah untuk menampilkan label",
-    "commonCaptionText": "Keterangan Teks Gabungan",
-    "commonLabelText": "Label Teks Gabungan",
-    "enableCommonStyle": "Aktifkan Gaya Tampilan Gabungan",
-    "fonts": {
-      "cursive": "Cursive Font",
-      "fantasy": "Fantasy",
-      "genericSanSerif": "San Serif Font",
-      "genericSerif": "Serif Font",
-      "monospace": "Monospace Font"
-    },
-    "labelBackFillColor": "Warna pengisi latar belakang",
-    "labelCaption": "Keterangan Teks",
-    "labelDisplayMode": "Mode Penampilan Label",
-    "labelDisplayModes": {
-      "captionOnly": "Keterangan Saja",
-      "nameAndCaption": "Nama & Keterangan",
-      "nameAndValue": "Nama & Nilai",
-      "nameOnly": "Nama Saja",
-      "valueOnly": "Nilai Saja"
-    },
-    "labelFrontFillColor": "Warning Pengisi Label Later Depan",
-    "labelNotVisible": "Label Tidak Ditampilkan",
-    "labelText": "Teks Label",
-    "labelTextDecoration": "Dekorasi Teks Label",
-    "labelTextFamily": "Keluarga Text Label",
-    "labelTextRotation": "Rotasi Label",
-    "labelTextScale": "Persentasi Skala Label",
-    "labelTextStyle": "Gaya Tampilan Teks Label",
-    "makeLabelsVisible": "Tampilkan Label",
-    "message": {
-      "maxLabelDisplayTextLength": "Label terlalu panjang. Max {max} huruf",
-      "minLabelDisplayTextLength": "Label minimum 1 karakter",
-      "maxCaptionLength": "Teks Keterangna terlalu panjang. Max {max} huruf",
-      "multipleObjectDifferingStyles": "Objek yang diseleksi memiliki gaya tampilan label berbeda"
-    },
-    "textDecoration": {
-      "none": "Tanpa dekorasi",
-      "overline": "Garis atas",
-      "strikethrough": "Garis coret",
-      "underline": "Garis bawah"
-    },
-    "textStyle": {
-      "bold": "Bold",
-      "italic": "Italic",
-      "normal": "Normal"
-    }
+  "labelBackFillColor": "Label Back Fill Color",
+  "labelCaption": "Label Caption",
+  "labelDisplayMode": "Label Display Mode",
+  "labelDisplayModes": {
+    "captionOnly": "Caption Only",
+    "nameAndCaption": "Name & Caption",
+    "nameAndValue": "Name & Value",
+    "nameOnly": "Name Only",
+    "valueOnly": "Value Only"
+  },
+  "labelFrontFillColor": "Label Front Fill Color",
+  "labelNotVisible": "Labels Not Visible",
+  "labelStyle": "Label Style",
+  "labelText": "Label Text",
+  "labelTextDecoration": "Label Text Decoration",
+  "labelTextFamily": "Label Text Family",
+  "labelTextRotation": "Label Rotation ()",
+  "labelTextScale": "Label Scale (%)",
+  "labelTextStyle": "Label Text Style",
+  "makeLabelsVisible": "Make Labels Visible",
+  "message": {
+    "maxLabelDisplayTextLength": "Label cannot be longer than {max} characters",
+    "minLabelDisplayTextLength": "Label must have at least 1 character",
+    "maxCaptionLength": "Caption cannot be longer than {max} characters",
+    "multipleObjectDifferingStyles": "Multiple object(s) selected have differing label styles."
+  },
+  "textDecoration": {
+    "none": "No decoration",
+    "overline": "Overline",
+    "strikethrough": "Strikethrough",
+    "underline": "Underline"
+  },
+  "textStyle": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "normal": "Normal"
+  }
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "backStyleDisagreement": "Gaya Tampilan Belakang Bertentangan",
+  "clickToMakeLabelsVisible": "Tekan tombol dibawah untuk menampilkan label",
+  "commonCaptionText": "Keterangan Teks Gabungan",
+  "commonLabelText": "Label Teks Gabungan",
+  "enableCommonStyle": "Aktifkan Gaya Tampilan Gabungan",
+  "fonts": {
+    "cursive": "Cursive Font",
+    "fantasy": "Fantasy",
+    "genericSanSerif": "San Serif Font",
+    "genericSerif": "Serif Font",
+    "monospace": "Monospace Font"
+  },
+  "labelBackFillColor": "Warna pengisi latar belakang",
+  "labelCaption": "Keterangan Teks",
+  "labelDisplayMode": "Mode Penampilan Label",
+  "labelDisplayModes": {
+    "captionOnly": "Keterangan Saja",
+    "nameAndCaption": "Nama & Keterangan",
+    "nameAndValue": "Nama & Nilai",
+    "nameOnly": "Nama Saja",
+    "valueOnly": "Nilai Saja"
+  },
+  "labelFrontFillColor": "Warning Pengisi Label Later Depan",
+  "labelNotVisible": "Label Tidak Ditampilkan",
+  "labelText": "Teks Label",
+  "labelTextDecoration": "Dekorasi Teks Label",
+  "labelTextFamily": "Keluarga Text Label",
+  "labelTextRotation": "Rotasi Label",
+  "labelTextScale": "Persentasi Skala Label",
+  "labelTextStyle": "Gaya Tampilan Teks Label",
+  "makeLabelsVisible": "Tampilkan Label",
+  "message": {
+    "maxLabelDisplayTextLength": "Label terlalu panjang. Max {max} huruf",
+    "minLabelDisplayTextLength": "Label minimum 1 karakter",
+    "maxCaptionLength": "Teks Keterangna terlalu panjang. Max {max} huruf",
+    "multipleObjectDifferingStyles": "Objek yang diseleksi memiliki gaya tampilan label berbeda"
+  },
+  "textDecoration": {
+    "none": "Tanpa dekorasi",
+    "overline": "Garis atas",
+    "strikethrough": "Garis coret",
+    "underline": "Garis bawah"
+  },
+  "textStyle": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "normal": "Normal"
   }
 }
 </i18n>

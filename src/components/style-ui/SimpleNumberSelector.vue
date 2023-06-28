@@ -16,7 +16,7 @@
       <template v-slot:append>
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
-      <template #thumb-label="{ modelValue }">
+      <template #thumb-label="{modelValue}">
         <span>{{ thumbMap(modelValue) }}</span>
       </template>
     </v-slider>
