@@ -17,10 +17,8 @@ function insertAscending(newItem: string, arr: string[]): void {
 }
 
 const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
-  ["undoAction", "redoAction"],
-  ["resetAction"],
-  ["point"],
-  ["zoomIn", "zoomOut", "zoomFit"],
+  [],
+  [],
 ];
 
 // defineStore("hans", (): => {});
@@ -74,7 +72,7 @@ export const useAccountStore = defineStore("acct", {
         this.favoriteTools = favTools
           .split("#")
           .map((fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[])
-        if (this.favoriteTools.length !== 4)
+        if (this.favoriteTools.length !== 2)
           this.favoriteTools = DEFAULT_TOOL_NAMES
       }
       else

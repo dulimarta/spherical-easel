@@ -1,7 +1,23 @@
 <template>
-  <v-navigation-drawer location="end" color="black" permanent width="80">
+  <div
+    style="
+      position: fixed;
+      right: 8px;
+      width: 80px;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 1;
+    ">
+    <!-- <div style="height: 60%; background: white; border: 1px solid black; border-radius: 0.5em;"> -->
     <StyleDrawer></StyleDrawer>
-  </v-navigation-drawer>
+    <!-- </div> -->
+  </div>
+  <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
+  background-color: transparent;">
+  </!--v-navigation-drawer-->
   <div>
     <Splitpanes
       :style="contentHeightStyle"
@@ -9,7 +25,11 @@
       @resize="dividerMoved"
       :push-other-panes="false">
       <!-- Use the left page for the toolbox -->
-      <Pane ref="leftPane" min-size="5" max-size="35" :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
+      <Pane
+        ref="leftPane"
+        min-size="5"
+        max-size="35"
+        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
         <Toolbox
           id="toolbox"
           ref="toolbox"
@@ -24,11 +44,25 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <SphereFrame
-            style="position: relative"
-            :available-height="availHeight"
-            :available-width="availWidth"
-            v-show="svgDataImage.length === 0" />
+          <!--AddressInput
+            v-if="isEarthMode"
+            style="position: absolute; bottom: 0; z-index: 100" /-->
+
+          <div id="earthAndCircle" :style="{ height: availHeight+'px' }">
+            <v-switch style="position: relative; top: 0; left:0"
+              label="Earth Mode"
+              v-model="isEarthMode"
+              id="earthTogger"></v-switch>
+            <EarthComp style="position: absolute; top: 0"
+              v-if="isEarthMode||true"
+              :available-height="availHeight"
+              :available-width="availWidth" />
+            <SphereFrame style="position: absolute; top: 0"
+              :available-height="availHeight"
+              :available-width="availWidth"
+              v-show="svgDataImage.length === 0"
+              :is-earth-mode="isEarthMode" />
+          </div>
           <v-overlay
             contained
             :class="['justify-center', 'align-center', previewClass]"
@@ -45,11 +79,25 @@
               :height="canvasHeight" />
           </v-overlay>
           <div id="msghub">
+            <ShortcutIcon
+              class="mx-1"
+              v-for="t in leftShortcutGroup"
+              :model="t" />
             <MessageHub />
+            <ShortcutIcon
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomOut')!" />
+            <!--span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</!--span>
+            <v-slider v-model="zoomMagnificationFactor" :min="0.1" :max="2" style="min-width: 100px;"/-->
+            <ShortcutIcon
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomIn')!" />
+            <ShortcutIcon
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomFit')!" />
           </div>
         </div>
       </Pane>
-
     </Splitpanes>
     <Dialog
       ref="unsavedWorkDialog"
@@ -84,13 +132,16 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
+// import AddressInput from "@/components/AddressInput.vue";
+
 import SphereFrame from "@/components/SphereFrame.vue";
+import EarthComp from "@/components/EarthComp.vue";
 import MessageHub from "@/components/MessageHub.vue";
+import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
 
-// Temporarily exclude Style.vue
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -100,7 +151,6 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import { ConstructionInFirestore, SphericalConstruction } from "@/types";
-// import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -129,8 +179,9 @@ import {
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
+import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
-const LEFT_PANE_PERCENTAGE = 25
+const LEFT_PANE_PERCENTAGE = 25;
 const appDB = getFirestore();
 const appAuth = getAuth();
 const appStorage = getStorage();
@@ -143,9 +194,15 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth } =
-  storeToRefs(seStore);
-
+const {
+  seNodules,
+  temporaryNodules,
+  hasObjects,
+  actionMode,
+  canvasHeight,
+  canvasWidth,
+  isEarthMode
+} = storeToRefs(seStore);
 const props = defineProps<{
   documentId?: string;
 }>();
@@ -155,7 +212,19 @@ const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
-const leftPane: Ref<HTMLElement|null> = ref(null)
+
+const leftShortcutGroup = computed(() => [
+  TOOL_DICTIONARY.get("undoAction")!,
+  TOOL_DICTIONARY.get("redoAction")!,
+  TOOL_DICTIONARY.get("resetAction")!
+]);
+const rightShortcutGroup = computed(() => [
+  TOOL_DICTIONARY.get("zoomOut")!,
+  TOOL_DICTIONARY.get("zoomIn")!,
+  TOOL_DICTIONARY.get("zoomFit")!
+]);
+
+const leftPane: Ref<HTMLElement | null> = ref(null);
 // const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
@@ -195,11 +264,14 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
   }
 };
 
-const availHeight = ref(100)
-const availWidth = ref(100)
+const availHeight = ref(100);
+const availWidth = ref(100);
 function adjustCanvasSize(): void {
   // The MessageHub height is set to 80 pixels
-  availWidth.value = display.width.value * (1 - LEFT_PANE_PERCENTAGE/100) - mainRect.value.left - mainRect.value.right;
+  availWidth.value =
+    display.width.value * (1 - LEFT_PANE_PERCENTAGE / 100) -
+    mainRect.value.left -
+    mainRect.value.right;
   availHeight.value =
     display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
   // console.debug(
@@ -278,7 +350,8 @@ function dividerMoved(
   // 80px is the width of the right navigation drawer
   availWidth.value =
     display.width.value - mainRect.value.left - mainRect.value.right - 80;
-  availHeight.value = display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
+  availHeight.value =
+    display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
   // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
 }
 
@@ -411,11 +484,11 @@ function handleToolboxMinify(state: boolean) {
 </script>
 <style scoped lang="scss">
 // .splitpanes__pane {
-  // color: hsla(40, 50%, 50%, 0.6);
-  // display: flex;
-  // justify-content: center;
-  // align-items: center;
-  // font-size: 5em;
+// color: hsla(40, 50%, 50%, 0.6);
+// display: flex;
+// justify-content: center;
+// align-items: center;
+// font-size: 5em;
 // }
 
 #sphere-and-msghub {
@@ -432,6 +505,10 @@ function handleToolboxMinify(state: boolean) {
   align-self: center;
   position: fixed;
   bottom: 4px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 #container {
   display: flex;
@@ -524,5 +601,19 @@ function handleToolboxMinify(state: boolean) {
   100% {
     transform: translateX(100%);
   }
+}
+
+#earthTogger {
+  position: absolute;
+  top: 0;
+}
+
+#earthAndCircle {
+  border: 3px solid darkorange;
+  // position: relative;
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: center;
+  // align-items: center;
 }
 </style>

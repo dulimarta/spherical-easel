@@ -1,7 +1,6 @@
 import { defineConfig } from "vite"
 import {resolve} from "path"
 import vue from "@vitejs/plugin-vue"
-
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
 // import Components from "unplugin-vue-components/vite"
@@ -9,6 +8,9 @@ import vue from "@vitejs/plugin-vue"
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
+  // define: {
+  //   'process.env': process.env
+  // },
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src")
@@ -34,7 +36,12 @@ export default defineConfig({
     //   path: resolve(__dirname, "./src")
     // }),
     vuetify({ autoImport: true }),
-    VueI18nPlugin({})
+    VueI18nPlugin({
+      include: [resolve(__dirname, './src/assets/languages/**')],
+      strictMessage: true, /* messages should not contain HTML tags */
+      allowDynamic: true,
+      bridge: true /* specify custom blocks to  work under both v8 and v9 */
+    })
   ],
   server: {
     port: 8080

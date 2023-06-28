@@ -15,6 +15,7 @@ import { SEPoint, SESegment, SELine, SECircle,SEAngleMarker,SEEllipse,SEParametr
 // import { SEParametric } from "./SEParametric";
 // import { SEPolygon } from "./SEPolygon";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import { SEEarthPoint } from "./SEEarthPoint";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -81,11 +82,17 @@ export class SELabel extends SENodule implements Visitable {
 
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
-      this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
-      if (parent.isFreePoint()) {
-        this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
-      } else {
-        this.showing = SETTINGS.point.showLabelsOfNonFreePointsInitially;
+      console.log("SELabel: parent is a point");
+      if(parent instanceof SEEarthPoint){
+        console.log("SELabel: parent is a earth point");
+        this.showing = true;
+      }else{
+        this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
+        if (parent.isFreePoint()) {
+          this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
+        } else {
+          this.showing = SETTINGS.point.showLabelsOfNonFreePointsInitially;
+        }
       }
     } else if (parent instanceof SELine) {
       this.ref.initialLabelDisplayMode = SETTINGS.line.defaultLabelMode;
@@ -108,7 +115,8 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEPolygon) {
       this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
       this.showing = SETTINGS.polygon.showLabelsInitially;
-    } else {
+    }
+    else {
       this.showing = true;
     }
   }

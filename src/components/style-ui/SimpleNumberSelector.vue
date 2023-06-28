@@ -1,83 +1,73 @@
 <template>
   <div>
-  <div v-if="true || typeof props.modelValue === 'number'">
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ $t(titleKey) + " (" + thumbMap(props.modelValue ?? 0) + ")" }}
+      {{ title + " (" + thumbMap(props.modelValue ?? 0) + ")" }}
     </span>
     <span v-if="numSelected > 1" class="text-subtitle-2" style="color: red">
       {{ " " + $t("style.labelStyleOptionsMultiple") }}
     </span>
-    <br />
 
     <!-- The number selector slider -->
-    <v-slider :disabled="(typeof modelValue !== 'number')"
-      @update:model-value="valueChanged"
-      v-bind="attrs"
-      type="range"
-      class="mb-n4 pa-n4">
+    <v-slider v-bind:="attrs"
+    v-model="styleData" thumb-label show-ticks>
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
-      </template>
-      <template v-slot:thumb-label="{ value }">
-        {{ thumbMap(value) }}
       </template>
       <template v-slot:append>
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
+      <template #thumb-label="{modelValue}">
+        <span>{{ thumbMap(modelValue) }}</span>
+      </template>
     </v-slider>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
-import { useAttrs } from "vue";
+import { ref, useAttrs, Ref } from "vue";
 
 const attrs = useAttrs();
 type ComponentProps = {
-  titleKey: string;
-  modelValue: number|undefined;
+  modelValue: number;
+  title: string;
   thumbStringValues: Array<string>;
   numSelected: number;
   conflict: boolean;
 };
-
-const props = defineProps<ComponentProps>();
+let props = defineProps<ComponentProps>();
 const emit = defineEmits(["update:modelValue"]);
-// @Component
-// export default class SimpleNumberSelector extends Vue {
-// @Prop() readonly titleKey!: string;
 // @PropSync("data") styleData!: number;
-// @Prop() readonly thumbStringValues?: string[];
-// @Prop() readonly numSelected!: number;
-// @Prop() conflict!: boolean;
-let styleData = Number(attrs.value);
 
-function valueChanged(val: number): void {
+const styleData: Ref<number> = ref(props.modelValue);
+
+// function valueChanged(val: number): void {
   // this.$emit("resetColor");
-  emit("update:modelValue", val);
-}
+  // emit("update:modelValue", val);
+// }
 //converts the value of the slider to the text message displayed in the thumb marker
 function thumbMap(val: number): string {
   if (
-    Array.isArray(props.thumbStringValues) &&
+    // Array.isArray(props.thumbStringValues) &&
     props.thumbStringValues.length > 0
   ) {
     const min = Number(attrs?.min ?? 0);
     const step = Number(attrs?.step ?? 1);
     return props.thumbStringValues[Math.floor((val - min) / step)] ?? "NaN";
-  } else {
-    return String(val);
+    // } else {
+    // return String(val);
   }
+  return "Yes";
 }
 
 function incrementDataValue(): void {
-  console.debug("Increase slider", arguments);
-  styleData += Number(attrs?.step ?? 1);
-  emit("update:modelValue", styleData);
+  const step = Number(attrs?.step);
+  console.debug("Increase slider by", step);
+  styleData.value += step;
+  emit("update:modelValue", styleData.value);
 }
 function decrementDataValue(): void {
-  styleData -= Number(attrs?.step ?? 1);
-  emit("update:modelValue", styleData);
+  styleData.value -= Number(attrs?.step ?? 1);
+  emit("update:modelValue", styleData.value);
 }
 </script>
 

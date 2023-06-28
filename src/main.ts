@@ -24,7 +24,6 @@ app.use(pinia)
 app.use(i18n)
 app.mount("#app")
 
-console.log("Setting global store from main.ts");
 const seStore = useSEStore()
 Command.setGlobalStore(seStore);
 MouseHandler.setGlobalStore(seStore);

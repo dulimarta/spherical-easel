@@ -231,8 +231,6 @@ import {
   onBeforeUnmount,
   nextTick
 } from "vue";
-import MessageHub from "@/components/MessageHub.vue";
-// import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue"
 import LanguageSelector from "./components/LanguageSelector.vue";
 import { ConstructionInFirestore } from "./types";
@@ -291,13 +289,11 @@ const router = useRouter();
 let clientBrowser: any;
 const description = ref("");
 const publicConstruction = ref(false);
-// $refs!: {
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareLinkReference: Ref<HTMLElement | null> = ref(null);
-// };
 let footerColor = "accent";
 let authSubscription!: Unsubscribe;
 const whoami = ref("");
