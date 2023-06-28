@@ -30,11 +30,24 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <SphereFrame
+
+          <AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/>
+
+          <button @click="()=>{
+            isEarthMode = !isEarthMode;
+            console.log(isEarthMode);
+          }" id="earthTogger" style="z-index: 100;">Earth Mode</button>
+          <div id="earthAndCircle">
+            <EarthComp v-if="isEarthMode" :canvas-size="currentCanvasSize"/>
+            <SphereFrame
             style="position: relative"
-            :available-height="availHeight"
-            :available-width="availWidth"
-            v-show="svgDataImage.length === 0" />
+            :canvas-size="currentCanvasSize"
+            v-show="svgDataImage.length === 0"
+            :is-earth-mode="isEarthMode" />
+          </div>
+          <div id="msghub">
+            <MessageHub />
+          </div>
           <v-overlay
             contained
             :class="['justify-center', 'align-center', previewClass]"
@@ -90,7 +103,10 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
+import AddressInput from "@/components/AddressInput.vue";
+
 import SphereFrame from "@/components/SphereFrame.vue";
+import EarthComp from "@/components/EarthComp.vue";
 import MessageHub from "@/components/MessageHub.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
@@ -148,9 +164,8 @@ const appStorage = getStorage();
 const { t } = useI18n();
 const seStore = useSEStore();
 const router = useRouter();
-const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth } =
+const { seNodules, temporaryNodules, hasObjects, actionMode, canvasHeight, canvasWidth, isEarthMode } =
   storeToRefs(seStore);
-
 const props = defineProps<{
   documentId?: string;
 }>();
@@ -263,6 +278,8 @@ onMounted((): void => {
     if (u !== null) uid = u.uid;
   });
   window.addEventListener("keydown", handleKeyDown);
+
+
 });
 
 onBeforeUnmount((): void => {
@@ -529,5 +546,18 @@ function handleToolboxMinify(state: boolean) {
   100% {
     transform: translateX(100%);
   }
+}
+#earthTogger{
+position: absolute;
+top: 0;
+color: white;
+background-color: blue;
+border-radius: 20px;
+padding:10px;
+}
+#earthAndCircle{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

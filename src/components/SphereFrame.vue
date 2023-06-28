@@ -107,7 +107,8 @@ import { ToolButtonType } from "@/types";
 
 type ComponentProps = {
   availableHeight: number,
-  availableWidth: number
+  availableWidth: number,
+  isEarthMode: boolean
 }
 
 const seStore = useSEStore();
@@ -123,10 +124,13 @@ const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
+
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
-  availableWidth: 240
+  availableWidth: 240,
+  isEarthMode: false
 });
+
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
 
@@ -261,6 +265,8 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
+  boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
+
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
 
@@ -331,8 +337,40 @@ onMounted((): void => {
     event.preventDefault()
   );
 
+  watch(()=>props.isEarthMode,()=>{
+    if(!props.isEarthMode){
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
+        if((layer as string).includes("background")){
+          (seStore.layers[i] as any).visible = true;
+        }
+        i++;
+      }
+    }else{
+
+      // console.log(Object.values(LAYER));
+      // (seStore.layers[Number(LAYER.background)] as any).visible = false;
+      // (seStore.layers[Number(LAYER.backgroundAngleMarkers)] as any).visible = false;
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
+        if((layer as string).includes("background")){
+          (seStore.layers[i] as any).visible = false;
+        }
+        i++;
+      }
+    }
+      // seStore.layers[Number(LAYER.midground)].visible = false;
+
+  })
+  // canvas.value!.style.width = twoInstance.width.toString() + "px";
+  // canvas.value!.style.height = twoInstance.height.toString() + "px";
+  // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
+  watch(()=>(seStore.canvasWidth),()=>{
+    canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
+    canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
+  })
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
@@ -571,6 +609,7 @@ function handleMouseLeave(e: MouseEvent): void {
 //#region handleSphereRotation
 function handleSphereRotation(e: unknown): void {
   seStore.rotateSphere((e as any).transform);
+  // console.log(seStore.inverseTotalRotationMatrix.elements);
 }
 //#endregion handleSphereRotation
 
@@ -1081,14 +1120,14 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 //   border: 1px solid red;
 // }
 #sphereContainer {
-  // border: 3px solid black;
+  border: 3px solid black;
   position: relative;
   display: flex;
   flex-direction: row;
   justify-content: center;
 }
 .anchored {
-  margin: 4px;
+  margin: 0px;
   position: absolute;
 }
 .left {

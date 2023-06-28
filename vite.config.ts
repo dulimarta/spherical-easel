@@ -8,6 +8,9 @@ import vue from "@vitejs/plugin-vue"
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
+  // define: {
+  //   'process.env': process.env
+  // },
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src")
