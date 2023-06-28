@@ -2,7 +2,9 @@
   <PopOverTabs
     :icon-name="
       editModeIsBack ? 'mdi-arrange-send-backward' : 'mdi-arrange-bring-forward'
-    " :tooltip="tooltipText" tooltip-location="left">
+    "
+    :tooltip="tooltipText"
+    tooltip-location="left">
     <template #tabs>
       <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
@@ -443,7 +445,9 @@ const emptyDashPattern = ref(true);
 let alreadySet = false;
 //private reverseDashArray = true;
 
-const tooltipText = computed(() => editModeIsBack.value ? t('backgroundStyle') : t('foregroundStyle'))
+const tooltipText = computed(() =>
+  editModeIsBack.value ? t("backgroundStyle") : t("foregroundStyle")
+);
 
 function setMax(angleMarker: boolean): number {
   if (angleMarker) {

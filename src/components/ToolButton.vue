@@ -68,7 +68,6 @@ onUpdated(() => {
   elev.value = props.selected ? 1 : 5;
   weight.value = props.selected ? "bold" : "normal";
 });
-
 </script>
 
 <style lang="scss" scoped>
