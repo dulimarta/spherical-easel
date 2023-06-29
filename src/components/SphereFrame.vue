@@ -1,7 +1,12 @@
 <template>
   <!-- <CurrentToolSelection /> -->
+  <!-- <span style="position:relative; left: 200px; border: 1px solid blue">Size: {{ availableWidth }}x{{ availableHeight }}</span> -->
   <div id="sphereContainer">
-    <div id="canvas" ref="canvas" :width="availableWidth" :height="availableHeight"></div>
+    <div
+      id="canvas"
+      ref="canvas"
+      :width="availableWidth"
+      :height="availableHeight"></div>
     <div class="anchored top left">
       <div
         v-for="(shortcut, index) in shortCutIcons[0]"
@@ -106,10 +111,10 @@ import { useI18n } from "vue-i18n";
 import { ToolButtonType } from "@/types";
 
 type ComponentProps = {
-  availableHeight: number,
-  availableWidth: number,
-  isEarthMode: boolean
-}
+  availableHeight: number;
+  availableWidth: number;
+  isEarthMode: boolean;
+};
 
 const seStore = useSEStore();
 const {
@@ -124,13 +129,11 @@ const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
-
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240,
   isEarthMode: false
 });
-
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
 
@@ -138,11 +141,9 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   console.debug("Updating shortcut icons");
   return favoriteTools.value.map(
     (corner: Array<ActionMode>): Array<ToolButtonType> =>
-      corner.map((act: ActionMode): ToolButtonType =>
-        TOOL_DICTIONARY.get(act)!
-      )
+      corner.map((act: ActionMode): ToolButtonType => TOOL_DICTIONARY.get(act)!)
   );
-})
+});
 
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
@@ -337,25 +338,33 @@ onMounted((): void => {
     event.preventDefault()
   );
 
-  watch(()=>props.isEarthMode,(earthMode)=>{
-    let i = 0;
-    for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
-      if((layer as string).includes("background")){
-        (seStore.layers[i] as any).visible = !earthMode;
+  watch(
+    () => props.isEarthMode,
+    earthMode => {
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter(
+        layer => typeof layer !== "number"
+      )) {
+        if ((layer as string).includes("background")) {
+          (seStore.layers[i] as any).visible = !earthMode;
+        }
+        i++;
       }
-      i++;
-    }
       // seStore.layers[Number(LAYER.midground)].visible = false;
-  })
+    }
+  );
   // canvas.value!.style.width = twoInstance.width.toString() + "px";
   // canvas.value!.style.height = twoInstance.height.toString() + "px";
   // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
-  watch(()=>(seStore.canvasWidth),()=>{
-    // canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
-    // canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
-  })
+  watch(
+    () => seStore.canvasWidth,
+    () => {
+      // canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
+      // canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
+    }
+  );
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
@@ -382,8 +391,8 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("delete-node");
 });
 
-
-watch([() => props.availableWidth, () => props.availableHeight],
+watch(
+  [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
     twoInstance.width = width;
     twoInstance.height = height;
@@ -421,7 +430,7 @@ function updateView() {
   const mag = zoomMagnificationFactor.value;
   const transVector = zoomTranslation;
   const originX = props.availableWidth / 2;
-  const originY = props.availableHeight / 2
+  const originY = props.availableHeight / 2;
 
   twoInstance.scene.translation = new Two.Vector(
     originX + transVector.value[0],
@@ -819,7 +828,9 @@ watch(
           zoomTool = new PanZoomHandler(canvas.value!);
         }
 
-        zoomTool.doZoomFit(Math.min(props.availableHeight, props.availableWidth));
+        zoomTool.doZoomFit(
+          Math.min(props.availableHeight, props.availableWidth)
+        );
         zoomTool.activate(); // unglow any selected objects.
         zoomTool.deactivate(); // shut the tool down properly
         seStore.revertActionMode();

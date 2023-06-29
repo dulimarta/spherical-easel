@@ -47,6 +47,7 @@
           <!--AddressInput
             v-if="isEarthMode"
             style="position: absolute; bottom: 0; z-index: 100" /-->
+          <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
 
           <div id="earthAndCircle">
             <EarthComp
@@ -55,11 +56,19 @@
               :available-width="availWidth" />
             <SphereFrame
               style="position: relative"
-              :available-height="availHeight"
               :available-width="availWidth"
+              :available-height="availHeight"
               v-show="svgDataImage.length === 0"
               :is-earth-mode="isEarthMode" />
           </div>
+          <v-switch
+          style="position: absolute; bottom: 4px; left: 8px; background-color: hsla(0, 100%, 100%, 0.6);"
+          density="compact"
+            v-model="isEarthMode"
+            :label="`Earth Mode (${isEarthMode})`"></v-switch>
+          <!--div id="msghub">
+            <MessageHub />
+          </div-->
           <v-overlay
             contained
             :class="['justify-center', 'align-center', previewClass]"
@@ -75,13 +84,14 @@
               :width="canvasWidth"
               :height="canvasHeight" />
           </v-overlay>
-          <v-switch class="bg-grey"
+          <!--v-switch
+            class="bg-grey"
             density="compact"
-            style="position: absolute; bottom: 4px; left: 8px"
+            style="position: absolute; bottom: 64px; left: 8px"
             v-model="isEarthMode"
             :label="`Earth Mode (${isEarthMode})`"
-            id="earthToggler"></v-switch>
-        <div id="msghub">
+            id="earthToggler"></v-switch-->
+          <div id="msghub">
             <ShortcutIcon
               class="mx-1"
               v-for="t in leftShortcutGroup"
@@ -90,7 +100,7 @@
             <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
-            <span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</span>
+            <span>{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
             <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
@@ -614,9 +624,6 @@ function handleToolboxMinify(state: boolean) {
 }
 
 #earthToggler {
-  // align-self: flex-start;
-  // position: absolute;
-  // top: 0;
 }
 
 #earthAndCircle {
