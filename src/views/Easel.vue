@@ -35,7 +35,7 @@
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
       </Pane>
-      <Pane style="border: 4px dashed forestgreen; position: relative;">
+      <Pane>
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
         When minified, the style panel takes only 5% of the remaining width
@@ -43,12 +43,22 @@
       -->
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-        <!--div id="sphere-and-msghub">
-          <AddressInput
+        <div id="sphere-and-msghub">
+          <!--AddressInput
             v-if="isEarthMode"
-            style="position: absolute; bottom: 0; z-index: 100" />
+            style="position: absolute; bottom: 0; z-index: 100" /-->
 
-          <div id="earthAndCircle" :style="{ height: availHeight+'px', top: '20px' }">
+          <div id="earthAndCircle">
+            <EarthComp
+              v-if="isEarthMode"
+              :available-height="availHeight"
+              :available-width="availWidth" />
+            <SphereFrame
+              style="position: relative"
+              :available-height="availHeight"
+              :available-width="availWidth"
+              v-show="svgDataImage.length === 0"
+              :is-earth-mode="isEarthMode" />
           </div>
           <v-overlay
             contained
@@ -65,16 +75,12 @@
               :width="canvasWidth"
               :height="canvasHeight" />
           </v-overlay>
-        </div-->
-        <!--EarthComp style="position: absolute; top: 0"
-              v-if="isEarthMode"
-              :available-height="availHeight"
-              :available-width="availWidth" /-->
-        <SphereFrame style="position: absolute"
-              :available-height="availHeight"
-              :available-width="availWidth"
-              v-show="svgDataImage.length === 0"
-              :is-earth-mode="isEarthMode" />
+          <v-switch class="bg-grey"
+            density="compact"
+            style="position: absolute; bottom: 4px; left: 8px"
+            v-model="isEarthMode"
+            :label="`Earth Mode (${isEarthMode})`"
+            id="earthToggler"></v-switch>
         <div id="msghub">
             <ShortcutIcon
               class="mx-1"
@@ -84,8 +90,12 @@
             <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
-            <!--span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</span-->
-            <v-slider v-model="zoomMagnificationFactor" :min="0.1" :max="2" style="min-width: 100px;"/>
+            <span>{{  (100*zoomMagnificationFactor).toFixed(2) }}</span>
+            <v-slider
+              v-model="zoomMagnificationFactor"
+              :min="0.1"
+              :max="2"
+              style="min-width: 100px" />
             <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomIn')!" />
@@ -93,10 +103,7 @@
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomFit')!" />
           </div>
-        <v-switch style="position: absolute; bottom: 40px; left: 8px"
-          v-model="isEarthMode"
-              :label="`Earth Mode (${isEarthMode})`"
-              id="earthToggler"></v-switch>
+        </div>
       </Pane>
     </Splitpanes>
     <Dialog
@@ -505,7 +512,7 @@ function handleToolboxMinify(state: boolean) {
 #msghub {
   align-self: center;
   position: absolute;
-  bottom: 4px;
+  bottom: -64px;
   left: 0;
   right: 0;
   display: flex;
@@ -607,13 +614,13 @@ function handleToolboxMinify(state: boolean) {
 }
 
 #earthToggler {
-  align-self: flex-start;
-  position: absolute;
-  top: 0;
+  // align-self: flex-start;
+  // position: absolute;
+  // top: 0;
 }
 
 #earthAndCircle {
-  border: 3px solid darkorange;
+  // border: 3px solid darkorange;
   // position: absolute;
   display: flex;
   flex-direction: column;

@@ -265,7 +265,7 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
+  // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
 
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
@@ -353,8 +353,8 @@ onMounted((): void => {
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
   watch(()=>(seStore.canvasWidth),()=>{
-    canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
-    canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
+    // canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
+    // canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
   })
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
