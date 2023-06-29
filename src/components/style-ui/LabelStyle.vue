@@ -295,8 +295,8 @@ import { useI18n } from "vue-i18n";
 import Label from "@/plottables/Label";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { useStyleEditor } from "@/components/StyleEditor";
-import { useDialogSequencer } from "@/components/DialogSequencer";
+import { useStyleEditor } from "@/composables/StyleEditor";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 import PopOverTabs from "../PopOverTabs.vue";
 type labelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
@@ -899,3 +899,4 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   }
 }
 </i18n>
+@/composables/StyleEditor

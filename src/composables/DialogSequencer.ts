@@ -1,5 +1,5 @@
 // import {ref} from "vue"
-import { DialogAction } from "./Dialog.vue";
+import { DialogAction } from "@/components/Dialog.vue";
 const dialogQueue: Array<DialogAction> = []
 export function useDialogSequencer() {
 

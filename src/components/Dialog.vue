@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { useDialogSequencer } from "./DialogSequencer";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 
 export interface DialogAction {
   hide: () => void;

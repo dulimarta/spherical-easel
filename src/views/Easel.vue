@@ -252,12 +252,6 @@ const constructionInfo = ref<any>({});
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
-let accountEnabled = false;
-let uid = "";
-let authSubscription!: Unsubscribe;
-const userUid = computed((): string | undefined => {
-  return appAuth.currentUser?.uid;
-});
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -341,19 +335,11 @@ onMounted((): void => {
 
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
-  EventBus.listen("secret-key-detected", () => {
-    if (uid.length > 0) accountEnabled = true;
-  });
-  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    if (u !== null) uid = u.uid;
-  });
   window.addEventListener("keydown", handleKeyDown);
 });
 
 onBeforeUnmount((): void => {
-  if (authSubscription) authSubscription();
   EventBus.unlisten("set-action-mode-to-select-tool");
-  EventBus.unlisten("secret-key-detected");
   window.removeEventListener("keydown", handleKeyDown);
 });
 

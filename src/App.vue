@@ -46,18 +46,8 @@
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
-      <template v-if="accountEnabled">
-        <span>{{ whoami }}</span>
-        <v-img
-          id="profilePic"
-          v-if="profilePicUrl"
-          class="mx-2"
-          contain
-          :src="profilePicUrl"
-          :aspect-ratio="1 / 1"
-          max-width="48"
-          @click="doLoginOrCheck"></v-img>
-        <v-icon v-else class="mx-2" @click="doLoginOrCheck">mdi-account</v-icon>
+      <AuthenticatedUserToolbox />
+      <template v-if="false">
         <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
         <!--v-btn icon variant="text" size="medium">
           <v-tooltip location="bottom" activator="parent">
@@ -233,6 +223,7 @@ import {
 } from "vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue"
 import LanguageSelector from "./components/LanguageSelector.vue";
+import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { User, getAuth, Unsubscribe } from "firebase/auth";
@@ -298,9 +289,7 @@ let footerColor = "accent";
 let authSubscription!: Unsubscribe;
 const whoami = ref("");
 const uid = ref("");
-const profilePicUrl: Ref<string | null> = ref(null);
 let svgRoot: SVGElement;
-const showExport = ref(false);
 const selectedFormat = ref("");
 const slider = ref(600);
 const sliderMin = 200;
@@ -312,8 +301,8 @@ const disableButton = ref(false);
 
 /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-let acceptedKeys = 0;
-const accountEnabled = ref(false);
+// let acceptedKeys = 0;
+// const accountEnabled = ref(false);
 
 // target formats for export window
 //formats = ["SVG", "PNG", "GIF"];
@@ -326,6 +315,7 @@ const baseURL = computed((): string => {
   return import.meta.env.BASE_URL ?? "";
 });
 
+/***
 function keyHandler(ev: KeyboardEvent): void {
   if (ev.repeat) return; // Ignore repeated events on the same key
   if (!ev.altKey) return;
@@ -344,15 +334,16 @@ function keyHandler(ev: KeyboardEvent): void {
     acceptedKeys = 0;
   }
 }
+***/
 
 onBeforeMount((): void => {
-  window.addEventListener("keydown", keyHandler);
-  EventBus.listen("secret-key-detected", () => {
-    console.log("Got the secret key");
-    accountEnabled.value = true;
-    acceptedKeys = 0;
-    // $forceUpdate();
-  });
+  // window.addEventListener("keydown", keyHandler);
+  // EventBus.listen("secret-key-detected", () => {
+  //   console.log("Got the secret key");
+  //   accountEnabled.value = true;
+  //   acceptedKeys = 0;
+  //   // $forceUpdate();
+  // });
   EventBus.listen("share-construction-requested", doShare);
   clientBrowser = detect();
   acctStore.resetToolset();
@@ -367,42 +358,11 @@ onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
   // SEStore.init();
   EventBus.listen("set-footer-color", setFooterColor);
-  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    if (u !== null) {
-      showExport.value = true;
-      whoami.value = u.email ?? "unknown email";
-      uid.value = u.uid;
-      const userDoc = doc(appDB, "users", uid.value);
-      getDoc(userDoc).then((ds: DocumentSnapshot) => {
-        if (ds.exists()) {
-          accountEnabled.value = true;
-          console.debug("User data", ds.data());
-          const { profilePictureURL, role } = ds.data() as any;
-          if (profilePictureURL) {
-            profilePicUrl.value = profilePictureURL;
-          }
-          if (role) {
-            userRole.value = role.toLowerCase();
-          }
-        }
-      });
-    } else {
-      whoami.value = "";
-      profilePicUrl.value = "";
-    }
-  });
+
   // Get the top-level SVG element
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 });
 
-onBeforeUnmount((): void => {
-  if (authSubscription) authSubscription();
-  whoami.value = "";
-  uid.value = "";
-  window.removeEventListener("keydown", keyHandler);
-  EventBus.unlisten("secret-key-detected");
-  // EventBus.unlisten("set-apply-transformation-footer-text");
-});
 function setFooterColor(e: { color: string }): void {
   footerColor = e.color;
 }
@@ -421,13 +381,13 @@ async function doLogout(): Promise<void> {
 // applyTransformationText = e.text;
 // }
 
-function doLoginOrCheck(): void {
-  if (appAuth.currentUser !== null) {
-    logoutDialog.value?.show();
-  } else {
-    router.replace({ path: "/account" });
-  }
-}
+// function doLoginOrCheck(): void {
+//   if (appAuth.currentUser !== null) {
+//     logoutDialog.value?.show();
+//   } else {
+//     router.replace({ path: "/account" });
+//   }
+// }
 function showShareConstructionDialog() {
   shareConstructionDialog.value?.show();
 }

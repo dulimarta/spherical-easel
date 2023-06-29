@@ -46,7 +46,7 @@
             <template v-slot:thumb-label="...a">
               {{
                 backStyleContrastSelectorThumbStrings[
-                  Math.floor(a.modelValue * 10)
+                  Math.floor((a as any).modelValue * 10)
                 ]
               }}
             </template>
@@ -295,7 +295,7 @@ import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { useStyleEditor } from "@/components/StyleEditor";
+import { useStyleEditor } from "@/composables/StyleEditor";
 import { onBeforeMount } from "vue";
 import PopOverTabs from "../PopOverTabs.vue";
 
@@ -804,3 +804,4 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "strokeWidthPercent": "Stroke Width (%)"
 }
 </i18n>
+@/composables/StyleEditor

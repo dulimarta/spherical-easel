@@ -95,7 +95,7 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
-import { useDialogSequencer } from "@/components/DialogSequencer";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 const { t } = useI18n();
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);

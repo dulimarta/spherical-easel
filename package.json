@@ -22,6 +22,7 @@
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
+    "@vueuse/core": "^10.2.1",
     "axios": "^0.27.2",
     "color": "^4.2.3",
     "d3-svg-to-png": "^0.1.7",

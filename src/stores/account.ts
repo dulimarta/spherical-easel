@@ -24,8 +24,10 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", {
   state: (): AccountState => ({
+    loginEnabled: false,
     temporaryProfilePicture: "",
     userDisplayedName: undefined,
+    userEmail: undefined,
     userProfilePictureURL: undefined,
     userRole: undefined,
     /** @type { ActionMode[]} */

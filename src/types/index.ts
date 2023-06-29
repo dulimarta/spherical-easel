@@ -26,9 +26,11 @@ export interface Selectable {
 }
 
 export interface AccountState {
+  loginEnabled: boolean
   temporaryProfilePicture: string;
   userProfilePictureURL: string | undefined;
   userDisplayedName: string | undefined;
+  userEmail: string | undefined;
   userRole: string | undefined;
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
