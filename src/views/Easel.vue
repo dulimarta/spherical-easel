@@ -50,7 +50,8 @@
           <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
 
           <div id="earthAndCircle">
-            <EarthLayer v-if="isEarthMode"
+            <EarthLayer
+              v-if="isEarthMode"
               :available-height="availHeight"
               :available-width="availWidth" />
             <SphereFrame
@@ -59,13 +60,32 @@
               :available-height="availHeight"
               v-show="svgDataImage.length === 0"
               :is-earth-mode="isEarthMode" />
-            <v-switch color="primary" hide-details
+            <v-switch
+              color="primary"
+              hide-details
               class="earthToggler"
               density="compact"
               v-model="isEarthMode"
-              label="Earth Mode"></v-switch>
+              label="Earth Mode">
+              <template #append v-if="isEarthMode">
+                <v-icon id="placeBubble">mdi-map-marker</v-icon>
+                <v-menu
+                  activator="#placeBubble"
+                  location="right"
+                  :close-on-content-click="false">
+                  <AddressInput
+                    style="
+                      position: relative;
+                      top: -8px;
+                      left: 1em;
+                      width: 30em;
+                    " />
+                </v-menu>
+              </template>
+            </v-switch>
           </div>
-          <v-overlay :scrim="false"
+          <v-overlay
+            :scrim="false"
             contained
             :class="['justify-center', 'align-start', previewClass]"
             :model-value="svgDataImage.length > 0">
@@ -137,7 +157,7 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
-// import AddressInput from "@/components/AddressInput.vue";
+import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
@@ -215,7 +235,7 @@ const props = defineProps<{
 const { mainRect } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
-const overlayHeight = computed(() => contentHeight.value - 60)
+const overlayHeight = computed(() => contentHeight.value - 60);
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
