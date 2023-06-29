@@ -50,8 +50,7 @@
           <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
 
           <div id="earthAndCircle">
-            <EarthComp
-              v-if="isEarthMode"
+            <EarthLayer v-if="isEarthMode"
               :available-height="availHeight"
               :available-width="availWidth" />
             <SphereFrame
@@ -60,18 +59,15 @@
               :available-height="availHeight"
               v-show="svgDataImage.length === 0"
               :is-earth-mode="isEarthMode" />
+            <v-switch color="primary" hide-details
+              class="earthToggler"
+              density="compact"
+              v-model="isEarthMode"
+              label="Earth Mode"></v-switch>
           </div>
-          <v-switch
-          style="position: absolute; bottom: 4px; left: 8px; background-color: hsla(0, 100%, 100%, 0.6);"
-          density="compact"
-            v-model="isEarthMode"
-            :label="`Earth Mode (${isEarthMode})`"></v-switch>
-          <!--div id="msghub">
-            <MessageHub />
-          </div-->
-          <v-overlay
+          <v-overlay :scrim="false"
             contained
-            :class="['justify-center', 'align-center', previewClass]"
+            :class="['justify-center', 'align-start', previewClass]"
             :model-value="svgDataImage.length > 0">
             <div class="previewText">
               {{ constructionInfo.count }} objects. Created by:
@@ -81,16 +77,8 @@
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
-              :width="canvasWidth"
-              :height="canvasHeight" />
+              :height="overlayHeight" />
           </v-overlay>
-          <!--v-switch
-            class="bg-grey"
-            density="compact"
-            style="position: absolute; bottom: 64px; left: 8px"
-            v-model="isEarthMode"
-            :label="`Earth Mode (${isEarthMode})`"
-            id="earthToggler"></v-switch-->
           <div id="msghub">
             <ShortcutIcon
               class="mx-1"
@@ -152,7 +140,7 @@ import Toolbox from "@/components/ToolBox.vue";
 // import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
-import EarthComp from "@/components/EarthComp.vue";
+import EarthLayer from "@/components/EarthLayer.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
@@ -227,6 +215,7 @@ const props = defineProps<{
 const { mainRect } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
+const overlayHeight = computed(() => contentHeight.value - 60)
 const contentHeightStyle = computed(() => ({
   height: contentHeight.value + "px"
 }));
@@ -487,17 +476,12 @@ function handleToolboxMinify(state: boolean) {
 }
 </script>
 <style scoped lang="scss">
-// .splitpanes__pane {
-// color: hsla(40, 50%, 50%, 0.6);
-// display: flex;
-// justify-content: center;
-// align-items: center;
-// font-size: 5em;
-// }
-
 #sphere-and-msghub {
   // position: relative is required for the parent of v-overlay
   position: relative;
+  // height 100% is also required to to keep message hub at the bottom
+  // during SVG preview
+  height: 100%;
   display: flex;
   justify-content: flex-start;
   // NOTE: DO NOT use column-reverse, otherwise the z-index of Vuetify
@@ -505,10 +489,11 @@ function handleToolboxMinify(state: boolean) {
   flex-direction: column;
   align-items: stretch;
 }
+
 #msghub {
   align-self: center;
   position: absolute;
-  bottom: -64px;
+  bottom: 4px;
   left: 0;
   right: 0;
   display: flex;
@@ -516,71 +501,26 @@ function handleToolboxMinify(state: boolean) {
   justify-content: center;
   align-items: center;
 }
-#container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  /* Pull contents vertically to the top */
-  align-items: flex-end;
-  /* Align contents horizontally to the right */
-  height: 100%;
-  color: #000;
-  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
-}
-
-#currentTool {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  /* Pull contents vertically to the top */
-  align-items: flex-end;
-  /* Align contents horizontally to the right */
-  height: 100%;
-  color: #000;
-  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
-}
 
 #toolbox {
   height: 100%;
   overflow: auto;
 }
 
-#styleContainer {
-  // border: 2px solid red;
-  height: calc(100vh - 136px);
-  padding-bottom: 0;
-  color: #000;
-  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
-    sans-serif;
-}
-
-// .anchored {
-//   position: absolute;
-//   margin: 4px;
-// }
-// .right {
-//   right: 0;
-// }
-
-// .top {
-//   top: 0;
-// }
-
 .previewText {
   position: absolute;
   background-color: #fffd;
-  z-index: 30;
+  border-radius: 0.5em;
   transform: translateX(-50%);
+  z-index: 30;
   padding: 0.25em;
   margin: 0.5em;
 }
 .previewImage {
   position: absolute;
   z-index: 20;
+  aspect-ratio: 1/1;
   transform: translateX(-50%);
-  // border: 2px solid black;
 }
 .preview-fadein {
   animation-duration: 500ms;
@@ -609,15 +549,22 @@ function handleToolboxMinify(state: boolean) {
   }
 }
 
-#earthToggler {
+/* Use class instead of id when applying to a vuetify builtin component.
+ * Looks like IDs are not preserved after built */
+.earthToggler {
+  background-color: hsla(240, 95%, 90%, 0.8);
+  position: relative;
+  top: -56px;
+  left: 12px;
+  margin: 0;
+  padding: 0 1em;
+  border-radius: 8px;
+  align-self: flex-start;
 }
 
 #earthAndCircle {
-  // border: 3px solid darkorange;
-  // position: absolute;
   display: flex;
   flex-direction: column;
-  // justify-content: center;
   align-items: center;
 }
 </style>

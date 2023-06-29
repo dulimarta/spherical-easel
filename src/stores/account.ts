@@ -24,7 +24,7 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", {
   state: (): AccountState => ({
-    loginEnabled: false,
+    loginEnabled: false, // true when the secret key combination is detected
     temporaryProfilePicture: "",
     userDisplayedName: undefined,
     userEmail: undefined,
@@ -62,14 +62,7 @@ export const useAccountStore = defineStore("acct", {
         this.includedTools.splice(pos, 1);
       }
     },
-    setUserDetails(
-      name: string | undefined,
-      pictureURL: string | undefined,
-      favTools: string
-    ) {
-      this.userDisplayedName = name;
-      this.userProfilePictureURL = pictureURL;
-      console.debug("Favorite tools", this.favoriteTools);
+    parseAndSetFavoriteTools(favTools: string) {
       if (favTools.trim().length > 0) {
         this.favoriteTools = favTools
           .split("#")
