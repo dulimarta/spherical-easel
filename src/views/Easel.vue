@@ -61,10 +61,11 @@
               v-show="svgDataImage.length === 0"
               :is-earth-mode="isEarthMode" />
             <v-switch
-              color="primary"
               hide-details
-              class="earthToggler"
+              color="primary"
+              :class="['earthToggler', 'bg-blue-lighten-2']"
               density="compact"
+              variant="outlined"
               v-model="isEarthMode"
               label="Earth Mode">
               <template #append v-if="isEarthMode">
@@ -72,14 +73,11 @@
                 <v-menu
                   activator="#placeBubble"
                   location="right"
+                  :offset="[24, 56]"
                   :close-on-content-click="false">
-                  <AddressInput
-                    style="
-                      position: relative;
-                      top: -8px;
-                      left: 1em;
-                      width: 30em;
-                    " />
+                  <Suspense>
+                    <AddressInput />
+                  </Suspense>
                 </v-menu>
               </template>
             </v-switch>
@@ -572,7 +570,6 @@ function handleToolboxMinify(state: boolean) {
 /* Use class instead of id when applying to a vuetify builtin component.
  * Looks like IDs are not preserved after built */
 .earthToggler {
-  background-color: hsla(240, 95%, 90%, 0.8);
   position: relative;
   top: -56px;
   left: 12px;
