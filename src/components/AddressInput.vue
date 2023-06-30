@@ -7,10 +7,11 @@
       :items="predictedAddresses"
       item-title="description"
       item-value="placeId"
+      :hide-details="addressError.length === 0"
       :error-messages="addressError"
       class="bg-white"
       density="compact"
-      label="Enter address"
+      :label="t('enterAddress')"
       style="width: 30em">
       <template #append>
         <v-icon @click="getPlaceDetails">mdi-check</v-icon>
@@ -18,6 +19,22 @@
     </v-autocomplete>
   </div>
 </template>
+<i18n lang="json" locale="en">
+{
+  "enterAddress": "Enter address",
+  "addressPredictionError": "Unable to get address prediction: ",
+  "noFormattedAddress": "Address details not available",
+  "addressDetailsUnknown": "Unable to get address details"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "enterAddress": "Ketikkan alamat",
+  "addressPredictionError": "Gagal menentukan prediksi alamat: ",
+  "noFormattedAddress": "Alamat lengkap tidak ditemukan",
+  "addressDetailsUnknown": "Alamat rinci tidak ditemukan"
+}
+</i18n>
 <style>
 #autocomplete {
   width: 100%;
@@ -43,6 +60,7 @@ import { LabelDisplayMode } from "@/types";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { Loader } from "@googlemaps/js-api-loader";
+import { useI18n } from "vue-i18n";
 
 type AddressPair = {
   description: string;
@@ -50,6 +68,8 @@ type AddressPair = {
 };
 const store = useSEStore();
 const { inverseTotalRotationMatrix } = storeToRefs(store);
+const { t } = useI18n()
+
 const addrPlaceId = ref("");
 const addressError = ref("");
 const addrInput: Ref<HTMLInputElement | null> = ref(null);
@@ -90,7 +110,7 @@ function searchAddress(v: string) {
       }));
     })
     .catch(err => {
-      addressError.value = `Unable to get place prediction: ${err}`
+      addressError.value = t('addressPredictionError') + err
     });
 }
 
@@ -125,7 +145,7 @@ function getPlaceDetails() {
 
           //caption change here
           const pointLabel = new Label("point");
-          pointLabel.caption = placeCaption ?? "Unknown address";
+          pointLabel.caption = placeCaption ?? t('noFormattedAddress')
           const newSELabel = new SELabel(pointLabel, vtx);
           const pointCommandGroup = new CommandGroup();
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
@@ -134,7 +154,7 @@ function getPlaceDetails() {
           newSELabel.update();
         }
       } else {
-        addressError.value = "Unable to get address details";
+        addressError.value = t('addressDetailsUnknown')
       }
     }
   );

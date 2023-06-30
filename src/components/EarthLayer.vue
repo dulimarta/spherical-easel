@@ -3,12 +3,7 @@
 </template>
 <style scoped>
 #earth {
-  /* border: 5px solid #a46e6e; */
   position: absolute;
-  /* top: 0; */
-
-  /* width:100px;
-    height:100px; */
 }
 </style>
 <script setup lang="ts">
@@ -30,7 +25,6 @@ import {
 import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-// import { onBeforeUpdate } from "vue";
 
 type EarthLayerProps = {
   availableWidth: number;
@@ -41,7 +35,13 @@ const store = useSEStore();
 const { zoomMagnificationFactor, zoomTranslation, inverseTotalRotationMatrix } =
   storeToRefs(store);
 let requestAnimFrameHandle: number | null = null;
-const rotationMatrix = new Matrix4();
+
+const rotationMatrix = new Matrix4(); // temporary matrix for rotating the sphere
+// The TwoJS drawing canvas is our assumed XY-plane, and our unit sphere is
+// initially position with its north pole(Z - plus axis) pointing towards the viewer.
+// However, the ThreeJS sphere wrapped with the earth texture shows its north pole
+// pointing up to the sky (our Y-plus axis).
+// A rotation by 90 degrees is required to lineup both north poles
 const ROTATION_X90 = new Matrix4().makeRotationX(Math.PI / 2);
 const textureManager = new LoadingManager();
 const textureLoader = new TextureLoader(textureManager);
@@ -68,11 +68,8 @@ let renderer: THREE.WebGLRenderer;
 const scene = new Scene();
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 const light = new PointLight(0xffffff, 1);
-const num = Math.min(prop.availableHeight, prop.availableWidth);
-light.position.set(num, num, num);
 
 scene.add(ambientLight);
-scene.add(light);
 
 const geometry = new SphereGeometry(
   SETTINGS.boundaryCircle.radius,
@@ -122,10 +119,17 @@ onMounted(async () => {
     bumpScale: 10
   });
   earth = new Mesh(geometry, material);
+  const num = Math.min(prop.availableHeight, prop.availableWidth);
+  // TODO: position the Point light based on the current position
+  // of the sun?
+  light.position.set(num, 0, 0); // I think this is the GMT+0 position
+  // To fix the light to the earth, add it to the earth not the scene
+  earth.add(light);
   earth.rotation.x = Math.PI / 2;
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
   rotationMatrix.multiply(ROTATION_X90);
   earth.setRotationFromMatrix(rotationMatrix);
+
   scene.add(earth);
 
   renderer = new WebGLRenderer({
@@ -142,6 +146,7 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+// Watch screen resize and zoom changes
 watch(
   [
     () => prop.availableWidth,
@@ -158,34 +163,32 @@ watch(
     camera.top = scaledHeight;
     camera.bottom = -scaledHeight;
     camera.updateProjectionMatrix();
-    console.debug("End of watch size and zoom factor");
   }
 );
 
+// Watch sphere rotation
 watch(
   () => inverseTotalRotationMatrix.value.elements,
   () => {
     rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
     rotationMatrix.multiply(ROTATION_X90);
     earth.setRotationFromMatrix(rotationMatrix);
-    console.debug("End of watch rotation");
   },
   { deep: true }
 );
 
-// zoom translate
+// Watch zoom translate
 watch(
   () => zoomTranslation.value,
   translation => {
     camera.setViewOffset(
       prop.availableWidth,
       prop.availableHeight,
-      translation[0],
-      translation[1],
+      -translation[0],
+      -translation[1],
       prop.availableWidth,
       prop.availableHeight
     );
-    console.debug("End of watch zoom translation");
   },
   { deep: true }
 );

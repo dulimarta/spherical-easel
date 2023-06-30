@@ -73,7 +73,7 @@
                 <v-menu
                   activator="#placeBubble"
                   location="right"
-                  :offset="[24, 56]"
+                  :offset="[24, 16]"
                   :close-on-content-click="false">
                   <Suspense>
                     <AddressInput />

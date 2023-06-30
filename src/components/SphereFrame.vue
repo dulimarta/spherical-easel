@@ -123,7 +123,8 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  buttonSelection
+  buttonSelection,
+  isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
@@ -266,8 +267,6 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
-
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
 
@@ -390,6 +389,31 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
 });
+
+watch(
+  () => isEarthMode.value,
+  isEarthMode => {
+    if (!isEarthMode) {
+      boundaryCircle.stroke = "black";
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth
+    }
+    else {
+      let currentLineWidth = boundaryCircle.linewidth;
+      boundaryCircle.stroke = "blue";
+      let intervalHandle: any;
+      // Gradually decrease the linewidth until it disappears
+      intervalHandle = setInterval(() => {
+        currentLineWidth -= 0.2;
+        if (currentLineWidth < 0) {
+          boundaryCircle.linewidth = 0;
+          clearInterval(intervalHandle);
+        } else {
+          boundaryCircle.linewidth = currentLineWidth;
+        }
+      }, 100);
+    }
+  }
+);
 
 watch(
   [() => props.availableWidth, () => props.availableHeight],
@@ -1112,9 +1136,6 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
     transform: rotate(180deg);
   }
 }
-// #canvas {
-//   border: 1px solid red;
-// }
 #sphereContainer {
   position: relative;
   display: flex;
