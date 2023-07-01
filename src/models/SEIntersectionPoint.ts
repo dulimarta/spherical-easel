@@ -15,6 +15,7 @@ import {
   rank_of_type
 } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -68,15 +69,15 @@ export class SEIntersectionPoint extends SEPoint {
    * intersects a circle at two locations
    */
   constructor(
-    pt: Point,
+    // pt: Point,
     seParent1: SEOneDimensional,
     seParent2: SEOneDimensional,
     order: number,
-    isUserCreated: boolean,
-    createNonFreePoint: boolean = false
+    isUserCreated: boolean
   ) {
-    super(createNonFreePoint); /* Non-Free Point */
-    this.ref = pt;
+    super(true); /* Non-Free Point */
+    // this.ref = pt;
+    this.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.sePrincipleParent1 = seParent1;
     this.sePrincipleParent2 = seParent2;
     this.order = order;

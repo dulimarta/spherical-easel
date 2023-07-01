@@ -136,9 +136,9 @@ export class AddNSectPointCommand extends Command {
       !isNaN(seNSectPointN)
     ) {
       //make the Nsect Point
-      const point = new NonFreePoint();
+      // const point = new NonFreePoint();
       const seNSectPoint = new SENSectPoint(
-        point,
+        // point,
         seNSectPointParentSegment,
         seNSectPointIndex,
         seNSectPointN
@@ -146,13 +146,13 @@ export class AddNSectPointCommand extends Command {
       //style the NSect Point
       const nSectPointFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectPointFrontStyleString !== undefined)
-        point.updateStyle(
+        seNSectPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(nSectPointFrontStyleString)
         );
       const nSectPointBackStyleString = propMap.get("objectBackStyle");
       if (nSectPointBackStyleString !== undefined)
-        point.updateStyle(
+        seNSectPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(nSectPointBackStyleString)
         );

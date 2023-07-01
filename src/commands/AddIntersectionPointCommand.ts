@@ -172,9 +172,9 @@ export class AddIntersectionPointCommand extends Command {
       !isNaN(intersectionOrder)
     ) {
       //make the intersection point
-      const nonFreePoint = new NonFreePoint();
+      // const nonFreePoint = new NonFreePoint();
       const seIntersectionPoint = new SEIntersectionPoint(
-        nonFreePoint,
+        // nonFreePoint,
         principleParent1,
         principleParent2,
         intersectionOrder,
@@ -184,13 +184,13 @@ export class AddIntersectionPointCommand extends Command {
       //style the intersection point
       const intersectionPointFrontStyleString = propMap.get("objectFrontStyle");
       if (intersectionPointFrontStyleString !== undefined)
-        nonFreePoint.updateStyle(
+        seIntersectionPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(intersectionPointFrontStyleString)
         );
       const intersectionPointBackStyleString = propMap.get("objectBackStyle");
       if (intersectionPointBackStyleString !== undefined)
-        nonFreePoint.updateStyle(
+        seIntersectionPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(intersectionPointBackStyleString)
         );

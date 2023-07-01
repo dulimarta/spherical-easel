@@ -21,7 +21,7 @@ export class SENSectPoint extends SEPoint {
    * @param N
    */
   constructor(
-    point: NonFreePoint,
+    // point: NonFreePoint,
     seSegmentParent: SESegment,
     index: number,
     N: number

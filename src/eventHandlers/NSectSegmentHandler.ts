@@ -277,14 +277,14 @@ export default class NSectSegmentHandler extends Highlighter {
           .isZero()
       );
       if (index === -1) {
-        const newPoint = new NonFreePoint();
+        // const newPoint = new NonFreePoint();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const nSectingPoint = new SENSectPoint(
-          newPoint,
+          // newPoint,
           candidateSegment,
           i,
           this.selectedNValue
