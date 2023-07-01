@@ -321,7 +321,7 @@ export default class NSectAngleHandler extends Highlighter {
         );
         if (index === -1) {
           // create the endSEPoint on the line, this is *never* displayed and never put into the DAG of SENodules
-          const endSEPoint = new SEPoint(new NonFreePoint());
+          const endSEPoint = new SEPoint(true);
           endSEPoint.showing = false; // this never changes
           endSEPoint.exists = true; // this never changes
           endSEPoint.locationVector = endPointVector; // this gets updated

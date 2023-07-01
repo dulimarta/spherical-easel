@@ -115,10 +115,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         console.debug(
           `set action mode from mouse pressed in measure circle handler`
         );
-        MeasuredCircleHandler.store.setActionMode({
-          id: "segment",
-          name: "CreateLineSegmentDisplayedName"
-        });
+        MeasuredCircleHandler.store.setActionMode("segment");
         return;
       }
       // The user is making a circle
@@ -512,7 +509,7 @@ export default class MeasuredCircleHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newCenterPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
@@ -681,7 +678,7 @@ export default class MeasuredCircleHandler extends Highlighter {
       // create the circle point on the measured circle
       // this point is never visible and is not in the DAG
       // it is only updated when the the new SEMeasuredCircle is updated.
-      const hiddenSEPoint = new SEPoint(new NonFreePoint());
+      const hiddenSEPoint = new SEPoint(true);
       hiddenSEPoint.showing = false; // this never changes
       hiddenSEPoint.exists = true; // this never changes
       // compute the location of the hiddenSEPoint using measurementSEExpression.value.modPi();

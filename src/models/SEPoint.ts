@@ -16,6 +16,8 @@ import { SELabel } from "./internal";
 // => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
+// import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreePoint from "@/plottables/NonFreePoint";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
@@ -50,14 +52,18 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
    * Create a model SEPoint using:
    * @param point The plottable TwoJS Object associated to this object
    */
-  constructor(point: Point) {
+  constructor(createNonFreePoint: boolean = false) {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    this.ref = point;
+    const p = createNonFreePoint ? new NonFreePoint() : new Point();
+    // p.stylize(DisplayStyle.ApplyCurrentVariables);
+    // p.adjustSize();
+    this.ref = p;
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;
   }
+
   customStyles(): Set<string> {
     return styleSet;
   }

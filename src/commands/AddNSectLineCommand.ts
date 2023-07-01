@@ -5,7 +5,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
@@ -136,7 +135,7 @@ export class AddNSectLineCommand extends Command {
       //make the Nsect Line
       const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = seNSectLineEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes

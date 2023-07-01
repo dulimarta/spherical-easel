@@ -2516,7 +2516,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedCircle,
       newInvertedSECircleCenter !== null
         ? newInvertedSECircleCenter
-        : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
+        : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
       transformedSEPointOnLineOrCircle
     );
     newInvertedSECircle.markKidsOutOfDate();
@@ -2548,7 +2548,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         newInvertedSECircle,
         newInvertedSECircleCenter !== null
           ? newInvertedSECircleCenter
-          : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
+          : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
         transformedSEPointOnLineOrCircle,
         newSECircleLabel
       )

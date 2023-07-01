@@ -106,7 +106,12 @@ export class AddAntipodalPointCommand extends Command {
       const point = new Point();
       const isUserCreated =
         propMap.get("antipodalPointIsUserCreated") === "true";
-      const sePoint = new SEAntipodalPoint(point, parentPoint, isUserCreated);
+      const sePoint = new SEAntipodalPoint(
+        // point,
+        parentPoint,
+        isUserCreated,
+        false
+      );
       const sePointLocation = new Vector3();
       sePointLocation.from(propMap.get("pointVector"));
       sePoint.locationVector.copy(sePointLocation);

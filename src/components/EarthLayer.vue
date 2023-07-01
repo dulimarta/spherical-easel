@@ -24,7 +24,7 @@ import {
 import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-
+import {DateTime} from "luxon"
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -99,14 +99,16 @@ onMounted(async () => {
   const num = Math.max(prop.availableHeight, prop.availableWidth);
   // Position the Point light based on the estimated
   // current position of the sun?
-  const sunGeoPosition = estimateSunGeoPosition();
+  // const sunGeoPosition = estimateSunGeoPosition();
+  const sunLng = estimateSunGP()
+  // console.debug(`Sun longitude: ${sunGeoPosition.lon.toDegrees()} degrees`)
   // (1,0,0) => Equator GMT-0
   // (0,1,0) => North Pole   (0,-1,0) => South Pole
   // (0,0,1) => Equator GMT-6
   light.position.set(
-    -num * Math.cos(sunGeoPosition.lon),
+    num * Math.cos(sunLng),
     0,
-    num * Math.sin(sunGeoPosition.lon)
+    num * Math.sin(sunLng)
   );
   // light.setRotationFromEuler(sunEulerRotation)
   // light.updateMatrix()
@@ -186,6 +188,20 @@ onBeforeUnmount(() => {
 });
 
 // Reference: https://astronomy.stackexchange.com/questions/20560/how-to-calculate-the-position-of-the-sun-in-long-lat/20585#20585
+function estimateSunGP() {
+  const now = DateTime.now()
+  // console.debug("Offset ", now.offset, "UTC offset", now.toUTC().offset)
+  const startOfYear = now.startOf('year')
+  const endOfYear = now.endOf('year')
+  const percentageOfYear =  startOfYear.diffNow().milliseconds / endOfYear.diff(startOfYear).milliseconds
+  const nowInUTC = now.toUTC()
+  console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime())
+  const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12)
+  // 15 degrees in 60 minutes => 1 degree in 4 minutes
+  const sunLongitude = utcMinutesUntilNoon/4
+  console.debug("Number of UTC elapse minutes", utcMinutesUntilNoon, "Sun estimate longitude", sunLongitude)
+  return sunLongitude * Math.PI / 180
+}
 function estimateSunGeoPosition() {
   const now = new Date();
 

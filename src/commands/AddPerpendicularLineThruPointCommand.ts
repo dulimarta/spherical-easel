@@ -8,7 +8,6 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -143,7 +142,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       //make the perpendicular Line
       const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = perpendicularLineThruPointEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes

@@ -558,7 +558,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
       } else {
         // Create a new point at the blank place where the user clicked
-        this.sePoint = new SEPoint(newPoint);
+        this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
         const newSELabel = new SELabel(new Label("point"), this.sePoint);
         // Set the initial label location
@@ -638,11 +638,11 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Create the endSEPoint for the line
       // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
-      const plottableEndPoint = new NonFreePoint();
+      // const plottableEndPoint = new NonFreePoint();
       // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
       // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
       // updated when the the new SETangentLineThruPoint is updated.
-      const endSEPoint = new SEPoint(plottableEndPoint);
+      const endSEPoint = new SEPoint(true);
       endSEPoint.showing = false; // this never changes
       endSEPoint.exists = true; // this never changes
 

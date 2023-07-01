@@ -750,7 +750,7 @@ export default class EllipseHandler extends Highlighter {
       } else {
         // Focus 1 mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newCenterPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
@@ -823,7 +823,7 @@ export default class EllipseHandler extends Highlighter {
       } else {
         // Focus 1 mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newCenterPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         ellipseCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
@@ -1004,7 +1004,7 @@ export default class EllipseHandler extends Highlighter {
         );
       } else {
         // The ending mouse release landed on an open space
-        vtx = new SEPoint(newEllipsePoint);
+        vtx = new SEPoint();
         // Set the Location
         vtx.locationVector = this.temporaryEllipsePointMarker.positionVector;
         newSELabel = new SELabel(new Label("point"), vtx);

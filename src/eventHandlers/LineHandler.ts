@@ -520,7 +520,7 @@ export default class LineHandler extends Highlighter {
         );
       } else {
         // Starting mouse press landed on an open space
-        vtx = new SEPoint(newStartPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
@@ -695,7 +695,7 @@ export default class LineHandler extends Highlighter {
         );
       } else {
         // The ending mouse release landed on an open space
-        vtx = new SEPoint(newEndPoint);
+        vtx = new SEPoint();
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
         newSELabel = new SELabel(new Label("point"), vtx);

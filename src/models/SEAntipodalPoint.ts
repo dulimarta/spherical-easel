@@ -2,6 +2,7 @@ import { SEPoint } from "./internal";
 import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { createElementBlock } from "vue";
 const { t } = i18n.global;
 export class SEAntipodalPoint extends SEPoint {
   /**
@@ -20,11 +21,12 @@ export class SEAntipodalPoint extends SEPoint {
    * @param antipodalPointParent The parent
    */
   constructor(
-    point: Point,
+    // point: Point,
     antipodalPointParent: SEPoint,
-    isUserCreated: boolean
+    isUserCreated: boolean,
+    createNonFreePoint: boolean
   ) {
-    super(point);
+    super(createNonFreePoint);
     this._antipodalPointParent = antipodalPointParent;
     if (isUserCreated) {
       this._isUserCreated = true;

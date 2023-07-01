@@ -96,10 +96,7 @@ export default class RotationTransformationHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
-        RotationTransformationHandler.store.setActionMode({
-          id: "segment",
-          name: "CreateLineSegmentDisplayedName"
-        });
+        RotationTransformationHandler.store.setActionMode("segment");
         return;
       }
 
@@ -422,7 +419,7 @@ export default class RotationTransformationHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newRotationPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         rotationCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }

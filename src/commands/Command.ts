@@ -133,7 +133,7 @@ export abstract class Command {
     labelStyleString: string | undefined
   ): { point: SEPoint; label: SELabel } {
     const newPoint = new Point();
-    const point = new SEPoint(newPoint);
+    const point = new SEPoint();
     point.locationVector.copy(pointLocation);
     if (pointFrontStyleString !== undefined)
       newPoint.updateStyle(

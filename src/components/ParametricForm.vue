@@ -787,17 +787,18 @@ function addParametricCurve(): void {
           /////////////
           // Create the antipode of the new point, vtx
           ///// WARNING This is duplicate code from the method addCreateAntipodeCommand in Highlighter.ts
-          const newAntipodePoint = new NonFreePoint();
+          // const newAntipodePoint = new NonFreePoint();
           // Set the display to the default values
-          newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
           // Adjust the size of the point to the current zoom magnification factor
-          newAntipodePoint.adjustSize();
+          // newAntipodePoint.adjustSize();
 
           // Create the model object for the new point and link them
           const antipodalVtx = new SEAntipodalPoint(
-            newAntipodePoint,
+            // newAntipodePoint,
             item.SEIntersectionPoint,
-            false
+            false,
+            true // NonFreePoint
           );
 
           // Create a plottable label

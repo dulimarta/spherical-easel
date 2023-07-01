@@ -805,7 +805,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else {
         // vector 1 mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newFirstPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
@@ -878,7 +878,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else {
         // vector 2 mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newSecondPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
@@ -1049,7 +1049,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
       } else {
         // The third point mouse release landed on an open space
-        vtx = new SEPoint(newThirdPoint);
+        vtx = new SEPoint();
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
         newSELabel = new SELabel(new Label("point"), vtx);

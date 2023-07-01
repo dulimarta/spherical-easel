@@ -25,7 +25,7 @@ export class SEPolarPoint extends SEPoint {
     polarLineOrSegmentParent: SELine | SESegment,
     index: number
   ) {
-    super(point);
+    super(true);
     this._polarLineOrSegmentParent = polarLineOrSegmentParent;
     this.index = index;
   }

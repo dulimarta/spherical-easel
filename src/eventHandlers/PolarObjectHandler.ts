@@ -599,7 +599,7 @@ export default class PolarObjectHandler extends Highlighter {
         newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
 
-        this.parentPoint = new SEPoint(newPoint);
+        this.parentPoint = new SEPoint();
         this.parentPoint.locationVector = this.parentPointVector;
         const newSELabel = new SELabel(new Label("point"), this.parentPoint);
         // Set the initial label location
@@ -639,7 +639,7 @@ export default class PolarObjectHandler extends Highlighter {
     // The (end|start)SEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
     // The (end|start)SEPoint is also never added to the object tree structure (via un/registrerChild) because it is
     // updated when the the new SEPolarLine is updated.
-    const endSEPoint = new SEPoint(new NonFreePoint());
+    const endSEPoint = new SEPoint(true);
     endSEPoint.showing = false; // this never changes
     endSEPoint.exists = true; // this never changes
     // form an orthonormal frame using the polar point parent vector
@@ -648,8 +648,8 @@ export default class PolarObjectHandler extends Highlighter {
     );
     endSEPoint.locationVector = frame[1];
 
-    const plottableStartPoint = new NonFreePoint();
-    const startSEPoint = new SEPoint(plottableStartPoint);
+    // const plottableStartPoint = new NonFreePoint();
+    const startSEPoint = new SEPoint(true);
     startSEPoint.showing = false; // this never changes
     startSEPoint.exists = true; // this never changes
     startSEPoint.locationVector = frame[0];

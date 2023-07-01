@@ -140,7 +140,7 @@ export class AddTangentLineThruPointCommand extends Command {
       //make the tangent Line
       const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = tangentLineThruPointEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes

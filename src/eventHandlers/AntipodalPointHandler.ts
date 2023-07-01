@@ -1,5 +1,4 @@
 import { SEPoint } from "@/models/SEPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
@@ -200,12 +199,12 @@ export default class AntipodalPointHandler extends Highlighter {
           );
         } else {
           // Create a new point at the blank place where the user clicked
-          const newPoint = new Point();
+          // const newPoint = new Point();
           // Set the display to the default values
-          newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-          newPoint.adjustSize();
+          // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // newPoint.adjustSize();
 
-          this.parentPoint = new SEPoint(newPoint);
+          this.parentPoint = new SEPoint();
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
           const newLabel = new Label("point");
@@ -228,13 +227,17 @@ export default class AntipodalPointHandler extends Highlighter {
           );
         }
 
-        const newPoint = new NonFreePoint();
+        // const newPoint = new NonFreePoint();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
-        const vtx = new SEAntipodalPoint(newPoint, this.parentPoint, true);
+        const vtx = new SEAntipodalPoint(
+          this.parentPoint,
+          true,
+          true /* NonFreePoint */
+        );
 
         // Create the plottable label
         const newLabel = new Label("point");

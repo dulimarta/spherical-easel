@@ -8,7 +8,6 @@ import Label from "@/plottables/Label";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 
 export class AddPolarLineCommand extends Command {
   private sePolarLine: SEPolarLine;
@@ -128,13 +127,13 @@ export class AddPolarLineCommand extends Command {
       //make the polar Line
       const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = sePolarLineEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes
 
       // create the non-displayed not in the DAG Start Point of the line
-      const startPoint = new SEPoint(new Point());
+      const startPoint = new SEPoint();
       startPoint.locationVector = sePolarLineStartSEPointLocation;
       startPoint.exists = true; //never changes
       startPoint.showing = false; // never changes

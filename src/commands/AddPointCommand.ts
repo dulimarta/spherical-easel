@@ -108,7 +108,7 @@ export class AddPointCommand extends Command {
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
     const point = new Point();
-    const sePoint = new SEPoint(point);
+    const sePoint = new SEPoint();
     sePoint.locationVector.copy(sePointLocation);
     // console.debug(`Point front style string ${pointFrontStyleString}`);
     if (pointFrontStyleString !== undefined) {

@@ -12,8 +12,8 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { CommandGroup } from "@/commands/CommandGroup";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { DisplayStyle } from "@/plottables/Nodule";
+// import NonFreePoint from "@/plottables/NonFreePoint";
+// import { DisplayStyle } from "@/plottables/Nodule";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
@@ -163,17 +163,18 @@ export default abstract class Highlighter extends MouseHandler {
     commandGroup: CommandGroup
   ): SEAntipodalPoint {
     // Create the antipode of the new parent point
-    const newAntipodePoint = new NonFreePoint();
+    // const newAntipodePoint = new NonFreePoint();
     // Set the display to the default values
-    newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newAntipodePoint.adjustSize();
+    // newAntipodePoint.adjustSize();
 
     // Create the model object for the new point and link them
     const antipodalVtx = new SEAntipodalPoint(
-      newAntipodePoint,
+      // newAntipodePoint,
       parentPoint,
-      false
+      false,
+      true // NonFreePoint
     );
 
     // Create a plottable label

@@ -193,7 +193,7 @@ export default class PointHandler extends Highlighter {
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
-          vtx = new SEPoint(newPoint);
+          vtx = new SEPoint();
           vtx.locationVector = this.currentSphereVector;
           newSELabel = new SELabel(new Label("point"), vtx);
 

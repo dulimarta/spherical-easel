@@ -1038,14 +1038,14 @@ export default class AngleHandler extends Highlighter {
       ) {
         // create a new point
         // we have to create a new point
-        const newPoint = new Point();
+        // const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         // Adjust the size of the point to the current zoom magnification factor
-        newPoint.adjustSize();
+        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
-        const vtx = new SEPoint(newPoint);
+        const vtx = new SEPoint();
 
         // Create a plottable label
         const newLabel = new Label("point");

@@ -72,9 +72,10 @@ export class SEIntersectionPoint extends SEPoint {
     seParent1: SEOneDimensional,
     seParent2: SEOneDimensional,
     order: number,
-    isUserCreated: boolean
+    isUserCreated: boolean,
+    createNonFreePoint: boolean = false
   ) {
-    super(pt);
+    super(createNonFreePoint); /* Non-Free Point */
     this.ref = pt;
     this.sePrincipleParent1 = seParent1;
     this.sePrincipleParent2 = seParent2;

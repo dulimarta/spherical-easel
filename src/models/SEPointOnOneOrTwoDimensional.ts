@@ -22,7 +22,7 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
    * @param oneDimensionalParent The parent
    */
   constructor(point: Point, oneDimensionalParent: SEOneOrTwoDimensional) {
-    super(point);
+    super(true); // NonFreePoint
     this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
   }

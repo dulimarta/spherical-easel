@@ -19,7 +19,7 @@ export class SEParametricEndPoint extends SEPoint {
   private tmpVector4 = new Vector3();
 
   constructor(point: Point, parametricParent: SEParametric, endPoint: string) {
-    super(point);
+    super(true); // NonFree?
     this.ref = point;
     this._parametricParent = parametricParent;
     this._isMinPoint = endPoint === "min";

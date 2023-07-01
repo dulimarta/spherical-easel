@@ -398,7 +398,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newRotationPoint);
+        vtx = new SEPoint();
         newSELabel = new SELabel(new Label("point"), vtx);
         pointRotationCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)

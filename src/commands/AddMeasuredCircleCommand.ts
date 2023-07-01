@@ -110,10 +110,10 @@ export class AddMeasuredCircleCommand extends Command {
 
     if (circleCenterPoint && radiusExpression) {
       // make the hidden circle point
-      // create the circle point on the measured circle
+      // create the circle point on the measured circlee
       // this point is never visible and is not in the DAG
       // it is only updated when the the new SEMeasuredCircle is updated.
-      const hiddenSEPoint = new SEPoint(new NonFreePoint());
+      const hiddenSEPoint = new SEPoint(true); /* non-free point */
       hiddenSEPoint.showing = false; // this never changes
       hiddenSEPoint.exists = true; // this never changes
       // compute the location of the hiddenSEPoint using radiusExpression.value.modPi();
