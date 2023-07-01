@@ -1,5 +1,4 @@
 import { SEPoint, SEParametric } from "./internal";
-import Point from "@/plottables/Point";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
@@ -17,14 +16,14 @@ export class SEParametricTracePoint extends SEPoint {
 
   // private tmpVector4 = new Vector3();
   private tmpMatrix = new Matrix4();
-  constructor(point: Point, parametricParent: SEParametric) {
+  constructor(/*point: Point, */ parametricParent: SEParametric) {
     super(true); // NonFree?
-    this.ref = point;
+    // this.ref = point;
     this._parametricParent = parametricParent;
     this.parametricParent.tracePoint = this;
     const tMin = parametricParent.tMinMaxExpressionValues()[0];
     this.parametricTime = tMin;
-    point.updateDisplay();
+    this.ref.updateDisplay();
     console.debug(
       `Point ${this.name} is a trace point of parametric curve ${parametricParent.name}`
     );

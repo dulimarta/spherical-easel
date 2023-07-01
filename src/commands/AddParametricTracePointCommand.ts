@@ -4,7 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
@@ -136,9 +135,9 @@ export class AddParametricTracePointCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Trace Point
-      const tracePoint = new Point();
+      // const tracePoint = new Point();
       const seTracePoint = new SEParametricTracePoint(
-        tracePoint,
+        // tracePoint,
         parametricParent
       );
       const seTracePointLocation = new Vector3();
@@ -150,7 +149,7 @@ export class AddParametricTracePointCommand extends Command {
         "parametricEndPointseTracePointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -158,7 +157,7 @@ export class AddParametricTracePointCommand extends Command {
         "parametricEndPointseTracePointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );

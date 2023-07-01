@@ -18,9 +18,9 @@ export class SEParametricEndPoint extends SEPoint {
 
   private tmpVector4 = new Vector3();
 
-  constructor(point: Point, parametricParent: SEParametric, endPoint: string) {
+  constructor(parametricParent: SEParametric, endPoint: string) {
     super(true); // NonFree?
-    this.ref = point;
+    // this.ref = point;
     this._parametricParent = parametricParent;
     this._isMinPoint = endPoint === "min";
     if (this._isMinPoint)
@@ -31,7 +31,7 @@ export class SEParametricEndPoint extends SEPoint {
       console.debug(
         `Point ${this.name} is a maximum endppoint for parametric ${parametricParent.name}`
       );
-    point.updateDisplay();
+    this.ref.updateDisplay();
   }
 
   /**

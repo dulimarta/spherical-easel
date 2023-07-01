@@ -79,8 +79,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import Vue, { computed, onBeforeMount, onBeforeUnmount, onMounted } from "vue";
-// import Component from "vue-class-component";
+import { computed, onBeforeMount, onBeforeUnmount, onMounted } from "vue";
 import {
   CoordExpression,
   MinMaxExpression,
@@ -96,7 +95,6 @@ import ParametricCuspParameterValues from "@/components/ParametricCuspParameterV
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEParametric } from "@/models/SEParametric";
@@ -105,14 +103,11 @@ import { AddParametricCommand } from "@/commands/AddParametricCommand";
 import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
 import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePointCommand";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { mapState, storeToRefs } from "pinia";
+import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { SENodule } from "@/models/SENodule";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import { getAncestors } from "@/utils/helpingfunctions";
 import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -682,10 +677,10 @@ function addParametricCurve(): void {
   parametricCommandGroup.addCommand(
     new AddParametricCommand(newSEParametric, calculationParents, newSELabel)
   );
-  const tracePoint = new NonFreePoint();
-  tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  tracePoint.adjustSize();
-  const traceSEPoint = new SEParametricTracePoint(tracePoint, newSEParametric);
+  // const tracePoint = new NonFreePoint();
+  // tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+  // tracePoint.adjustSize();
+  const traceSEPoint = new SEParametricTracePoint(/*tracePoint, */newSEParametric);
   traceSEPoint.locationVector = startVector;
   const traceLabel = new Label("point");
   const traceSELabel = new SELabel(traceLabel, traceSEPoint);
@@ -695,24 +690,24 @@ function addParametricCurve(): void {
   // create the parametric endpoints if there are tracing expressions or the curve is not closed
   if (tExpressions.min.length !== 0 || !closed) {
     // we have to create a two points
-    const startPoint = new NonFreePoint();
-    const endPoint = new NonFreePoint();
+    // const startPoint = new NonFreePoint();
+    // const endPoint = new NonFreePoint();
     // Set the display to the default values
-    startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    startPoint.adjustSize();
-    endPoint.adjustSize();
+    // startPoint.adjustSize();
+    // endPoint.adjustSize();
 
     // create the endPoints
     const startSEEndPoint = new SEParametricEndPoint(
-      startPoint,
+      // startPoint,
       newSEParametric,
       "min"
     );
 
     const endSEEndPoint = new SEParametricEndPoint(
-      endPoint,
+      // endPoint,
       newSEParametric,
       "max"
     );

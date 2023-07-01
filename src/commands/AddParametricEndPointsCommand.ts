@@ -4,7 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
@@ -290,9 +289,8 @@ export class AddParametricEndPointsCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Start End Point
-      const startEndPoint = new Point();
       const seStartEndPoint = new SEParametricEndPoint(
-        startEndPoint,
+        // startEndPoint,
         parametricParent,
         "min"
       );
@@ -307,7 +305,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartEndPointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        startEndPoint.updateStyle(
+        seStartEndPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -315,7 +313,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartEndPointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        startEndPoint.updateStyle(
+        seStartEndPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
@@ -375,9 +373,9 @@ export class AddParametricEndPointsCommand extends Command {
       seStartEndPoint.ref.updateDisplay();
 
       // make the End End Point
-      const endEndPoint = new Point();
+      // const endEndPoint = new Point();
       const seEndEndPoint = new SEParametricEndPoint(
-        endEndPoint,
+        // endEndPoint,
         parametricParent,
         "max"
       );
@@ -391,7 +389,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseEndEndPointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        endEndPoint.updateStyle(
+        seEndEndPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -399,7 +397,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseEndEndPointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        endEndPoint.updateStyle(
+        seEndEndPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
@@ -452,9 +450,9 @@ export class AddParametricEndPointsCommand extends Command {
 
       seEndEndPoint.ref.updateDisplay();
       // make the Trace Point
-      const tracePoint = new Point();
+      // const tracePoint = new Point();
       const seTracePoint = new SEParametricTracePoint(
-        tracePoint,
+        // tracePoint,
         parametricParent
       );
       const seTracePointLocation = new Vector3();
@@ -466,7 +464,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTracePointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -474,7 +472,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTracePointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
