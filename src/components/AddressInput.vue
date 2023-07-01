@@ -51,14 +51,11 @@
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
-import Label from "@/plottables/Label";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import { LabelDisplayMode } from "@/types";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
 
@@ -144,13 +141,13 @@ function getPlaceDetails() {
           let placeCaption = place.formatted_address;
 
           //caption change here
-          const pointLabel = new Label("point");
-          pointLabel.caption = placeCaption ?? t('noFormattedAddress')
-          const newSELabel = new SELabel(pointLabel, vtx);
+          // const pointLabel = new Label("point");
+          const newSELabel = new SELabel("point", vtx);
+          newSELabel.ref.caption = placeCaption ?? t('noFormattedAddress')
           const pointCommandGroup = new CommandGroup();
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
           pointCommandGroup.execute();
-          pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
+          // pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
           newSELabel.update();
         }
       } else {

@@ -15,7 +15,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 // import NonFreePoint from "@/plottables/NonFreePoint";
 // import { DisplayStyle } from "@/plottables/Nodule";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 
@@ -179,7 +178,7 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Create a plottable label
     // Create an SELabel and link it to the plottable object
-    const newSEAntipodalLabel = new SELabel(new Label("point"), antipodalVtx);
+    const newSEAntipodalLabel = new SELabel("point", antipodalVtx);
 
     antipodalVtx.locationVector = parentPoint.locationVector;
     antipodalVtx.locationVector.multiplyScalar(-1);

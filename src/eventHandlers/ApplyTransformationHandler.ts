@@ -22,7 +22,6 @@ import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SETranslation } from "@/models/SETranslation";
 import Circle from "@/plottables/Circle";
 import Ellipse from "@/plottables/Ellipse";
-import Label from "@/plottables/Label";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
@@ -1570,14 +1569,14 @@ export default class ApplyTransformationHandler extends Highlighter {
       );
     }
     // we have to create a new transformed point
-    const newTransformedPoint = new NonFreePoint();
+    // const newTransformedPoint = new NonFreePoint();
     // Set the display to the default values
-    newTransformedPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newTransformedPoint.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newTransformedPoint.adjustSize();
+    // newTransformedPoint.adjustSize();
 
     const newTransformedSEPoint = new SETransformedPoint(
-      newTransformedPoint,
+      // newTransformedPoint,
       preimageSEPoint,
       transformationSEParent
     );
@@ -1585,7 +1584,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newTransformedSEPoint.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("point"), newTransformedSEPoint);
+    const newSELabel = new SELabel("point", newTransformedSEPoint);
     // Set the initial label location
     this.tmpVector
       .copy(newTransformedSEPoint.locationVector)
@@ -1706,7 +1705,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySESegment.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("segment"), newIsometrySESegment);
+    const newSELabel = new SELabel("segment", newIsometrySESegment);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySESegment.getMidPointVector())
@@ -1745,8 +1744,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector
             .copy(item.SEIntersectionPoint.locationVector)
@@ -1868,7 +1867,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySELine.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("line"), newIsometrySELine);
+    const newSELabel = new SELabel("line", newIsometrySELine);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySELine.endSEPoint.locationVector)
@@ -1903,8 +1902,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector
             .copy(item.SEIntersectionPoint.locationVector)
@@ -2027,7 +2026,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySECircle.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("circle"), newIsometrySECircle);
+    const newSELabel = new SELabel("circle", newIsometrySECircle);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySECircle.circleSEPoint.locationVector)
@@ -2066,8 +2065,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location
           this.tmpVector
@@ -2219,7 +2218,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySEEllipse.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("ellipse"), newIsometrySEEllipse);
+    const newSELabel = new SELabel("ellipse", newIsometrySEEllipse);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySEEllipse.ellipseSEPoint.locationVector)
@@ -2259,8 +2258,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location
           this.tmpVector
@@ -2469,7 +2468,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
       const newSELabel = new SELabel(
-        new Label("point"),
+        "point",
         newInvertedSECircleCenter
       );
       // Set the initial label location
@@ -2527,7 +2526,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Create the label
     const newSECircleLabel = new SELabel(
-      new Label("circle"),
+      "circle",
       newInvertedSECircle
     );
     // Set the initial label location
@@ -2570,8 +2569,8 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location
           this.tmpVector

@@ -3,7 +3,6 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
@@ -152,15 +151,18 @@ export class AddIsometryCircleCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("circle");
-      const isometrySECircleLabel = new SELabel(label, isometrySECircle);
+      // const label = new Label("circle");
+      const isometrySECircleLabel = new SELabel("circle", isometrySECircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySECircleLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySECircleLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Circle in the object map
       if (propMap.get("objectName") !== undefined) {

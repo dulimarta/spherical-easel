@@ -11,7 +11,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
@@ -793,7 +792,7 @@ export default class ThreePointCircleHandler extends Highlighter {
           this.point1SEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -806,7 +805,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // vector 1 mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );
@@ -866,7 +865,7 @@ export default class ThreePointCircleHandler extends Highlighter {
           this.point2SEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -879,7 +878,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // vector 2 mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );
@@ -957,7 +956,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -975,7 +974,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -991,7 +990,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1007,7 +1006,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1023,7 +1022,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1039,7 +1038,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         );
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1052,7 +1051,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         vtx = new SEPoint();
         // Set the Location
         vtx.locationVector = this.temporaryPoint3Marker.positionVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         threePointCircleCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );
@@ -1114,8 +1113,8 @@ export default class ThreePointCircleHandler extends Highlighter {
         this.point3SEPoint
       );
       // Create the plottable and model label
-      const newLabel = new Label("point");
-      const newSELabel = new SELabel(newLabel, newSEThreePointCircleCenter);
+      // const newLabel = new Label("point");
+      const newSELabel = new SELabel("point", newSEThreePointCircleCenter);
       // Set the initial label location
 
       this.tmpVector
@@ -1165,8 +1164,8 @@ export default class ThreePointCircleHandler extends Highlighter {
         this.point1SEPoint
       );
       // Create the plottable and model label
-      const newLabel1 = new Label("circle");
-      const newSELabel1 = new SELabel(newLabel1, newSECircle);
+      // const newLabel1 = new Label("circle");
+      const newSELabel1 = new SELabel("circle", newSECircle);
       // Set the initial label location
       this.tmpVector
         .copy(this.point1SEPoint.locationVector)
@@ -1197,8 +1196,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // const newLabel = new Label("point");
+            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
             // Set the initial label location
             this.tmpVector

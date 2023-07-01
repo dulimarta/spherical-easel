@@ -95,7 +95,6 @@ import ParametricCuspParameterValues from "@/components/ParametricCuspParameterV
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEParametric } from "@/models/SEParametric";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -661,8 +660,8 @@ function addParametricCurve(): void {
     calculationParents
   );
   // Create the plottable and model label
-  const newLabel = new Label("parametric");
-  const newSELabel = new SELabel(newLabel, newSEParametric);
+  // const newLabel = new Label("parametric");
+  const newSELabel = new SELabel("parametric", newSEParametric);
   // Set the initial label location at the start of the curve
   const startVector = newSEParametric.P(tNumbers.min);
   tempVector
@@ -682,8 +681,8 @@ function addParametricCurve(): void {
   // tracePoint.adjustSize();
   const traceSEPoint = new SEParametricTracePoint(/*tracePoint, */newSEParametric);
   traceSEPoint.locationVector = startVector;
-  const traceLabel = new Label("point");
-  const traceSELabel = new SELabel(traceLabel, traceSEPoint);
+  // const traceLabel = new Label("point");
+  const traceSELabel = new SELabel("point", traceSEPoint);
 
   // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
 
@@ -713,10 +712,10 @@ function addParametricCurve(): void {
     );
 
     // Create the plottable labels
-    const startLabel = new Label("point");
-    const endLabel = new Label("point");
-    const startSELabel = new SELabel(startLabel, startSEEndPoint);
-    const endSELabel = new SELabel(endLabel, endSEEndPoint);
+    // const startLabel = new Label("point");
+    // const endLabel = new Label("point");
+    const startSELabel = new SELabel("point", startSEEndPoint);
+    const endSELabel = new SELabel("point", endSEEndPoint);
 
     parametricCommandGroup.addCommand(
       new AddParametricEndPointsCommand(
@@ -753,8 +752,8 @@ function addParametricCurve(): void {
         );
       } else {
         // Create the plottable label
-        const newLabel = new Label("point");
-        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+        // const newLabel = new Label("point");
+        const newSELabel = new SELabel("point", item.SEIntersectionPoint);
         // Set the initial label location
         tempVector
           .copy(item.SEIntersectionPoint.locationVector)
@@ -799,7 +798,7 @@ function addParametricCurve(): void {
           // Create a plottable label
           // Create an SELabel and link it to the plottable object
           const newSEAntipodalLabel = new SELabel(
-            new Label("point"),
+            "point",
             antipodalVtx
           );
 

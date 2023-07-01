@@ -5,7 +5,6 @@ import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
-import Label from "@/plottables/Label";
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -125,15 +124,18 @@ export class AddPointCommand extends Command {
     }
 
     //make the label
-    const label = new Label("point");
-    const seLabel = new SELabel(label, sePoint);
+    // const label = new Label("point");
+    const seLabel = new SELabel("point", sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number
     seLabel.locationVector.copy(seLabelLocation);
     const labelStyleString = propMap.get("labelStyle");
     // console.debug(`Point label style string ${labelStyleString}`);
     if (labelStyleString !== undefined) {
-      label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+      seLabel.updatePlottableStyle(
+        StyleEditPanels.Label,
+        JSON.parse(labelStyleString)
+      );
     }
 
     //put the point in the object map

@@ -13,7 +13,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
-import Label from "@/plottables/Label";
 import Point from "@/plottables/Point";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import SETTINGS from "@/global-settings";
@@ -534,7 +533,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
+        const newSELabel = new SELabel("point", this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -559,7 +558,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
+        const newSELabel = new SELabel("point", this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -671,8 +670,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
       newSETangentLine.update();
 
       // Create the plottable label
-      const newLabel = new Label("line");
-      const newSELabel = new SELabel(newLabel, newSETangentLine);
+      // const newLabel = new Label("line");
+      const newSELabel = new SELabel("line", newSETangentLine);
 
       // Set the initial label location
       this.tmpVector1
@@ -709,8 +708,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
             );
           } else {
             // Create the plottable label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // const newLabel = new Label("point");
+            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
             // Set the initial label location
             this.tmpVector
               .copy(item.SEIntersectionPoint.locationVector)

@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import NonFreeEllipse from "@/plottables/NonFreeEllipse";
@@ -159,15 +158,18 @@ export class AddIsometryEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("ellipse");
-      const isometrySEEllipseLabel = new SELabel(label, isometrySEEllipse);
+      // const label = new Label("ellipse");
+      const isometrySEEllipseLabel = new SELabel("ellipse", isometrySEEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySEEllipseLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySEEllipseLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Ellipse in the object map
       if (propMap.get("objectName") !== undefined) {

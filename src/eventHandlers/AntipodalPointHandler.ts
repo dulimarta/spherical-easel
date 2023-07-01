@@ -1,10 +1,8 @@
 import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEOneOrTwoDimensional } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
@@ -174,8 +172,8 @@ export default class AntipodalPointHandler extends Highlighter {
           );
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, this.parentPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", this.parentPoint);
           // Set the initial label location
           this.tmpVector
             .copy(this.parentPoint.locationVector)
@@ -207,8 +205,8 @@ export default class AntipodalPointHandler extends Highlighter {
           this.parentPoint = new SEPoint();
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, this.parentPoint);
+          // const newLabel = new Label("point");
+          const newSELabel = new SELabel("point", this.parentPoint);
           // Set the initial label location
           this.tmpVector
             .copy(this.parentPoint.locationVector)
@@ -240,8 +238,8 @@ export default class AntipodalPointHandler extends Highlighter {
         );
 
         // Create the plottable label
-        const newLabel = new Label("point");
-        const newSELabel = new SELabel(newLabel, vtx);
+        // const newLabel = new Label("point");
+        const newSELabel = new SELabel("point", vtx);
 
         // Set the initial label location
         this.tmpVector

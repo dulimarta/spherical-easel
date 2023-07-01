@@ -5,8 +5,22 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
-import { Labelable, ObjectState } from "@/types";
-import { SEPoint, SESegment, SELine, SECircle,SEAngleMarker,SEEllipse,SEParametric,SEPolygon } from "./internal";
+import {
+  LabelDisplayMode,
+  LabelParentTypes,
+  Labelable,
+  ObjectState
+} from "@/types";
+import {
+  SEPoint,
+  SESegment,
+  SELine,
+  SECircle,
+  SEAngleMarker,
+  SEEllipse,
+  SEParametric,
+  SEPolygon
+} from "./internal";
 // import { SESegment } from "./SESegment";
 // import { SELine } from "./SELine";
 // import { SECircle } from "./SECircle";
@@ -45,9 +59,9 @@ export class SELabel extends SENodule implements Visitable {
    * @param label the TwoJS label associated with this SELabel
    * @param parent The parent SENodule object
    */
-  constructor(label: Label, parent: SENodule) {
+  constructor(labelType: LabelParentTypes, parent: SENodule) {
     super();
-
+    const label = new Label(labelType);
     this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
@@ -83,10 +97,11 @@ export class SELabel extends SENodule implements Visitable {
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
       console.log("SELabel: parent is a point");
-      if(parent instanceof SEEarthPoint){
+      if (parent instanceof SEEarthPoint) {
         console.log("SELabel: parent is a earth point");
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
         this.showing = true;
-      }else{
+      } else {
         this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
         if (parent.isFreePoint()) {
           this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
@@ -115,8 +130,7 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEPolygon) {
       this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
       this.showing = SETTINGS.polygon.showLabelsInitially;
-    }
-    else {
+    } else {
       this.showing = true;
     }
   }

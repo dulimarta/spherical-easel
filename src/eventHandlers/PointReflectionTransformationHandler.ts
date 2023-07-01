@@ -7,7 +7,6 @@ import { Vector3 } from "three";
 import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -385,7 +384,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
           this.rotationSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         pointRotationCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -398,7 +397,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         pointRotationCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );

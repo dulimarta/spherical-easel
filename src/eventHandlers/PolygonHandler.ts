@@ -8,7 +8,6 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AngleMode } from "@/types";
@@ -358,8 +357,8 @@ export default class PolygonHandler extends Highlighter {
         );
 
         // Create the plottable label
-        const newLabel = new Label("polygon");
-        const newSELabel = new SELabel(newLabel, vtx);
+        // const newLabel = new Label("polygon");
+        const newSELabel = new SELabel("polygon", vtx);
         vtx.valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
 
         // Set the initial label location as the average of all the vertices
@@ -392,7 +391,9 @@ export default class PolygonHandler extends Highlighter {
 
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [newLabel],
+            [
+              /*newLabel*/
+            ],
             StyleEditPanels.Label,
             [
               {
@@ -823,8 +824,8 @@ export default class PolygonHandler extends Highlighter {
       );
 
       // Create the plottable and model label
-      const newLabel = new Label("angleMarker");
-      const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+      // const newLabel = new Label("angleMarker");
+      const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
       newSEAngleMarker.valueDisplayMode =
         SETTINGS.angleMarker.initialValueDisplayMode;
 

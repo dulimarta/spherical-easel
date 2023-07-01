@@ -3,9 +3,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { sRGBEncoding, Vector3 } from "three";
-import Label from "@/plottables/Label";
-import NonFreePoint from "@/plottables/NonFreePoint";
+import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
@@ -196,8 +194,8 @@ export class AddIntersectionPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, seIntersectionPoint);
+      // const label = new Label("point");
+      const seLabel = new SELabel("point", seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
@@ -205,7 +203,10 @@ export class AddIntersectionPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
 
       if (labelStyleString !== undefined) {
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
       }
 
       //put the intersection point in the object map

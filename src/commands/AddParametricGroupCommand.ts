@@ -1,8 +1,6 @@
 import { Command } from "./Command";
-// import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 // import { Vector3 } from "three";
-// import Label from "@/plottables/Label";
 import { SEParametricGroup } from "@/models/SEParametricGroup";
 // import { SEExpression } from "@/models/SEExpression";
 // import {

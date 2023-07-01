@@ -5,7 +5,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import NonFreeLine from "@/plottables/NonFreeLine";
@@ -164,15 +163,18 @@ export class AddNSectLineCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, seNSectLine);
+      // const label = new Label("line");
+      const seLabel = new SELabel("line", seNSectLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

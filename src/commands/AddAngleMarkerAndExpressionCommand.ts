@@ -6,7 +6,6 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import AngleMarker from "@/plottables/AngleMarker";
-import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
@@ -181,15 +180,18 @@ export class AddAngleMarkerCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("angleMarker");
-      const seLabel = new SELabel(label, seAngleMarker);
+      // const label = new Label("angleMarker");
+      const seLabel = new SELabel("angleMarker", seAngleMarker);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
       // Must be done after the SELabel is created and linked
       seAngleMarker.valueDisplayMode = valueDisplayMode;
       //put the angleMarker in the object map

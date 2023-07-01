@@ -1,10 +1,9 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
@@ -159,15 +158,18 @@ export class AddPolarLineCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, sePolarLine);
+      // const label = new Label("line");
+      const seLabel = new SELabel("line", sePolarLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the polar line in the object map
       if (propMap.get("objectName") !== undefined) {

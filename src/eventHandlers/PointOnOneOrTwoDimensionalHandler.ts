@@ -3,7 +3,6 @@ import Point from "@/plottables/Point";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEOneOrTwoDimensional } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
@@ -75,7 +74,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
-        const newSELabel = new SELabel(new Label("point"), vtx);
+        const newSELabel = new SELabel("point", vtx);
         // Set the initial label location
         this.tmpVector
           .copy(vtx.locationVector)

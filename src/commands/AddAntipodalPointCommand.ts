@@ -6,7 +6,6 @@ import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import Label from "@/plottables/Label";
 
 export class AddAntipodalPointCommand extends Command {
   private seAntipodalPoint: SEAntipodalPoint;
@@ -128,14 +127,14 @@ export class AddAntipodalPointCommand extends Command {
         );
 
       //make the label
-      const label = new Label("point");
-      const seLabel = new SELabel(label, sePoint);
+      // const label = new Label("point");
+      const seLabel = new SELabel("point", sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));
       seLabel.locationVector.copy(seLabelLocation);
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
 
       //put the point in the object map
       if (propMap.get("objectName") !== undefined) {

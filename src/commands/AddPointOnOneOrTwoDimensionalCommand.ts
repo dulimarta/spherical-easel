@@ -5,7 +5,6 @@ import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPointOnOneDimensionalCommand extends Command {
@@ -162,15 +161,18 @@ export class AddPointOnOneDimensionalCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, sePointOnOneOrTwoDimensional);
+      // const label = new Label("point");
+      const seLabel = new SELabel("point", sePointOnOneOrTwoDimensional);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the point on one or two dimensional in the object map
       if (propMap.get("objectName") !== undefined) {

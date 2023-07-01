@@ -3,7 +3,6 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SETransformation } from "@/models/SETransformation";
@@ -151,15 +150,18 @@ export class AddTransformedPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const transformedSEPointLabel = new SELabel(label, transformedSEPoint);
+      // const label = new Label("point");
+      const transformedSEPointLabel = new SELabel("point", transformedSEPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       transformedSEPointLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        transformedSEPointLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Point in the object map
       if (propMap.get("objectName") !== undefined) {

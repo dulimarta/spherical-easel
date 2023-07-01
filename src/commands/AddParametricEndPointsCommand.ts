@@ -4,7 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
@@ -319,11 +318,8 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Start End Point Label
-      const startEndPointLabel = new Label("point");
-      const seStartEndPointLabel = new SELabel(
-        startEndPointLabel,
-        seStartEndPoint
-      );
+      // const startEndPointLabel = new Label("point");
+      const seStartEndPointLabel = new SELabel("point", seStartEndPoint);
       const seStartEndPointLabelLocation = new Vector3();
       seStartEndPointLabelLocation.from(
         propMap.get("parametricEndPointseStartLabelLocationVector")
@@ -333,7 +329,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartLabelLabelStyle"
       );
       if (labelStyleString !== undefined) {
-        startEndPointLabel.updateStyle(
+        seStartEndPointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );
@@ -403,8 +399,8 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the End End Point Label
-      const endEndPointLabel = new Label("point");
-      const seEndEndPointLabel = new SELabel(endEndPointLabel, seEndEndPoint);
+      // const endEndPointLabel = new Label("point");
+      const seEndEndPointLabel = new SELabel("point", seEndEndPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(
         propMap.get("parametricEndPointseEndLabelLocationVector")
@@ -412,7 +408,7 @@ export class AddParametricEndPointsCommand extends Command {
       seEndEndPointLabel.locationVector.copy(seLabelLocation);
       labelStyleString = propMap.get("parametricEndPointseEndLabelLabelStyle");
       if (labelStyleString !== undefined) {
-        endEndPointLabel.updateStyle(
+        seEndEndPointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );
@@ -478,8 +474,8 @@ export class AddParametricEndPointsCommand extends Command {
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label("point");
-      const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
+      // const tracePointLabel = new Label("point");
+      const seTracePointLabel = new SELabel("point", seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seLabelLocation.from(
         propMap.get("parametricEndPointseTraceLabelLocationVector")
@@ -489,7 +485,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTraceLabelLabelStyle"
       );
       if (labelStyleString !== undefined) {
-        tracePointLabel.updateStyle(
+        seTracePointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );

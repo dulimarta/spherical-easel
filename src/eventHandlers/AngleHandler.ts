@@ -10,7 +10,6 @@ import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
@@ -1000,9 +999,9 @@ export default class AngleHandler extends Highlighter {
         );
 
         // Create a plottable label
-        const newLabel = new Label("point");
+        // const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
-        const newSELabel = new SELabel(newLabel, vtx);
+        const newSELabel = new SELabel("point", vtx);
 
         vtx.locationVector = this.pointLocations[i];
         // Set the initial label location
@@ -1045,9 +1044,9 @@ export default class AngleHandler extends Highlighter {
         const vtx = new SEPoint();
 
         // Create a plottable label
-        const newLabel = new Label("point");
+        // const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
-        const newSELabel = new SELabel(newLabel, vtx);
+        const newSELabel = new SELabel("point", vtx);
 
         angleMarkerCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
@@ -1106,8 +1105,8 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label("angleMarker");
-    const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    // const newLabel = new Label("angleMarker");
+    const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
 
@@ -1238,8 +1237,8 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label("angleMarker");
-    const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    // const newLabel = new Label("angleMarker");
+    const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
 
@@ -1325,8 +1324,8 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    const newLabel = new Label("angleMarker");
-    const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    // const newLabel = new Label("angleMarker");
+    const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
 
@@ -1466,8 +1465,8 @@ export default class AngleHandler extends Highlighter {
       );
     }
     // Create the plottable and model label
-    const newLabel = new Label("angleMarker");
-    const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+    // const newLabel = new Label("angleMarker");
+    const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
 

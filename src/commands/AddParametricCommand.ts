@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Matrix4, Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SEParametric } from "@/models/SEParametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
@@ -234,15 +233,18 @@ export class AddParametricCommand extends Command {
       //   );
 
       //make the label and set its location
-      const label = new Label("parametric");
-      const seLabel = new SELabel(label, seParametric);
+      // const label = new Label("parametric");
+      const seLabel = new SELabel("parametric", seParametric);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the parametric in the object map
       if (propMap.get("objectName") !== undefined) {

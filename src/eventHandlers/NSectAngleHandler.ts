@@ -3,9 +3,7 @@ import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Two from "two.js";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionReturnType } from "@/types";
@@ -344,8 +342,8 @@ export default class NSectAngleHandler extends Highlighter {
           );
 
           // Create plottable for the Label
-          const newLabel2 = new Label("line");
-          const newSELabel2 = new SELabel(newLabel2, nSectingLine);
+          // const newLabel2 = new Label("line");
+          const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location
           this.tmpVector
             .copy(endSEPoint.locationVector)
@@ -379,9 +377,9 @@ export default class NSectAngleHandler extends Highlighter {
                 );
               } else {
                 // Create the plottable label
-                const newLabel = new Label("point");
+                // const newLabel = new Label("point");
                 const newSELabel = new SELabel(
-                  newLabel,
+                  "point",
                   item.SEIntersectionPoint
                 );
                 // Set the initial label location

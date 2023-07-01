@@ -13,7 +13,6 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -406,7 +405,7 @@ export default class RotationTransformationHandler extends Highlighter {
           this.rotationSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         rotationCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -419,7 +418,7 @@ export default class RotationTransformationHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         rotationCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.rotationVector;

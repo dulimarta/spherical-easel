@@ -7,7 +7,6 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolarPointCommand extends Command {
@@ -157,15 +156,18 @@ export class AddPolarPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, sePolarPoint);
+      // const label = new Label("point");
+      const seLabel = new SELabel("point", sePolarPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

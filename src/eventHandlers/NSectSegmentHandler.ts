@@ -5,7 +5,6 @@ import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
@@ -292,8 +291,8 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        const newLabel2 = new Label("point");
-        const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
+        // const newLabel2 = new Label("point");
+        const newSELabel2 = new SELabel("point", nSectingPoint);
         // Set the initial label location
         this.tmpVector
           .copy(nSectingPoint.locationVector)

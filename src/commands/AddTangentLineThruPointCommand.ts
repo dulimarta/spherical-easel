@@ -5,7 +5,6 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddTangentLineThruPointCommand extends Command {
@@ -169,15 +168,18 @@ export class AddTangentLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, tangentLineThruPointLine);
+      // const label = new Label("line");
+      const seLabel = new SELabel("line", tangentLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

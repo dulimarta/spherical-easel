@@ -15,7 +15,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
-import Label from "@/plottables/Label";
 import Point from "@/plottables/Point";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import SETTINGS from "@/global-settings";
@@ -586,7 +585,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
+        const newSELabel = new SELabel("point", this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -611,7 +610,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
+        const newSELabel = new SELabel("point", this.sePoint);
         // Set the initial label location
         this.tmpVector
           .copy(this.sePoint.locationVector)
@@ -743,8 +742,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       newPerpLine.update();
 
       // Create the plottable label
-      const newLabel = new Label("line");
-      const newSELabel = new SELabel(newLabel, newPerpLine);
+      // const newLabel = new Label("line");
+      const newSELabel = new SELabel("line", newPerpLine);
 
       // Set the initial label location
       this.tmpVector1
@@ -790,8 +789,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             //   item.SEIntersectionPoint.locationVector.toFixed(4)
             // );
             // Create the plottable label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // const newLabel = new Label("point");
+            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
             // Set the initial label location
             this.tmpVector
               .copy(item.SEIntersectionPoint.locationVector)

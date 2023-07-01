@@ -14,7 +14,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import Two from "two.js";
@@ -441,7 +440,7 @@ export default class CircleHandler extends Highlighter {
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -454,7 +453,7 @@ export default class CircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
@@ -536,7 +535,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -556,7 +555,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -574,7 +573,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -592,7 +591,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -610,7 +609,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -628,7 +627,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -641,7 +640,7 @@ export default class CircleHandler extends Highlighter {
         vtx = new SEPoint();
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
 
@@ -712,8 +711,8 @@ export default class CircleHandler extends Highlighter {
         this.circleSEPoint
       );
       // Create the plottable and model label
-      const newLabel = new Label("circle");
-      const newSELabel = new SELabel(newLabel, newSECircle);
+      // const newLabel = new Label("circle");
+      const newSELabel = new SELabel("circle", newSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
         this.centerSEPoint.locationVector,
@@ -750,8 +749,8 @@ export default class CircleHandler extends Highlighter {
           } else {
             // the intersection point is newly created and must be added as a child of the two parents returned
             // Create the plottable and model label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // const newLabel = new Label("point")
+            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
             // Set the initial label location
             this.tmpVector

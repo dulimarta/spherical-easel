@@ -3,7 +3,6 @@ import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
@@ -204,15 +203,18 @@ export class AddPolygonCommand extends Command {
         );
 
       //make the label and set its location
-      const label = new Label("polygon");
-      const seLabel = new SELabel(label, sePolygon);
+      // const label = new Label("polygon");
+      const seLabel = new SELabel("polygon", sePolygon);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
       // Must be done after the SELabel is created and linked
       sePolygon.valueDisplayMode = valueDisplayMode;
 

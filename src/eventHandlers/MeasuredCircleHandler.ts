@@ -17,7 +17,6 @@ import {
   SEIntersectionReturnType,
   SEMeasurable
 } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { SESegment } from "@/models/SESegment";
@@ -497,7 +496,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -510,7 +509,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint();
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
@@ -722,8 +721,8 @@ export default class MeasuredCircleHandler extends Highlighter {
         measurementSEExpression
       );
       // Create the plottable and model label
-      const newLabel = new Label("circle");
-      const newSELabel = new SELabel(newLabel, newMeasuredSECircle);
+      // const newLabel = new Label("circle");
+      const newSELabel = new SELabel("circle", newMeasuredSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
         this.centerSEPoint.locationVector,
@@ -761,8 +760,8 @@ export default class MeasuredCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // const newLabel = new Label("point");
+            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
             // Set the initial label location
             this.tmpVector

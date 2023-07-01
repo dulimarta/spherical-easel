@@ -12,7 +12,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
@@ -145,11 +144,14 @@ export abstract class Command {
         JSON.parse(pointBackStyleString)
       );
 
-    const newLabel = new Label("point");
-    const label = new SELabel(newLabel, point);
+    // const newLabel = new Label("point");
+    const label = new SELabel("point", point);
     label.locationVector.copy(labelLocation);
     if (labelStyleString !== undefined)
-      newLabel.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+      label.updatePlottableStyle(
+        StyleEditPanels.Label,
+        JSON.parse(labelStyleString)
+      );
     return { point, label };
   }
 

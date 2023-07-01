@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
@@ -148,15 +147,18 @@ export class AddIsometryLineCommand extends Command {
         seg.updateStyle(StyleEditPanels.Back, JSON.parse(LineBackStyleString));
 
       //make the label and set its location
-      const label = new Label("line");
-      const isometrySELineLabel = new SELabel(label, isometrySELine);
+      // const label = new Label("line");
+      const isometrySELineLabel = new SELabel("line", isometrySELine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySELineLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySELineLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Line in the object map
       if (propMap.get("objectName") !== undefined) {

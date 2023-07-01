@@ -5,7 +5,6 @@ import { SELabel } from "@/models/SELabel";
 import Line from "@/plottables/Line";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 export class AddLineCommand extends Command {
@@ -129,15 +128,18 @@ export class AddLineCommand extends Command {
         line.updateStyle(StyleEditPanels.Back, JSON.parse(lineBackStyleString));
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, seLine);
+      // const label = new Label("line");
+      const seLabel = new SELabel("line", seLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the line in the object map
       if (propMap.get("objectName") !== undefined) {
