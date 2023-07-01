@@ -19,8 +19,7 @@ import {
   Mesh,
   AmbientLight,
   PointLight,
-  WebGLRenderer,
-  LoadingManager
+  WebGLRenderer
 } from "three";
 import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
@@ -43,26 +42,7 @@ const rotationMatrix = new Matrix4(); // temporary matrix for rotating the spher
 // pointing up to the sky (our Y-plus axis).
 // A rotation by 90 degrees is required to lineup both north poles
 const ROTATION_X90 = new Matrix4().makeRotationX(Math.PI / 2);
-const textureManager = new LoadingManager();
-const textureLoader = new TextureLoader(textureManager);
-
-let loadingCount = 0;
-let loadedCount = 0;
-
-textureManager.onStart = (url, loaded, total) => {
-  console.debug(`Begin loading texture ${url} Count ${loaded}/${total}`);
-};
-textureManager.onProgress = (url, loaded, total) => {
-  if (total > loadingCount) loadingCount = total;
-  console.debug(`Progress loading texture ${url} Count ${loaded}/${total}`);
-};
-textureManager.onLoad = () => {
-  loadedCount += 1;
-  console.debug("Texture loading completed", loadedCount);
-};
-textureManager.onError = url => {
-  console.error("Unable to load", url);
-};
+const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
 const scene = new Scene();
@@ -102,13 +82,10 @@ camera.setViewOffset(
 console.debug(`Setting up camera viewport for ${scaledWidth}x${scaledHeight}`);
 
 onMounted(async () => {
-  const t1 = textureLoader.loadAsync("/earth/earth.jpg");
-  const t2 = textureLoader.loadAsync("/earth/elevate.jpg");
-  const t3 = textureLoader.loadAsync("/earth/starfield.jpg");
   const [earthTexture, elevationMap, startField] = await Promise.all([
-    t1,
-    t2,
-    t3
+    textureLoader.loadAsync("/earth/earth.jpg"),
+    textureLoader.loadAsync("/earth/elevate.jpg"),
+    textureLoader.loadAsync("/earth/starfield.jpg")
   ]);
   console.debug("Promise.all(): Loading all textures done");
   scene.background = startField;
@@ -119,10 +96,20 @@ onMounted(async () => {
     bumpScale: 10
   });
   earth = new Mesh(geometry, material);
-  const num = Math.min(prop.availableHeight, prop.availableWidth);
-  // TODO: position the Point light based on the current position
-  // of the sun?
-  light.position.set(num, 0, 0); // I think this is the GMT+0 position
+  const num = Math.max(prop.availableHeight, prop.availableWidth);
+  // Position the Point light based on the estimated
+  // current position of the sun?
+  const sunGeoPosition = estimateSunGeoPosition();
+  // (1,0,0) => Equator GMT-0
+  // (0,1,0) => North Pole   (0,-1,0) => South Pole
+  // (0,0,1) => Equator GMT-6
+  light.position.set(
+    -num * Math.cos(sunGeoPosition.lon),
+    0,
+    num * Math.sin(sunGeoPosition.lon)
+  );
+  // light.setRotationFromEuler(sunEulerRotation)
+  // light.updateMatrix()
   // To fix the light to the earth, add it to the earth not the scene
   earth.add(light);
   earth.rotation.x = Math.PI / 2;
@@ -154,8 +141,7 @@ watch(
     () => zoomMagnificationFactor.value
   ],
   ([canvasWidth, canvasHeight, zoomMagnificationFactor]) => {
-    if (renderer)
-      renderer.setSize(canvasWidth, canvasHeight);
+    if (renderer) renderer.setSize(canvasWidth, canvasHeight);
     const scaledWidth = canvasWidth / (zoomMagnificationFactor * 2.0);
     const scaledHeight = canvasHeight / (zoomMagnificationFactor * 2.0);
     camera.left = -scaledWidth;
@@ -198,4 +184,28 @@ onBeforeUnmount(() => {
     cancelAnimationFrame(requestAnimFrameHandle);
   }
 });
+
+// Reference: https://astronomy.stackexchange.com/questions/20560/how-to-calculate-the-position-of-the-sun-in-long-lat/20585#20585
+function estimateSunGeoPosition() {
+  const now = new Date();
+
+  // The boilerplate: fiddling with dates
+  const startOfYear = new Date(now.getFullYear(), 0, 0).getTime();
+  const endOfYear = new Date(now.getFullYear() + 1, 0, 0).getTime();
+  const nows = now.getTime();
+  const percetageOfYear = (nows - startOfYear) / (endOfYear - startOfYear);
+
+  const secs =
+    now.getUTCMilliseconds() / 1e3 +
+    now.getUTCSeconds() +
+    60 * (now.getUTCMinutes() + 60 * now.getUTCHours());
+  const percentOfDay = secs / 86400; // leap secs? nah.
+
+  // The actual magic
+  const lat = (-percentOfDay + 0.5) * Math.PI * 2;
+  const lon = Math.sin((percetageOfYear - 0.22) * Math.PI * 2) * 0.41;
+  console.debug(`Sun geo position is ${lat.toDegrees()},${lon.toDegrees()}`);
+  // return new Euler(0, lat, lon, 'YZX')
+  return { lat, lon };
+}
 </script>
