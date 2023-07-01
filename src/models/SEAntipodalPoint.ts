@@ -1,8 +1,6 @@
 import { SEPoint } from "./internal";
-import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import { createElementBlock } from "vue";
 const { t } = i18n.global;
 export class SEAntipodalPoint extends SEPoint {
   /**

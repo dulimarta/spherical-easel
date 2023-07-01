@@ -1,12 +1,7 @@
 import { SEPoint, SESegment, SELine, SECircle, SEEllipse } from "./internal";
-import Point from "@/plottables/Point";
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SELine } from "./SELine";
-// import { SECircle } from "./SECircle";
-// import { SEEllipse } from "./SEEllipse";
 import { Vector3 } from "three";
 import { useSEStore } from "@/stores/se";
 import {

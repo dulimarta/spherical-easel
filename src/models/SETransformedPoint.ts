@@ -7,7 +7,6 @@ import {
   SEPointReflection,
   SEInversion
 } from "./internal";
-import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 const { t } = i18n.global;
@@ -19,9 +18,12 @@ export class SETransformedPoint extends SEPoint {
   private _seParentTransformation: SETransformation;
   private transType = "";
 
-  constructor(pt: Point, sePoint: SEPoint, seTransformation: SETransformation) {
+  constructor(
+    /*pt: Point,*/ sePoint: SEPoint,
+    seTransformation: SETransformation
+  ) {
     super(true); // NonFreePoint
-    this.ref = pt;
+    // this.ref = pt;
     this._seParentPoint = sePoint;
     this._seParentTransformation = seTransformation;
     if (this._seParentTransformation instanceof SETranslation) {

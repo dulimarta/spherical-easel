@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
@@ -7,13 +6,8 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { compile } from "vue/types/umd";
 
 export class AddTransformedPointCommand extends Command {
   private preimageSEPoint: SEPoint;
@@ -136,22 +130,22 @@ export class AddTransformedPointCommand extends Command {
 
     if (parentSEPoint && transformedPointParentTransformation) {
       //make the point
-      const point = new NonFreePoint();
+      // const point = new NonFreePoint();
       const transformedSEPoint = new SETransformedPoint(
-        point,
+        // point,
         parentSEPoint,
         transformedPointParentTransformation
       );
       //style the point
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
-        point.updateStyle(
+        transformedSEPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
-        point.updateStyle(
+        transformedSEPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );

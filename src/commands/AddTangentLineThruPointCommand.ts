@@ -8,7 +8,6 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;

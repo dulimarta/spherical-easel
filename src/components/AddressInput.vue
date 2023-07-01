@@ -131,10 +131,10 @@ function getPlaceDetails() {
           const xcor = Math.cos(latRad) * Math.cos(lngRad);
           const ycor = Math.cos(latRad) * Math.sin(lngRad);
           const zcor = Math.sin(latRad);
-          const newPoint = new NonFreePoint();
+          // const newPoint = new NonFreePoint();
 
           // caption
-          const vtx = new SEEarthPoint(newPoint, lngRad, latRad);
+          const vtx = new SEEarthPoint(/*newPoint,*/ lngRad, latRad);
           const pointVector = new THREE.Vector3(xcor, ycor, zcor);
           pointVector.normalize();
           const rotationMatrix = new THREE.Matrix4();

@@ -1,7 +1,6 @@
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";

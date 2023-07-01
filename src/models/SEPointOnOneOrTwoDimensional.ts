@@ -1,5 +1,4 @@
 import { SEPoint, SESegment, SELine, SECircle, SEEllipse } from "./internal";
-import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";

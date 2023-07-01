@@ -12,7 +12,6 @@ import {
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Point from "@/plottables/Point";

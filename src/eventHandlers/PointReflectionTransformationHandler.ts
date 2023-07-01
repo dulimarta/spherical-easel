@@ -6,7 +6,6 @@ import { AddPointReflectionCommand } from "@/commands/AddPointReflectionCommand"
 import { Vector3 } from "three";
 import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";

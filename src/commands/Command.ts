@@ -12,7 +12,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-// import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";

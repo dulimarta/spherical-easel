@@ -6,7 +6,6 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
 import Label from "@/plottables/Label";
-// import Point from "@/plottables/Point";
 
 //#region addPointCommand
 export class AddPointCommand extends Command {

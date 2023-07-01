@@ -5,7 +5,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
-// import Point from "@/plottables/Point";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import Label from "@/plottables/Label";
 

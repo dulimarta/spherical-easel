@@ -4,8 +4,6 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";

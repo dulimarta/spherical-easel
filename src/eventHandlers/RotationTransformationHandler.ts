@@ -12,7 +12,6 @@ import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";

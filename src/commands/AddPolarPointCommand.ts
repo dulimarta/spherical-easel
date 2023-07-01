@@ -8,7 +8,6 @@ import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import Label from "@/plottables/Label";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolarPointCommand extends Command {
@@ -137,22 +136,22 @@ export class AddPolarPointCommand extends Command {
       !isNaN(sePolarPointIndex)
     ) {
       //make the Polar Point
-      const point = new NonFreePoint();
+      // const point = new NonFreePoint();
       const sePolarPoint = new SEPolarPoint(
-        point,
+        // point,
         sePolarPointParent,
         sePolarPointIndex
       );
       //style the Polar Point
       const polarPointFrontStyleString = propMap.get("objectFrontStyle");
       if (polarPointFrontStyleString !== undefined)
-        point.updateStyle(
+        sePolarPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(polarPointFrontStyleString)
         );
       const polarPointBackStyleString = propMap.get("objectBackStyle");
       if (polarPointBackStyleString !== undefined)
-        point.updateStyle(
+        sePolarPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(polarPointBackStyleString)
         );
