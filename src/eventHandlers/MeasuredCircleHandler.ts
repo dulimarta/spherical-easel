@@ -480,11 +480,11 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      const newCenterPoint = new Point();
+      // const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newCenterPoint.adjustSize();
+      // newCenterPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -493,7 +493,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCenterPoint,
+          // newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
 

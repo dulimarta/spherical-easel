@@ -495,10 +495,10 @@ export default class LineHandler extends Highlighter {
 
     if (this.startSEPoint === null) {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
-      const newStartPoint = new Point();
+      // const newStartPoint = new Point();
       // Set the display and size to the default values
-      newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newStartPoint.adjustSize();
+      // newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newStartPoint.adjustSize();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -506,7 +506,7 @@ export default class LineHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newStartPoint,
+          // newStartPoint,
           this.startSEPointOneDimensionalParent
         );
         newSELabel = new SELabel(new Label("point"), vtx);
@@ -573,10 +573,10 @@ export default class LineHandler extends Highlighter {
       }
     } else if (!fromActivate) {
       // We have to create a new Point for the end
-      const newEndPoint = new Point();
+      // const newEndPoint = new Point();
       // Set the display and size to the default values
-      newEndPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newEndPoint.adjustSize();
+      // newEndPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newEndPoint.adjustSize();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -584,7 +584,7 @@ export default class LineHandler extends Highlighter {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEndPoint,
+          // newEndPoint,
           this.hitSESegments[0]
         );
         // Set the Location
@@ -603,7 +603,9 @@ export default class LineHandler extends Highlighter {
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneOrTwoDimensional(newEndPoint, this.hitSELines[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          /*newEndPoint, */ this.hitSELines[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
@@ -620,7 +622,7 @@ export default class LineHandler extends Highlighter {
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEndPoint,
+          // newEndPoint,
           this.hitSECircles[0]
         );
         // Set the Location
@@ -639,7 +641,7 @@ export default class LineHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEndPoint,
+          // newEndPoint,
           this.hitSEEllipses[0]
         );
         // Set the Location
@@ -658,7 +660,7 @@ export default class LineHandler extends Highlighter {
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a parametric
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEndPoint,
+          // newEndPoint,
           this.hitSEParametrics[0]
         );
         // Set the Location
@@ -677,7 +679,7 @@ export default class LineHandler extends Highlighter {
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a parametric
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEndPoint,
+          // newEndPoint,
           this.hitSEPolygons[0]
         );
         // Set the Location

@@ -369,11 +369,11 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     if (this.rotationSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      const newRotationPoint = new Point();
+      // const newRotationPoint = new Point();
       // Set the display to the default values
-      newRotationPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newRotationPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newRotationPoint.adjustSize();
+      // newRotationPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -382,7 +382,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newRotationPoint,
+          // newRotationPoint,
           this.rotationSEPointOneDimensionalParent
         );
 

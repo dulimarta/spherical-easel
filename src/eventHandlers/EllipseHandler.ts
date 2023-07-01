@@ -721,11 +721,11 @@ export default class EllipseHandler extends Highlighter {
     if (this.focus1SEPoint === null) {
       // Focus 1 point landed on an open space
       // we have to create a new point and it to the group/store
-      const newCenterPoint = new Point();
+      // const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newCenterPoint.adjustSize();
+      // newCenterPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -734,7 +734,7 @@ export default class EllipseHandler extends Highlighter {
         // Focus 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCenterPoint,
+          // newCenterPoint,
           this.focus1SEPointOneDimensionalParent
         );
 
@@ -794,11 +794,11 @@ export default class EllipseHandler extends Highlighter {
     if (this.focus2SEPoint === null) {
       // Focus 1 point landed on an open space
       // we have to create a new point and it to the group/store
-      const newCenterPoint = new Point();
+      // const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newCenterPoint.adjustSize();
+      // newCenterPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -807,7 +807,7 @@ export default class EllipseHandler extends Highlighter {
         // Focus 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCenterPoint,
+          // newCenterPoint,
           this.focus2SEPointOneDimensionalParent
         );
 
@@ -894,11 +894,11 @@ export default class EllipseHandler extends Highlighter {
       }
     } else if (!fromActivate) {
       // We have to create a new Point for the ellipse point
-      const newEllipsePoint = new Point();
+      // const newEllipsePoint = new Point();
       // Set the display to the default values
-      newEllipsePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newEllipsePoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newEllipsePoint.adjustSize();
+      // newEllipsePoint.adjustSize();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -906,7 +906,7 @@ export default class EllipseHandler extends Highlighter {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSESegments[0]
         );
         // Set the Location
@@ -925,7 +925,7 @@ export default class EllipseHandler extends Highlighter {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSELines[0]
         );
         // Set the Location
@@ -941,7 +941,7 @@ export default class EllipseHandler extends Highlighter {
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSECircles[0]
         );
         // Set the Location
@@ -957,7 +957,7 @@ export default class EllipseHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSEEllipses[0]
         );
         // Set the Location
@@ -973,7 +973,7 @@ export default class EllipseHandler extends Highlighter {
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSEParametrics[0]
         );
         // Set the Location
@@ -989,7 +989,7 @@ export default class EllipseHandler extends Highlighter {
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newEllipsePoint,
+          // newEllipsePoint,
           this.hitSEPolygons[0]
         );
         // Set the Location

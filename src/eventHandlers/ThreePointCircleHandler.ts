@@ -776,11 +776,11 @@ export default class ThreePointCircleHandler extends Highlighter {
     if (this.point1SEPoint === null) {
       // vector 1 point landed on an open space
       // we have to create a new point and it to the group/store
-      const newFirstPoint = new Point();
+      // const newFirstPoint = new Point();
       // Set the display to the default values
-      newFirstPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newFirstPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newFirstPoint.adjustSize();
+      // newFirstPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -789,7 +789,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // Vector 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newFirstPoint,
+          // newFirstPoint,
           this.point1SEPointOneDimensionalParent
         );
 
@@ -849,11 +849,11 @@ export default class ThreePointCircleHandler extends Highlighter {
     if (this.point2SEPoint === null) {
       // Vector 2 point landed on an open space
       // we have to create a new point and it to the group/store
-      const newSecondPoint = new Point();
+      // const newSecondPoint = new Point();
       // Set the display to the default values
-      newSecondPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newSecondPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newSecondPoint.adjustSize();
+      // newSecondPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -862,7 +862,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // Focus 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newSecondPoint,
+          // newSecondPoint,
           this.point2SEPointOneDimensionalParent
         );
 
@@ -939,11 +939,11 @@ export default class ThreePointCircleHandler extends Highlighter {
       }
     } else if (!fromActivate) {
       // We have to create a new Point for the third point/vector
-      const newThirdPoint = new Point();
+      // const newThirdPoint = new Point();
       // Set the display to the default values
-      newThirdPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newThirdPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newThirdPoint.adjustSize();
+      // newThirdPoint.adjustSize();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -951,7 +951,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // The third point will be on a segment
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSESegments[0]
         );
         // Set the Location
@@ -970,7 +970,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         // The third point will be a point on a line
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSELines[0]
         );
         // Set the Location
@@ -986,7 +986,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else if (this.hitSECircles.length > 0) {
         // The third point will be a point on a circle
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSECircles[0]
         );
         // Set the Location
@@ -1002,7 +1002,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         // The third point will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSEEllipses[0]
         );
         // Set the Location
@@ -1018,7 +1018,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else if (this.hitSEParametrics.length > 0) {
         // The third point will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSEParametrics[0]
         );
         // Set the Location
@@ -1034,7 +1034,7 @@ export default class ThreePointCircleHandler extends Highlighter {
       } else if (this.hitSEPolygons.length > 0) {
         // The third point will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newThirdPoint,
+          // newThirdPoint,
           this.hitSEPolygons[0]
         );
         // Set the Location

@@ -77,10 +77,10 @@ export default class PointHandler extends Highlighter {
         //#region linkNoduleSENodule
         const pointCommandGroup = new CommandGroup();
         // create a new Point
-        const newPoint = new Point();
+        // const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.adjustSize();
         let vtx: SEPointOnOneOrTwoDimensional | SEPoint | null = null;
         let newSELabel: SELabel | null = null;
 
@@ -88,7 +88,7 @@ export default class PointHandler extends Highlighter {
           // The new point will be a point on a segment
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.hitSESegments[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
@@ -106,7 +106,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSELines.length > 0) {
           // The new point will be a point on a line
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(newPoint, this.hitSELines[0]);
+          vtx = new SEPointOnOneOrTwoDimensional(
+            /*newPoint,*/ this.hitSELines[0]
+          );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
           newSELabel = new SELabel(new Label("point"), vtx);
 
@@ -122,7 +124,7 @@ export default class PointHandler extends Highlighter {
           // The new point will be a point on a circle
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.hitSECircles[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
@@ -140,7 +142,7 @@ export default class PointHandler extends Highlighter {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.hitSEEllipses[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
@@ -158,7 +160,7 @@ export default class PointHandler extends Highlighter {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.hitSEParametrics[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
@@ -176,7 +178,7 @@ export default class PointHandler extends Highlighter {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
           vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.hitSEPolygons[0]
           );
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional

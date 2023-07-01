@@ -2,7 +2,6 @@ import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
@@ -17,9 +16,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { SEEllipse } from "@/models/SEEllipse";
 import { AngleMode } from "@/types";
-import { SEParametric } from "@/models/SEParametric";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
 import Two from "two.js";
 //import { Group } from "two.js/src/group";
@@ -990,15 +987,15 @@ export default class AngleHandler extends Highlighter {
       ) {
         // create a new point *on object*
         // we have to create a new point
-        const newPoint = new Point();
+        // const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         // Adjust the size of the point to the current zoom magnification factor
-        newPoint.adjustSize();
+        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const vtx = new SEPointOnOneOrTwoDimensional(
-          newPoint,
+          // newPoint,
           this.sePointOneDimensionalParents[i]!
         );
 

@@ -141,7 +141,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
       //make the point on object
       const point = new Point();
       const sePointOnOneOrTwoDimensional = new SEPointOnOneOrTwoDimensional(
-        point,
+        // point,
         pointOnOneOrTwoDimensionalParent
       );
       // use the direct setter because the parent may be out of date

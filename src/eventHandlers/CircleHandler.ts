@@ -422,11 +422,11 @@ export default class CircleHandler extends Highlighter {
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      const newCenterPoint = new Point();
+      // const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newCenterPoint.adjustSize();
+      // newCenterPoint.adjustSize();
 
       // Create the plottable label
       //const newLabel = new Label("point",vtx.name);
@@ -437,7 +437,7 @@ export default class CircleHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCenterPoint,
+          // newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
 
@@ -517,11 +517,11 @@ export default class CircleHandler extends Highlighter {
       }
     } else if (!fromActivate) {
       // We have to create a new Point for the end
-      const newCirclePoint = new Point();
+      // const newCirclePoint = new Point();
       // Set the display to the default values
-      newCirclePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCirclePoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
-      newCirclePoint.adjustSize();
+      // newCirclePoint.adjustSize();
 
       let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
@@ -529,7 +529,7 @@ export default class CircleHandler extends Highlighter {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSESegments[0]
         );
         // Set the Location
@@ -549,7 +549,7 @@ export default class CircleHandler extends Highlighter {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSELines[0]
         );
         // Set the Location
@@ -567,7 +567,7 @@ export default class CircleHandler extends Highlighter {
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSECircles[0]
         );
         // Set the Location
@@ -585,7 +585,7 @@ export default class CircleHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSEEllipses[0]
         );
         // Set the Location
@@ -603,7 +603,7 @@ export default class CircleHandler extends Highlighter {
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a parametric
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSEParametrics[0]
         );
         // Set the Location
@@ -621,7 +621,7 @@ export default class CircleHandler extends Highlighter {
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a polygon
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCirclePoint,
+          // newCirclePoint,
           this.hitSEPolygons[0]
         );
         // Set the Location

@@ -63,14 +63,14 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       }
       if (this.oneDimensional !== null) {
         const pointOnOneDimensionalCommandGroup = new CommandGroup();
-        const newPoint = new Point();
+        // const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
+        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const vtx = new SEPointOnOneOrTwoDimensional(
-          newPoint,
+          // newPoint,
           this.oneDimensional
         );
         vtx.locationVector = this.oneDimensional.closestVector(

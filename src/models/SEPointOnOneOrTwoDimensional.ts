@@ -3,10 +3,6 @@ import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SELine } from "./SELine";
-// import { SECircle } from "./SECircle";
-// import { SEEllipse } from "./SEEllipse";
 const { t } = i18n.global;
 
 export class SEPointOnOneOrTwoDimensional extends SEPoint {
@@ -21,9 +17,9 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param oneDimensionalParent The parent
    */
-  constructor(point: Point, oneDimensionalParent: SEOneOrTwoDimensional) {
-    super(true); // NonFreePoint
-    this.ref = point;
+  constructor(oneDimensionalParent: SEOneOrTwoDimensional) {
+    super(false); // Always free point
+    // this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
   }
 

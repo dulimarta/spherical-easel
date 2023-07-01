@@ -521,16 +521,16 @@ export default class TangentLineThruPointHandler extends Highlighter {
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
       // create a
-      const newPoint = new Point();
+      // const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
+      // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newPoint.adjustSize();
 
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
         this.sePoint = new SEPointOnOneOrTwoDimensional( // Use  this.sePoint so that this variable points to the parent point, no matter how it is created or picked
-          newPoint,
+          // newPoint,
           sePointOneDimensionalParent
         );
         this.sePoint.locationVector =

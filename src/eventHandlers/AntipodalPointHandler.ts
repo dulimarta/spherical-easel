@@ -162,14 +162,14 @@ export default class AntipodalPointHandler extends Highlighter {
 
         if (this.oneDimensionalContainingParentPoint !== null) {
           // create a new point on the object that the user clicked on
-          const newPoint = new Point();
+          // const newPoint = new Point();
           // Set the display to the default values
-          newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-          newPoint.adjustSize();
+          // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+          // newPoint.adjustSize();
 
           // Create the model object for the new point and link them
           this.parentPoint = new SEPointOnOneOrTwoDimensional(
-            newPoint,
+            // newPoint,
             this.oneDimensionalContainingParentPoint
           );
           this.parentPoint.locationVector = this.parentPointVector;
