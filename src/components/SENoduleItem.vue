@@ -344,7 +344,6 @@ onBeforeMount(() => {
 onMounted((): void => {
   if (props.node instanceof SEParametric) {
     curve = props.node;
-    // const pt = new Point();
     curvePoint = curve.tracePoint;
     const [tMin, tMax] = curve.tMinMaxExpressionValues();
     parametricTMin.value = tMin;

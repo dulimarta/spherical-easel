@@ -6,7 +6,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
 import Label from "@/plottables/Label";
-import Point from "@/plottables/Point";
+// import Point from "@/plottables/Point";
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -107,19 +107,22 @@ export class AddPointCommand extends Command {
     sePointLocation.from(propMap.get("pointVector")); // convert to vector
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
-    const point = new Point();
+    // const point = new Point();
     const sePoint = new SEPoint();
     sePoint.locationVector.copy(sePointLocation);
     // console.debug(`Point front style string ${pointFrontStyleString}`);
     if (pointFrontStyleString !== undefined) {
-      point.updateStyle(
+      sePoint.updatePlottableStyle(
         StyleEditPanels.Front,
         JSON.parse(pointFrontStyleString)
       );
     }
     // console.debug(`Point back style string ${pointBackStyleString}`);
     if (pointBackStyleString !== undefined) {
-      point.updateStyle(StyleEditPanels.Back, JSON.parse(pointBackStyleString));
+      sePoint.updatePlottableStyle(
+        StyleEditPanels.Back,
+        JSON.parse(pointBackStyleString)
+      );
     }
 
     //make the label

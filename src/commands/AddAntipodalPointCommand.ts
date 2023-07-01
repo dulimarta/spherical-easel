@@ -5,7 +5,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
+// import Point from "@/plottables/Point";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import Label from "@/plottables/Label";
 
@@ -103,7 +103,7 @@ export class AddAntipodalPointCommand extends Command {
 
     if (parentPoint) {
       //make the point
-      const point = new Point();
+      // const point = new Point();
       const isUserCreated =
         propMap.get("antipodalPointIsUserCreated") === "true";
       const sePoint = new SEAntipodalPoint(
@@ -117,13 +117,13 @@ export class AddAntipodalPointCommand extends Command {
       sePoint.locationVector.copy(sePointLocation);
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
-        point.updateStyle(
+        sePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
-        point.updateStyle(
+        sePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );

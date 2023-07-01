@@ -4,7 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
@@ -139,7 +138,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
     // );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
-      const point = new Point();
+      // const point = new Point();
       const sePointOnOneOrTwoDimensional = new SEPointOnOneOrTwoDimensional(
         // point,
         pointOnOneOrTwoDimensionalParent
@@ -150,14 +149,14 @@ export class AddPointOnOneDimensionalCommand extends Command {
       const pointOnOneOrTwoDimensionalFrontStyleString =
         propMap.get("objectFrontStyle");
       if (pointOnOneOrTwoDimensionalFrontStyleString !== undefined)
-        point.updateStyle(
+        sePointOnOneOrTwoDimensional.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointOnOneOrTwoDimensionalFrontStyleString)
         );
       const pointOnOneOrTwoDimensionalBackStyleString =
         propMap.get("objectBackStyle");
       if (pointOnOneOrTwoDimensionalBackStyleString !== undefined)
-        point.updateStyle(
+        sePointOnOneOrTwoDimensional.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointOnOneOrTwoDimensionalBackStyleString)
         );
