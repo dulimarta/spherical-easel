@@ -134,9 +134,9 @@ export class AddIsometryEllipseCommand extends Command {
       isometryEllipseFocus2Point
     ) {
       //make the Ellipse
-      const seg = new NonFreeEllipse();
+      // const seg = new NonFreeEllipse();
       const isometrySEEllipse = new SEIsometryEllipse(
-        seg,
+        // seg,
         isometryEllipseFocus1Point,
         isometryEllipseFocus2Point,
         isometryEllipseEllipsePoint,
@@ -146,13 +146,13 @@ export class AddIsometryEllipseCommand extends Command {
       //style the Ellipse
       const EllipseFrontStyleString = propMap.get("objectFrontStyle");
       if (EllipseFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySEEllipse.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(EllipseFrontStyleString)
         );
       const EllipseBackStyleString = propMap.get("objectBackStyle");
       if (EllipseBackStyleString !== undefined)
-        seg.updateStyle(
+        isometrySEEllipse.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(EllipseBackStyleString)
         );

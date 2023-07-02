@@ -37,7 +37,6 @@ import { AddIsometryCircleCommand } from "@/commands/AddIsometryCircleCommand";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
 import { AddIsometryEllipseCommand } from "@/commands/AddIsometryEllipseCommand";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
-import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { AddIsometryLineCommand } from "@/commands/AddIsometryLineCommand";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
 import {
@@ -2197,14 +2196,14 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Ellipse
-    const newTransformedEllipse = new NonFreeEllipse();
+    // const newTransformedEllipse = new NonFreeEllipse();
     // Set the display to the default values
-    newTransformedEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newTransformedEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newTransformedEllipse.adjustSize();
+    // newTransformedEllipse.adjustSize();
 
     const newIsometrySEEllipse = new SEIsometryEllipse(
-      newTransformedEllipse,
+      // newTransformedEllipse,
       transformedFocus1SEPoint,
       transformedFocus2SEPoint,
       transformedEllipseSEPoint,

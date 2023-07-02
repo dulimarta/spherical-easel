@@ -1106,10 +1106,11 @@ export default class EllipseHandler extends Highlighter {
 
       // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
       const newSEEllipse = new SEEllipse(
-        newEllipse,
+        // newEllipse,
         this.focus1SEPoint,
         this.focus2SEPoint,
-        this.ellipseSEPoint
+        this.ellipseSEPoint,
+        false
       );
       // Create the plottable and model label
       // const newLabel = new Label("ellipse");

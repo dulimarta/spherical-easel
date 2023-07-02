@@ -186,7 +186,7 @@ import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
-import { getAuth, User, Unsubscribe } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import {
   getStorage,
   ref as storageRef,
@@ -206,7 +206,7 @@ import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const appDB = getFirestore();
-const appAuth = getAuth();
+// const appAuth = getAuth();
 const appStorage = getStorage();
 /**
  * Split panel width distribution (percentages):

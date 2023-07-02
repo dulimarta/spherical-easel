@@ -4,7 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
-import Ellipse from "@/plottables/Ellipse";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 
@@ -116,23 +115,24 @@ export class AddEllipseCommand extends Command {
 
     if (ellipseFocus1 && ellipseFocus2 && ellipsePointOnEllipse) {
       //make the ellipse
-      const ellipse = new Ellipse();
+      // const ellipse = new Ellipse();
       const seEllipse = new SEEllipse(
-        ellipse,
+        // ellipse,
         ellipseFocus1,
         ellipseFocus2,
-        ellipsePointOnEllipse
+        ellipsePointOnEllipse,
+        false
       );
       //style the ellipse
       const ellipseFrontStyleString = propMap.get("objectFrontStyle");
       if (ellipseFrontStyleString !== undefined)
-        ellipse.updateStyle(
+        seEllipse.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(ellipseFrontStyleString)
         );
       const ellipseBackStyleString = propMap.get("objectBackStyle");
       if (ellipseBackStyleString !== undefined)
-        ellipse.updateStyle(
+        seEllipse.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(ellipseBackStyleString)
         );
