@@ -11,7 +11,6 @@ import SETTINGS from "@/global-settings";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AngleMode } from "@/types";
-import Polygon from "@/plottables/Polygon";
 import { SEPolygon } from "@/models/SEPolygon";
 import { AddPolygonCommand } from "@/commands/AddPolygonAndExpressionCommand";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
@@ -340,17 +339,17 @@ export default class PolygonHandler extends Highlighter {
         // Create and add all the angle markers to the polygonCommandGroup
         this.addMeasuredSegments(polygonCommandGroup);
 
-        const newPolygon = new Polygon(
-          this.seEdgeSegments,
-          this.segmentIsFlipped
-        );
-        // Set the display to the default values
-        newPolygon.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPolygon.adjustSize();
+        // const newPolygon = new Polygon(
+        //   this.seEdgeSegments,
+        //   this.segmentIsFlipped
+        // );
+        // // Set the display to the default values
+        // newPolygon.stylize(DisplayStyle.ApplyCurrentVariables);
+        // newPolygon.adjustSize();
 
         // Create the model object for the new polygon and link them
         const vtx = new SEPolygon(
-          newPolygon,
+          // newPolygon,
           this.seEdgeSegments,
           this.segmentIsFlipped,
           seAngleMarkerList

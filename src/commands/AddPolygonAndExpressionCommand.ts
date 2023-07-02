@@ -6,7 +6,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
-import Polygon from "@/plottables/Polygon";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolygonCommand extends Command {
@@ -177,12 +176,12 @@ export class AddPolygonCommand extends Command {
       valueDisplayMode
     ) {
       //make the polygon
-      const polygon = new Polygon(
-        polygonSegmentParents.map(seg => seg as SESegment),
-        polygonSegmentFlippedList
-      );
+      // const polygon = new Polygon(
+      //   polygonSegmentParents.map(seg => seg as SESegment),
+      //   polygonSegmentFlippedList
+      // );
       const sePolygon = new SEPolygon(
-        polygon,
+        // polygon,
         polygonSegmentParents.map(seg => seg as SESegment),
         polygonSegmentFlippedList,
         polygonAngleMarkerParents.map(ang => ang as SEAngleMarker)
@@ -191,13 +190,13 @@ export class AddPolygonCommand extends Command {
       //style the polygon
       const polygonFrontStyleString = propMap.get("objectFrontStyle");
       if (polygonFrontStyleString !== undefined)
-        polygon.updateStyle(
+        sePolygon.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(polygonFrontStyleString)
         );
       const polygonBackStyleString = propMap.get("objectBackStyle");
       if (polygonBackStyleString !== undefined)
-        polygon.updateStyle(
+        sePolygon.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(polygonBackStyleString)
         );

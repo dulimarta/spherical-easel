@@ -16,6 +16,7 @@ import i18n from "@/i18n";
 import Polygon from "@/plottables/Polygon";
 // import { SEExpression } from "./SEExpression";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -80,13 +81,15 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
    * @param angleMarkers
    */
   constructor(
-    poly: Polygon,
+    // poly: Polygon,
     edges: SESegment[],
     flippedBooleans: boolean[],
     angleMarkers: SEAngleMarker[]
   ) {
     super();
-    this.ref = poly;
+    this.ref = new Polygon(edges, flippedBooleans);
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.updateDisplay();
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);
