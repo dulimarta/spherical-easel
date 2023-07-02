@@ -18,6 +18,7 @@ import {
 } from "@/types/Styles";
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
+import NonFreeSegment from "@/plottables/NonFreeSegment";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -82,14 +83,15 @@ export class SESegment
    * @param segmentEndSEPoint The model SEPoint object that is the end of the segment
    */
   constructor(
-    seg: Segment,
+    // seg: Segment,
     segmentStartSEPoint: SEPoint,
     segmentNormalVector: Vector3,
     segmentArcLength: number,
-    segmentEndSEPoint: SEPoint
+    segmentEndSEPoint: SEPoint,
+    createNonFreeSegment: boolean = false
   ) {
     super();
-    this.ref = seg;
+    this.ref = createNonFreeSegment ? new NonFreeSegment() : new Segment();
     this._startSEPoint = segmentStartSEPoint;
     this._normalVector.copy(segmentNormalVector);
     this._arcLength = segmentArcLength;

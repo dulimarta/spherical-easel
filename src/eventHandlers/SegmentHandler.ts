@@ -824,14 +824,14 @@ export default class SegmentHandler extends Highlighter {
         return false;
       }
       // Clone the temporary segment and mark it removed from the scene,
-      const newSegment = this.temporarySegment.clone();
+      // const newSegment = this.temporarySegment.clone();
       this.isTemporarySegmentAdded = false;
       // Stylize the new segment
-      newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
-      newSegment.adjustSize();
+      // newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newSegment.adjustSize();
 
       const newSESegment = new SESegment(
-        newSegment,
+        // newSegment,
         this.startSEPoint,
         this.normalVector,
         this.arcLength,

@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
@@ -117,9 +116,9 @@ export class AddSegmentCommand extends Command {
       !isNaN(segmentArcLength)
     ) {
       //make the segment
-      const segment = new Segment();
+      // const segment = new Segment();
       const seSegment = new SESegment(
-        segment,
+        // segment,
         segmentStartPoint,
         segmentNormalVector,
         segmentArcLength,
@@ -128,13 +127,13 @@ export class AddSegmentCommand extends Command {
       //style the segment
       const segmentFrontStyleString = propMap.get("objectFrontStyle");
       if (segmentFrontStyleString !== undefined)
-        segment.updateStyle(
+        seSegment.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(segmentFrontStyleString)
         );
       const segmentBackStyleString = propMap.get("objectBackStyle");
       if (segmentBackStyleString !== undefined)
-        segment.updateStyle(
+        seSegment.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(segmentBackStyleString)
         );

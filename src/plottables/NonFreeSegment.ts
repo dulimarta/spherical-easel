@@ -1,7 +1,5 @@
-import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
-import SETTINGS, { LAYER } from "@/global-settings";
-import Nodule, { DisplayStyle } from "./Nodule";
+import SETTINGS from "@/global-settings";
+import Nodule from "./Nodule";
 import {
   StyleOptions,
   StyleEditPanels,

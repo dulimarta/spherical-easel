@@ -25,7 +25,6 @@ import Ellipse from "@/plottables/Ellipse";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import NonFreeSegment from "@/plottables/NonFreeSegment";
 import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
@@ -1685,14 +1684,14 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed segment
-    const newTransformedSegment = new NonFreeSegment();
+    // const newTransformedSegment = new NonFreeSegment();
     // Set the display to the default values
-    newTransformedSegment.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newTransformedSegment.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newTransformedSegment.adjustSize();
+    // newTransformedSegment.adjustSize();
 
     const newIsometrySESegment = new SEIsometrySegment(
-      newTransformedSegment,
+      // newTransformedSegment,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSESegment.normalVector),
       preimageSESegment.arcLength,
