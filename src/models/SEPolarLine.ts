@@ -1,10 +1,8 @@
-import Line from "@/plottables/Line";
 import { Visitable } from "@/visitors/Visitable";
 import { SEPoint, SELine } from "./internal";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
 import { Vector3 } from "three";
 const { t } = i18n.global;
 
@@ -22,16 +20,17 @@ export class SEPolarLine
    * @param polarPointParent The polar point parent of the line
    */
   constructor(
-    line: Line,
+    // line: Line,
     lineStartSEPoint: SEPoint,
     lineEndSEPoint: SEPoint,
     polarPointParent: SEPoint
   ) {
     super(
-      line,
+      // line,
       lineStartSEPoint,
       polarPointParent.locationVector,
-      lineEndSEPoint
+      lineEndSEPoint,
+      true
     );
     this.polarPointParent = polarPointParent;
   }

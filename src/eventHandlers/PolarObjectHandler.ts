@@ -630,8 +630,8 @@ export default class PolarObjectHandler extends Highlighter {
 
     const newLine = this.temporaryPolarLineMarker.clone();
     // Set the display to the default values
-    newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-    newLine.adjustSize();
+    // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newLine.adjustSize();
     // Create the start and end points of the line, these will never be displayed
 
     // The (end|start)SEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
@@ -654,7 +654,7 @@ export default class PolarObjectHandler extends Highlighter {
 
     // Create the model object for the new point and link them
     const newPolarLine = new SEPolarLine(
-      newLine,
+      // newLine,
       startSEPoint,
       endSEPoint,
       this.parentPoint

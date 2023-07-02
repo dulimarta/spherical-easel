@@ -24,7 +24,6 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import Two from "two.js";
 // import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
@@ -647,14 +646,14 @@ export default class TangentLineThruPointHandler extends Highlighter {
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this tangent
-      const plottableLine = new NonFreeLine();
+      // const plottableLine = new NonFreeLine();
       // Stylize the new Line
-      plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      plottableLine.adjustSize();
+      // plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
+      // plottableLine.adjustSize();
 
       // Create the model(SE) tangent line for the new point and link them
       const newSETangentLine = new SETangentLineThruPoint(
-        plottableLine,
+        // plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,

@@ -5,7 +5,6 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
@@ -139,7 +138,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       !isNaN(perpendicularLineThruPointIndex)
     ) {
       //make the perpendicular Line
-      const line = new NonFreeLine();
+      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = perpendicularLineThruPointEndSEPointLocation;
@@ -147,7 +146,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       endPoint.showing = false; // never changes
 
       const perpendicularLineThruPointLine = new SEPerpendicularLineThruPoint(
-        line,
+        // line,
         perpendicularLineThruPointParentOneDimensional,
         perpendicularLineThruPointParentPoint,
         perpendicularLineThruPointNormal,
@@ -158,14 +157,14 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       const perpendicularThruPointLineFrontStyleString =
         propMap.get("objectFrontStyle");
       if (perpendicularThruPointLineFrontStyleString !== undefined)
-        line.updateStyle(
+        perpendicularLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(perpendicularThruPointLineFrontStyleString)
         );
       const perpendicularThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (perpendicularThruPointLineBackStyleString !== undefined)
-        line.updateStyle(
+        perpendicularLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(perpendicularThruPointLineBackStyleString)
         );

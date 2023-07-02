@@ -42,7 +42,6 @@ import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { AddIsometryLineCommand } from "@/commands/AddIsometryLineCommand";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import {
   SEIntersectionReturnType,
   SEOneDimensional,
@@ -1849,14 +1848,14 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Line
-    const newTransformedLine = new NonFreeLine();
+    // const newTransformedLine = new NonFreeLine();
     // Set the display to the default values
-    newTransformedLine.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newTransformedLine.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newTransformedLine.adjustSize();
+    // newTransformedLine.adjustSize();
 
     const newIsometrySELine = new SEIsometryLine(
-      newTransformedLine,
+      // newTransformedLine,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSELine.normalVector),
       transformedEndSEPoint,
@@ -2467,10 +2466,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedSECircleCenter.update();
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
-      const newSELabel = new SELabel(
-        "point",
-        newInvertedSECircleCenter
-      );
+      const newSELabel = new SELabel("point", newInvertedSECircleCenter);
       // Set the initial label location
       this.tmpVector
         .copy(newInvertedSECircleCenter.locationVector)
@@ -2525,10 +2521,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedSECircle.circleRadius
     );
     // Create the label
-    const newSECircleLabel = new SELabel(
-      "circle",
-      newInvertedSECircle
-    );
+    const newSECircleLabel = new SELabel("circle", newInvertedSECircle);
     // Set the initial label location
     this.tmpVector
       .copy(newInvertedSECircle.circleSEPoint.locationVector)

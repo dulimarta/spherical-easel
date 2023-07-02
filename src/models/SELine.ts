@@ -3,7 +3,6 @@ import Line from "@/plottables/Line";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-// import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
@@ -12,23 +11,20 @@ import {
   ObjectState
 } from "@/types";
 import { SELabel, SEPoint } from "./internal";
-// import  SENoduleItem  from "*.vue";
-// import magnificationLevel from "*.vue";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
+import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreeLine from "@/plottables/NonFreeLine";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
 const { t } = i18n.global;
-export class SELine
-  extends SENodule
-  implements Visitable, OneDimensional, Labelable
-{
+export class SELine extends SENodule implements Visitable, OneDimensional, Labelable {
   /**
    * The corresponding plottable TwoJS object
    */
@@ -63,13 +59,16 @@ export class SELine
    * @param lineEndSEPoint A second Point on the line
    */
   constructor(
-    line: Line,
+    // line: Line,
     lineStartSEPoint: SEPoint,
     normalVector: Vector3,
-    lineEndSEPoint: SEPoint
+    lineEndSEPoint: SEPoint,
+    createNonFreeLine: boolean = false
   ) {
     super();
-    this.ref = line;
+    this.ref = createNonFreeLine ? new NonFreeLine() : new Line();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     this._startSEPoint = lineStartSEPoint;
     this._normalVector.copy(normalVector);
     this._endSEPoint = lineEndSEPoint;

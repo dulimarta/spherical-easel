@@ -7,7 +7,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddNSectLineCommand extends Command {
@@ -132,7 +131,7 @@ export class AddNSectLineCommand extends Command {
       !isNaN(seNSectLineN)
     ) {
       //make the Nsect Line
-      const line = new NonFreeLine();
+      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = seNSectLineEndSEPointLocation;
@@ -140,7 +139,7 @@ export class AddNSectLineCommand extends Command {
       endPoint.showing = false; // never changes
 
       const seNSectLine = new SENSectLine(
-        line,
+        // line,
         seNSectLineStartSEPoint,
         seNSectLineNormalVector,
         endPoint,
@@ -151,13 +150,13 @@ export class AddNSectLineCommand extends Command {
       //style the NSect Line
       const nSectLineFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectLineFrontStyleString !== undefined)
-        line.updateStyle(
+        seNSectLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(nSectLineFrontStyleString)
         );
       const nSectLineBackStyleString = propMap.get("objectBackStyle");
       if (nSectLineBackStyleString !== undefined)
-        line.updateStyle(
+        seNSectLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(nSectLineBackStyleString)
         );

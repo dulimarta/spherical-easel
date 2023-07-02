@@ -7,7 +7,6 @@ import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SELine } from "@/models/SELine";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 
 export class AddIsometryLineCommand extends Command {
   private preimageSELine: SELine;
@@ -126,9 +125,9 @@ export class AddIsometryLineCommand extends Command {
       isometryLineStartPoint
     ) {
       //make the Line
-      const seg = new NonFreeLine();
+      // const seg = new NonFreeLine();
       const isometrySELine = new SEIsometryLine(
-        seg,
+        // seg,
         isometryLineStartPoint,
         isometryLineParentIsometry.f(parentSELine.normalVector),
         isometryLineEndPoint,
@@ -138,13 +137,16 @@ export class AddIsometryLineCommand extends Command {
       //style the Line
       const LineFrontStyleString = propMap.get("objectFrontStyle");
       if (LineFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySELine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(LineFrontStyleString)
         );
       const LineBackStyleString = propMap.get("objectBackStyle");
       if (LineBackStyleString !== undefined)
-        seg.updateStyle(StyleEditPanels.Back, JSON.parse(LineBackStyleString));
+        isometrySELine.updatePlottableStyle(
+          StyleEditPanels.Back,
+          JSON.parse(LineBackStyleString)
+        );
 
       //make the label and set its location
       // const label = new Label("line");

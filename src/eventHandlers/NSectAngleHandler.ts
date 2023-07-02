@@ -1,7 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Two from "two.js";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
@@ -10,7 +9,6 @@ import { SEIntersectionReturnType } from "@/types";
 import Line from "@/plottables/Line";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SENSectLine } from "@/models/SENSectLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
@@ -325,14 +323,14 @@ export default class NSectAngleHandler extends Highlighter {
           endSEPoint.locationVector = endPointVector; // this gets updated
 
           // create the plottable line
-          const newLine = new NonFreeLine();
+          // const newLine = new NonFreeLine();
           // Set the display to the default values
-          newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-          newLine.adjustSize();
+          // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
+          // newLine.adjustSize();
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
-            newLine,
+            // newLine,
             startSEPoint as SEPoint,
             normalVector,
             endSEPoint,

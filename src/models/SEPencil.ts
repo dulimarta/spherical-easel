@@ -1,5 +1,3 @@
-import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { ObjectState } from "@/types";
@@ -10,9 +8,11 @@ import {
 import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
-import { SEParametric, SEPerpendicularLineThruPoint, SEPoint } from "./internal";
-// import { SEPerpendicularLineThruPoint } from "./SEPerpendicularLineThruPoint";
-// import { SEPoint } from "./SEPoint";
+import {
+  SEParametric,
+  SEPerpendicularLineThruPoint,
+  SEPoint
+} from "./internal";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
@@ -62,11 +62,11 @@ export class SEPencil extends SENodule {
         );
         endSEPoint.locationVector = this.tempVector.normalize();
 
-        const plottableLine = new NonFreeLine();
-        plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-        plottableLine.adjustSize();
+        // const plottableLine = new NonFreeLine();
+        // plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
+        // plottableLine.adjustSize();
         const newPerpLine = new SEPerpendicularLineThruPoint(
-          plottableLine,
+          // plottableLine,
           this._commonParent,
           this._commonPoint,
           normals[k].normal,

@@ -2,7 +2,6 @@ import { SEPoint, SELine, SECircle, SEEllipse, SEParametric } from "./internal";
 import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
 // import { SELine } from "./SELine";
 import { Vector3 } from "three";
-import Line from "@/plottables/Line";
 import i18n from "@/i18n";
 // import { SECircle } from "./SECircle";
 // import { SEEllipse } from "./SEEllipse";
@@ -41,15 +40,15 @@ export class SETangentLineThruPoint extends SELine {
    * @param index
    */
   constructor(
-    line: Line,
+    // line: Line,
     seParentOneDimensional: SEOneDimensionalNotStraight,
     seParentPoint: SEPoint,
     normalVector: Vector3,
     seEndPoint: SEPoint,
     index: number
   ) {
-    super(line, seParentPoint, normalVector, seEndPoint);
-    this.ref = line;
+    super(seParentPoint, normalVector, seEndPoint, true);
+    // this.ref = line;
     this._seParentOneDimensional = seParentOneDimensional;
     this._seParentPoint = seParentPoint;
     this._index = index;

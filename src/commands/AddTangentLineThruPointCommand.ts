@@ -5,7 +5,6 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
@@ -136,7 +135,7 @@ export class AddTangentLineThruPointCommand extends Command {
       !isNaN(tangentLineThruPointIndex)
     ) {
       //make the tangent Line
-      const line = new NonFreeLine();
+      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = tangentLineThruPointEndSEPointLocation;
@@ -144,7 +143,7 @@ export class AddTangentLineThruPointCommand extends Command {
       endPoint.showing = false; // never changes
 
       const tangentLineThruPointLine = new SETangentLineThruPoint(
-        line,
+        // line,
         tangentLineThruPointParentOneDimensional,
         tangentLineThruPointParentPoint,
         tangentLineThruPointNormal,
@@ -155,14 +154,14 @@ export class AddTangentLineThruPointCommand extends Command {
       const tangentThruPointLineFrontStyleString =
         propMap.get("objectFrontStyle");
       if (tangentThruPointLineFrontStyleString !== undefined)
-        line.updateStyle(
+        tangentLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(tangentThruPointLineFrontStyleString)
         );
       const tangentThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (tangentThruPointLineBackStyleString !== undefined)
-        line.updateStyle(
+        tangentLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(tangentThruPointLineBackStyleString)
         );

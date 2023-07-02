@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import Line from "@/plottables/Line";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
@@ -109,9 +108,9 @@ export class AddLineCommand extends Command {
 
     if (lineEndPoint && lineStartPoint && lineNormalVector.z !== 1) {
       //make the line
-      const line = new Line();
+      // const line = new Line();
       const seLine = new SELine(
-        line,
+        // line,
         lineStartPoint,
         lineNormalVector,
         lineEndPoint
@@ -119,13 +118,16 @@ export class AddLineCommand extends Command {
       //style the line
       const lineFrontStyleString = propMap.get("objectFrontStyle");
       if (lineFrontStyleString !== undefined)
-        line.updateStyle(
+        seLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(lineFrontStyleString)
         );
       const lineBackStyleString = propMap.get("objectBackStyle");
       if (lineBackStyleString !== undefined)
-        line.updateStyle(StyleEditPanels.Back, JSON.parse(lineBackStyleString));
+        seLine.updatePlottableStyle(
+          StyleEditPanels.Back,
+          JSON.parse(lineBackStyleString)
+        );
 
       //make the label and set its location
       // const label = new Label("line");

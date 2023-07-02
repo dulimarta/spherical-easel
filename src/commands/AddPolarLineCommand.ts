@@ -5,7 +5,6 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPolarLine } from "@/models/SEPolarLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolarLineCommand extends Command {
@@ -124,7 +123,7 @@ export class AddPolarLineCommand extends Command {
       sePolarLineEndSEPointLocation.z !== 1
     ) {
       //make the polar Line
-      const line = new NonFreeLine();
+      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = sePolarLineEndSEPointLocation;
@@ -138,7 +137,7 @@ export class AddPolarLineCommand extends Command {
       startPoint.showing = false; // never changes
 
       const sePolarLine = new SEPolarLine(
-        line,
+        // line,
         startPoint,
         endPoint,
         sePolarLineParentPoint
@@ -146,13 +145,13 @@ export class AddPolarLineCommand extends Command {
       //style the Polara Line
       const polarLineFrontStyleString = propMap.get("objectFrontStyle");
       if (polarLineFrontStyleString !== undefined)
-        line.updateStyle(
+        sePolarLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(polarLineFrontStyleString)
         );
       const polarLineBackStyleString = propMap.get("objectBackStyle");
       if (polarLineBackStyleString !== undefined)
-        line.updateStyle(
+        sePolarLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(polarLineBackStyleString)
         );

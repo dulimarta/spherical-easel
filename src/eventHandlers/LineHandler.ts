@@ -6,7 +6,6 @@ import { AddLineCommand } from "@/commands/AddLineCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
@@ -768,13 +767,13 @@ export default class LineHandler extends Highlighter {
       }
 
       // Create the new line after the normalVector is set
-      const newLine = this.temporaryLine.clone();
+      // const newLine = this.temporaryLine.clone();
       // Stylize the new Line
-      newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      newLine.adjustSize();
+      // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newLine.adjustSize();
 
       const newSELine = new SELine(
-        newLine,
+        // newLine,
         this.startSEPoint,
         this.normalVector,
         this.endSEPoint

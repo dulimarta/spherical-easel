@@ -18,7 +18,6 @@ import Line from "@/plottables/Line";
 import Point from "@/plottables/Point";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import SETTINGS from "@/global-settings";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
@@ -26,7 +25,6 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
 import Two from "two.js";
@@ -718,14 +716,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this perpendicular
-      const plottableLine = new NonFreeLine();
+      // const plottableLine = new NonFreeLine();
       // Stylize the new Line
-      plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      plottableLine.adjustSize();
+      // plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
+      // plottableLine.adjustSize();
 
       // Create the model(SE) perpendicular line for the new point and link them
       const newPerpLine = new SEPerpendicularLineThruPoint(
-        plottableLine,
+        // plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,
