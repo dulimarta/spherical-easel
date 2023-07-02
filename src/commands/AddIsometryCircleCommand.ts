@@ -1,11 +1,9 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
@@ -128,9 +126,9 @@ export class AddIsometryCircleCommand extends Command {
       isometryCircleCenterPoint
     ) {
       //make the Circle
-      const seg = new NonFreeCircle();
+      // const seg = new NonFreeCircle();
       const isometrySECircle = new SEIsometryCircle(
-        seg,
+        // seg,
         isometryCircleCenterPoint,
         isometryCircleCirclePoint,
         parentSECircle,
@@ -139,13 +137,13 @@ export class AddIsometryCircleCommand extends Command {
       //style the Circle
       const CircleFrontStyleString = propMap.get("objectFrontStyle");
       if (CircleFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySECircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(CircleFrontStyleString)
         );
       const CircleBackStyleString = propMap.get("objectBackStyle");
       if (CircleBackStyleString !== undefined)
-        seg.updateStyle(
+        isometrySECircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(CircleBackStyleString)
         );

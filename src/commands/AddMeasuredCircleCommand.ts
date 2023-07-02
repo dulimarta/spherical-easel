@@ -7,7 +7,6 @@ import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
 
 export class AddMeasuredCircleCommand extends Command {
@@ -138,9 +137,9 @@ export class AddMeasuredCircleCommand extends Command {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       //make the circle
-      const circle = new NonFreeCircle();
+      // const circle = new NonFreeCircle();
       const seCircle = new SEMeasuredCircle(
-        circle,
+        // circle,
         circleCenterPoint,
         hiddenSEPoint,
         radiusExpression
@@ -148,13 +147,13 @@ export class AddMeasuredCircleCommand extends Command {
       //style the circle
       const circleFrontStyleString = propMap.get("objectFrontStyle");
       if (circleFrontStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(circleFrontStyleString)
         );
       const circleBackStyleString = propMap.get("objectBackStyle");
       if (circleBackStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(circleBackStyleString)
         );

@@ -1,12 +1,9 @@
-import { SENodule } from "./SENodule";
 import { SEPoint, SECircle, SEExpression } from "./internal";
-import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 // import { SECircle } from "./SECircle";
 // import { SEExpression } from "./SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
@@ -26,12 +23,12 @@ export class SEMeasuredCircle extends SECircle {
    * @param radiusMeasurementSEExpression The model SEExpression that determines the radius
    */
   constructor(
-    circ: NonFreeCircle,
+    // circ: NonFreeCircle,
     centerPoint: SEPoint,
     hiddenCirclePoint: SEPoint,
     radiusMeasurementSEExpression: SEExpression
   ) {
-    super(circ, centerPoint, hiddenCirclePoint);
+    super(centerPoint, hiddenCirclePoint, true);
     this._radiusMeasurementSEExpression = radiusMeasurementSEExpression;
   }
 

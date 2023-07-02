@@ -3,7 +3,6 @@ import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
@@ -105,18 +104,18 @@ export class AddCircleCommand extends Command {
 
     if (circleCenterPoint && circlePoint) {
       //make the circle
-      const circle = new Circle();
-      const seCircle = new SECircle(circle, circleCenterPoint, circlePoint);
+      // const circle = new Circle();
+      const seCircle = new SECircle(circleCenterPoint, circlePoint, false);
       //style the circle
       const circleFrontStyleString = propMap.get("objectFrontStyle");
       if (circleFrontStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(circleFrontStyleString)
         );
       const circleBackStyleString = propMap.get("objectBackStyle");
       if (circleBackStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(circleBackStyleString)
         );

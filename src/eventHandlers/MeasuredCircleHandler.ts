@@ -7,7 +7,6 @@ import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -31,8 +30,6 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import Two from "two.js";
@@ -704,18 +701,18 @@ export default class MeasuredCircleHandler extends Highlighter {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       // create the new non free circle
-      const newCircle = new NonFreeCircle();
+      // const newCircle = new NonFreeCircle();
       // Set the display to the default values
-      newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor
-      newCircle.adjustSize();
+      // newCircle.adjustSize();
       // set the radius, center and update the display
-      newCircle.centerVector = this.centerSEPoint.locationVector;
-      newCircle.circleRadius = newRadius;
-      newCircle.updateDisplay();
+      // newCircle.centerVector = this.centerSEPoint.locationVector;
+      // newCircle.circleRadius = newRadius;
+      // newCircle.updateDisplay();
 
       const newMeasuredSECircle = new SEMeasuredCircle(
-        newCircle,
+        // newCircle,
         this.centerSEPoint,
         hiddenSEPoint,
         measurementSEExpression

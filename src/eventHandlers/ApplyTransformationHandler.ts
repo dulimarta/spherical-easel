@@ -35,7 +35,6 @@ import Highlighter from "./Highlighter";
 import { AddIsometrySegmentCommand } from "@/commands/AddIsometrySegmentCommand";
 import { AddIsometryCircleCommand } from "@/commands/AddIsometryCircleCommand";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { AddIsometryEllipseCommand } from "@/commands/AddIsometryEllipseCommand";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 import NonFreeEllipse from "@/plottables/NonFreeEllipse";
@@ -2007,14 +2006,14 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed Circle
-    const newTransformedCircle = new NonFreeCircle();
+    // const newTransformedCircle = new NonFreeCircle();
     // Set the display to the default values
-    newTransformedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newTransformedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newTransformedCircle.adjustSize();
+    // newTransformedCircle.adjustSize();
 
     const newIsometrySECircle = new SEIsometryCircle(
-      newTransformedCircle,
+      // newTransformedCircle,
       transformedCenterSEPoint,
       transformedCircleSEPoint,
       preimageSECircle,
@@ -2500,18 +2499,19 @@ export default class ApplyTransformationHandler extends Highlighter {
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
 
     // we have to create a new transformed Circle
-    const newInvertedCircle = new NonFreeCircle();
+    // const newInvertedCircle = new NonFreeCircle();
     // Set the display to the default values
-    newInvertedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newInvertedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the size of the point to the current zoom magnification factor
-    newInvertedCircle.adjustSize();
+    // newInvertedCircle.adjustSize();
 
     const newInvertedSECircle = new SECircle(
-      newInvertedCircle,
+      // newInvertedCircle,
       newInvertedSECircleCenter !== null
         ? newInvertedSECircleCenter
         : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
-      transformedSEPointOnLineOrCircle
+      transformedSEPointOnLineOrCircle,
+      true
     );
     newInvertedSECircle.markKidsOutOfDate();
     newInvertedSECircle.update();

@@ -1145,23 +1145,24 @@ export default class ThreePointCircleHandler extends Highlighter {
 
       // Clone the current three point circle
       // const newNonFreeCircle = this.temporaryThreePointCircle.clone();
-      const newNonFreeCircle = new NonFreeCircle();
-      newNonFreeCircle.centerVector =
-        this.temporaryThreePointCircle.centerVector;
-      newNonFreeCircle.circleRadius =
-        this.temporaryThreePointCircle.circleRadius;
+      // const newNonFreeCircle = new NonFreeCircle();
+      // newNonFreeCircle.centerVector =
+      //   this.temporaryThreePointCircle.centerVector;
+      // newNonFreeCircle.circleRadius =
+      //   this.temporaryThreePointCircle.circleRadius;
 
       // Set the display to the default values
-      newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newNonFreeCircle.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor
-      newNonFreeCircle.adjustSize();
-      newNonFreeCircle.updateDisplay();
+      // newNonFreeCircle.adjustSize();
+      // newNonFreeCircle.updateDisplay();
 
       //Should I make a new SEThreePointCircle class? What would be different from SECircle? No
       const newSECircle = new SECircle(
-        newNonFreeCircle,
+        // newNonFreeCircle,
         newSEThreePointCircleCenter,
-        this.point1SEPoint
+        this.point1SEPoint,
+        true
       );
       // Create the plottable and model label
       // const newLabel1 = new Label("circle");

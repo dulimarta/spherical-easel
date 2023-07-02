@@ -24,7 +24,8 @@ import {
 import { Labelable } from "@/types";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
+import NonFreeCircle from "@/plottables/NonFreeCircle";
+import { DisplayStyle } from "@/plottables/Nodule";
 // import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 // import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 // import { SELine } from "./SELine";
@@ -72,11 +73,20 @@ export class SECircle
    * @param centerPoint The model SEPoint object that is the center of the circle
    * @param circlePoint The model SEPoint object that is on the circle
    */
-  constructor(circ: Circle, centerPoint: SEPoint, circlePoint: SEPoint) {
+  constructor(
+    centerPoint: SEPoint,
+    circlePoint: SEPoint,
+    createNonFreeCircle: boolean
+  ) {
     super();
-    this.ref = circ;
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
+    this.ref = createNonFreeCircle ? new NonFreeCircle() : new Circle();
+    this.ref.centerVector = centerPoint.locationVector;
+    this.ref.circleRadius = this.circleRadius;
+    this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.updateDisplay();
 
     SECircle.CIRCLE_COUNT++;
     this.name = `C${SECircle.CIRCLE_COUNT}`;

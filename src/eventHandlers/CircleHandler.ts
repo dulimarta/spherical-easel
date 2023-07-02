@@ -706,9 +706,10 @@ export default class CircleHandler extends Highlighter {
 
       // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
       const newSECircle = new SECircle(
-        newCircle,
+        // newCircle,
         this.centerSEPoint,
-        this.circleSEPoint
+        this.circleSEPoint,
+        false
       );
       // Create the plottable and model label
       // const newLabel = new Label("circle");
