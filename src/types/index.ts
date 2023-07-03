@@ -496,7 +496,9 @@ export type SEIsometry =
   | SEReflection
   | SEPointReflection;
 
-export type ObjectNames =
+// This type definition seems to be unused in other files
+// but used only internally here
+/*export */ type ObjectNames =
   | "angleMarker"
   | "antipodalPoint"
   | "calculation"

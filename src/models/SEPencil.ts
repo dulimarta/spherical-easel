@@ -1,4 +1,3 @@
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { ObjectState } from "@/types";
 import {
   DEFAULT_LINE_BACK_STYLE,
@@ -22,7 +21,6 @@ export class SEPencil extends SENodule {
   private _commonParent: SEParametric;
   private _lines: Array<SEPerpendicularLineThruPoint> = [];
   private tempVector: Vector3 = new Vector3();
-  private store: SEStoreType;
   constructor(
     seParent: SEParametric,
     commontPoint: SEPoint,
@@ -32,7 +30,6 @@ export class SEPencil extends SENodule {
     this._commonPoint = commontPoint;
     this._commonParent = seParent;
     this._lines.push(...lines);
-    this.store = useSEStore();
   }
 
   public accept(v: Visitor): boolean {
@@ -72,7 +69,7 @@ export class SEPencil extends SENodule {
         this._commonPoint.registerChild(newPerpLine);
         this._commonParent.registerChild(newPerpLine);
         this._lines.push(newPerpLine);
-        this.store.addLine(newPerpLine);
+        SENodule.store.addLine(newPerpLine);
       }
     }
   }

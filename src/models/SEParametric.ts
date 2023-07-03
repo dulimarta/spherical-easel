@@ -32,7 +32,6 @@ import {
 import { ExpressionParser } from "@/expression/ExpressionParser";
 // import { SEExpression } from "./SEExpression";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { SEStoreType, useSEStore } from "@/stores/se";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -155,8 +154,6 @@ export class SEParametric
    */
   readonly prevVarMap = new Map<string, number>();
 
-  private store: SEStoreType;
-
   /**
    * Create a model SEParametric using:
    * @param parametric The plottable TwoJS Object associated to this object
@@ -182,7 +179,6 @@ export class SEParametric
     //   "Closed?",
     //   isClosed
     // );
-    this.store = useSEStore();
     this._isClosed = isClosed;
     this._c1DiscontinuityParameterValues.push(
       ...c1DiscontinuityParameterValues
@@ -943,7 +939,7 @@ export class SEParametric
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
 
-    const mag = this.store.zoomMagnificationFactor;
+    const mag = SENodule.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -1055,7 +1051,7 @@ export class SEParametric
     //If the vector is on the Parametric then there is at at least one tangent
     if (
       this.closestVector(sePointVector).angleTo(sePointVector) <
-      0.01 / this.store.zoomMagnificationFactor
+      0.01 / SENodule.store.zoomMagnificationFactor
     ) {
       const correspondingTVal = this.partitionedTValues
         .map(tVals =>

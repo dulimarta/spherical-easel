@@ -4062,6 +4062,8 @@ export const useSEStore = defineStore({
   }
 });
 
-export type SEStoreType = StoreActions<ReturnType<typeof useSEStore>> &
-  StoreGetters<ReturnType<typeof useSEStore>> &
-  StoreState<ReturnType<typeof useSEStore>>;
+// export type SEStoreType = StoreActions<ReturnType<typeof useSEStore>> &
+//   StoreGetters<ReturnType<typeof useSEStore>> &
+//   StoreState<ReturnType<typeof useSEStore>>;
+
+export type SEStoreType = ReturnType<typeof useSEStore>

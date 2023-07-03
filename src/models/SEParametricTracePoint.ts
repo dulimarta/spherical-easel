@@ -3,7 +3,6 @@ import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 // import { SEParametric } from "./SEParametric";
-import { SEStoreType, useSEStore } from "@/stores/se";
 const MIN = true;
 const { t } = i18n.global;
 export class SEParametricTracePoint extends SEPoint {
@@ -12,7 +11,6 @@ export class SEParametricTracePoint extends SEPoint {
    */
   private _parametricParent: SEParametric;
   private parametricTime = NaN;
-  store: SEStoreType;
 
   // private tmpVector4 = new Vector3();
   private tmpMatrix = new Matrix4();
@@ -27,7 +25,6 @@ export class SEParametricTracePoint extends SEPoint {
     console.debug(
       `Point ${this.name} is a trace point of parametric curve ${parametricParent.name}`
     );
-    this.store = useSEStore();
   }
 
   /**

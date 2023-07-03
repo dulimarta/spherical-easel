@@ -9,7 +9,6 @@ import { SESegment } from "@/models/SESegment";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
 
@@ -89,12 +88,10 @@ export default class RotateHandler extends Highlighter {
 
   // private tempVector1 = new Vector3();
   // private tempVector2 = new Vector3();
-  private store: SEStoreType;
   // private _disableKeyHandler = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
-    this.store = useSEStore();
   }
 
   keyDown = (keyEvent: KeyboardEvent): void => {
@@ -474,7 +471,7 @@ export default class RotateHandler extends Highlighter {
       // EventBus.fire("sphere-rotate", {
       //   transform: this.changeInPositionRotationMatrix
       // });
-      this.store.rotateSphere(this.changeInPositionRotationMatrix);
+      RotateHandler.store.rotateSphere(this.changeInPositionRotationMatrix);
       this.saveRotationNeeded = true;
       //#endregion sphereRotate
     }

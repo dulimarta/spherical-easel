@@ -17,7 +17,6 @@ import {
   DEFAULT_SEGMENT_FRONT_STYLE
 } from "@/types/Styles";
 import i18n from "@/i18n";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import NonFreeSegment from "@/plottables/NonFreeSegment";
 import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
@@ -73,7 +72,6 @@ export class SESegment
   private tmpVector3 = new Vector3();
   private desiredZAxis = new Vector3();
   private toVector = new Vector3();
-  private store: SEStoreType;
 
   /**
    * Create a model SESegment using:
@@ -105,7 +103,6 @@ export class SESegment
 
     SENodule.SEGMENT_COUNT++;
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
-    this.store = useSEStore();
   }
 
   customStyles(): Set<string> {
@@ -494,7 +491,7 @@ export class SESegment
 
     // The current magnification level
 
-    const mag = this.store.zoomMagnificationFactor;
+    const mag = SENodule.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

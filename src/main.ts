@@ -14,6 +14,7 @@ import { firebaseConfig } from "./firebase-config";
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
+import { SENodule } from "./models/internal";
 const pinia = createPinia();
 const firebaseApp = initializeApp(firebaseConfig)
 
@@ -27,3 +28,4 @@ app.mount("#app")
 const seStore = useSEStore()
 Command.setGlobalStore(seStore);
 MouseHandler.setGlobalStore(seStore);
+SENodule.setGlobalStore(seStore);

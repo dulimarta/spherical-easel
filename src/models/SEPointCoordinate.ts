@@ -1,9 +1,7 @@
-import { SEExpression, SEPoint } from "./internal";
-// import { SEPoint } from "./SEPoint";
+import { SEExpression, SENodule, SEPoint } from "./internal";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
-import { SEStoreType, useSEStore } from "@/stores/se";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -15,7 +13,6 @@ export enum CoordinateSelection {
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   readonly point: SEPoint;
-  private store: SEStoreType;
 
   /**
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
@@ -27,7 +24,6 @@ export class SEPointCoordinate extends SEExpression {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.selector = selector;
     this.point = point;
-    this.store = useSEStore();
   }
   public customStyles = (): Set<string> => emptySet;
   public get value(): number {
@@ -127,7 +123,7 @@ export class SEPointCoordinate extends SEExpression {
 
     if (this.exists) {
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-      this.invMatrix = this.store.inverseTotalRotationMatrix;
+      this.invMatrix = SENodule.store.inverseTotalRotationMatrix;
       this.valueVector
         .copy(this.point.locationVector)
         .applyMatrix4(this.invMatrix);

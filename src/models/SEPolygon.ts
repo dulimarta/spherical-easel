@@ -11,11 +11,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
-// import { SEExpression } from "./SEExpression";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 
@@ -68,7 +64,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
 
   //** The number of edges in this polygon */
   private _n: number;
-  private store: SEStoreType;
 
   /** The area of the polygon */
   private _area = 0;
@@ -105,7 +100,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // The M### name is defined in the SEExpression constructor
     SENodule.POLYGON_COUNT++;
     this._polygonNumber = SENodule.POLYGON_COUNT;
-    this.store = useSEStore();
   }
 
   public customStyles(): Set<string> {
@@ -456,7 +450,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
             j !== (((i - 1) % this._n) + this._n) % this._n
           ) {
             if (
-              this.store
+              SENodule.store
                 .findIntersectionPointsByParent(
                   this._seEdgeSegments[i].name,
                   this._seEdgeSegments[j].name
@@ -546,7 +540,10 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // check to see if the idealUnitSphereVector is inside of the polygon
     if (
-      this.isHitAt(idealUnitSphereVector, this.store.zoomMagnificationFactor)
+      this.isHitAt(
+        idealUnitSphereVector,
+        SENodule.store.zoomMagnificationFactor
+      )
     ) {
       // console.log("heree");
       return idealUnitSphereVector;
@@ -583,7 +580,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    const mag = this.store.zoomMagnificationFactor;
+    const mag = SENodule.store.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

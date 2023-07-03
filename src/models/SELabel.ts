@@ -28,7 +28,6 @@ import {
 // import { SEEllipse } from "./SEEllipse";
 // import { SEParametric } from "./SEParametric";
 // import { SEPolygon } from "./SEPolygon";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 
 const styleSet = new Set([
@@ -52,7 +51,6 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
-  private store: SEStoreType;
   private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
@@ -62,7 +60,6 @@ export class SELabel extends SENodule implements Visitable {
   constructor(labelType: LabelParentTypes, parent: SENodule) {
     super();
     const label = new Label(labelType);
-    this.store = useSEStore();
     this.ref = label;
     this.parent = parent;
 
@@ -165,7 +162,7 @@ export class SELabel extends SENodule implements Visitable {
       this._locationVector.copy(
         (this.parent as unknown as Labelable).closestLabelLocationVector(
           this.tmpVector,
-          this.store.zoomMagnificationFactor
+          SENodule.store.zoomMagnificationFactor
         )
       );
       //Update the location of the associate plottable Label
@@ -228,7 +225,7 @@ export class SELabel extends SENodule implements Visitable {
         .copy(
           (this.parent as unknown as Labelable).closestLabelLocationVector(
             pos,
-            this.store.zoomMagnificationFactor
+            SENodule.store.zoomMagnificationFactor
           )
         )
         .normalize();
@@ -263,8 +260,8 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = this.store.canvasWidth;
-    const zoomTranslation = this.store.zoomTranslation;
+    const canvasSize = SENodule.store.canvasWidth;
+    const zoomTranslation = SENodule.store.zoomTranslation;
 
     return (
       boundingBox.left - canvasSize / 2 <
