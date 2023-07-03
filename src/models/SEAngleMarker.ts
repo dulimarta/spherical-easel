@@ -10,16 +10,14 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
 import i18n from "@/i18n";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
-export class SEAngleMarker
-  extends SEExpression
-  implements Visitable, Labelable
-{
+export class SEAngleMarker extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
@@ -115,7 +113,7 @@ export class SEAngleMarker
    * @param thirdParent The model SE object that is the third parent of the angle marker (defined only if the other two parents are SEPoints)
    */
   constructor(
-    angMar: AngleMarker,
+    // angMar: AngleMarker,
     mode: AngleMode,
     zoomMagnificationFactor: number,
     firstSEParent: SELine | SESegment | SEPoint,
@@ -125,7 +123,10 @@ export class SEAngleMarker
     lineClickLocation2?: Vector3 | undefined
   ) {
     super(); // this.name is set to a measurement token M### in the super constructor
-    this.ref = angMar;
+    this.ref = new AngleMarker();
+    this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;

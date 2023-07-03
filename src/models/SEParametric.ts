@@ -188,6 +188,9 @@ export class SEParametric
       ...c1DiscontinuityParameterValues
     );
     this.ref = new Parametric(tNumbers.min, tNumbers.max, isClosed);
+    this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     // Set the expressions for the curve, its derivative, and the tMin & tMax
     this.coordinateExpressions.x = coordinateExpressions.x;
     this.coordinateExpressions.y = coordinateExpressions.y;

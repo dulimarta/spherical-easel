@@ -6,7 +6,6 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -808,14 +807,14 @@ export default class PolygonHandler extends Highlighter {
       }
 
       // Create a new angle marker plottable
-      const newAngleMarker = new AngleMarker();
+      // const newAngleMarker = new AngleMarker();
       // Set the display to the default values
-      newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor
-      newAngleMarker.adjustSize();
+      // newAngleMarker.adjustSize();
 
       const newSEAngleMarker = new SEAngleMarker(
-        newAngleMarker,
+        // newAngleMarker,
         PolygonHandler.store.zoomMagnificationFactor,
         AngleMode.SEGMENTS,
         seg0,

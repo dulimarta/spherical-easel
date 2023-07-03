@@ -8,7 +8,6 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -1089,14 +1088,14 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Clone the current angle marker after the target points are set
-    const newAngleMarker = this.temporaryAngleMarker.clone();
+    // const newAngleMarker = this.temporaryAngleMarker.clone();
     // Set the display to the default values
-    newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    newAngleMarker.adjustSize();
+    // newAngleMarker.adjustSize();
 
     const newSEAngleMarker = new SEAngleMarker(
-      newAngleMarker,
+      // newAngleMarker,
       AngleMode.POINTS,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetPoints[0] as SEPoint,
@@ -1219,14 +1218,14 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    const newAngleMarker = new AngleMarker();
+    // const newAngleMarker = new AngleMarker();
     // Set the display to the default values
-    newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    newAngleMarker.adjustSize();
+    // newAngleMarker.adjustSize();
 
     const newSEAngleMarker = new SEAngleMarker(
-      newAngleMarker,
+      // newAngleMarker,
       AngleMode.LINES,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetLines[0],
@@ -1309,14 +1308,14 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    const newAngleMarker = new AngleMarker();
+    // const newAngleMarker = new AngleMarker();
     // Set the display to the default values
-    newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    newAngleMarker.adjustSize();
+    // newAngleMarker.adjustSize();
 
     const newSEAngleMarker = new SEAngleMarker(
-      newAngleMarker,
+      // newAngleMarker,
       AngleMode.SEGMENTS,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetSegments[0],
@@ -1439,17 +1438,17 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    const newAngleMarker = new AngleMarker();
+    // const newAngleMarker = new AngleMarker();
     // Set the display to the default values
-    newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    newAngleMarker.adjustSize();
+    // newAngleMarker.adjustSize();
 
     let newSEAngleMarker;
 
     if (this.lineSelectedFirst) {
       newSEAngleMarker = new SEAngleMarker(
-        newAngleMarker,
+        // newAngleMarker,
         AngleMode.LINEANDSEGMENT,
         AngleHandler.store.zoomMagnificationFactor,
         this.targetLines[0],
@@ -1457,7 +1456,7 @@ export default class AngleHandler extends Highlighter {
       );
     } else {
       newSEAngleMarker = new SEAngleMarker(
-        newAngleMarker,
+        // newAngleMarker,
         AngleMode.LINEANDSEGMENT,
         AngleHandler.store.zoomMagnificationFactor,
         this.targetSegments[0],

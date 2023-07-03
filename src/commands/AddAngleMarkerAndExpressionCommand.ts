@@ -5,7 +5,6 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
@@ -155,9 +154,9 @@ export class AddAngleMarkerCommand extends Command {
 
     if (firstParent && secondParent && mode && valueDisplayMode) {
       //make the angleMarker
-      const angleMarker = new AngleMarker();
+      // const angleMarker = new AngleMarker();
       const seAngleMarker = new SEAngleMarker(
-        angleMarker,
+        // angleMarker,
         mode,
         AddAngleMarkerCommand.store.zoomMagnificationFactor,
         firstParent,
@@ -168,13 +167,13 @@ export class AddAngleMarkerCommand extends Command {
       //style the angle marker
       const angleMarkerFrontStyleString = propMap.get("objectFrontStyle");
       if (angleMarkerFrontStyleString !== undefined)
-        angleMarker.updateStyle(
+        seAngleMarker.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(angleMarkerFrontStyleString)
         );
       const angleMarkerBackStyleString = propMap.get("objectBackStyle");
       if (angleMarkerBackStyleString !== undefined)
-        angleMarker.updateStyle(
+        seAngleMarker.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(angleMarkerBackStyleString)
         );
