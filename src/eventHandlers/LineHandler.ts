@@ -750,13 +750,7 @@ export default class LineHandler extends Highlighter {
       }
 
       // Create the new line after the normalVector is set
-      // const newLine = this.temporaryLine.clone();
-      // Stylize the new Line
-      // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      // newLine.adjustSize();
-
       const newSELine = new SELine(
-        // newLine,
         this.startSEPoint,
         this.normalVector,
         this.endSEPoint
