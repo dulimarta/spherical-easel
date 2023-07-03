@@ -8,7 +8,6 @@ import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -698,11 +697,11 @@ export default class CircleHandler extends Highlighter {
         return false;
       }
       // Clone the current circle after the circlePoint is set
-      const newCircle = this.temporaryCircle.clone();
+      // const newCircle = this.temporaryCircle.clone();
       // Set the display to the default values
-      newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor
-      newCircle.adjustSize();
+      // newCircle.adjustSize();
 
       // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
       const newSECircle = new SECircle(

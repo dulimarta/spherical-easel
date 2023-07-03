@@ -16,10 +16,10 @@ import Two from "two.js";
 const SUBDIVS = SETTINGS.line.numPoints;
 
 /**
- * A line segment
+ * A line
  *
  * @export
- * @class Segment
+ * @class Line
  * @extends Nodule
  */
 export default class Line extends Nodule {

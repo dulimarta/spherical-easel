@@ -96,9 +96,7 @@ export class SELabel extends SENodule implements Visitable {
 
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
-      console.log("SELabel: parent is a point");
       if (parent instanceof SEEarthPoint) {
-        console.log("SELabel: parent is a earth point");
         this.ref.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
         this.showing = true;
       } else {

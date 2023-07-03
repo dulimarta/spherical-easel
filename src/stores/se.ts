@@ -612,6 +612,7 @@ export const useSEStore = defineStore({
       this.seCircleIds.push(circle.id);
       seCircles.set(circle.id, circle);
       seNodules.push(circle);
+      console.debug(`SEStore: Adding Circle ${circle.ref} to layers`);
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
       this.updateDisabledTools("circle");

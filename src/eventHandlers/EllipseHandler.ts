@@ -1098,11 +1098,11 @@ export default class EllipseHandler extends Highlighter {
         return false;
       }
       // Clone the current circle after the circlePoint is set
-      const newEllipse = this.temporaryEllipse.clone();
+      // const newEllipse = this.temporaryEllipse.clone();
       // Set the display to the default values
-      newEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
+      // newEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor
-      newEllipse.adjustSize();
+      // newEllipse.adjustSize();
 
       // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
       const newSEEllipse = new SEEllipse(

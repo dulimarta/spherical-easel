@@ -19,6 +19,7 @@ import {
 import i18n from "@/i18n";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import NonFreeSegment from "@/plottables/NonFreeSegment";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -92,6 +93,11 @@ export class SESegment
   ) {
     super();
     this.ref = createNonFreeSegment ? new NonFreeSegment() : new Segment();
+    this.ref._startVector.copy(segmentStartSEPoint.locationVector);
+    this.ref._normalVector.copy(segmentNormalVector);
+    this.ref.arcLength = segmentArcLength;
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     this._startSEPoint = segmentStartSEPoint;
     this._normalVector.copy(segmentNormalVector);
     this._arcLength = segmentArcLength;

@@ -67,6 +67,8 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
   ) {
     super();
     this.ref = createNonFreeLine ? new NonFreeLine() : new Line();
+    this.ref.normalVector = normalVector;
+    this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
     this._startSEPoint = lineStartSEPoint;
@@ -285,9 +287,6 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     // plane of the line.
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
         return;
       }
       orderedSENoduleList.push(this.id);

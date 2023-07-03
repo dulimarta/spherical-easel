@@ -88,8 +88,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   ) {
     super();
     this.ref = new Polygon(edges, flippedBooleans);
-    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);

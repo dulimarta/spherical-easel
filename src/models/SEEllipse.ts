@@ -97,8 +97,11 @@ export class SEEllipse
     this._focus2SEPoint = focus2Point;
     this._ellipseSEPoint = ellipsePoint;
     this.ref = createNonFree ? new NonFreeEllipse() : new Ellipse();
-    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.focus1Vector.copy(focus1Point.locationVector);
+    this.ref.focus2Vector.copy(focus2Point.locationVector);
     this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     //Set the parameters for the parameterization of the ellipse
     this._a =
       0.5 *

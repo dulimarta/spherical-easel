@@ -86,8 +86,7 @@ export class SECircle
     this.ref.circleRadius = this.circleRadius;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.updateDisplay();
-
+    this.ref.adjustSize();
     SECircle.CIRCLE_COUNT++;
     this.name = `C${SECircle.CIRCLE_COUNT}`;
   }
