@@ -131,7 +131,6 @@ export class AddNSectLineCommand extends Command {
       !isNaN(seNSectLineN)
     ) {
       //make the Nsect Line
-      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = seNSectLineEndSEPointLocation;
@@ -139,7 +138,6 @@ export class AddNSectLineCommand extends Command {
       endPoint.showing = false; // never changes
 
       const seNSectLine = new SENSectLine(
-        // line,
         seNSectLineStartSEPoint,
         seNSectLineNormalVector,
         endPoint,
@@ -162,7 +160,6 @@ export class AddNSectLineCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("line");
       const seLabel = new SELabel("line", seNSectLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

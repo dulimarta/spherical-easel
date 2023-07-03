@@ -127,9 +127,7 @@ export class AddIsometrySegmentCommand extends Command {
       isometrySegmentStartPoint
     ) {
       //make the segment
-      // const seg = new NonFreeSegment();
       const isometrySESegment = new SEIsometrySegment(
-        // seg,
         isometrySegmentParentIsometry instanceof SEReflection
           ? isometrySegmentEndPoint
           : isometrySegmentStartPoint,
@@ -156,7 +154,6 @@ export class AddIsometrySegmentCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("segment");
       const isometrySESegmentLabel = new SELabel("segment", isometrySESegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

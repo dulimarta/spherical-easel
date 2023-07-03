@@ -134,9 +134,7 @@ export class AddNSectPointCommand extends Command {
       !isNaN(seNSectPointN)
     ) {
       //make the Nsect Point
-      // const point = new NonFreePoint();
       const seNSectPoint = new SENSectPoint(
-        // point,
         seNSectPointParentSegment,
         seNSectPointIndex,
         seNSectPointN
@@ -156,7 +154,6 @@ export class AddNSectPointCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("point");
       const seLabel = new SELabel("point", seNSectPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

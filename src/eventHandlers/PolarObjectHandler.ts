@@ -1,7 +1,6 @@
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
@@ -469,17 +468,12 @@ export default class PolarObjectHandler extends Highlighter {
   createPolarPoints(parentLineOrSegment: SELine | SESegment): void {
     const polarPointsCommandGroup = new CommandGroup();
     // Create the first polar point
-    // const newPoint1 = new NonFreePoint();
-    // Set the display to the default values
-    // newPoint1.stylize(DisplayStyle.ApplyCurrentVariables);
-    // newPoint1.adjustSize();
 
     // Create the model object for the new point and link them
     const polarPoint1 = new SEPolarPoint(parentLineOrSegment, 0);
     polarPoint1.locationVector = parentLineOrSegment.normalVector;
 
     // Create plottable for the Label
-    // const newLabel1 = new Label("point");
     const newSELabel1 = new SELabel("point", polarPoint1);
     // Set the initial label location
     this.tmpVector
@@ -499,18 +493,12 @@ export default class PolarObjectHandler extends Highlighter {
     );
 
     // Create the second polar point
-    // const newPoint2 = new NonFreePoint();
-    // Set the display to the default values
-    // newPoint2.stylize(DisplayStyle.ApplyCurrentVariables);
-    // newPoint2.adjustSize();
-
     // Create the model object for the new point and link them
     const polarPoint2 = new SEPolarPoint(parentLineOrSegment, 1);
     polarPoint2.locationVector =
       parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
-    // const newLabel2 = new Label("point");
     const newSELabel2 = new SELabel("point", polarPoint2);
     // Set the initial label location
     this.tmpVector
@@ -558,14 +546,9 @@ export default class PolarObjectHandler extends Highlighter {
     } else {
       if (this.oneDimensionalContainingParentPoint !== null) {
         // create a new point on the object that the user clicked on
-        // const newPoint = new Point();
-        // Set the display to the default values
-        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         this.parentPoint = new SEPointOnOneOrTwoDimensional(
-          // newPoint,
           this.oneDimensionalContainingParentPoint
         );
         this.parentPoint.locationVector = this.parentPointVector;
@@ -592,10 +575,6 @@ export default class PolarObjectHandler extends Highlighter {
         );
       } else {
         // Create a new point at the blank place where the user clicked
-        // const newPoint = new Point();
-        // Set the display to the default values
-        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // newPoint.adjustSize();
 
         this.parentPoint = new SEPoint();
         this.parentPoint.locationVector = this.parentPointVector;
@@ -628,10 +607,6 @@ export default class PolarObjectHandler extends Highlighter {
       ///////////
     }
 
-    const newLine = this.temporaryPolarLineMarker.clone();
-    // Set the display to the default values
-    // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-    // newLine.adjustSize();
     // Create the start and end points of the line, these will never be displayed
 
     // The (end|start)SEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
@@ -646,7 +621,6 @@ export default class PolarObjectHandler extends Highlighter {
     );
     endSEPoint.locationVector = frame[1];
 
-    // const plottableStartPoint = new NonFreePoint();
     const startSEPoint = new SEPoint(true);
     startSEPoint.showing = false; // this never changes
     startSEPoint.exists = true; // this never changes
@@ -661,7 +635,6 @@ export default class PolarObjectHandler extends Highlighter {
     );
 
     // Create the plottable label
-    // const newLabel = new Label("line");
     const newSELabel = new SELabel("line", newPolarLine);
 
     // Set the initial label location
@@ -698,7 +671,6 @@ export default class PolarObjectHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector

@@ -984,21 +984,12 @@ export default class AngleHandler extends Highlighter {
         this.targetPoints[i] === null
       ) {
         // create a new point *on object*
-        // we have to create a new point
-        // const newPoint = new Point();
-        // Set the display to the default values
-        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const vtx = new SEPointOnOneOrTwoDimensional(
-          // newPoint,
           this.sePointOneDimensionalParents[i]!
         );
 
-        // Create a plottable label
-        // const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel("point", vtx);
 
@@ -1031,19 +1022,9 @@ export default class AngleHandler extends Highlighter {
         this.sePointOneDimensionalParents[i] === null &&
         this.targetPoints[i] === null
       ) {
-        // create a new point
-        // we have to create a new point
-        // const newPoint = new Point();
-        // Set the display to the default values
-        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // Adjust the size of the point to the current zoom magnification factor
-        // newPoint.adjustSize();
-
         // Create the model object for the new point and link them
         const vtx = new SEPoint();
 
-        // Create a plottable label
-        // const newLabel = new Label("point");
         // Create an SELabel and link it to the plottable object
         const newSELabel = new SELabel("point", vtx);
 
@@ -1087,15 +1068,7 @@ export default class AngleHandler extends Highlighter {
       }
     }
 
-    // Clone the current angle marker after the target points are set
-    // const newAngleMarker = this.temporaryAngleMarker.clone();
-    // Set the display to the default values
-    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    // newAngleMarker.adjustSize();
-
     const newSEAngleMarker = new SEAngleMarker(
-      // newAngleMarker,
       AngleMode.POINTS,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetPoints[0] as SEPoint,
@@ -1104,7 +1077,6 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    // const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
@@ -1218,14 +1190,8 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    // const newAngleMarker = new AngleMarker();
-    // Set the display to the default values
-    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    // newAngleMarker.adjustSize();
 
     const newSEAngleMarker = new SEAngleMarker(
-      // newAngleMarker,
       AngleMode.LINES,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetLines[0],
@@ -1236,7 +1202,6 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    // const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
@@ -1308,14 +1273,8 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    // const newAngleMarker = new AngleMarker();
-    // Set the display to the default values
-    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    // newAngleMarker.adjustSize();
 
     const newSEAngleMarker = new SEAngleMarker(
-      // newAngleMarker,
       AngleMode.SEGMENTS,
       AngleHandler.store.zoomMagnificationFactor,
       this.targetSegments[0],
@@ -1323,7 +1282,6 @@ export default class AngleHandler extends Highlighter {
     );
 
     // Create the plottable and model label
-    // const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;
@@ -1438,17 +1396,10 @@ export default class AngleHandler extends Highlighter {
     }
 
     // Create a new angle marker plottable
-    // const newAngleMarker = new AngleMarker();
-    // Set the display to the default values
-    // newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the stroke width to the current zoom magnification factor
-    // newAngleMarker.adjustSize();
-
     let newSEAngleMarker;
 
     if (this.lineSelectedFirst) {
       newSEAngleMarker = new SEAngleMarker(
-        // newAngleMarker,
         AngleMode.LINEANDSEGMENT,
         AngleHandler.store.zoomMagnificationFactor,
         this.targetLines[0],
@@ -1456,7 +1407,6 @@ export default class AngleHandler extends Highlighter {
       );
     } else {
       newSEAngleMarker = new SEAngleMarker(
-        // newAngleMarker,
         AngleMode.LINEANDSEGMENT,
         AngleHandler.store.zoomMagnificationFactor,
         this.targetSegments[0],
@@ -1464,7 +1414,6 @@ export default class AngleHandler extends Highlighter {
       );
     }
     // Create the plottable and model label
-    // const newLabel = new Label("angleMarker");
     const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
     newSEAngleMarker.valueDisplayMode =
       SETTINGS.angleMarker.initialValueDisplayMode;

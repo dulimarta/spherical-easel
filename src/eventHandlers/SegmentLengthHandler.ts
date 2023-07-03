@@ -8,10 +8,7 @@ import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 // import { Group } from "two.js/src/group";
 
 export default class SegmentLengthHandler extends Highlighter {

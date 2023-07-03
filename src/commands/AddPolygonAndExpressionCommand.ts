@@ -176,12 +176,7 @@ export class AddPolygonCommand extends Command {
       valueDisplayMode
     ) {
       //make the polygon
-      // const polygon = new Polygon(
-      //   polygonSegmentParents.map(seg => seg as SESegment),
-      //   polygonSegmentFlippedList
-      // );
       const sePolygon = new SEPolygon(
-        // polygon,
         polygonSegmentParents.map(seg => seg as SESegment),
         polygonSegmentFlippedList,
         polygonAngleMarkerParents.map(ang => ang as SEAngleMarker)
@@ -202,7 +197,6 @@ export class AddPolygonCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("polygon");
       const seLabel = new SELabel("polygon", sePolygon);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

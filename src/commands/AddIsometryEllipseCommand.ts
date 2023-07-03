@@ -4,7 +4,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
@@ -134,9 +133,7 @@ export class AddIsometryEllipseCommand extends Command {
       isometryEllipseFocus2Point
     ) {
       //make the Ellipse
-      // const seg = new NonFreeEllipse();
       const isometrySEEllipse = new SEIsometryEllipse(
-        // seg,
         isometryEllipseFocus1Point,
         isometryEllipseFocus2Point,
         isometryEllipseEllipsePoint,
@@ -158,7 +155,6 @@ export class AddIsometryEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("ellipse");
       const isometrySEEllipseLabel = new SELabel("ellipse", isometrySEEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

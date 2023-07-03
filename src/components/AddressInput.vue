@@ -128,10 +128,9 @@ function getPlaceDetails() {
           const xcor = Math.cos(latRad) * Math.cos(lngRad);
           const ycor = Math.cos(latRad) * Math.sin(lngRad);
           const zcor = Math.sin(latRad);
-          // const newPoint = new NonFreePoint();
 
           // caption
-          const vtx = new SEEarthPoint(/*newPoint,*/ lngRad, latRad);
+          const vtx = new SEEarthPoint(lngRad, latRad);
           const pointVector = new THREE.Vector3(xcor, ycor, zcor);
           pointVector.normalize();
           const rotationMatrix = new THREE.Matrix4();
@@ -141,7 +140,6 @@ function getPlaceDetails() {
           let placeCaption = place.formatted_address;
 
           //caption change here
-          // const pointLabel = new Label("point");
           const newSELabel = new SELabel("point", vtx);
           newSELabel.ref.caption = placeCaption ?? t('noFormattedAddress')
           const pointCommandGroup = new CommandGroup();

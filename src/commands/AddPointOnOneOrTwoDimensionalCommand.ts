@@ -137,9 +137,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
     // );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
-      // const point = new Point();
       const sePointOnOneOrTwoDimensional = new SEPointOnOneOrTwoDimensional(
-        // point,
         pointOnOneOrTwoDimensionalParent
       );
       // use the direct setter because the parent may be out of date
@@ -161,7 +159,6 @@ export class AddPointOnOneDimensionalCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("point");
       const seLabel = new SELabel("point", sePointOnOneOrTwoDimensional);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

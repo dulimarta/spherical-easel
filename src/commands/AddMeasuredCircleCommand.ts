@@ -137,9 +137,7 @@ export class AddMeasuredCircleCommand extends Command {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       //make the circle
-      // const circle = new NonFreeCircle();
       const seCircle = new SEMeasuredCircle(
-        // circle,
         circleCenterPoint,
         hiddenSEPoint,
         radiusExpression
@@ -159,7 +157,6 @@ export class AddMeasuredCircleCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("circle");
       const seLabel = new SELabel("circle", seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

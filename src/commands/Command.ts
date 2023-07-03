@@ -130,7 +130,6 @@ export abstract class Command {
     labelLocation: Vector3,
     labelStyleString: string | undefined
   ): { point: SEPoint; label: SELabel } {
-    // const newPoint = new Point();
     const point = new SEPoint();
     point.locationVector.copy(pointLocation);
     if (pointFrontStyleString !== undefined)
@@ -144,7 +143,6 @@ export abstract class Command {
         JSON.parse(pointBackStyleString)
       );
 
-    // const newLabel = new Label("point");
     const label = new SELabel("point", point);
     label.locationVector.copy(labelLocation);
     if (labelStyleString !== undefined)

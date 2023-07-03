@@ -323,14 +323,9 @@ export default class NSectAngleHandler extends Highlighter {
           endSEPoint.locationVector = endPointVector; // this gets updated
 
           // create the plottable line
-          // const newLine = new NonFreeLine();
-          // Set the display to the default values
-          // newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-          // newLine.adjustSize();
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
-            // newLine,
             startSEPoint as SEPoint,
             normalVector,
             endSEPoint,
@@ -340,7 +335,6 @@ export default class NSectAngleHandler extends Highlighter {
           );
 
           // Create plottable for the Label
-          // const newLabel2 = new Label("line");
           const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location
           this.tmpVector
@@ -375,7 +369,6 @@ export default class NSectAngleHandler extends Highlighter {
                 );
               } else {
                 // Create the plottable label
-                // const newLabel = new Label("point");
                 const newSELabel = new SELabel(
                   "point",
                   item.SEIntersectionPoint

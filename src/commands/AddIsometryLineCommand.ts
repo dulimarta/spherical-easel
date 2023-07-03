@@ -125,9 +125,7 @@ export class AddIsometryLineCommand extends Command {
       isometryLineStartPoint
     ) {
       //make the Line
-      // const seg = new NonFreeLine();
       const isometrySELine = new SEIsometryLine(
-        // seg,
         isometryLineStartPoint,
         isometryLineParentIsometry.f(parentSELine.normalVector),
         isometryLineEndPoint,
@@ -149,7 +147,6 @@ export class AddIsometryLineCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("line");
       const isometrySELineLabel = new SELabel("line", isometrySELine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

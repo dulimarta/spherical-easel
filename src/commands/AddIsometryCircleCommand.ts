@@ -126,9 +126,7 @@ export class AddIsometryCircleCommand extends Command {
       isometryCircleCenterPoint
     ) {
       //make the Circle
-      // const seg = new NonFreeCircle();
       const isometrySECircle = new SEIsometryCircle(
-        // seg,
         isometryCircleCenterPoint,
         isometryCircleCirclePoint,
         parentSECircle,
@@ -149,7 +147,6 @@ export class AddIsometryCircleCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("circle");
       const isometrySECircleLabel = new SELabel("circle", isometrySECircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

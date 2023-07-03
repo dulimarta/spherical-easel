@@ -153,10 +153,7 @@ export class AddAngleMarkerCommand extends Command {
       | undefined;
 
     if (firstParent && secondParent && mode && valueDisplayMode) {
-      //make the angleMarker
-      // const angleMarker = new AngleMarker();
       const seAngleMarker = new SEAngleMarker(
-        // angleMarker,
         mode,
         AddAngleMarkerCommand.store.zoomMagnificationFactor,
         firstParent,
@@ -178,8 +175,6 @@ export class AddAngleMarkerCommand extends Command {
           JSON.parse(angleMarkerBackStyleString)
         );
 
-      //make the label and set its location
-      // const label = new Label("angleMarker");
       const seLabel = new SELabel("angleMarker", seAngleMarker);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

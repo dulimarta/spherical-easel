@@ -4,7 +4,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 import { SEInversion } from "@/models/SEInversion";
@@ -143,25 +142,25 @@ export class AddInvertedCircleCenterCommand extends Command {
     ) as SEInversion | undefined;
     if (parentSECircleOrLine && invertedCircleCenterParentInversion) {
       //make the point
-      const pt = new NonFreePoint();
       const inversionSECircleCenterPoint = new SEInversionCircleCenter(
-        pt,
         parentSECircleOrLine,
         invertedCircleCenterParentInversion
       );
       //style the point
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
-        pt.updateStyle(
+        inversionSECircleCenterPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
-        pt.updateStyle(StyleEditPanels.Back, JSON.parse(pointBackStyleString));
+        inversionSECircleCenterPoint.updatePlottableStyle(
+          StyleEditPanels.Back,
+          JSON.parse(pointBackStyleString)
+        );
 
       //make the label and set its location
-      // const label = new Label("point");
       const inversionSECircleCenterLabel = new SELabel(
         "point",
         inversionSECircleCenterPoint

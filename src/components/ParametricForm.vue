@@ -20,8 +20,9 @@
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricCoordinates
                   i18LabelKey="objectTree.parametricCoordinates"
-                  :coordinateData="parametricFormulaData">
-                </ParametricCoordinates>
+                  :coordinateData="
+                    parametricFormulaData
+                  "></ParametricCoordinates>
               </v-sheet>
             </v-col>
           </v-row>
@@ -30,8 +31,9 @@
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricTracingExpressions
                   i18LabelKey="objectTree.tExpressionData"
-                  :tExpressionData="tExpressionData">
-                </ParametricTracingExpressions>
+                  :tExpressionData="
+                    tExpressionData
+                  "></ParametricTracingExpressions>
               </v-sheet>
             </v-col>
           </v-row>
@@ -43,8 +45,7 @@
                   :placeholder="tVal.placeholder"
                   :i18nLabelKey="tVal.i18nLabelkey"
                   :i18nToolTip="tVal.i18nToolTip"
-                  :name="tVal.name">
-                </ParametricTNumber>
+                  :name="tVal.name"></ParametricTNumber>
               </template>
             </v-col>
           </v-row>
@@ -54,8 +55,7 @@
                 <ParametricCuspParameterValues
                   :i18nLabelKey="cusp.i18nLabelKey"
                   :i18nToolTip="cusp.i18nToolTip"
-                  :name="cusp.name">
-                </ParametricCuspParameterValues>
+                  :name="cusp.name"></ParametricCuspParameterValues>
               </template>
             </v-col>
           </v-row>
@@ -614,7 +614,9 @@ function addParametricCurve(): void {
   for (k in coordinateExpressions) {
     const exp = coordinateExpressions[k];
     for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-      const pos = expressions.value.findIndex(z => z.name.startsWith(`${v[0]}`));
+      const pos = expressions.value.findIndex(z =>
+        z.name.startsWith(`${v[0]}`)
+      );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = calculationParents.findIndex(
@@ -632,7 +634,9 @@ function addParametricCurve(): void {
     const exp = tExpressions[l];
     // Match all measurement variables Mxxx
     for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-      const pos = expressions.value.findIndex(z => z.name.startsWith(`${v[0]}`));
+      const pos = expressions.value.findIndex(z =>
+        z.name.startsWith(`${v[0]}`)
+      );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = calculationParents.findIndex(
@@ -660,7 +664,6 @@ function addParametricCurve(): void {
     calculationParents
   );
   // Create the plottable and model label
-  // const newLabel = new Label("parametric");
   const newSELabel = new SELabel("parametric", newSEParametric);
   // Set the initial label location at the start of the curve
   const startVector = newSEParametric.P(tNumbers.min);
@@ -676,12 +679,8 @@ function addParametricCurve(): void {
   parametricCommandGroup.addCommand(
     new AddParametricCommand(newSEParametric, calculationParents, newSELabel)
   );
-  // const tracePoint = new NonFreePoint();
-  // tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  // tracePoint.adjustSize();
-  const traceSEPoint = new SEParametricTracePoint(/*tracePoint, */newSEParametric);
+  const traceSEPoint = new SEParametricTracePoint(newSEParametric);
   traceSEPoint.locationVector = startVector;
-  // const traceLabel = new Label("point");
   const traceSELabel = new SELabel("point", traceSEPoint);
 
   // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
@@ -689,31 +688,13 @@ function addParametricCurve(): void {
   // create the parametric endpoints if there are tracing expressions or the curve is not closed
   if (tExpressions.min.length !== 0 || !closed) {
     // we have to create a two points
-    // const startPoint = new NonFreePoint();
-    // const endPoint = new NonFreePoint();
-    // Set the display to the default values
-    // startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // startPoint.adjustSize();
-    // endPoint.adjustSize();
 
     // create the endPoints
-    const startSEEndPoint = new SEParametricEndPoint(
-      // startPoint,
-      newSEParametric,
-      "min"
-    );
+    const startSEEndPoint = new SEParametricEndPoint(newSEParametric, "min");
 
-    const endSEEndPoint = new SEParametricEndPoint(
-      // endPoint,
-      newSEParametric,
-      "max"
-    );
+    const endSEEndPoint = new SEParametricEndPoint(newSEParametric, "max");
 
     // Create the plottable labels
-    // const startLabel = new Label("point");
-    // const endLabel = new Label("point");
     const startSELabel = new SELabel("point", startSEEndPoint);
     const endSELabel = new SELabel("point", endSEEndPoint);
 
@@ -752,7 +733,6 @@ function addParametricCurve(): void {
         );
       } else {
         // Create the plottable label
-        // const newLabel = new Label("point");
         const newSELabel = new SELabel("point", item.SEIntersectionPoint);
         // Set the initial label location
         tempVector
@@ -781,26 +761,16 @@ function addParametricCurve(): void {
           /////////////
           // Create the antipode of the new point, vtx
           ///// WARNING This is duplicate code from the method addCreateAntipodeCommand in Highlighter.ts
-          // const newAntipodePoint = new NonFreePoint();
-          // Set the display to the default values
-          // newAntipodePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-          // Adjust the size of the point to the current zoom magnification factor
-          // newAntipodePoint.adjustSize();
 
           // Create the model object for the new point and link them
           const antipodalVtx = new SEAntipodalPoint(
-            // newAntipodePoint,
             item.SEIntersectionPoint,
-            false,
-            true // NonFreePoint
+            false
           );
 
           // Create a plottable label
           // Create an SELabel and link it to the plottable object
-          const newSEAntipodalLabel = new SELabel(
-            "point",
-            antipodalVtx
-          );
+          const newSEAntipodalLabel = new SELabel("point", antipodalVtx);
 
           antipodalVtx.locationVector = item.SEIntersectionPoint.locationVector;
           antipodalVtx.locationVector.multiplyScalar(-1);
@@ -829,8 +799,6 @@ function addParametricCurve(): void {
         }
       }
       // // Create the plottable and model label
-      // const newLabel = new Label();
-      // const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
       // // Set the initial label location
       // tempVector

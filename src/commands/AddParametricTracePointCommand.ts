@@ -134,9 +134,7 @@ export class AddParametricTracePointCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Trace Point
-      // const tracePoint = new Point();
       const seTracePoint = new SEParametricTracePoint(
-        // tracePoint,
         parametricParent
       );
       const seTracePointLocation = new Vector3();
@@ -162,7 +160,6 @@ export class AddParametricTracePointCommand extends Command {
         );
 
       // make the Trace Point Label
-      // const tracePointLabel = new Label("point");
       const seTracePointLabel = new SELabel("point", seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seTracePointLabelLocation.from(

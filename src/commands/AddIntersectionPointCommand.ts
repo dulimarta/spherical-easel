@@ -170,9 +170,7 @@ export class AddIntersectionPointCommand extends Command {
       !isNaN(intersectionOrder)
     ) {
       //make the intersection point
-      // const nonFreePoint = new NonFreePoint();
       const seIntersectionPoint = new SEIntersectionPoint(
-        // nonFreePoint,
         principleParent1,
         principleParent2,
         intersectionOrder,
@@ -194,7 +192,6 @@ export class AddIntersectionPointCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("point");
       const seLabel = new SELabel("point", seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

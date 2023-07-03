@@ -105,7 +105,6 @@ export class AddPointCommand extends Command {
     sePointLocation.from(propMap.get("pointVector")); // convert to vector
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
-    // const point = new Point();
     const sePoint = new SEPoint();
     sePoint.locationVector.copy(sePointLocation);
     // console.debug(`Point front style string ${pointFrontStyleString}`);
@@ -124,7 +123,6 @@ export class AddPointCommand extends Command {
     }
 
     //make the label
-    // const label = new Label("point");
     const seLabel = new SELabel("point", sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number

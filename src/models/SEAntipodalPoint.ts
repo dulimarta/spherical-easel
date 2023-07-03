@@ -18,13 +18,8 @@ export class SEAntipodalPoint extends SEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor(
-    // point: Point,
-    antipodalPointParent: SEPoint,
-    isUserCreated: boolean,
-    createNonFreePoint: boolean
-  ) {
-    super(createNonFreePoint);
+  constructor(antipodalPointParent: SEPoint, isUserCreated: boolean) {
+    super(true); // Non free point
     this._antipodalPointParent = antipodalPointParent;
     if (isUserCreated) {
       this._isUserCreated = true;

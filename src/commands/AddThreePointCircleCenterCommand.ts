@@ -5,7 +5,6 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
 
 export class AddThreePointCircleCenterCommand extends Command {
@@ -144,10 +143,7 @@ export class AddThreePointCircleCenterCommand extends Command {
     ) as SEPoint | undefined;
 
     if (sePoint1 && sePoint2 && sePoint3) {
-      //make the three point circle center
-      const threePointCircleCenter = new ThreePointCircleCenter();
       const seThreePointCircleCenter = new SEThreePointCircleCenter(
-        threePointCircleCenter,
         sePoint1,
         sePoint2,
         sePoint3
@@ -155,13 +151,13 @@ export class AddThreePointCircleCenterCommand extends Command {
       //style the center
       const centerPointFrontStyleString = propMap.get("objectFrontStyle");
       if (centerPointFrontStyleString !== undefined)
-        threePointCircleCenter.updateStyle(
+        seThreePointCircleCenter.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(centerPointFrontStyleString)
         );
       const centerPointBackStyleString = propMap.get("objectBackStyle");
       if (centerPointBackStyleString !== undefined)
-        threePointCircleCenter.updateStyle(
+        seThreePointCircleCenter.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(centerPointBackStyleString)
         );

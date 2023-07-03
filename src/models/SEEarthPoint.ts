@@ -1,4 +1,3 @@
-import Point from "@/plottables/Point";
 import { SEPoint } from "./SEPoint";
 export class SEEarthPoint extends SEPoint {
   private _longitude: number;

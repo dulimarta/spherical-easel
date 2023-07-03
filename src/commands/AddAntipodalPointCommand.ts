@@ -101,15 +101,9 @@ export class AddAntipodalPointCommand extends Command {
 
     if (parentPoint) {
       //make the point
-      // const point = new Point();
       const isUserCreated =
         propMap.get("antipodalPointIsUserCreated") === "true";
-      const sePoint = new SEAntipodalPoint(
-        // point,
-        parentPoint,
-        isUserCreated,
-        false
-      );
+      const sePoint = new SEAntipodalPoint(parentPoint, isUserCreated);
       const sePointLocation = new Vector3();
       sePointLocation.from(propMap.get("pointVector"));
       sePoint.locationVector.copy(sePointLocation);
@@ -127,14 +121,16 @@ export class AddAntipodalPointCommand extends Command {
         );
 
       //make the label
-      // const label = new Label("point");
       const seLabel = new SELabel("point", sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));
       seLabel.locationVector.copy(seLabelLocation);
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        seLabel.updatePlottableStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the point in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -1,7 +1,6 @@
 import { SEPoint, SESegment } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
 const { t } = i18n.global;
 

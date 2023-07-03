@@ -135,7 +135,6 @@ export class AddTangentLineThruPointCommand extends Command {
       !isNaN(tangentLineThruPointIndex)
     ) {
       //make the tangent Line
-      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = tangentLineThruPointEndSEPointLocation;
@@ -143,7 +142,6 @@ export class AddTangentLineThruPointCommand extends Command {
       endPoint.showing = false; // never changes
 
       const tangentLineThruPointLine = new SETangentLineThruPoint(
-        // line,
         tangentLineThruPointParentOneDimensional,
         tangentLineThruPointParentPoint,
         tangentLineThruPointNormal,
@@ -167,7 +165,6 @@ export class AddTangentLineThruPointCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("line");
       const seLabel = new SELabel("line", tangentLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

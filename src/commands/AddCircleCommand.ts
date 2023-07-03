@@ -104,7 +104,6 @@ export class AddCircleCommand extends Command {
 
     if (circleCenterPoint && circlePoint) {
       //make the circle
-      // const circle = new Circle();
       const seCircle = new SECircle(circleCenterPoint, circlePoint, false);
       //style the circle
       const circleFrontStyleString = propMap.get("objectFrontStyle");
@@ -121,7 +120,6 @@ export class AddCircleCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("circle");
       const seLabel = new SELabel("circle", seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

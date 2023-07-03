@@ -108,13 +108,7 @@ export class AddLineCommand extends Command {
 
     if (lineEndPoint && lineStartPoint && lineNormalVector.z !== 1) {
       //make the line
-      // const line = new Line();
-      const seLine = new SELine(
-        // line,
-        lineStartPoint,
-        lineNormalVector,
-        lineEndPoint
-      );
+      const seLine = new SELine(lineStartPoint, lineNormalVector, lineEndPoint);
       //style the line
       const lineFrontStyleString = propMap.get("objectFrontStyle");
       if (lineFrontStyleString !== undefined)
@@ -130,7 +124,6 @@ export class AddLineCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("line");
       const seLabel = new SELabel("line", seLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

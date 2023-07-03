@@ -135,9 +135,7 @@ export class AddPolarPointCommand extends Command {
       !isNaN(sePolarPointIndex)
     ) {
       //make the Polar Point
-      // const point = new NonFreePoint();
       const sePolarPoint = new SEPolarPoint(
-        // point,
         sePolarPointParent,
         sePolarPointIndex
       );
@@ -156,7 +154,6 @@ export class AddPolarPointCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("point");
       const seLabel = new SELabel("point", sePolarPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

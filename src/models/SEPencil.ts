@@ -1,4 +1,3 @@
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { ObjectState } from "@/types";
 import {
@@ -50,7 +49,6 @@ export class SEPencil extends SENodule {
       const numMissing = normals.length - N;
       // console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
       for (let k = N; k < normals.length; k++) {
-        const plottableEndPoint = new NonFreePoint();
         const endSEPoint = new SEPoint(true);
         endSEPoint.showing = false;
         endSEPoint.exists = true;
@@ -62,11 +60,7 @@ export class SEPencil extends SENodule {
         );
         endSEPoint.locationVector = this.tempVector.normalize();
 
-        // const plottableLine = new NonFreeLine();
-        // plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-        // plottableLine.adjustSize();
         const newPerpLine = new SEPerpendicularLineThruPoint(
-          // plottableLine,
           this._commonParent,
           this._commonPoint,
           normals[k].normal,

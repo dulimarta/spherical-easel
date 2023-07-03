@@ -274,14 +274,9 @@ export default class NSectSegmentHandler extends Highlighter {
           .isZero()
       );
       if (index === -1) {
-        // const newPoint = new NonFreePoint();
-        // Set the display to the default values
-        // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        // newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const nSectingPoint = new SENSectPoint(
-          // newPoint,
           candidateSegment,
           i,
           this.selectedNValue
@@ -291,7 +286,6 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        // const newLabel2 = new Label("point");
         const newSELabel2 = new SELabel("point", nSectingPoint);
         // Set the initial label location
         this.tmpVector

@@ -476,11 +476,6 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      // const newCenterPoint = new Point();
-      // Set the display to the default values
-      // newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      // newCenterPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -489,7 +484,6 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          // newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
 
@@ -701,24 +695,12 @@ export default class MeasuredCircleHandler extends Highlighter {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       // create the new non free circle
-      // const newCircle = new NonFreeCircle();
-      // Set the display to the default values
-      // newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the stroke width to the current zoom magnification factor
-      // newCircle.adjustSize();
-      // set the radius, center and update the display
-      // newCircle.centerVector = this.centerSEPoint.locationVector;
-      // newCircle.circleRadius = newRadius;
-      // newCircle.updateDisplay();
-
       const newMeasuredSECircle = new SEMeasuredCircle(
-        // newCircle,
         this.centerSEPoint,
         hiddenSEPoint,
         measurementSEExpression
       );
       // Create the plottable and model label
-      // const newLabel = new Label("circle");
       const newSELabel = new SELabel("circle", newMeasuredSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
@@ -757,7 +739,6 @@ export default class MeasuredCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            // const newLabel = new Label("point");
             const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
             // Set the initial label location

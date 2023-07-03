@@ -129,9 +129,7 @@ export class AddTransformedPointCommand extends Command {
 
     if (parentSEPoint && transformedPointParentTransformation) {
       //make the point
-      // const point = new NonFreePoint();
       const transformedSEPoint = new SETransformedPoint(
-        // point,
         parentSEPoint,
         transformedPointParentTransformation
       );
@@ -150,7 +148,6 @@ export class AddTransformedPointCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("point");
       const transformedSEPointLabel = new SELabel("point", transformedSEPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

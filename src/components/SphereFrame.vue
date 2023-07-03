@@ -238,10 +238,6 @@ onBeforeMount((): void => {
     if (!isNaN(layerIdx)) {
       // Create the layers
       const newLayer = new Two.Group();
-      if (layerIdx === LAYER.background)
-        console.debug("Background layer is", newLayer.id);
-      if (layerIdx === LAYER.foreground)
-        console.debug("Foreground layer is", newLayer.id);
       // newLayer.matrix.manual = true;
       // Undo the y-flip on text layers
       if (textLayers.indexOf(layerIdx) >= 0) {
@@ -325,7 +321,9 @@ onMounted((): void => {
   canvas.value?.addEventListener("mousedown", handleMousePressed);
   canvas.value?.addEventListener("mouseup", handleMouseReleased);
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
-  canvas.value?.addEventListener("wheel", handleMouseWheel);
+  // Add the passive option to avoid Chrome warning
+  // Without this option, scroll events will potentially block touch/wheel events
+  canvas.value?.addEventListener("wheel", handleMouseWheel, {passive: true});
 
   // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
   // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is

@@ -115,9 +115,7 @@ export class AddEllipseCommand extends Command {
 
     if (ellipseFocus1 && ellipseFocus2 && ellipsePointOnEllipse) {
       //make the ellipse
-      // const ellipse = new Ellipse();
       const seEllipse = new SEEllipse(
-        // ellipse,
         ellipseFocus1,
         ellipseFocus2,
         ellipsePointOnEllipse,
@@ -138,7 +136,6 @@ export class AddEllipseCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("ellipse");
       const seLabel = new SELabel("ellipse", seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

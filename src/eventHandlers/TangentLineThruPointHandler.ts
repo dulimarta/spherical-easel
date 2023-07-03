@@ -517,17 +517,10 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
-      // create a
-      // const newPoint = new Point();
-      // Set the display to the default values
-      // newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // newPoint.adjustSize();
-
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
         this.sePoint = new SEPointOnOneOrTwoDimensional( // Use  this.sePoint so that this variable points to the parent point, no matter how it is created or picked
-          // newPoint,
           sePointOneDimensionalParent
         );
         this.sePoint.locationVector =
@@ -635,7 +628,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Create the endSEPoint for the line
       // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
-      // const plottableEndPoint = new NonFreePoint();
       // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
       // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
       // updated when the the new SETangentLineThruPoint is updated.
@@ -646,14 +638,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this tangent
-      // const plottableLine = new NonFreeLine();
-      // Stylize the new Line
-      // plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      // plottableLine.adjustSize();
 
       // Create the model(SE) tangent line for the new point and link them
       const newSETangentLine = new SETangentLineThruPoint(
-        // plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,
@@ -669,7 +656,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
       newSETangentLine.update();
 
       // Create the plottable label
-      // const newLabel = new Label("line");
       const newSELabel = new SELabel("line", newSETangentLine);
 
       // Set the initial label location
@@ -707,7 +693,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
             );
           } else {
             // Create the plottable label
-            // const newLabel = new Label("point");
             const newSELabel = new SELabel("point", item.SEIntersectionPoint);
             // Set the initial label location
             this.tmpVector

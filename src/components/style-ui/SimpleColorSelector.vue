@@ -68,7 +68,6 @@ import { ref, watch, onMounted, onBeforeUpdate, Ref } from "vue";
 
 import SETTINGS from "@/global-settings";
 // import Nodule from "@/plottables/Nodule";
-import { hslaColorType } from "@/types";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
 import i18n from "@/i18n";

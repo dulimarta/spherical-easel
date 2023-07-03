@@ -116,9 +116,7 @@ export class AddSegmentCommand extends Command {
       !isNaN(segmentArcLength)
     ) {
       //make the segment
-      // const segment = new Segment();
       const seSegment = new SESegment(
-        // segment,
         segmentStartPoint,
         segmentNormalVector,
         segmentArcLength,
@@ -139,7 +137,6 @@ export class AddSegmentCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("segment");
       const seLabel = new SELabel("segment", seSegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number

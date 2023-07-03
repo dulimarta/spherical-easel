@@ -24,7 +24,6 @@ import Circle from "@/plottables/Circle";
 import Ellipse from "@/plottables/Ellipse";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
@@ -1565,14 +1564,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       );
     }
     // we have to create a new transformed point
-    // const newTransformedPoint = new NonFreePoint();
-    // Set the display to the default values
-    // newTransformedPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newTransformedPoint.adjustSize();
 
     const newTransformedSEPoint = new SETransformedPoint(
-      // newTransformedPoint,
       preimageSEPoint,
       transformationSEParent
     );
@@ -1682,14 +1675,8 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed segment
-    // const newTransformedSegment = new NonFreeSegment();
-    // Set the display to the default values
-    // newTransformedSegment.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newTransformedSegment.adjustSize();
 
     const newIsometrySESegment = new SEIsometrySegment(
-      // newTransformedSegment,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSESegment.normalVector),
       preimageSESegment.arcLength,
@@ -1740,7 +1727,6 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector
@@ -1845,14 +1831,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Line
-    // const newTransformedLine = new NonFreeLine();
-    // Set the display to the default values
-    // newTransformedLine.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newTransformedLine.adjustSize();
 
     const newIsometrySELine = new SEIsometryLine(
-      // newTransformedLine,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSELine.normalVector),
       transformedEndSEPoint,
@@ -1898,7 +1878,6 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
           // Set the initial label location
           this.tmpVector
@@ -2005,14 +1984,8 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed Circle
-    // const newTransformedCircle = new NonFreeCircle();
-    // Set the display to the default values
-    // newTransformedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newTransformedCircle.adjustSize();
 
     const newIsometrySECircle = new SEIsometryCircle(
-      // newTransformedCircle,
       transformedCenterSEPoint,
       transformedCircleSEPoint,
       preimageSECircle,
@@ -2061,7 +2034,6 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location
@@ -2196,14 +2168,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Ellipse
-    // const newTransformedEllipse = new NonFreeEllipse();
-    // Set the display to the default values
-    // newTransformedEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newTransformedEllipse.adjustSize();
 
     const newIsometrySEEllipse = new SEIsometryEllipse(
-      // newTransformedEllipse,
       transformedFocus1SEPoint,
       transformedFocus2SEPoint,
       transformedEllipseSEPoint,
@@ -2254,7 +2220,6 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location
@@ -2448,14 +2413,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       });
 
     if (newInvertedSECircleCenter === null) {
-      const newTransformedCircleCenter = new NonFreePoint();
-      // Set the display to the default values
-      newTransformedCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newTransformedCircleCenter.adjustSize();
-
       newInvertedSECircleCenter = new SEInversionCircleCenter(
-        newTransformedCircleCenter,
         lineOrCircle,
         transformationSEParent
       );
@@ -2498,14 +2456,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
 
     // we have to create a new transformed Circle
-    // const newInvertedCircle = new NonFreeCircle();
-    // Set the display to the default values
-    // newInvertedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    // newInvertedCircle.adjustSize();
-
     const newInvertedSECircle = new SECircle(
-      // newInvertedCircle,
       newInvertedSECircleCenter !== null
         ? newInvertedSECircleCenter
         : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
@@ -2560,7 +2511,6 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          // const newLabel = new Label("point");
           const newSELabel = new SELabel("point", item.SEIntersectionPoint);
 
           // Set the initial label location

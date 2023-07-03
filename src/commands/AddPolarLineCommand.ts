@@ -123,7 +123,6 @@ export class AddPolarLineCommand extends Command {
       sePolarLineEndSEPointLocation.z !== 1
     ) {
       //make the polar Line
-      // const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
       const endPoint = new SEPoint();
       endPoint.locationVector = sePolarLineEndSEPointLocation;
@@ -157,7 +156,6 @@ export class AddPolarLineCommand extends Command {
         );
 
       //make the label and set its location
-      // const label = new Label("line");
       const seLabel = new SELabel("line", sePolarLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
