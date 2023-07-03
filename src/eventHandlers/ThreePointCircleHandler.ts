@@ -1067,14 +1067,10 @@ export default class ThreePointCircleHandler extends Highlighter {
         this.point3SEPoint
       );
       // Create the plottable and model label
-      const newSELabel = new SELabel("point", newSEThreePointCircleCenter);
-      // Set the initial label location
-
-      this.tmpVector
-        .copy(newSEThreePointCircleCenter.locationVector)
-        .add(new Vector3(0, SETTINGS.point.initialLabelOffset, 0))
-        .normalize();
-      newSELabel.locationVector = this.tmpVector;
+      const newSELabel =
+        newSEThreePointCircleCenter.attachLabelWithOffset(
+          new Vector3(0, SETTINGS.point.initialLabelOffset, 0)
+        );
 
       // Add this new point to the store
       threePointCircleCommandGroup.addCommand(
@@ -1134,20 +1130,13 @@ export default class ThreePointCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             threePointCircleCommandGroup.addCommand(
               new AddIntersectionPointCommand(

@@ -286,19 +286,13 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        const newSELabel2 = new SELabel("point", nSectingPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(nSectingPoint.locationVector)
-          .add(
+        const newSELabel2 = nSectingPoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel2.locationVector = this.tmpVector;
 
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)

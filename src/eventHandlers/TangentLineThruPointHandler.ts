@@ -525,19 +525,13 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel("point", this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel =this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addTangentLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -550,19 +544,13 @@ export default class TangentLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel("point", this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel = this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addTangentLineGroup.addCommand(
           new AddPointCommand(this.sePoint, newSELabel)
@@ -693,19 +681,13 @@ export default class TangentLineThruPointHandler extends Highlighter {
             );
           } else {
             // Create the plottable label
-            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             addTangentLineGroup.addCommand(
               new AddIntersectionPointCommand(

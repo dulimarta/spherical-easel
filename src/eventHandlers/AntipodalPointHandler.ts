@@ -167,19 +167,26 @@ export default class AntipodalPointHandler extends Highlighter {
           );
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newSELabel = new SELabel("point", this.parentPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.parentPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+          const newSELabel = this.parentPoint.attachLabelWithOffset(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+          );
+          // const newSELabel = new SELabel("point", this.parentPoint);
+          // Set the initial label location
+          // this.tmpVector
+          //   .copy(this.parentPoint.locationVector)
+          //   .add(
+          //     new Vector3(
+          //       2 * SETTINGS.point.initialLabelOffset,
+          //       SETTINGS.point.initialLabelOffset,
+          //       0
+          //     )
+          //   )
+          //   .normalize();
+          // newSELabel.locationVector = this.tmpVector;
           // Create and execute the command to create a new point for undo/redo
 
           antipodalCommandGroup.addCommand(
@@ -195,19 +202,26 @@ export default class AntipodalPointHandler extends Highlighter {
           this.parentPoint = new SEPoint();
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newSELabel = new SELabel("point", this.parentPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.parentPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+          const newSELabel = this.parentPoint.attachLabelWithOffset(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+          );
+          // const newSELabel = new SELabel("point", this.parentPoint);
+          // // Set the initial label location
+          // this.tmpVector
+          //   .copy(this.parentPoint.locationVector)
+          //   .add(
+          //     new Vector3(
+          //       2 * SETTINGS.point.initialLabelOffset,
+          //       SETTINGS.point.initialLabelOffset,
+          //       0
+          //     )
+          //   )
+          //   .normalize();
+          // newSELabel.locationVector = this.tmpVector;
 
           antipodalCommandGroup.addCommand(
             new AddPointCommand(this.parentPoint, newSELabel)
@@ -218,20 +232,13 @@ export default class AntipodalPointHandler extends Highlighter {
         const vtx = new SEAntipodalPoint(this.parentPoint, true);
 
         // Create the plottable label
-        const newSELabel = new SELabel("point", vtx);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(vtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+        const newSELabel = vtx.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+        );
 
         // Create and execute the command to create a new point for undo/redo
         antipodalCommandGroup.addCommand(

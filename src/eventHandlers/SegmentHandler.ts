@@ -807,19 +807,7 @@ export default class SegmentHandler extends Highlighter {
       );
       newSESegment.shallowUpdate();
       // Create Plottable Label
-      const newSELabel = new SELabel("segment", newSESegment);
-      this.tmpVector
-        .addVectors(
-          this.startSEPoint.locationVector,
-          this.endSEPoint.locationVector
-        )
-        .normalize()
-        .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
-        .normalize();
-      if (this.arcLength > Math.PI) {
-        this.tmpVector.multiplyScalar(-1);
-      }
-      newSELabel.locationVector = this.tmpVector;
+      const newSELabel = newSESegment.attachLabelWithOffset(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
 
       segmentGroup.addCommand(
         new AddSegmentCommand(
@@ -842,19 +830,13 @@ export default class SegmentHandler extends Highlighter {
             );
           } else {
             // Create the plottable label
-            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.segment.initialLabelOffset,
                   SETTINGS.segment.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             segmentGroup.addCommand(
               new AddIntersectionPointCommand(

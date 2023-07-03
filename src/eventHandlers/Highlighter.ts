@@ -166,22 +166,17 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Create a plottable label
     // Create an SELabel and link it to the plottable object
-    const newSEAntipodalLabel = new SELabel("point", antipodalVtx);
 
     antipodalVtx.locationVector = parentPoint.locationVector;
     antipodalVtx.locationVector.multiplyScalar(-1);
     // Set the initial label location
-    tmpVector
-      .copy(antipodalVtx.locationVector)
-      .add(
+    const newSEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSEAntipodalLabel.locationVector = tmpVector;
     commandGroup.addCommand(
       new AddAntipodalPointCommand(
         antipodalVtx,
