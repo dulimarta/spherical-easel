@@ -111,33 +111,8 @@
       </p>
     </Dialog>
 
-    <!--Dialog
-      ref="saveConstructionDialog"
-      :title="i18nText('constructions.saveConstruction')"
-      :yes-text="i18nText('constructions.save')"
-      :no-text="i18nText('constructions.cancel')"
-      :yes-action="() => doShare()"
-      max-width="40%">
-      <p>
-        {{ i18nText("constructions.saveConstructionDialog") }}
-      </p>
 
-      <v-text-field
-        type="text"
-        density="compact"
-        clearable
-        counter
-        persistent-hint
-        :label="i18nText('constructions.description')"
-        required
-        v-model="description"
-        @keypress.stop></v-text-field>
-      <v-switch
-        v-model="publicConstruction"
-        :disabled="uid.length === 0"
-        :label="i18nText('constructions.makePublic')"></v-switch>
-    </!--Dialog>
-    <Dialog
+    <!--Dialog
       ref="shareConstructionDialog"
       :title="i18nText('constructions.shareConstructionDialog')"
       :yesText="i18nText('constructions.exportConstructionDialog')"
@@ -151,7 +126,7 @@
 
       <input ref="shareLinkReference" readonly :value="shareLink" />
       <button @click="copyShareLink">Copy</button>
-    </Dialog>
+    </!--Dialog>
 
     <Dialog
       ref="exportConstructionDialog"
@@ -344,7 +319,7 @@ onBeforeMount((): void => {
   //   acceptedKeys = 0;
   //   // $forceUpdate();
   // });
-  EventBus.listen("share-construction-requested", doShare);
+  // EventBus.listen("share-construction-requested", doShare);
   clientBrowser = detect();
   acctStore.resetToolset();
   //ACStore.resetToolset();
@@ -373,7 +348,7 @@ async function doLogout(): Promise<void> {
   userRole.value = undefined;
   uid.value = "";
   whoami.value = "";
-  acctStore.setUserDetails(undefined, undefined, "")
+  acctStore.parseAndSetFavoriteTools("")
 }
 
 // additionalFooterText(e: { text: string }): void {
@@ -586,115 +561,7 @@ function showSaveConstructionDialog() {
   saveConstructionDialog.value?.show();
 }
 
-async function doShare(): Promise<void> {
-  /* TODO: move the following constant to global-settings? */
-  const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
-  // A local function to convert a blob to base64 representation
-  const toBase64 = (inputBlob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.readAsDataURL(inputBlob);
-    });
 
-  /* dump the command history */
-  const scriptOut = Command.dumpOpcode();
-
-  // TODO: should we decouple the zoomFactor from the rotation matrix when
-  // saving a construction?. Possible issue: the construction
-  // was saved by a user working on a larger screen (large zoomFactor),
-  // but loaded by a user working on a smaller screen (small zoomFactor)
-
-  const rotationMat = inverseTotalRotationMatrix;
-  const collectionPath = publicConstruction
-    ? "constructions"
-    : `users/${uid}/constructions`;
-
-  // Make a duplicate of the SVG tree
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-  // Remove the top-level transformation matrix
-  // We have to save the preview in its "natural" pose
-  svgElement.style.removeProperty("transform");
-
-  const svgBlob = new Blob([svgElement.outerHTML], {
-    type: "image/svg+xml;charset=utf-8"
-  });
-  const svgPreviewData = await toBase64(svgBlob);
-  console.log(svgPreviewData); // TODO delete
-
-  // const svgURL = URL.createObjectURL(svgBlob);
-  // FileSaver.saveAs(svgURL, "hans.svg");
-
-  /* Create a pipeline of Firebase tasks
-       Task 1: Upload construction to Firestore
-       Task 2: Upload the script to Firebase Storage (for large script)
-       Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
-    */
-  addDoc(
-    // Task #1
-    collection(appDB, collectionPath),
-    {
-      version: "1",
-      dateCreated: new Date().toISOString(),
-      author: whoami.value,
-      description: description.value,
-      rotationMatrix: JSON.stringify(rotationMat.value.elements),
-      tools: includedTools.value,
-      script: "" // Use an empty string (for type checking only)
-    } as ConstructionInFirestore
-  )
-    .then((constructionDoc: DocumentReference) => {
-      /* Task #2 */
-      const scriptPromise: Promise<string> =
-        scriptOut.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(scriptOut)
-          : uploadString(
-              storageRef(appStorage, `scripts/${constructionDoc.id}`),
-              scriptOut
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Task #3 */
-      const svgPromise: Promise<string> =
-        svgPreviewData.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(svgPreviewData)
-          : uploadString(
-              storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              svgPreviewData
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Wrap the result from the three tasks as a new Promise */
-      return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
-    })
-    .then(([docId, scriptData, svgData]) => {
-      const constructionDoc = doc(appDB, collectionPath, docId);
-      updateDoc(constructionDoc, { script: scriptData, preview: svgData });
-      // Pass on the document ID to be included in the alert message
-      return docId;
-    })
-    .then((docId: string) => {
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionSaved",
-        keyOptions: { docId },
-        type: "info"
-      });
-      seStore.clearUnsavedFlag();
-    })
-    .catch((err: Error) => {
-      console.error("Can't save document", err.message);
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreSaveError",
-        // keyOptions: { docId: constructionDoc.id },
-        type: "error"
-      });
-    });
-
-  saveConstructionDialog.value?.hide();
-}
 
 function copyShareLink(): void {
   shareLinkReference.value?.focus();

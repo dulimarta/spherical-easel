@@ -110,6 +110,7 @@
                   :key="`${msg.key}-${index}`"
                   density="compact"
                   closable
+                  :icon="iconType(msg)"
                   :type="alertType(msg)"
                   :text="pretty(msg)"
                   v-on:update:model-value="
@@ -183,6 +184,7 @@ const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
+
 const messageTypes = computed(() =>
   SETTINGS.messageTypes.map((s: string) => ({
     value: s,
@@ -221,7 +223,9 @@ const currentMsg = computed((): MessageType | null =>
 function shortMessage(m: MessageType): string {
   return t(m.key, m.keyOptions);
 }
-
+function iconType(m: MessageType): string {
+  return m.type === "directive" ? "mdi-lightbulb" : (m.type as AlertType);
+}
 function alertType(m: MessageType): AlertType {
   return m.type === "directive" ? "success" : (m.type as AlertType);
 }

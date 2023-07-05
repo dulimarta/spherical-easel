@@ -60,7 +60,7 @@
                     size="small"
                     icon="$deleteConstruction"
                     color="red"
-                    @click="$emit('delete-requested', { docId: r.id })">
+                    @click="$emit('delete-requested', r.id)">
                   </v-btn>
                 </div>
               </v-overlay>
@@ -83,7 +83,9 @@ const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing?: boolean;
 }>();
-const emit = defineEmits(["load-requested"]);
+const emit = defineEmits<{
+  "load-requested": [id:string]
+}>();
 
 const seStore = useSEStore();
 const appAuth = getAuth();
@@ -121,7 +123,7 @@ function onListLeave(/*_ev: MouseEvent*/): void {
 }
 
 function loadPreview(docId: string): void {
-  emit("load-requested", { docId });
+  emit("load-requested", docId);
 }
 </script>
 

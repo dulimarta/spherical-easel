@@ -88,13 +88,14 @@
             :class="['justify-center', 'align-start', previewClass]"
             :model-value="svgDataImage.length > 0">
             <div class="previewText">
-              {{ constructionInfo.count }} objects. Created by:
-              {{ constructionInfo.author }}
+              <p>{{ constructionInfo.count }} objects.</p>
+              <p>Created by: {{ constructionInfo.author }}</p>
             </div>
             <img
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
+              :width="overlayHeight * 1.5"
               :height="overlayHeight" />
           </v-overlay>
           <div id="msghub">
@@ -274,7 +275,7 @@ onBeforeMount(() => {
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
-    svgDataImage.value = s.previewData;
+    svgDataImage.value = s.preview;
     constructionInfo.value.author = s.author;
     constructionInfo.value.count = s.objectCount;
   } else {
@@ -528,11 +529,13 @@ function handleToolboxMinify(state: boolean) {
 .previewText {
   position: absolute;
   background-color: #fffd;
+  border: 2px solid grey;
   border-radius: 0.5em;
   transform: translateX(-50%);
   z-index: 30;
   padding: 0.25em;
   margin: 0.5em;
+  width: 20em;
 }
 .previewImage {
   position: absolute;

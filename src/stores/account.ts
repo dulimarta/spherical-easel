@@ -33,7 +33,8 @@ export const useAccountStore = defineStore("acct", {
     /** @type { ActionMode[]} */
     includedTools: [],
     excludedTools: [],
-    favoriteTools: DEFAULT_TOOL_NAMES
+    favoriteTools: DEFAULT_TOOL_NAMES,
+    constructionDocId: null
   }),
   actions: {
     resetToolset(includeAll = true): void {

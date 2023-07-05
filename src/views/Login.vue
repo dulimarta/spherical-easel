@@ -168,9 +168,9 @@ function parseUserProfile(uid: string) {
       const uProfile = ds.data() as UserProfile;
       console.debug("User Profile Details from Firestore", uProfile);
       const { favoriteTools, displayName, profilePictureURL } = uProfile;
-      if (userDisplayedName === undefined)
+      if (userDisplayedName.value === undefined)
         acctStore.userDisplayedName = displayName
-      if (userProfilePictureURL === undefined)
+      if (userProfilePictureURL.value === undefined)
         acctStore.userProfilePictureURL = profilePictureURL
       acctStore.parseAndSetFavoriteTools(favoriteTools ?? "#")
     }

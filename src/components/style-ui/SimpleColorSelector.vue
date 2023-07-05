@@ -43,8 +43,9 @@
           type="colorInput"
           @click="toggleColorInputs"
           :disabled="noColorData"
-          i18n-label="style.showColorInputs"
-          i18n-tooltip="style.showColorInputsToolTip"></HintButton>
+          :tooltip="t('showInput')">
+          <template #icon>mdi-palette</template>
+        </HintButton>
       </v-col>
     </v-row>
   </v-container>
@@ -70,8 +71,8 @@ import SETTINGS from "@/global-settings";
 // import Nodule from "@/plottables/Nodule";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
-import i18n from "@/i18n";
-
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 type ComponentProps = {
   title: string;
@@ -98,7 +99,7 @@ const showColorInputs = ref(false);
 
 const colorSwatches = ref(SETTINGS.style.swatches);
 let noDataStr = "";
-const noDataUILabel = ref(i18n.global.t("style.noFill"));
+const noDataUILabel = ref(t("style.noFill"));
 
 function toggleNoColor(ev: PointerEvent): void {
   console.log("What is toggle flag?", noColorData.value);
@@ -132,8 +133,8 @@ onMounted((): void => {
   var re = /fill/gi;
   noDataUILabel.value =
     props.styleName.search(re) === -1
-      ? i18n.global.t("style.noStroke")
-      : i18n.global.t("style.noFill"); // the noStroke/noFill option
+      ? t("style.noStroke")
+      : t("style.noFill"); // the noStroke/noFill option
 
   var re2 = /label/gi;
   isOnLabelPanel.value = props.title.search(re2) !== -1;
@@ -206,3 +207,8 @@ watch(
   color: rgb(255, 82, 82);
 }
 </style>
+<i18n locale="en">
+{
+  "showInput": "Show Color Input"
+}
+</i18n>

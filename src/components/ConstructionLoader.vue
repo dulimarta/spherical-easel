@@ -98,7 +98,8 @@ import {
   deleteDoc,
   getDoc,
   CollectionReference,
-  getDocs
+  getDocs,
+onSnapshot
 } from "firebase/firestore";
 import { run } from "@/commands/CommandInterpreter";
 import {
@@ -120,7 +121,8 @@ import { getAuth } from "firebase/auth";
 import {
   getStorage,
   ref as storageRef,
-  getDownloadURL
+  getDownloadURL,
+deleteObject
 } from "firebase/storage";
 import { useI18n } from "vue-i18n";
 type PublicConstructionReferencee = {
@@ -156,8 +158,11 @@ onMounted((): void => {
       "users",
       firebaseUid.value,
       "constructions"
-    );
-    populateData(privateColl, privateConstructions.value);
+    )
+    onSnapshot(privateColl, () => {
+      privateConstructions.value.splice(0)
+      populateData(privateColl, privateConstructions.value);
+    })
   }
   const publicColl = collection(appDB, "constructions");
   populateData(publicColl, publicConstructions.value);
@@ -213,6 +218,7 @@ async function parseDocument(
       sphereRotationMatrix.fromArray(matrixData);
     }
     return {
+      version: remoteDoc.version,
       id,
       script: trimmedScript,
       parsedScript,
@@ -221,7 +227,7 @@ async function parseDocument(
       dateCreated: remoteDoc.dateCreated,
       description: remoteDoc.description,
       sphereRotationMatrix,
-      previewData: svgData ?? "",
+      preview: svgData ?? "",
       tools: remoteDoc.tools ?? undefined
     };
   }
@@ -275,8 +281,8 @@ function populateData(
     });
 }
 
-function shouldLoadConstruction(event: { docId: string }): void {
-  selectedDocId.value = event.docId;
+function shouldLoadConstruction(docId: string): void {
+  selectedDocId.value = docId;
   if (hasUnsavedNodules) constructionLoadDialog.value?.show();
   else {
     doLoadConstruction();
@@ -352,13 +358,28 @@ function doCopyURL(): void {
   constructionShareDialog.value?.hide();
 }
 
-function shouldDeleteConstruction(event: { docId: string }): void {
-  selectedDocId.value = event.docId;
+function shouldDeleteConstruction(docId: string): void {
+  selectedDocId.value = docId;
   constructionDeleteDialog.value?.show();
 }
 
-function doDeleteConstruction(): void {
+async function doDeleteConstruction(): Promise<void> {
+  /* Constructions are saved under the user account. However, when
+     a construction is made public, its document ID is also listed
+     under the "public" construction collection.
+     So we have to delete the public listing.
+     Also, scripts and the preview image must also be deleted.
+   */
+  const pos = privateConstructions.value.findIndex((c: SphericalConstruction) => c.id === selectedDocId.value)
   constructionDeleteDialog.value?.hide();
+  if (pos < 0) return;
+  const victimDetails = privateConstructions.value[pos]
+  if (victimDetails.script.startsWith("https://")) {
+    await deleteObject(storageRef(appStorage, `/scripts/${selectedDocId.value}`))
+  }
+  if (victimDetails.preview) {
+    await deleteObject(storageRef(appStorage, `/scripts/${selectedDocId.value}`))
+  }
   const doc1 = doc(appDB, "constructions", selectedDocId.value);
   const task1 = deleteDoc(doc1);
   const doc2 = doc(
@@ -372,8 +393,7 @@ function doDeleteConstruction(): void {
   Promise.any([task1, task2])
     .then(() => {
       EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionDeleted",
-        keyOptions: { docId: selectedDocId.value },
+        key: t('constructionDeleted', {docId: selectedDocId.value}),
         type: "info"
       });
     })
@@ -382,3 +402,8 @@ function doDeleteConstruction(): void {
     });
 }
 </script>
+<i18n locale="en">
+{
+  "constructionDeleted": "Construction {docId} was successfully removed"
+}
+</i18n>

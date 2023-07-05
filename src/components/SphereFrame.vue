@@ -335,7 +335,17 @@ onMounted((): void => {
     event.preventDefault()
   );
 
-  watch(
+  // canvas.value!.style.width = twoInstance.width.toString() + "px";
+  // canvas.value!.style.height = twoInstance.height.toString() + "px";
+  // Set the canvas size to the window size
+  // Make the canvas accessible to other components which need
+  // to grab the SVG contents of the sphere
+  console.debug("TwoJS SVG Canvas is", canvas.value)
+  seStore.setCanvas(canvas.value!);
+  // updateShortcutTools();
+  updateView();
+});
+watch(
     () => props.isEarthMode,
     earthMode => {
       let i = 0;
@@ -350,22 +360,6 @@ onMounted((): void => {
       // seStore.layers[Number(LAYER.midground)].visible = false;
     }
   );
-  // canvas.value!.style.width = twoInstance.width.toString() + "px";
-  // canvas.value!.style.height = twoInstance.height.toString() + "px";
-  // Set the canvas size to the window size
-  // Make the canvas accessible to other components which need
-  // to grab the SVG contents of the sphere
-  watch(
-    () => seStore.canvasWidth,
-    () => {
-      // canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
-      // canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
-    }
-  );
-  seStore.setCanvas(canvas.value!);
-  // updateShortcutTools();
-  updateView();
-});
 
 onBeforeUnmount((): void => {
   canvas.value?.removeEventListener("mousemove", handleMouseMoved);

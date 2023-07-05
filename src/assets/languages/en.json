@@ -516,7 +516,7 @@
     "firestoreConstructionLoaded": "Construction {docId} successfully loaded.",
     "firestoreConstructionSaved": "Construction {docId} successfully saved.",
     "firestoreConstructionDeleted": "Construction {docId} successfully deleted.",
-    "firestoreSaveError": "Construction was not saved.",
+    "firestoreSaveError": "Construction was not saved: {error}",
     "constructionNotFound": "Construction {docId} not found."
   },
   "key": "",
