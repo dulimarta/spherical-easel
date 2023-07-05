@@ -1,5 +1,6 @@
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
+
 import { Vector3 } from "three";
 import {
   StyleOptions,
@@ -8,8 +9,8 @@ import {
 } from "@/types/Styles";
 import { LabelDisplayMode, LabelParentTypes } from "@/types";
 import { ValueDisplayMode } from "@/types";
-
 import Two from "two.js";
+
 // import { Vector } from "two.js/src/vector";
 // import { Text } from "two.js/src/text";
 // import { Group } from "two.js/src/group";
@@ -57,6 +58,7 @@ export default class Label extends Nodule {
   private seLabelParentType: LabelParentTypes = "point";
   // private _seLabelParentID = -1;
   private _valueDisplayMode = ValueDisplayMode.Number;
+
   private _defaultName = "";
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
@@ -65,7 +67,7 @@ export default class Label extends Nodule {
    * caption is a longer, ?? characters long
    * Note that initialName is not user modifiable and is used (in shortUserName) until the user changes the name field in the styling panel
    * this.seLabel.parent.name is the name that is restored when defaults are restored.
-   * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
+   * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for point coordinates is an array of
    * the three coordinate values.
    */
   protected _shortUserName = "";
@@ -517,6 +519,7 @@ export default class Label extends Nodule {
         // Compute the numerical part of the label (if any) and add it to the end of label
         if (this.value.length > 0) {
           if (this.seLabelParentType === "point") {
+            //For coordinates of a point
             labelText =
               "(" +
               `${this._value
@@ -540,6 +543,38 @@ export default class Label extends Nodule {
                     .toDegrees()
                     .toFixed(SETTINGS.decimalPrecision) + "\u{00B0}";
                 break;
+              case ValueDisplayMode.EarthModeMiles:
+                if (this.seLabelParentType == "polygon") {
+                  labelText =
+                    (
+                      this._value[0] *
+                      SETTINGS.earthMode.radiusMiles *
+                      SETTINGS.earthMode.radiusMiles
+                    ).toFixed(SETTINGS.decimalPrecision) + " mi\u{00B2}"; //TODO: How do I internationalize this?
+                  break;
+                } else {
+                  labelText =
+                    (this._value[0] * SETTINGS.earthMode.radiusMiles).toFixed(
+                      SETTINGS.decimalPrecision
+                    ) + " mi"; //TODO: How do I internationalize this?
+                  break;
+                }
+              case ValueDisplayMode.EarthModeKilos:
+                if (this.seLabelParentType == "polygon") {
+                  labelText =
+                    (
+                      this._value[0] *
+                      SETTINGS.earthMode.radiusKilometers *
+                      SETTINGS.earthMode.radiusKilometers
+                    ).toFixed(SETTINGS.decimalPrecision) + " km\u{00B2}"; //TODO: How do I internationalize this?
+                  break;
+                } else {
+                  labelText =
+                    (
+                      this._value[0] * SETTINGS.earthMode.radiusKilometers
+                    ).toFixed(SETTINGS.decimalPrecision) + " km"; //TODO: How do I internationalize this?
+                  break;
+                }
             }
           }
         }

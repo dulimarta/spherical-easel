@@ -4,11 +4,14 @@ import { ValueDisplayMode } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
-
+import { SEPolygon } from "./SEPolygon";
 // const emptySet = new Set<string>();
+
 export abstract class SEExpression extends SENodule {
   //Controls if the expression should be measured in multiples of pi, decimal degrees or just a number
   protected _valueDisplayMode = ValueDisplayMode.Number;
+  protected _preEarthModeChangeValueDisplayMode = ValueDisplayMode.Number;
+
   constructor() {
     super();
     SEExpression.EXPR_COUNT++;
@@ -17,12 +20,27 @@ export abstract class SEExpression extends SENodule {
     this.name = `M${SEExpression.EXPR_COUNT}`;
   }
 
+  // watch(
+  //   () => isEarthMode.value,
+  //   (x): void => {
+  //     console.log("WOW")
+  //     if (newValue) {
+  //      this._preEarthModeChangeValueDisplayMode = this._valueDisplayMode}
+  //     else {
+  //       this._valueDisplayMode = this._preEarthModeChangeValueDisplayMode
+  //     }
+  //   }
+  // );
+
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
    * The setter must update the plottable label (if the expression is attached to a label)
    */
   abstract get valueDisplayMode(): ValueDisplayMode;
   abstract set valueDisplayMode(vdm: ValueDisplayMode);
 
+  get preEarthModeValueDisplayMode(): ValueDisplayMode {
+    return this._preEarthModeChangeValueDisplayMode;
+  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 
@@ -44,6 +62,38 @@ export abstract class SEExpression extends SENodule {
         return (
           this.value.toDegrees().toFixed(SETTINGS.decimalPrecision) + "\u{00B0}"
         );
+      case ValueDisplayMode.EarthModeMiles:
+        if (this instanceof SEPolygon) {
+          return (
+            (
+              this.value *
+              SETTINGS.earthMode.radiusMiles *
+              SETTINGS.earthMode.radiusMiles
+            ).toFixed(SETTINGS.decimalPrecision) + " mi\u{00B2}" //TODO: How do I internationalize this?
+          );
+        } else {
+          return (
+            (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
+              SETTINGS.decimalPrecision
+            ) + " mi" //TODO: How do I internationalize this?
+          );
+        }
+      case ValueDisplayMode.EarthModeKilos:
+        if (this instanceof SEPolygon) {
+          return (
+            (
+              this.value *
+              SETTINGS.earthMode.radiusKilometers *
+              SETTINGS.earthMode.radiusKilometers
+            ).toFixed(SETTINGS.decimalPrecision) + " km\u{00B2}" //TODO: How do I internationalize this?
+          );
+        } else {
+          return (
+            (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
+              SETTINGS.decimalPrecision
+            ) + " km" //TODO: How do I internationalize this?
+          );
+        }
     }
   }
 

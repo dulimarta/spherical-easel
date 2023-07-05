@@ -1414,6 +1414,11 @@ export const SETTINGS = {
     delay: 3000,
     display: true // controls if they should be displayed
   },
+  earthMode: {
+    defaultEarthModeUnits: "km", // The other option is idiot units of miles (mi)
+    radiusMiles: 3959,
+    radiusKilometers: 6371
+  },
   parameterization: {
     useNewtonsMethod: false, // When finding the zeros, should we use newton's method?  If false we use bisections
     subdivisions: 80, // When searching function on a parametrized curve for a change in sign, use this many subdivisions

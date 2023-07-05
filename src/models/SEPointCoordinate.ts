@@ -26,6 +26,7 @@ export class SEPointCoordinate extends SEExpression {
     this.point = point;
   }
   public customStyles = (): Set<string> => emptySet;
+
   public get value(): number {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:

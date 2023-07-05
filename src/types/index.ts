@@ -25,7 +25,7 @@ export interface Selectable {
 }
 
 export interface AccountState {
-  loginEnabled: boolean
+  loginEnabled: boolean;
   temporaryProfilePicture: string;
   userProfilePictureURL: string | undefined;
   userDisplayedName: string | undefined;
@@ -478,7 +478,9 @@ export type hslaColorType = {
 export enum ValueDisplayMode {
   Number, // just the raw number is displayed
   MultipleOfPi, // convert to multiples of pi for display
-  DegreeDecimals // convert to degrees for display
+  DegreeDecimals, // convert to degrees for display
+  EarthModeMiles, // convert lengths/areas to miles/sq miles ONLY AVAILABLE IN EARTH MODE (for point coordinates display x,y,z on Earth Coordinates)
+  EarthModeKilos // convert length/areas to km/sq km ONLY AVAILABLE IN EARTH MODE (for point coordinates display longitude, latitude Coordinates)
 }
 
 export enum LabelDisplayMode {
@@ -578,7 +580,6 @@ export interface ConstructionInFirestore {
 }
 
 /* Reference to a user's favorite tool in settings */
-
 
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {

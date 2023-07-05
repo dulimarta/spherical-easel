@@ -56,7 +56,7 @@
             <template v-slot:activator="{ props }">
               <div
                 id="_test_toggle_format"
-                v-if="isExpressionAndNotCoordinate"
+                v-if="isExpressionAndNotCoordinateNotEarthMode"
                 v-bind="props"
                 @click="cycleValueDisplayMode">
                 <v-icon size="small">$cycleNodeValueDisplayMode</v-icon>
@@ -171,8 +171,9 @@ import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
+import SETTINGS from "@/global-settings";
 const seStore = useSEStore();
-const { actionMode } = storeToRefs(seStore);
+const { actionMode, isEarthMode } = storeToRefs(seStore);
 const props = defineProps<{
   node: SENodule;
 }>();
@@ -486,17 +487,41 @@ function cycleValueDisplayMode(): void {
   }
   const oldValueDisplayMode = (props.node as SEExpression).valueDisplayMode;
   let newValueDisplayMode: ValueDisplayMode;
-  // Compute the next valueDisplayMode so that we cycle through the different options
-  switch (oldValueDisplayMode) {
-    case ValueDisplayMode.Number:
-      newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
-      break;
-    case ValueDisplayMode.MultipleOfPi:
-      newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
-      break;
-    case ValueDisplayMode.DegreeDecimals:
-      newValueDisplayMode = ValueDisplayMode.Number;
-      break;
+  // Compute the next valueDisplayMode so that we cycle through the different options (in earth mode it flips between km and mi)
+  if (isEarthMode) {
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+      case ValueDisplayMode.MultipleOfPi:
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode =
+          SETTINGS.earthMode.defaultEarthModeUnits === "km"
+            ? ValueDisplayMode.EarthModeKilos
+            : ValueDisplayMode.EarthModeMiles;
+        break;
+      case ValueDisplayMode.EarthModeKilos:
+        newValueDisplayMode = ValueDisplayMode.EarthModeMiles;
+        break;
+      case ValueDisplayMode.EarthModeMiles:
+        newValueDisplayMode = ValueDisplayMode.EarthModeKilos;
+        break;
+    }
+  } else {
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+        newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
+        break;
+      case ValueDisplayMode.MultipleOfPi:
+        newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
+        break;
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode = ValueDisplayMode.Number;
+        break;
+      case ValueDisplayMode.EarthModeKilos:
+      case ValueDisplayMode.EarthModeMiles:
+        newValueDisplayMode = (props.node as SEExpression)
+          .preEarthModeValueDisplayMode;
+        break;
+    }
   }
   new SetValueDisplayModeCommand(
     props.node as SEExpression,
@@ -560,11 +585,15 @@ const isLabelHidden = (): boolean => {
   }
   return false;
 };
-const isExpressionAndNotCoordinate = computed((): boolean => {
-  return (
-    props.node instanceof SEExpression &&
-    !(props.node instanceof SEPointCoordinate)
-  );
+const isExpressionAndNotCoordinateNotEarthMode = computed((): boolean => {
+  if (isEarthMode) {
+    return props.node instanceof SEExpression; // All measurement expressions are effect by Earth mode even point coordinates
+  } else {
+    return (
+      props.node instanceof SEExpression &&
+      !(props.node instanceof SEPointCoordinate)
+    );
+  }
 });
 
 const isMeasurement = computed((): boolean => {
