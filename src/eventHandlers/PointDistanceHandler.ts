@@ -125,7 +125,12 @@ export default class PointDistanceHandler extends Highlighter {
       const distanceMeasure = new SEPointDistance(sePoint1, sePoint2);
 
       EventBus.fire("show-alert", {
-        text: `New measurement ${distanceMeasure.name} added`,
+        key: "handler.pointDistanceMeasurementAdded",
+        keyOptions: {
+          pt0Name: `${sePoint1.label?.ref.shortUserName}`,
+          pt1Name: `${sePoint2.label?.ref.shortUserName}`,
+          measurementName: `${measurementName}`
+        },
         type: "success"
       });
       new AddPointDistanceMeasurementCommand(distanceMeasure, [

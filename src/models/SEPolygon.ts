@@ -158,6 +158,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     return this._valueDisplayMode;
   }
   set valueDisplayMode(vdm: ValueDisplayMode) {
+    console.log("Set the vdm in polygon");
     this._valueDisplayMode = vdm;
     // move the vdm to the plottable label
     if (this.label) {
@@ -613,6 +614,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   }
 
   public isLabelable(): boolean {
+    return true;
+  }
+  public isPolygon(): boolean {
     return true;
   }
 }

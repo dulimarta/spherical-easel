@@ -373,6 +373,11 @@ export abstract class SENodule implements Visitable {
   public isTransformation(): boolean {
     return false;
   }
+
+  public isPolygon(): boolean {
+    return false;
+  }
+
   //Getters and Setters
 
   public abstract get noduleItemText(): string;

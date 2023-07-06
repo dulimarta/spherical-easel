@@ -67,6 +67,7 @@
               density="compact"
               variant="outlined"
               v-model="isEarthMode"
+              @click="recordAndUpdateValueDisplayModeForExpressions"
               label="Earth Mode">
               <template #append v-if="isEarthMode">
                 <v-icon id="placeBubble">mdi-map-marker</v-icon>
@@ -203,6 +204,10 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
+import { SEExpression } from "@/models/SEExpression";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
+import { SEAngleMarker } from "@/models/internal";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const appDB = getFirestore();
@@ -491,6 +496,29 @@ onBeforeRouteLeave(
 
 function handleToolboxMinify(state: boolean) {
   toolboxMinified.value = state;
+}
+function recordAndUpdateValueDisplayModeForExpressions() {
+  // Use the store to record the current state of the value display modes of the all SEExpression objects
+  let seExpressions = seNodules.value
+    .filter(
+      nodule =>
+        nodule instanceof SEExpression && !(nodule instanceof SEAngleMarker) // AngleMarkers units are never km or mi
+    )
+    .map(nodule => nodule as SEExpression);
+  if (seExpressions.length == 0) return;
+  let setNoduleDisplayCommandGroup = new CommandGroup();
+  // The click operation on the switch triggers before the isEarthMode variable
+  // is changed, so at this point in the code when the isEarthMode is false we have entered EarthMode
+  seExpressions.forEach(seExpression => {
+    let VDMArray = seExpression.recordCurrentValueDisplayModeAndUpdate(
+      !isEarthMode.value
+    );
+    setNoduleDisplayCommandGroup.addCommand(
+      new SetValueDisplayModeCommand(seExpression, VDMArray[0], VDMArray[1])
+    );
+  });
+
+  setNoduleDisplayCommandGroup.execute();
 }
 </script>
 <style scoped lang="scss">

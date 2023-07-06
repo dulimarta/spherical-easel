@@ -206,6 +206,8 @@ onBeforeMount(() => {
   }
   if (props.node.isLabelable()) {
     nodeName = (props.node as any).label?.ref.shortUserName ?? "";
+  } else {
+    nodeName = props.node.name;
   }
   if (false) {
   } else if (props.node instanceof SEAngleMarker) {
@@ -357,8 +359,9 @@ onMounted((): void => {
 function glowMe(flag: boolean): void {
   /* If the highlighted object is plottable, we highlight
        it directly. Otherwise, we highlight its parents */
-  if (isPlottable) props.node.glowing = flag;
-  else if (props.node instanceof SESegmentLength) {
+  if (isPlottable.value) {
+    props.node.glowing = flag;
+  } else if (props.node instanceof SESegmentLength) {
     const target = props.node.parents[0] as SESegment;
     target.glowing = flag;
   } else if (props.node instanceof SEPointDistance) {
@@ -488,15 +491,14 @@ function cycleValueDisplayMode(): void {
   const oldValueDisplayMode = (props.node as SEExpression).valueDisplayMode;
   let newValueDisplayMode: ValueDisplayMode;
   // Compute the next valueDisplayMode so that we cycle through the different options (in earth mode it flips between km and mi)
-  if (isEarthMode) {
+  if (isEarthMode.value && !(props.node instanceof SEAngleMarker)) {
+    // AngleMarkers units are never km or mi
     switch (oldValueDisplayMode) {
       case ValueDisplayMode.Number:
       case ValueDisplayMode.MultipleOfPi:
       case ValueDisplayMode.DegreeDecimals:
-        newValueDisplayMode =
-          SETTINGS.earthMode.defaultEarthModeUnits === "km"
-            ? ValueDisplayMode.EarthModeKilos
-            : ValueDisplayMode.EarthModeMiles;
+        newValueDisplayMode = (props.node as SEExpression)
+          .postEarthModeValueDisplayMode;
         break;
       case ValueDisplayMode.EarthModeKilos:
         newValueDisplayMode = ValueDisplayMode.EarthModeMiles;

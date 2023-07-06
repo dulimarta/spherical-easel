@@ -4,13 +4,18 @@ import { ValueDisplayMode } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
-import { SEPolygon } from "./SEPolygon";
+import i18n from "@/i18n";
+
 // const emptySet = new Set<string>();
 
 export abstract class SEExpression extends SENodule {
   //Controls if the expression should be measured in multiples of pi, decimal degrees or just a number
   protected _valueDisplayMode = ValueDisplayMode.Number;
-  protected _preEarthModeChangeValueDisplayMode = ValueDisplayMode.Number;
+  protected _preEarthModeValueDisplayMode = ValueDisplayMode.Number;
+  protected _postEarthModeValueDisplayMode =
+    SETTINGS.earthMode.defaultEarthModeUnits === "km"
+      ? ValueDisplayMode.EarthModeKilos
+      : ValueDisplayMode.EarthModeMiles;
 
   constructor() {
     super();
@@ -20,18 +25,6 @@ export abstract class SEExpression extends SENodule {
     this.name = `M${SEExpression.EXPR_COUNT}`;
   }
 
-  // watch(
-  //   () => isEarthMode.value,
-  //   (x): void => {
-  //     console.log("WOW")
-  //     if (newValue) {
-  //      this._preEarthModeChangeValueDisplayMode = this._valueDisplayMode}
-  //     else {
-  //       this._valueDisplayMode = this._preEarthModeChangeValueDisplayMode
-  //     }
-  //   }
-  // );
-
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
    * The setter must update the plottable label (if the expression is attached to a label)
    */
@@ -39,8 +32,42 @@ export abstract class SEExpression extends SENodule {
   abstract set valueDisplayMode(vdm: ValueDisplayMode);
 
   get preEarthModeValueDisplayMode(): ValueDisplayMode {
-    return this._preEarthModeChangeValueDisplayMode;
+    return this._preEarthModeValueDisplayMode;
   }
+
+  get postEarthModeValueDisplayMode(): ValueDisplayMode {
+    return this._postEarthModeValueDisplayMode;
+  }
+
+  recordCurrentValueDisplayModeAndUpdate(
+    isEarthMode: boolean
+  ): Array<ValueDisplayMode> {
+    if (isEarthMode) {
+      /** Called when Earth mode is turned on so that the value display mode can updated immediately (in Easel.vue) and then
+       * be restored when earth mode is turned off. */
+      this._preEarthModeValueDisplayMode = this._valueDisplayMode;
+      this._valueDisplayMode = this._postEarthModeValueDisplayMode;
+      // console.log(
+      //   "Entering Earth mode old,new modes: ",
+      //   this._preEarthModeValueDisplayMode,
+      //   this._valueDisplayMode
+      // );
+      return [this._preEarthModeValueDisplayMode, this._valueDisplayMode];
+    } else {
+      /** Called when Earth mode is turned off so that the previous value display modes can be
+       * restored and the display value mode can be updated immediately (In Easel.vue). */
+      // issue the command to change back to the preEarthMode VDM (Value display mode)
+      this._postEarthModeValueDisplayMode = this._valueDisplayMode;
+      this._valueDisplayMode = this._preEarthModeValueDisplayMode;
+      // console.log(
+      //   "Leaving Earth mode old,new modes: ",
+      //   this._postEarthModeValueDisplayMode,
+      //   this._valueDisplayMode
+      // );
+      return [this._postEarthModeValueDisplayMode, this._valueDisplayMode];
+    }
+  }
+
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 
@@ -63,35 +90,40 @@ export abstract class SEExpression extends SENodule {
           this.value.toDegrees().toFixed(SETTINGS.decimalPrecision) + "\u{00B0}"
         );
       case ValueDisplayMode.EarthModeMiles:
-        if (this instanceof SEPolygon) {
+        if (this.isPolygon()) {
+          console.log("ispolygon in SEExpression");
           return (
             (
               this.value *
               SETTINGS.earthMode.radiusMiles *
               SETTINGS.earthMode.radiusMiles
-            ).toFixed(SETTINGS.decimalPrecision) + " mi\u{00B2}" //TODO: How do I internationalize this?
+            ).toFixed(SETTINGS.decimalPrecision) +
+            i18n.global.t(`units.mi`) +
+            "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
               SETTINGS.decimalPrecision
-            ) + " mi" //TODO: How do I internationalize this?
+            ) + i18n.global.t(`units.mi`)
           );
         }
       case ValueDisplayMode.EarthModeKilos:
-        if (this instanceof SEPolygon) {
+        if (this.isPolygon()) {
           return (
             (
               this.value *
               SETTINGS.earthMode.radiusKilometers *
               SETTINGS.earthMode.radiusKilometers
-            ).toFixed(SETTINGS.decimalPrecision) + " km\u{00B2}" //TODO: How do I internationalize this?
+            ).toFixed(SETTINGS.decimalPrecision) +
+            i18n.global.t(`units.km`) +
+            "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
               SETTINGS.decimalPrecision
-            ) + " km" //TODO: How do I internationalize this?
+            ) + i18n.global.t(`units.km`)
           );
         }
     }
