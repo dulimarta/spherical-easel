@@ -1,12 +1,9 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
@@ -129,9 +126,7 @@ export class AddIsometryCircleCommand extends Command {
       isometryCircleCenterPoint
     ) {
       //make the Circle
-      const seg = new NonFreeCircle();
       const isometrySECircle = new SEIsometryCircle(
-        seg,
         isometryCircleCenterPoint,
         isometryCircleCirclePoint,
         parentSECircle,
@@ -140,27 +135,29 @@ export class AddIsometryCircleCommand extends Command {
       //style the Circle
       const CircleFrontStyleString = propMap.get("objectFrontStyle");
       if (CircleFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySECircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(CircleFrontStyleString)
         );
       const CircleBackStyleString = propMap.get("objectBackStyle");
       if (CircleBackStyleString !== undefined)
-        seg.updateStyle(
+        isometrySECircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(CircleBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("circle");
-      const isometrySECircleLabel = new SELabel(label, isometrySECircle);
+      const isometrySECircleLabel = new SELabel("circle", isometrySECircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySECircleLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySECircleLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Circle in the object map
       if (propMap.get("objectName") !== undefined) {

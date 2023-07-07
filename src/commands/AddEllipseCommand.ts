@@ -3,9 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SEEllipse } from "@/models/SEEllipse";
-import Ellipse from "@/plottables/Ellipse";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 
@@ -117,37 +115,38 @@ export class AddEllipseCommand extends Command {
 
     if (ellipseFocus1 && ellipseFocus2 && ellipsePointOnEllipse) {
       //make the ellipse
-      const ellipse = new Ellipse();
       const seEllipse = new SEEllipse(
-        ellipse,
         ellipseFocus1,
         ellipseFocus2,
-        ellipsePointOnEllipse
+        ellipsePointOnEllipse,
+        false
       );
       //style the ellipse
       const ellipseFrontStyleString = propMap.get("objectFrontStyle");
       if (ellipseFrontStyleString !== undefined)
-        ellipse.updateStyle(
+        seEllipse.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(ellipseFrontStyleString)
         );
       const ellipseBackStyleString = propMap.get("objectBackStyle");
       if (ellipseBackStyleString !== undefined)
-        ellipse.updateStyle(
+        seEllipse.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(ellipseBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("ellipse");
-      const seLabel = new SELabel(label, seEllipse);
+      const seLabel = new SELabel("ellipse", seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the ellipse in the object map
       if (propMap.get("objectName") !== undefined) {

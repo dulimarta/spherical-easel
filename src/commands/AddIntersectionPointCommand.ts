@@ -3,9 +3,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { sRGBEncoding, Vector3 } from "three";
-import Label from "@/plottables/Label";
-import NonFreePoint from "@/plottables/NonFreePoint";
+import { Vector3 } from "three";
 import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
@@ -172,9 +170,7 @@ export class AddIntersectionPointCommand extends Command {
       !isNaN(intersectionOrder)
     ) {
       //make the intersection point
-      const nonFreePoint = new NonFreePoint();
       const seIntersectionPoint = new SEIntersectionPoint(
-        nonFreePoint,
         principleParent1,
         principleParent2,
         intersectionOrder,
@@ -184,20 +180,19 @@ export class AddIntersectionPointCommand extends Command {
       //style the intersection point
       const intersectionPointFrontStyleString = propMap.get("objectFrontStyle");
       if (intersectionPointFrontStyleString !== undefined)
-        nonFreePoint.updateStyle(
+        seIntersectionPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(intersectionPointFrontStyleString)
         );
       const intersectionPointBackStyleString = propMap.get("objectBackStyle");
       if (intersectionPointBackStyleString !== undefined)
-        nonFreePoint.updateStyle(
+        seIntersectionPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(intersectionPointBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, seIntersectionPoint);
+      const seLabel = new SELabel("point", seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
@@ -205,7 +200,10 @@ export class AddIntersectionPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
 
       if (labelStyleString !== undefined) {
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
       }
 
       //put the intersection point in the object map

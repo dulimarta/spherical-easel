@@ -5,11 +5,8 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import Label from "@/plottables/Label";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddNSectLineCommand extends Command {
@@ -134,15 +131,13 @@ export class AddNSectLineCommand extends Command {
       !isNaN(seNSectLineN)
     ) {
       //make the Nsect Line
-      const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = seNSectLineEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes
 
       const seNSectLine = new SENSectLine(
-        line,
         seNSectLineStartSEPoint,
         seNSectLineNormalVector,
         endPoint,
@@ -153,27 +148,29 @@ export class AddNSectLineCommand extends Command {
       //style the NSect Line
       const nSectLineFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectLineFrontStyleString !== undefined)
-        line.updateStyle(
+        seNSectLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(nSectLineFrontStyleString)
         );
       const nSectLineBackStyleString = propMap.get("objectBackStyle");
       if (nSectLineBackStyleString !== undefined)
-        line.updateStyle(
+        seNSectLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(nSectLineBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, seNSectLine);
+      const seLabel = new SELabel("line", seNSectLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -9,15 +9,8 @@ import {
 } from "./internal";
 import { ObjectState, SEOneDimensional } from "@/types";
 
-// import { SELine } from "./SELine";
 import { Vector3 } from "three";
-import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SECircle } from "./SECircle";
-// import { SEEllipse } from "./SEEllipse";
-// import { SEParametric } from "./SEParametric";
-// import { SEPencil } from "./SEPencil";
 const { t } = i18n.global;
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
@@ -52,7 +45,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
    * @param index
    */
   constructor(
-    line: Line,
+    // line: Line,
     seParentOneDimensional: SEOneDimensional,
     seParentPoint: SEPoint,
     normalVector: Vector3,
@@ -60,7 +53,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     index: number
     // pencilSize: number
   ) {
-    super(line, seParentPoint, normalVector, seEndPoint);
+    super(seParentPoint, normalVector, seEndPoint, true);
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;

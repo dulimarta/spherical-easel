@@ -9,7 +9,6 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-// import { useSEStore } from "@/stores/se";
 import Two from "two.js";
 // import { Path } from "two.js/src/path";
 // import { Anchor } from "two.js/src/anchor";
@@ -131,7 +130,6 @@ export default class Parametric extends Nodule {
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
-    // const store = useSEStore();
     // this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
     console.debug(
       "Parametric constructor",

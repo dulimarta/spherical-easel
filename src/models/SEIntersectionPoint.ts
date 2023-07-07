@@ -1,20 +1,22 @@
-import { SEPoint, SESegment, SELine, SECircle, SEEllipse } from "./internal";
-import Point from "@/plottables/Point";
+import {
+  SEPoint,
+  SESegment,
+  SELine,
+  SECircle,
+  SEEllipse,
+  SENodule
+} from "./internal";
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SELine } from "./SELine";
-// import { SECircle } from "./SECircle";
-// import { SEEllipse } from "./SEEllipse";
 import { Vector3 } from "three";
-import { useSEStore } from "@/stores/se";
 import {
   getAncestors,
   getDescendants,
   rank_of_type
 } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -68,14 +70,15 @@ export class SEIntersectionPoint extends SEPoint {
    * intersects a circle at two locations
    */
   constructor(
-    pt: Point,
+    // pt: Point,
     seParent1: SEOneDimensional,
     seParent2: SEOneDimensional,
     order: number,
     isUserCreated: boolean
   ) {
-    super(pt);
-    this.ref = pt;
+    super(true); /* Non-Free Point */
+    // this.ref = pt;
+    this.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.sePrincipleParent1 = seParent1;
     this.sePrincipleParent2 = seParent2;
     this.order = order;
@@ -96,7 +99,7 @@ export class SEIntersectionPoint extends SEPoint {
       this._antipodalPointId = -1;
       this._isAntipodeMode = false;
     } else {
-      const antipode = useSEStore().getSENoduleById(seIntersectionPointID);
+      const antipode = SENodule.store.getSENoduleById(seIntersectionPointID);
       if (
         antipode instanceof SEIntersectionPoint &&
         !antipode._isAntipodeMode
@@ -378,7 +381,7 @@ export class SEIntersectionPoint extends SEPoint {
         ...intersectTwoObjects(
           potentialParent1,
           potentialParent2,
-          useSEStore().inverseTotalRotationMatrix
+          SENodule.store.inverseTotalRotationMatrix
         )
       );
     } else {
@@ -386,7 +389,7 @@ export class SEIntersectionPoint extends SEPoint {
         ...intersectTwoObjects(
           potentialParent2,
           potentialParent1,
-          useSEStore().inverseTotalRotationMatrix
+          SENodule.store.inverseTotalRotationMatrix
         )
       );
     }
@@ -457,7 +460,7 @@ export class SEIntersectionPoint extends SEPoint {
       intersectTwoObjects(
         this.sePrincipleParent1,
         this.sePrincipleParent2,
-        useSEStore().inverseTotalRotationMatrix
+        SENodule.store.inverseTotalRotationMatrix
       );
     let updateOrderSuccessful = false;
     updatedIntersectionInfo.forEach((element, index) => {
@@ -511,7 +514,7 @@ export class SEIntersectionPoint extends SEPoint {
           intersectTwoObjects(
             object1,
             object2,
-            useSEStore().inverseTotalRotationMatrix
+            SENodule.store.inverseTotalRotationMatrix
           );
         if (updatedIntersectionInfo[this.order] !== undefined) {
           console.debug(
@@ -540,7 +543,7 @@ export class SEIntersectionPoint extends SEPoint {
     //     parent.exists &&
     //     parent.isHitAt(
     //       this.locationVector, // this is the current location
-    //       useSEStore().zoomMagnificationFactor,
+    //       SENodule.store.zoomMagnificationFactor,
     //       100000
     //     )
     //   ) {
@@ -553,7 +556,7 @@ export class SEIntersectionPoint extends SEPoint {
 
   public shallowUpdate(): void {
     if (this._isAntipodeMode) {
-      const antipode = useSEStore().getSENoduleById(this._antipodalPointId);
+      const antipode = SENodule.store.getSENoduleById(this._antipodalPointId);
       if (antipode instanceof SEPoint) {
         antipode.shallowUpdate(); // this won't create a circular reference because for a pair of antipodal intersection points only one can be in antipode mode
         this._exists = antipode.exists;
@@ -569,7 +572,7 @@ export class SEIntersectionPoint extends SEPoint {
         intersectTwoObjects(
           this.sePrincipleParent1,
           this.sePrincipleParent2,
-          useSEStore().inverseTotalRotationMatrix
+          SENodule.store.inverseTotalRotationMatrix
         );
       // order is always the order from the intersection of the two principle parents
       if (updatedIntersectionInfo[this.order] !== undefined) {

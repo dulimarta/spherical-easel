@@ -8,19 +8,20 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
-import { SENSectLine } from "@/models/SENSectLine";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEPoint } from "@/models/SEPoint";
-import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SESegment } from "@/models/SESegment";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { ActionMode, plottableType, SEIntersectionReturnType, ToolButtonType } from "@/types";
+import {
+  ActionMode,
+  plottableType,
+  SEIntersectionReturnType,
+  ToolButtonType
+} from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
@@ -59,6 +60,7 @@ type PiniaAppState = {
   hasUnsavedNodules: boolean;
   svgCanvas: HTMLDivElement | null;
   canvasWidth: number;
+  canvasHeight: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   inverseTotalRotationMatrix: Matrix4;
   styleSavedFromPanel: StyleEditPanels;
@@ -397,6 +399,7 @@ export const useSEStore = defineStore({
     zoomMagnificationFactor: 1, // the initial zoom factor
     zoomTranslation: [0, 0], // [x , y]
     canvasWidth: 0,
+    canvasHeight: 0,
     sePointIds: [],
     seLineIds: [],
     seSegmentIds: [],
@@ -412,7 +415,7 @@ export const useSEStore = defineStore({
     styleSavedFromPanel: StyleEditPanels.Label,
     selectedSENoduleIds: [],
     disabledTools: [],
-    inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+    inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   }),
   actions: {
     init(): void {
@@ -467,8 +470,9 @@ export const useSEStore = defineStore({
     setCanvas(c: HTMLDivElement | null): void {
       this.svgCanvas = c;
     },
-    setCanvasWidth(w: number): void {
+    setCanvasDimension(w: number, h: number): void {
       this.canvasWidth = w;
+      this.canvasHeight = h;
     },
     setRotationMatrix(mat: Matrix4): void {
       this.inverseTotalRotationMatrix.copy(mat);
@@ -608,6 +612,7 @@ export const useSEStore = defineStore({
       this.seCircleIds.push(circle.id);
       seCircles.set(circle.id, circle);
       seNodules.push(circle);
+      console.debug(`SEStore: Adding Circle ${circle.ref} to layers`);
       circle.ref.addToLayers(layers);
       this.hasUnsavedNodules = true;
       this.updateDisabledTools("circle");
@@ -1472,11 +1477,7 @@ export const useSEStore = defineStore({
                 })
               ) {
                 // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-                const newPt = new NonFreePoint();
-                newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-                newPt.adjustSize();
                 const newSEIntersectionPt = new SEIntersectionPoint(
-                  newPt,
                   oldLine,
                   newLine,
                   index,
@@ -1574,11 +1575,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newLine,
                 oldSegment,
                 index,
@@ -1669,11 +1666,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newLine,
                 oldCircle,
                 index,
@@ -1767,11 +1760,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newLine,
                 oldEllipse,
                 index,
@@ -1867,11 +1856,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newLine,
                 oldParametric,
                 index,
@@ -2022,11 +2007,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldLine,
                 newSegment,
                 index,
@@ -2124,11 +2105,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldSegment,
                 newSegment,
                 index,
@@ -2222,11 +2199,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newSegment,
                 oldCircle,
                 index,
@@ -2320,11 +2293,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newSegment,
                 oldEllipse,
                 index,
@@ -2419,11 +2388,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newSegment,
                 oldParametric,
                 index,
@@ -2567,11 +2532,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldLine,
                 newCircle,
                 index,
@@ -2664,11 +2625,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldSegment,
                 newCircle,
                 index,
@@ -2767,11 +2724,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldCircle,
                 newCircle,
                 index,
@@ -2865,11 +2818,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newCircle,
                 oldEllipse,
                 index,
@@ -2964,11 +2913,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newCircle,
                 oldParametric,
                 index,
@@ -3118,11 +3063,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldLine,
                 newEllipse,
                 index,
@@ -3216,11 +3157,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldSegment,
                 newEllipse,
                 index,
@@ -3314,11 +3251,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldCircle,
                 newEllipse,
                 index,
@@ -3416,11 +3349,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldEllipse,
                 newEllipse,
                 index,
@@ -3515,11 +3444,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 newEllipse,
                 oldParametric,
                 index,
@@ -3673,11 +3598,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldLine,
                 newParametric,
                 index,
@@ -3771,11 +3692,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldSegment,
                 newParametric,
                 index,
@@ -3869,11 +3786,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldCircle,
                 newParametric,
                 index,
@@ -3967,11 +3880,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldEllipse,
                 newParametric,
                 index,
@@ -4067,11 +3976,7 @@ export const useSEStore = defineStore({
               })
             ) {
               // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
-              const newPt = new NonFreePoint();
-              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-              newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
-                newPt,
                 oldParametric,
                 newParametric,
                 index,
@@ -4157,6 +4062,8 @@ export const useSEStore = defineStore({
   }
 });
 
-export type SEStoreType = StoreActions<ReturnType<typeof useSEStore>> &
-  StoreGetters<ReturnType<typeof useSEStore>> &
-  StoreState<ReturnType<typeof useSEStore>>;
+// export type SEStoreType = StoreActions<ReturnType<typeof useSEStore>> &
+//   StoreGetters<ReturnType<typeof useSEStore>> &
+//   StoreState<ReturnType<typeof useSEStore>>;
+
+export type SEStoreType = ReturnType<typeof useSEStore>

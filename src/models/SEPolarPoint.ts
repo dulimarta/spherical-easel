@@ -1,10 +1,6 @@
 import { SEPoint, SELine, SESegment } from "./internal";
-import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
-// import { SESegment } from "./SESegment";
-import NonFreePoint from "@/plottables/NonFreePoint";
 const { t } = i18n.global;
 
 export class SEPolarPoint extends SEPoint {
@@ -21,11 +17,11 @@ export class SEPolarPoint extends SEPoint {
    * @param index Which point is this?  There are two polar points associated with each line
    */
   constructor(
-    point: NonFreePoint,
+    // point: NonFreePoint,
     polarLineOrSegmentParent: SELine | SESegment,
     index: number
   ) {
-    super(point);
+    super(true);
     this._polarLineOrSegmentParent = polarLineOrSegmentParent;
     this.index = index;
   }

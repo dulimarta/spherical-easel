@@ -1,7 +1,12 @@
 <template>
   <!-- <CurrentToolSelection /> -->
+  <!-- <span style="position:relative; left: 200px; border: 1px solid blue">Size: {{ availableWidth }}x{{ availableHeight }}</span> -->
   <div id="sphereContainer">
-    <div id="canvas" ref="canvas"></div>
+    <div
+      id="canvas"
+      ref="canvas"
+      :width="availableWidth"
+      :height="availableHeight"></div>
     <div class="anchored top left">
       <div
         v-for="(shortcut, index) in shortCutIcons[0]"
@@ -18,22 +23,22 @@
         <ShortcutIcon :model="shortcut" />
       </div>
     </div>
-    <div class="anchored bottom left">
+    <!--div class="anchored bottom left">
       <div
         v-for="(shortcut, index) in shortCutIcons[2]"
         :key="index"
         :style="listItemStyle(index, 'left', 'bottom')">
         <ShortcutIcon :model="shortcut" />
       </div>
-    </div>
-    <div class="anchored bottom right">
+    </!--div>
+    <div-- class="anchored bottom right">
       <div
         v-for="(shortcut, index) in shortCutIcons[3]"
         :key="index"
         :style="listItemStyle(index, 'right', 'bottom')">
         <ShortcutIcon :model="shortcut" />
       </div>
-    </div>
+    </div-->
   </div>
 </template>
 
@@ -53,8 +58,6 @@ import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-
-// import CurrentToolSelection from "./CurrentToolSelection.vue";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
@@ -107,6 +110,12 @@ import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
 import { ToolButtonType } from "@/types";
 
+type ComponentProps = {
+  availableHeight: number;
+  availableWidth: number;
+  isEarthMode: boolean;
+};
+
 const seStore = useSEStore();
 const {
   actionMode,
@@ -114,14 +123,16 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  buttonSelection
+  buttonSelection,
+  isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<{ canvasSize: number,isEarthMode: boolean }>(), {
-  canvasSize: 240,
+const props = withDefaults(defineProps<ComponentProps>(), {
+  availableHeight: 240,
+  availableWidth: 240,
   isEarthMode: false
 });
 
@@ -132,11 +143,9 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   console.debug("Updating shortcut icons");
   return favoriteTools.value.map(
     (corner: Array<ActionMode>): Array<ToolButtonType> =>
-      corner.map((act: ActionMode): ToolButtonType =>
-        TOOL_DICTIONARY.get(act)!
-      )
+      corner.map((act: ActionMode): ToolButtonType => TOOL_DICTIONARY.get(act)!)
   );
-})
+});
 
 /**
  * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
@@ -203,8 +212,8 @@ let applyTransformationTool: ApplyTransformationHandler | null = null;
 
 onBeforeMount((): void => {
   twoInstance = new Two({
-    width: props.canvasSize,
-    height: props.canvasSize,
+    width: props.availableWidth,
+    height: props.availableHeight,
     autostart: true
     // ratio: window.devicePixelRatio
   });
@@ -230,10 +239,6 @@ onBeforeMount((): void => {
     if (!isNaN(layerIdx)) {
       // Create the layers
       const newLayer = new Two.Group();
-      if (layerIdx === LAYER.background)
-        console.debug("Background layer is", newLayer.id);
-      if (layerIdx === LAYER.foreground)
-        console.debug("Foreground layer is", newLayer.id);
       // newLayer.matrix.manual = true;
       // Undo the y-flip on text layers
       if (textLayers.indexOf(layerIdx) >= 0) {
@@ -319,7 +324,9 @@ onMounted((): void => {
   canvas.value?.addEventListener("mousedown", handleMousePressed);
   canvas.value?.addEventListener("mouseup", handleMouseReleased);
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
-  canvas.value?.addEventListener("wheel", handleMouseWheel);
+  // Add the passive option to avoid Chrome warning
+  // Without this option, scroll events will potentially block touch/wheel events
+  canvas.value?.addEventListener("wheel", handleMouseWheel, {passive: true});
 
   // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
   // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -331,44 +338,31 @@ onMounted((): void => {
     event.preventDefault()
   );
 
-  watch(()=>props.isEarthMode,()=>{
-    if(!props.isEarthMode){
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
-        if((layer as string).includes("background")){
-          (seStore.layers[i] as any).visible = true;
-        }
-        i++;
-      }
-    }else{
-
-      // console.log(Object.values(LAYER));
-      // (seStore.layers[Number(LAYER.background)] as any).visible = false;
-      // (seStore.layers[Number(LAYER.backgroundAngleMarkers)] as any).visible = false;
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter((layer)=>typeof layer !== "number")) {
-        if((layer as string).includes("background")){
-          (seStore.layers[i] as any).visible = false;
-        }
-        i++;
-      }
-    }
-      // seStore.layers[Number(LAYER.midground)].visible = false;
-
-  })
   // canvas.value!.style.width = twoInstance.width.toString() + "px";
   // canvas.value!.style.height = twoInstance.height.toString() + "px";
   // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
-  watch(()=>(seStore.canvasWidth),()=>{
-    canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
-    canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
-  })
+  console.debug("TwoJS SVG Canvas is", canvas.value)
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
 });
+watch(
+    () => props.isEarthMode,
+    earthMode => {
+      let i = 0;
+      for (const layer of Object.values(LAYER).filter(
+        layer => typeof layer !== "number"
+      )) {
+        if ((layer as string).includes("background")) {
+          (seStore.layers[i] as any).visible = !earthMode;
+        }
+        i++;
+      }
+      // seStore.layers[Number(LAYER.midground)].visible = false;
+    }
+  );
 
 onBeforeUnmount((): void => {
   canvas.value?.removeEventListener("mousemove", handleMouseMoved);
@@ -389,19 +383,43 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
-  // EventBus.unlisten("dialog-box-is-active");
 });
 
 watch(
-  () => props.canvasSize,
-  (size: number): void => {
-    twoInstance.width = size;
-    twoInstance.height = size;
+  () => isEarthMode.value,
+  isEarthMode => {
+    if (!isEarthMode) {
+      boundaryCircle.stroke = "black";
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth
+    }
+    else {
+      let currentLineWidth = boundaryCircle.linewidth;
+      boundaryCircle.stroke = "blue";
+      let intervalHandle: any;
+      // Gradually decrease the linewidth until it disappears
+      intervalHandle = setInterval(() => {
+        currentLineWidth -= 0.2;
+        if (currentLineWidth < 0) {
+          boundaryCircle.linewidth = 0;
+          clearInterval(intervalHandle);
+        } else {
+          boundaryCircle.linewidth = currentLineWidth;
+        }
+      }, 100);
+    }
+  }
+);
+
+watch(
+  [() => props.availableWidth, () => props.availableHeight],
+  ([width, height]): void => {
+    twoInstance.width = width;
+    twoInstance.height = height;
     // layers.forEach(z => {
     //   z.translation.set(size / 2, size / 2);
     // });
 
-    const radius = size / 2 - 16; // 16-pixel gap
+    const radius = Math.min(width, height) / 2 - 16; // 16-pixel gap
     // setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
@@ -416,7 +434,7 @@ watch(
 
     updateView();
     // record the canvas width for the SELabel so that the bounding box of the text can be computed correctly
-    seStore.setCanvasWidth(size);
+    seStore.setCanvasDimension(width, height);
   }
 );
 
@@ -430,11 +448,12 @@ function updateView() {
   // Get the current maginification factor and translation vector
   const mag = zoomMagnificationFactor.value;
   const transVector = zoomTranslation;
-  const origin = props.canvasSize / 2;
+  const originX = props.availableWidth / 2;
+  const originY = props.availableHeight / 2;
 
   twoInstance.scene.translation = new Two.Vector(
-    origin + transVector.value[0],
-    origin + transVector.value[1]
+    originX + transVector.value[0],
+    originY + transVector.value[1]
   );
   twoInstance.scene.scale = new Two.Vector(mag, -mag);
   // twoInstance.scene.matrix
@@ -828,7 +847,9 @@ watch(
           zoomTool = new PanZoomHandler(canvas.value!);
         }
 
-        zoomTool.doZoomFit(props.canvasSize);
+        zoomTool.doZoomFit(
+          Math.min(props.availableHeight, props.availableWidth)
+        );
         zoomTool.activate(); // unglow any selected objects.
         zoomTool.deactivate(); // shut the tool down properly
         seStore.revertActionMode();
@@ -1110,9 +1131,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
     transform: rotate(180deg);
   }
 }
-
 #sphereContainer {
-  border: 3px solid black;
   position: relative;
   display: flex;
   flex-direction: row;

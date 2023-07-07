@@ -1,19 +1,12 @@
 import { Command } from "./Command";
-import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { compile } from "vue/types/umd";
 
 export class AddTransformedPointCommand extends Command {
   private preimageSEPoint: SEPoint;
@@ -136,36 +129,36 @@ export class AddTransformedPointCommand extends Command {
 
     if (parentSEPoint && transformedPointParentTransformation) {
       //make the point
-      const point = new NonFreePoint();
       const transformedSEPoint = new SETransformedPoint(
-        point,
         parentSEPoint,
         transformedPointParentTransformation
       );
       //style the point
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
-        point.updateStyle(
+        transformedSEPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
-        point.updateStyle(
+        transformedSEPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const transformedSEPointLabel = new SELabel(label, transformedSEPoint);
+      const transformedSEPointLabel = new SELabel("point", transformedSEPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       transformedSEPointLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        transformedSEPointLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Point in the object map
       if (propMap.get("objectName") !== undefined) {

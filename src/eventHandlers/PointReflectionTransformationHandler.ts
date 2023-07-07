@@ -6,9 +6,7 @@ import { AddPointReflectionCommand } from "@/commands/AddPointReflectionCommand"
 import { Vector3 } from "three";
 import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
@@ -369,11 +367,6 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     if (this.rotationSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      const newRotationPoint = new Point();
-      // Set the display to the default values
-      newRotationPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newRotationPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -382,11 +375,10 @@ export default class PointReflectionTransformationHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newRotationPoint,
           this.rotationSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         pointRotationCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -398,8 +390,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newRotationPoint);
-        newSELabel = new SELabel(new Label("point"), vtx);
+        vtx = new SEPoint();
+        newSELabel = new SELabel("point", vtx);
         pointRotationCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );

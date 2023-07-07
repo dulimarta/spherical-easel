@@ -1,7 +1,3 @@
-import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreeLine from "@/plottables/NonFreeLine";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { ObjectState } from "@/types";
 import {
   DEFAULT_LINE_BACK_STYLE,
@@ -10,9 +6,11 @@ import {
 import { Visitor } from "@/visitors/Visitor";
 import { Vector3 } from "three";
 import { SENodule } from "./SENodule";
-import { SEParametric, SEPerpendicularLineThruPoint, SEPoint } from "./internal";
-// import { SEPerpendicularLineThruPoint } from "./SEPerpendicularLineThruPoint";
-// import { SEPoint } from "./SEPoint";
+import {
+  SEParametric,
+  SEPerpendicularLineThruPoint,
+  SEPoint
+} from "./internal";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
@@ -23,7 +21,6 @@ export class SEPencil extends SENodule {
   private _commonParent: SEParametric;
   private _lines: Array<SEPerpendicularLineThruPoint> = [];
   private tempVector: Vector3 = new Vector3();
-  private store: SEStoreType;
   constructor(
     seParent: SEParametric,
     commontPoint: SEPoint,
@@ -33,7 +30,6 @@ export class SEPencil extends SENodule {
     this._commonPoint = commontPoint;
     this._commonParent = seParent;
     this._lines.push(...lines);
-    this.store = useSEStore();
   }
 
   public accept(v: Visitor): boolean {
@@ -50,8 +46,7 @@ export class SEPencil extends SENodule {
       const numMissing = normals.length - N;
       // console.debug(`Must allocate ${numMissing} new perpendicular line(s)`);
       for (let k = N; k < normals.length; k++) {
-        const plottableEndPoint = new NonFreePoint();
-        const endSEPoint = new SEPoint(plottableEndPoint);
+        const endSEPoint = new SEPoint(true);
         endSEPoint.showing = false;
         endSEPoint.exists = true;
 
@@ -62,11 +57,7 @@ export class SEPencil extends SENodule {
         );
         endSEPoint.locationVector = this.tempVector.normalize();
 
-        const plottableLine = new NonFreeLine();
-        plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-        plottableLine.adjustSize();
         const newPerpLine = new SEPerpendicularLineThruPoint(
-          plottableLine,
           this._commonParent,
           this._commonPoint,
           normals[k].normal,
@@ -78,7 +69,7 @@ export class SEPencil extends SENodule {
         this._commonPoint.registerChild(newPerpLine);
         this._commonParent.registerChild(newPerpLine);
         this._lines.push(newPerpLine);
-        this.store.addLine(newPerpLine);
+        SENodule.store.addLine(newPerpLine);
       }
     }
   }

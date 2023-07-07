@@ -14,13 +14,10 @@ import {
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import Line from "@/plottables/Line";
-import Label from "@/plottables/Label";
 import Point from "@/plottables/Point";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import SETTINGS from "@/global-settings";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
@@ -28,7 +25,6 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
 import Two from "two.js";
@@ -572,34 +568,22 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
-      // create a
-      const newPoint = new Point();
-      // Set the display to the default values
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
 
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
         this.sePoint = new SEPointOnOneOrTwoDimensional( // Use  this.sePoint so that this variable points to the parent point, no matter how it is created or picked
-          newPoint,
           sePointOneDimensionalParent
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel = this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addPerpendicularLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -610,21 +594,15 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
       } else {
         // Create a new point at the blank place where the user clicked
-        this.sePoint = new SEPoint(newPoint);
+        this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel(new Label("point"), this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel = this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addPerpendicularLineGroup.addCommand(
           new AddPointCommand(this.sePoint, newSELabel)
@@ -709,25 +687,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       // Create the endSEPoint for the line
       // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
-      const plottableEndPoint = new NonFreePoint();
       // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
       // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
       // updated when the the new SEPerpendicularLineThruPoint is updated.
-      const endSEPoint = new SEPoint(plottableEndPoint);
+      const endSEPoint = new SEPoint(true);
       endSEPoint.showing = false; // this never changes
       endSEPoint.exists = true; // this never changes
 
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this perpendicular
-      const plottableLine = new NonFreeLine();
-      // Stylize the new Line
-      plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      plottableLine.adjustSize();
 
       // Create the model(SE) perpendicular line for the new point and link them
       const newPerpLine = new SEPerpendicularLineThruPoint(
-        plottableLine,
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,
@@ -744,8 +716,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       newPerpLine.update();
 
       // Create the plottable label
-      const newLabel = new Label("line");
-      const newSELabel = new SELabel(newLabel, newPerpLine);
+      const newSELabel = new SELabel("line", newPerpLine);
 
       // Set the initial label location
       this.tmpVector1
@@ -791,20 +762,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             //   item.SEIntersectionPoint.locationVector.toFixed(4)
             // );
             // Create the plottable label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             const addIntersectionCmd = new AddIntersectionPointCommand(
               item.SEIntersectionPoint,

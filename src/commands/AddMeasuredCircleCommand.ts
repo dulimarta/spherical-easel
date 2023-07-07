@@ -4,13 +4,10 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 
 export class AddMeasuredCircleCommand extends Command {
   private seCircle: SECircle;
@@ -110,10 +107,10 @@ export class AddMeasuredCircleCommand extends Command {
 
     if (circleCenterPoint && radiusExpression) {
       // make the hidden circle point
-      // create the circle point on the measured circle
+      // create the circle point on the measured circlee
       // this point is never visible and is not in the DAG
       // it is only updated when the the new SEMeasuredCircle is updated.
-      const hiddenSEPoint = new SEPoint(new NonFreePoint());
+      const hiddenSEPoint = new SEPoint(true); /* non-free point */
       hiddenSEPoint.showing = false; // this never changes
       hiddenSEPoint.exists = true; // this never changes
       // compute the location of the hiddenSEPoint using radiusExpression.value.modPi();
@@ -140,9 +137,7 @@ export class AddMeasuredCircleCommand extends Command {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       //make the circle
-      const circle = new NonFreeCircle();
       const seCircle = new SEMeasuredCircle(
-        circle,
         circleCenterPoint,
         hiddenSEPoint,
         radiusExpression
@@ -150,27 +145,29 @@ export class AddMeasuredCircleCommand extends Command {
       //style the circle
       const circleFrontStyleString = propMap.get("objectFrontStyle");
       if (circleFrontStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(circleFrontStyleString)
         );
       const circleBackStyleString = propMap.get("objectBackStyle");
       if (circleBackStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(circleBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("circle");
-      const seLabel = new SELabel(label, seCircle);
+      const seLabel = new SELabel("circle", seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ $t(titleKey) + " " }}
+      {{ title + " " }}
     </span>
     <v-icon
       :color="conflict ? '' : internalColor"
@@ -43,8 +43,9 @@
           type="colorInput"
           @click="toggleColorInputs"
           :disabled="noColorData"
-          i18n-label="style.showColorInputs"
-          i18n-tooltip="style.showColorInputsToolTip"></HintButton>
+          :tooltip="t('showInput')">
+          <template #icon>mdi-palette</template>
+        </HintButton>
       </v-col>
     </v-row>
   </v-container>
@@ -68,27 +69,18 @@ import { ref, watch, onMounted, onBeforeUpdate, Ref } from "vue";
 
 import SETTINGS from "@/global-settings";
 // import Nodule from "@/plottables/Nodule";
-import { hslaColorType } from "@/types";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
-import i18n from "@/i18n";
-
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
 const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
-// @Component({ components: { HintButton, OverlayWithFixButton } })
-// export default class SimpleColorSelector extends Vue {
 type ComponentProps = {
-  titleKey: string;
+  title: string;
   conflict: boolean;
   styleName: string;
   numSelected: number;
   modelValue?: string;
 };
-// @Prop() readonly titleKey!: string;
-// @Prop() conflict!: boolean;
-// external representation: hsla in CSS
-// @PropSync("data") hslaColor!: string;
-// @Prop({ required: true }) readonly styleName!: string;
-// @Prop() readonly numSelected!: number;
 const props = defineProps<ComponentProps>();
 const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
@@ -107,7 +99,7 @@ const showColorInputs = ref(false);
 
 const colorSwatches = ref(SETTINGS.style.swatches);
 let noDataStr = "";
-const noDataUILabel = ref(i18n.global.t("style.noFill"));
+const noDataUILabel = ref(t("style.noFill"));
 
 function toggleNoColor(ev: PointerEvent): void {
   console.log("What is toggle flag?", noColorData.value);
@@ -141,11 +133,11 @@ onMounted((): void => {
   var re = /fill/gi;
   noDataUILabel.value =
     props.styleName.search(re) === -1
-      ? i18n.global.t("style.noStroke")
-      : i18n.global.t("style.noFill"); // the noStroke/noFill option
+      ? t("style.noStroke")
+      : t("style.noFill"); // the noStroke/noFill option
 
   var re2 = /label/gi;
-  isOnLabelPanel.value = props.titleKey.search(re2) !== -1;
+  isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
 // onBeforeUpdate((): void => {
@@ -215,3 +207,8 @@ watch(
   color: rgb(255, 82, 82);
 }
 </style>
+<i18n locale="en">
+{
+  "showInput": "Show Color Input"
+}
+</i18n>

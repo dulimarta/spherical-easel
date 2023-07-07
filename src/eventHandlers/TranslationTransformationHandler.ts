@@ -59,10 +59,7 @@ export default class TranslationTransformationHandler extends Highlighter {
         // switch to tools tab
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
         // Change the tool
-        TranslationTransformationHandler.store.setActionMode({
-          id: "segment",
-          name: "CreateLineSegmentDisplayedName"
-        });
+        TranslationTransformationHandler.store.setActionMode("segment");
         return;
       }
       // Check to see if the current location is near any segments

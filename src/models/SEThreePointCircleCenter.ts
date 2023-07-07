@@ -1,5 +1,4 @@
 import { SEPoint } from "./internal";
-// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
@@ -11,6 +10,7 @@ export class SEThreePointCircleCenter extends SEPoint {
   /**
    * The point parents of this SEThreePointCircleCenter
    */
+  public declare ref: ThreePointCircleCenter;
   private _sePointParent1: SEPoint;
   private _sePointParent2: SEPoint;
   private _sePointParent3: SEPoint;
@@ -26,16 +26,17 @@ export class SEThreePointCircleCenter extends SEPoint {
    * @param sePointParent3 The parent
    */
   constructor(
-    threePointCircleCenter: ThreePointCircleCenter,
+    // threePointCircleCenter: ThreePointCircleCenter,
     sePointParent1: SEPoint,
     sePointParent2: SEPoint,
     sePointParent3: SEPoint
   ) {
-    super(threePointCircleCenter);
+    super(true);
+    this.ref = new ThreePointCircleCenter();
     this._sePointParent1 = sePointParent1;
     this._sePointParent2 = sePointParent2;
     this._sePointParent3 = sePointParent3;
-    this._locationVector.copy(threePointCircleCenter._locationVector); // needed so that right after construction but before any (SE)update method to update the DAG, the location is set correctly and not to (0,0,0)
+    this._locationVector.copy(this.ref._locationVector); // needed so that right after construction but before any (SE)update method to update the DAG, the location is set correctly and not to (0,0,0)
   }
 
   public get noduleDescription(): string {
@@ -156,7 +157,7 @@ export class SEThreePointCircleCenter extends SEPoint {
       // location from the plottable object.
 
       // set the location of the plottable object
-      const threePointCircleCenter = this.ref as ThreePointCircleCenter;
+      const threePointCircleCenter = this.ref;
       threePointCircleCenter.vector1 = this._sePointParent1.locationVector;
       threePointCircleCenter.vector2 = this._sePointParent2.locationVector;
       threePointCircleCenter.vector3 = this._sePointParent3.locationVector;

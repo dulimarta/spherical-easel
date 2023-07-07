@@ -18,6 +18,8 @@ import {
 import { Labelable } from "@/types";
 // import { SELabel } from "@/models/SELabel";
 import i18n from "@/i18n";
+import NonFreeEllipse from "@/plottables/NonFreeEllipse";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
@@ -80,13 +82,13 @@ export class SEEllipse
    * @param ellipsePoint The model SEPoint object that is on the circle
    */
   constructor(
-    ellipse: Ellipse,
+    // ellipse: Ellipse,
     focus1Point: SEPoint,
     focus2Point: SEPoint,
-    ellipsePoint: SEPoint
+    ellipsePoint: SEPoint,
+    createNonFree: boolean
   ) {
     super();
-    this.ref = ellipse;
 
     /**
      * Set the SEPoints
@@ -94,7 +96,12 @@ export class SEEllipse
     this._focus1SEPoint = focus1Point;
     this._focus2SEPoint = focus2Point;
     this._ellipseSEPoint = ellipsePoint;
-
+    this.ref = createNonFree ? new NonFreeEllipse() : new Ellipse();
+    this.ref.focus1Vector.copy(focus1Point.locationVector);
+    this.ref.focus2Vector.copy(focus2Point.locationVector);
+    this.ref.updateDisplay();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
     //Set the parameters for the parameterization of the ellipse
     this._a =
       0.5 *

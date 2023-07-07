@@ -5,8 +5,6 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import AngleMarker from "@/plottables/AngleMarker";
-import Label from "@/plottables/Label";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
@@ -155,10 +153,7 @@ export class AddAngleMarkerCommand extends Command {
       | undefined;
 
     if (firstParent && secondParent && mode && valueDisplayMode) {
-      //make the angleMarker
-      const angleMarker = new AngleMarker();
       const seAngleMarker = new SEAngleMarker(
-        angleMarker,
         mode,
         AddAngleMarkerCommand.store.zoomMagnificationFactor,
         firstParent,
@@ -169,27 +164,28 @@ export class AddAngleMarkerCommand extends Command {
       //style the angle marker
       const angleMarkerFrontStyleString = propMap.get("objectFrontStyle");
       if (angleMarkerFrontStyleString !== undefined)
-        angleMarker.updateStyle(
+        seAngleMarker.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(angleMarkerFrontStyleString)
         );
       const angleMarkerBackStyleString = propMap.get("objectBackStyle");
       if (angleMarkerBackStyleString !== undefined)
-        angleMarker.updateStyle(
+        seAngleMarker.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(angleMarkerBackStyleString)
         );
 
-      //make the label and set its location
-      const label = new Label("angleMarker");
-      const seLabel = new SELabel(label, seAngleMarker);
+      const seLabel = new SELabel("angleMarker", seAngleMarker);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
       // Must be done after the SELabel is created and linked
       seAngleMarker.valueDisplayMode = valueDisplayMode;
       //put the angleMarker in the object map

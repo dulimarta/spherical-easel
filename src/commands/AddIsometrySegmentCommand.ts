@@ -2,12 +2,10 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
-import NonFreeSegment from "@/plottables/NonFreeSegment";
 import { SEReflection } from "@/models/SEReflection";
 import { SESegment } from "@/models/SESegment";
 
@@ -129,9 +127,7 @@ export class AddIsometrySegmentCommand extends Command {
       isometrySegmentStartPoint
     ) {
       //make the segment
-      const seg = new NonFreeSegment();
       const isometrySESegment = new SEIsometrySegment(
-        seg,
         isometrySegmentParentIsometry instanceof SEReflection
           ? isometrySegmentEndPoint
           : isometrySegmentStartPoint,
@@ -146,27 +142,29 @@ export class AddIsometrySegmentCommand extends Command {
       //style the Segment
       const segmentFrontStyleString = propMap.get("objectFrontStyle");
       if (segmentFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySESegment.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(segmentFrontStyleString)
         );
       const segmentBackStyleString = propMap.get("objectBackStyle");
       if (segmentBackStyleString !== undefined)
-        seg.updateStyle(
+        isometrySESegment.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(segmentBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("segment");
-      const isometrySESegmentLabel = new SELabel(label, isometrySESegment);
+      const isometrySESegmentLabel = new SELabel("segment", isometrySESegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySESegmentLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySESegmentLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the segment in the object map
       if (propMap.get("objectName") !== undefined) {

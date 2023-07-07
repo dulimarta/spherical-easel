@@ -1,11 +1,8 @@
 import Two from "two.js";
 import Point from "@/plottables/Point";
-import { AddPointCommand } from "@/commands/AddPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEOneOrTwoDimensional } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
@@ -64,32 +61,19 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       }
       if (this.oneDimensional !== null) {
         const pointOnOneDimensionalCommandGroup = new CommandGroup();
-        const newPoint = new Point();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
 
         // Create the model object for the new point and link them
-        const vtx = new SEPointOnOneOrTwoDimensional(
-          newPoint,
-          this.oneDimensional
-        );
+        const vtx = new SEPointOnOneOrTwoDimensional(this.oneDimensional);
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
-        const newSELabel = new SELabel(new Label("point"), vtx);
-        // Set the initial label location
-        this.tmpVector
-          .copy(vtx.locationVector)
-          .add(
+        const newSELabel = vtx.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
         // Create the command to create a new point for undo/redo
 
         pointOnOneDimensionalCommandGroup.addCommand(

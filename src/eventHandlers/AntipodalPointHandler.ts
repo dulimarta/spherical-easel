@@ -1,11 +1,8 @@
 import { SEPoint } from "@/models/SEPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEOneOrTwoDimensional } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
@@ -163,32 +160,33 @@ export default class AntipodalPointHandler extends Highlighter {
 
         if (this.oneDimensionalContainingParentPoint !== null) {
           // create a new point on the object that the user clicked on
-          const newPoint = new Point();
-          // Set the display to the default values
-          newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-          newPoint.adjustSize();
 
           // Create the model object for the new point and link them
           this.parentPoint = new SEPointOnOneOrTwoDimensional(
-            newPoint,
             this.oneDimensionalContainingParentPoint
           );
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, this.parentPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.parentPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+          const newSELabel = this.parentPoint.attachLabelWithOffset(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+          );
+          // const newSELabel = new SELabel("point", this.parentPoint);
+          // Set the initial label location
+          // this.tmpVector
+          //   .copy(this.parentPoint.locationVector)
+          //   .add(
+          //     new Vector3(
+          //       2 * SETTINGS.point.initialLabelOffset,
+          //       SETTINGS.point.initialLabelOffset,
+          //       0
+          //     )
+          //   )
+          //   .normalize();
+          // newSELabel.locationVector = this.tmpVector;
           // Create and execute the command to create a new point for undo/redo
 
           antipodalCommandGroup.addCommand(
@@ -200,58 +198,47 @@ export default class AntipodalPointHandler extends Highlighter {
           );
         } else {
           // Create a new point at the blank place where the user clicked
-          const newPoint = new Point();
-          // Set the display to the default values
-          newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-          newPoint.adjustSize();
 
-          this.parentPoint = new SEPoint(newPoint);
+          this.parentPoint = new SEPoint();
           this.parentPoint.locationVector = this.parentPointVector;
           // Create plottable for the Label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, this.parentPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(this.parentPoint.locationVector)
-            .add(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+          const newSELabel = this.parentPoint.attachLabelWithOffset(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
+          );
+          // const newSELabel = new SELabel("point", this.parentPoint);
+          // // Set the initial label location
+          // this.tmpVector
+          //   .copy(this.parentPoint.locationVector)
+          //   .add(
+          //     new Vector3(
+          //       2 * SETTINGS.point.initialLabelOffset,
+          //       SETTINGS.point.initialLabelOffset,
+          //       0
+          //     )
+          //   )
+          //   .normalize();
+          // newSELabel.locationVector = this.tmpVector;
 
           antipodalCommandGroup.addCommand(
             new AddPointCommand(this.parentPoint, newSELabel)
           );
         }
 
-        const newPoint = new NonFreePoint();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
-
         // Create the model object for the new point and link them
-        const vtx = new SEAntipodalPoint(newPoint, this.parentPoint, true);
+        const vtx = new SEAntipodalPoint(this.parentPoint, true);
 
         // Create the plottable label
-        const newLabel = new Label("point");
-        const newSELabel = new SELabel(newLabel, vtx);
-
-        // Set the initial label location
-        this.tmpVector
-          .copy(vtx.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+        const newSELabel = vtx.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
+        );
 
         // Create and execute the command to create a new point for undo/redo
         antipodalCommandGroup.addCommand(

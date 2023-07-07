@@ -6,7 +6,7 @@
     </ul-->
 
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-  <PopOverTabs icon-name="mdi-tag">
+  <PopOverTabs icon-name="mdi-tag" :tooltip="t('labelStyle')" tooltip-location="left">
     <template #tabs>
       <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
@@ -16,11 +16,10 @@
       <!-- Label Text Options -->
       <v-window-item class="pa-2">
         <!-- Label Text Selections -->
-        <!--span class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span-->
         <v-text-field
           v-model="styleOptions.labelDisplayText"
           :disabled="selectionCount > 1"
-          v-bind:label="$t('style.labelText')"
+          v-bind:label="$t('labelText')"
           :counter="maxLabelDisplayTextLength"
           ref="labelDisplayText"
           :class="{
@@ -41,7 +40,7 @@
           ]"></v-text-field>
         <v-text-field
           v-model.lazy="styleOptions.labelDisplayCaption"
-          v-bind:label="$t('style.labelCaption')"
+          v-bind:label="$t('labelCaption')"
           :counter="maxLabelDisplayCaptionLength"
           :placeholder="placeHolderText(selectionCount, true)"
           ref="labelDisplayCaption"
@@ -61,28 +60,25 @@
             labelDisplayCaptionCheck,
             labelDisplayCaptionTruncate(styleOptions)
           ]"></v-text-field>
-          {{ styleOptions.labelTextScalePercent }}
         <SimpleNumberSelector
           :numSelected="selectionCount"
-          v-model="styleOptions.labelTextScalePercent"
-          title-key="style.labelTextScalePercent"
+          v-model="labelTextScalePercentage"
+          :title="t('labelTextScale')"
           ref="labelTextScalePercent"
           :color="conflictItems.labelTextScalePercent ? 'red' : ''"
           :conflict="conflictItems.labelTextScalePercent"
-          v-on:resetColor="conflictItems.labelTextScalePercent = false"
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
-          {{ styleOptions.labelTextRotation }}
         <SimpleNumberSelector
           :numSelected="selectionCount"
-          v-model="styleOptions.labelTextRotation"
+          v-model="labelTextRotation"
           ref="labelTextRotation"
           :conflict="conflictItems.labelTextRotation"
           :class="{ shake: animatedInput.labelTextRotation }"
-          title-key="style.labelTextRotation"
+          :title="t('labelTextRotation')"
           :color="conflictItems.labelTextRotation ? 'red' : ''"
           v-on:resetColor="conflictItems.labelTextRotation = false"
           :min="-3.14159"
@@ -96,7 +92,7 @@
         <!-- Label Text Family Selections -->
         <v-select
           v-model.lazy="styleOptions.labelTextFamily"
-          v-bind:label="$t('style.labelTextFamily')"
+          v-bind:label="$t('labelTextFamily')"
           :items="labelTextFamilyItems"
           item-title="text"
           item-value="value"
@@ -110,7 +106,7 @@
           density="compact"></v-select>
         <v-select
           v-model.lazy="styleOptions.labelTextStyle"
-          v-bind:label="$t('style.labelTextStyle')"
+          v-bind:label="$t('labelTextStyle')"
           :items="labelTextStyleItems"
           item-title="text"
           item-value="value"
@@ -124,7 +120,7 @@
           density="compact"></v-select>
         <v-select
           v-model.lazy="styleOptions.labelTextDecoration"
-          v-bind:label="$t('style.labelTextDecoration')"
+          v-bind:label="$t('labelTextDecoration')"
           :items="labelTextDecorationItems"
           item-title="text"
           item-value="value"
@@ -140,7 +136,7 @@
         <v-select
           v-model.lazy="styleOptions.labelDisplayMode"
           :class="[
-            showMoreLabelStyles ? '' : 'pa-0',
+            'pa-0',
             {
               shake: animatedInput.labelDisplayMode,
               conflict: conflictItems.labelDisplayMode
@@ -148,7 +144,7 @@
           ]"
           :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
           ref="labelDisplayMode"
-          v-bind:label="$t('style.labelDisplayMode')"
+          v-bind:label="$t('labelDisplayMode')"
           :items="labelDisplayModeValueFilter(styleOptions)"
           item-title="text"
           item-value="value"
@@ -158,7 +154,7 @@
       </v-window-item>
       <v-window-item class="pa-2">
         <SimpleColorSelector
-          title-key="style.labelFrontFillColor"
+          :title="t('labelFrontFillColor')"
           :numSelected="selectionCount"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
@@ -167,7 +163,7 @@
           v-model="styleOptions.labelFrontFillColor"></SimpleColorSelector>
         <SimpleColorSelector
           :numSelected="selectionCount"
-          title-key="style.labelBackFillColor"
+          :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"
           v-on:resetColor="conflictItems.labelBackFillColor = false"
           ref="labelBackFillColor"
@@ -176,13 +172,9 @@
       </v-window-item>
     </template>
   </PopOverTabs>
-  <InputGroup
-    v-if="false"
-    :numSelected="selectionCount"
-    :panel="panel"
-    input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration">
-    <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-    <!--OverlayWithFixButton
+
+  <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -191,19 +183,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
           </!--OverlayWithFixButton-->
-    <span
-      v-if="selectedSENodules.length > 1"
-      class="text-subtitle-2"
-      style="color: red">
-      {{ " " + $t("style.labelStyleOptionsMultiple") }}
-    </span>
-  </InputGroup>
-  <InputGroup
-    :numSelected="selectionCount"
-    :panel="panel"
-    input-selector="labelTextScalePercent,labelTextRotation"
-    v-if="showMoreLabelStyles && false">
-    <!--OverlayWithFixButton
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelTextScalePercent|labelTextRotation/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -212,22 +192,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelTextScalePercent`,`labelTextRotation`])">
           </OverlayWithFixButton-->
-    {{ $t("style.labelTextScalePercent") }} &
-    {{ $t("style.labelTextRotation") }}
-    <span
-      v-if="selectedSENodules.length > 1"
-      class="text-subtitle-2"
-      style="color: red">
-      {{ " " + $t("style.labelStyleOptionsMultiple") }}
-    </span>
-    <v-divider></v-divider>
-  </InputGroup>
-  <InputGroup
-    :numSelected="selectionCount"
-    :panel="panel"
-    input-selector="labelFrontFillColor"
-    v-if="showMoreLabelStyles && false">
-    <!--OverlayWithFixButton
+  <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelFrontFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -236,13 +201,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelFrontFillColor`])">
           </OverlayWithFixButton-->
-  </InputGroup>
-  <InputGroup
-    :numSelected="selectionCount"
-    :panel="panel"
-    input-selector="labelBackFillColor"
-    v-if="showMoreLabelStyles && false">
-    <!--
+  <!--
 
           <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
             z-index="10"
@@ -260,7 +219,6 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelBackFillColor`])">
           </OverlayWithFixButton-->
-  </InputGroup>
 
   <!-- Show more or less styling options -->
   <!--v-tooltip
@@ -270,25 +228,23 @@
     <template v-slot:activator="{ props }">
       <v-btn
         v-bind="props"
-        @click="toggleShowMoreLabelStyles"
         class="text-subtitle-2"
         text
         variant="plain"
         ripple
         size="x-small">
-        <v-icon v-if="showMoreLabelStyles">mdi-chevron-up</v-icon>
+        <v-icon v-if="false">mdi-chevron-up</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
       </v-btn>
     </template>
-    {{ t("style.toggleStyleOptionsToolTip") }}
   </v-tooltip-->
   <Dialog
     ref="backStyleDisagreementDialog"
-    :title="t('style.backStyleDisagreement')"
+    :title="t('backStyleDisagreement')"
     width="50%"
-    :yes-text="t('style.enableCommonStyle')"
+    :yes-text="t('enableCommonStyle')"
     :yes-action="overrideDynamicBackStyleDisagreement">
-    Multiple object(s) selected have differing label styles.
+    {{ t("message.multipleObjectDifferingStyles") }}
   </Dialog>
   <!--OverlayWithFixButton
             v-if="!dataAgreement(/labelDynamicBackStyle/)"
@@ -301,10 +257,10 @@
   <Dialog
     ref="labelNotVisibleDialog"
     width="50%"
-    :title="t('style.labelNotVisible')"
-    :yes-text="t('style.makeLabelsVisible')"
+    :title="t('labelNotVisible')"
+    :yes-text="t('makeLabelsVisible')"
     :yes-action="toggleAllLabelsVisibility">
-    {{ t("style.clickToMakeLabelsVisible") }}
+    {{ t("clickToMakeLabelsVisible") }}
   </Dialog>
   <!--OverlayWithFixButton v-if="!allLabelsShowing"
           z-index="100"
@@ -330,21 +286,18 @@ import Nodule from "@/plottables/Nodule";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
-import InputGroup from "@/components/InputGroupWithReset.vue";
 import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/style-ui/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
-// import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import Label from "@/plottables/Label";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { useStyleEditor } from "@/components/StyleEditor";
-import { useDialogSequencer } from "@/components/DialogSequencer";
+import { useStyleEditor } from "@/composables/StyleEditor";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 import PopOverTabs from "../PopOverTabs.vue";
-// import UI from "@/store/ui-styles";
 type labelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
@@ -399,6 +352,10 @@ const labelNotVisibleDialog: Ref<DialogAction | null> = ref(null);
 // $refs
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
+const labelTextScalePercentage = ref(
+  styleOptions.value.labelTextScalePercent ?? 100
+);
+const labelTextRotation = ref(styleOptions.value.labelTextRotation ?? 0);
 
 watch(() => selectedSENodules.value, resetAllItemsFromConflict);
 function resetAllItemsFromConflict(): void {
@@ -475,8 +432,6 @@ const textScaleSelectorThumbStrings: Array<string> = [];
 
 //Many of the label style will not be commonly modified so create a button/variable for
 // the user to click to show more of the Label Styling options
-const showMoreLabelStyles = ref(false);
-const moreOrLessText = ref(t("style.moreStyleOptions")); // The text for the button to toggle between less/more options
 
 const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
 const labelDisplayTextErrorMessageKey = "";
@@ -490,31 +445,31 @@ const labelDisplayCaptionTestResults = [true, true];
 
 const labelDisplayModeItems: labelDisplayModeItem[] = [
   {
-    text: t("style.labelDisplayModes.nameOnly"),
+    text: t("labelDisplayModes.nameOnly"),
     value: LabelDisplayMode.NameOnly,
     optionRequiresMeasurementValueToExist: false,
     optionRequiresCaptionToExist: false
   },
   {
-    text: t("style.labelDisplayModes.captionOnly"),
+    text: t("labelDisplayModes.captionOnly"),
     value: LabelDisplayMode.CaptionOnly,
     optionRequiresMeasurementValueToExist: false,
     optionRequiresCaptionToExist: true
   },
   {
-    text: t("style.labelDisplayModes.valueOnly"),
+    text: t("labelDisplayModes.valueOnly"),
     value: LabelDisplayMode.ValueOnly,
     optionRequiresMeasurementValueToExist: true,
     optionRequiresCaptionToExist: false
   },
   {
-    text: t("style.labelDisplayModes.nameAndCaption"),
+    text: t("labelDisplayModes.nameAndCaption"),
     value: LabelDisplayMode.NameAndCaption,
     optionRequiresMeasurementValueToExist: false,
     optionRequiresCaptionToExist: true
   },
   {
-    text: t("style.labelDisplayModes.nameAndValue"),
+    text: t("labelDisplayModes.nameAndValue"),
     value: LabelDisplayMode.NameAndValue,
     optionRequiresMeasurementValueToExist: true,
     optionRequiresCaptionToExist: false
@@ -523,57 +478,57 @@ const labelDisplayModeItems: labelDisplayModeItem[] = [
 
 const labelTextFamilyItems = [
   {
-    text: t("style.genericSanSerif"),
+    text: t("fonts.genericSanSerif"),
     value: "sans/-serif"
   },
   {
-    text: t("style.genericSerif"),
+    text: t("fonts.genericSerif"),
     value: "serif"
   },
   {
-    text: t("style.monospace"),
+    text: t("fonts.monospace"),
     value: "monospace"
   },
   {
-    text: t("style.cursive"),
+    text: t("fonts.cursive"),
     value: "cursive"
   },
   {
-    text: t("style.fantasy"),
+    text: t("fonts.fantasy"),
     value: "fantasy"
   }
 ];
 
 const labelTextStyleItems = [
   {
-    text: t("style.normal"),
+    text: t("textStyle.normal"),
     value: "normal"
   },
   {
-    text: t("style.italic"),
+    text: t("textStyle.italic"),
     value: "italic"
   },
   {
-    text: t("style.bold"),
+    text: t("textStyle.bold"),
     value: "bold"
   }
 ];
 
 const labelTextDecorationItems = [
   {
-    text: t("style.none"),
+    text: t("textDecoration.none"),
     value: "none"
   },
   {
-    text: t("style.underline"),
+    text: t("textDecoration.underline"),
     value: "underline"
   },
   {
-    text: t("style.strikethrough"),
+    text: t("textDecoration.strikethrough"),
     value: "strikethrough"
   },
   {
-    text: t("style.overline"),
+    text: t("textDecoration.overline"),
     value: "overline"
   }
 ];
@@ -646,14 +601,6 @@ function overrideDynamicBackStyleDisagreement() {
   // dialogSequencer.hideDialog(backStyleDisagreementDialog.value!)
 }
 
-function toggleShowMoreLabelStyles(): void {
-  showMoreLabelStyles.value = !showMoreLabelStyles.value;
-  if (!showMoreLabelStyles.value) {
-    moreOrLessText.value = t("style.moreStyleOptions");
-  } else {
-    moreOrLessText.value = t("style.lessStyleOptions");
-  }
-}
 function toggleAllLabelsVisibility(): void {
   EventBus.fire("toggle-label-visibility", { fromPanel: true });
   // dialogSequencer.hideDialog(labelNotVisibleDialog.value!)
@@ -663,12 +610,12 @@ function toggleAllLabelsVisibility(): void {
 function labelDisplayTextCheck(txt: string | undefined): boolean | string {
   if (txt !== undefined && txt !== null) {
     if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
-      return t("style.maxLabelDisplayTextLengthWarning", {
+      return t("message.maxLabelDisplayTextLength", {
         max: SETTINGS.label.maxLabelDisplayTextLength
-      }) as string;
+      });
     } else if (txt.length === 0) {
       // console.log("here");
-      return t("style.minLabelDisplayTextLengthWarning", {}) as string;
+      return t("message.minLabelDisplayTextLength", {});
     }
   }
   return true;
@@ -695,7 +642,7 @@ function labelDisplayTextTruncate(opt: StyleOptions): boolean {
 
 function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
   if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
-    return t("style.maxLabelDisplayCaptionLengthWarning", {
+    return t("message.maxCaptionLength", {
       max: SETTINGS.label.maxLabelDisplayCaptionLength
     }) as string;
   }
@@ -756,15 +703,15 @@ function labelDisplayModeValueFilter(
 function placeHolderText(numSelected: number, caption: boolean): string {
   if (numSelected > 1) {
     if (caption) {
-      return t('style.commonCaptionText');
+      return t("commonCaptionText");
     } else {
-      return "Common Label Text";
+      return t("commonLabelText");
     }
   } else {
     if (caption) {
-      return "Caption Text";
+      return t("captionText");
     } else {
-      return "Label Text";
+      return t("labelText");
     }
   }
 }
@@ -847,3 +794,109 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   }
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "backStyleDisagreement": "Back Styling Disagreement",
+  "clickToMakeLabelsVisible": "Click the button below to make labels visible",
+  "commonCaptionText": "Common Caption Text",
+  "commonLabelText": "Common Label Text",
+  "enableCommonStyle": "Enable Common Style",
+  "fonts": {
+    "cursive": "Cursive Font",
+    "fantasy": "Fantasy",
+    "genericSanSerif": "San Serif Font",
+    "genericSerif": "Serif Font",
+    "monospace": "Monospace Font"
+  },
+  "labelBackFillColor": "Label Back Fill Color",
+  "labelCaption": "Label Caption",
+  "labelDisplayMode": "Label Display Mode",
+  "labelDisplayModes": {
+    "captionOnly": "Caption Only",
+    "nameAndCaption": "Name & Caption",
+    "nameAndValue": "Name & Value",
+    "nameOnly": "Name Only",
+    "valueOnly": "Value Only"
+  },
+  "labelFrontFillColor": "Label Front Fill Color",
+  "labelNotVisible": "Labels Not Visible",
+  "labelStyle": "Label Style",
+  "labelText": "Label Text",
+  "labelTextDecoration": "Label Text Decoration",
+  "labelTextFamily": "Label Text Family",
+  "labelTextRotation": "Label Rotation ()",
+  "labelTextScale": "Label Scale (%)",
+  "labelTextStyle": "Label Text Style",
+  "makeLabelsVisible": "Make Labels Visible",
+  "message": {
+    "maxLabelDisplayTextLength": "Label cannot be longer than {max} characters",
+    "minLabelDisplayTextLength": "Label must have at least 1 character",
+    "maxCaptionLength": "Caption cannot be longer than {max} characters",
+    "multipleObjectDifferingStyles": "Multiple object(s) selected have differing label styles."
+  },
+  "textDecoration": {
+    "none": "No decoration",
+    "overline": "Overline",
+    "strikethrough": "Strikethrough",
+    "underline": "Underline"
+  },
+  "textStyle": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "normal": "Normal"
+  }
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "backStyleDisagreement": "Gaya Tampilan Belakang Bertentangan",
+  "clickToMakeLabelsVisible": "Tekan tombol dibawah untuk menampilkan label",
+  "commonCaptionText": "Keterangan Teks Gabungan",
+  "commonLabelText": "Label Teks Gabungan",
+  "enableCommonStyle": "Aktifkan Gaya Tampilan Gabungan",
+  "fonts": {
+    "cursive": "Cursive Font",
+    "fantasy": "Fantasy",
+    "genericSanSerif": "San Serif Font",
+    "genericSerif": "Serif Font",
+    "monospace": "Monospace Font"
+  },
+  "labelBackFillColor": "Warna pengisi latar belakang",
+  "labelCaption": "Keterangan Teks",
+  "labelDisplayMode": "Mode Penampilan Label",
+  "labelDisplayModes": {
+    "captionOnly": "Keterangan Saja",
+    "nameAndCaption": "Nama & Keterangan",
+    "nameAndValue": "Nama & Nilai",
+    "nameOnly": "Nama Saja",
+    "valueOnly": "Nilai Saja"
+  },
+  "labelFrontFillColor": "Warning Pengisi Label Later Depan",
+  "labelNotVisible": "Label Tidak Ditampilkan",
+  "labelText": "Teks Label",
+  "labelTextDecoration": "Dekorasi Teks Label",
+  "labelTextFamily": "Keluarga Text Label",
+  "labelTextRotation": "Rotasi Label",
+  "labelTextScale": "Persentasi Skala Label",
+  "labelTextStyle": "Gaya Tampilan Teks Label",
+  "makeLabelsVisible": "Tampilkan Label",
+  "message": {
+    "maxLabelDisplayTextLength": "Label terlalu panjang. Max {max} huruf",
+    "minLabelDisplayTextLength": "Label minimum 1 karakter",
+    "maxCaptionLength": "Teks Keterangna terlalu panjang. Max {max} huruf",
+    "multipleObjectDifferingStyles": "Objek yang diseleksi memiliki gaya tampilan label berbeda"
+  },
+  "textDecoration": {
+    "none": "Tanpa dekorasi",
+    "overline": "Garis atas",
+    "strikethrough": "Garis coret",
+    "underline": "Garis bawah"
+  },
+  "textStyle": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "normal": "Normal"
+  }
+}
+</i18n>
+@/composables/StyleEditor

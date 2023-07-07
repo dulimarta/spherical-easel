@@ -10,7 +10,6 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
-// import Segment from "./Segment";
 import { SESegment } from "@/models/SESegment";
 import Two from "two.js";
 // import { Path } from "two.js/src/path";

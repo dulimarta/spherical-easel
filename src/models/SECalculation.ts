@@ -4,7 +4,6 @@ import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
 const { t } = i18n.global;
-import { useSEStore } from "@/stores/se";
 
 const emptySet = new Set<string>();
 const parser = new ExpressionParser();
@@ -22,19 +21,22 @@ export class SECalculation extends SEExpression {
     this.exprText = text;
     //const vars = [];
     // Search the expression text for occurrences of M###
-    const store = useSEStore();
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
-      const pos = store.expressions.findIndex(z => z.name === `${v[0]}`);
+      const pos = SENodule.store.expressions.findIndex(
+        z => z.name === `${v[0]}`
+      );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = this._calculationParents.findIndex(
-          parent => parent.name === store.expressions[pos].name
+          parent => parent.name === SENodule.store.expressions[pos].name
         );
         if (pos2 < 0) {
-          this._calculationParents.push(store.expressions[pos] as SEExpression);
+          this._calculationParents.push(
+            SENodule.store.expressions[pos] as SEExpression
+          );
         }
       }
 

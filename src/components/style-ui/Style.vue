@@ -7,9 +7,6 @@
       style="height: 100%; overflow: auto"
       @mouseenter="setSelectTool"
       @mouseleave="saveStyleState">
-      <v-btn icon size="x-small">
-        <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
-      </v-btn>
       <!-- Switches for show/hide label(s) and object(s)-->
       <!--v-card flat class="ma-0 pa-0">
         <v-card-text class="ma-0 pa-0"-->
@@ -51,24 +48,8 @@
         </v-chip>
       </div>
 
-      <v-expansion-panels>
-        <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-title class="ps-6 pe-0 pt-n4 pb-n4 pm-0">
-            {{ $t(p.i18n_key) }}
-          </v-expansion-panel-title>
-          <v-expansion-panel-text :color="panelBackgroundColor(idx)">
-            <component
-              :is="p.component"
-              :panel="p.panel"
-              :active-panel="activePanel"></component>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
     </div>
     <div v-else class="mini-icons">
-      <v-btn key="partial" icon size="x-small" class="pa-0 mx-0">
-        <v-icon @click="toggleMinify">mdi-arrow-left</v-icon>
-      </v-btn>
       <div class="mini-icons">
         <v-icon>$stylePanel</v-icon>
       </div>
@@ -104,13 +85,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
-import LabelStyle from "@/components/style-ui/LabelStyle.vue";
-import BasicFrontBackStyle from "@/components/style-ui/FrontBackStyle.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-// import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
-import { StyleEditPanels } from "@/types/Styles";
 import { Labelable } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -119,41 +95,16 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPolygon } from "@/models/SEPolygon";
-import { useDialogSequencer } from "@/components/DialogSequencer";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 const { t } = useI18n();
 const seStore = useSEStore();
 const { selectedSENodules } = storeToRefs(seStore);
 const dialogSequencer = useDialogSequencer()
 
 // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
-const panels = [
-  {
-    i18n_key: "style.labelStyle",
-    component: LabelStyle,
-    panel: StyleEditPanels.Label
-  },
-  {
-    i18n_key: "style.foregroundStyle",
-    component: BasicFrontBackStyle,
-    panel: StyleEditPanels.Front
-  },
-  {
-    i18n_key: "style.backgroundStyle",
-    component: BasicFrontBackStyle,
-    panel: StyleEditPanels.Back
-  }
-  // {
-  //   i18n_key: "style.advancedStyle",
-  //   component: () => import("@/components/AdvancedStyle.vue"),
-  //   panel: StyleEditPanels.Advanced
-  // }
-];
-
 const minified = ref(true);
 const emit = defineEmits(["minifyToggled"]);
 const selectObjectsDialog = ref<DialogAction | null>(null);
-
-const activePanel = ref<number | undefined>(0); // Default selection is the Label panel
 
 const allLabelsShowing = ref(false);
 const allObjectsShowing = ref(false);
@@ -179,11 +130,6 @@ const buttonListItems = computed((): string[] => {
   ];
 });
 
-function closeAllPanels(): void {
-  activePanel.value = undefined;
-  // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
-  EventBus.fire("save-style-state", {});
-}
 watch(
   [() => selectedSENodules.value, () => minified.value],
   ([selectedObjs, isMinified]) => {
@@ -331,11 +277,6 @@ function toggleObjectsShowing(source: any): void {
   //  SETTINGS.hideObjectHidesLabel) and similarly showing an object shows the label (depending
   //  SETTIGNS.showObjectShowsLabel)
   allLabelsShowingCheck();
-}
-
-function toggleMinify() {
-  minified.value = !minified.value;
-  emit("minifyToggled", minified.value);
 }
 </script>
 

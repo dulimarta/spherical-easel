@@ -1,18 +1,14 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Two from "two.js";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionReturnType } from "@/types";
 import Line from "@/plottables/Line";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SENSectLine } from "@/models/SENSectLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
@@ -321,20 +317,15 @@ export default class NSectAngleHandler extends Highlighter {
         );
         if (index === -1) {
           // create the endSEPoint on the line, this is *never* displayed and never put into the DAG of SENodules
-          const endSEPoint = new SEPoint(new NonFreePoint());
+          const endSEPoint = new SEPoint(true);
           endSEPoint.showing = false; // this never changes
           endSEPoint.exists = true; // this never changes
           endSEPoint.locationVector = endPointVector; // this gets updated
 
           // create the plottable line
-          const newLine = new NonFreeLine();
-          // Set the display to the default values
-          newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-          newLine.adjustSize();
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
-            newLine,
             startSEPoint as SEPoint,
             normalVector,
             endSEPoint,
@@ -344,8 +335,7 @@ export default class NSectAngleHandler extends Highlighter {
           );
 
           // Create plottable for the Label
-          const newLabel2 = new Label("line");
-          const newSELabel2 = new SELabel(newLabel2, nSectingLine);
+          const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location
           this.tmpVector
             .copy(endSEPoint.locationVector)
@@ -379,23 +369,14 @@ export default class NSectAngleHandler extends Highlighter {
                 );
               } else {
                 // Create the plottable label
-                const newLabel = new Label("point");
-                const newSELabel = new SELabel(
-                  newLabel,
-                  item.SEIntersectionPoint
-                );
-                // Set the initial label location
-                this.tmpVector
-                  .copy(item.SEIntersectionPoint.locationVector)
-                  .add(
+                const newSELabel =
+                  item.SEIntersectionPoint.attachLabelWithOffset(
                     new Vector3(
                       2 * SETTINGS.point.initialLabelOffset,
                       SETTINGS.point.initialLabelOffset,
                       0
                     )
                   )
-                  .normalize();
-                newSELabel.locationVector = this.tmpVector;
 
                 nSectingLinesCommandGroup.addCommand(
                   new AddIntersectionPointCommand(

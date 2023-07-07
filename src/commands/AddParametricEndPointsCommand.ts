@@ -4,8 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import Label from "@/plottables/Label";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
@@ -290,9 +288,8 @@ export class AddParametricEndPointsCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Start End Point
-      const startEndPoint = new Point();
       const seStartEndPoint = new SEParametricEndPoint(
-        startEndPoint,
+        // startEndPoint,
         parametricParent,
         "min"
       );
@@ -307,7 +304,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartEndPointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        startEndPoint.updateStyle(
+        seStartEndPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -315,17 +312,13 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartEndPointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        startEndPoint.updateStyle(
+        seStartEndPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       // make the Start End Point Label
-      const startEndPointLabel = new Label("point");
-      const seStartEndPointLabel = new SELabel(
-        startEndPointLabel,
-        seStartEndPoint
-      );
+      const seStartEndPointLabel = new SELabel("point", seStartEndPoint);
       const seStartEndPointLabelLocation = new Vector3();
       seStartEndPointLabelLocation.from(
         propMap.get("parametricEndPointseStartLabelLocationVector")
@@ -335,7 +328,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseStartLabelLabelStyle"
       );
       if (labelStyleString !== undefined) {
-        startEndPointLabel.updateStyle(
+        seStartEndPointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );
@@ -375,12 +368,7 @@ export class AddParametricEndPointsCommand extends Command {
       seStartEndPoint.ref.updateDisplay();
 
       // make the End End Point
-      const endEndPoint = new Point();
-      const seEndEndPoint = new SEParametricEndPoint(
-        endEndPoint,
-        parametricParent,
-        "max"
-      );
+      const seEndEndPoint = new SEParametricEndPoint(parametricParent, "max");
       const seEndEndPointLocation = new Vector3();
       seEndEndPointLocation.from(
         propMap.get("parametricEndPointseEndEndPointLocationVector")
@@ -391,7 +379,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseEndEndPointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        endEndPoint.updateStyle(
+        seEndEndPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -399,14 +387,13 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseEndEndPointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        endEndPoint.updateStyle(
+        seEndEndPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       // make the End End Point Label
-      const endEndPointLabel = new Label("point");
-      const seEndEndPointLabel = new SELabel(endEndPointLabel, seEndEndPoint);
+      const seEndEndPointLabel = new SELabel("point", seEndEndPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(
         propMap.get("parametricEndPointseEndLabelLocationVector")
@@ -414,7 +401,7 @@ export class AddParametricEndPointsCommand extends Command {
       seEndEndPointLabel.locationVector.copy(seLabelLocation);
       labelStyleString = propMap.get("parametricEndPointseEndLabelLabelStyle");
       if (labelStyleString !== undefined) {
-        endEndPointLabel.updateStyle(
+        seEndEndPointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );
@@ -452,11 +439,7 @@ export class AddParametricEndPointsCommand extends Command {
 
       seEndEndPoint.ref.updateDisplay();
       // make the Trace Point
-      const tracePoint = new Point();
-      const seTracePoint = new SEParametricTracePoint(
-        tracePoint,
-        parametricParent
-      );
+      const seTracePoint = new SEParametricTracePoint(parametricParent);
       const seTracePointLocation = new Vector3();
       seTracePointLocation.from(
         propMap.get("parametricEndPointseTracePointLocationVector")
@@ -466,7 +449,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTracePointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -474,14 +457,13 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTracePointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label("point");
-      const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
+      const seTracePointLabel = new SELabel("point", seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seLabelLocation.from(
         propMap.get("parametricEndPointseTraceLabelLocationVector")
@@ -491,7 +473,7 @@ export class AddParametricEndPointsCommand extends Command {
         "parametricEndPointseTraceLabelLabelStyle"
       );
       if (labelStyleString !== undefined) {
-        tracePointLabel.updateStyle(
+        seTracePointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );
@@ -543,104 +525,4 @@ export class AddParametricEndPointsCommand extends Command {
       );
     }
   }
-
-  // static parse(command: string, objMap: Map<string, SENodule>): Command {
-  //   const tokens = command.split("/");
-  //   const parametricParent = objMap.get(tokens[1]) as SEParametric | undefined;
-  //   if (parametricParent) {
-  //     const startPosition = new Vector3();
-  //     startPosition.from(tokens[3]);
-  //     // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEParametricEndPoint and not just an SEPoint
-  //     const startPoint = new Point();
-  //     startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  //     startPoint.adjustSize();
-  //     const seStartPoint = new SEParametricEndPoint(
-  //       startPoint,
-  //       parametricParent,
-  //       "min"
-  //     );
-  //     seStartPoint.locationVector.copy(startPosition);
-  //     seStartPoint.showing = tokens[4] === "true";
-  //     seStartPoint.exists = tokens[5] === "true";
-  //     seStartPoint.name = tokens[2];
-  //     objMap.set(tokens[2], seStartPoint);
-
-  //     const startLabel = new SELabel(new Label(), seStartPoint);
-  //     startLabel.locationVector.copy(startPosition);
-  //     const offset = SETTINGS.point.initialLabelOffset;
-  //     startLabel.locationVector
-  //       .add(new Vector3(2 * offset, offset, 0))
-  //       .normalize();
-  //     startLabel.showing = tokens[15] === "true";
-  //     startLabel.exists = tokens[16] === "true";
-  //     startLabel.name = tokens[14];
-  //     objMap.set(tokens[14], startLabel);
-
-  //     const endPosition = new Vector3();
-  //     endPosition.from(tokens[7]);
-  //     // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEParametricEndPoint and not just an SEPoint
-  //     const endPoint = new Point();
-  //     endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  //     endPoint.adjustSize();
-  //     const seEndPoint = new SEParametricEndPoint(
-  //       endPoint,
-  //       parametricParent,
-  //       "max"
-  //     );
-  //     seEndPoint.locationVector.copy(endPosition);
-  //     seEndPoint.showing = tokens[8] === "true";
-  //     seEndPoint.exists = tokens[9] === "true";
-  //     seEndPoint.name = tokens[6];
-  //     objMap.set(tokens[6], seEndPoint);
-
-  //     const endLabel = new SELabel(new Label(), seEndPoint);
-  //     endLabel.locationVector.copy(endPosition);
-  //     endLabel.locationVector
-  //       .add(new Vector3(2 * offset, offset, 0))
-  //       .normalize();
-  //     endLabel.showing = tokens[18] === "true";
-  //     endLabel.exists = tokens[19] === "true";
-  //     endLabel.name = tokens[17];
-  //     objMap.set(tokens[17], endLabel);
-
-  //     const tracePosition = new Vector3();
-  //     tracePosition.from(tokens[11]);
-  //     const tracePoint = new Point();
-  //     tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  //     tracePoint.adjustSize();
-  //     const seTracePoint = new SEParametricTracePoint(
-  //       tracePoint,
-  //       parametricParent
-  //     );
-  //     seTracePoint.locationVector.copy(tracePosition);
-  //     seTracePoint.showing = tokens[12] === "true";
-  //     seTracePoint.exists = tokens[13] === "true";
-  //     seTracePoint.name = tokens[10];
-  //     objMap.set(tokens[10], seTracePoint);
-
-  //     const traceLabel = new SELabel(new Label(), seTracePoint);
-  //     traceLabel.locationVector.copy(tracePosition);
-  //     traceLabel.locationVector
-  //       .add(new Vector3(2 * offset, offset, 0))
-  //       .normalize();
-  //     traceLabel.showing = tokens[21] === "true";
-  //     traceLabel.exists = tokens[22] === "true";
-  //     traceLabel.name = tokens[20];
-  //     objMap.set(tokens[20], traceLabel);
-
-  //     return new AddParametricEndPointsCommand(
-  //       parametricParent,
-  //       seStartPoint,
-  //       startLabel,
-  //       seEndPoint,
-  //       endLabel,
-  //       seTracePoint,
-  //       traceLabel
-  //     );
-  //   } else {
-  //     throw new Error(
-  //       `AddParametricEndPoints: parametric parent ${tokens[1]} is undefined`
-  //     );
-  //   }
-  // }
 }

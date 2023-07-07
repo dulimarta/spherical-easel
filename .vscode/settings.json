@@ -86,9 +86,7 @@
     "untransforming",
     "vuetify"
   ],
-  "i18n-ally.localesPaths": [
-    "./src/assets/languages"
-  ],
+  "i18n-ally.localesPaths": ["./src/assets/languages"],
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "files.readonlyFromPermissions": false,
@@ -98,8 +96,8 @@
   "i18n-ally.annotations": true,
   "i18n-ally.autoDetection": true,
   "i18n-ally.disablePathParsing": false,
-  "i18n-ally.displayLanguage": "en",
-  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.displayLanguage": "en,id",
+  "i18n-ally.sourceLanguage": "en,id",
   "i18n-ally.extract.autoDetect": true,
   "i18n-ally.extract.keyMaxLength": 50,
   "i18n-ally.frameworks.ruby-rails.scopeRoot": "",
@@ -107,13 +105,8 @@
   "i18n-ally.pathMatcher": "{locale}.json",
   "i18n-ally.translate.promptSource": true,
   "i18n-ally.dirStructure": "dir",
-  "i18n-ally.enabledParsers": [
-    "json"
-  ],
-  "i18n-ally.enabledFrameworks": [
-    "vue-sfc",
-    "vue"
-  ],
+  "i18n-ally.enabledParsers": ["ts"],
+  "i18n-ally.enabledFrameworks": ["vue-sfc", "vue"],
   "i18n-ally.extract.keygenStyle": "camelCase",
   "i18n-ally.keystyle": "nested",
   "i18n-ally.editor.preferEditor": true

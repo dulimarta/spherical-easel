@@ -1,10 +1,6 @@
 import { SEPoint, SESegment } from "./internal";
-// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
-// import { SESegment } from "./SESegment";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
 const { t } = i18n.global;
 
@@ -24,12 +20,12 @@ export class SENSectPoint extends SEPoint {
    * @param N
    */
   constructor(
-    point: NonFreePoint,
+    // point: NonFreePoint,
     seSegmentParent: SESegment,
     index: number,
     N: number
   ) {
-    super(point);
+    super(true);
     this._seSegmentParent = seSegmentParent;
     this._index = index;
     this._N = N;

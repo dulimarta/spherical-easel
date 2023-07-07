@@ -6,7 +6,6 @@ import {
   SEReflection,
   SEPointReflection
 } from "./internal";
-import Circle from "@/plottables/Circle";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 // import { SECircle } from "./SECircle";
@@ -30,13 +29,13 @@ export class SEIsometryCircle extends SECircle {
    * @param circlePoint The model SEPoint object that is on the circle
    */
   constructor(
-    circ: Circle,
+    // circ: Circle,
     centerPoint: SEPoint,
     circlePoint: SEPoint,
     seParentCircle: SECircle,
     seParentIsometry: SEIsometry
   ) {
-    super(circ, centerPoint, circlePoint);
+    super(centerPoint, circlePoint, true);
     this._seParentCircle = seParentCircle;
     this._seParentIsometry = seParentIsometry;
     if (this._seParentIsometry instanceof SETranslation) {

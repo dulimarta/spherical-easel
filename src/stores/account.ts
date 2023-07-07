@@ -17,23 +17,24 @@ function insertAscending(newItem: string, arr: string[]): void {
 }
 
 const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
-  ["undoAction", "redoAction"],
-  ["resetAction"],
-  ["point"],
-  ["zoomIn", "zoomOut", "zoomFit"],
+  [],
+  [],
 ];
 
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", {
   state: (): AccountState => ({
+    loginEnabled: false, // true when the secret key combination is detected
     temporaryProfilePicture: "",
     userDisplayedName: undefined,
+    userEmail: undefined,
     userProfilePictureURL: undefined,
     userRole: undefined,
     /** @type { ActionMode[]} */
     includedTools: [],
     excludedTools: [],
-    favoriteTools: DEFAULT_TOOL_NAMES
+    favoriteTools: DEFAULT_TOOL_NAMES,
+    constructionDocId: null
   }),
   actions: {
     resetToolset(includeAll = true): void {
@@ -62,19 +63,12 @@ export const useAccountStore = defineStore("acct", {
         this.includedTools.splice(pos, 1);
       }
     },
-    setUserDetails(
-      name: string | undefined,
-      pictureURL: string | undefined,
-      favTools: string
-    ) {
-      this.userDisplayedName = name;
-      this.userProfilePictureURL = pictureURL;
-      console.debug("Favorite tools", this.favoriteTools);
+    parseAndSetFavoriteTools(favTools: string) {
       if (favTools.trim().length > 0) {
         this.favoriteTools = favTools
           .split("#")
           .map((fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[])
-        if (this.favoriteTools.length !== 4)
+        if (this.favoriteTools.length !== 2)
           this.favoriteTools = DEFAULT_TOOL_NAMES
       }
       else

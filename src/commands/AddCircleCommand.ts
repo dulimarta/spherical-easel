@@ -3,9 +3,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
 
@@ -106,32 +104,33 @@ export class AddCircleCommand extends Command {
 
     if (circleCenterPoint && circlePoint) {
       //make the circle
-      const circle = new Circle();
-      const seCircle = new SECircle(circle, circleCenterPoint, circlePoint);
+      const seCircle = new SECircle(circleCenterPoint, circlePoint, false);
       //style the circle
       const circleFrontStyleString = propMap.get("objectFrontStyle");
       if (circleFrontStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(circleFrontStyleString)
         );
       const circleBackStyleString = propMap.get("objectBackStyle");
       if (circleBackStyleString !== undefined)
-        circle.updateStyle(
+        seCircle.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(circleBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("circle");
-      const seLabel = new SELabel(label, seCircle);
+      const seLabel = new SELabel("circle", seCircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

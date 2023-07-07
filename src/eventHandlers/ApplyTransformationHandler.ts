@@ -22,11 +22,8 @@ import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SETranslation } from "@/models/SETranslation";
 import Circle from "@/plottables/Circle";
 import Ellipse from "@/plottables/Ellipse";
-import Label from "@/plottables/Label";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import NonFreeSegment from "@/plottables/NonFreeSegment";
 import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
@@ -37,13 +34,10 @@ import Highlighter from "./Highlighter";
 import { AddIsometrySegmentCommand } from "@/commands/AddIsometrySegmentCommand";
 import { AddIsometryCircleCommand } from "@/commands/AddIsometryCircleCommand";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { AddIsometryEllipseCommand } from "@/commands/AddIsometryEllipseCommand";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
-import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { AddIsometryLineCommand } from "@/commands/AddIsometryLineCommand";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import {
   SEIntersectionReturnType,
   SEOneDimensional,
@@ -1570,14 +1564,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       );
     }
     // we have to create a new transformed point
-    const newTransformedPoint = new NonFreePoint();
-    // Set the display to the default values
-    newTransformedPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedPoint.adjustSize();
 
     const newTransformedSEPoint = new SETransformedPoint(
-      newTransformedPoint,
       preimageSEPoint,
       transformationSEParent
     );
@@ -1585,19 +1573,14 @@ export default class ApplyTransformationHandler extends Highlighter {
     newTransformedSEPoint.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("point"), newTransformedSEPoint);
-    // Set the initial label location
-    this.tmpVector
-      .copy(newTransformedSEPoint.locationVector)
-      .add(
+    const newSELabel = newTransformedSEPoint.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
+
 
     commandGroup.addCommand(
       new AddTransformedPointCommand(
@@ -1687,14 +1670,8 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed segment
-    const newTransformedSegment = new NonFreeSegment();
-    // Set the display to the default values
-    newTransformedSegment.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedSegment.adjustSize();
 
     const newIsometrySESegment = new SEIsometrySegment(
-      newTransformedSegment,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSESegment.normalVector),
       preimageSESegment.arcLength,
@@ -1706,19 +1683,13 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySESegment.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("segment"), newIsometrySESegment);
-    // Set the initial label location
-    this.tmpVector
-      .copy(newIsometrySESegment.getMidPointVector())
-      .add(
+    const newSELabel = newIsometrySESegment.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.segment.initialLabelOffset,
           SETTINGS.segment.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
 
     transformedSegmentCommandGroup.addCommand(
       new AddIsometrySegmentCommand(
@@ -1745,20 +1716,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.segment.initialLabelOffset,
                 SETTINGS.segment.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -1850,14 +1814,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Line
-    const newTransformedLine = new NonFreeLine();
-    // Set the display to the default values
-    newTransformedLine.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedLine.adjustSize();
 
     const newIsometrySELine = new SEIsometryLine(
-      newTransformedLine,
       transformedStartSEPoint,
       transformationSEParent.f(preimageSELine.normalVector),
       transformedEndSEPoint,
@@ -1868,7 +1826,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySELine.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("line"), newIsometrySELine);
+    const newSELabel = new SELabel("line", newIsometrySELine);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySELine.endSEPoint.locationVector)
@@ -1903,20 +1861,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2010,14 +1961,8 @@ export default class ApplyTransformationHandler extends Highlighter {
     }
 
     // we have to create a new transformed Circle
-    const newTransformedCircle = new NonFreeCircle();
-    // Set the display to the default values
-    newTransformedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedCircle.adjustSize();
 
     const newIsometrySECircle = new SEIsometryCircle(
-      newTransformedCircle,
       transformedCenterSEPoint,
       transformedCircleSEPoint,
       preimageSECircle,
@@ -2027,7 +1972,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySECircle.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("circle"), newIsometrySECircle);
+    const newSELabel = new SELabel("circle", newIsometrySECircle);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySECircle.circleSEPoint.locationVector)
@@ -2066,21 +2011,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2201,14 +2138,8 @@ export default class ApplyTransformationHandler extends Highlighter {
       }
     }
     // we have to create a new transformed Ellipse
-    const newTransformedEllipse = new NonFreeEllipse();
-    // Set the display to the default values
-    newTransformedEllipse.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newTransformedEllipse.adjustSize();
 
     const newIsometrySEEllipse = new SEIsometryEllipse(
-      newTransformedEllipse,
       transformedFocus1SEPoint,
       transformedFocus2SEPoint,
       transformedEllipseSEPoint,
@@ -2219,7 +2150,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySEEllipse.update();
 
     // Create the label
-    const newSELabel = new SELabel(new Label("ellipse"), newIsometrySEEllipse);
+    const newSELabel = new SELabel("ellipse", newIsometrySEEllipse);
     // Set the initial label location
     this.tmpVector
       .copy(newIsometrySEEllipse.ellipseSEPoint.locationVector)
@@ -2259,21 +2190,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2453,14 +2376,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       });
 
     if (newInvertedSECircleCenter === null) {
-      const newTransformedCircleCenter = new NonFreePoint();
-      // Set the display to the default values
-      newTransformedCircleCenter.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newTransformedCircleCenter.adjustSize();
-
       newInvertedSECircleCenter = new SEInversionCircleCenter(
-        newTransformedCircleCenter,
         lineOrCircle,
         transformationSEParent
       );
@@ -2468,22 +2384,13 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedSECircleCenter.update();
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
-      const newSELabel = new SELabel(
-        new Label("point"),
-        newInvertedSECircleCenter
-      );
-      // Set the initial label location
-      this.tmpVector
-        .copy(newInvertedSECircleCenter.locationVector)
-        .add(
+      const newSELabel = newInvertedSECircleCenter.attachLabelWithOffset(
           new Vector3(
             2 * SETTINGS.line.initialLabelOffset,
             SETTINGS.line.initialLabelOffset,
             0
           )
         )
-        .normalize();
-      newSELabel.locationVector = this.tmpVector;
 
       invertedCircleOrLineCommandGroup.addCommand(
         new AddInvertedCircleCenterCommand(
@@ -2506,18 +2413,12 @@ export default class ApplyTransformationHandler extends Highlighter {
     /// now create the circle with center newInvertedCircleCenter and circle point transformedSEPointOnLineOrCircle
 
     // we have to create a new transformed Circle
-    const newInvertedCircle = new NonFreeCircle();
-    // Set the display to the default values
-    newInvertedCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-    // Adjust the size of the point to the current zoom magnification factor
-    newInvertedCircle.adjustSize();
-
     const newInvertedSECircle = new SECircle(
-      newInvertedCircle,
       newInvertedSECircleCenter !== null
         ? newInvertedSECircleCenter
-        : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
-      transformedSEPointOnLineOrCircle
+        : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
+      transformedSEPointOnLineOrCircle,
+      true
     );
     newInvertedSECircle.markKidsOutOfDate();
     newInvertedSECircle.update();
@@ -2526,10 +2427,7 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedSECircle.circleRadius
     );
     // Create the label
-    const newSECircleLabel = new SELabel(
-      new Label("circle"),
-      newInvertedSECircle
-    );
+    const newSECircleLabel = new SELabel("circle", newInvertedSECircle);
     // Set the initial label location
     this.tmpVector
       .copy(newInvertedSECircle.circleSEPoint.locationVector)
@@ -2548,7 +2446,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         newInvertedSECircle,
         newInvertedSECircleCenter !== null
           ? newInvertedSECircleCenter
-          : new SEPoint(new Point()), // this should never happen newInvertedCircleCenter is defined above
+          : new SEPoint(), // this should never happen newInvertedCircleCenter is defined above
         transformedSEPointOnLineOrCircle,
         newSECircleLabel
       )
@@ -2570,21 +2468,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newLabel = new Label("point");
-          const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(

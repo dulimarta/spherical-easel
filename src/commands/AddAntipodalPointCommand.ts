@@ -5,9 +5,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import Label from "@/plottables/Label";
 
 export class AddAntipodalPointCommand extends Command {
   private seAntipodalPoint: SEAntipodalPoint;
@@ -103,35 +101,36 @@ export class AddAntipodalPointCommand extends Command {
 
     if (parentPoint) {
       //make the point
-      const point = new Point();
       const isUserCreated =
         propMap.get("antipodalPointIsUserCreated") === "true";
-      const sePoint = new SEAntipodalPoint(point, parentPoint, isUserCreated);
+      const sePoint = new SEAntipodalPoint(parentPoint, isUserCreated);
       const sePointLocation = new Vector3();
       sePointLocation.from(propMap.get("pointVector"));
       sePoint.locationVector.copy(sePointLocation);
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
-        point.updateStyle(
+        sePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
-        point.updateStyle(
+        sePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       //make the label
-      const label = new Label("point");
-      const seLabel = new SELabel(label, sePoint);
+      const seLabel = new SELabel("point", sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));
       seLabel.locationVector.copy(seLabelLocation);
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the point in the object map
       if (propMap.get("objectName") !== undefined) {

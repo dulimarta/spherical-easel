@@ -30,9 +30,9 @@ export default abstract class MouseHandler implements ToolStrategy {
    */
   protected readonly canvas: Two.Group;
   /**
-   * Vuex global state
+   * Pinia Global Store
    */
-  // protected store = AppStore; //
+  static store: SEStoreType;
   /**
    * The vector location of the current and previous mouse event on the ideal unit sphere
    */
@@ -61,7 +61,6 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEParametrics: SEParametric[] = [];
   protected hitSEPolygons: SEPolygon[] = [];
 
-  static store: SEStoreType;
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
    * This allow the created objects to be put in the correct layers

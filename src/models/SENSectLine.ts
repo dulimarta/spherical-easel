@@ -1,13 +1,7 @@
 import { SEPoint, SELine, SEAngleMarker } from "./internal";
-// import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
-// import { SESegment } from "./SESegment";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { Vector3 } from "three";
-import NonFreeLine from "@/plottables/NonFreeLine";
-// import { SEAngleMarker } from "./SEAngleMarker";
 const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**
@@ -26,7 +20,7 @@ export class SENSectLine extends SELine {
    * @param N
    */
   constructor(
-    line: NonFreeLine,
+    // line: NonFreeLine,
     startSEPoint: SEPoint,
     normalVector: Vector3,
     endSEPoint: SEPoint,
@@ -34,7 +28,7 @@ export class SENSectLine extends SELine {
     index: number,
     N: number
   ) {
-    super(line, startSEPoint, normalVector, endSEPoint);
+    super(startSEPoint, normalVector, endSEPoint, true);
     this._seAngleParent = seAngleParent;
     this._index = index;
     this._N = N;

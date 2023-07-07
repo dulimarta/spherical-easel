@@ -1,5 +1,4 @@
 import { SEPoint } from "./internal";
-import Point from "@/plottables/Point";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 const { t } = i18n.global;
@@ -19,12 +18,8 @@ export class SEAntipodalPoint extends SEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor(
-    point: Point,
-    antipodalPointParent: SEPoint,
-    isUserCreated: boolean
-  ) {
-    super(point);
+  constructor(antipodalPointParent: SEPoint, isUserCreated: boolean) {
+    super(true); // Non free point
     this._antipodalPointParent = antipodalPointParent;
     if (isUserCreated) {
       this._isUserCreated = true;

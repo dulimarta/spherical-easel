@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { useDialogSequencer } from "./DialogSequencer";
+import { useDialogSequencer } from "@/composables/DialogSequencer";
 
 export interface DialogAction {
   hide: () => void;
@@ -71,7 +71,8 @@ function hide(): void {
 
 function hideLast(): void {
   console.debug("Calling hideLast()")
-  sequencer.hideLastDialog()
+  if (!sequencer.hideLastDialog())
+    hide()
 }
 function doYes() {
   hideLast()

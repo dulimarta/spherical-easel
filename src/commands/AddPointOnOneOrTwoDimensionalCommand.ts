@@ -4,9 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPointOnOneDimensionalCommand extends Command {
@@ -139,9 +137,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
     // );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
-      const point = new Point();
       const sePointOnOneOrTwoDimensional = new SEPointOnOneOrTwoDimensional(
-        point,
         pointOnOneOrTwoDimensionalParent
       );
       // use the direct setter because the parent may be out of date
@@ -150,28 +146,30 @@ export class AddPointOnOneDimensionalCommand extends Command {
       const pointOnOneOrTwoDimensionalFrontStyleString =
         propMap.get("objectFrontStyle");
       if (pointOnOneOrTwoDimensionalFrontStyleString !== undefined)
-        point.updateStyle(
+        sePointOnOneOrTwoDimensional.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointOnOneOrTwoDimensionalFrontStyleString)
         );
       const pointOnOneOrTwoDimensionalBackStyleString =
         propMap.get("objectBackStyle");
       if (pointOnOneOrTwoDimensionalBackStyleString !== undefined)
-        point.updateStyle(
+        sePointOnOneOrTwoDimensional.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointOnOneOrTwoDimensionalBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, sePointOnOneOrTwoDimensional);
+      const seLabel = new SELabel("point", sePointOnOneOrTwoDimensional);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the point on one or two dimensional in the object map
       if (propMap.get("objectName") !== undefined) {

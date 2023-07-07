@@ -5,8 +5,22 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
-import { Labelable, ObjectState } from "@/types";
-import { SEPoint, SESegment, SELine, SECircle,SEAngleMarker,SEEllipse,SEParametric,SEPolygon } from "./internal";
+import {
+  LabelDisplayMode,
+  LabelParentTypes,
+  Labelable,
+  ObjectState
+} from "@/types";
+import {
+  SEPoint,
+  SESegment,
+  SELine,
+  SECircle,
+  SEAngleMarker,
+  SEEllipse,
+  SEParametric,
+  SEPolygon
+} from "./internal";
 // import { SESegment } from "./SESegment";
 // import { SELine } from "./SELine";
 // import { SECircle } from "./SECircle";
@@ -14,7 +28,6 @@ import { SEPoint, SESegment, SELine, SECircle,SEAngleMarker,SEEllipse,SEParametr
 // import { SEEllipse } from "./SEEllipse";
 // import { SEParametric } from "./SEParametric";
 // import { SEPolygon } from "./SEPolygon";
-import { SEStoreType, useSEStore } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 
 const styleSet = new Set([
@@ -38,17 +51,15 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
-  private store: SEStoreType;
   private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
    * @param label the TwoJS label associated with this SELabel
    * @param parent The parent SENodule object
    */
-  constructor(label: Label, parent: SENodule) {
+  constructor(labelType: LabelParentTypes, parent: SENodule) {
     super();
-
-    this.store = useSEStore();
+    const label = new Label(labelType);
     this.ref = label;
     this.parent = parent;
 
@@ -82,11 +93,10 @@ export class SELabel extends SENodule implements Visitable {
 
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
-      console.log("SELabel: parent is a point");
-      if(parent instanceof SEEarthPoint){
-        console.log("SELabel: parent is a earth point");
+      if (parent instanceof SEEarthPoint) {
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
         this.showing = true;
-      }else{
+      } else {
         this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
         if (parent.isFreePoint()) {
           this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
@@ -153,7 +163,7 @@ export class SELabel extends SENodule implements Visitable {
       this._locationVector.copy(
         (this.parent as unknown as Labelable).closestLabelLocationVector(
           this.tmpVector,
-          this.store.zoomMagnificationFactor
+          SENodule.store.zoomMagnificationFactor
         )
       );
       //Update the location of the associate plottable Label
@@ -216,7 +226,7 @@ export class SELabel extends SENodule implements Visitable {
         .copy(
           (this.parent as unknown as Labelable).closestLabelLocationVector(
             pos,
-            this.store.zoomMagnificationFactor
+            SENodule.store.zoomMagnificationFactor
           )
         )
         .normalize();
@@ -251,8 +261,8 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = this.store.canvasWidth;
-    const zoomTranslation = this.store.zoomTranslation;
+    const canvasSize = SENodule.store.canvasWidth;
+    const zoomTranslation = SENodule.store.zoomTranslation;
 
     return (
       boundingBox.left - canvasSize / 2 <

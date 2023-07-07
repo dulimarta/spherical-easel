@@ -6,7 +6,6 @@ import {
   SEReflection,
   SEPointReflection
 } from "./internal";
-import Ellipse from "@/plottables/Ellipse";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 // import { SEEllipse } from "./SEEllipse";
@@ -32,14 +31,14 @@ export class SEIsometryEllipse extends SEEllipse {
    * @param ellipsePoint The model SEPoint object that is on the circle
    */
   constructor(
-    ellipse: Ellipse,
+    // ellipse: Ellipse,
     focus1Point: SEPoint,
     focus2Point: SEPoint,
     ellipsePoint: SEPoint,
     seParentEllipse: SEEllipse,
     seParentIsometry: SEIsometry
   ) {
-    super(ellipse, focus1Point, focus2Point, ellipsePoint);
+    super(focus1Point, focus2Point, ellipsePoint, true);
     this._seParentEllipse = seParentEllipse;
     this._seParentIsometry = seParentIsometry;
     if (this._seParentIsometry instanceof SETranslation) {

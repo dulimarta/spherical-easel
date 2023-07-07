@@ -5,10 +5,7 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -141,15 +138,13 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       !isNaN(perpendicularLineThruPointIndex)
     ) {
       //make the perpendicular Line
-      const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = perpendicularLineThruPointEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes
 
       const perpendicularLineThruPointLine = new SEPerpendicularLineThruPoint(
-        line,
         perpendicularLineThruPointParentOneDimensional,
         perpendicularLineThruPointParentPoint,
         perpendicularLineThruPointNormal,
@@ -160,28 +155,30 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       const perpendicularThruPointLineFrontStyleString =
         propMap.get("objectFrontStyle");
       if (perpendicularThruPointLineFrontStyleString !== undefined)
-        line.updateStyle(
+        perpendicularLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(perpendicularThruPointLineFrontStyleString)
         );
       const perpendicularThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (perpendicularThruPointLineBackStyleString !== undefined)
-        line.updateStyle(
+        perpendicularLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(perpendicularThruPointLineBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, perpendicularLineThruPointLine);
+      const seLabel = new SELabel("line", perpendicularLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

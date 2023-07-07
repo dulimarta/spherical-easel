@@ -7,7 +7,6 @@ import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
@@ -17,7 +16,6 @@ import {
   SEIntersectionReturnType,
   SEMeasurable
 } from "@/types";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import { SESegment } from "@/models/SESegment";
@@ -32,8 +30,6 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import Two from "two.js";
@@ -115,10 +111,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         console.debug(
           `set action mode from mouse pressed in measure circle handler`
         );
-        MeasuredCircleHandler.store.setActionMode({
-          id: "segment",
-          name: "CreateLineSegmentDisplayedName"
-        });
+        MeasuredCircleHandler.store.setActionMode("segment");
         return;
       }
       // The user is making a circle
@@ -483,11 +476,6 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
-      const newCenterPoint = new Point();
-      // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the size of the point to the current zoom magnification factor
-      newCenterPoint.adjustSize();
 
       let newSELabel: SELabel | null = null;
 
@@ -496,11 +484,10 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
         vtx = new SEPointOnOneOrTwoDimensional(
-          newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
 
-        newSELabel = new SELabel(new Label("point"), vtx);
+        newSELabel = new SELabel("point", vtx);
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -512,8 +499,8 @@ export default class MeasuredCircleHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint(newCenterPoint);
-        newSELabel = new SELabel(new Label("point"), vtx);
+        vtx = new SEPoint();
+        newSELabel = new SELabel("point", vtx);
         circleCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.centerVector;
@@ -681,7 +668,7 @@ export default class MeasuredCircleHandler extends Highlighter {
       // create the circle point on the measured circle
       // this point is never visible and is not in the DAG
       // it is only updated when the the new SEMeasuredCircle is updated.
-      const hiddenSEPoint = new SEPoint(new NonFreePoint());
+      const hiddenSEPoint = new SEPoint(true);
       hiddenSEPoint.showing = false; // this never changes
       hiddenSEPoint.exists = true; // this never changes
       // compute the location of the hiddenSEPoint using measurementSEExpression.value.modPi();
@@ -708,25 +695,13 @@ export default class MeasuredCircleHandler extends Highlighter {
       hiddenSEPoint.locationVector = this.tmpVector1.normalize();
 
       // create the new non free circle
-      const newCircle = new NonFreeCircle();
-      // Set the display to the default values
-      newCircle.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the stroke width to the current zoom magnification factor
-      newCircle.adjustSize();
-      // set the radius, center and update the display
-      newCircle.centerVector = this.centerSEPoint.locationVector;
-      newCircle.circleRadius = newRadius;
-      newCircle.updateDisplay();
-
       const newMeasuredSECircle = new SEMeasuredCircle(
-        newCircle,
         this.centerSEPoint,
         hiddenSEPoint,
         measurementSEExpression
       );
       // Create the plottable and model label
-      const newLabel = new Label("circle");
-      const newSELabel = new SELabel(newLabel, newMeasuredSECircle);
+      const newSELabel = new SELabel("circle", newMeasuredSECircle);
       // Set the initial label location
       this.tmpMatrix.makeRotationAxis(
         this.centerSEPoint.locationVector,
@@ -764,21 +739,13 @@ export default class MeasuredCircleHandler extends Highlighter {
             );
           } else {
             // Create the plottable and model label
-            const newLabel = new Label("point");
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             circleCommandGroup.addCommand(
               new AddIntersectionPointCommand(

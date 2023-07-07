@@ -11,11 +11,15 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-badge :content="selectedMessageType.length" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-badge
+            :content="selectedMessageType.length"
+            v-if="selectedMessageType.length !== messageTypes.length">
             <v-icon id="filter-menu-popup">mdi-filter</v-icon>
           </v-badge>
           <v-icon v-else id="filter-menu-popup">mdi-filter</v-icon>
-          <v-tooltip activator="#filter-menu-popup" v-if="selectedMessageType.length !== messageTypes.length">
+          <v-tooltip
+            activator="#filter-menu-popup"
+            v-if="selectedMessageType.length !== messageTypes.length">
             {{ selectedMessageType.map(s => s.toUpperCase()).join(", ") }}
           </v-tooltip>
           <v-menu
@@ -25,11 +29,10 @@
             location="top"
             offset="32">
             <v-card class="pa-1">
-              <v-card-title>Select message types</v-card-title>
+              <v-card-title v-t="'selectMsgType'"></v-card-title>
               <v-card-text>
-                {{ selectedMessageType }}
                 <v-checkbox
-                  label="Select All"
+                  :label="t('selectAll')"
                   v-model="showAllType"
                   @update:model-value="doSelectAllMessageType" />
                 <div style="display: flex">
@@ -78,7 +81,7 @@
                 :icon="currentMsg.type"
                 :text="pretty(currentMsg)"
                 v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
-              <v-alert v-else text="No messages"></v-alert>
+              <v-alert v-else :text="t('noMessages')"></v-alert>
             </v-slide-x-transition>
           </template>
           <v-alert
@@ -107,6 +110,7 @@
                   :key="`${msg.key}-${index}`"
                   density="compact"
                   closable
+                  :icon="iconType(msg)"
                   :type="alertType(msg)"
                   :text="pretty(msg)"
                   v-on:update:model-value="
@@ -149,9 +153,9 @@
     </v-container>
   </div>
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
-    Messages will be deleted
+    {{ t("deleteWarning") }}
     <template #actions>
-      <v-btn @click="cancelDeleteMessages" color="warning">Undo</v-btn>
+      <v-btn @click="cancelDeleteMessages" color="warning">{{t('undo')}}</v-btn>
     </template>
   </v-snackbar>
 </template>
@@ -174,18 +178,21 @@ type MessageType = {
 type AlertType = "success" | "info" | "error" | "warning";
 
 const DELETE_DELAY = 3000;
-const { t } = useI18n();
+const { t } = useI18n({useScope: 'local'});
 const filterMenuVisible = ref(false);
 const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
-const messageTypes = SETTINGS.messageTypes.map((s: string) => ({
-  value: s,
-  title: t(`notifications.${s}`)
-}));
+
+const messageTypes = computed(() =>
+  SETTINGS.messageTypes.map((s: string) => ({
+    value: s,
+    title: t(s)
+  }))
+);
 const selectedMessageType: Ref<Array<string>> = ref(
-  messageTypes.map(m => m.value)
+  messageTypes.value.map(m => m.value)
 );
 const messages: Ref<MessageType[]> = ref([]);
 let deleteTimer: any;
@@ -216,7 +223,9 @@ const currentMsg = computed((): MessageType | null =>
 function shortMessage(m: MessageType): string {
   return t(m.key, m.keyOptions);
 }
-
+function iconType(m: MessageType): string {
+  return m.type === "directive" ? "mdi-lightbulb" : (m.type as AlertType);
+}
 function alertType(m: MessageType): AlertType {
   return m.type === "directive" ? "success" : (m.type as AlertType);
 }
@@ -266,7 +275,7 @@ function cancelDeleteMessages() {
 #msg-display-area {
   /* background-color: blue; */
   /* padding: 4px; */
-  width: 40em;
+  width: 25em;
   height: 60px;
   overflow-y: auto;
 }
@@ -277,3 +286,31 @@ function cancelDeleteMessages() {
   border: 1px solid gray;
 }
 </style>
+<i18n lang="yaml">
+en:
+  all: "All"
+  deleteMsg: "Delete {msgType} messages"
+  deleteWarning: "Messages will be deleted"
+  directive: "Directive"
+  error: "Error"
+  info: "Informational"
+  noMessages: "No messages"
+  selectAll: "Select All Type"
+  selectMsgType: "Select Message Type"
+  success: "Success"
+  undo: "Undo"
+  warning: "Warning"
+id:
+  all: "Semua Pesan"
+  deleteMsg: "Hapus Pesan Jenis {msgType}"
+  deleteWarning: "Pesan-pesan akan dihapus"
+  directive: "Petunjuk"
+  error: "Kesalahan"
+  info: "Informasional"
+  noMessages: "Tidak ada pesan"
+  selectAll: "Pilih semua jenis pesan"
+  selectMsgType: "Pilih Jenis Pesan"
+  success: "Sukses"
+  undo: "Urung"
+  warning: "Peringatan"
+</i18n>

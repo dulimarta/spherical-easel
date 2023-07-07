@@ -1,13 +1,11 @@
 import { Command } from "./Command";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
-import Label from "@/plottables/Label";
 import { SENSectPoint } from "@/models/SENSectPoint";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddNSectPointCommand extends Command {
@@ -136,9 +134,7 @@ export class AddNSectPointCommand extends Command {
       !isNaN(seNSectPointN)
     ) {
       //make the Nsect Point
-      const point = new NonFreePoint();
       const seNSectPoint = new SENSectPoint(
-        point,
         seNSectPointParentSegment,
         seNSectPointIndex,
         seNSectPointN
@@ -146,27 +142,29 @@ export class AddNSectPointCommand extends Command {
       //style the NSect Point
       const nSectPointFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectPointFrontStyleString !== undefined)
-        point.updateStyle(
+        seNSectPoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(nSectPointFrontStyleString)
         );
       const nSectPointBackStyleString = propMap.get("objectBackStyle");
       if (nSectPointBackStyleString !== undefined)
-        point.updateStyle(
+        seNSectPoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(nSectPointBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("point");
-      const seLabel = new SELabel(label, seNSectPoint);
+      const seLabel = new SELabel("point", seNSectPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -6,13 +6,10 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3 } from "three";
-import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AngleMode } from "@/types";
-import Polygon from "@/plottables/Polygon";
 import { SEPolygon } from "@/models/SEPolygon";
 import { AddPolygonCommand } from "@/commands/AddPolygonAndExpressionCommand";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
@@ -341,25 +338,15 @@ export default class PolygonHandler extends Highlighter {
         // Create and add all the angle markers to the polygonCommandGroup
         this.addMeasuredSegments(polygonCommandGroup);
 
-        const newPolygon = new Polygon(
-          this.seEdgeSegments,
-          this.segmentIsFlipped
-        );
-        // Set the display to the default values
-        newPolygon.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPolygon.adjustSize();
-
         // Create the model object for the new polygon and link them
         const vtx = new SEPolygon(
-          newPolygon,
           this.seEdgeSegments,
           this.segmentIsFlipped,
           seAngleMarkerList
         );
 
         // Create the plottable label
-        const newLabel = new Label("polygon");
-        const newSELabel = new SELabel(newLabel, vtx);
+        const newSELabel = new SELabel("polygon", vtx);
         vtx.valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
 
         // Set the initial label location as the average of all the vertices
@@ -392,7 +379,9 @@ export default class PolygonHandler extends Highlighter {
 
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [newLabel],
+            [
+              /*newLabel*/
+            ],
             StyleEditPanels.Label,
             [
               {
@@ -808,14 +797,8 @@ export default class PolygonHandler extends Highlighter {
       }
 
       // Create a new angle marker plottable
-      const newAngleMarker = new AngleMarker();
-      // Set the display to the default values
-      newAngleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
-      // Adjust the stroke width to the current zoom magnification factor
-      newAngleMarker.adjustSize();
 
       const newSEAngleMarker = new SEAngleMarker(
-        newAngleMarker,
         PolygonHandler.store.zoomMagnificationFactor,
         AngleMode.SEGMENTS,
         seg0,
@@ -823,8 +806,7 @@ export default class PolygonHandler extends Highlighter {
       );
 
       // Create the plottable and model label
-      const newLabel = new Label("angleMarker");
-      const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+      const newSELabel = new SELabel("angleMarker", newSEAngleMarker);
       newSEAngleMarker.valueDisplayMode =
         SETTINGS.angleMarker.initialValueDisplayMode;
 

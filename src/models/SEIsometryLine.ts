@@ -1,4 +1,3 @@
-import Line from "@/plottables/Line";
 import { Vector3 } from "three";
 import {
   SEPoint,
@@ -14,11 +13,6 @@ import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
-// import { SELine } from "./SELine";
-// import { SETranslation } from "./SETranslation";
-// import { SERotation } from "./SERotation";
-// import { SEReflection } from "./SEReflection";
-// import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -42,14 +36,14 @@ export class SEIsometryLine extends SELine {
    * @param lineEndSEPoint A second Point on the line
    */
   constructor(
-    line: Line,
+    // line: Line,
     lineStartSEPoint: SEPoint,
     normalVector: Vector3,
     lineEndSEPoint: SEPoint,
     seParentLine: SELine,
     seParentIsometry: SEIsometry
   ) {
-    super(line, lineStartSEPoint, normalVector, lineEndSEPoint);
+    super(lineStartSEPoint, normalVector, lineEndSEPoint, true);
     this._seParentLine = seParentLine;
     this._seParentIsometry = seParentIsometry;
     if (this._seParentIsometry instanceof SETranslation) {

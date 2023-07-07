@@ -1,14 +1,11 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SEPolarLine } from "@/models/SEPolarLine";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 
 export class AddPolarLineCommand extends Command {
   private sePolarLine: SEPolarLine;
@@ -126,21 +123,20 @@ export class AddPolarLineCommand extends Command {
       sePolarLineEndSEPointLocation.z !== 1
     ) {
       //make the polar Line
-      const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = sePolarLineEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes
 
       // create the non-displayed not in the DAG Start Point of the line
-      const startPoint = new SEPoint(new Point());
+      const startPoint = new SEPoint();
       startPoint.locationVector = sePolarLineStartSEPointLocation;
       startPoint.exists = true; //never changes
       startPoint.showing = false; // never changes
 
       const sePolarLine = new SEPolarLine(
-        line,
+        // line,
         startPoint,
         endPoint,
         sePolarLineParentPoint
@@ -148,27 +144,29 @@ export class AddPolarLineCommand extends Command {
       //style the Polara Line
       const polarLineFrontStyleString = propMap.get("objectFrontStyle");
       if (polarLineFrontStyleString !== undefined)
-        line.updateStyle(
+        sePolarLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(polarLineFrontStyleString)
         );
       const polarLineBackStyleString = propMap.get("objectBackStyle");
       if (polarLineBackStyleString !== undefined)
-        line.updateStyle(
+        sePolarLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(polarLineBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, sePolarLine);
+      const seLabel = new SELabel("line", sePolarLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the polar line in the object map
       if (propMap.get("objectName") !== undefined) {

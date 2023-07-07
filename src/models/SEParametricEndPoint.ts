@@ -1,9 +1,7 @@
 import { SEPoint, SEParametric } from "./internal";
-import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SEParametric } from "./SEParametric";
 const { t } = i18n.global;
 
 const MAX = false;
@@ -18,9 +16,9 @@ export class SEParametricEndPoint extends SEPoint {
 
   private tmpVector4 = new Vector3();
 
-  constructor(point: Point, parametricParent: SEParametric, endPoint: string) {
-    super(point);
-    this.ref = point;
+  constructor(parametricParent: SEParametric, endPoint: string) {
+    super(true); // NonFree?
+    // this.ref = point;
     this._parametricParent = parametricParent;
     this._isMinPoint = endPoint === "min";
     if (this._isMinPoint)
@@ -31,7 +29,7 @@ export class SEParametricEndPoint extends SEPoint {
       console.debug(
         `Point ${this.name} is a maximum endppoint for parametric ${parametricParent.name}`
       );
-    point.updateDisplay();
+    this.ref.updateDisplay();
   }
 
   /**

@@ -5,10 +5,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
-import NonFreeLine from "@/plottables/NonFreeLine";
 import { StyleEditPanels } from "@/types/Styles";
-import Point from "@/plottables/Point";
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -138,15 +135,13 @@ export class AddTangentLineThruPointCommand extends Command {
       !isNaN(tangentLineThruPointIndex)
     ) {
       //make the tangent Line
-      const line = new NonFreeLine();
       // create the non-displayed not in the DAG End Point of the line
-      const endPoint = new SEPoint(new Point());
+      const endPoint = new SEPoint();
       endPoint.locationVector = tangentLineThruPointEndSEPointLocation;
       endPoint.exists = true; //never changes
       endPoint.showing = false; // never changes
 
       const tangentLineThruPointLine = new SETangentLineThruPoint(
-        line,
         tangentLineThruPointParentOneDimensional,
         tangentLineThruPointParentPoint,
         tangentLineThruPointNormal,
@@ -157,28 +152,30 @@ export class AddTangentLineThruPointCommand extends Command {
       const tangentThruPointLineFrontStyleString =
         propMap.get("objectFrontStyle");
       if (tangentThruPointLineFrontStyleString !== undefined)
-        line.updateStyle(
+        tangentLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(tangentThruPointLineFrontStyleString)
         );
       const tangentThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (tangentThruPointLineBackStyleString !== undefined)
-        line.updateStyle(
+        tangentLineThruPointLine.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(tangentThruPointLineBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("line");
-      const seLabel = new SELabel(label, tangentLineThruPointLine);
+      const seLabel = new SELabel("line", tangentLineThruPointLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the circle in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -12,7 +12,6 @@ import { SESegment } from "@/models/SESegment";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import Parametric from "@/plottables/Parametric";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";

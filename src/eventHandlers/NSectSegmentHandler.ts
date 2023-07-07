@@ -4,10 +4,7 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreePoint from "@/plottables/NonFreePoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
@@ -277,14 +274,9 @@ export default class NSectSegmentHandler extends Highlighter {
           .isZero()
       );
       if (index === -1) {
-        const newPoint = new NonFreePoint();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const nSectingPoint = new SENSectPoint(
-          newPoint,
           candidateSegment,
           i,
           this.selectedNValue
@@ -294,20 +286,13 @@ export default class NSectSegmentHandler extends Highlighter {
         nSectingPoint.locationVector = nSectingPointVector;
 
         // Create plottable for the Label
-        const newLabel2 = new Label("point");
-        const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(nSectingPoint.locationVector)
-          .add(
+        const newSELabel2 = nSectingPoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel2.locationVector = this.tmpVector;
 
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)

@@ -1,4 +1,3 @@
-import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
 import {
   SEPoint,
@@ -36,7 +35,7 @@ export class SEIsometrySegment extends SESegment {
    * @param segmentEndSEPoint The model SEPoint object that is the end of the segment
    */
   constructor(
-    seg: Segment,
+    // seg: Segment,
     segmentStartSEPoint: SEPoint,
     segmentNormalVector: Vector3,
     segmentArcLength: number,
@@ -52,19 +51,20 @@ export class SEIsometrySegment extends SESegment {
     if (parentTransformation instanceof SEReflection) {
       // console.debug("here");
       super(
-        seg,
+        // seg,
         segmentEndSEPoint,
         segmentNormalVector,
         segmentArcLength,
-        segmentStartSEPoint
+        segmentStartSEPoint,
+        true
       );
     } else {
       super(
-        seg,
         segmentStartSEPoint,
         segmentNormalVector,
         segmentArcLength,
-        segmentEndSEPoint
+        segmentEndSEPoint,
+        true
       );
     }
     this._seParentSegment = parentSegment;

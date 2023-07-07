@@ -20,7 +20,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEPolygon } from "@/models/SEPolygon";
-import { ObjectNames, ObjectState } from "@/types";
+import { ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";

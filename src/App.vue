@@ -28,7 +28,7 @@
         </router-link>
         <a href="/docs/">
           <v-icon class="ml-2" color="white">mdi-help-circle</v-icon>
-          <v-tooltip location="start" activator="parent">Open Doc</v-tooltip>
+          <v-tooltip location="bottom" activator="parent">Open Documentation</v-tooltip>
         </a>
       </template>
       <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title>
@@ -46,18 +46,8 @@
 
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
-      <template v-if="accountEnabled">
-        <span>{{ whoami }}</span>
-        <v-img
-          id="profilePic"
-          v-if="profilePicUrl"
-          class="mx-2"
-          contain
-          :src="profilePicUrl"
-          :aspect-ratio="1 / 1"
-          max-width="48"
-          @click="doLoginOrCheck"></v-img>
-        <v-icon v-else class="mx-2" @click="doLoginOrCheck">mdi-account</v-icon>
+      <AuthenticatedUserToolbox />
+      <template v-if="false">
         <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
         <!--v-btn icon variant="text" size="medium">
           <v-tooltip location="bottom" activator="parent">
@@ -90,6 +80,7 @@
           </v-icon>
         </v-btn-->
       </template>
+      <LanguageSelector/>
       <router-link to="/settings/">
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
@@ -120,33 +111,8 @@
       </p>
     </Dialog>
 
-    <!--Dialog
-      ref="saveConstructionDialog"
-      :title="i18nText('constructions.saveConstruction')"
-      :yes-text="i18nText('constructions.save')"
-      :no-text="i18nText('constructions.cancel')"
-      :yes-action="() => doShare()"
-      max-width="40%">
-      <p>
-        {{ i18nText("constructions.saveConstructionDialog") }}
-      </p>
 
-      <v-text-field
-        type="text"
-        density="compact"
-        clearable
-        counter
-        persistent-hint
-        :label="i18nText('constructions.description')"
-        required
-        v-model="description"
-        @keypress.stop></v-text-field>
-      <v-switch
-        v-model="publicConstruction"
-        :disabled="uid.length === 0"
-        :label="i18nText('constructions.makePublic')"></v-switch>
-    </!--Dialog>
-    <Dialog
+    <!--Dialog
       ref="shareConstructionDialog"
       :title="i18nText('constructions.shareConstructionDialog')"
       :yesText="i18nText('constructions.exportConstructionDialog')"
@@ -160,7 +126,7 @@
 
       <input ref="shareLinkReference" readonly :value="shareLink" />
       <button @click="copyShareLink">Copy</button>
-    </Dialog>
+    </!--Dialog>
 
     <Dialog
       ref="exportConstructionDialog"
@@ -230,9 +196,9 @@ import {
   onBeforeUnmount,
   nextTick
 } from "vue";
-import MessageHub from "@/components/MessageHub.vue";
-// import ConstructionLoader from "@/components/ConstructionLoader.vue";
-import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue"
+import LanguageSelector from "./components/LanguageSelector.vue";
+import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
 import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
 import { User, getAuth, Unsubscribe } from "firebase/auth";
@@ -276,7 +242,7 @@ import { useRouter } from "vue-router";
 //   "beforeRouteUpdate"
 // ]);
 
-const { t, locale } = useI18n({ inheritLocale: true });
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const { includedTools, userRole } = storeToRefs(acctStore);
@@ -289,20 +255,16 @@ const router = useRouter();
 let clientBrowser: any;
 const description = ref("");
 const publicConstruction = ref(false);
-// $refs!: {
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareLinkReference: Ref<HTMLElement | null> = ref(null);
-// };
 let footerColor = "accent";
 let authSubscription!: Unsubscribe;
 const whoami = ref("");
 const uid = ref("");
-const profilePicUrl: Ref<string | null> = ref(null);
 let svgRoot: SVGElement;
-const showExport = ref(false);
 const selectedFormat = ref("");
 const slider = ref(600);
 const sliderMin = 200;
@@ -314,8 +276,8 @@ const disableButton = ref(false);
 
 /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-let acceptedKeys = 0;
-const accountEnabled = ref(false);
+// let acceptedKeys = 0;
+// const accountEnabled = ref(false);
 
 // target formats for export window
 //formats = ["SVG", "PNG", "GIF"];
@@ -328,6 +290,7 @@ const baseURL = computed((): string => {
   return import.meta.env.BASE_URL ?? "";
 });
 
+/***
 function keyHandler(ev: KeyboardEvent): void {
   if (ev.repeat) return; // Ignore repeated events on the same key
   if (!ev.altKey) return;
@@ -346,16 +309,17 @@ function keyHandler(ev: KeyboardEvent): void {
     acceptedKeys = 0;
   }
 }
+***/
 
 onBeforeMount((): void => {
-  window.addEventListener("keydown", keyHandler);
-  EventBus.listen("secret-key-detected", () => {
-    console.log("Got the secret key");
-    accountEnabled.value = true;
-    acceptedKeys = 0;
-    // $forceUpdate();
-  });
-  EventBus.listen("share-construction-requested", doShare);
+  // window.addEventListener("keydown", keyHandler);
+  // EventBus.listen("secret-key-detected", () => {
+  //   console.log("Got the secret key");
+  //   accountEnabled.value = true;
+  //   acceptedKeys = 0;
+  //   // $forceUpdate();
+  // });
+  // EventBus.listen("share-construction-requested", doShare);
   clientBrowser = detect();
   acctStore.resetToolset();
   //ACStore.resetToolset();
@@ -369,42 +333,11 @@ onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
   // SEStore.init();
   EventBus.listen("set-footer-color", setFooterColor);
-  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    if (u !== null) {
-      showExport.value = true;
-      whoami.value = u.email ?? "unknown email";
-      uid.value = u.uid;
-      const userDoc = doc(appDB, "users", uid.value);
-      getDoc(userDoc).then((ds: DocumentSnapshot) => {
-        if (ds.exists()) {
-          accountEnabled.value = true;
-          console.debug("User data", ds.data());
-          const { profilePictureURL, role } = ds.data() as any;
-          if (profilePictureURL) {
-            profilePicUrl.value = profilePictureURL;
-          }
-          if (role) {
-            userRole.value = role.toLowerCase();
-          }
-        }
-      });
-    } else {
-      whoami.value = "";
-      profilePicUrl.value = "";
-    }
-  });
+
   // Get the top-level SVG element
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 });
 
-onBeforeUnmount((): void => {
-  if (authSubscription) authSubscription();
-  whoami.value = "";
-  uid.value = "";
-  window.removeEventListener("keydown", keyHandler);
-  EventBus.unlisten("secret-key-detected");
-  // EventBus.unlisten("set-apply-transformation-footer-text");
-});
 function setFooterColor(e: { color: string }): void {
   footerColor = e.color;
 }
@@ -415,7 +348,7 @@ async function doLogout(): Promise<void> {
   userRole.value = undefined;
   uid.value = "";
   whoami.value = "";
-  acctStore.setUserDetails(undefined, undefined, "")
+  acctStore.parseAndSetFavoriteTools("")
 }
 
 // additionalFooterText(e: { text: string }): void {
@@ -423,13 +356,13 @@ async function doLogout(): Promise<void> {
 // applyTransformationText = e.text;
 // }
 
-function doLoginOrCheck(): void {
-  if (appAuth.currentUser !== null) {
-    logoutDialog.value?.show();
-  } else {
-    router.replace({ path: "/account" });
-  }
-}
+// function doLoginOrCheck(): void {
+//   if (appAuth.currentUser !== null) {
+//     logoutDialog.value?.show();
+//   } else {
+//     router.replace({ path: "/account" });
+//   }
+// }
 function showShareConstructionDialog() {
   shareConstructionDialog.value?.show();
 }
@@ -628,115 +561,7 @@ function showSaveConstructionDialog() {
   saveConstructionDialog.value?.show();
 }
 
-async function doShare(): Promise<void> {
-  /* TODO: move the following constant to global-settings? */
-  const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
-  // A local function to convert a blob to base64 representation
-  const toBase64 = (inputBlob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.readAsDataURL(inputBlob);
-    });
 
-  /* dump the command history */
-  const scriptOut = Command.dumpOpcode();
-
-  // TODO: should we decouple the zoomFactor from the rotation matrix when
-  // saving a construction?. Possible issue: the construction
-  // was saved by a user working on a larger screen (large zoomFactor),
-  // but loaded by a user working on a smaller screen (small zoomFactor)
-
-  const rotationMat = inverseTotalRotationMatrix;
-  const collectionPath = publicConstruction
-    ? "constructions"
-    : `users/${uid}/constructions`;
-
-  // Make a duplicate of the SVG tree
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-  // Remove the top-level transformation matrix
-  // We have to save the preview in its "natural" pose
-  svgElement.style.removeProperty("transform");
-
-  const svgBlob = new Blob([svgElement.outerHTML], {
-    type: "image/svg+xml;charset=utf-8"
-  });
-  const svgPreviewData = await toBase64(svgBlob);
-  console.log(svgPreviewData); // TODO delete
-
-  // const svgURL = URL.createObjectURL(svgBlob);
-  // FileSaver.saveAs(svgURL, "hans.svg");
-
-  /* Create a pipeline of Firebase tasks
-       Task 1: Upload construction to Firestore
-       Task 2: Upload the script to Firebase Storage (for large script)
-       Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
-    */
-  addDoc(
-    // Task #1
-    collection(appDB, collectionPath),
-    {
-      version: "1",
-      dateCreated: new Date().toISOString(),
-      author: whoami.value,
-      description: description.value,
-      rotationMatrix: JSON.stringify(rotationMat.value.elements),
-      tools: includedTools.value,
-      script: "" // Use an empty string (for type checking only)
-    } as ConstructionInFirestore
-  )
-    .then((constructionDoc: DocumentReference) => {
-      /* Task #2 */
-      const scriptPromise: Promise<string> =
-        scriptOut.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(scriptOut)
-          : uploadString(
-              storageRef(appStorage, `scripts/${constructionDoc.id}`),
-              scriptOut
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Task #3 */
-      const svgPromise: Promise<string> =
-        svgPreviewData.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(svgPreviewData)
-          : uploadString(
-              storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              svgPreviewData
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Wrap the result from the three tasks as a new Promise */
-      return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
-    })
-    .then(([docId, scriptData, svgData]) => {
-      const constructionDoc = doc(appDB, collectionPath, docId);
-      updateDoc(constructionDoc, { script: scriptData, preview: svgData });
-      // Pass on the document ID to be included in the alert message
-      return docId;
-    })
-    .then((docId: string) => {
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionSaved",
-        keyOptions: { docId },
-        type: "info"
-      });
-      seStore.clearUnsavedFlag();
-    })
-    .catch((err: Error) => {
-      console.error("Can't save document", err.message);
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreSaveError",
-        // keyOptions: { docId: constructionDoc.id },
-        type: "error"
-      });
-    });
-
-  saveConstructionDialog.value?.hide();
-}
 
 function copyShareLink(): void {
   shareLinkReference.value?.focus();

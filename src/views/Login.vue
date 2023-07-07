@@ -110,6 +110,7 @@ import {
   DocumentSnapshot
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
+import { storeToRefs } from "pinia";
 
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -117,6 +118,7 @@ const router = useRouter();
 const acctStore = useAccountStore();
 const userEmail = ref("");
 const userPassword = ref("");
+const {userDisplayedName, userProfilePictureURL } = storeToRefs(acctStore)
 const emailRules = [
   (s: string | undefined): boolean | string => {
     if (!s) return false;
@@ -166,11 +168,11 @@ function parseUserProfile(uid: string) {
       const uProfile = ds.data() as UserProfile;
       console.debug("User Profile Details from Firestore", uProfile);
       const { favoriteTools, displayName, profilePictureURL } = uProfile;
-      acctStore.setUserDetails(
-        displayName,
-        profilePictureURL,
-        favoriteTools ?? "###" /* Use '#' as separator among groups */
-      );
+      if (userDisplayedName.value === undefined)
+        acctStore.userDisplayedName = displayName
+      if (userProfilePictureURL.value === undefined)
+        acctStore.userProfilePictureURL = profilePictureURL
+      acctStore.parseAndSetFavoriteTools(favoriteTools ?? "#")
     }
   });
 }

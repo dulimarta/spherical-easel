@@ -1,12 +1,10 @@
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
-import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
@@ -77,22 +75,15 @@ export default class PointHandler extends Highlighter {
         //#region linkNoduleSENodule
         const pointCommandGroup = new CommandGroup();
         // create a new Point
-        const newPoint = new Point();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-        newPoint.adjustSize();
         let vtx: SEPointOnOneOrTwoDimensional | SEPoint | null = null;
         let newSELabel: SELabel | null = null;
 
         if (this.hitSESegments.length > 0) {
           // The new point will be a point on a segment
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
-            this.hitSESegments[0]
-          );
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -106,9 +97,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSELines.length > 0) {
           // The new point will be a point on a line
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(newPoint, this.hitSELines[0]);
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSELines[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -121,12 +112,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSECircles.length > 0) {
           // The new point will be a point on a circle
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
-            this.hitSECircles[0]
-          );
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -139,12 +127,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSEEllipses.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
-            this.hitSEEllipses[0]
-          );
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -157,12 +142,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSEParametrics.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
-            this.hitSEParametrics[0]
-          );
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -175,12 +157,9 @@ export default class PointHandler extends Highlighter {
         } else if (this.hitSEPolygons.length > 0) {
           // The new point will be a point on an ellipse
           // Create the model object for the new point and link them
-          vtx = new SEPointOnOneOrTwoDimensional(
-            newPoint,
-            this.hitSEPolygons[0]
-          );
+          vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
           vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(
@@ -193,9 +172,9 @@ export default class PointHandler extends Highlighter {
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
-          vtx = new SEPoint(newPoint);
+          vtx = new SEPoint();
           vtx.locationVector = this.currentSphereVector;
-          newSELabel = new SELabel(new Label("point"), vtx);
+          newSELabel = new SELabel("point", vtx);
 
           // Create and execute the command to create a new point for undo/redo
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));

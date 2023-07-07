@@ -2,9 +2,7 @@ import { Command } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames } from "@/types";
@@ -118,9 +116,7 @@ export class AddSegmentCommand extends Command {
       !isNaN(segmentArcLength)
     ) {
       //make the segment
-      const segment = new Segment();
       const seSegment = new SESegment(
-        segment,
         segmentStartPoint,
         segmentNormalVector,
         segmentArcLength,
@@ -129,27 +125,29 @@ export class AddSegmentCommand extends Command {
       //style the segment
       const segmentFrontStyleString = propMap.get("objectFrontStyle");
       if (segmentFrontStyleString !== undefined)
-        segment.updateStyle(
+        seSegment.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(segmentFrontStyleString)
         );
       const segmentBackStyleString = propMap.get("objectBackStyle");
       if (segmentBackStyleString !== undefined)
-        segment.updateStyle(
+        seSegment.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(segmentBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("segment");
-      const seLabel = new SELabel(label, seSegment);
+      const seLabel = new SELabel("segment", seSegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        seLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the segment in the object map
       if (propMap.get("objectName") !== undefined) {

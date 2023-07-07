@@ -10,7 +10,8 @@ import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { SEStoreType } from "@/stores/se";
 let NODE_COUNT = 0;
 
 export abstract class SENodule implements Visitable {
@@ -31,6 +32,7 @@ export abstract class SENodule implements Visitable {
   public static INVERSION_COUNT = 0;
   public static POINT_REFLECTION_COUNT = 0;
   public static VISIBLE_POINT_COUNT = 0;
+  static store: SEStoreType;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -51,6 +53,10 @@ export abstract class SENodule implements Visitable {
     SENodule.INVERSION_COUNT = 0;
     SENodule.POINT_REFLECTION_COUNT = 0;
     SENodule.VISIBLE_POINT_COUNT = 0;
+  }
+
+  static setGlobalStore(store: SEStoreType): void {
+    SENodule.store = store;
   }
 
   /**
@@ -114,6 +120,14 @@ export abstract class SENodule implements Visitable {
    */
   public abstract shallowUpdate(): void;
 
+  public updatePlottableStyle(
+    updateMode: StyleEditPanels,
+    styleData: StyleOptions
+  ): void {
+    // TODO: Why do we have to pass the Label, Front, and Back here?
+    console.debug(`updatePlottableStyle of ${this.name} ==> ${this.ref}`);
+    this.ref?.updateStyle(updateMode, styleData);
+  }
   /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere

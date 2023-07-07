@@ -4,8 +4,6 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import Label from "@/plottables/Label";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
 import { StyleEditPanels } from "@/types/Styles";
@@ -136,9 +134,7 @@ export class AddParametricTracePointCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Trace Point
-      const tracePoint = new Point();
       const seTracePoint = new SEParametricTracePoint(
-        tracePoint,
         parametricParent
       );
       const seTracePointLocation = new Vector3();
@@ -150,7 +146,7 @@ export class AddParametricTracePointCommand extends Command {
         "parametricEndPointseTracePointFrontStyle"
       );
       if (pointFrontStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
@@ -158,14 +154,13 @@ export class AddParametricTracePointCommand extends Command {
         "parametricEndPointseTracePointBackStyle"
       );
       if (pointBackStyleString !== undefined)
-        tracePoint.updateStyle(
+        seTracePoint.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
 
       // make the Trace Point Label
-      const tracePointLabel = new Label("point");
-      const seTracePointLabel = new SELabel(tracePointLabel, seTracePoint);
+      const seTracePointLabel = new SELabel("point", seTracePoint);
       const seTracePointLabelLocation = new Vector3();
       seTracePointLabelLocation.from(
         propMap.get("parametricEndPointseTraceLabelLocationVector")
@@ -175,7 +170,7 @@ export class AddParametricTracePointCommand extends Command {
         "parametricEndPointseTraceLabelLabelStyle"
       );
       if (labelStyleString !== undefined) {
-        tracePointLabel.updateStyle(
+        seTracePointLabel.updatePlottableStyle(
           StyleEditPanels.Label,
           JSON.parse(labelStyleString)
         );

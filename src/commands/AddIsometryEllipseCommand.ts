@@ -2,10 +2,8 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Label from "@/plottables/Label";
 import { StyleEditPanels } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
@@ -135,9 +133,7 @@ export class AddIsometryEllipseCommand extends Command {
       isometryEllipseFocus2Point
     ) {
       //make the Ellipse
-      const seg = new NonFreeEllipse();
       const isometrySEEllipse = new SEIsometryEllipse(
-        seg,
         isometryEllipseFocus1Point,
         isometryEllipseFocus2Point,
         isometryEllipseEllipsePoint,
@@ -147,27 +143,29 @@ export class AddIsometryEllipseCommand extends Command {
       //style the Ellipse
       const EllipseFrontStyleString = propMap.get("objectFrontStyle");
       if (EllipseFrontStyleString !== undefined)
-        seg.updateStyle(
+        isometrySEEllipse.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(EllipseFrontStyleString)
         );
       const EllipseBackStyleString = propMap.get("objectBackStyle");
       if (EllipseBackStyleString !== undefined)
-        seg.updateStyle(
+        isometrySEEllipse.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(EllipseBackStyleString)
         );
 
       //make the label and set its location
-      const label = new Label("ellipse");
-      const isometrySEEllipseLabel = new SELabel(label, isometrySEEllipse);
+      const isometrySEEllipseLabel = new SELabel("ellipse", isometrySEEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       isometrySEEllipseLabel.locationVector.copy(seLabelLocation);
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
-        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+        isometrySEEllipseLabel.updatePlottableStyle(
+          StyleEditPanels.Label,
+          JSON.parse(labelStyleString)
+        );
 
       //put the Ellipse in the object map
       if (propMap.get("objectName") !== undefined) {
