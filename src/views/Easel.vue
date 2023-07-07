@@ -35,6 +35,7 @@
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
       </Pane>
+
       <Pane>
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
@@ -344,8 +345,6 @@ onMounted((): void => {
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   window.addEventListener("keydown", handleKeyDown);
-
-
 });
 
 onBeforeUnmount((): void => {

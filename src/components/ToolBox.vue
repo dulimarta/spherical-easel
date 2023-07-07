@@ -3,7 +3,8 @@
     tabs-->
   <!-- This the not minimized left drawer containing two tabs -->
   <!-- <CurrentToolSelection/> -->
-  <transition name="slide-out" mode="out-in">
+
+  <!-- <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
       <v-container>
         <v-row align="center">
@@ -63,7 +64,52 @@
         <v-icon>$constructionsTab</v-icon>
       </div>
     </div>
-  </transition>
+  </transition> -->
+
+  <v-card>
+    <v-layout>
+      <v-navigation-drawer expand-on-hover rail>
+        <v-list>
+          <v-list-item
+            prepend-avatar="@/assets/SphericalEaselLogo.gif"
+            title="Spherical Easle"></v-list-item>
+        </v-list>
+
+        <v-divider></v-divider>
+
+        <v-list density="compact" nav>
+          <v-list-item
+            prepend-icon="mdi-tools"
+            title="Tools"
+            value="tools"></v-list-item>
+          <v-list-item
+            prepend-icon="mdi-axis"
+            title="Objects"
+            value="object"></v-list-item>
+          <v-list-item
+            prepend-icon="mdi-diameter"
+            title="Construction"
+            value="construction"></v-list-item>
+          <v-list-item
+            prepend-icon="mdi-earth"
+            title="Earth"
+            value="earth"></v-list-item>
+        </v-list>
+        <template v-slot:append>
+          <v-list density="compact" nav>
+            <v-list-item
+              prepend-icon="mdi-translate-variant"
+              title="English"></v-list-item>
+            <v-list-item
+              prepend-icon="mdi-account-circle"
+              title="Hans Dulimatar"></v-list-item>
+          </v-list>
+        </template>
+      </v-navigation-drawer>
+
+      <v-main style="height: 500px"></v-main>
+    </v-layout>
+  </v-card>
 </template>
 
 <script lang="ts" setup>
@@ -88,7 +134,6 @@ const minified = ref(false);
 const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
 const activeLeftDrawerTab = ref(0);
-
 onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
 });

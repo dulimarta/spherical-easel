@@ -18,10 +18,7 @@
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
     "@googlemaps/js-api-loader": "^1.16.2",
-<<<<<<< HEAD
-=======
     "@intlify/unplugin-vue-i18n": "^0.11.0",
->>>>>>> d701cb20ec729c906d2f54371a4e93b28629f0cd
     "@types/color": "^3.0.1",
     "@types/file-saver": "^2.0.2",
     "@vitejs/plugin-vue": "^4.0.0",
