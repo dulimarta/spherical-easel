@@ -86,6 +86,7 @@ let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
   placesInspector = new PlacesService(addrInput.value!);
+
 });
 
 watch(

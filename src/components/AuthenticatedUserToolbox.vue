@@ -18,7 +18,7 @@
     </v-btn>
     <template v-if="appAuth.currentUser !== null">
       <HintButton v-if="constructionDocId" tooltip="Share saved cons">
-        <template #icon>mdi-share</template>
+        <template #icon>mdi-share-variant</template>
       </HintButton>
       <HintButton
         :disabled="!hasObjects"
@@ -100,7 +100,7 @@ const {
   constructionDocId,
   includedTools
 } = storeToRefs(acctStore);
-const { hasObjects, inverseTotalRotationMatrix, svgCanvas } =
+const { hasObjects, inverseTotalRotationMatrix, svgCanvas, canvasHeight, canvasWidth } =
   storeToRefs(seStore);
 const { t } = useI18n();
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
@@ -165,6 +165,7 @@ onMounted(() => {
           }
         }
       });
+      acctStore.loginEnabled = true
     } else {
       acctStore.userEmail = undefined;
       acctStore.userProfilePictureURL = undefined;
@@ -256,7 +257,10 @@ async function doSave(): Promise<void> {
       description: constructionDescription.value,
       rotationMatrix: JSON.stringify(rotationMat.value.elements),
       tools: includedTools.value,
-      script: "" // Use an empty string (for type checking only)
+      aspectRatio: canvasWidth.value / canvasHeight.value,
+      // Use an empty string (for type checking only)
+      // the actual script will be determine below
+      script: ""
     } as ConstructionInFirestore
   )
     .then((constructionDoc: DocumentReference) => {

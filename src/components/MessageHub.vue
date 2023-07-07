@@ -45,13 +45,6 @@
                     density="compact"
                     direction="horizontal"></v-checkbox>
                 </div>
-                <!--v-select
-                  density="compact"
-                  v-model="selectedMessageType"
-                  label="Message filter"
-                  :items="messageTypes"
-                  item-title="title"
-                  item-value="value"></!--v-select-->
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
@@ -286,31 +279,35 @@ function cancelDeleteMessages() {
   border: 1px solid gray;
 }
 </style>
-<i18n lang="yaml">
-en:
-  all: "All"
-  deleteMsg: "Delete {msgType} messages"
-  deleteWarning: "Messages will be deleted"
-  directive: "Directive"
-  error: "Error"
-  info: "Informational"
-  noMessages: "No messages"
-  selectAll: "Select All Type"
-  selectMsgType: "Select Message Type"
-  success: "Success"
-  undo: "Undo"
-  warning: "Warning"
-id:
-  all: "Semua Pesan"
-  deleteMsg: "Hapus Pesan Jenis {msgType}"
-  deleteWarning: "Pesan-pesan akan dihapus"
-  directive: "Petunjuk"
-  error: "Kesalahan"
-  info: "Informasional"
-  noMessages: "Tidak ada pesan"
-  selectAll: "Pilih semua jenis pesan"
-  selectMsgType: "Pilih Jenis Pesan"
-  success: "Sukses"
-  undo: "Urung"
-  warning: "Peringatan"
+<i18n locale="en">
+{
+  "all": "All",
+  "deleteMsg": "Delete {msgType} messages",
+  "deleteWarning": "Messages will be deleted",
+  "directive": "Directive",
+  "error": "Error",
+  "info": "Informational",
+  "noMessages": "No messages",
+  "selectAll": "Select All Type",
+  "selectMsgType": "Select Message Type",
+  "success": "Success",
+  "undo": "Undo",
+  "warning": "Warning"
+}
+</i18n>
+<i18n locale="id">
+{
+  "all": "Semua Pesan",
+  "deleteMsg": "Hapus Pesan Jenis {msgType}",
+  "deleteWarning": "Pesan-pesan akan dihapus",
+  "directive": "Petunjuk",
+  "error": "Kesalahan",
+  "info": "Informasional",
+  "noMessages": "Tidak ada pesan",
+  "selectAll": "Pilih semua jenis pesan",
+  "selectMsgType": "Pilih Jenis Pesan",
+  "success": "Sukses",
+  "undo": "Urung",
+  "warning": "Peringatan"
+}
 </i18n>

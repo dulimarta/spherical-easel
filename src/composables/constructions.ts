@@ -1,0 +1,190 @@
+import {
+  ConstructionInFirestore,
+  SphericalConstruction,
+  ConstructionScript,
+  PublicConstructionInFirestore
+} from "@/types";
+import { Auth, User, getAuth } from "firebase/auth";
+import { onMounted } from "vue";
+import { ref, Ref } from "vue";
+import {
+  FirebaseStorage,
+  getDownloadURL,
+  getStorage,
+  ref as storageRef
+} from "firebase/storage";
+import {
+  CollectionReference,
+  getDocs,
+  getDoc,
+  doc,
+  collection,
+  QuerySnapshot,
+  QueryDocumentSnapshot,
+  getFirestore,
+  Unsubscribe,
+  onSnapshot,
+  Firestore
+} from "firebase/firestore";
+import axios, { AxiosResponse } from "axios";
+import { Matrix4 } from "three";
+import EventBus from "@/eventHandlers/EventBus";
+// import { useAccountStore } from "@/stores/account";
+// import { storeToRefs } from "pinia";
+// const acctStore = useAccountStore()
+// const {u} = storeToRefs(acctStore)
+let appAuth: Auth;
+let appStorage: FirebaseStorage;
+let appDB: Firestore;
+let snapShotUnsubscribe: Unsubscribe | null = null;
+// Private construnctions is set to null when no authenticated user is active
+const privateConstructions: Ref<Array<SphericalConstruction> | null> =
+  ref(null);
+// Public constructions is never null
+const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+
+async function parseDocument(
+  id: string,
+  remoteDoc: ConstructionInFirestore
+): Promise<SphericalConstruction | null> {
+  let parsedScript: ConstructionScript | undefined = undefined;
+  const trimmedScript = remoteDoc.script.trim();
+  if (trimmedScript.length === 0) return null;
+  if (trimmedScript.startsWith("https")) {
+    // Fetch the actual script from Firebase Storagee
+    const scriptText = await getDownloadURL(
+      storageRef(appStorage, trimmedScript)
+    )
+      .then((url: string) => axios.get(url))
+      .then((r: AxiosResponse) => r.data);
+
+    parsedScript = scriptText as ConstructionScript;
+  } else {
+    // Parse the script directly from the Firestore document
+    parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
+  }
+  const sphereRotationMatrix = new Matrix4();
+  if (parsedScript && parsedScript.length > 0) {
+    // we care only for non-empty script
+    let svgData: string | undefined;
+    if (remoteDoc.preview?.startsWith("https:")) {
+      svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
+        .then((url: string) => axios.get(url))
+        .then((r: AxiosResponse) => r.data);
+      console.debug(
+        "SVG preview from Firebase Storage ",
+        svgData?.substring(0, 70)
+      );
+    } else {
+      svgData = remoteDoc.preview;
+      console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
+    }
+    const objectCount = parsedScript
+      // A simple command contributes 1 object
+      // A CommandGroup contributes N objects (as many elements in its subcommands)
+      .map((z: string | Array<string>) =>
+        typeof z === "string" ? 1 : z.length
+      )
+      .reduce((prev: number, curr: number) => prev + curr);
+
+    if (remoteDoc.rotationMatrix) {
+      const matrixData = JSON.parse(remoteDoc.rotationMatrix);
+      sphereRotationMatrix.fromArray(matrixData);
+    }
+    return {
+      version: remoteDoc.version,
+      id,
+      script: trimmedScript,
+      parsedScript,
+      objectCount,
+      author: remoteDoc.author,
+      dateCreated: remoteDoc.dateCreated,
+      description: remoteDoc.description,
+      aspectRatio: remoteDoc.aspectRatio ?? 1,
+      sphereRotationMatrix,
+      preview: svgData ?? "",
+      tools: remoteDoc.tools ?? undefined
+    };
+  }
+  return null;
+}
+
+function parseCollection(
+  constructionCollection: CollectionReference,
+  targetArr: Array<SphericalConstruction>
+): void {
+  targetArr.splice(0);
+
+  const erronesousDocs: Array<string> = [];
+  getDocs(constructionCollection)
+    .then((qs: QuerySnapshot) => {
+      qs.forEach(async (qd: QueryDocumentSnapshot) => {
+        const remoteData = qd.data();
+        let out: SphericalConstruction | null = null;
+        if (remoteData["constructionDocId"]) {
+          // In a neew format defined by Capstone group Fall 2022
+          // public constructions are simply a reference to
+          // constructions owned by a particular user
+          const constructionRef = remoteData as PublicConstructionInFirestore;
+          const ownedDocRef = doc(
+            appDB,
+            "users",
+            constructionRef.author,
+            "constructions",
+            constructionRef.constructionDocId
+          );
+          const ownedDoc = await getDoc(ownedDocRef);
+          out = await parseDocument(
+            constructionRef.constructionDocId,
+            ownedDoc.data() as ConstructionInFirestore
+          );
+        } else {
+          out = await parseDocument(
+            qd.id,
+            remoteData as ConstructionInFirestore
+          );
+        }
+        if (out) targetArr.push(out);
+        else {
+          console.error("Failed to parse", qd.id);
+          erronesousDocs.push(qd.id);
+        }
+      });
+    })
+    .finally(() => {
+      // Sort by creation date
+      targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
+        a.dateCreated.localeCompare(b.dateCreated)
+      );
+      if (erronesousDocs.length > 0) {
+        EventBus.fire("show-alert", {
+          key: "Error in parsing documents: " + erronesousDocs.join(","),
+          type: "error"
+        });
+      }
+    });
+}
+export function useConstruction() {
+  onMounted(() => {
+    appAuth = getAuth();
+    appDB = getFirestore();
+    appStorage = getStorage();
+
+    appAuth.onAuthStateChanged((u: User | null) => {
+      if (snapShotUnsubscribe !== null) snapShotUnsubscribe();
+      if (u !== null) {
+        const privateColl = collection(appDB, "users", u.uid, "constructions");
+        privateConstructions.value = [];
+        snapShotUnsubscribe = onSnapshot(privateColl, () => {
+          parseCollection(privateColl, privateConstructions.value!);
+        });
+      } else {
+        privateConstructions.value = null;
+      }
+    });
+    const publicColl = collection(appDB, "constructions");
+    parseCollection(publicColl, publicConstructions.value);
+  });
+
+  return { publicConstructions, privateConstructions };
+}

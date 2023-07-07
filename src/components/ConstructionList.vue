@@ -3,7 +3,7 @@
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list lines="three">
-      <template v-for="(r, pos) in items" :key="pos">
+      <template v-for="(r, pos) in items" :key="r.id">
         <v-hover>
           <template v-slot:default="{ isHovering, props }">
             <!-- the class "constructionItem" is used for testing. Do not remove it -->
@@ -13,13 +13,13 @@
               @mouseover.capture="onItemHover(r)">
               <template #prepend>
                 <img
-                  :src="previewOrDefault(r.previewData)"
+                  :src="previewOrDefault(r.preview)"
                   class="mr-1"
                   alt="preview"
                   width="64" />
               </template>
               <v-list-item-title class="text-truncate">
-                {{ r.description || "N/A" }}
+                Hov: {{ isHovering }}{{ r.description || "N/A" }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 <code>{{ r.id.substring(0, 5) }}</code>
@@ -42,8 +42,8 @@
                     class="mx-1"
                     size="small"
                     color="secondary"
-                    icon="$downloadConstruction"
-                    @click="loadPreview(r.id)"></v-btn>
+                    icon="mdi-file-document-edit"
+                    @click="handleLoadConstruction(r.id)"></v-btn>
                   <v-btn
                     v-if="allowSharing"
                     id="_test_sharefab"
@@ -60,8 +60,7 @@
                     size="small"
                     icon="$deleteConstruction"
                     color="red"
-                    @click="$emit('delete-requested', r.id)">
-                  </v-btn>
+                    @click="handleDeleteConstruction(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -70,27 +69,55 @@
       </template>
     </v-list>
   </div>
+  <Dialog
+    ref="constructionLoadDialog"
+    class="dialog"
+    title="Confirmation Required"
+    yes-text="Proceed"
+    :yesAction="doLoadConstruction"
+    no-text="Cancel"
+    max-width="50%">
+    {{ t('unsavedObjects') }}
+  </Dialog>
+  <v-snackbar v-model="showDeleteWarning" :timeout="DELETE_DELAY">
+    {{ t("deleteWarning") }}
+    <template #actions>
+      <v-btn @click="cancelDelete" color="warning">{{t('undo')}}</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
-import { SphericalConstruction } from "@/types";
+import { ActionMode, ConstructionScript, SphericalConstruction } from "@/types";
+import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
+import { useAccountStore } from "@/stores/account";
 import { getAuth } from "firebase/auth";
-import { computed, onBeforeMount, onMounted } from "vue";
+import { computed, Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
+import { run } from "@/commands/CommandInterpreter";
+import { SENodule } from "@/models/internal";
+import { Matrix4 } from "three";
+import { useI18n } from "vue-i18n";
+
+const DELETE_DELAY = 3000
 const props = defineProps<{
   items: Array<SphericalConstruction>;
-  allowSharing?: boolean;
+  allowSharing: boolean;
 }>();
-const emit = defineEmits<{
-  "load-requested": [id:string]
-}>();
+const constructionLoadDialog: Ref<DialogAction | null> = ref(null);
 
 const seStore = useSEStore();
+const acctStore = useAccountStore();
 const appAuth = getAuth();
-
+const selectedDocId = ref("");
+const showDeleteWarning = ref(false)
+const { hasUnsavedNodules } = storeToRefs(seStore);
+const {t} = useI18n({useScope: "local"})
 let lastDocId: string | null = null;
+let deleteTimer: any
+
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
 });
@@ -99,20 +126,18 @@ function previewOrDefault(dataUrl: string | undefined): string {
   return dataUrl ? dataUrl : "/logo.png";
 }
 
-
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
 // or when the mouse moves while a new construction is being loaded
 async function onItemHover(s: SphericalConstruction): Promise<void> {
   if (lastDocId === s.id) return; // Prevent double hovers?
   lastDocId = s.id;
-  EventBus.fire("preview-construction", s)
+  EventBus.fire("preview-construction", s);
 }
 
 function onListLeave(/*_ev: MouseEvent*/): void {
-  EventBus.fire("preview-construction", null)
+  EventBus.fire("preview-construction", null);
   lastDocId = "";
-
 
   /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
   //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
@@ -122,8 +147,76 @@ function onListLeave(/*_ev: MouseEvent*/): void {
   // }, 1000);
 }
 
-function loadPreview(docId: string): void {
-  emit("load-requested", docId);
+function handleLoadConstruction(docId: string): void {
+  selectedDocId.value = docId;
+  if (hasUnsavedNodules.value) constructionLoadDialog.value?.show();
+  else {
+    doLoadConstruction();
+  }
+}
+function doLoadConstruction(/*event: { docId: string }*/): void {
+  constructionLoadDialog.value!.hide();
+  let script: ConstructionScript | null = null;
+  let rotationMatrix: Matrix4;
+  // Search in public list
+  let pos = props.items.findIndex(
+    (c: SphericalConstruction) => c.id === selectedDocId.value
+  );
+  let toolSet: ActionMode[] | undefined = undefined;
+  if (pos >= 0) {
+    script = props.items[pos].parsedScript;
+    rotationMatrix = props.items[pos].sphereRotationMatrix;
+    if (props.items[pos].tools) toolSet = props.items[pos].tools;
+  }
+  if (toolSet === undefined) {
+    console.debug("Include all tools");
+    acctStore.resetToolset(true); /* include all tools */
+  } else {
+    console.debug("Exclude all tools");
+    acctStore.resetToolset(false); /* exclude all */
+    toolSet.forEach((toolAction: ActionMode) => {
+      acctStore.includeToolName(toolAction);
+    });
+  }
+
+  if (script !== null) {
+    seStore.removeAllFromLayers();
+    seStore.init();
+    SENodule.resetAllCounters();
+    // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+    EventBus.fire("show-alert", {
+      key: t("constructionLoaded", {docId: selectedDocId.value }),
+      type: "info"
+    });
+    // It looks like we have to apply the rotation matrix
+    // before running the script
+    // setRotationMatrix(rotationMatrix);
+    run(script);
+    // rotateSphere(rotationMatrix.invert());
+    seStore.clearUnsavedFlag();
+    EventBus.fire("construction-loaded", {});
+    // update all
+    seStore.updateDisplay();
+
+    // set the mode to move because chances are high that the user wants this mode after loading.
+    seStore.setActionMode("move");
+  }
+}
+
+function doDeleteConstruction(docId:string) {
+  alert(`Construction ${docId} deleted`)
+}
+
+function handleDeleteConstruction(docId: string): void {
+  showDeleteWarning.value = true
+  deleteTimer = setTimeout(() => {
+    doDeleteConstruction(docId)
+  }, 3500)
+}
+
+function cancelDelete() {
+  showDeleteWarning.value = false
+  clearTimeout(deleteTimer)
 }
 </script>
 
@@ -136,3 +229,11 @@ function loadPreview(docId: string): void {
   /* background-color: red; */
 }
 </style>
+<i18n locale="en">
+{
+  "deleteWarning": "You construction {docId} is about to be deleted",
+  "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
+  "unsavedObjects": "Loading a new construction will delete the unsaved work",
+  "undo": "Undo"
+}
+</i18n>

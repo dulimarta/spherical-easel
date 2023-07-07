@@ -95,7 +95,7 @@
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
-              :width="overlayHeight * 1.5"
+              :width="overlayHeight * svgDataImageAspectRatio"
               :height="overlayHeight" />
           </v-overlay>
           <div id="msghub">
@@ -222,9 +222,7 @@ const {
   seNodules,
   temporaryNodules,
   hasObjects,
-  actionMode,
-  canvasHeight,
-  canvasWidth,
+  canvasHeight, canvasWidth,
   zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore);
@@ -264,6 +262,7 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const svgDataImage = ref("");
+const svgDataImageAspectRatio = ref(1)
 
 //#region magnificationUpdate
 onBeforeMount(() => {
@@ -276,6 +275,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
+    svgDataImageAspectRatio.value = s.aspectRatio ?? 1
     constructionInfo.value.author = s.author;
     constructionInfo.value.count = s.objectCount;
   } else {
@@ -478,7 +478,7 @@ onBeforeRouteLeave(
     toRoute: RouteLocationNormalized,
     fromRoute: RouteLocationNormalized
   ): boolean => {
-    if (hasObjects && !confirmedLeaving) {
+    if (hasObjects.value && !confirmedLeaving) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;
       return false;

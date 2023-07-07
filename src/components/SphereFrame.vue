@@ -5,6 +5,7 @@
     <div
       id="canvas"
       ref="canvas"
+      :class="animateClass"
       :width="availableWidth"
       :height="availableHeight"></div>
     <div class="anchored top left">
@@ -123,7 +124,7 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  buttonSelection,
+  // buttonSelection,
   isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
@@ -137,6 +138,7 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
+  const animateClass = ref("")
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   console.debug("Updating shortcut icons");
@@ -323,7 +325,7 @@ onMounted((): void => {
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
   // Without this option, scroll events will potentially block touch/wheel events
-  canvas.value?.addEventListener("wheel", handleMouseWheel, {passive: true});
+  canvas.value?.addEventListener("wheel", handleMouseWheel, { passive: true });
 
   // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
   // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -340,26 +342,26 @@ onMounted((): void => {
   // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
-  console.debug("TwoJS SVG Canvas is", canvas.value)
+  console.debug("TwoJS SVG Canvas is", canvas.value);
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
 });
 watch(
-    () => props.isEarthMode,
-    earthMode => {
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter(
-        layer => typeof layer !== "number"
-      )) {
-        if ((layer as string).includes("background")) {
-          (seStore.layers[i] as any).visible = !earthMode;
-        }
-        i++;
+  () => props.isEarthMode,
+  earthMode => {
+    let i = 0;
+    for (const layer of Object.values(LAYER).filter(
+      layer => typeof layer !== "number"
+    )) {
+      if ((layer as string).includes("background")) {
+        (seStore.layers[i] as any).visible = !earthMode;
       }
-      // seStore.layers[Number(LAYER.midground)].visible = false;
+      i++;
     }
-  );
+    // seStore.layers[Number(LAYER.midground)].visible = false;
+  }
+);
 
 onBeforeUnmount((): void => {
   canvas.value?.removeEventListener("mousemove", handleMouseMoved);
@@ -387,9 +389,8 @@ watch(
   isEarthMode => {
     if (!isEarthMode) {
       boundaryCircle.stroke = "black";
-      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth
-    }
-    else {
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
+    } else {
       let currentLineWidth = boundaryCircle.linewidth;
       boundaryCircle.stroke = "blue";
       let intervalHandle: any;
@@ -700,9 +701,9 @@ function getCurrentSVGForIcon(): void {
 }
 
 function animateCanvas(): void {
-  canvas.value?.classList.add("spin");
+  animateClass.value = "spin"
   setTimeout(() => {
-    canvas.value?.classList.remove("spin");
+    animateClass.value = ""
   }, 1200);
 }
 
@@ -801,13 +802,16 @@ watch(
     currentTool = null;
     //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
-    const directiveMsg = {
-      key: buttonSelection.value.displayedName,
-      secondaryMsg: buttonSelection.value.toolUseMessage,
-      keyOptions: {},
-      secondaryMsgKeyOptions: {},
-      type: "directive"
-    };
+    let directiveMsg;
+    const associatedButton = TOOL_DICTIONARY.get(mode);
+    if (associatedButton)
+      directiveMsg = {
+        key: associatedButton.displayedName,
+        secondaryMsg: associatedButton.toolUseMessage,
+        keyOptions: {},
+        secondaryMsgKeyOptions: {},
+        type: "directive"
+      };
 
     switch (mode) {
       case "select":
@@ -1084,7 +1088,7 @@ watch(
       default:
         currentTool = null;
     }
-    if (currentTool) {
+    if (currentTool && directiveMsg) {
       EventBus.fire("show-alert", directiveMsg);
     }
     currentTool?.activate();
