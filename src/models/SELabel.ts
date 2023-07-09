@@ -260,11 +260,12 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = SENodule.store.canvasWidth;
+    const canvasWidth = SENodule.store.canvasWidth;
+    const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
     return (
-      boundingBox.left - canvasSize / 2 <
+      boundingBox.left - canvasWidth / 2 <
         unitIdealVector.x *
           SETTINGS.boundaryCircle.radius *
           currentMagnificationFactor +
@@ -273,8 +274,8 @@ export class SELabel extends SENodule implements Visitable {
         SETTINGS.boundaryCircle.radius *
         currentMagnificationFactor +
         zoomTranslation[0] <
-        boundingBox.right - canvasSize / 2 &&
-      boundingBox.top - canvasSize / 2 <
+        boundingBox.right - canvasWidth / 2 &&
+      boundingBox.top - canvasHeight / 2 <
         -unitIdealVector.y *
           SETTINGS.boundaryCircle.radius *
           currentMagnificationFactor +
@@ -283,7 +284,7 @@ export class SELabel extends SENodule implements Visitable {
         SETTINGS.boundaryCircle.radius *
         currentMagnificationFactor +
         zoomTranslation[1] < // minus sign because text layers are not y flipped
-        boundingBox.bottom - canvasSize / 2
+        boundingBox.bottom - canvasHeight / 2
     );
   }
 

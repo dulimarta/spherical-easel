@@ -5,6 +5,8 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 // const emptySet = new Set<string>();
 
@@ -43,15 +45,11 @@ export abstract class SEExpression extends SENodule {
     isEarthMode: boolean
   ): Array<ValueDisplayMode> {
     if (isEarthMode) {
+      //new SetNoduleDisplayCommand(this, true);
       /** Called when Earth mode is turned on so that the value display mode can updated immediately (in Easel.vue) and then
        * be restored when earth mode is turned off. */
       this._preEarthModeValueDisplayMode = this._valueDisplayMode;
       this._valueDisplayMode = this._postEarthModeValueDisplayMode;
-      // console.log(
-      //   "Entering Earth mode old,new modes: ",
-      //   this._preEarthModeValueDisplayMode,
-      //   this._valueDisplayMode
-      // );
       return [this._preEarthModeValueDisplayMode, this._valueDisplayMode];
     } else {
       /** Called when Earth mode is turned off so that the previous value display modes can be
@@ -59,11 +57,6 @@ export abstract class SEExpression extends SENodule {
       // issue the command to change back to the preEarthMode VDM (Value display mode)
       this._postEarthModeValueDisplayMode = this._valueDisplayMode;
       this._valueDisplayMode = this._preEarthModeValueDisplayMode;
-      // console.log(
-      //   "Leaving Earth mode old,new modes: ",
-      //   this._postEarthModeValueDisplayMode,
-      //   this._valueDisplayMode
-      // );
       return [this._postEarthModeValueDisplayMode, this._valueDisplayMode];
     }
   }

@@ -67,7 +67,10 @@
               density="compact"
               variant="outlined"
               v-model="isEarthMode"
-              @click="recordAndUpdateValueDisplayModeForExpressions"
+              @click="
+                setEarthModeFunction();
+                recordAndUpdateValueDisplayModeForExpressions();
+              "
               label="Earth Mode">
               <template #append v-if="isEarthMode">
                 <v-icon id="placeBubble">mdi-map-marker</v-icon>
@@ -208,6 +211,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import { SEAngleMarker } from "@/models/internal";
+import { SetEarthModeCommand } from "@/commands/SetEarthModeCommand";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const appDB = getFirestore();
@@ -519,6 +523,12 @@ function recordAndUpdateValueDisplayModeForExpressions() {
   });
 
   setNoduleDisplayCommandGroup.execute();
+}
+
+function setEarthModeFunction() {
+  // The click operation on the switch triggers before the isEarthMode variable
+  // is changed, so at this point in the code when the isEarthMode is false we have entered EarthMode
+  new SetEarthModeCommand(!isEarthMode.value).push(); // do not execute because the v-model of the switch does that already
 }
 </script>
 <style scoped lang="scss">
