@@ -68,46 +68,58 @@
 
   <v-card>
     <v-layout>
-      <v-navigation-drawer expand-on-hover rail>
+      <v-navigation-drawer :expand-on-hover="expandOnHover" :rail="rail">
         <v-list>
           <v-list-item
             prepend-avatar="@/assets/SphericalEaselLogo.gif"
             title="Spherical Easle"></v-list-item>
         </v-list>
-
         <v-divider></v-divider>
 
-        <v-list density="compact" nav>
+        <v-list density="compact" nav :selected="activeItem">
           <v-list-item
+            @click="setHover(0)"
             prepend-icon="mdi-tools"
             title="Tools"
             value="tools"></v-list-item>
           <v-list-item
+            @click="setHover(1)"
             prepend-icon="mdi-axis"
             title="Objects"
             value="object"></v-list-item>
           <v-list-item
+            @click="setHover(2)"
             prepend-icon="mdi-diameter"
             title="Construction"
             value="construction"></v-list-item>
           <v-list-item
+            @click="setHover(3)"
             prepend-icon="mdi-earth"
             title="Earth"
             value="earth"></v-list-item>
         </v-list>
+
         <template v-slot:append>
+          <v-divider></v-divider>
+
           <v-list density="compact" nav>
             <v-list-item
               prepend-icon="mdi-translate-variant"
-              title="English"></v-list-item>
+              title="English"
+              ></v-list-item>
             <v-list-item
               prepend-icon="mdi-account-circle"
               title="Hans Dulimatar"></v-list-item>
           </v-list>
         </template>
       </v-navigation-drawer>
+      <v-navigation-drawer v-if="show">
+        <v-list>
+          <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
+        </v-list>
+      </v-navigation-drawer>
 
-      <v-main style="height: 500px"></v-main>
+      <v-main :style="{ height: height + 'px' }"></v-main>
     </v-layout>
   </v-card>
 </template>
@@ -124,12 +136,46 @@ import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
+import { computed } from "vue";
+import { set } from "@vueuse/core";
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
-
+const { height, width, name } = useDisplay();
+const temp = ref("0px");
+const rail = ref(true);
+const show = ref(false);
+const activeItem = ref([]);
+const headerItem = ["Tools", "Objects", "Construction", "Earth"];
+const expandOnHover = ref(true);
+// const screenStyle = computed(() => {
+//   return {
+//     height: height.value + "px"
+//   };
+// });
 // ('layers')')
-
+function setHover(newActive:number):void{
+  rail.value = true;
+  expandOnHover.value = false;
+  if(newActive === activeItem.value[0]){
+    activeItem.value.pop();
+    setTimeout(() => {
+    show.value = !show.value;
+    }, 100);
+  }else if(activeItem.value.length === 0){
+    activeItem.value.push(newActive);
+    setTimeout(() => {
+    show.value = !show.value;
+    }, 100);
+  }
+  else{
+    activeItem.value.pop();
+    activeItem.value.push(newActive);
+  }
+  setTimeout(() => {
+    expandOnHover.value = true;
+  }, 1000);
+}
 const minified = ref(false);
 const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
@@ -140,9 +186,9 @@ onBeforeMount((): void => {
 
 onMounted((): void => {
   const { mainRect } = useLayout();
-  const { height, width, name } = useDisplay();
-  console.debug("Layout details", mainRect.value);
-  console.debug("Display details", height.value, width.value, name.value);
+  console.log("Layout details", mainRect);
+  console.log("Display details", height.value, width.value, name.value);
+  activeItem.value = [];
   // this.scene = this.layers[LAYER.midground];
 });
 

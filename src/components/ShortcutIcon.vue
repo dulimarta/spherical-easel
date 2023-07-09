@@ -1,8 +1,9 @@
 <template>
   <v-btn
     v-bind="$attrs"
-    icon size="x-small"
+    icon size="small"
     tile
+
     @click="invokeAction">
     <v-icon v-bind="$attrs">{{ model.icon ?? '$' + model.action }}</v-icon>
     <v-tooltip
@@ -20,7 +21,8 @@ import { ToolButtonType } from "@/types";
 const seStore = useSEStore();
 
 const props = defineProps<{
-  model:ToolButtonType
+  model:ToolButtonType,
+  isShortcutTool:{type:Boolean, default:false},
 }>();
 
 function invokeAction(): void {

@@ -100,26 +100,34 @@
               :height="overlayHeight" />
           </v-overlay>
           <div id="msghub">
-            <ShortcutIcon
+            <div id="undoPanel">
+              <ShortcutIcon
               class="mx-1"
               v-for="t in leftShortcutGroup"
               :model="t" />
+            </div>
+
             <MessageHub />
-            <ShortcutIcon
+            <div id="zoomPanel">
+              <ShortcutIcon
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomFit')!" />
+              <ShortcutIcon
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
+              <ShortcutIcon
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomIn')!" />
             <span>{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
-            <v-slider
+            <!-- <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
               :max="2"
-              style="min-width: 100px" />
-            <ShortcutIcon
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomIn')!" />
-            <ShortcutIcon
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomFit')!" />
+              style="min-width: 100px" /> -->
+
+
+            </div>
+
           </div>
         </div>
       </Pane>
@@ -519,8 +527,8 @@ function handleToolboxMinify(state: boolean) {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
-}
+  align-items: stretch;
+  border: 1px solid grey;}
 
 #toolbox {
   height: 100%;
@@ -587,5 +595,21 @@ function handleToolboxMinify(state: boolean) {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+#undoPanel{
+  border-radius: 8px;
+  border: solid red;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  // box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+}
+#zoomPanel{
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  border: solid red;
+  background-color: white;
+
 }
 </style>
