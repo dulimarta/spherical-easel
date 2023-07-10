@@ -81,7 +81,7 @@
                 :icon="currentMsg.type"
                 :text="pretty(currentMsg)"
                 v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
-              <v-alert v-else :text="t('noMessages')"></v-alert>
+              <v-alert class="bg-white" v-else :text="t('noMessages')"></v-alert>
             </v-slide-x-transition>
           </template>
           <v-alert
@@ -102,7 +102,7 @@
             <v-card class="bg-white" :max-width="600">
               <v-card-text>
                 <v-alert
-                  class="my-1 py-0"
+                  class="my-1 py-0 bg-white"
                   border="end"
                   variant="outlined"
                   :border-color="alertType(msg)"
@@ -274,16 +274,22 @@ function cancelDeleteMessages() {
 <style scoped>
 #msg-display-area {
   /* background-color: blue; */
-  /* padding: 4px; */
+  padding: 4px;
   width: 25em;
   height: 60px;
+  display: flex;
+  align-content: center;
   overflow-y: auto;
+  background-color: white;
 }
 #msghub {
   width: 80%;
   margin: auto; /* place this center in its parent */
   padding: 0;
-  border: 1px solid gray;
+  border: 1px solid white;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 </style>
 <i18n lang="yaml">

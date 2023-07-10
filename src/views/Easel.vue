@@ -102,6 +102,7 @@
           <div id="msghub">
             <div id="undoPanel">
               <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
               v-for="t in leftShortcutGroup"
               :model="t" />
@@ -110,12 +111,15 @@
             <MessageHub />
             <div id="zoomPanel">
               <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomFit')!" />
               <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
               <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomIn')!" />
             <span>{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
@@ -528,7 +532,10 @@ function handleToolboxMinify(state: boolean) {
   flex-direction: row;
   justify-content: center;
   align-items: stretch;
-  border: 1px solid grey;}
+  gap: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  }
 
 #toolbox {
   height: 100%;
@@ -598,18 +605,20 @@ function handleToolboxMinify(state: boolean) {
 }
 #undoPanel{
   border-radius: 8px;
-  border: solid red;
+  border: solid white;
   display: flex;
   align-items: center;
   background-color: white;
-  // box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
 }
 #zoomPanel{
   display: flex;
   align-items: center;
   border-radius: 8px;
-  border: solid red;
+  border: solid white;
   background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
 }
 </style>
