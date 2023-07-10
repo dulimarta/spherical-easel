@@ -109,7 +109,7 @@
             </div>
 
             <MessageHub />
-            <div id="zoomPanel">
+            <div id="zoomPanel" class="pr-5">
               <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
