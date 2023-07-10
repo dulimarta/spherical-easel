@@ -101,11 +101,16 @@
           </v-overlay>
           <div id="msghub">
             <div id="undoPanel">
-              <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              v-for="t in leftShortcutGroup"
-              :model="t" />
+              <div v-for="(t,index) in leftShortcutGroup" style="display: flex;">
+                <ShortcutIcon
+                  :isShortcutTool="true"
+                  class="mx-1"
+                  :model="t"
+                />
+                <div class="horizontalLine" v-if="index<2"></div>
+              </div>
+
+
             </div>
 
             <MessageHub />
@@ -114,15 +119,19 @@
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomFit')!" />
+              <div class="horizontalLine" style="height: 50%;"></div>
               <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
+              <div class="horizontalLine" style="height: 50%;"></div>
               <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomIn')!" />
-            <span>{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
+              <div class="horizontalLine" style="height: 50%;"></div>
+
+            <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
             <!-- <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
@@ -588,6 +597,7 @@ function handleToolboxMinify(state: boolean) {
 
 /* Use class instead of id when applying to a vuetify builtin component.
  * Looks like IDs are not preserved after built */
+
 .earthToggler {
   position: relative;
   top: -56px;
@@ -619,6 +629,13 @@ function handleToolboxMinify(state: boolean) {
   border: solid white;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
 
+.horizontalLine{
+  background-color: black;
+  width: 1px;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  // height: 80%;
 }
 </style>
