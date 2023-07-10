@@ -1,4 +1,5 @@
 <template>
+  {{ readPermission }} {{ writePermission }}  {{ clipboardAPI }}
   <div @mouseleave="onListLeave">
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
@@ -45,15 +46,15 @@
                     icon="mdi-file-document-edit"
                     @click="handleLoadConstruction(r.id)"></v-btn>
                   <v-btn
-                    v-if="allowSharing"
+                    v-if="r.publicDocId"
                     id="_test_sharefab"
                     class="mx-1"
                     size="small"
                     color="secondary"
                     icon="$shareConstruction"
-                    @click="$emit('share-requested', { docId: r.id })"></v-btn>
-                  <!-- show delete button only for its owner -->
-                  <v-btn
+                    @click="handleShareConstruction(r.id)"></v-btn>
+                <!-- show delete button only for its owner -->
+                <v-btn
                     v-if="r.author === userEmail"
                     id="_test_deletefab"
                     class="mx-1"
@@ -82,8 +83,11 @@
   <v-snackbar v-model="showDeleteWarning" :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
-      <v-btn @click="cancelDelete" color="warning">{{t('undo')}}</v-btn>
+      <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
     </template>
+  </v-snackbar>
+  <v-snackbar v-model="showURLCopyInfo" :timeout="DELETE_DELAY">
+    {{ t('copyURL', {docId: selectedDocId}) }}
   </v-snackbar>
 </template>
 
@@ -100,8 +104,9 @@ import { run } from "@/commands/CommandInterpreter";
 import { SENodule } from "@/models/internal";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
-
-const DELETE_DELAY = 3000
+import { useConstruction } from "@/composables/constructions";
+import { useClipboard, usePermission } from "@vueuse/core";
+const DELETE_DELAY = 3000;
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -112,11 +117,16 @@ const seStore = useSEStore();
 const acctStore = useAccountStore();
 const appAuth = getAuth();
 const selectedDocId = ref("");
-const showDeleteWarning = ref(false)
+const showDeleteWarning = ref(false);
+const showURLCopyInfo = ref(false)
 const { hasUnsavedNodules } = storeToRefs(seStore);
-const {t} = useI18n({useScope: "local"})
+const { t } = useI18n({ useScope: "local" });
+const { deleteConstruction } = useConstruction();
+const clipboardAPI = useClipboard()
+const readPermission = usePermission('clipboard-read')
+const writePermission = usePermission('clipboard-write')
 let lastDocId: string | null = null;
-let deleteTimer: any
+let deleteTimer: any;
 
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
@@ -138,13 +148,6 @@ async function onItemHover(s: SphericalConstruction): Promise<void> {
 function onListLeave(/*_ev: MouseEvent*/): void {
   EventBus.fire("preview-construction", null);
   lastDocId = "";
-
-  /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
-  //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
-  // setTimeout(() => {
-  //   console.log("list leave");
-  //   SEStore.updateDisplay();
-  // }, 1000);
 }
 
 function handleLoadConstruction(docId: string): void {
@@ -185,7 +188,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
-      key: t("constructionLoaded", {docId: selectedDocId.value }),
+      key: t("constructionLoaded", { docId: selectedDocId.value }),
       type: "info"
     });
     // It looks like we have to apply the rotation matrix
@@ -203,20 +206,41 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
   }
 }
 
-function doDeleteConstruction(docId:string) {
-  alert(`Construction ${docId} deleted`)
+async function doDeleteConstruction(docId: string) {
+  const uid = appAuth.currentUser?.uid;
+  if (uid) {
+    const deleted = await deleteConstruction(uid, docId);
+    if (deleted)
+      EventBus.fire("show-alert", {
+        key: t("constructionDeleted", { docId }),
+        type: "error"
+      });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("deleteAttemptNoUid"),
+      type: "error"
+    });
+  }
 }
 
 function handleDeleteConstruction(docId: string): void {
-  showDeleteWarning.value = true
+  showDeleteWarning.value = true;
   deleteTimer = setTimeout(() => {
-    doDeleteConstruction(docId)
-  }, 3500)
+    doDeleteConstruction(docId);
+  }, 3500);
 }
 
 function cancelDelete() {
-  showDeleteWarning.value = false
-  clearTimeout(deleteTimer)
+  showDeleteWarning.value = false;
+  clearTimeout(deleteTimer);
+}
+
+function handleShareConstruction(docId:string) {
+  selectedDocId.value = docId
+  if (clipboardAPI.isSupported) {
+    clipboardAPI.copy(`https://easelgeo.app/construction/${docId}`)
+    showURLCopyInfo.value = true
+  }
 }
 </script>
 
@@ -232,7 +256,10 @@ function cancelDelete() {
 <i18n locale="en">
 {
   "deleteWarning": "You construction {docId} is about to be deleted",
+  "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
+  "constructionDeleted": "Construction {docId} is succesfully removed",
   "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
+  "copyURL": "The URL https://easelgeo.app/construction/{docId} has been copied to clipboard",
   "unsavedObjects": "Loading a new construction will delete the unsaved work",
   "undo": "Undo"
 }

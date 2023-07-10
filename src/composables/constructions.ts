@@ -9,6 +9,7 @@ import { onMounted } from "vue";
 import { ref, Ref } from "vue";
 import {
   FirebaseStorage,
+  deleteObject,
   getDownloadURL,
   getStorage,
   ref as storageRef
@@ -24,7 +25,8 @@ import {
   getFirestore,
   Unsubscribe,
   onSnapshot,
-  Firestore
+  Firestore,
+  deleteDoc
 } from "firebase/firestore";
 import axios, { AxiosResponse } from "axios";
 import { Matrix4 } from "three";
@@ -144,9 +146,14 @@ function parseCollection(
             remoteData as ConstructionInFirestore
           );
         }
-        if (out) targetArr.push(out);
+        if (out !== null) targetArr.push(out);
         else {
-          console.error("Failed to parse", qd.id);
+          console.error(
+            "Failed to parse",
+            qd.id,
+            "under",
+            constructionCollection.path
+          );
           erronesousDocs.push(qd.id);
         }
       });
@@ -163,6 +170,31 @@ function parseCollection(
         });
       }
     });
+}
+
+async function deleteConstruction(
+  uid: string,
+  docId: string
+): Promise<boolean> {
+  if (privateConstructions.value === null) return Promise.resolve(false);
+  const pos = privateConstructions.value.findIndex(
+    (c: SphericalConstruction) => c.id === docId
+  );
+  if (pos < 0) return Promise.resolve(false);
+  try {
+    const victimDetails = privateConstructions.value[pos];
+    // Delete script and preview if they are stored
+    // on the Firebase Storage
+    if (victimDetails.script.startsWith("https://")) {
+      await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
+    }
+    if (victimDetails.preview.startsWith("https://"))
+      await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
+    await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
+    return Promise.resolve(true);
+  } catch (err: any) {
+    return Promise.resolve(false);
+  }
 }
 export function useConstruction() {
   onMounted(() => {
@@ -186,5 +218,5 @@ export function useConstruction() {
     parseCollection(publicColl, publicConstructions.value);
   });
 
-  return { publicConstructions, privateConstructions };
+  return { publicConstructions, privateConstructions, deleteConstruction };
 }
