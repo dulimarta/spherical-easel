@@ -294,7 +294,7 @@ async function doSave(): Promise<void> {
           collection(appDB, "/constructions/"),
           {
             author: userUid,
-            constructionId: docId // construction document under the user sub-collection
+            constructionDocId: docId // construction document under the user sub-collection
           }
         );
         await updateDoc(constructionDoc, {

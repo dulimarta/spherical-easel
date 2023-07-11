@@ -31,10 +31,10 @@ import {
 import axios, { AxiosResponse } from "axios";
 import { Matrix4 } from "three";
 import EventBus from "@/eventHandlers/EventBus";
-// import { useAccountStore } from "@/stores/account";
-// import { storeToRefs } from "pinia";
-// const acctStore = useAccountStore()
-// const {u} = storeToRefs(acctStore)
+import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
+const acctStore = useAccountStore();
+const { userEmail } = storeToRefs(acctStore);
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -93,7 +93,7 @@ async function parseDocument(
       const matrixData = JSON.parse(remoteDoc.rotationMatrix);
       sphereRotationMatrix.fromArray(matrixData);
     }
-    return {
+    return Promise.resolve({
       version: remoteDoc.version,
       id,
       script: trimmedScript,
@@ -105,8 +105,9 @@ async function parseDocument(
       aspectRatio: remoteDoc.aspectRatio ?? 1,
       sphereRotationMatrix,
       preview: svgData ?? "",
+      publicDocId: remoteDoc.publicDocId,
       tools: remoteDoc.tools ?? undefined
-    };
+    });
   }
   return null;
 }
@@ -185,6 +186,9 @@ async function deleteConstruction(
     const victimDetails = privateConstructions.value[pos];
     // Delete script and preview if they are stored
     // on the Firebase Storage
+    if (victimDetails.publicDocId) {
+      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    }
     if (victimDetails.script.startsWith("https://")) {
       await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
     }

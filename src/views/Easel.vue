@@ -174,7 +174,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+import { ConstructionInFirestore, PublicConstructionInFirestore, SphericalConstruction } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -308,10 +308,14 @@ function loadDocument(docId: string): void {
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   // load the script from public collection
-  getDoc(doc(appDB, "constructions", docId)).then(
-    async (doc: DocumentSnapshot) => {
-      if (doc.exists()) {
-        const { script } = doc.data() as ConstructionInFirestore;
+  getDoc(doc(appDB, "constructions", docId)).then((ds: DocumentSnapshot) => {
+    const { author, constructionDocId} = ds.data() as PublicConstructionInFirestore
+    return getDoc(doc(appDB, "users", author, "constructions", constructionDocId))
+  })
+  .then(
+    async (ds: DocumentSnapshot) => {
+      if (ds.exists()) {
+        const { script } = ds.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {
           // The script must be fetched from Firebase storage
