@@ -115,22 +115,27 @@
 
             <MessageHub />
             <div id="zoomPanel" class="pr-5">
-              <ShortcutIcon
+              <div style="display: flex;">
+                <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomFit')!" />
-              <div class="horizontalLine" style="height: 50%;"></div>
+              <div class="horizontalLine"></div>
+              </div>
+              <div style="display: flex;">
               <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
-              <div class="horizontalLine" style="height: 50%;"></div>
+              <div class="horizontalLine"></div>
+              </div>
+              <div style="display: flex;">
               <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomIn')!" />
-              <div class="horizontalLine" style="height: 50%;"></div>
-
+              <div class="horizontalLine"></div>
+                </div>
             <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
             <!-- <v-slider
               v-model="zoomMagnificationFactor"
