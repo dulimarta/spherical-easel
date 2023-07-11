@@ -31,10 +31,14 @@ import {
 import axios, { AxiosResponse } from "axios";
 import { Matrix4 } from "three";
 import EventBus from "@/eventHandlers/EventBus";
-import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-const acctStore = useAccountStore();
-const { userEmail } = storeToRefs(acctStore);
+import { useAccountStore } from "@/stores/account";
+import { computed } from "vue";
+import { ComputedRef } from "vue";
+// import { useAccountStore } from "@/stor  es/account";
+// import { storeToRefs } from "pinia";
+// const acctStore = useAccountStore();
+// const { userEmail } = storeToRefs(acctStore);
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -221,6 +225,34 @@ export function useConstruction() {
     const publicColl = collection(appDB, "constructions");
     parseCollection(publicColl, publicConstructions.value);
   });
-
-  return { publicConstructions, privateConstructions, deleteConstruction };
+  const acctStore = useAccountStore();
+  const { constructionDocId } = storeToRefs(acctStore);
+  const currentConstructionPreview: ComputedRef<string | null> = computed(
+    () => {
+      let pos = -1;
+      if (privateConstructions.value !== null) {
+        pos = privateConstructions.value.findIndex(
+          (sc: SphericalConstruction) => sc.id === constructionDocId.value
+        );
+        if (pos >= 0) {
+          return privateConstructions.value[pos].preview;
+        }
+      }
+      if (publicConstructions.value !== null) {
+        pos = publicConstructions.value.findIndex(
+          (sc: SphericalConstruction) => sc.id === constructionDocId.value
+        );
+        if (pos >= 0) {
+          return publicConstructions.value[pos].preview;
+        }
+      }
+      return null;
+    }
+  );
+  return {
+    publicConstructions,
+    privateConstructions,
+    deleteConstruction,
+    currentConstructionPreview
+  };
 }

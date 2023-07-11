@@ -26,7 +26,10 @@
         tooltip="Save construction">
         <template #icon>mdi-content-save</template>
       </HintButton>
-      <HintButton v-if="constructionDocId" tooltip="Export Construction">
+      <HintButton
+        v-if="constructionDocId"
+        @click="() => exportConstructionDialog?.show()"
+        tooltip="Export Construction">
         <template #icon>mdi-file-export</template>
       </HintButton>
     </template>
@@ -52,6 +55,50 @@
       v-model="isPublicConstruction"
       :disabled="appAuth.currentUser?.uid.length === 0"
       :label="t('construction.makePublic')"></v-switch>
+  </Dialog>
+  <Dialog
+    ref="exportConstructionDialog"
+    title="Export Construction"
+    yesText="Export"
+    no-text="Cancel"
+    :yes-action="doExport"
+    max-width="60%">
+    <v-row align="center" justify="space-between">
+      <v-col cols="6" v-if="currentConstructionPreview">
+        <img id="preview" :src="currentConstructionPreview" width="400" />
+      </v-col>
+      <v-col cols="6">
+        <v-row class="green">
+          <v-col cols="8" class="pr-4">
+            <p>{{ t("sliderFileDimensions") }}</p>
+            <v-slider
+              v-model="svgExportDimension"
+              class="align-center"
+              :max="1500"
+              :min="100"
+              :step="8"
+              hide-details>
+            </v-slider>
+          </v-col>
+          <v-col cols="4">
+            <v-text-field
+              type="number"
+              v-model="svgExportDimension"
+              class="mt-0 pt-0"
+              hide-details
+              single-line
+              @keypress.stop></v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="4">
+            <v-select
+              :items="['SVG', 'PNG']"
+              label="Format"
+              v-model="selectedExportFormat"
+              solo></v-select>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
   </Dialog>
 </template>
 <script setup lang="ts">
@@ -85,10 +132,13 @@ import {
   ref as storageRef,
   getStorage
 } from "firebase/storage";
+import { useConstruction } from "@/composables/constructions";
+import { nextTick } from "vue";
+import FileSaver from "file-saver";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
-  COMPLETE
+  COMPLETE // Accept "SE"
 }
 const acctStore = useAccountStore();
 const seStore = useSEStore();
@@ -100,9 +150,15 @@ const {
   constructionDocId,
   includedTools
 } = storeToRefs(acctStore);
-const { hasObjects, inverseTotalRotationMatrix, svgCanvas, canvasHeight, canvasWidth } =
-  storeToRefs(seStore);
+const {
+  hasObjects,
+  inverseTotalRotationMatrix,
+  svgCanvas,
+  canvasHeight,
+  canvasWidth
+} = storeToRefs(seStore);
 const { t } = useI18n();
+const { currentConstructionPreview } = useConstruction();
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -110,7 +166,10 @@ const appStorage = getStorage();
 const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
+const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isPublicConstruction = ref(false);
+const selectedExportFormat = ref("");
+const svgExportDimension = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 onKeyDown(
@@ -165,7 +224,7 @@ onMounted(() => {
           }
         }
       });
-      acctStore.loginEnabled = true
+      acctStore.loginEnabled = true;
     } else {
       acctStore.userEmail = undefined;
       acctStore.userProfilePictureURL = undefined;
@@ -329,6 +388,28 @@ async function doSave(): Promise<void> {
 
   saveConstructionDialog.value?.hide();
 }
+
+async function doExportSVG() {
+  const svgElement = svgRoot.cloneNode(true) as SVGElement
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+  const svgBlob = new Blob([svgElement.outerHTML], {
+    type: "image/svg+xml;charset=utf-8"
+  })
+  const svgURL = URL.createObjectURL(svgBlob)
+  await nextTick()
+  FileSaver.saveAs(svgURL, "construction.svg")
+}
+function doExportPNG() {}
+
+function doExport() {
+  if (svgRoot === undefined) {
+    // By the time doSave() is called svgCanvas must have been set
+    // to it is safe to non-null assert svgCanvas.value
+    svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+  }
+  if (selectedExportFormat.value === 'SVG') doExportSVG()
+  else doExportPNG()
+}
 </script>
 <i18n locale="en">
 {
@@ -340,6 +421,8 @@ async function doSave(): Promise<void> {
     "description": "Description",
     "makePublic": "Make Construction Publicly Available",
     "firestoreSaveError": "Construction was not saved: {error}"
-  }
+  },
+  "sliderFileDimensions": "Exported file dimension",
+  "displaySlider": "What"
 }
 </i18n>

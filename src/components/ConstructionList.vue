@@ -133,6 +133,7 @@ const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("")
 const showDeleteWarning = ref(false);
+const {constructionDocId} = storeToRefs(acctStore)
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 const { deleteConstruction } = useConstruction();
@@ -168,6 +169,7 @@ function handleLoadConstruction(docId: string): void {
   selectedDocId.value = docId;
   if (hasUnsavedNodules.value) constructionLoadDialog.value?.show();
   else {
+    constructionDocId.value = docId
     doLoadConstruction();
   }
 }

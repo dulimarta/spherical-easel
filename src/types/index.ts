@@ -34,7 +34,7 @@ export interface AccountState {
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
   favoriteTools: Array<Array<ActionMode>>;
-  constructionDocId: string | null;
+  constructionDocId: string | null; // The document id of construction being viewed on the canvas
   constructionSaved: boolean;
 }
 

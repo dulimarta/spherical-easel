@@ -112,73 +112,7 @@
     </Dialog>
 
 
-    <!--Dialog
-      ref="shareConstructionDialog"
-      :title="i18nText('constructions.shareConstructionDialog')"
-      :yesText="i18nText('constructions.exportConstructionDialog')"
-      :yes-action="() => doExportConstructionDialog()"
-      :no-text="i18nText('constructions.cancel')"
-      max-width="40%"
-      content-class="shareConstructionClass">
-      <p>
-        {{ i18nText("constructions.shareLinkDialog") }}
-      </p>
 
-      <input ref="shareLinkReference" readonly :value="shareLink" />
-      <button @click="copyShareLink">Copy</button>
-    </!--Dialog>
-
-    <Dialog
-      ref="exportConstructionDialog"
-      :title="i18nText('constructions.exportConstructionDialog')"
-      :yesText="i18nText('constructions.exportConstructionDialog')"
-      :no-text="i18nText('constructions.cancel')"
-      :yes-action="() => doExportButton()"
-      :isDisabled="disableButton"
-      max-width="60%">
-      <v-row align="center" justify="space-between">
-        <v-col cols="10" xs="10" sm="10" md="2" lg="3" xl="3">
-          <div>
-            <img id="preview" />
-          </div>
-        </v-col>
-        <v-col cols="10" xs="10" sm="10" md="4" lg="6" xl="6">
-          <v-row>
-            <v-col class="pr-4">
-              <p>{{ i18nText("constructions.sliderFileDimensions") }}</p>
-              <v-slider
-                v-model="slider"
-                class="align-center"
-                :max="sliderMax"
-                :min="sliderMin"
-                hide-details
-                >{{ i18nText("constructions.displaySlider") }}
-                <template v-slot:append>
-                  <v-text-field
-                    type="number"
-                    v-model="slider"
-                    class="mt-0 pt-0"
-                    hide-details
-                    single-line
-                    style="width: 120px"
-                    :rules="[exportDimensionsCheck]"
-                    @keypress.stop></v-text-field>
-                </template>
-              </v-slider>
-            </v-col>
-          </v-row>
-
-          <v-col class="d-flex" cols="12" sm="6">
-            <v-select
-              :items="formats"
-              label="Format"
-              v-model="selectedFormat"
-              :rules="[exportDimensionsCheck]"
-              solo></v-select>
-          </v-col>
-        </v-col>
-      </v-row>
-    </Dialog-->
 </template>
 
 <!--
@@ -253,13 +187,9 @@ const { svgCanvas, inverseTotalRotationMatrix, hasObjects } =
 const router = useRouter();
 
 let clientBrowser: any;
-const description = ref("");
-const publicConstruction = ref(false);
 const logoutDialog: Ref<DialogAction | null> = ref(null);
-const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
-const shareLinkReference: Ref<HTMLElement | null> = ref(null);
 let footerColor = "accent";
 let authSubscription!: Unsubscribe;
 const whoami = ref("");
@@ -267,10 +197,6 @@ const uid = ref("");
 let svgRoot: SVGElement;
 const selectedFormat = ref("");
 const slider = ref(600);
-const sliderMin = 200;
-const sliderMax = 1200;
-const shareLink = ref("--Placeholder for share link--");
-const disableButton = ref(false);
 // lastText = "";
 // count = 0;
 
@@ -290,36 +216,7 @@ const baseURL = computed((): string => {
   return import.meta.env.BASE_URL ?? "";
 });
 
-/***
-function keyHandler(ev: KeyboardEvent): void {
-  if (ev.repeat) return; // Ignore repeated events on the same key
-  if (!ev.altKey) return;
-  if (!ev.ctrlKey) return;
-
-  if (ev.code === "KeyS" && acceptedKeys === 0) {
-    console.info("'S' is accepted");
-    acceptedKeys = 1;
-  } else if (ev.code === "KeyE" && acceptedKeys === 1) {
-    acceptedKeys = 2;
-    // Directly setting the accountEnable flag here does not trigger
-    // a UI update even after calling $forceUpdate()
-    // Firing an event seems to solve the problem
-    EventBus.fire("secret-key-detected", {});
-  } else {
-    acceptedKeys = 0;
-  }
-}
-***/
-
 onBeforeMount((): void => {
-  // window.addEventListener("keydown", keyHandler);
-  // EventBus.listen("secret-key-detected", () => {
-  //   console.log("Got the secret key");
-  //   accountEnabled.value = true;
-  //   acceptedKeys = 0;
-  //   // $forceUpdate();
-  // });
-  // EventBus.listen("share-construction-requested", doShare);
   clientBrowser = detect();
   acctStore.resetToolset();
   //ACStore.resetToolset();
@@ -557,16 +454,6 @@ function exportDimensionsCheck(txt: string | undefined): boolean {
   return true;
 }
 
-function showSaveConstructionDialog() {
-  saveConstructionDialog.value?.show();
-}
-
-
-
-function copyShareLink(): void {
-  shareLinkReference.value?.focus();
-  document.execCommand("copy");
-}
 </script>
 
 <style lang="scss">
