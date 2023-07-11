@@ -80,7 +80,7 @@
   <Dialog
     ref="constructionLoadDialog"
     class="dialog"
-    title="Confirmation Required"
+    :title="t('confirmationRequired')"
     yes-text="Proceed"
     :yesAction="doLoadConstruction"
     no-text="Cancel"
@@ -89,7 +89,7 @@
   </Dialog>
   <Dialog
     ref="constructionShareDialog"
-    title="Confirmation Required"
+    :title="t('confirmationRequired')"
     yes-text="Copy URL"
     :yesAction="doShareConstruction"
     no-text="Cancel"
@@ -282,6 +282,7 @@ function doShareConstruction() {
   "constructionDeleted": "Construction {docId} is succesfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
   "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
+  "confirmationRequired": "Confirmation Required",
   "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",
   "unsavedObjects": "Loading a new construction will delete the unsaved work",
   "undo": "Undo"

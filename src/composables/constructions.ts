@@ -49,6 +49,11 @@ const privateConstructions: Ref<Array<SphericalConstruction> | null> =
 // Public constructions is never null
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 
+function isPublicConstruction(docId: string): boolean {
+  const pos = publicConstructions.value.findIndex((c: SphericalConstruction) => c.id === docId)
+  return pos >= 0
+}
+
 async function parseDocument(
   id: string,
   remoteDoc: ConstructionInFirestore
@@ -253,6 +258,7 @@ export function useConstruction() {
     publicConstructions,
     privateConstructions,
     deleteConstruction,
-    currentConstructionPreview
+    currentConstructionPreview,
+    isPublicConstruction
   };
 }

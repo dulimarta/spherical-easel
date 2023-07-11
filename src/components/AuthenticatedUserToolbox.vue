@@ -1,5 +1,4 @@
 <template>
-  {{ loginEnabled }}
   <template v-if="loginEnabled">
     {{ userDisplayedName }} {{ userEmail }}
     <v-avatar
@@ -17,22 +16,23 @@
       <v-icon>mdi-account</v-icon>
     </v-btn>
     <template v-if="appAuth.currentUser !== null">
-      <HintButton v-if="constructionDocId" tooltip="Share saved cons">
-        <template #icon>mdi-share-variant</template>
-      </HintButton>
       <HintButton
         :disabled="!hasObjects"
         @click="() => saveConstructionDialog?.show()"
         tooltip="Save construction">
         <template #icon>mdi-content-save</template>
       </HintButton>
-      <HintButton
-        v-if="constructionDocId"
-        @click="() => exportConstructionDialog?.show()"
-        tooltip="Export Construction">
-        <template #icon>mdi-file-export</template>
-      </HintButton>
     </template>
+  </template>
+  <template v-if="constructionDocId">
+    <HintButton tooltip="Share saved cons" v-if="isPublicConstruction(constructionDocId)">
+      <template #icon>mdi-share-variant</template>
+    </HintButton>
+    <HintButton
+      @click="() => exportConstructionDialog?.show()"
+      tooltip="Export Construction">
+      <template #icon>mdi-file-export</template>
+    </HintButton>
   </template>
   <Dialog
     ref="saveConstructionDialog"
@@ -47,20 +47,20 @@
       clearable
       counter
       persistent-hint
-      :label="t('construction.description')"
+      :label="t('construction.saveDescription')"
       required
       v-model="constructionDescription"
       @keypress.stop></v-text-field>
     <v-switch
-      v-model="isPublicConstruction"
+      v-model="isSavedAsPublicConstruction"
       :disabled="appAuth.currentUser?.uid.length === 0"
       :label="t('construction.makePublic')"></v-switch>
   </Dialog>
   <Dialog
     ref="exportConstructionDialog"
-    title="Export Construction"
-    yesText="Export"
-    no-text="Cancel"
+    :title="t('exportConstructionDialogTitle')"
+    :yes-text="t('exportAction')"
+    :no-text="t('cancelAction')"
     :yes-action="doExport"
     max-width="60%">
     <v-row align="center" justify="space-between">
@@ -77,8 +77,7 @@
               :max="1500"
               :min="100"
               :step="8"
-              hide-details>
-            </v-slider>
+              hide-details></v-slider>
           </v-col>
           <v-col cols="4">
             <v-text-field
@@ -91,8 +90,8 @@
           </v-col>
           <v-col class="d-flex" cols="4">
             <v-select
-              :items="['SVG', 'PNG']"
-              label="Format"
+              :items="['SVG', 'PNG', 'JPEG', 'GIF', 'BMP']"
+              :label="t('exportFormat')"
               v-model="selectedExportFormat"
               solo></v-select>
           </v-col>
@@ -158,7 +157,7 @@ const {
   canvasWidth
 } = storeToRefs(seStore);
 const { t } = useI18n();
-const { currentConstructionPreview } = useConstruction();
+const { currentConstructionPreview, isPublicConstruction } = useConstruction();
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -167,11 +166,12 @@ const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
-const isPublicConstruction = ref(false);
+const isSavedAsPublicConstruction = ref(false);
 const selectedExportFormat = ref("");
 const svgExportDimension = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
+
 onKeyDown(
   true, // true: accept all keys
   (event: KeyboardEvent) => {
@@ -238,6 +238,7 @@ onBeforeUnmount(() => {
     authSubscription = null;
   }
 });
+
 async function doLoginOrLogout() {
   if (appAuth.currentUser !== null) {
     await appAuth.signOut();
@@ -348,7 +349,7 @@ async function doSave(): Promise<void> {
     .then(async ([docId, scriptData, svgData]) => {
       const constructionDoc = doc(appDB, collectionPath, docId);
       // Pass on the document ID to be included in the alert message
-      if (isPublicConstruction.value) {
+      if (isSavedAsPublicConstruction.value) {
         const publicConstructionDoc = await addDoc(
           collection(appDB, "/constructions/"),
           {
@@ -395,44 +396,55 @@ function doExport() {
     // to it is safe to non-null assert svgCanvas.value
     svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
   }
-  const svgElement = svgRoot.cloneNode(true) as SVGElement
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+  const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   const svgBlob = new Blob([svgElement.outerHTML], {
     type: "image/svg+xml;charset=utf-8"
-  })
-  const svgURL = URL.createObjectURL(svgBlob)
-  if (selectedExportFormat.value === 'SVG') {
+  });
+  const svgURL = URL.createObjectURL(svgBlob);
+  if (selectedExportFormat.value === "SVG") {
     // await nextTick()
-    FileSaver.saveAs(svgURL, "construction.svg")
-  }
-  else {
+    FileSaver.saveAs(svgURL, "construction.svg");
+  } else {
     // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
-    const offlineImage = new Image()
-    offlineImage.addEventListener('load', () => {
-      const offlineCanvas = document.createElement('canvas')
-      offlineCanvas.setAttribute("width", svgExportDimension.value.toString())
-      offlineCanvas.setAttribute("height", svgExportDimension.value.toString())
-      const graphicsCtx = offlineCanvas.getContext("2d")
-      graphicsCtx?.drawImage(offlineImage, 0, 0, svgExportDimension.value, svgExportDimension.value)
-      const pngURL = offlineCanvas.toDataURL('image/png')
-      FileSaver.saveAs(pngURL, "construction.png")
-    })
-    offlineImage.src = svgURL
+    const offlineImage = new Image();
+    offlineImage.addEventListener("load", () => {
+      const aspectRatio = canvasWidth.value / canvasHeight.value
+      const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
+      offlineCanvas.width = svgExportDimension.value * aspectRatio
+      offlineCanvas.height = svgExportDimension.value
+      // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
+      // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
+      const graphicsCtx = offlineCanvas.getContext("2d");
+      graphicsCtx?.drawImage(
+        offlineImage,
+        0,
+        0,
+        svgExportDimension.value * aspectRatio,
+        svgExportDimension.value
+      );
+      const imageExtension = selectedExportFormat.value.toLowerCase()
+      const pngURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
+      FileSaver.saveAs(pngURL, `construction.${imageExtension}`);
+    });
+    offlineImage.src = svgURL;
   }
 }
 </script>
 <i18n locale="en">
 {
   "saveConstructionDialogTitle": "Save Construction",
+  "exportConstructionDialogTitle": "Export Construction",
+  "exportAction": "Export",
   "saveAction": "Save",
   "cancelAction": "Cancel",
   "unknownEmail": "Unknown email",
   "construction": {
-    "description": "Description",
+    "saveDescription": "Description",
     "makePublic": "Make Construction Publicly Available",
     "firestoreSaveError": "Construction was not saved: {error}"
   },
-  "sliderFileDimensions": "Exported file dimension",
-  "displaySlider": "What"
+  "sliderFileDimensions": "Exported file height",
+  "exportFormat": "Image Format"
 }
 </i18n>
