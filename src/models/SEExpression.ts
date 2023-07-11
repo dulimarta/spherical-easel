@@ -5,8 +5,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
-import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 // const emptySet = new Set<string>();
 
@@ -69,35 +67,40 @@ export abstract class SEExpression extends SENodule {
     return false;
   }
 
-  public get prettyValue(): string {
+  prettyValue(fullPrecision = false): string {
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
-        return String(this.value.toFixed(SETTINGS.decimalPrecision));
+        return String(
+          this.value.toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision)
+        );
       case ValueDisplayMode.MultipleOfPi:
         return (
-          (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) +
-          "\u{1D7B9}"
+          (this.value / Math.PI).toFixed(
+            fullPrecision ? 20 : SETTINGS.decimalPrecision
+          ) + "\u{1D7B9}"
         );
       case ValueDisplayMode.DegreeDecimals:
         return (
-          this.value.toDegrees().toFixed(SETTINGS.decimalPrecision) + "\u{00B0}"
+          this.value
+            .toDegrees()
+            .toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
+          "\u{00B0}"
         );
       case ValueDisplayMode.EarthModeMiles:
         if (this.isPolygon()) {
-          console.log("ispolygon in SEExpression");
           return (
             (
               this.value *
               SETTINGS.earthMode.radiusMiles *
               SETTINGS.earthMode.radiusMiles
-            ).toFixed(SETTINGS.decimalPrecision) +
+            ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
             i18n.global.t(`units.mi`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
-              SETTINGS.decimalPrecision
+              fullPrecision ? 20 : SETTINGS.decimalPrecision
             ) + i18n.global.t(`units.mi`)
           );
         }
@@ -108,14 +111,14 @@ export abstract class SEExpression extends SENodule {
               this.value *
               SETTINGS.earthMode.radiusKilometers *
               SETTINGS.earthMode.radiusKilometers
-            ).toFixed(SETTINGS.decimalPrecision) +
+            ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
             i18n.global.t(`units.km`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
-              SETTINGS.decimalPrecision
+              fullPrecision ? 20 : SETTINGS.decimalPrecision
             ) + i18n.global.t(`units.km`)
           );
         }

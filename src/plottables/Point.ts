@@ -348,6 +348,7 @@ export default class Point extends Nodule {
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
+        console.log("check fill color: ", frontStyle.fillColor);
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {

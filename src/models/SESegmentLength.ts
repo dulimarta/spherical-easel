@@ -1,4 +1,4 @@
-import { SEExpression, SESegment } from "./internal";
+import { SEExpression, SENodule, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
@@ -35,7 +35,7 @@ export class SESegmentLength extends SEExpression {
     return String(
       i18n.global.t(`objectTree.segmentLength`, {
         seg: this.seSegment.label?.ref.shortUserName,
-        val: this.value
+        val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
       })
     );
   }
@@ -45,7 +45,7 @@ export class SESegmentLength extends SEExpression {
       this.name +
       ": " +
       this.seSegment.label?.ref.shortUserName +
-      ` ${this.prettyValue}`
+      ` ${this.prettyValue()}`
     );
   }
 

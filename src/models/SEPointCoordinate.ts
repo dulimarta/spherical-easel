@@ -93,7 +93,7 @@ export class SEPointCoordinate extends SEExpression {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            val: this.prettyValue()
           })
         );
       case CoordinateSelection.Y_VALUE:
@@ -102,7 +102,7 @@ export class SEPointCoordinate extends SEExpression {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            val: this.prettyValue()
           })
         );
       case CoordinateSelection.Z_VALUE:
@@ -111,7 +111,7 @@ export class SEPointCoordinate extends SEExpression {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            val: this.prettyValue()
           })
         );
       default:

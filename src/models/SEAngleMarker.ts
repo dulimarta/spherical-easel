@@ -240,7 +240,10 @@ export class SEAngleMarker
 
   public get noduleItemText(): string {
     return (
-      this.name + ": " + this.label?.ref.shortUserName + ` ${this.prettyValue}`
+      this.name +
+      ": " +
+      this.label?.ref.shortUserName +
+      ` ${this.prettyValue()}`
     );
   }
 

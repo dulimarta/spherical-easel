@@ -116,7 +116,7 @@ export class SECalculation extends SEExpression {
     return String(
       i18n.global.t(`objectTree.calculationValue`, {
         token: this.name,
-        val: this.prettyValue
+        val: this.prettyValue()
       })
     );
   }

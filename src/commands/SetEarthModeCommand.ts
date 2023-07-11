@@ -3,8 +3,8 @@ import { SENodule } from "@/models/SENodule";
 import { SavedNames } from "@/types";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-//const seStore = useSEStore();
-//const { isEarthMode } = storeToRefs(seStore);
+// const seStore = useSEStore();
+// const { isEarthMode } = storeToRefs(seStore);
 
 export class SetEarthModeCommand extends Command {
   private showing: boolean;
