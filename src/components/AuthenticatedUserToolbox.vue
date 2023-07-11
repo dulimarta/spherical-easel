@@ -389,26 +389,36 @@ async function doSave(): Promise<void> {
   saveConstructionDialog.value?.hide();
 }
 
-async function doExportSVG() {
-  const svgElement = svgRoot.cloneNode(true) as SVGElement
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg")
-  const svgBlob = new Blob([svgElement.outerHTML], {
-    type: "image/svg+xml;charset=utf-8"
-  })
-  const svgURL = URL.createObjectURL(svgBlob)
-  await nextTick()
-  FileSaver.saveAs(svgURL, "construction.svg")
-}
-function doExportPNG() {}
-
 function doExport() {
   if (svgRoot === undefined) {
     // By the time doSave() is called svgCanvas must have been set
     // to it is safe to non-null assert svgCanvas.value
     svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
   }
-  if (selectedExportFormat.value === 'SVG') doExportSVG()
-  else doExportPNG()
+  const svgElement = svgRoot.cloneNode(true) as SVGElement
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+  const svgBlob = new Blob([svgElement.outerHTML], {
+    type: "image/svg+xml;charset=utf-8"
+  })
+  const svgURL = URL.createObjectURL(svgBlob)
+  if (selectedExportFormat.value === 'SVG') {
+    // await nextTick()
+    FileSaver.saveAs(svgURL, "construction.svg")
+  }
+  else {
+    // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
+    const offlineImage = new Image()
+    offlineImage.addEventListener('load', () => {
+      const offlineCanvas = document.createElement('canvas')
+      offlineCanvas.setAttribute("width", svgExportDimension.value.toString())
+      offlineCanvas.setAttribute("height", svgExportDimension.value.toString())
+      const graphicsCtx = offlineCanvas.getContext("2d")
+      graphicsCtx?.drawImage(offlineImage, 0, 0, svgExportDimension.value, svgExportDimension.value)
+      const pngURL = offlineCanvas.toDataURL('image/png')
+      FileSaver.saveAs(pngURL, "construction.png")
+    })
+    offlineImage.src = svgURL
+  }
 }
 </script>
 <i18n locale="en">

@@ -801,7 +801,6 @@ watch(
     currentTool?.deactivate();
     currentTool = null;
     //set the default footer color -- override as necessary
-    EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     let directiveMsg;
     const associatedButton = TOOL_DICTIONARY.get(mode);
     if (associatedButton)
@@ -819,14 +818,12 @@ watch(
           selectTool = new SelectionHandler(layers.value);
         }
         currentTool = selectTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "delete":
         if (!deleteTool) {
           deleteTool = new DeleteHandler(layers.value);
         }
         currentTool = deleteTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomIn":
         if (!zoomTool) {
@@ -876,7 +873,6 @@ watch(
           moveTool = new MoveHandler(layers.value);
         }
         currentTool = moveTool;
-        EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
         break;
       case "rotate":
         if (!rotateTool) {
@@ -890,35 +886,30 @@ watch(
           pointTool = new PointHandler(layers.value);
         }
         currentTool = pointTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "line":
         if (!lineTool) {
           lineTool = new LineHandler(layers.value);
         }
         currentTool = lineTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "segment":
         if (!segmentTool) {
           segmentTool = new SegmentHandler(layers.value);
         }
         currentTool = segmentTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "circle":
         if (!circleTool) {
           circleTool = new CircleHandler(layers.value);
         }
         currentTool = circleTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "ellipse":
         if (!ellipseTool) {
           ellipseTool = new EllipseHandler(layers.value);
         }
         currentTool = ellipseTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "antipodalPoint":
         if (!antipodalPointTool) {
@@ -952,28 +943,24 @@ watch(
           segmentLengthTool = new SegmentLengthHandler(layers.value);
         }
         currentTool = segmentLengthTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "pointDistance":
         if (!pointDistanceTool) {
           pointDistanceTool = new PointDistanceHandler(layers.value);
         }
         currentTool = pointDistanceTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "angle":
         if (!angleTool) {
           angleTool = new AngleHandler(layers.value);
         }
         currentTool = angleTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "coordinate":
         if (!coordinateTool) {
           coordinateTool = new CoordinateHandler(layers.value);
         }
         currentTool = coordinateTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "toggleLabelDisplay":
         if (!toggleLabelDisplayTool) {

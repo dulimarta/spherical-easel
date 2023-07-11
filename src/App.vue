@@ -133,28 +133,15 @@ import {
 import Dialog, { DialogAction } from "@/components/Dialog.vue"
 import LanguageSelector from "./components/LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
-import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
-import { User, getAuth, Unsubscribe } from "firebase/auth";
+import { getAuth, Unsubscribe } from "firebase/auth";
 import {
-  DocumentReference,
-  DocumentSnapshot,
-  getFirestore,
-  doc,
-  collection,
-  getDoc,
-  addDoc,
-  updateDoc
+  getFirestore
 } from "firebase/firestore";
 import {
-  FirebaseStorage,
-  UploadTaskSnapshot,
   getStorage,
-  ref as storageRef,
-  uploadString,
-  getDownloadURL
+  ref as storageRef
 } from "firebase/storage";
-import { Command } from "./commands/Command";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
@@ -165,8 +152,8 @@ import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import { useI18n } from "vue-i18n";
 const appAuth = getAuth();
-const appDB = getFirestore();
-const appStorage = getStorage();
+// const appDB = getFirestore();
+// const appStorage = getStorage();
 import { useRouter } from "vue-router";
 
 // Register vue router in-component navigation guard functions
@@ -188,17 +175,13 @@ const router = useRouter();
 
 let clientBrowser: any;
 const logoutDialog: Ref<DialogAction | null> = ref(null);
-const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
+// const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
-let footerColor = "accent";
-let authSubscription!: Unsubscribe;
 const whoami = ref("");
 const uid = ref("");
 let svgRoot: SVGElement;
 const selectedFormat = ref("");
 const slider = ref(600);
-// lastText = "";
-// count = 0;
 
 /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -229,15 +212,9 @@ onBeforeMount((): void => {
 onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
   // SEStore.init();
-  EventBus.listen("set-footer-color", setFooterColor);
-
   // Get the top-level SVG element
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 });
-
-function setFooterColor(e: { color: string }): void {
-  footerColor = e.color;
-}
 
 async function doLogout(): Promise<void> {
   await appAuth.signOut();
@@ -248,24 +225,8 @@ async function doLogout(): Promise<void> {
   acctStore.parseAndSetFavoriteTools("")
 }
 
-// additionalFooterText(e: { text: string }): void {
-// console.debug("apply transform", e.text);
-// applyTransformationText = e.text;
-// }
-
-// function doLoginOrCheck(): void {
-//   if (appAuth.currentUser !== null) {
-//     logoutDialog.value?.show();
-//   } else {
-//     router.replace({ path: "/account" });
-//   }
-// }
-function showShareConstructionDialog() {
-  shareConstructionDialog.value?.show();
-}
-
 async function doExportConstructionDialog(): Promise<void> {
-  shareConstructionDialog.value?.hide();
+  // shareConstructionDialog.value?.hide();
   exportConstructionDialog.value?.show();
 
   // copy sphere construction svg and get URL, then set the preview img src as that URL
@@ -494,11 +455,11 @@ function exportDimensionsCheck(txt: string | undefined): boolean {
   }
 }
 
-.shareConstructionClass {
-  width: 300px;
-  margin-top: 50px;
-  margin-bottom: auto;
-  margin-right: 30px;
-  margin-left: auto;
-}
+// .shareConstructionClass {
+//   width: 300px;
+//   margin-top: 50px;
+//   margin-bottom: auto;
+//   margin-right: 30px;
+//   margin-left: auto;
+// }
 </style>
