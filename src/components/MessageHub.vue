@@ -276,11 +276,7 @@ function cancelDeleteMessages() {
   /* background-color: blue; */
   padding: 4px;
   width: 25em;
-
-  display: flex;
-  align-content: center;
   overflow-y: auto;
-  background-color: white;
 }
 
 #msghub {
@@ -290,6 +286,9 @@ function cancelDeleteMessages() {
   border: 1px solid white;
   border-radius: 8px;
   background-color: white;
+  align-content: center;
+  display: flex;
+
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 </style>
