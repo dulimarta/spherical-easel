@@ -25,7 +25,9 @@
     </template>
   </template>
   <template v-if="constructionDocId">
-    <HintButton tooltip="Share saved cons" v-if="isPublicConstruction(constructionDocId)">
+    <HintButton
+      tooltip="Share saved cons"
+      v-if="isPublicConstruction(constructionDocId)">
       <template #icon>mdi-share-variant</template>
     </HintButton>
     <HintButton
@@ -55,6 +57,13 @@
       v-model="isSavedAsPublicConstruction"
       :disabled="appAuth.currentUser?.uid.length === 0"
       :label="t('construction.makePublic')"></v-switch>
+    <v-switch
+      v-if="isMyOwnConstruction"
+      v-model="shouldSaveOverwrite"
+      :disabled="appAuth.currentUser?.uid.length === 0"
+      :label="
+        t('construction.saveOverwrite', { docId: constructionDocId })
+      "></v-switch>
   </Dialog>
   <Dialog
     ref="exportConstructionDialog"
@@ -70,9 +79,18 @@
       <v-col cols="6">
         <v-row class="green">
           <v-col cols="8" class="pr-4">
-            <p>{{ t("sliderFileDimensions") }}</p>
+            <p>
+              {{
+                t("sliderFileDimensions", {
+                  widthHeight: `${(
+                    (svgExportHeight * canvasWidth) /
+                    canvasHeight
+                  ).toFixed(0)}x${svgExportHeight}`
+                })
+              }}
+            </p>
             <v-slider
-              v-model="svgExportDimension"
+              v-model="svgExportHeight"
               class="align-center"
               :max="1500"
               :min="100"
@@ -82,7 +100,7 @@
           <v-col cols="4">
             <v-text-field
               type="number"
-              v-model="svgExportDimension"
+              v-model="svgExportHeight"
               class="mt-0 pt-0"
               hide-details
               single-line
@@ -123,7 +141,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
 import { Command } from "@/commands/Command";
-import { ConstructionInFirestore } from "@/types";
+import { ConstructionInFirestore, SphericalConstruction } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import {
   uploadString,
@@ -134,6 +152,8 @@ import {
 import { useConstruction } from "@/composables/constructions";
 import { nextTick } from "vue";
 import FileSaver from "file-saver";
+import { computed } from "vue";
+import { watch } from "vue";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -157,7 +177,11 @@ const {
   canvasWidth
 } = storeToRefs(seStore);
 const { t } = useI18n();
-const { currentConstructionPreview, isPublicConstruction } = useConstruction();
+const {
+  currentConstructionPreview,
+  isPublicConstruction,
+  privateConstructions
+} = useConstruction();
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -167,8 +191,9 @@ const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isSavedAsPublicConstruction = ref(false);
+const shouldSaveOverwrite = ref(false);
 const selectedExportFormat = ref("");
-const svgExportDimension = ref(100);
+const svgExportHeight = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 
@@ -194,8 +219,31 @@ onKeyDown(
       event.preventDefault();
     }
   },
-  { dedupe: true }
+  { dedupe: true } // ignore repeated key events when keys are held down
 );
+
+const isMyOwnConstruction = computed((): boolean => {
+  // Confirm if the current construction is in my private list
+  if (constructionDocId.value === null) return false;
+  const pos =
+    privateConstructions.value?.findIndex(
+      (c: SphericalConstruction) => c.id === constructionDocId.value
+    ) ?? -1;
+  return pos >= 0;
+});
+
+watch(() => shouldSaveOverwrite.value, (overWrite) => {
+  if (!overWrite || privateConstructions.value === null)
+    constructionDescription.value = ""
+  else {
+    const pos = privateConstructions.value.findIndex(
+      (c: SphericalConstruction) => c.id === constructionDocId.value
+    );
+    constructionDescription.value =  pos >= 0
+      ? privateConstructions.value[pos].description
+      : ""
+  }
+});
 
 onMounted(() => {
   // The svgCanvas was set by SphereFrame but this component may be mounted
@@ -252,7 +300,7 @@ async function doLoginOrLogout() {
 
 async function doSave(): Promise<void> {
   if (svgRoot === undefined) {
-    // By the time doSave() is called svgCanvas must have been set
+    // By the time doSave() is called, svgCanvas must have been set
     // to it is safe to non-null assert svgCanvas.value
     svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
   }
@@ -299,30 +347,43 @@ async function doSave(): Promise<void> {
   const svgPreviewData = await toBase64(svgBlob);
   console.log(svgPreviewData); // TODO delete
 
-  // const svgURL = URL.createObjectURL(svgBlob);
-  // FileSaver.saveAs(svgURL, "hans.svg");
-
+  const saveFunction = shouldSaveOverwrite.value ? updateDoc : addDoc;
   /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
        Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
     */
-  addDoc(
-    // Task #1
-    collection(appDB, collectionPath),
-    {
-      version: "1",
-      dateCreated: new Date().toISOString(),
-      author: userEmail.value,
-      description: constructionDescription.value,
-      rotationMatrix: JSON.stringify(rotationMat.value.elements),
-      tools: includedTools.value,
-      aspectRatio: canvasWidth.value / canvasHeight.value,
-      // Use an empty string (for type checking only)
-      // the actual script will be determine below
-      script: ""
-    } as ConstructionInFirestore
-  )
+  let saveTask: Promise<DocumentReference>;
+  const constructionDetails: ConstructionInFirestore = {
+    version: "1",
+    dateCreated: new Date().toISOString(),
+    author: userEmail.value!,
+    description: constructionDescription.value,
+    rotationMatrix: JSON.stringify(rotationMat.value.elements),
+    tools: includedTools.value,
+    aspectRatio: canvasWidth.value / canvasHeight.value,
+    // Use an empty string (for type checking only)
+    // the actual script will be determine below
+    script: "",
+    preview: ""
+  };
+
+  // Task #1
+  if (shouldSaveOverwrite.value) {
+    const targetDoc = doc(
+      appDB,
+      collectionPath.concat("/" + constructionDocId.value)
+    );
+    // Task #1a: update the existing construction
+    saveTask = updateDoc(targetDoc, constructionDetails as any).then(
+      () => targetDoc
+    );
+  } else {
+    // Task #1b: save as a new construction
+    saveTask = addDoc(collection(appDB, collectionPath), constructionDetails);
+  }
+
+  saveTask
     .then((constructionDoc: DocumentReference) => {
       acctStore.constructionDocId = constructionDoc.id;
       /* Task #2 */
@@ -409,10 +470,12 @@ function doExport() {
     // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
     const offlineImage = new Image();
     offlineImage.addEventListener("load", () => {
-      const aspectRatio = canvasWidth.value / canvasHeight.value
-      const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
-      offlineCanvas.width = svgExportDimension.value * aspectRatio
-      offlineCanvas.height = svgExportDimension.value
+      const aspectRatio = canvasWidth.value / canvasHeight.value;
+      const offlineCanvas = document.createElement(
+        "canvas"
+      ) as HTMLCanvasElement;
+      offlineCanvas.width = svgExportHeight.value * aspectRatio;
+      offlineCanvas.height = svgExportHeight.value;
       // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
       // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
       const graphicsCtx = offlineCanvas.getContext("2d");
@@ -420,10 +483,10 @@ function doExport() {
         offlineImage,
         0,
         0,
-        svgExportDimension.value * aspectRatio,
-        svgExportDimension.value
+        svgExportHeight.value * aspectRatio,
+        svgExportHeight.value
       );
-      const imageExtension = selectedExportFormat.value.toLowerCase()
+      const imageExtension = selectedExportFormat.value.toLowerCase();
       const pngURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
       FileSaver.saveAs(pngURL, `construction.${imageExtension}`);
     });
@@ -441,10 +504,11 @@ function doExport() {
   "unknownEmail": "Unknown email",
   "construction": {
     "saveDescription": "Description",
-    "makePublic": "Make Construction Publicly Available",
+    "saveOverwrite": "Overwrite the existing construction {docId}",
+    "makePublic": "Make construction publicly available",
     "firestoreSaveError": "Construction was not saved: {error}"
   },
-  "sliderFileDimensions": "Exported file height",
+  "sliderFileDimensions": "Exported file size {widthHeight}",
   "exportFormat": "Image Format"
 }
 </i18n>

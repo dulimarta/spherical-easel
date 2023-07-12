@@ -216,10 +216,14 @@ export function useConstruction() {
     appStorage = getStorage();
 
     appAuth.onAuthStateChanged((u: User | null) => {
+      // Unregister previous snapshot listener (if exists)
       if (snapShotUnsubscribe !== null) snapShotUnsubscribe();
       if (u !== null) {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
-        privateConstructions.value = [];
+        if (privateConstructions.value === null)
+          privateConstructions.value = [] // Create a new empty array
+        else
+          privateConstructions.value.splice(0) // Purge the existing items
         snapShotUnsubscribe = onSnapshot(privateColl, () => {
           parseCollection(privateColl, privateConstructions.value!);
         });
