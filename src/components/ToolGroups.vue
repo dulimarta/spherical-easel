@@ -12,12 +12,18 @@
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
+    <v-expansion-panels>
     <div v-for="(g, gpos) in buttonGroup" :key="gpos">
       <template v-if="g.children.length > 0">
-        <h3 class="body-1 font-weight-bold button-group-heading">
-          {{ $t(`toolGroups.${g.group}`) }}
-        </h3>
-        <div class="button-group">
+
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              <h3 class="body-1 font-weight-bold button-group-heading">
+                {{ $t(`toolGroups.${g.group}`) }}
+              </h3>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div class="button-group">
           <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
           <template v-for="btn in g.children" :key="btn.action">
             <v-item
@@ -32,8 +38,12 @@
             </v-item>
           </template>
         </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+
       </template>
     </div>
+    </v-expansion-panels>
 
     <div
       id="DeveloperToolGroup"

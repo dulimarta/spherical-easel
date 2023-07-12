@@ -114,9 +114,11 @@
         </template>
       </v-navigation-drawer>
       <v-navigation-drawer v-if="show">
-        <v-list>
+        <span>{{headerItem[activeItem[0]]  }}</span>
+        <ToolGroups />
+        <!-- <v-list>
           <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
-        </v-list>
+        </v-list> -->
       </v-navigation-drawer>
 
       <v-main :style="{ height: height + 'px' }"></v-main>
