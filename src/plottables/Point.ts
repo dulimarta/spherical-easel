@@ -109,10 +109,10 @@ export default class Point extends Nodule {
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
     // The points are not initially glowing but are visible for the temporary object
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = false;
+    // this.frontPoint.visible = true;
+    // this.glowingFrontPoint.visible = false;
+    // this.backPoint.visible = true;
+    // this.glowingBackPoint.visible = false;
 
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
@@ -123,6 +123,7 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.back;
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_POINT_FRONT_STYLE);
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_POINT_BACK_STYLE);
+    this.adjustSize(); // apply the current scale factor and zoom level
   }
 
   /**
@@ -307,6 +308,7 @@ export default class Point extends Nodule {
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const radiusPercentFront = frontStyle?.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
+
     this.frontPoint.scale = (Point.pointScaleFactor * radiusPercentFront) / 100;
 
     this.backPoint.scale =

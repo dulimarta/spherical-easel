@@ -424,7 +424,6 @@ function handleKeyDown(keyEvent: KeyboardEvent): void {
 }
 //#region resizePlottables
 function resizePlottables(e: { factor: number }): void {
-  // const oldFactor = previousZoomMagnificationFactor;
   // Update the current stroke widths/radius in each plottable class
   Line.updateCurrentStrokeWidthForZoom(e.factor);
   Segment.updateCurrentStrokeWidthForZoom(e.factor);
@@ -435,7 +434,6 @@ function resizePlottables(e: { factor: number }): void {
   Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
   Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
-  //console.debug("Resize all nodules and the temporary ones");
   // Apply the new size in each nodule in the store
   seNodules.value.forEach((p: SENodule) => {
     p.ref?.adjustSize();
