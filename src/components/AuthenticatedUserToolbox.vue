@@ -38,7 +38,11 @@
   </template>
   <Dialog
     ref="saveConstructionDialog"
-    :title="t('saveConstructionDialogTitle')"
+    :title="
+      isSavedAsPublicConstruction
+        ? t('savePublicConstructionDialogTitle')
+        : t('savePrivateConstructionDialogTitle')
+    "
     :yes-text="t('saveAction')"
     :no-text="t('cancelAction')"
     :yes-action="doSave"
@@ -232,18 +236,28 @@ const isMyOwnConstruction = computed((): boolean => {
   return pos >= 0;
 });
 
-watch(() => shouldSaveOverwrite.value, (overWrite) => {
-  if (!overWrite || privateConstructions.value === null)
-    constructionDescription.value = ""
-  else {
-    const pos = privateConstructions.value.findIndex(
-      (c: SphericalConstruction) => c.id === constructionDocId.value
-    );
-    constructionDescription.value =  pos >= 0
-      ? privateConstructions.value[pos].description
-      : ""
+watch(
+  () => constructionDocId.value,
+  () => {
+    // When the construction selection changes, reset the constructionDescription
+    constructionDescription.value = "";
   }
-});
+);
+
+watch(
+  () => shouldSaveOverwrite.value,
+  overWrite => {
+    if (!overWrite || privateConstructions.value === null)
+      constructionDescription.value = "";
+    else {
+      const pos = privateConstructions.value.findIndex(
+        (c: SphericalConstruction) => c.id === constructionDocId.value
+      );
+      constructionDescription.value =
+        pos >= 0 ? privateConstructions.value[pos].description : "";
+    }
+  }
+);
 
 onMounted(() => {
   // The svgCanvas was set by SphereFrame but this component may be mounted
@@ -496,7 +510,8 @@ function doExport() {
 </script>
 <i18n locale="en">
 {
-  "saveConstructionDialogTitle": "Save Construction",
+  "savePrivateConstructionDialogTitle": "Save Private Construction",
+  "savePublicConstructionDialogTitle": "Save Public Construction",
   "exportConstructionDialogTitle": "Export Construction",
   "exportAction": "Export",
   "saveAction": "Save",

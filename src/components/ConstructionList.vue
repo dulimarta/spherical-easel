@@ -27,7 +27,7 @@
                   width="64" />
               </template>
               <v-list-item-title class="text-truncate">
-                {{ r.publicDocId }}--{{ r.description || "N/A" }}
+                {{ r.description || "N/A" }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 <code>{{ r.id.substring(0, 5) }}</code>
