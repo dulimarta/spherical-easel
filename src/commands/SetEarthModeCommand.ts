@@ -1,10 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SavedNames } from "@/types";
-import { useSEStore } from "@/stores/se";
-import { storeToRefs } from "pinia";
-// const seStore = useSEStore();
-// const { isEarthMode } = storeToRefs(seStore);
 
 export class SetEarthModeCommand extends Command {
   private showing: boolean;
@@ -21,7 +17,7 @@ export class SetEarthModeCommand extends Command {
   saveState(): void {}
 
   restoreState(): void {
-    //isEarthMode.value = !this.showing;
+    Command.store.isEarthMode = !this.showing;
   }
 
   toOpcode(): null | string | Array<string> {

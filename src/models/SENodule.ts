@@ -414,19 +414,21 @@ export abstract class SENodule implements Visitable {
 
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
+    //console.log("SENodule set glow of ", this.name, " to ", b);
+    //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref?.glowingDisplay();
-    } else this.ref?.normalDisplay();
-    // TODO: not glowing implies not selected?
-    // this.selected = false;
+    } else {
+      this.ref?.normalDisplay();
+    }
   }
 
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
-    console.debug("SENodule::selected() arg", b);
+    console.log("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
     if (!this._showing) return;
     this._selected = b;

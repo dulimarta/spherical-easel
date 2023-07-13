@@ -18,6 +18,13 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
+  public static NODULE_COUNT = 0;
+  public id = 0;
+
+  constructor() {
+    this.id = Nodule.NODULE_COUNT;
+    Nodule.NODULE_COUNT++;
+  }
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */
