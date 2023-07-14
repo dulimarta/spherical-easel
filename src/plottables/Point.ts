@@ -123,7 +123,6 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.back;
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_POINT_FRONT_STYLE);
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_POINT_BACK_STYLE);
-    this.adjustSize(); // apply the current scale factor and zoom level
   }
 
   /**
@@ -210,7 +209,6 @@ export default class Point extends Nodule {
     } else {
       this.backNormalDisplay();
     }
-    this.stylize(DisplayStyle.ApplyCurrentVariables); // If you remove this line when you make a point and then move the point off the sphere canvas, the interior of the point becomes white.
   }
 
   addToLayers(layers: Two.Group[]): void {
@@ -232,14 +230,6 @@ export default class Point extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-    // console.log(
-    //   "set visible point front id:",
-    //   this.frontPoint.id,
-    //   " set ",
-    //   flag,
-    //   " id ",
-    //   this.id
-    // );
     if (!flag) {
       this.frontPoint.visible = false;
       this.glowingFrontPoint.visible = false;
