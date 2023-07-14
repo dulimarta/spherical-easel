@@ -198,6 +198,7 @@ export default class PointHandler extends Highlighter {
           .normalize();
         newSELabel.locationVector = this.tmpVector;
         pointCommandGroup.execute();
+        super.mouseLeave(event); // If this line is not here the point handler puts a "dim" point on the sphere and when you trigger the mouseLeave() event the point "brightens".  This fixes that issue so there is no brightening.
       }
     } else if (this.isTemporaryPointAdded) {
       // Remove the temporary object

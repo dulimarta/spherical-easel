@@ -36,8 +36,6 @@ export class AddPointCommand extends Command {
     if (this.sePoint.label && this.useVisiblePointCountToRename) {
       this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
     }
-    // this.sePoint.markKidsOutOfDate();
-    // this.sePoint.update();
   }
 
   saveState(): void {

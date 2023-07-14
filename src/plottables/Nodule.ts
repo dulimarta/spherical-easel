@@ -19,13 +19,13 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
-  public static NODULE_COUNT = 0;
+  //public static NODULE_COUNT = 0;
   static store: SEStoreType;
-  public id = 0;
+  //public id = 0;
 
   constructor() {
-    this.id = Nodule.NODULE_COUNT;
-    Nodule.NODULE_COUNT++;
+    // this.id = Nodule.NODULE_COUNT;
+    // Nodule.NODULE_COUNT++;
   }
 
   static setGlobalStore(store: SEStoreType): void {

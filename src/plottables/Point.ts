@@ -184,12 +184,7 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    // console.log(
-    //   "frt normal disp point front id:",
-    //   this.frontPoint.id,
-    //   " id ",
-    //   this.id
-    // );
+    //console.log("frt normal disp point front id:", this.frontPoint.id);
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -323,8 +318,8 @@ export default class Point extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    //console.log("before point fill frt: ", this.frontPoint.fill);
-    //console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
+    // console.log("before point fill frt: ", this.frontPoint.fill);
+    // console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // console.log("temp front id ", this.frontPoint.id);
@@ -454,7 +449,7 @@ export default class Point extends Nodule {
         break;
       }
     }
-    //console.log("after point fill frt: ", this.frontPoint.fill);
-    //console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
+    // console.log("after point fill frt: ", this.frontPoint.fill);
+    // console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
   }
 }
