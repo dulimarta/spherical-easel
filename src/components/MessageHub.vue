@@ -273,9 +273,9 @@ function cancelDeleteMessages() {
 </script>
 <style scoped>
 #msg-display-area {
-  /* background-color: blue; */
-  padding: 4px;
+  /* padding: 4px; */
   width: 25em;
+  height: 100%; /* Needed to place the alert vertically centered */
   overflow-y: auto;
 }
 

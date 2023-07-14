@@ -114,8 +114,12 @@
         </template>
       </v-navigation-drawer>
       <v-navigation-drawer v-if="show">
-        <span>{{headerItem[activeItem[0]]  }}</span>
-        <ToolGroups />
+        <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
+
+        <ToolGroups v-if="activeItem[0]===0"/>
+        <ObjectTree v-if="activeItem[0]===1"/>
+        <ConstructionLoader v-if="activeItem[0]===2"/>
+        <EarthToolVue v-if="activeItem[0]===3"/>
         <!-- <v-list>
           <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
         </v-list> -->
@@ -133,7 +137,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
 import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
-
+import EarthToolVue from "@/components/EarthTool.vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";

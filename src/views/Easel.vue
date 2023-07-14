@@ -61,27 +61,6 @@
               :available-height="availHeight"
               v-show="svgDataImage.length === 0"
               :is-earth-mode="isEarthMode" />
-            <v-switch
-              hide-details
-              color="primary"
-              :class="['earthToggler', 'bg-blue-lighten-2']"
-              density="compact"
-              variant="outlined"
-              v-model="isEarthMode"
-              label="Earth Mode">
-              <template #append v-if="isEarthMode">
-                <v-icon id="placeBubble">mdi-map-marker</v-icon>
-                <v-menu
-                  activator="#placeBubble"
-                  location="right"
-                  :offset="[24, 16]"
-                  :close-on-content-click="false">
-                  <Suspense>
-                    <AddressInput />
-                  </Suspense>
-                </v-menu>
-              </template>
-            </v-switch>
           </div>
           <v-overlay
             :scrim="false"
