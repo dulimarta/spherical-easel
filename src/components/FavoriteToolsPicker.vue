@@ -5,7 +5,7 @@
       <v-col cols="3">
         <v-card>
           <v-card-title>
-            {{ $t("allTools") }}
+            {{ t("allTools") }}
           </v-card-title>
           <v-card-text>
             <v-list density="compact" id="mainToolsList">
@@ -34,36 +34,18 @@
                 v-model="favoriteTools[0]"
                 :tool-pick="selected"
                 :id="0"
-                :list-title="$t('topLeft')"
+                :list-title="t('topLeft')"
                 v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved"/>
+                v-on:tool-removed="onToolRemoved" />
             </v-col>
             <v-col cols="6">
               <FavoriteToolsCard
                 v-model="favoriteTools[1]"
                 :tool-pick="selected"
                 :id="1"
-                :list-title="$t('topRight')"
+                :list-title="t('topRight')"
                 v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved"/>
-            </v-col>
-            <v-col cols="6">
-              <FavoriteToolsCard
-                v-model="favoriteTools[2]"
-                :tool-pick="selected"
-                :id="2"
-                :list-title="$t('bottomLeft')"
-                v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved"/>
-            </v-col>
-            <v-col cols="6">
-              <FavoriteToolsCard
-                v-model="favoriteTools[3]"
-                :tool-pick="selected"
-                :id="3"
-                :list-title="$t('bottomRight')"
-                v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved"/>
+                v-on:tool-removed="onToolRemoved" />
             </v-col>
           </v-row>
         </v-container>
@@ -83,29 +65,40 @@ import { TOOL_DICTIONARY } from "./tooldictionary";
 import { onMounted } from "vue";
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
-const {t} = useI18n({useScope: 'local'})
+const { t } = useI18n({ useScope: "local" });
 const allToolsList: Ref<ToolButtonType[]> = ref([]);
 const selected: Ref<ActionMode | null> = ref(null);
 
 onBeforeMount(() => {
-  allToolsList.value = Array.from(TOOL_DICTIONARY.values());
-  allToolsList.value.sort(toolSortFunc)
+  allToolsList.value = Array.from(TOOL_DICTIONARY.values()).filter(
+    (t: ToolButtonType) =>
+      t.action !== "zoomIn" &&
+      t.action !== "zoomOut" &&
+      t.action !== "zoomFit" &&
+      t.action !== "undoAction" &&
+      t.action !== "redoAction" &&
+      t.action !== "resetAction"
+  );
+  allToolsList.value.sort(toolSortFunc);
 });
 
 onMounted(() => {
-  favoriteTools.value.flatMap(x => x).forEach((a: ActionMode) => {
-    const pos = allToolsList.value.findIndex((t: ToolButtonType) => t.action == a)
-    if (pos >= 0) {
-      allToolsList.value.splice(pos, 1)
-    }
-  })
-})
+  favoriteTools.value
+    .flatMap(x => x)
+    .forEach((a: ActionMode) => {
+      const pos = allToolsList.value.findIndex(
+        (t: ToolButtonType) => t.action == a
+      );
+      if (pos >= 0) {
+        allToolsList.value.splice(pos, 1);
+      }
+    });
+});
 
 function toolSortFunc(a: ToolButtonType, b: ToolButtonType): number {
-  const aText = t(a.displayedName)
-  const bText = t(b.displayedName)
-  console.debug(`Comparing [${aText}] vs. [${bText}]`)
-  return aText.localeCompare(bText)
+  const aText = t(a.displayedName);
+  const bText = t(b.displayedName);
+  return aText.localeCompare(bText);
 }
 
 function onToolAdded() {
@@ -119,8 +112,8 @@ function onToolAdded() {
 }
 
 function onToolRemoved(toolName: ActionMode) {
-  allToolsList.value.push(TOOL_DICTIONARY.get(toolName)!)
-  allToolsList.value.sort(toolSortFunc)
+  allToolsList.value.push(TOOL_DICTIONARY.get(toolName)!);
+  allToolsList.value.sort(toolSortFunc);
 }
 </script>
 <style scoped>
@@ -130,7 +123,7 @@ function onToolRemoved(toolName: ActionMode) {
   overflow-y: auto;
 }
 </style>
-<i18n lang="json" locale="en">
+<i18n locale="en">
 {
   "allTools": "All Tools",
   "topLeft": "Top-Left Corner",

@@ -16,6 +16,9 @@
       <v-icon>mdi-account</v-icon>
     </v-btn>
     <template v-if="appAuth.currentUser !== null">
+      <router-link to="/settings/">
+        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
+      </router-link>
       <HintButton
         :disabled="!hasObjects"
         @click="() => saveConstructionDialog?.show()"

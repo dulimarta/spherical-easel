@@ -47,43 +47,7 @@
       <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <AuthenticatedUserToolbox />
-      <template v-if="false">
-        <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-        <!--v-btn icon variant="text" size="medium">
-          <v-tooltip location="bottom" activator="parent">
-            Logout
-          </v-tooltip>
-          <v-icon
-            @click="showShareConstructionDialog">
-            mdi-location-exit
-          </v-icon>
-        </!--v-btn>
-        <v-btn icon variant="text" size="medium">
-          <v-tooltip location="bottom" activator="parent">
-            Share Construction
-          </v-tooltip>
-          <v-icon
-            v-show="showExport"
-            @click="showShareConstructionDialog">
-            mdi-share
-          </v-icon>
-        </--v-btn>
-        <v-btn-- icon variant="text">
-          <v-tooltip location="bottom" activator="parent">
-            Save Construction
-          </v-tooltip>
-          <v-icon
-            v-if="whoami !== ''"
-            :disabled="!hasObjects"
-            @click="showSaveConstructionDialog">
-            mdi-content-save
-          </v-icon>
-        </v-btn-->
-      </template>
       <LanguageSelector/>
-      <router-link to="/settings/">
-        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
-      </router-link>
     </v-app-bar>
 
     <!--

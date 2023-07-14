@@ -5,12 +5,14 @@
       <v-row justify="center" align="center" class="ma-0">
         <!-- <v-col cols="auto">Message filter {{ selectedMessageType }}</v-col> -->
         <v-col cols="auto" class="pa-0">
+          <!-- Enable/Disable notification -->
           <v-btn icon size="small" variant="text" @click="notifyMe = !notifyMe">
             <v-icon v-if="notifyMe">mdi-bell</v-icon>
             <v-icon v-else>mdi-bell-off</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="auto">
+          <!-- Message filter -->
           <v-badge
             :content="selectedMessageType.length"
             v-if="selectedMessageType.length !== messageTypes.length">
@@ -59,6 +61,7 @@
           </v-menu>
         </v-col>
         <v-col id="msg-display-area" class="pa-0 ma-0">
+          <!-- The actual messages -->
           <template v-if="notifyMe">
             <v-slide-x-transition>
               <v-alert
@@ -81,7 +84,7 @@
             transition="fade-transition"
             v-else
             color="grey"
-            text="(Messages disabled)"
+            :text="t('msgDisabled')"
             class="text-white"></v-alert>
         </v-col>
         <v-col cols="auto" class="pa-0">
@@ -266,10 +269,10 @@ function cancelDeleteMessages() {
 </script>
 <style scoped>
 #msg-display-area {
-  /* background-color: blue; */
   /* padding: 4px; */
   width: 25em;
-  height: 60px;
+  max-height: 60px;
+  height: 100%; /* Needed to place the alert vertically centered */
   overflow-y: auto;
 }
 #msghub {
@@ -288,6 +291,7 @@ function cancelDeleteMessages() {
   "error": "Error",
   "info": "Informational",
   "noMessages": "No messages",
+  "msgDisabled": "(Messages disabled)",
   "selectAll": "Select All Type",
   "selectMsgType": "Select Message Type",
   "success": "Success",
