@@ -177,12 +177,6 @@ export default class Point extends Nodule {
   }
 
   glowingDisplay(): void {
-    // console.log(
-    //   "glowing Display point",
-    //   this.glowingFrontPoint.id,
-    //   " id ",
-    //   this.id
-    // );
     if (this._locationVector.z > 0) {
       this.frontGlowingDisplay();
     } else {
@@ -216,6 +210,7 @@ export default class Point extends Nodule {
     } else {
       this.backNormalDisplay();
     }
+    this.stylize(DisplayStyle.ApplyCurrentVariables); // If you remove this line when you make a point and then move the point off the sphere canvas, the interior of the point becomes white.
   }
 
   addToLayers(layers: Two.Group[]): void {
@@ -338,11 +333,11 @@ export default class Point extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    console.log("before point fill frt: ", this.frontPoint.fill);
-    console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
+    //console.log("before point fill frt: ", this.frontPoint.fill);
+    //console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        console.log("temp front id ", this.frontPoint.id);
+        // console.log("temp front id ", this.frontPoint.id);
         // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
@@ -370,7 +365,7 @@ export default class Point extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        console.log("NONtemp front id ", this.frontPoint.id);
+        // console.log("NONtemp front id ", this.frontPoint.id);
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
@@ -469,7 +464,7 @@ export default class Point extends Nodule {
         break;
       }
     }
-    console.log("after point fill frt: ", this.frontPoint.fill);
-    console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
+    //console.log("after point fill frt: ", this.frontPoint.fill);
+    //console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
   }
 }
