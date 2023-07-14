@@ -31,7 +31,6 @@ export class SESegmentLength extends SEExpression {
   }
 
   public get noduleDescription(): string {
-    // const val = ;
     return String(
       i18n.global.t(`objectTree.segmentLength`, {
         seg: this.seSegment.label?.ref.shortUserName,

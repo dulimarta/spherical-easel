@@ -82,12 +82,12 @@ export class DeleteNoduleCommand extends Command {
           .filter(exp => exp instanceof SEPointCoordinate)
           .every(
             exp =>
-              (exp as SEPointCoordinate).point.name !==
-              (this.seNodule as SEPointCoordinate).point.name
+              (exp as SEPointCoordinate).sePoint.name !==
+              (this.seNodule as SEPointCoordinate).sePoint.name
           )
       ) {
-        if (this.seNodule.point.label) {
-          this.seNodule.point.label.ref.value = [];
+        if (this.seNodule.sePoint.label) {
+          this.seNodule.sePoint.label.ref.value = [];
         }
       }
     } else if (this.seNodule instanceof SETransformation) {

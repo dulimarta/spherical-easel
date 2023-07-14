@@ -33,7 +33,7 @@
             <span>{{ definitionText }}/ {{ nodeName }}</span>
           </v-tooltip>
         </v-col>
-        <!--v-col justify="end">
+        <v-col justify="end">
           <v-row align="center" no-gutters>
             <v-col>
               <v-tooltip location="end">
@@ -43,14 +43,14 @@
                     v-if="isMeasurement && supportsClipboard"
                     v-bind="props"
                     @click="copyToClipboard">
-                    <v-icon size="small">
-                      $copyToClipboard
-                    </v-icon>
+                    <v-icon size="small">$copyToClipboard</v-icon>
                   </div>
                 </template>
                 <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
               </v-tooltip>
-            </v-col-->
+            </v-col>
+          </v-row>
+        </v-col>
         <v-col>
           <v-tooltip location="end">
             <template v-slot:activator="{ props }">
@@ -445,6 +445,7 @@ function toggleLabelDisplay(): void {
   labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
   visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
 }
+
 function copyToClipboard(): void {
   if (props.node instanceof SEExpression) {
     navigator.clipboard.writeText(String(props.node.value)).then(() =>
@@ -663,6 +664,7 @@ const shakeTransformationDisplay = computed((): string => {
 const shortDisplayText = computed((): string => {
   return props.node.noduleItemText;
 });
+
 const definitionText = computed((): string => {
   return props.node.noduleDescription;
 });

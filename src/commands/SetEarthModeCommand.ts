@@ -11,7 +11,7 @@ export class SetEarthModeCommand extends Command {
   }
 
   do(): void {
-    // isEarthMode.value = this.showing;
+    Command.store.isEarthMode = this.showing;
   }
 
   saveState(): void {}
@@ -42,9 +42,7 @@ export class SetEarthModeCommand extends Command {
       return new SetEarthModeCommand(propMap.get("objectShowing") === "true");
     } else {
       throw new Error(
-        `SetEarthModeDisplayCommand:  ${propMap.get(
-          "objectShowing"
-        )} is undefined`
+        `SetEarthModeDisplayCommand: "objectShowing" is undefined`
       );
     }
   }

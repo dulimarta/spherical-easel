@@ -195,6 +195,7 @@ export default class Label extends Nodule {
   }
 
   set valueDisplayMode(vdm: ValueDisplayMode) {
+    console.log("set vdm in label");
     this._valueDisplayMode = vdm;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
@@ -519,13 +520,25 @@ export default class Label extends Nodule {
         // Compute the numerical part of the label (if any) and add it to the end of label
         if (this.value.length > 0) {
           if (this.seLabelParentType === "point") {
-            //For coordinates of a point
-            labelText =
-              "(" +
-              `${this._value
-                .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                .join(",")}` +
-              ")";
+            if (!Nodule.store.isEarthMode) {
+              //For coordinates of a point
+              labelText =
+                "(" +
+                `${this._value
+                  .map(num => num.toFixed(SETTINGS.decimalPrecision))
+                  .join(",")}` +
+                ")";
+            } else {
+              const latLong = this.convertXYZtoLatLong(this.value);
+              labelText =
+                "(" +
+                `${latLong
+                  .map(num =>
+                    num.toDegrees().toFixed(SETTINGS.decimalPrecision)
+                  )
+                  .join("\u{00B0},")}` +
+                "\u{00B0})";
+            }
           } else {
             switch (this._valueDisplayMode) {
               case ValueDisplayMode.Number:
@@ -709,5 +722,8 @@ export default class Label extends Nodule {
         break;
       }
     }
+  }
+  convertXYZtoLatLong(coords: number[]): number[] {
+    return [Math.asin(coords[2]), Math.atan2(coords[1], coords[0])];
   }
 }
