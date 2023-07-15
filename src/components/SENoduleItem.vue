@@ -126,7 +126,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeMount, onMounted, ref, Ref, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -661,12 +661,12 @@ const shakeTransformationDisplay = computed((): string => {
     : "";
 });
 
-const shortDisplayText = computed((): string => {
-  return props.node.noduleItemText;
+const shortDisplayText = computed((): (() => string) => {
+  return () => props.node.noduleItemText;
 });
 
-const definitionText = computed((): string => {
-  return props.node.noduleDescription;
+const definitionText = computed((): (() => string) => {
+  return () => props.node.noduleDescription;
 });
 </script>
 
