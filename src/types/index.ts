@@ -34,6 +34,8 @@ export interface AccountState {
   includedTools: Array<ActionMode>;
   excludedTools: Array<ActionMode>;
   favoriteTools: Array<Array<ActionMode>>;
+  constructionDocId: string | null; // The document id of construction being viewed on the canvas
+  constructionSaved: boolean;
 }
 
 /* This interface lists all the properties that each tool/button must have. */
@@ -565,16 +567,24 @@ export interface SphericalConstruction extends ConstructionInFirestore {
   parsedScript: ConstructionScript;
   sphereRotationMatrix: Matrix4;
   objectCount: number;
-  previewData: string;
+  // previewData: string;
+}
+
+export interface PublicConstructionInFirestore {
+  author: string; // Firebase Auth UID of the construction owner
+  constructionDocId: string;
 }
 
 export interface ConstructionInFirestore {
+  version: string;
   author: string;
   dateCreated: string;
   script: string;
   description: string;
   rotationMatrix?: string;
-  preview?: string;
+  preview: string; // Either the data:image of the URL to the data:image
+  aspectRatio?: number /* width / height of the screen when image was capture*/;
+  publicDocId?: string; // linked to the document with structure PublicConstructionInFirebase
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
 }

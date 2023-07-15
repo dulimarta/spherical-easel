@@ -5,6 +5,7 @@
     <div
       id="canvas"
       ref="canvas"
+      :class="animateClass"
       :width="availableWidth"
       :height="availableHeight"></div>
     <div class="anchored top left">
@@ -123,7 +124,7 @@ const {
   zoomTranslation,
   seLabels,
   layers,
-  buttonSelection,
+  // buttonSelection,
   isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
@@ -137,6 +138,7 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
+  const animateClass = ref("")
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   console.debug("Updating shortcut icons");
@@ -323,7 +325,7 @@ onMounted((): void => {
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
   // Without this option, scroll events will potentially block touch/wheel events
-  canvas.value?.addEventListener("wheel", handleMouseWheel, {passive: true});
+  canvas.value?.addEventListener("wheel", handleMouseWheel, { passive: true });
 
   // Add the listener to disable the context menu because without this line of code, if the user activates a tool,
   // then *first* presses ctrl key, then mouse clicks, a context menu appears and the functionality of the tool is
@@ -335,37 +337,31 @@ onMounted((): void => {
     event.preventDefault()
   );
 
-  watch(
-    () => props.isEarthMode,
-    earthMode => {
-      let i = 0;
-      for (const layer of Object.values(LAYER).filter(
-        layer => typeof layer !== "number"
-      )) {
-        if ((layer as string).includes("background")) {
-          (seStore.layers[i] as any).visible = !earthMode;
-        }
-        i++;
-      }
-      // seStore.layers[Number(LAYER.midground)].visible = false;
-    }
-  );
   // canvas.value!.style.width = twoInstance.width.toString() + "px";
   // canvas.value!.style.height = twoInstance.height.toString() + "px";
   // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
-  watch(
-    () => seStore.canvasWidth,
-    () => {
-      // canvas.value!.style.width = seStore.canvasWidth.toString() + "px";
-      // canvas.value!.style.height = seStore.canvasWidth.toString() + "px";
-    }
-  );
+  console.debug("TwoJS SVG Canvas is", canvas.value);
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
 });
+watch(
+  () => props.isEarthMode,
+  earthMode => {
+    let i = 0;
+    for (const layer of Object.values(LAYER).filter(
+      layer => typeof layer !== "number"
+    )) {
+      if ((layer as string).includes("background")) {
+        (seStore.layers[i] as any).visible = !earthMode;
+      }
+      i++;
+    }
+    // seStore.layers[Number(LAYER.midground)].visible = false;
+  }
+);
 
 onBeforeUnmount((): void => {
   canvas.value?.removeEventListener("mousemove", handleMouseMoved);
@@ -393,9 +389,8 @@ watch(
   isEarthMode => {
     if (!isEarthMode) {
       boundaryCircle.stroke = "black";
-      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth
-    }
-    else {
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
+    } else {
       let currentLineWidth = boundaryCircle.linewidth;
       boundaryCircle.stroke = "blue";
       let intervalHandle: any;
@@ -706,9 +701,9 @@ function getCurrentSVGForIcon(): void {
 }
 
 function animateCanvas(): void {
-  canvas.value?.classList.add("spin");
+  animateClass.value = "spin"
   setTimeout(() => {
-    canvas.value?.classList.remove("spin");
+    animateClass.value = ""
   }, 1200);
 }
 
@@ -806,14 +801,16 @@ watch(
     currentTool?.deactivate();
     currentTool = null;
     //set the default footer color -- override as necessary
-    EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
-    const directiveMsg = {
-      key: buttonSelection.value.displayedName,
-      secondaryMsg: buttonSelection.value.toolUseMessage,
-      keyOptions: {},
-      secondaryMsgKeyOptions: {},
-      type: "directive"
-    };
+    let directiveMsg;
+    const associatedButton = TOOL_DICTIONARY.get(mode);
+    if (associatedButton)
+      directiveMsg = {
+        key: associatedButton.displayedName,
+        secondaryMsg: associatedButton.toolUseMessage,
+        keyOptions: {},
+        secondaryMsgKeyOptions: {},
+        type: "directive"
+      };
 
     switch (mode) {
       case "select":
@@ -821,14 +818,12 @@ watch(
           selectTool = new SelectionHandler(layers.value);
         }
         currentTool = selectTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "delete":
         if (!deleteTool) {
           deleteTool = new DeleteHandler(layers.value);
         }
         currentTool = deleteTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomIn":
         if (!zoomTool) {
@@ -878,7 +873,6 @@ watch(
           moveTool = new MoveHandler(layers.value);
         }
         currentTool = moveTool;
-        EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
         break;
       case "rotate":
         if (!rotateTool) {
@@ -892,35 +886,30 @@ watch(
           pointTool = new PointHandler(layers.value);
         }
         currentTool = pointTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "line":
         if (!lineTool) {
           lineTool = new LineHandler(layers.value);
         }
         currentTool = lineTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "segment":
         if (!segmentTool) {
           segmentTool = new SegmentHandler(layers.value);
         }
         currentTool = segmentTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "circle":
         if (!circleTool) {
           circleTool = new CircleHandler(layers.value);
         }
         currentTool = circleTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "ellipse":
         if (!ellipseTool) {
           ellipseTool = new EllipseHandler(layers.value);
         }
         currentTool = ellipseTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "antipodalPoint":
         if (!antipodalPointTool) {
@@ -954,28 +943,24 @@ watch(
           segmentLengthTool = new SegmentLengthHandler(layers.value);
         }
         currentTool = segmentLengthTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "pointDistance":
         if (!pointDistanceTool) {
           pointDistanceTool = new PointDistanceHandler(layers.value);
         }
         currentTool = pointDistanceTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "angle":
         if (!angleTool) {
           angleTool = new AngleHandler(layers.value);
         }
         currentTool = angleTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "coordinate":
         if (!coordinateTool) {
           coordinateTool = new CoordinateHandler(layers.value);
         }
         currentTool = coordinateTool;
-        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "toggleLabelDisplay":
         if (!toggleLabelDisplayTool) {
@@ -1090,7 +1075,7 @@ watch(
       default:
         currentTool = null;
     }
-    if (currentTool) {
+    if (currentTool && directiveMsg) {
       EventBus.fire("show-alert", directiveMsg);
     }
     currentTool?.activate();

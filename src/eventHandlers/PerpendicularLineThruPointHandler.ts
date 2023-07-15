@@ -577,19 +577,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel = new SELabel("point", this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel = this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addPerpendicularLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -602,19 +596,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // Create a new point at the blank place where the user clicked
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
-        const newSELabel = new SELabel("point", this.sePoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.sePoint.locationVector)
-          .add(
+        const newSELabel = this.sePoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         addPerpendicularLineGroup.addCommand(
           new AddPointCommand(this.sePoint, newSELabel)
@@ -774,19 +762,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             //   item.SEIntersectionPoint.locationVector.toFixed(4)
             // );
             // Create the plottable label
-            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             const addIntersectionCmd = new AddIntersectionPointCommand(
               item.SEIntersectionPoint,

@@ -5,12 +5,14 @@
       <v-row justify="center" align="center" class="ma-0">
         <!-- <v-col cols="auto">Message filter {{ selectedMessageType }}</v-col> -->
         <v-col cols="auto" class="pa-0">
+          <!-- Enable/Disable notification -->
           <v-btn icon size="small" variant="text" @click="notifyMe = !notifyMe">
             <v-icon v-if="notifyMe">mdi-bell</v-icon>
             <v-icon v-else>mdi-bell-off</v-icon>
           </v-btn>
         </v-col>
         <v-col cols="auto">
+          <!-- Message filter -->
           <v-badge
             :content="selectedMessageType.length"
             v-if="selectedMessageType.length !== messageTypes.length">
@@ -45,13 +47,6 @@
                     density="compact"
                     direction="horizontal"></v-checkbox>
                 </div>
-                <!--v-select
-                  density="compact"
-                  v-model="selectedMessageType"
-                  label="Message filter"
-                  :items="messageTypes"
-                  item-title="title"
-                  item-value="value"></!--v-select-->
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
@@ -66,6 +61,7 @@
           </v-menu>
         </v-col>
         <v-col id="msg-display-area" class="pa-0 ma-0">
+          <!-- The actual messages -->
           <template v-if="notifyMe">
             <v-slide-x-transition>
               <v-alert
@@ -88,7 +84,7 @@
             transition="fade-transition"
             v-else
             color="grey"
-            text="(Messages disabled)"
+            :text="t('msgDisabled')"
             class="text-white"></v-alert>
         </v-col>
         <v-col cols="auto" class="pa-0">
@@ -110,6 +106,7 @@
                   :key="`${msg.key}-${index}`"
                   density="compact"
                   closable
+                  :icon="iconType(msg)"
                   :type="alertType(msg)"
                   :text="pretty(msg)"
                   v-on:update:model-value="
@@ -183,6 +180,7 @@ const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
+
 const messageTypes = computed(() =>
   SETTINGS.messageTypes.map((s: string) => ({
     value: s,
@@ -221,7 +219,9 @@ const currentMsg = computed((): MessageType | null =>
 function shortMessage(m: MessageType): string {
   return t(m.key, m.keyOptions);
 }
-
+function iconType(m: MessageType): string {
+  return m.type === "directive" ? "mdi-lightbulb" : (m.type as AlertType);
+}
 function alertType(m: MessageType): AlertType {
   return m.type === "directive" ? "success" : (m.type as AlertType);
 }
@@ -269,10 +269,10 @@ function cancelDeleteMessages() {
 </script>
 <style scoped>
 #msg-display-area {
-  /* background-color: blue; */
   /* padding: 4px; */
   width: 25em;
-  height: 60px;
+  max-height: 60px;
+  height: 100%; /* Needed to place the alert vertically centered */
   overflow-y: auto;
 }
 #msghub {
@@ -282,31 +282,36 @@ function cancelDeleteMessages() {
   border: 1px solid gray;
 }
 </style>
-<i18n lang="yaml">
-en:
-  all: "All"
-  deleteMsg: "Delete {msgType} messages"
-  deleteWarning: "Messages will be deleted"
-  directive: "Directive"
-  error: "Error"
-  info: "Informational"
-  noMessages: "No messages"
-  selectAll: "Select All Type"
-  selectMsgType: "Select Message Type"
-  success: "Success"
-  undo: "Undo"
-  warning: "Warning"
-id:
-  all: "Semua Pesan"
-  deleteMsg: "Hapus Pesan Jenis {msgType}"
-  deleteWarning: "Pesan-pesan akan dihapus"
-  directive: "Petunjuk"
-  error: "Kesalahan"
-  info: "Informasional"
-  noMessages: "Tidak ada pesan"
-  selectAll: "Pilih semua jenis pesan"
-  selectMsgType: "Pilih Jenis Pesan"
-  success: "Sukses"
-  undo: "Urung"
-  warning: "Peringatan"
+<i18n locale="en">
+{
+  "all": "All",
+  "deleteMsg": "Delete {msgType} messages",
+  "deleteWarning": "Messages will be deleted",
+  "directive": "Directive",
+  "error": "Error",
+  "info": "Informational",
+  "noMessages": "No messages",
+  "msgDisabled": "(Messages disabled)",
+  "selectAll": "Select All Type",
+  "selectMsgType": "Select Message Type",
+  "success": "Success",
+  "undo": "Undo",
+  "warning": "Warning"
+}
+</i18n>
+<i18n locale="id">
+{
+  "all": "Semua Pesan",
+  "deleteMsg": "Hapus Pesan Jenis {msgType}",
+  "deleteWarning": "Pesan-pesan akan dihapus",
+  "directive": "Petunjuk",
+  "error": "Kesalahan",
+  "info": "Informasional",
+  "noMessages": "Tidak ada pesan",
+  "selectAll": "Pilih semua jenis pesan",
+  "selectMsgType": "Pilih Jenis Pesan",
+  "success": "Sukses",
+  "undo": "Urung",
+  "warning": "Peringatan"
+}
 </i18n>

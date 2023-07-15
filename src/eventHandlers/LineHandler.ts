@@ -794,19 +794,13 @@ export default class LineHandler extends Highlighter {
             );
           } else {
             // Create the plottable label
-            const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
+            const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
                 new Vector3(
                   2 * SETTINGS.point.initialLabelOffset,
                   SETTINGS.point.initialLabelOffset,
                   0
                 )
               )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
 
             lineGroup.addCommand(
               new AddIntersectionPointCommand(

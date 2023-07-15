@@ -71,7 +71,8 @@ function hide(): void {
 
 function hideLast(): void {
   console.debug("Calling hideLast()")
-  sequencer.hideLastDialog()
+  if (!sequencer.hideLastDialog())
+    hide()
 }
 function doYes() {
   hideLast()

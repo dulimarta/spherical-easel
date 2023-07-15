@@ -10,5 +10,7 @@ export default createI18n({
   messages: {
     en: messagesEn,
     id: messagedId
-  }
+  },
+  fallbackWarn: false,
+  missingWarn: false
 });

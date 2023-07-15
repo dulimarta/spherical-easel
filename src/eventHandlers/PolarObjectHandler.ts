@@ -474,19 +474,13 @@ export default class PolarObjectHandler extends Highlighter {
     polarPoint1.locationVector = parentLineOrSegment.normalVector;
 
     // Create plottable for the Label
-    const newSELabel1 = new SELabel("point", polarPoint1);
-    // Set the initial label location
-    this.tmpVector
-      .copy(polarPoint1.locationVector)
-      .add(
+    const newSELabel1 = polarPoint1.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel1.locationVector = this.tmpVector;
 
     polarPointsCommandGroup.addCommand(
       new AddPolarPointCommand(polarPoint1, 0, parentLineOrSegment, newSELabel1)
@@ -499,19 +493,13 @@ export default class PolarObjectHandler extends Highlighter {
       parentLineOrSegment.normalVector.multiplyScalar(-1);
 
     // Create plottable for the Label
-    const newSELabel2 = new SELabel("point", polarPoint2);
-    // Set the initial label location
-    this.tmpVector
-      .copy(polarPoint2.locationVector)
-      .add(
+    const newSELabel2 = polarPoint2.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel2.locationVector = this.tmpVector;
 
     polarPointsCommandGroup.addCommand(
       new AddPolarPointCommand(polarPoint2, 1, parentLineOrSegment, newSELabel2)
@@ -552,19 +540,13 @@ export default class PolarObjectHandler extends Highlighter {
           this.oneDimensionalContainingParentPoint
         );
         this.parentPoint.locationVector = this.parentPointVector;
-        const newSELabel = new SELabel("point", this.parentPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.parentPoint.locationVector)
-          .add(
+        const newSELabel = this.parentPoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
         // Create the command to create a new point for undo/redo
         polarLineCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -578,19 +560,13 @@ export default class PolarObjectHandler extends Highlighter {
 
         this.parentPoint = new SEPoint();
         this.parentPoint.locationVector = this.parentPointVector;
-        const newSELabel = new SELabel("point", this.parentPoint);
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.parentPoint.locationVector)
-          .add(
+        const newSELabel = this.parentPoint.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
 
         polarLineCommandGroup.addCommand(
           new AddPointCommand(this.parentPoint, newSELabel)
@@ -671,19 +647,13 @@ export default class PolarObjectHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           polarLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(

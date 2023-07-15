@@ -173,7 +173,7 @@ export class AddPolygonCommand extends Command {
         angleMarker => angleMarker !== undefined
       ) &&
       polygonSegmentParents.every(segment => segment !== undefined) &&
-      valueDisplayMode
+      typeof valueDisplayMode === "number"
     ) {
       //make the polygon
       const sePolygon = new SEPolygon(

@@ -67,19 +67,13 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
-        const newSELabel = new SELabel("point", vtx);
-        // Set the initial label location
-        this.tmpVector
-          .copy(vtx.locationVector)
-          .add(
+        const newSELabel = vtx.attachLabelWithOffset(
             new Vector3(
               2 * SETTINGS.point.initialLabelOffset,
               SETTINGS.point.initialLabelOffset,
               0
             )
           )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
         // Create the command to create a new point for undo/redo
 
         pointOnOneDimensionalCommandGroup.addCommand(

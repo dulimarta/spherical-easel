@@ -89,13 +89,14 @@
             :class="['justify-center', 'align-start', previewClass]"
             :model-value="svgDataImage.length > 0">
             <div class="previewText">
-              {{ constructionInfo.count }} objects. Created by:
-              {{ constructionInfo.author }}
+              <p>{{ constructionInfo.count }} objects.</p>
+              <p>Created by: {{ constructionInfo.author }}</p>
             </div>
             <img
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
+              :width="overlayHeight * svgDataImageAspectRatio"
               :height="overlayHeight" />
           </v-overlay>
           <div id="msghub">
@@ -175,7 +176,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+import { ConstructionInFirestore, PublicConstructionInFirestore, SphericalConstruction } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -228,9 +229,7 @@ const {
   seNodules,
   temporaryNodules,
   hasObjects,
-  actionMode,
-  canvasHeight,
-  canvasWidth,
+  canvasHeight, canvasWidth,
   zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore);
@@ -271,6 +270,7 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const svgDataImage = ref("");
+const svgDataImageAspectRatio = ref(1)
 
 //#region magnificationUpdate
 onBeforeMount(() => {
@@ -282,7 +282,8 @@ onBeforeMount(() => {
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
-    svgDataImage.value = s.previewData;
+    svgDataImage.value = s.preview;
+    svgDataImageAspectRatio.value = s.aspectRatio ?? 1
     constructionInfo.value.author = s.author;
     constructionInfo.value.count = s.objectCount;
   } else {
@@ -315,10 +316,14 @@ function loadDocument(docId: string): void {
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   // load the script from public collection
-  getDoc(doc(appDB, "constructions", docId)).then(
-    async (doc: DocumentSnapshot) => {
-      if (doc.exists()) {
-        const { script } = doc.data() as ConstructionInFirestore;
+  getDoc(doc(appDB, "constructions", docId)).then((ds: DocumentSnapshot) => {
+    const { author, constructionDocId} = ds.data() as PublicConstructionInFirestore
+    return getDoc(doc(appDB, "users", author, "constructions", constructionDocId))
+  })
+  .then(
+    async (ds: DocumentSnapshot) => {
+      if (ds.exists()) {
+        const { script } = ds.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {
           // The script must be fetched from Firebase storage
@@ -490,7 +495,7 @@ onBeforeRouteLeave(
     toRoute: RouteLocationNormalized,
     fromRoute: RouteLocationNormalized
   ): boolean => {
-    if (hasObjects && !confirmedLeaving) {
+    if (hasObjects.value && !confirmedLeaving) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;
       return false;
@@ -572,11 +577,13 @@ function setEarthModeFunction() {
 .previewText {
   position: absolute;
   background-color: #fffd;
+  border: 2px solid grey;
   border-radius: 0.5em;
   transform: translateX(-50%);
   z-index: 30;
   padding: 0.25em;
   margin: 0.5em;
+  width: 20em;
 }
 .previewImage {
   position: absolute;

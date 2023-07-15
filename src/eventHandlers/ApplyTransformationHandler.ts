@@ -1573,19 +1573,14 @@ export default class ApplyTransformationHandler extends Highlighter {
     newTransformedSEPoint.update();
 
     // Create the label
-    const newSELabel = new SELabel("point", newTransformedSEPoint);
-    // Set the initial label location
-    this.tmpVector
-      .copy(newTransformedSEPoint.locationVector)
-      .add(
+    const newSELabel = newTransformedSEPoint.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
+
 
     commandGroup.addCommand(
       new AddTransformedPointCommand(
@@ -1688,19 +1683,13 @@ export default class ApplyTransformationHandler extends Highlighter {
     newIsometrySESegment.update();
 
     // Create the label
-    const newSELabel = new SELabel("segment", newIsometrySESegment);
-    // Set the initial label location
-    this.tmpVector
-      .copy(newIsometrySESegment.getMidPointVector())
-      .add(
+    const newSELabel = newIsometrySESegment.attachLabelWithOffset(
         new Vector3(
           2 * SETTINGS.segment.initialLabelOffset,
           SETTINGS.segment.initialLabelOffset,
           0
         )
       )
-      .normalize();
-    newSELabel.locationVector = this.tmpVector;
 
     transformedSegmentCommandGroup.addCommand(
       new AddIsometrySegmentCommand(
@@ -1727,19 +1716,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.segment.initialLabelOffset,
                 SETTINGS.segment.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -1878,19 +1861,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2034,20 +2011,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2220,20 +2190,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2421,19 +2384,13 @@ export default class ApplyTransformationHandler extends Highlighter {
       newInvertedSECircleCenter.update();
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
-      const newSELabel = new SELabel("point", newInvertedSECircleCenter);
-      // Set the initial label location
-      this.tmpVector
-        .copy(newInvertedSECircleCenter.locationVector)
-        .add(
+      const newSELabel = newInvertedSECircleCenter.attachLabelWithOffset(
           new Vector3(
             2 * SETTINGS.line.initialLabelOffset,
             SETTINGS.line.initialLabelOffset,
             0
           )
         )
-        .normalize();
-      newSELabel.locationVector = this.tmpVector;
 
       invertedCircleOrLineCommandGroup.addCommand(
         new AddInvertedCircleCenterCommand(
@@ -2511,20 +2468,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           );
         } else {
           // Create the plottable and model label
-          const newSELabel = new SELabel("point", item.SEIntersectionPoint);
-
-          // Set the initial label location
-          this.tmpVector
-            .copy(item.SEIntersectionPoint.locationVector)
-            .add(
+          const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
                 2 * SETTINGS.point.initialLabelOffset,
                 SETTINGS.point.initialLabelOffset,
                 0
               )
             )
-            .normalize();
-          newSELabel.locationVector = this.tmpVector;
 
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(

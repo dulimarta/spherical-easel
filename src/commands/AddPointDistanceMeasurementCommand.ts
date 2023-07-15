@@ -59,7 +59,7 @@ export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
       | ValueDisplayMode
       | undefined;
 
-    if (parentPoint1 && parentPoint2 && valueDisplayMode) {
+    if (parentPoint1 && parentPoint2 && typeof valueDisplayMode === "number") {
       const distanceMeasure = new SEPointDistance(parentPoint1, parentPoint2);
       distanceMeasure.valueDisplayMode = valueDisplayMode;
       //put the distance measure in the object map

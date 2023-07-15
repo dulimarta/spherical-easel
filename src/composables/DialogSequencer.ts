@@ -28,14 +28,15 @@ export function useDialogSequencer() {
     }
   }
 
-  function hideLastDialog() {
+  function hideLastDialog():boolean {
     console.debug("hideLastDialog: queue length", dialogQueue.length)
-    if (dialogQueue.length === 0) return
+    if (dialogQueue.length === 0) return false
     const d = dialogQueue.shift()
     d?.hide()
     if (dialogQueue.length > 0) {
       dialogQueue[0].show()
     }
+    return true
   }
 
   return {showDialog,hideDialog, hideLastDialog}

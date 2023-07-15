@@ -17,7 +17,7 @@ document.body.appendChild(app);
 // VueTestUtils.config?.mocks["$t"] = msg => translations[locale][msg];
 if (config) {
   // config.mocks["$t"] = key => key;
-  config.showDeprecationWarnings = false;
+  // config = false;
 }
 
 // /* Extension functions for numbers */

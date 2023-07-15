@@ -53,7 +53,7 @@ export class AddLengthMeasurementCommand extends AddExpressionCommand {
       | ValueDisplayMode
       | undefined;
 
-    if (segmentParent && valueDisplayMode) {
+    if (segmentParent && typeof valueDisplayMode === "number") {
       const lengthMeasure = new SESegmentLength(segmentParent);
       lengthMeasure.valueDisplayMode = valueDisplayMode;
       //put the length measure in the object map
