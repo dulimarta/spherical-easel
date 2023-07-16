@@ -2,10 +2,9 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
-      <span v-if="children.length === 1" class="text-subtitle-1">{{
-        $t(i18LabelKey, 1)
+      <span class="text-subtitle-1">{{
+        $t(i18LabelKey, children.length == 1 ? 1 : 0)
       }}</span>
-      <span v-else class="text-subtitle-1">{{ $t(i18LabelKey, 0) }}</span>
       <v-btn size="small" v-show="hasExistingChildren" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
@@ -42,6 +41,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 const props = defineProps<{
   children: SENodule[];
   i18LabelKey: string;
@@ -49,7 +49,7 @@ const props = defineProps<{
 
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
-
+const {t} = useI18n()
 const expanded = ref(false);
 onBeforeMount((): void => {
   EventBus.listen("expand-measurement-sheet", expandMeasurementSheet);

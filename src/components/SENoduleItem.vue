@@ -27,10 +27,10 @@
                   shakeMeasurementDisplay,
                   shakeTransformationDisplay
                 ]">
-                <span class="text-truncate ml-1">{{ shortDisplayText }}</span>
+                <span class="text-truncate ml-1">{{ node.noduleItemText }}</span>
               </div>
             </template>
-            <span>{{ definitionText }}/ {{ nodeName }}</span>
+            <span>q{{ node.noduleDescription }}/ {{ nodeName }}</span>
           </v-tooltip>
         </v-col>
         <!--v-col justify="end">
@@ -627,13 +627,6 @@ const shakeTransformationDisplay = computed((): string => {
     props.node instanceof SETransformation
     ? "shake"
     : "";
-});
-
-const shortDisplayText = computed((): string => {
-  return props.node.noduleItemText;
-});
-const definitionText = computed((): string => {
-  return props.node.noduleDescription;
 });
 </script>
 
