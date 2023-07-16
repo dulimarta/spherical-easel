@@ -9,19 +9,13 @@
               v-model="isEarthMode"
               label="Earth Mode">
     </v-switch>
-    <AddressInput />
   </div>
-
-              <!-- <template #append v-if="isEarthMode">
-                <v-icon id="placeBubble">mdi-map-marker</v-icon>
-
-              </template> -->
-
+  <AddressInput/>
 </template>
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import AddressInput from "@/components/AddressInput.vue";
+import AddressInput from "./AddressInput.vue";
 const seStore = useSEStore();
 const {
   isEarthMode

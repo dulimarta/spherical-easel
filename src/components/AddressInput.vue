@@ -1,5 +1,4 @@
 <template>
-  <div>
     <v-autocomplete
       ref="addrInput"
       v-model="addrPlaceId"
@@ -17,8 +16,8 @@
         <v-icon @click="getPlaceDetails">mdi-check</v-icon>
       </template>
     </v-autocomplete>
-  </div>
 </template>
+
 <i18n lang="json" locale="en">
 {
   "enterAddress": "Enter address",
@@ -44,10 +43,10 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 10px;
-  background-color: white;
+  background-color: black;
 }
 </style>
-<script setup lang="ts">
+ <script setup lang="ts">
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
@@ -73,7 +72,7 @@ const addrInput: Ref<HTMLInputElement | null> = ref(null);
 const predictedAddresses: Ref<Array<AddressPair>> = ref([]);
 const addressSearch: Ref<string | undefined> = ref(undefined);
 const apiKey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY;
-console.debug("Address input using API", apiKey);
+console.log("Address input using API", apiKey);
 const loader = new Loader({
   apiKey,
   version: "weekly"

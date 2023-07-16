@@ -45,10 +45,7 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <!--AddressInput
-            v-if="isEarthMode"
-            style="position: absolute; bottom: 0; z-index: 100" /-->
-          <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
+
 
           <div id="earthAndCircle">
             <EarthLayer

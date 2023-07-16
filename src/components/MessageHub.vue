@@ -72,6 +72,7 @@
                 v-if="currentMsg"
                 :key="currentMsg.key"
                 class="my-1 py-0"
+                style="height: 60px;"
                 border="end"
                 variant="outlined"
                 :border-color="alertType(currentMsg)"
@@ -86,6 +87,7 @@
           </template>
           <v-alert
             transition="fade-transition"
+            style="height: 60px;"
             v-else
             color="grey"
             text="(Messages disabled)"
@@ -103,6 +105,7 @@
               <v-card-text>
                 <v-alert
                   class="my-1 py-0 bg-white"
+                  style="height: 60px;"
                   border="end"
                   variant="outlined"
                   :border-color="alertType(msg)"
