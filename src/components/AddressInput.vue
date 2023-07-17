@@ -1,9 +1,11 @@
 <template>
+  <div style="display: flex; padding:5px;">
     <v-autocomplete
       ref="addrInput"
       v-model="addrPlaceId"
       v-model:search="addressSearch"
       :items="predictedAddresses"
+      :disabled="!isEarthMode"
       item-title="description"
       item-value="placeId"
       :hide-details="addressError.length === 0"
@@ -12,10 +14,14 @@
       density="compact"
       :label="t('enterAddress')"
       style="width: 30em">
-      <template #append>
-        <v-icon @click="getPlaceDetails">mdi-check</v-icon>
+      <template #append v-if="!isLine" >
+        <v-btn  @click="getPlaceDetails" :disabled="addrPlaceId.length===0">
+          <v-icon>mdi-map-marker</v-icon>
+        </v-btn>
+
       </template>
     </v-autocomplete>
+  </div>
 </template>
 
 <i18n lang="json" locale="en">
@@ -57,7 +63,22 @@ import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
-
+import { SEPoint } from "@/models/internal";
+const seStore = useSEStore();
+const emit = defineEmits( ["update:point"]);
+const props = defineProps({
+  isLine: {
+    type: Boolean,
+    default: false
+  },
+  point:{
+    type:SEPoint,
+    default:undefined
+  }
+})
+const {
+  isEarthMode
+} = storeToRefs(seStore);
 type AddressPair = {
   description: string;
   placeId: string;
@@ -146,11 +167,15 @@ function getPlaceDetails() {
           pointCommandGroup.execute();
           // pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
           newSELabel.update();
+          emit("update:point", vtx);
         }
       } else {
         addressError.value = t('addressDetailsUnknown')
       }
     }
   );
+  addrPlaceId.value="";
+  addressSearch.value="";
+  predictedAddresses.value.splice(0, predictedAddresses.value.length)
 }
 </script>
