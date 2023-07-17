@@ -33,6 +33,7 @@ export abstract class Command {
     if (Command.commandHistory.length === 0) return;
     // Pop the last command from the history stack
     const lastAction: Command | undefined = Command.commandHistory.pop();
+    console.log("undo last", lastAction);
     // Run is restore state logic
     if (lastAction) {
       Command.redoHistory.push(lastAction);

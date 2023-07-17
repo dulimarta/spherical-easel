@@ -176,10 +176,10 @@ export default class Label extends Nodule {
     this.backText.translation = this.defaultScreenVectorLocation;
 
     // The text is not initially visible
-    this.frontText.visible = false;
-    this.glowingFrontText.visible = false;
-    this.backText.visible = false;
-    this.glowingBackText.visible = false;
+    // this.frontText.visible = false;
+    // this.glowingFrontText.visible = false;
+    // this.backText.visible = false;
+    // this.glowingBackText.visible = false;
 
     // Set the properties of the points that never change - stroke width and some glowing options
     this.frontText.noStroke();
@@ -529,15 +529,7 @@ export default class Label extends Nodule {
                   .join(",")}` +
                 ")";
             } else {
-              const latLong = this.convertXYZtoLatLong(this.value);
-              labelText =
-                "(" +
-                `${latLong
-                  .map(num =>
-                    num.toDegrees().toFixed(SETTINGS.decimalPrecision)
-                  )
-                  .join("\u{00B0},")}` +
-                "\u{00B0})";
+              labelText = this.convertXYZtoLatLong(this.value);
             }
           } else {
             switch (this._valueDisplayMode) {
@@ -723,7 +715,34 @@ export default class Label extends Nodule {
       }
     }
   }
-  convertXYZtoLatLong(coords: number[]): number[] {
-    return [Math.asin(coords[2]), Math.atan2(coords[1], coords[0])];
+  convertXYZtoLatLong(coords: number[]): string {
+    const latitude = Math.asin(coords[2]);
+    const longitude = Math.atan2(coords[1], coords[0]);
+    let latitudeString: string;
+    if (latitude < 0) {
+      latitudeString =
+        Math.abs(latitude).toDegrees().toFixed(SETTINGS.decimalPrecision) +
+        "\u{00B0}" +
+        "S";
+    } else {
+      latitudeString =
+        latitude.toDegrees().toFixed(SETTINGS.decimalPrecision) +
+        "\u{00B0}" +
+        "N";
+    }
+    let longitudeString: string;
+    if (longitude < 0) {
+      longitudeString =
+        Math.abs(longitude).toDegrees().toFixed(SETTINGS.decimalPrecision) +
+        "\u{00B0}" +
+        "W";
+    } else {
+      longitudeString =
+        longitude.toDegrees().toFixed(SETTINGS.decimalPrecision) +
+        "\u{00B0}" +
+        "E";
+    }
+
+    return "(" + latitudeString + "," + longitudeString + ")";
   }
 }

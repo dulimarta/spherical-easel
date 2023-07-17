@@ -70,7 +70,7 @@
               @click="setEarthModeFunction()"
               label="Earth Mode">
               <template #append v-if="localIsEarthMode">
-                <v-icon id="placeBubble">mdi-map-marker</v-icon>
+                <v-icon id="placeBubble">$earthPoint</v-icon>
                 <v-menu
                   activator="#placeBubble"
                   location="right"
@@ -82,6 +82,9 @@
                 </v-menu>
               </template>
             </v-switch>
+            <DisplayEquatorAndPoles
+              v-if="localIsEarthMode"
+              :class="['displayEquatorAndPoles', 'bg-blue-lighten-2']" />
           </div>
           <v-overlay
             :scrim="false"
@@ -162,6 +165,7 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
+import DisplayEquatorAndPoles from "@/components/DisplayEquatorAndPoles.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
@@ -176,7 +180,11 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, PublicConstructionInFirestore, SphericalConstruction } from "@/types";
+import {
+  ConstructionInFirestore,
+  PublicConstructionInFirestore,
+  SphericalConstruction
+} from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -229,7 +237,8 @@ const {
   seNodules,
   temporaryNodules,
   hasObjects,
-  canvasHeight, canvasWidth,
+  canvasHeight,
+  canvasWidth,
   zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore);
@@ -270,7 +279,7 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
 const svgDataImage = ref("");
-const svgDataImageAspectRatio = ref(1)
+const svgDataImageAspectRatio = ref(1);
 
 //#region magnificationUpdate
 onBeforeMount(() => {
@@ -283,7 +292,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
-    svgDataImageAspectRatio.value = s.aspectRatio ?? 1
+    svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
     constructionInfo.value.author = s.author;
     constructionInfo.value.count = s.objectCount;
   } else {
@@ -316,12 +325,15 @@ function loadDocument(docId: string): void {
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   // load the script from public collection
-  getDoc(doc(appDB, "constructions", docId)).then((ds: DocumentSnapshot) => {
-    const { author, constructionDocId} = ds.data() as PublicConstructionInFirestore
-    return getDoc(doc(appDB, "users", author, "constructions", constructionDocId))
-  })
-  .then(
-    async (ds: DocumentSnapshot) => {
+  getDoc(doc(appDB, "constructions", docId))
+    .then((ds: DocumentSnapshot) => {
+      const { author, constructionDocId } =
+        ds.data() as PublicConstructionInFirestore;
+      return getDoc(
+        doc(appDB, "users", author, "constructions", constructionDocId)
+      );
+    })
+    .then(async (ds: DocumentSnapshot) => {
       if (ds.exists()) {
         const { script } = ds.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
@@ -344,8 +356,7 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
-    }
-  );
+    });
 }
 
 /** mounted() is part of VueJS lifecycle hooks */
@@ -629,7 +640,15 @@ function setEarthModeFunction() {
   border-radius: 8px;
   align-self: flex-start;
 }
-
+.displayEquatorAndPoles {
+  position: relative;
+  top: -210px;
+  left: 12px;
+  margin: 0;
+  padding: 0 0em;
+  border-radius: 8px;
+  align-self: flex-start;
+}
 #earthAndCircle {
   display: flex;
   flex-direction: column;

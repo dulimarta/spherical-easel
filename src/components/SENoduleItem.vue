@@ -27,10 +27,12 @@
                   shakeMeasurementDisplay,
                   shakeTransformationDisplay
                 ]">
-                <span class="text-truncate ml-1">{{ shortDisplayText }}</span>
+                <span class="text-truncate ml-1">
+                  {{ node.noduleItemText }}
+                </span>
               </div>
             </template>
-            <span>{{ definitionText }}/ {{ nodeName }}</span>
+            <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
           </v-tooltip>
         </v-col>
         <v-col justify="end">
@@ -73,7 +75,7 @@
                 v-if="isPlottable"
                 v-bind="props"
                 @click="toggleVisibility"
-                size="small"
+                size="tiny"
                 :icon="node.showing ? '$hideNode' : '$showNode'"
                 :key="visibilityUpdateKey"
                 :style="{ color: node.showing ? 'gray' : 'black' }" />
@@ -172,6 +174,7 @@ import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import SETTINGS from "@/global-settings";
+import { SEEarthPoint } from "@/models/SEEarthPoint";
 const seStore = useSEStore();
 const { actionMode, isEarthMode } = storeToRefs(seStore);
 const props = defineProps<{
@@ -180,8 +183,8 @@ const props = defineProps<{
 const emit = defineEmits(["object-select"]);
 const { t } = useI18n();
 
-const visibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
-const labelVisibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
+const visibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
+const labelVisibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 const iconName = ref("mdi-help");
 // const rotationMatrix = new Matrix4();
 // private traceLocation = new Vector3();
@@ -210,30 +213,34 @@ onBeforeMount(() => {
     nodeName = props.node.name;
   }
   if (false) {
-  } else if (props.node instanceof SEAngleMarker) {
-    iconName.value = "$angle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.angleMarkers`, 3);
+  } else if (props.node instanceof SEEarthPoint) {
+    // All the point subclasses with SEPoint last
+    iconName.value = "$earthPoint";
+    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SECircle) {
-    iconName.value = "$circle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SEEllipse) {
-    iconName.value = "$ellipse";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.ellipses`, 3);
   } else if (props.node instanceof SEIntersectionPoint) {
     iconName.value = "$intersect";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEInversion) {
-    iconName.value = "$inversion";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.transformations`, 3);
+  } else if (props.node instanceof SENSectPoint) {
+    iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPolarPoint) {
+    iconName.value = "$polar";
+    nodeType = t(`objects.points`, 3);
+  } else if (
+    props.node instanceof SETransformedPoint ||
+    props.node instanceof SEInversionCircleCenter
+  ) {
+    iconName.value = "$transformedPoint";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
+    iconName.value = "$pointOnObject";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPoint) {
+    iconName.value = "$point";
+    nodeType = t(`objects.points`, 3);
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&
@@ -242,104 +249,87 @@ onBeforeMount(() => {
       props.node.centerSEPoint.parentTransformation.name ===
         props.node.circleSEPoint.parentTransformation.name)
   ) {
+    // All the SECircle subclasses with SECircle last
     iconName.value = "$transformedCircle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.circles`, 3);
+  } else if (props.node instanceof SECircle) {
+    iconName.value = "$circle";
     nodeType = t(`objects.circles`, 3);
   } else if (props.node instanceof SEIsometryEllipse) {
+    // All the SEEllipse subclasses with SEEllipse last
     iconName.value = "$transformedEllipse";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.ellipses`, 3);
-  } else if (props.node instanceof SEIsometryLine) {
-    iconName.value = "$transformedLine";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEIsometrySegment) {
-    iconName.value = "$transformedSegment";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SELine) {
-    iconName.value = "$line";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SENSectLine) {
-    iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SENSectPoint) {
-    iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEPerpendicularLineThruPoint) {
-    iconName.value = "$perpendicular";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEPoint) {
-    iconName.value = "$point";
-  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
-    iconName.value = "$pointOnObject";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEEllipse) {
+    iconName.value = "$ellipse";
+    nodeType = t(`objects.ellipses`, 3);
+  } else if (props.node instanceof SEInversion) {
+    // All the transformation classes
+    iconName.value = "$inversion";
+    nodeType = t(`objects.transformations`, 3);
   } else if (props.node instanceof SEPointReflection) {
     iconName.value = "$pointReflection";
-    nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  } else if (props.node instanceof SEPolarLine) {
-    iconName.value = "$polar";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEPolarPoint) {
-    iconName.value = "$polar";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SEReflection) {
     iconName.value = "$reflection";
-    nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
   } else if (props.node instanceof SERotation) {
     iconName.value = "$rotation";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  } else if (props.node instanceof SESegment) {
-    iconName.value = "$segment";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SETangentLineThruPoint) {
-    iconName.value = "$tangent";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (
-    props.node instanceof SETransformedPoint ||
-    props.node instanceof SEInversionCircleCenter
-  ) {
-    iconName.value = "$transformedPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SETranslation) {
     iconName.value = "$translation";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
+  } // All the SELine subclasses with SELine last
+  else if (props.node instanceof SEPerpendicularLineThruPoint) {
+    iconName.value = "$perpendicular";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEIsometryLine) {
+    iconName.value = "$transformedLine";
+    nodeName = props.node.name;
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SENSectLine) {
+    iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEPolarLine) {
+    iconName.value = "$polar";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SETangentLineThruPoint) {
+    iconName.value = "$tangent";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SELine) {
+    iconName.value = "$line";
+    nodeType = t(`objects.lines`, 3);
+  } //All the SESegment subclasses with SESegment last
+  else if (props.node instanceof SEIsometrySegment) {
+    iconName.value = "$transformedSegment";
+    nodeName = props.node.name;
+    nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SESegment) {
+    iconName.value = "$segment";
+    nodeType = t(`objects.segments`, 3);
+  } // All the SEExpression subclasses with SEExpression last
+  else if (props.node instanceof SEAngleMarker) {
+    iconName.value = "$angle";
+    nodeType = t(`objects.angleMarkers`, 3);
   } else if (props.node instanceof SEPolygon) {
     iconName.value =
       props.node.seEdgeSegments.length === 3
         ? "$measureTriangle"
         : "$measurePolygon";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.triangles`, 3);
   } else if (props.node instanceof SESegmentLength) {
     iconName.value = "$segmentLength";
-    // nodeName = props.node.seSegment.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.measurements`, 3);
   } else if (props.node instanceof SEPointDistance) {
     iconName.value = "$pointDistance";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
   } else if (props.node instanceof SECalculation) {
     iconName.value = "$calculationObject";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.calculations`, 3);
   } else if (props.node instanceof SEExpression) {
     iconName.value = "$measurementObject";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
   }
 });
@@ -661,13 +651,13 @@ const shakeTransformationDisplay = computed((): string => {
     : "";
 });
 
-const shortDisplayText = computed((): (() => string) => {
-  return () => props.node.noduleItemText;
-});
+// const shortDisplayText = computed((): (() => string) => {
+//   return () => props.node.noduleItemText;
+// });
 
-const definitionText = computed((): (() => string) => {
-  return () => props.node.noduleDescription;
-});
+// const definitionText = computed((): (() => string) => {
+//   return () => props.node.noduleDescription;
+// });
 </script>
 
 <style scoped lang="scss">

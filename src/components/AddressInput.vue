@@ -65,7 +65,7 @@ type AddressPair = {
 };
 const store = useSEStore();
 const { inverseTotalRotationMatrix } = storeToRefs(store);
-const { t } = useI18n()
+const { t } = useI18n();
 
 const addrPlaceId = ref("");
 const addressError = ref("");
@@ -86,7 +86,6 @@ let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
   placesInspector = new PlacesService(addrInput.value!);
-
 });
 
 watch(
@@ -97,7 +96,7 @@ watch(
 );
 
 function searchAddress(v: string) {
-  addressError.value = ""
+  addressError.value = "";
   addressPredictor
     .getPlacePredictions({ input: v })
     .then(response => {
@@ -108,7 +107,7 @@ function searchAddress(v: string) {
       }));
     })
     .catch(err => {
-      addressError.value = t('addressPredictionError') + err
+      addressError.value = t("addressPredictionError") + err;
     });
 }
 
@@ -142,7 +141,7 @@ function getPlaceDetails() {
 
           //caption change here
           const newSELabel = new SELabel("point", vtx);
-          newSELabel.ref.caption = placeCaption ?? t('noFormattedAddress')
+          newSELabel.ref.caption = placeCaption ?? t("noFormattedAddress");
           const pointCommandGroup = new CommandGroup();
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
           pointCommandGroup.execute();
@@ -150,7 +149,7 @@ function getPlaceDetails() {
           newSELabel.update();
         }
       } else {
-        addressError.value = t('addressDetailsUnknown')
+        addressError.value = t("addressDetailsUnknown");
       }
     }
   );

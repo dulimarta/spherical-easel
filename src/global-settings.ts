@@ -937,6 +937,13 @@ export const SETTINGS = {
         filePath: "../../icons/iconAntipodalPointPaths.svg"
       }
     },
+    earthPoint: {
+      props: {
+        mdiIcon: "mdi-map-marker",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
+      }
+    },
     polar: {
       props: {
         mdiIcon: false,
