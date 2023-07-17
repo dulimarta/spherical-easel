@@ -136,7 +136,7 @@ div#appSetting {
 }
 </style>
 <script lang="ts" setup>
-import PhotoCapture from "@/views/PhotoCapture.vue";
+// import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import {
   getAuth,
@@ -155,19 +155,19 @@ import { UserProfile } from "@/types";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue"
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
-import { useI18n } from "vue-i18n";
+// import { useI18n } from "vue-i18n";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 type LocaleName = {
   locale: string;
   name: string;
 };
-const { t } = useI18n();
+// const { t } = useI18n();
 const acctStore = useAccountStore()
 const { favoriteTools} = storeToRefs(acctStore)
 const appAuth = getAuth();
 const appDB = getFirestore();
-const imageUpload: Ref<HTMLInputElement | null> = ref(null);
+// const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const updatingPicture = ref(false);
 const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
@@ -177,6 +177,7 @@ const userDisplayName = ref("");
 const userLocation = ref("");
 const userRole = ref("Community Member");
 const selectedTab = ref(0);
+// eslint-disable-next-line no-unused-vars
 let authSubscription!: Unsubscribe;
 const profileEnabled = ref(false);
 // The displayed favorite tools (includes defaults)
@@ -215,9 +216,9 @@ onMounted((): void => {
 });
 
 
-function switchLocale(): void {
-  // $i18n.locale = (this.selectedLanguage as any).locale;
-}
+// function switchLocale(): void {
+//   // $i18n.locale = (this.selectedLanguage as any).locale;
+// }
 function setUpdatingPicture(flag: boolean): void {
   updatingPicture.value = flag;
 }

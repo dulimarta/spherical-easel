@@ -1,3 +1,4 @@
+
 <template>
   <div style="display: flex; padding:5px;">
     <v-autocomplete
@@ -110,6 +111,7 @@ const { AutocompleteService, PlacesService } = await loader.importLibrary(
   "places"
 );
 const addressPredictor = new AutocompleteService();
+// eslint-disable-next-line no-undef
 let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
@@ -161,6 +163,7 @@ function getPlaceDetails() {
       fields: ["name", "geometry", "formatted_address"]
     },
     (place, status) => {
+      // eslint-disable-next-line no-undef
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
         if (place?.geometry?.location) {

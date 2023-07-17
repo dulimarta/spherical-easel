@@ -136,22 +136,24 @@ import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
-import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
+// import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 import EarthToolVue from "@/components/EarthTool.vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
-import { computed } from "vue";
-import { set } from "@vueuse/core";
+// import { computed } from "vue";
+// import { set } from "@vueuse/core";
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
 const { height, width, name } = useDisplay();
+// eslint-disable-next-line no-unused-vars
 const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
 const activeItem = ref([]);
+// eslint-disable-next-line no-unused-vars
 const headerItem = ["Tools", "Objects", "Construction", "Earth"];
 const expandOnHover = ref(true);
 // const screenStyle = computed(() => {
@@ -169,14 +171,14 @@ function setHover(newActive:number):void{
     show.value = !show.value;
     }, 100);
   }else if(activeItem.value.length === 0){
-    activeItem.value.push(newActive);
+    (activeItem.value as Array<number>).push(newActive);
     setTimeout(() => {
     show.value = !show.value;
     }, 100);
   }
   else{
     activeItem.value.pop();
-    activeItem.value.push(newActive);
+    (activeItem.value as Array<number>).push(newActive);
   }
   setTimeout(() => {
     expandOnHover.value = true;

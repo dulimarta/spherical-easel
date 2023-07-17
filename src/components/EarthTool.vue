@@ -43,11 +43,12 @@
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import AddressInput from "./AddressInput.vue";
-import { SELabel, SELine, SEPoint } from "@/models/internal";
+import { SELabel, SELine, SEPoint, SESegment } from "@/models/internal";
 import { Ref, ref } from "vue";
 import { watch } from "vue";
 import * as THREE from "three";
 import { AddLineCommand } from "@/commands/AddLineCommand";
+import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
 const seStore = useSEStore();
 const {
   isEarthMode
@@ -57,18 +58,18 @@ const secondPoint:Ref<undefined|SEPoint> = ref();
 const firstPlaceID = ref("")
 const secondPlaceID = ref("")
 const trigger=ref(true);
-watch([()=>firstPoint.value, ()=>secondPoint.value], ([first, second])=>{
-  console.log("watch")
+watch([()=>firstPoint.value, ()=>secondPoint.value], ()=>{
   if(firstPoint.value!= null && secondPoint.value!= null){
-    console.log(firstPoint.value)
-    console.log(secondPoint.value)
     const lineNormal = new THREE.Vector3();
     lineNormal.crossVectors(firstPoint.value.locationVector, secondPoint.value.locationVector);
     lineNormal.normalize();
     const newLine = new SELine(firstPoint.value, lineNormal,secondPoint.value);
+    const newSeg = new SESegment(firstPoint.value,lineNormal,firstPoint.value.locationVector.angleTo(secondPoint.value.locationVector),secondPoint.value);
     const lineLabel = new SELabel("line",newLine);
-    const cmd = new AddLineCommand(newLine,firstPoint.value,secondPoint.value,lineLabel);
-    cmd.execute();
+    const cmdSeg = new AddSegmentCommand(newSeg,firstPoint.value,secondPoint.value,lineLabel)
+    // const cmd = new AddLineCommand(newLine,firstPoint.value,secondPoint.value,lineLabel);
+    // cmd.execute();
+    cmdSeg.execute();
     firstPoint.value = undefined;
     secondPoint.value = undefined;
   }
