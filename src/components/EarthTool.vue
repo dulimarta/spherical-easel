@@ -27,12 +27,12 @@
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <Suspense>
-            <AddressInput :isLine="true" v-model:point="firstPoint" :trigger="trigger"/>
+            <AddressInput :isLine="true" v-model:place-id="firstPlaceID" v-model:point="firstPoint" :trigger="trigger"/>
           </Suspense>
           <Suspense>
-            <AddressInput :isLine="true" v-model:point="secondPoint" :trigger="trigger"/>
+            <AddressInput :isLine="true" v-model:place-id="secondPlaceID" v-model:point="secondPoint" :trigger="trigger"/>
           </Suspense>
-          <v-btn @click="trigger=!trigger">Draw</v-btn>
+          <v-btn @click="trigger=!trigger" :disabled="firstPlaceID===null||secondPlaceID===null||firstPlaceID.length===0||secondPlaceID.length===0">Draw</v-btn>
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -54,6 +54,8 @@ const {
 } = storeToRefs(seStore);
 const firstPoint:Ref<undefined|SEPoint> = ref();
 const secondPoint:Ref<undefined|SEPoint> = ref();
+const firstPlaceID = ref("")
+const secondPlaceID = ref("")
 const trigger=ref(true);
 watch([()=>firstPoint.value, ()=>secondPoint.value], ([first, second])=>{
   console.log("watch")

@@ -15,7 +15,7 @@
       :label="t('enterAddress')"
       style="width: 30em">
       <template #append v-if="!isLine" >
-        <v-btn  @click="getPlaceDetails" :disabled="addrPlaceId.length===0">
+        <v-btn  @click="getPlaceDetails" :disabled="addrPlaceId===null||addrPlaceId.length===0">
           <v-icon>mdi-map-marker</v-icon>
         </v-btn>
 
@@ -65,7 +65,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
 import { SEPoint } from "@/models/internal";
 const seStore = useSEStore();
-const emit = defineEmits( ["update:point"]);
+const emit = defineEmits( ["update:point","update:placeId"]);
 const props = defineProps({
   isLine: {
     type: Boolean,
@@ -78,6 +78,10 @@ const props = defineProps({
   trigger:{
     type: Boolean,
     default: false
+  },
+  placeId:{
+    type:String,
+    default:""
   }
 })
 const {
@@ -124,6 +128,12 @@ watch(
     if(props.isLine){
       getPlaceDetails()
     }
+  }
+)
+watch(
+  ()=>addrPlaceId.value,
+  ()=>{
+      emit("update:placeId",addrPlaceId.value)
   }
 )
 function searchAddress(v: string) {
@@ -187,6 +197,6 @@ function getPlaceDetails() {
   );
   addrPlaceId.value="";
   addressSearch.value="";
-  predictedAddresses.value.splice(0, predictedAddresses.value.length)
+  predictedAddresses.value=[];
 }
 </script>
