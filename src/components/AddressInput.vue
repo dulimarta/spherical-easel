@@ -74,6 +74,10 @@ const props = defineProps({
   point:{
     type:SEPoint,
     default:undefined
+  },
+  trigger:{
+    type: Boolean,
+    default: false
   }
 })
 const {
@@ -114,7 +118,14 @@ watch(
     if (addr) searchAddress(addr);
   }
 );
-
+watch(
+  ()=>props.trigger,
+  ()=>{
+    if(props.isLine){
+      getPlaceDetails()
+    }
+  }
+)
 function searchAddress(v: string) {
   addressError.value = ""
   addressPredictor
