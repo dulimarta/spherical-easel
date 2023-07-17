@@ -22,6 +22,14 @@
         variant="outlined"
         :label="t('southPole')"
         @click="displayPole(Pole.SOUTH)"></v-switch>
+
+      <v-switch
+        hide-details
+        v-model="showEquator"
+        density="compact"
+        variant="outlined"
+        :label="t('equator')"
+        @click="displayEquator()"></v-switch>
     </v-col>
   </div>
 </template>
@@ -171,4 +179,6 @@ function displayPole(pole: Pole) {
   }
   displayCommandGroup.execute();
 }
+
+function displayEquator() {}
 </script>
