@@ -1,8 +1,8 @@
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
 export class SEEarthPoint extends SEPoint {
-  private _longitude: number;
-  private _latitude: number;
+  private _longitude: number; // DEGREES
+  private _latitude: number; // DEGREES
   constructor(/*point: Point,*/ longitude: number, latitude: number) {
     super(true); /* Non-Free Point */
     this._longitude = longitude;
@@ -18,8 +18,8 @@ export class SEEarthPoint extends SEPoint {
   public get noduleDescription(): string {
     return String(
       i18n.global.t(`objectTree.earthPoint`, {
-        lat: this._latitude,
-        long: this._longitude
+        lat: String(this._latitude + "\u{00B0}"),
+        long: String(this._longitude + "\u{00B0}")
       })
     );
   }

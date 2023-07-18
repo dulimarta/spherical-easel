@@ -50,6 +50,8 @@ const showSouthPole = ref(false);
 let seNorthPole: SEEarthPoint | undefined = undefined;
 let seSouthPole: SEEarthPoint | undefined = undefined;
 
+//watch(() => sePoints.value.filter(pt => pt instanceof SEEarthPoint).length);
+
 function findPoleInObjectTree(pole: Pole): SEEarthPoint | undefined {
   const seEarthPoints = sePoints.value
     .filter(pt => pt instanceof SEEarthPoint)
