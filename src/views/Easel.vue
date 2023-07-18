@@ -77,6 +77,7 @@
           </v-overlay>
           <div id="msghub">
             <div id="undoPanel">
+
               <div v-for="(t,index) in leftShortcutGroup" style="display: flex;">
                 <ShortcutIcon
                   :isShortcutTool="true"

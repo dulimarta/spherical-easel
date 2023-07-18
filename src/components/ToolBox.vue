@@ -68,7 +68,7 @@
 
   <v-card>
     <v-layout>
-      <v-navigation-drawer :expand-on-hover="expandOnHover" :rail="rail">
+      <v-navigation-drawer :expand-on-hover="expandOnHover" :rail="rail" style="background-color: #002108; color: white;">
         <v-list>
           <v-list-item
             prepend-avatar="@/assets/SphericalEaselLogo.gif"
@@ -76,7 +76,7 @@
         </v-list>
         <v-divider></v-divider>
 
-        <v-list density="compact" nav :selected="activeItem">
+        <v-list density="compact" nav :selected="activeItem" active-class="active">
           <v-list-item
             @click="setHover(0)"
             prepend-icon="mdi-tools"
@@ -113,7 +113,7 @@
           </v-list>
         </template>
       </v-navigation-drawer>
-      <v-navigation-drawer v-if="show">
+      <v-navigation-drawer v-if="show" style="background-color: #B9D9C1;">
         <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
 
         <ToolGroups v-if="activeItem[0]===0"/>
@@ -256,5 +256,9 @@ onBeforeUnmount((): void => {
 .slide-out-leave-to {
   opacity: 0;
   transform: translateX(-100%);
+}
+.active{
+  background-color: #BDF3CB;
+  color: black;
 }
 </style>

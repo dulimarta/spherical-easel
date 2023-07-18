@@ -7,16 +7,18 @@
     elevation="2"
     rounded="lg"
     width="80px"
+    :style="{backgroundColor: selected ? '#002108' : '#8CCD8F'}"
     height="100px">
     <div class="toolbutton" v-bind="props">
-      <v-icon class="toolicon" :icon="vuetifyIconAlias"></v-icon>
-      <span class="tooltext" :style="myTextStyle">
+      <v-icon class="toolicon" :icon="vuetifyIconAlias" :style="{filter: selected? 'invert(100%) sepia(17%) saturate(0%) hue-rotate(91deg) brightness(104%) contrast(104%)':''}" ></v-icon>
+      <span class="tooltext" :style="[myTextStyle,{color:selected ? 'white' : 'black'}]" >
         {{ t(button.displayedName) }}
       </span>
     </div>
     <v-overlay
       contained
       v-model="isEditing"
+      :style="{backgroundColor: selected ? '#002108' : '#8CCD8F', color: selected ? 'white' : 'black'}"
       :scrim="props.included ? '#00F' : '#000'">
       <v-icon v-if="props.included" size="x-large" class="overlayicon">
         mdi-minus-circle
@@ -98,7 +100,6 @@ onUpdated(() => {
   border: 1px solid grey;
   border-radius: 0.5em;
 }
-
 .overlayicon {
   position: absolute;
   color: black;

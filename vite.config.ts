@@ -35,7 +35,10 @@ export default defineConfig({
     // i18n({
     //   path: resolve(__dirname, "./src")
     // }),
-    vuetify({ autoImport: true }),
+    vuetify({ autoImport: true ,       styles: {
+      configFile: "src/scss/settings.scss"
+    }
+}),
     VueI18nPlugin({
       include: [resolve(__dirname, './src/assets/languages/**')],
       strictMessage: true, /* messages should not contain HTML tags */

@@ -42,15 +42,17 @@
           </v-expansion-panel>
 
 
-    </v-expansion-panels>
 
-    <div
-      id="DeveloperToolGroup"
+
+      <v-expansion-panel id="DeveloperToolGroup"
       v-show="developerButtonList.length > 0 && !inProductionMode">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.DeveloperOnlyTools") }}
-      </h3>
-      <v-item v-slot="{ isSelected, toggle }">
+        <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold">
+            {{ $t("toolGroups.DeveloperOnlyTools") }}
+          </h3>
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+        <v-item v-slot="{ isSelected, toggle }">
         <ToolButton
           @click="toggle as () => void"
           v-for="(button, pos) in developerButtonList"
@@ -58,9 +60,14 @@
           :button="button"
           :editing="inEditMode"
           :selected="isSelected!"
-          :included="true" />
-      </v-item>
-    </div>
+          :included="true"
+
+        />
+        </v-item>
+        </v-expansion-panel-text>
+        </v-expansion-panel>
+
+  </v-expansion-panels>
   </v-item-group>
 </template>
 
@@ -244,6 +251,7 @@ const developerButtonList: ToolButtonType[] = [
 </script>
 
 <style lang="scss" scoped>
+
 .button-group {
   display: flex;
   flex-direction: row;
@@ -252,4 +260,5 @@ const developerButtonList: ToolButtonType[] = [
 .button-group-heading {
   margin-top: 0.5em;
 }
+
 </style>

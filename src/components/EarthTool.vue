@@ -67,8 +67,6 @@ watch([()=>firstPoint.value, ()=>secondPoint.value], ()=>{
     const newSeg = new SESegment(firstPoint.value,lineNormal,firstPoint.value.locationVector.angleTo(secondPoint.value.locationVector),secondPoint.value);
     const lineLabel = new SELabel("line",newLine);
     const cmdSeg = new AddSegmentCommand(newSeg,firstPoint.value,secondPoint.value,lineLabel)
-    // const cmd = new AddLineCommand(newLine,firstPoint.value,secondPoint.value,lineLabel);
-    // cmd.execute();
     cmdSeg.execute();
     firstPoint.value = undefined;
     secondPoint.value = undefined;
