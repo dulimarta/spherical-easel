@@ -1,10 +1,4 @@
 <template>
-  <!--<div>
-    <v-switch
-      model="showEquator"
-      :label="t('displayEquator')"
-      @click="displayEquator"></v-switch>
-  </div> -->
   <div>
     <v-col>
       <v-switch
@@ -14,7 +8,6 @@
         variant="outlined"
         :label="t('northPole')"
         @click="displayPole(Pole.NORTH)"></v-switch>
-
       <v-switch
         hide-details
         v-model="showSouthPole"
@@ -22,22 +15,13 @@
         variant="outlined"
         :label="t('southPole')"
         @click="displayPole(Pole.SOUTH)"></v-switch>
-
-      <v-switch
-        hide-details
-        v-model="showEquator"
-        density="compact"
-        variant="outlined"
-        :label="t('equator')"
-        @click="displayEquator()"></v-switch>
     </v-col>
   </div>
 </template>
 <i18n lang="json" locale="en">
 {
   "northPole": "North Pole",
-  "southPole": "South Pole",
-  "equator": "Equator"
+  "southPole": "South Pole"
 }
 </i18n>
 
@@ -46,7 +30,7 @@
 import { onMounted, ref, watch, Ref } from "vue";
 import { Vector3, Matrix4 } from "three";
 import { SELabel } from "@/models/SELabel";
-import { AddPointCommand } from "@/commands/AddPointCommand";
+import { AddEarthPointCommand } from "@/commands/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
@@ -60,7 +44,6 @@ const store = useSEStore();
 const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
 const { t } = useI18n();
 
-const showEquator = ref(false);
 let showNorthPole = ref(false);
 const showSouthPole = ref(false);
 
@@ -96,7 +79,7 @@ function setSEPoleVariable(pole: Pole): undefined | Command {
     poleSELabel.ref.caption =
       pole === Pole.NORTH ? t("northPole") : t("southPole");
     poleSELabel.update();
-    cmd = new AddPointCommand(sePole, poleSELabel);
+    cmd = new AddEarthPointCommand(sePole, poleSELabel);
   }
   if (pole === Pole.NORTH) {
     seNorthPole = sePole;

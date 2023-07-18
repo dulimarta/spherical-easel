@@ -18,6 +18,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { Command } from "@/commands/Command";
 const seStore = useSEStore();
 
 const props = defineProps<{
@@ -28,10 +29,10 @@ let disabled = ref(false);
 onMounted((): void => {
   if (props.model.action === "undoAction") {
     EventBus.listen("undo-enabled", setEnabled);
-    disabled.value = true; // initially disabled
+    disabled.value = Command.commandHistory.length == 0; // initially value
   } else if (props.model.action === "redoAction") {
     EventBus.listen("redo-enabled", setEnabled);
-    disabled.value = true; // initially disabled
+    disabled.value = Command.redoHistory.length == 0; // initially value
   }
 });
 

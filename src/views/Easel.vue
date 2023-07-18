@@ -82,9 +82,9 @@
                 </v-menu>
               </template>
             </v-switch>
-            <DisplayEquatorAndPoles
+            <DisplayPoles
               v-if="localIsEarthMode"
-              :class="['displayEquatorAndPoles', 'bg-blue-lighten-2']" />
+              :class="['displayPoles', 'bg-blue-lighten-2']" />
           </div>
           <v-overlay
             :scrim="false"
@@ -165,7 +165,7 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
-import DisplayEquatorAndPoles from "@/components/DisplayEquatorAndPoles.vue";
+import DisplayPoles from "@/components/DisplayPoles.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
@@ -640,7 +640,7 @@ function setEarthModeFunction() {
   border-radius: 8px;
   align-self: flex-start;
 }
-.displayEquatorAndPoles {
+.displayPoles {
   position: relative;
   top: -210px;
   left: 12px;

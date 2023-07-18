@@ -229,7 +229,9 @@ export type SavedNames =
   | "convertToUserCreatedIntersectionPointName"
   | "setValueDisplayModeOldValue"
   | "setValueDisplayModeNewValue"
-  | "pointVisibleBefore";
+  | "pointVisibleBefore"
+  | "earthPointLatitude"
+  | "earthPointLongitude";
 
 export type ActionMode =
   | "angle"

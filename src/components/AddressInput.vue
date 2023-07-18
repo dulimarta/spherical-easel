@@ -52,7 +52,7 @@ import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AddPointCommand } from "@/commands/AddPointCommand";
+import { AddEarthPointCommand } from "@/commands/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
@@ -143,7 +143,9 @@ function getPlaceDetails() {
           const newSELabel = new SELabel("point", vtx);
           newSELabel.ref.caption = placeCaption ?? t("noFormattedAddress");
           const pointCommandGroup = new CommandGroup();
-          pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
+          pointCommandGroup.addCommand(
+            new AddEarthPointCommand(vtx, newSELabel)
+          );
           pointCommandGroup.execute();
           // pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
           newSELabel.update();

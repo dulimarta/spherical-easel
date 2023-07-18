@@ -6,6 +6,7 @@ import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
 import { AddLineCommand } from "./AddLineCommand";
 import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThruPointCommand";
 import { AddPointCommand } from "./AddPointCommand";
+import { AddEarthPointCommand } from "./AddEarthPointCommand";
 import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneOrTwoDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
@@ -77,6 +78,8 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddEarthPoint":
+      return AddEarthPointCommand.parse(command, noduleDictionary);
     case "AddSegment":
       return AddSegmentCommand.parse(command, noduleDictionary);
     case "AddLine":

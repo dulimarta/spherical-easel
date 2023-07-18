@@ -436,6 +436,7 @@
     "segmentThrough": "Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
     "freePoint": "Free point",
+    "earthPoint": "Fixed earth location with latitude {lat} and longitude {long}.",
     "perpendicularLineThru": "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     "tangentLineThru": "Tangent line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     "deleteNode": "Delete the selected object.",
