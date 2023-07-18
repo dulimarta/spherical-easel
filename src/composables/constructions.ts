@@ -82,13 +82,13 @@ async function parseDocument(
       svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
         .then((url: string) => axios.get(url))
         .then((r: AxiosResponse) => r.data);
-      console.debug(
-        "SVG preview from Firebase Storage ",
-        svgData?.substring(0, 70)
-      );
+      // console.debug(
+      //   "SVG preview from Firebase Storage ",
+      //   svgData?.substring(0, 70)
+      // );
     } else {
       svgData = remoteDoc.preview;
-      console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
+      // console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
     }
     const objectCount = parsedScript
       // A simple command contributes 1 object

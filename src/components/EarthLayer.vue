@@ -19,12 +19,16 @@ import {
   Mesh,
   AmbientLight,
   PointLight,
-  WebGLRenderer
+  WebGLRenderer,
+Vector3,
+AxesHelper
 } from "three";
-import { watch, onMounted, onBeforeUnmount } from "vue";
+import { watch, onMounted, onBeforeUnmount, onBeforeUpdate } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import {DateTime} from "luxon"
+import { useEarthCoordinate } from "@/composables/earth"
+const {flyTo} = useEarthCoordinate()
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -41,16 +45,20 @@ const rotationMatrix = new Matrix4(); // temporary matrix for rotating the spher
 // However, the ThreeJS sphere wrapped with the earth texture shows its north pole
 // pointing up to the sky (our Y-plus axis).
 // A rotation by 90 degrees is required to lineup both north poles
-const ROTATION_X90 = new Matrix4().makeRotationX(Math.PI / 2);
 const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
+const axes = new AxesHelper(400) // For debugging?
 const scene = new Scene();
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 const light = new PointLight(0xffffff, 1);
 
 scene.add(ambientLight);
 
+// ThreeJS Sphere coordinate frame
+// Positive-X axis => latitude 0-degrees (south of Ghana)
+// Positive-Y axis => north pole
+// Positive-Z axis => latitude 90-degree (west of ecuador)
 const geometry = new SphereGeometry(
   SETTINGS.boundaryCircle.radius,
   200 /* number of longitude segments */,
@@ -96,15 +104,13 @@ onMounted(async () => {
     bumpScale: 10
   });
   earth = new Mesh(geometry, material);
+  earth.add(axes)
+
   const num = Math.max(prop.availableHeight, prop.availableWidth);
   // Position the Point light based on the estimated
   // current position of the sun?
   // const sunGeoPosition = estimateSunGeoPosition();
   const sunLng = estimateSunGP()
-  // console.debug(`Sun longitude: ${sunGeoPosition.lon.toDegrees()} degrees`)
-  // (1,0,0) => Equator GMT-0
-  // (0,1,0) => North Pole   (0,-1,0) => South Pole
-  // (0,0,1) => Equator GMT-6
   light.position.set(
     num * Math.cos(sunLng),
     0,
@@ -114,9 +120,7 @@ onMounted(async () => {
   // light.updateMatrix()
   // To fix the light to the earth, add it to the earth not the scene
   earth.add(light);
-  earth.rotation.x = Math.PI / 2;
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-  rotationMatrix.multiply(ROTATION_X90);
   earth.setRotationFromMatrix(rotationMatrix);
 
   scene.add(earth);
@@ -127,6 +131,10 @@ onMounted(async () => {
   renderer.setSize(prop.availableWidth, prop.availableHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
+  setTimeout(async () => {
+    await flyTo(0, 110)
+    console.debug("Rotation done")
+  }, 2000)
   animate();
 });
 
@@ -159,7 +167,6 @@ watch(
   () => inverseTotalRotationMatrix.value.elements,
   () => {
     rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-    rotationMatrix.multiply(ROTATION_X90);
     earth.setRotationFromMatrix(rotationMatrix);
   },
   { deep: true }
@@ -181,6 +188,10 @@ watch(
   { deep: true }
 );
 
+onBeforeUpdate(() => {
+  console.debug("Before update")
+})
+
 onBeforeUnmount(() => {
   if (requestAnimFrameHandle != null) {
     cancelAnimationFrame(requestAnimFrameHandle);
@@ -201,27 +212,5 @@ function estimateSunGP() {
   const sunLongitude = utcMinutesUntilNoon/4
   console.debug("Number of UTC elapse minutes", utcMinutesUntilNoon, "Sun estimate longitude", sunLongitude)
   return sunLongitude * Math.PI / 180
-}
-function estimateSunGeoPosition() {
-  const now = new Date();
-
-  // The boilerplate: fiddling with dates
-  const startOfYear = new Date(now.getFullYear(), 0, 0).getTime();
-  const endOfYear = new Date(now.getFullYear() + 1, 0, 0).getTime();
-  const nows = now.getTime();
-  const percetageOfYear = (nows - startOfYear) / (endOfYear - startOfYear);
-
-  const secs =
-    now.getUTCMilliseconds() / 1e3 +
-    now.getUTCSeconds() +
-    60 * (now.getUTCMinutes() + 60 * now.getUTCHours());
-  const percentOfDay = secs / 86400; // leap secs? nah.
-
-  // The actual magic
-  const lat = (-percentOfDay + 0.5) * Math.PI * 2;
-  const lon = Math.sin((percetageOfYear - 0.22) * Math.PI * 2) * 0.41;
-  console.debug(`Sun geo position is ${lat.toDegrees()},${lon.toDegrees()}`);
-  // return new Euler(0, lat, lon, 'YZX')
-  return { lat, lon };
 }
 </script>
