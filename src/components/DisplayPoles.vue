@@ -45,12 +45,29 @@ const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
 const { t } = useI18n();
 
 let showNorthPole = ref(false);
-const showSouthPole = ref(false);
+let showSouthPole = ref(false);
 
 let seNorthPole: SEEarthPoint | undefined = undefined;
 let seSouthPole: SEEarthPoint | undefined = undefined;
 
-//watch(() => sePoints.value.filter(pt => pt instanceof SEEarthPoint).length);
+watch(
+  () => {
+    return sePoints.value.filter(
+      pt =>
+        pt instanceof SEEarthPoint && pt.latitude === 90 && pt.longitude === 0
+    );
+    // let bob = findPoleInObjectTree(Pole.NORTH);
+    // console.log("watcher", bob?.showing);
+    // return bob ? bob.showing : false;
+  },
+  () => {
+    console.log("execute");
+    if (seNorthPole) {
+      showNorthPole.value = seNorthPole.showing;
+    }
+  },
+  { deep: true }
+);
 
 function findPoleInObjectTree(pole: Pole): SEEarthPoint | undefined {
   const seEarthPoints = sePoints.value
@@ -83,6 +100,7 @@ function setSEPoleVariable(pole: Pole): undefined | Command {
     poleSELabel.update();
     cmd = new AddEarthPointCommand(sePole, poleSELabel);
   }
+  //Now set the pole into the local variable so it can be accessed in this component
   if (pole === Pole.NORTH) {
     seNorthPole = sePole;
   } else {
@@ -113,7 +131,7 @@ enum Pole {
 function displayPole(pole: Pole) {
   let displayCommandGroup = new CommandGroup();
   if (pole === Pole.NORTH) {
-    //console.log("northpole name ", seNorthPole ? seNorthPole.name : "");
+    //console.log("north pole name ", seNorthPole ? seNorthPole.name : "");
     if (seNorthPole === undefined) {
       const cmd = setSEPoleVariable(Pole.NORTH); // onces this executes seNorthPole is defined and we can control the visibility
       if (cmd !== undefined) {
@@ -138,7 +156,7 @@ function displayPole(pole: Pole) {
     }
   } else {
     // South Pole
-    //console.log("northpole name ", seSouthPole ? seSouthPole.name : "");
+    //console.log("south pole name ", seSouthPole ? seSouthPole.name : "");
     if (seSouthPole === undefined) {
       const cmd = setSEPoleVariable(Pole.SOUTH); // onces this executes seSouthPole is defined and we can control the visibility
       if (cmd !== undefined) {
@@ -164,6 +182,4 @@ function displayPole(pole: Pole) {
   }
   displayCommandGroup.execute();
 }
-
-function displayEquator() {}
 </script>
