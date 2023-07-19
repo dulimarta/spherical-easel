@@ -18,25 +18,28 @@
   <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
   background-color: transparent;">
   </!--v-navigation-drawer-->
-  <div>
-    <Splitpanes
+  <div id="toolbox-and-sphere">
+    <!-- <Splitpanes
       :style="contentHeightStyle"
       class="default-theme"
       @resize="dividerMoved"
-      :push-other-panes="false">
+      :push-other-panes="false"> -->
       <!-- Use the left page for the toolbox -->
-      <Pane
+      <!-- <Pane
         ref="leftPane"
         min-size="5"
         max-size="35"
-        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
-        <Toolbox
+        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE"> -->
+        <div id="toolbox">
+          <Toolbox
           id="toolbox"
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
-      </Pane>
+        </div>
 
-      <Pane>
+      <!-- </Pane> -->
+
+      <!-- <Pane> -->
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
         When minified, the style panel takes only 5% of the remaining width
@@ -125,8 +128,8 @@
 
           </div>
         </div>
-      </Pane>
-    </Splitpanes>
+      <!-- </Pane> -->
+    <!-- </Splitpanes> -->
     <Dialog
       ref="unsavedWorkDialog"
       max-width="40%"
@@ -507,6 +510,7 @@ function handleToolboxMinify(state: boolean) {
   height: 100%;
   display: flex;
   justify-content: flex-start;
+  background-color: white;
   // NOTE: DO NOT use column-reverse, otherwise the z-index of Vuetify
   // v-card will be below the TwoJS SVG layers
   flex-direction: column;
@@ -619,5 +623,17 @@ function handleToolboxMinify(state: boolean) {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   // height: 80%;
+}
+#toolbox{
+  display: inline-block;
+}
+#toolbox-and-sphere{
+  display: flex;
+  position:fixed;
+
+  flex-direction: row;
+  width: 100%;
+  justify-content: stretch;
+  height: 100%;
 }
 </style>

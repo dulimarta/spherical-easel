@@ -74,7 +74,7 @@
             prepend-avatar="@/assets/SphericalEaselLogo.gif"
             title="Spherical Easle"></v-list-item>
         </v-list>
-        <v-divider></v-divider>
+        <v-divider color="#BDF3CB" ></v-divider>
 
         <v-list density="compact" nav :selected="activeItem" active-class="active">
           <v-list-item
@@ -100,7 +100,7 @@
         </v-list>
 
         <template v-slot:append>
-          <v-divider></v-divider>
+          <v-divider color="#BDF3CB" ></v-divider>
 
           <v-list density="compact" nav>
             <v-list-item
@@ -113,7 +113,7 @@
           </v-list>
         </template>
       </v-navigation-drawer>
-      <v-navigation-drawer v-if="show" style="background-color: #B9D9C1;">
+      <v-navigation-drawer v-show="show" :style="{backgroundColor: show? '#B9D9C1':'white',border:show?'':'0px'}">
         <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
 
         <ToolGroups v-if="activeItem[0]===0"/>
@@ -261,4 +261,6 @@ onBeforeUnmount((): void => {
   background-color: #BDF3CB;
   color: black;
 }
+
+
 </style>

@@ -133,7 +133,6 @@ const { t } = useI18n();
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240,
-  isEarthMode: false
 });
 
 
@@ -215,6 +214,7 @@ onBeforeMount((): void => {
     width: props.availableWidth,
     height: props.availableHeight,
     autostart: true
+
     // ratio: window.devicePixelRatio
   });
   // twoInstance.scene.matrix.manual = true;
