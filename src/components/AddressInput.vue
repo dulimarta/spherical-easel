@@ -124,13 +124,13 @@ function getPlaceDetails() {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
         if (place?.geometry?.location) {
-          const latRad = place.geometry?.location.lat().toRadians()
-          const lngRad = place.geometry?.location.lng().toRadians()
+          const latDegree = place.geometry?.location.lat()
+          const lngDegree = place.geometry?.location.lng()
 
-          const coords = geoLocationToUnitSphere(place.geometry.location.lat(), place.geometry.location.lng())
+          const coords = geoLocationToUnitSphere(latDegree, lngDegree)
 
           // caption
-          const vtx = new SEEarthPoint(lngRad, latRad);
+          const vtx = new SEEarthPoint(latDegree, lngDegree);
           const pointVector = new THREE.Vector3(coords[0], coords[1], coords[2]);
           pointVector.normalize();
           const rotationMatrix = new THREE.Matrix4();

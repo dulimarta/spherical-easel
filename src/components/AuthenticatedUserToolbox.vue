@@ -181,7 +181,8 @@ const {
   inverseTotalRotationMatrix,
   svgCanvas,
   canvasHeight,
-  canvasWidth
+  canvasWidth,
+  isEarthMode
 } = storeToRefs(seStore);
 const { t } = useI18n();
 const {
@@ -362,9 +363,22 @@ async function doSave(): Promise<void> {
     type: "image/svg+xml;charset=utf-8"
   });
   const svgPreviewData = await toBase64(svgBlob);
-  console.log(svgPreviewData); // TODO delete
+  const svgURL = URL.createObjectURL(svgBlob);
 
-  const saveFunction = shouldSaveOverwrite.value ? updateDoc : addDoc;
+
+  if (isEarthMode.value) {
+    const earthCanvas = document.getElementById("earth") as HTMLCanvasElement;
+    console.debug("ThreeJS at", earthCanvas);
+    // console.debug("ThreeJS canvas", earthCanvas.toDataURL())
+    saveAsImage(
+      [earthCanvas.toDataURL(), svgURL],
+      "earthlayer",
+      canvasWidth.value,
+      canvasHeight.value,
+      "png"
+    );
+  }
+
   /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
@@ -426,6 +440,7 @@ async function doSave(): Promise<void> {
     })
     .then(async ([docId, scriptData, svgData]) => {
       const constructionDoc = doc(appDB, collectionPath, docId);
+      /* Task #4 */
       // Pass on the document ID to be included in the alert message
       if (isSavedAsPublicConstruction.value) {
         const publicConstructionDoc = await addDoc(
@@ -468,6 +483,36 @@ async function doSave(): Promise<void> {
   saveConstructionDialog.value?.hide();
 }
 
+function saveAsImage(
+  sourceURLs: Array<string>,
+  fileName: string,
+  imageWidth: number,
+  imageHeight: number,
+  imageFormat: string
+): void {
+  // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
+  const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
+  offlineCanvas.width = imageWidth;
+  offlineCanvas.height = imageHeight;
+  // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
+  // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
+  const graphicsCtx = offlineCanvas.getContext("2d");
+  const imageExtension = imageFormat.toLowerCase();
+  const arr = sourceURLs.map((dataUrl: string): Promise<string> => {
+    return new Promise(resolve => {
+      const offlineImage = new Image();
+      offlineImage.addEventListener("load", () => {
+        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+        resolve(dataUrl);
+      });
+      offlineImage.src = dataUrl;
+    });
+  });
+  Promise.all(arr).then(() => {
+    const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
+    FileSaver.saveAs(imgURL, `${fileName}.${imageExtension}`);
+  })
+}
 function doExport() {
   if (svgRoot === undefined) {
     // By the time doSave() is called svgCanvas must have been set
@@ -480,34 +525,18 @@ function doExport() {
     type: "image/svg+xml;charset=utf-8"
   });
   const svgURL = URL.createObjectURL(svgBlob);
+
   if (selectedExportFormat.value === "SVG") {
     // await nextTick()
     FileSaver.saveAs(svgURL, "construction.svg");
   } else {
-    // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
-    const offlineImage = new Image();
-    offlineImage.addEventListener("load", () => {
-      const aspectRatio = canvasWidth.value / canvasHeight.value;
-      const offlineCanvas = document.createElement(
-        "canvas"
-      ) as HTMLCanvasElement;
-      offlineCanvas.width = svgExportHeight.value * aspectRatio;
-      offlineCanvas.height = svgExportHeight.value;
-      // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
-      // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
-      const graphicsCtx = offlineCanvas.getContext("2d");
-      graphicsCtx?.drawImage(
-        offlineImage,
-        0,
-        0,
-        svgExportHeight.value * aspectRatio,
-        svgExportHeight.value
-      );
-      const imageExtension = selectedExportFormat.value.toLowerCase();
-      const pngURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
-      FileSaver.saveAs(pngURL, `construction.${imageExtension}`);
-    });
-    offlineImage.src = svgURL;
+    saveAsImage(
+      [svgURL],
+      "construction",
+      canvasWidth.value,
+      canvasHeight.value,
+      selectedExportFormat.value
+    );
   }
 }
 </script>

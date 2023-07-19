@@ -51,7 +51,7 @@
 
           <div id="earthAndCircle">
             <EarthLayer
-              v-show="isEarthMode && svgDataImage.length === 0"
+              v-if="isEarthMode && svgDataImage.length === 0"
               :available-height="availHeight"
               :available-width="availWidth" />
             <SphereFrame

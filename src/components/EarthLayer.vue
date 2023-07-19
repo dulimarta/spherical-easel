@@ -20,14 +20,15 @@ import {
   AmbientLight,
   PointLight,
   WebGLRenderer,
-Vector3,
-AxesHelper
+  AxesHelper
 } from "three";
 import { watch, onMounted, onBeforeUnmount, onBeforeUpdate } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import {DateTime} from "luxon"
 import { useEarthCoordinate } from "@/composables/earth"
+import { useGeolocation } from "@vueuse/core";
+const {coords} = useGeolocation()
 const {flyTo} = useEarthCoordinate()
 type EarthLayerProps = {
   availableWidth: number;
@@ -126,14 +127,15 @@ onMounted(async () => {
   scene.add(earth);
 
   renderer = new WebGLRenderer({
-    canvas: document.getElementById("earth") as HTMLCanvasElement
+    canvas: document.getElementById("earth") as HTMLCanvasElement,
+    preserveDrawingBuffer: true
   });
   renderer.setSize(prop.availableWidth, prop.availableHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
   setTimeout(async () => {
-    await flyTo(0, 110)
-    console.debug("Rotation done")
+    // FlyTo current user location
+    await flyTo(coords.value.latitude, coords.value.longitude)
   }, 2000)
   animate();
 });
