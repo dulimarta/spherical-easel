@@ -12,12 +12,12 @@
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
-    <v-expansion-panels>
+    <v-expansion-panels style="gap:10px">
     <!-- <div v-for="(g, gpos) in buttonGroup" :key="gpos"> -->
-          <v-expansion-panel v-for="(g,gpos) in buttonGroup" :key="gpos" >
+          <v-expansion-panel v-for="(g,gpos) in buttonGroup" :key="gpos">
             <div v-if="g.children.length>0">
             </div>
-            <v-expansion-panel-title>
+            <v-expansion-panel-title >
               <h3 class="body-1 font-weight-bold button-group-heading">
                 {{ $t(`toolGroups.${g.group}`) }}
               </h3>

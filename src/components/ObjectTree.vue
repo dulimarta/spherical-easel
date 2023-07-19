@@ -2,10 +2,12 @@
   <div>
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
-      <v-expansion-panels>
+      <v-expansion-panels style="gap: 10px;">
         <v-expansion-panel>
           <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.expression") }}
+            </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
             <ExpressionForm></ExpressionForm>
@@ -13,7 +15,9 @@
         </v-expansion-panel>
         <v-expansion-panel>
           <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.parametricCurves") }}
+          </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
             <ParametricForm></ParametricForm>
@@ -21,7 +25,9 @@
         </v-expansion-panel>
         <v-expansion-panel>
           <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.slider") }}
+          </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
             <SliderForm></SliderForm>

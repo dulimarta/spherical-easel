@@ -4,22 +4,29 @@
       {{ $t(`constructions.privateConstructions`) }}
     </div> -->
     <!--- WARNING: the "id" attribs below are needed for testing -->
-    <v-expansion-panels>
-      <v-expansion-panel v-if="firebaseUid && firebaseUid.length > 0">
+    <v-expansion-panels style="gap:10px">
+      <v-expansion-panel>
         <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold button-group-heading">
           {{ t(`constructions.privateConstructions`) }}
+          </h3>
         </v-expansion-panel-title>
-        <v-expansion-panel-text>
+        <v-expansion-panel-text v-if="firebaseUid && firebaseUid.length > 0">
           <ConstructionList
             id="privateList"
             :items="privateConstructions"
             v-on:load-requested="shouldLoadConstruction"
             v-on:delete-requested="shouldDeleteConstruction"/>
         </v-expansion-panel-text>
+        <v-expansion-panel-text v-else>
+         Nothing here
+        </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel>
         <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold button-group-heading">
           {{ t(`constructions.publicConstructions`) }}
+          </h3>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <ConstructionList

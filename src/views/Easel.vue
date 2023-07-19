@@ -19,7 +19,7 @@
   background-color: transparent;">
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
-    <!-- <Splitpanes
+   <!-- <Splitpanes
       :style="contentHeightStyle"
       class="default-theme"
       @resize="dividerMoved"
@@ -129,7 +129,7 @@
           </div>
         </div>
       <!-- </Pane> -->
-    <!-- </Splitpanes> -->
+   <!-- </Splitpanes> -->
     <Dialog
       ref="unsavedWorkDialog"
       max-width="40%"
@@ -163,7 +163,6 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
-import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";

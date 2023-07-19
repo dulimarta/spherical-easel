@@ -1,18 +1,21 @@
 <template>
-  <div style="padding-left: 15px;">
+  <!-- <div style="display: flex;"> -->
     <v-switch
+             style="padding-left: 8px;"
               hide-details
               color="primary"
-              :class="['earthToggler']"
               density="compact"
               variant="outlined"
               v-model="isEarthMode"
               label="Earth Mode">
     </v-switch>
-    <v-expansion-panels>
+    <!-- </div> -->
+    <v-expansion-panels style="gap:10px">
       <v-expansion-panel>
         <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold button-group-heading">
           Point
+          </h3>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <Suspense>
@@ -23,22 +26,39 @@
 
       <v-expansion-panel>
         <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold button-group-heading">
+
           Line
+          </h3>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
-          <Suspense>
-            <AddressInput :isLine="true" v-model:place-id="firstPlaceID" v-model:point="firstPoint" :trigger="trigger"/>
-          </Suspense>
-          <Suspense>
-            <AddressInput :isLine="true" v-model:place-id="secondPlaceID" v-model:point="secondPoint" :trigger="trigger"/>
-          </Suspense>
+          <v-icon>mdi-crosshairs-gps</v-icon>
+          <v-icon>mdi-map-marker</v-icon>
+              <Suspense>
+              <AddressInput :isLine="true" v-model:place-id="firstPlaceID" v-model:point="firstPoint" :trigger="trigger"/>
+              </Suspense>
+              <Suspense>
+              <AddressInput :isLine="true" v-model:place-id="secondPlaceID" v-model:point="secondPoint" :trigger="trigger"/>
+              </Suspense>
+
+
+
+
           <v-btn @click="trigger=!trigger" :disabled="firstPlaceID===null||secondPlaceID===null||firstPlaceID.length===0||secondPlaceID.length===0">Draw</v-btn>
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
-  </div>
+
 
 </template>
+<style scoped lang="scss">
+  #address-box{
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+
+  }
+</style>
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
