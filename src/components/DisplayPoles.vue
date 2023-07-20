@@ -50,8 +50,11 @@ const { t } = useI18n();
 let showNorthPole = ref(false);
 let showSouthPole = ref(false);
 
-const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
-const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
+// const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
+// const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
+
+let seNorthPole: SEEarthPoint | undefined = undefined;
+let seSouthPole: SEEarthPoint | undefined = undefined;
 
 // watch(
 //   () => sePoints.value,
@@ -64,24 +67,24 @@ const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
 //       .map(pt => pt as SEEarthPoint);
 
 //     if (northPoleList[0]) {
-//       seNorthPole.value = northPoleList[0];
+//       seNorthPole = northPoleList[0];
 //       showNorthPole.value = northPoleList[0].showing;
 //     } else {
 //       // the north pole doesn't exist (or was deleted)
-//       seNorthPole.value = undefined;
+//       seNorthPole = undefined;
 //       showNorthPole.value = false;
 //     }
-//     console.log("execute ", seNorthPole.value);
+//     console.log("execute ", seNorthPole);
 //   }
 // );
 
 // watch(
-//   () => seNorthPole.value,
+//   () => seNorthPole,
 //   () => {
-//     console.log("second watcher execute", seNorthPole.value);
-//     if (seNorthPole.value) {
-//       console.log("seNorthPole.value.showing", seNorthPole.value.showing);
-//       showNorthPole.value = seNorthPole.value.showing;
+//     console.log("second watcher execute", seNorthPole);
+//     if (seNorthPole) {
+//       console.log("seNorthPole.showing", seNorthPole.showing);
+//       showNorthPole.value = seNorthPole.showing;
 //     }
 //   },
 //   { deep: true }
@@ -99,13 +102,13 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | undefined {
 
 onMounted(() => {
   // set the show(North|South)Pole.value if the (South|North)Pole has already been created and put into the object tree
-  seSouthPole.value = findPoleInObjectTree(Poles.SOUTH);
-  seNorthPole.value = findPoleInObjectTree(Poles.NORTH);
-  if (seNorthPole.value !== undefined) {
-    showNorthPole.value = seNorthPole.value.showing;
+  seSouthPole = findPoleInObjectTree(Poles.SOUTH);
+  seNorthPole = findPoleInObjectTree(Poles.NORTH);
+  if (seNorthPole !== undefined) {
+    showNorthPole.value = seNorthPole.showing;
   }
-  if (seSouthPole.value !== undefined) {
-    showSouthPole.value = seSouthPole.value.showing;
+  if (seSouthPole !== undefined) {
+    showSouthPole.value = seSouthPole.showing;
   }
   EventBus.listen("update-pole-switch", poleSwitch); //NP
 });
@@ -122,10 +125,13 @@ function poleSwitch(e: { pole: Poles; val: boolean }) {
 onBeforeUnmount((): void => {
   EventBus.unlisten("update-pole-switch"); //NP
 });
+
 //Return the command to add the north pole to the object tree so that it can be grouped with the other hide/show commands.
 function setSEPoleVariable(pole: Poles): undefined | Command {
   //Find the north or south pole in the store of sePoints, if it exists
   let sePole = findPoleInObjectTree(pole);
+  // If the north or south pole already exists then this next code block will not execute (because findPoleInObjectTree will return the pole) so you cannot
+  // create two points at either pole
   let cmd: Command | undefined = undefined;
   if (sePole === undefined) {
     // Initialize/create the north pole and add it to the object tree
@@ -146,9 +152,9 @@ function setSEPoleVariable(pole: Poles): undefined | Command {
   }
   //Now set the pole into the local variable so it can be accessed in this component
   if (pole === Poles.NORTH) {
-    seNorthPole.value = sePole;
+    seNorthPole = sePole;
   } else {
-    seSouthPole.value = sePole;
+    seSouthPole = sePole;
   }
   return cmd;
 }
@@ -160,27 +166,24 @@ function displayPole(pole: Poles) {
   let displayCommandGroup = new CommandGroup();
   if (pole === Poles.NORTH) {
     //console.log("north pole name ", seNorthPole ? seNorthPole.name : "");
-    if (seNorthPole.value === undefined) {
+    if (seNorthPole === undefined) {
       const cmd = setSEPoleVariable(Poles.NORTH); // onces this executes seNorthPole is defined and we can control the visibility
       if (cmd !== undefined) {
         displayCommandGroup.addCommand(cmd);
       }
     }
-    if (seNorthPole.value !== undefined) {
+    if (seNorthPole !== undefined) {
       displayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(seNorthPole.value, !showNorthPole.value)
+        new SetNoduleDisplayCommand(seNorthPole, !showNorthPole.value)
       ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
-        seNorthPole.value.label &&
+        seNorthPole.label &&
         (showNorthPole.value
           ? !SETTINGS.hideObjectHidesLabel
           : !SETTINGS.showObjectShowsLabel)
       ) {
         displayCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(
-            seNorthPole.value.label,
-            !showNorthPole.value
-          )
+          new SetNoduleDisplayCommand(seNorthPole.label, !showNorthPole.value)
           // also hide/shows the label if needed
         );
       }
@@ -188,27 +191,24 @@ function displayPole(pole: Poles) {
   } else {
     // South Pole
     //console.log("south pole name ", seSouthPole ? seSouthPole.name : "");
-    if (seSouthPole.value === undefined) {
-      const cmd = setSEPoleVariable(Poles.SOUTH); // onces this executes seSouthPole.value is defined and we can control the visibility
+    if (seSouthPole === undefined) {
+      const cmd = setSEPoleVariable(Poles.SOUTH); // onces this executes seSouthPole is defined and we can control the visibility
       if (cmd !== undefined) {
         displayCommandGroup.addCommand(cmd);
       }
     }
-    if (seSouthPole.value !== undefined) {
+    if (seSouthPole !== undefined) {
       displayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(seSouthPole.value, !showSouthPole.value)
+        new SetNoduleDisplayCommand(seSouthPole, !showSouthPole.value)
       ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
-        seSouthPole.value.label &&
+        seSouthPole.label &&
         (showSouthPole.value
           ? !SETTINGS.hideObjectHidesLabel
           : !SETTINGS.showObjectShowsLabel)
       ) {
         displayCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(
-            seSouthPole.value.label,
-            !showSouthPole.value
-          )
+          new SetNoduleDisplayCommand(seSouthPole.label, !showSouthPole.value)
           // also hide/shows the label if needed
         );
       }
