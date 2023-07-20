@@ -269,6 +269,7 @@
     "newIsometryCircleAdded": "New isometry circle {name} added.",
     "newIsometryEllipseAdded": "New isometry ellipse {name} added.",
     "newTransformedPointAdded": "New transformed point {name} added.",
+    "newEarthPointAdded": "New earth point {name} added at ({lat},{long})",
     "applyTransformationSelectTransformation": "You must select a transformation before you can use this tool.",
     "nEqualOneAngleNSect": "You must choose to divide angles into more than 1 equal pieces.",
     "nSetAngleNSect": "You are dividing angles into {number} equal pieces.",

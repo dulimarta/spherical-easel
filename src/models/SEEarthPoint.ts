@@ -5,10 +5,13 @@ import { StyleEditPanels } from "@/types/Styles";
 export class SEEarthPoint extends SEPoint {
   private _longitude: number; // DEGREES
   private _latitude: number; // DEGREES
-  constructor(/*point: Point,*/ longitude: number, latitude: number) {
+  constructor(
+    /*point: Point,*/ latitudeDegrees: number,
+    longitudeDegrees: number
+  ) {
     super(true); /* Non-Free Point */
-    this._longitude = longitude;
-    this._latitude = latitude;
+    this._longitude = longitudeDegrees;
+    this._latitude = latitudeDegrees;
     // style the earth point
     SENodule.store.changeStyle({
       selected: [this.ref],

@@ -60,6 +60,7 @@
     "**/*.wasm": true
   },
   "cSpell.words": [
+    "composables",
     "endregion",
     "Labelable",
     "LINEANDSEGMENT",

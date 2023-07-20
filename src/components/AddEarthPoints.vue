@@ -15,19 +15,44 @@
         variant="outlined"
         :label="t('southPole')"
         @click="displayPole(Poles.SOUTH)"></v-switch>
+      <v-divider :thickness="8" color="black"></v-divider>
+      <v-text-field
+        :label="t('latitude')"
+        clearable
+        density="compact"
+        :rules="[numberCheck]"
+        v-model="pointLatitude"></v-text-field>
+      <v-text-field
+        :label="t('longitude')"
+        density="compact"
+        clearable
+        v-model="pointLongitude"></v-text-field>
+      <v-btn
+        :disabled="addButtonDisabled"
+        variant="outlined"
+        density="compact"
+        @click="addEarthPoint">
+        {{ t("addPoint") }}
+      </v-btn>
     </v-col>
   </div>
 </template>
 <i18n lang="json" locale="en">
 {
   "northPole": "North Pole",
-  "southPole": "South Pole"
+  "southPole": "South Pole",
+  "latitude": "Degrees Latitude",
+  "longitude": "Degrees longitude",
+  "numbersOnly": "Enter only numbers",
+  "latitudeRange": "Latitude must be between -90 and 90 degrees",
+  "longitudeRange": "Longitude must be between -180 and 180 degrees",
+  "addPoint": "Add Point"
 }
 </i18n>
 
 <style></style>
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, Ref, toRaw } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { Vector3, Matrix4 } from "three";
 import { SELabel } from "@/models/SELabel";
 import { AddEarthPointCommand } from "@/commands/AddEarthPointCommand";
@@ -42,13 +67,17 @@ import { Command } from "@/commands/Command";
 import { SENodule } from "@/models/SENodule";
 import EventBus from "@/eventHandlers/EventBus";
 import { Poles } from "@/types/index";
+import { useEarthCoordinate } from "@/composables/earth";
 
 const store = useSEStore();
 const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
 const { t } = useI18n();
+const { geoLocationToUnitSphere } = useEarthCoordinate();
 
 let showNorthPole = ref(false);
 let showSouthPole = ref(false);
+let pointLatitude = ref("");
+let pointLongitude = ref("");
 
 // const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
 // const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
@@ -56,6 +85,75 @@ let showSouthPole = ref(false);
 let seNorthPole: SEEarthPoint | undefined = undefined;
 let seSouthPole: SEEarthPoint | undefined = undefined;
 
+function numberCheck(txt: string | undefined): boolean | string {
+  if (!Number(txt)) {
+    return t("numbersOnly");
+  } else {
+    let num = Number(txt);
+    if (!(-90 <= num && num <= 90)) {
+      return t("latitudeRange");
+    } else {
+      return true;
+    }
+  }
+}
+const addButtonDisabled = computed((): boolean => {
+  return pointLongitude.value === "" || pointLatitude.value === "";
+});
+
+function addEarthPoint(): void {
+  // console.log(
+  //   "check this point doesn't exist",
+  //   Number(pointLatitude.value),
+  //   Number(pointLongitude.value)
+  // );
+  if (
+    sePoints.value.filter(
+      pt =>
+        pt instanceof SEEarthPoint &&
+        Math.abs(pt.latitude - Number(pointLatitude.value)) <
+          SETTINGS.tolerance &&
+        Math.abs(pt.longitude - Number(pointLongitude.value)) <
+          SETTINGS.tolerance
+    ).length > 0
+  ) {
+    EventBus.fire("show-alert", {
+      key: "handlers.pointCreationAttemptDuplicate",
+      type: "error"
+    });
+    return;
+  }
+  const seEarthPoint = new SEEarthPoint(
+    Number(pointLatitude.value),
+    Number(pointLongitude.value)
+  );
+  const coords = geoLocationToUnitSphere(
+    Number(pointLatitude.value),
+    Number(pointLongitude.value)
+  );
+  const poleVector = new Vector3(coords[0], coords[2], coords[1]); //Switch when merging with vue3-upgrade
+  const rotationMatrix = new Matrix4();
+  rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+  poleVector.applyMatrix4(rotationMatrix);
+  seEarthPoint.locationVector = poleVector;
+  const poleSELabel = new SELabel("point", seEarthPoint);
+  // stylize the north pole
+  poleSELabel.ref.caption =
+    "(" + pointLatitude.value + "," + pointLongitude.value + ")";
+  poleSELabel.update();
+  new AddEarthPointCommand(seEarthPoint, poleSELabel).execute();
+  EventBus.fire("show-alert", {
+    key: "handlers.newEarthPointAdded",
+    keyOptions: {
+      name: seEarthPoint.name,
+      lat: seEarthPoint.latitude + "\u{00B0}",
+      long: seEarthPoint.longitude + "\u{00B0}"
+    },
+    type: "success"
+  });
+  pointLongitude.value = "";
+  pointLatitude.value = "";
+}
 // watch(
 //   () => sePoints.value,
 //   points => {
@@ -136,7 +234,7 @@ function setSEPoleVariable(pole: Poles): undefined | Command {
   if (sePole === undefined) {
     // Initialize/create the north pole and add it to the object tree
     sePole =
-      pole === Poles.NORTH ? new SEEarthPoint(0, 90) : new SEEarthPoint(0, -90);
+      pole === Poles.NORTH ? new SEEarthPoint(90, 0) : new SEEarthPoint(-90, 0);
     const poleVector =
       pole === Poles.NORTH ? new Vector3(0, 0, 1) : new Vector3(0, 0, -1);
     const rotationMatrix = new Matrix4();
