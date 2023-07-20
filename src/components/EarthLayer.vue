@@ -25,11 +25,11 @@ import {
 import { watch, onMounted, onBeforeUnmount, onBeforeUpdate } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import {DateTime} from "luxon"
-import { useEarthCoordinate } from "@/composables/earth"
+import { DateTime } from "luxon";
+import { useEarthCoordinate } from "@/composables/earth";
 import { useGeolocation } from "@vueuse/core";
-const {coords} = useGeolocation()
-const {flyTo} = useEarthCoordinate()
+const { coords } = useGeolocation();
+const { flyTo } = useEarthCoordinate();
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -49,7 +49,7 @@ const rotationMatrix = new Matrix4(); // temporary matrix for rotating the spher
 const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
-const axes = new AxesHelper(400) // For debugging?
+const axes = new AxesHelper(400); // For debugging?
 const scene = new Scene();
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 const light = new PointLight(0xffffff, 1);
@@ -105,18 +105,14 @@ onMounted(async () => {
     bumpScale: 10
   });
   earth = new Mesh(geometry, material);
-  earth.add(axes)
+  earth.add(axes);
 
   const num = Math.max(prop.availableHeight, prop.availableWidth);
   // Position the Point light based on the estimated
   // current position of the sun?
   // const sunGeoPosition = estimateSunGeoPosition();
-  const sunLng = estimateSunGP()
-  light.position.set(
-    num * Math.cos(sunLng),
-    0,
-    num * Math.sin(sunLng)
-  );
+  const sunLng = estimateSunGP();
+  light.position.set(num * Math.cos(sunLng), 0, num * Math.sin(sunLng));
   // light.setRotationFromEuler(sunEulerRotation)
   // light.updateMatrix()
   // To fix the light to the earth, add it to the earth not the scene
@@ -135,8 +131,13 @@ onMounted(async () => {
   renderer.setClearColor(0x000000, 0);
   setTimeout(async () => {
     // FlyTo current user location
-    await flyTo(coords.value.latitude, coords.value.longitude)
-  }, 2000)
+    if (
+      (!isNaN(coords.value.latitude) && !isNaN(coords.value.longitude)) ||
+      (coords.value.latitude !== Infinity &&
+        coords.value.longitude !== Infinity)
+    )
+      await flyTo(coords.value.latitude, coords.value.longitude);
+  }, 2000);
   animate();
 });
 
@@ -191,8 +192,8 @@ watch(
 );
 
 onBeforeUpdate(() => {
-  console.debug("Before update")
-})
+  console.debug("Before update");
+});
 
 onBeforeUnmount(() => {
   if (requestAnimFrameHandle != null) {
@@ -202,17 +203,24 @@ onBeforeUnmount(() => {
 
 // Reference: https://astronomy.stackexchange.com/questions/20560/how-to-calculate-the-position-of-the-sun-in-long-lat/20585#20585
 function estimateSunGP() {
-  const now = DateTime.now()
+  const now = DateTime.now();
   // console.debug("Offset ", now.offset, "UTC offset", now.toUTC().offset)
-  const startOfYear = now.startOf('year')
-  const endOfYear = now.endOf('year')
-  const percentageOfYear =  startOfYear.diffNow().milliseconds / endOfYear.diff(startOfYear).milliseconds
-  const nowInUTC = now.toUTC()
-  console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime())
-  const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12)
+  const startOfYear = now.startOf("year");
+  const endOfYear = now.endOf("year");
+  const percentageOfYear =
+    startOfYear.diffNow().milliseconds /
+    endOfYear.diff(startOfYear).milliseconds;
+  const nowInUTC = now.toUTC();
+  console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime());
+  const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12);
   // 15 degrees in 60 minutes => 1 degree in 4 minutes
-  const sunLongitude = utcMinutesUntilNoon/4
-  console.debug("Number of UTC elapse minutes", utcMinutesUntilNoon, "Sun estimate longitude", sunLongitude)
-  return sunLongitude * Math.PI / 180
+  const sunLongitude = utcMinutesUntilNoon / 4;
+  console.debug(
+    "Number of UTC elapse minutes",
+    utcMinutesUntilNoon,
+    "Sun estimate longitude",
+    sunLongitude
+  );
+  return (sunLongitude * Math.PI) / 180;
 }
 </script>
