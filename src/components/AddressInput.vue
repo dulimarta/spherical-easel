@@ -58,13 +58,16 @@ import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPoint } from "@/models/SEPoint";
+import EventBus from "@/eventHandlers/EventBus";
 
 type AddressPair = {
   description: string;
   placeId: string;
 };
 const store = useSEStore();
-const { inverseTotalRotationMatrix } = storeToRefs(store);
+const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
 const { t } = useI18n();
 
 const addrPlaceId = ref("");
@@ -122,6 +125,25 @@ function getPlaceDetails() {
     (place, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
+        // Make sure that this location doesn't exist already
+        const earthPoints = sePoints.value
+          .filter(pt => pt instanceof SEEarthPoint)
+          .map(pt => pt as SEEarthPoint);
+        if (
+          earthPoints.some(
+            pt =>
+              place?.geometry?.location &&
+              pt.latitude === place.geometry?.location.lat() &&
+              pt.longitude === place.geometry?.location.lng()
+          )
+        ) {
+          EventBus.fire("show-alert", {
+            key: `handlers.pointCreationAttemptDuplicate`,
+            keyOptions: {},
+            type: "error"
+          });
+          return;
+        }
         if (place?.geometry?.location) {
           const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
           const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;

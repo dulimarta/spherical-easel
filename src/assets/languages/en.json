@@ -425,6 +425,8 @@
     "centerOfThreePointCircle": "Center of circle through {pt1}, {pt2}, and {pt3}.",
     "aPolarPointOf": "Polar point of line {line} with index {index}.",
     "circleThrough": "Circle with center {center} through point {through}",
+    "latitudeCircle": "Latitude with degree {degree}",
+    "equatorCircle": "Equator",
     "inversionImageOfACircle": "Image of {circleOrLine} {circleOrLineParentName} under inversion {inversionParentName}.",
     "threePointCircleThrough": "Circle through the points {pt1}, {pt2}, and {pt3}.",
     "measuredCircle": "Circle with center {center} with radius {measurementToken}",

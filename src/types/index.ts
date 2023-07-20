@@ -302,6 +302,10 @@ export type IconNames =
   | "copyToClipboard"
   | "notifications";
 
+export enum Poles {
+  NORTH,
+  SOUTH
+}
 export interface AntipodalPointPair {
   newPoint: SEPoint;
   newAntipode: SEAntipodalPoint | null;

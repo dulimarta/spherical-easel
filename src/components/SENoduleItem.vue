@@ -128,7 +128,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, onMounted, ref, Ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onBeforeMount,
+  onMounted,
+  ref,
+  Ref,
+  watch
+} from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -175,6 +183,7 @@ import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import SETTINGS from "@/global-settings";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
+import { Poles } from "@/types";
 const seStore = useSEStore();
 const { actionMode, isEarthMode } = storeToRefs(seStore);
 const props = defineProps<{
@@ -191,6 +200,8 @@ const iconName = ref("mdi-help");
 let nodeName = "";
 let nodeType = "";
 
+let isNorthPole = false; //NP
+let isSouthPole = false;
 let curve: SEParametric | null = null;
 let curvePoint: SEParametricTracePoint | null = null;
 const parametricTime = ref(0);
@@ -217,6 +228,12 @@ onBeforeMount(() => {
     // All the point subclasses with SEPoint last
     iconName.value = "$earthPoint";
     nodeType = t(`objects.points`, 3);
+    //NP
+    if (props.node.latitude == 90 && props.node.longitude == 0) {
+      isNorthPole = true;
+    } else if (props.node.latitude == -90 && props.node.longitude == 0) {
+      isSouthPole = true;
+    }
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
     nodeType = t(`objects.points`, 3);
@@ -344,6 +361,16 @@ onMounted((): void => {
     parametricTStep.value = (tMax - tMin) / 100;
     onParametricTimeChanged(tMin);
   }
+  EventBus.listen("update-label-and-showing-display", updateVisibilityKeys);
+});
+
+function updateVisibilityKeys() {
+  visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
+  labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
+}
+
+onBeforeUnmount((): void => {
+  EventBus.unlisten("update-label-and-showing-display");
 });
 
 function glowMe(flag: boolean): void {
@@ -410,8 +437,19 @@ function selectMe(): void {
 
 function toggleVisibility(): void {
   new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
-  visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
-  labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
+  updateVisibilityKeys();
+  //NP
+  if (isNorthPole) {
+    EventBus.fire("update-pole-switch", {
+      pole: Poles.NORTH,
+      val: props.node.showing
+    });
+  } else if (isSouthPole) {
+    EventBus.fire("update-pole-switch", {
+      pole: Poles.SOUTH,
+      val: props.node.showing
+    });
+  }
 }
 
 function toggleLabelDisplay(): void {
@@ -432,8 +470,9 @@ function toggleLabelDisplay(): void {
       ).execute();
     }
   }
-  labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
-  visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
+  updateVisibilityKeys();
+  // labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
+  // visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
 }
 
 function copyToClipboard(): void {
