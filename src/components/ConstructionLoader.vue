@@ -5,7 +5,8 @@
     </div> -->
     <!--- WARNING: the "id" attribs below are needed for testing -->
     <v-expansion-panels style="gap:10px">
-      <v-expansion-panel>
+      <v-expansion-panels>
+        <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
           <h3 class="body-1 font-weight-bold button-group-heading">
           {{ t(`constructions.privateConstructions`) }}
@@ -22,7 +23,9 @@
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel>
+      </v-expansion-panels>
+      <v-expansion-panels>
+        <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
           <h3 class="body-1 font-weight-bold button-group-heading">
           {{ t(`constructions.publicConstructions`) }}
@@ -38,6 +41,9 @@
             v-on:delete-requested="shouldDeleteConstruction" />
         </v-expansion-panel-text>
       </v-expansion-panel>
+      </v-expansion-panels>
+
+
     </v-expansion-panels>
     <!-- <div class="text-h6">{{ $t(`constructions.publicConstructions`) }}</div> -->
 

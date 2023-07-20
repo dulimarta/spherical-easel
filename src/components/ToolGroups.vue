@@ -14,10 +14,11 @@
     @update:model-value="toolSelectionChanged">
     <v-expansion-panels style="gap:10px">
     <!-- <div v-for="(g, gpos) in buttonGroup" :key="gpos"> -->
-          <v-expansion-panel v-for="(g,gpos) in buttonGroup" :key="gpos">
+          <v-expansion-panels v-for="(g,gpos) in buttonGroup" :key="gpos" >
+            <v-expansion-panel  style="border-radius: 8px;">
             <div v-if="g.children.length>0">
             </div>
-            <v-expansion-panel-title >
+            <v-expansion-panel-title>
               <h3 class="body-1 font-weight-bold button-group-heading">
                 {{ $t(`toolGroups.${g.group}`) }}
               </h3>
@@ -40,12 +41,12 @@
         </div>
             </v-expansion-panel-text>
           </v-expansion-panel>
+    </v-expansion-panels>
 
 
-
-
-      <v-expansion-panel id="DeveloperToolGroup"
+    <v-v-expansion-panels id="DeveloperToolGroup"
       v-show="developerButtonList.length > 0 && !inProductionMode">
+      <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
           <h3 class="body-1 font-weight-bold">
             {{ $t("toolGroups.DeveloperOnlyTools") }}
@@ -66,7 +67,7 @@
         </v-item>
         </v-expansion-panel-text>
         </v-expansion-panel>
-
+    </v-v-expansion-panels>
   </v-expansion-panels>
   </v-item-group>
 </template>

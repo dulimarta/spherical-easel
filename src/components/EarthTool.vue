@@ -11,7 +11,8 @@
     </v-switch>
     <!-- </div> -->
     <v-expansion-panels style="gap:10px">
-      <v-expansion-panel>
+    <v-expansion-panels>
+      <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
           <h3 class="body-1 font-weight-bold button-group-heading">
           Point
@@ -23,8 +24,9 @@
           </Suspense>
         </v-expansion-panel-text>
       </v-expansion-panel>
-
-      <v-expansion-panel>
+    </v-expansion-panels>
+    <v-expansion-panels>
+      <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
           <h3 class="body-1 font-weight-bold button-group-heading">
 
@@ -47,6 +49,10 @@
           <v-btn @click="trigger=!trigger" :disabled="firstPlaceID===null||secondPlaceID===null||firstPlaceID.length===0||secondPlaceID.length===0">Draw</v-btn>
         </v-expansion-panel-text>
       </v-expansion-panel>
+    </v-expansion-panels>
+
+
+
     </v-expansion-panels>
 
 

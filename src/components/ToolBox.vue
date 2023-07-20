@@ -113,7 +113,7 @@
           </v-list>
         </template>
       </v-navigation-drawer>
-      <v-navigation-drawer v-show="show" :style="{backgroundColor: show? '#B9D9C1':'white',border:show?'':'0px'}" style="padding:5px;">
+      <v-navigation-drawer v-show="show" width="290" :style="{backgroundColor: show? '#B9D9C1':'white',border:show?'':'0px'}" style="padding:8px;">
         <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
 
         <ToolGroups v-if="activeItem[0]===0"/>

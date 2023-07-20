@@ -3,7 +3,8 @@
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
       <v-expansion-panels style="gap: 10px;">
-        <v-expansion-panel>
+      <v-expansion-panels>
+        <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.expression") }}
@@ -13,7 +14,9 @@
             <ExpressionForm></ExpressionForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
-        <v-expansion-panel>
+      </v-expansion-panels>
+      <v-expansion-panels>
+        <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.parametricCurves") }}
@@ -23,7 +26,9 @@
             <ParametricForm></ParametricForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
-        <v-expansion-panel>
+      </v-expansion-panels>
+      <v-expansion-panels>
+        <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.slider") }}
@@ -33,6 +38,10 @@
             <SliderForm></SliderForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
+      </v-expansion-panels>
+
+
+
       </v-expansion-panels>
       <div class="ma-2 pa-1" id="objectTreeContainer">
         <v-sheet
