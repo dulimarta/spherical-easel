@@ -186,7 +186,8 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     script = props.items[pos].parsedScript;
     rotationMatrix = props.items[pos].sphereRotationMatrix;
     if (props.items[pos].tools) toolSet = props.items[pos].tools;
-  }
+  } else
+    rotationMatrix = new Matrix4()
   if (toolSet === undefined) {
     console.debug("Include all tools");
     acctStore.resetToolset(true); /* include all tools */
@@ -209,7 +210,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    // setRotationMatrix(rotationMatrix);
+    seStore.setRotationMatrix(rotationMatrix);
     run(script);
     // rotateSphere(rotationMatrix.invert());
     seStore.clearUnsavedFlag();

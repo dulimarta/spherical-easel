@@ -456,6 +456,7 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
       this.inverseTotalRotationMatrix.identity();
+      this.isEarthMode = false
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
