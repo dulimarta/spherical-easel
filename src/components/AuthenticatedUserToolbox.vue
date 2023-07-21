@@ -157,10 +157,8 @@ import {
   getStorage
 } from "firebase/storage";
 import { useConstruction } from "@/composables/constructions";
-import { nextTick } from "vue";
 import FileSaver from "file-saver";
-import { computed } from "vue";
-import { watch } from "vue";
+import { computed, watch } from "vue";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -362,21 +360,26 @@ async function doSave(): Promise<void> {
   const svgBlob = new Blob([svgElement.outerHTML], {
     type: "image/svg+xml;charset=utf-8"
   });
-  const svgPreviewData = await toBase64(svgBlob);
-  const svgURL = URL.createObjectURL(svgBlob);
-
+  const svgDataUrl = await toBase64(svgBlob);
+  let previewData: string;
 
   if (isEarthMode.value) {
+    // In earth mode, the preview has to capture both the
+    // the earth ThreeJS and the unit sphere TwoJS layers
+    // Our trick below is to draw both layers (in the correct order)
+    // into an offline canvas and then convert to a data image
     const earthCanvas = document.getElementById("earth") as HTMLCanvasElement;
-    console.debug("ThreeJS at", earthCanvas);
-    // console.debug("ThreeJS canvas", earthCanvas.toDataURL())
-    saveAsImage(
-      [earthCanvas.toDataURL(), svgURL],
-      "earthlayer",
+    previewData = await mergeIntoImageUrl(
+      // Must be specified in the correct order, the first item
+      // in the array will be drawn to the offline canvas first
+      [earthCanvas.toDataURL(), svgDataUrl],
       canvasWidth.value,
       canvasHeight.value,
       "png"
     );
+    // FileSaver.saveAs(previewData, "hans.png");
+  } else {
+    previewData = svgDataUrl
   }
 
   /* Create a pipeline of Firebase tasks
@@ -428,11 +431,11 @@ async function doSave(): Promise<void> {
 
       /* Task #3 */
       const svgPromise: Promise<string> =
-        svgPreviewData.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(svgPreviewData)
+        previewData.length < FIELD_SIZE_LIMIT
+          ? Promise.resolve(previewData)
           : uploadString(
               storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              svgPreviewData
+              previewData
             ).then(t => getDownloadURL(t.ref));
 
       /* Wrap the result from the three tasks as a new Promise */
@@ -483,13 +486,13 @@ async function doSave(): Promise<void> {
   saveConstructionDialog.value?.hide();
 }
 
-function saveAsImage(
+async function mergeIntoImageUrl(
   sourceURLs: Array<string>,
-  fileName: string,
+  // fileName: string,
   imageWidth: number,
   imageHeight: number,
   imageFormat: string
-): void {
+): Promise<string> {
   // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
   const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
   offlineCanvas.width = imageWidth;
@@ -498,21 +501,23 @@ function saveAsImage(
   // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
   const graphicsCtx = offlineCanvas.getContext("2d");
   const imageExtension = imageFormat.toLowerCase();
-  const arr = sourceURLs.map((dataUrl: string): Promise<string> => {
+  const drawTasks= sourceURLs.map((dataUrl: string, index: number): Promise<string> => {
     return new Promise(resolve => {
       const offlineImage = new Image();
       offlineImage.addEventListener("load", () => {
         graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
         resolve(dataUrl);
       });
       offlineImage.src = dataUrl;
     });
   });
-  Promise.all(arr).then(() => {
-    const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
-    FileSaver.saveAs(imgURL, `${fileName}.${imageExtension}`);
-  })
+  await Promise.all(drawTasks)
+  const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
+
+  return imgURL;
 }
+
 function doExport() {
   if (svgRoot === undefined) {
     // By the time doSave() is called svgCanvas must have been set
@@ -530,13 +535,14 @@ function doExport() {
     // await nextTick()
     FileSaver.saveAs(svgURL, "construction.svg");
   } else {
-    saveAsImage(
+    mergeIntoImageUrl(
       [svgURL],
-      "construction",
       canvasWidth.value,
       canvasHeight.value,
       selectedExportFormat.value
-    );
+    ).then((imageUrl: string) => {
+      FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
+    });
   }
 }
 </script>

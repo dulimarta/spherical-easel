@@ -97,7 +97,7 @@
     {{ t('copyURL', {docId: sharedDocId}) }}
   </Dialog>
 
-  <v-snackbar v-model="showDeleteWarning" :timeout="DELETE_DELAY">
+  <v-snackbar v-model="showDeleteWarning" location="top" :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>

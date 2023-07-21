@@ -265,7 +265,6 @@ function cancelDeleteMessages() {
 #msg-display-area {
   /* padding: 4px; */
   width: 35em;
-  overflow: scroll;
   overflow-y: auto;
 }
 #msghub {

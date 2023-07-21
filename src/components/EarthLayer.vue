@@ -41,11 +41,6 @@ const { zoomMagnificationFactor, zoomTranslation, inverseTotalRotationMatrix } =
 let requestAnimFrameHandle: number | null = null;
 
 const rotationMatrix = new Matrix4(); // temporary matrix for rotating the sphere
-// The TwoJS drawing canvas is our assumed XY-plane, and our unit sphere is
-// initially position with its north pole(Z - plus axis) pointing towards the viewer.
-// However, the ThreeJS sphere wrapped with the earth texture shows its north pole
-// pointing up to the sky (our Y-plus axis).
-// A rotation by 90 degrees is required to lineup both north poles
 const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
