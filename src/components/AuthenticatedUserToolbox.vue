@@ -509,6 +509,7 @@ async function mergeIntoImageUrl(
         // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
         resolve(dataUrl);
       });
+      // Similar to <img :src="dataUrl" /> but programmatically
       offlineImage.src = dataUrl;
     });
   });

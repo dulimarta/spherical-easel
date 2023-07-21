@@ -472,7 +472,9 @@ function handleMouseWheel(event: WheelEvent): void {
   const boundingRect = target.getBoundingClientRect();
   const pixelX = event.clientX - boundingRect.left - boundingRect.width / 2;
   const pixelY = event.clientY - boundingRect.top - boundingRect.height / 2;
-  event.preventDefault();
+  /* Uncommenting this line triggers errors in Chrome console:
+     Unable to preventDefault inside passive event listener */
+  // event.preventDefault();
 
   // Compute the fraction to zoom in or out by
   let scrollFraction = event.deltaY / boundingRect.height;

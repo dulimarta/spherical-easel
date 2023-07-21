@@ -69,9 +69,13 @@ const camera = new OrthographicCamera(
   scaledWidth,
   scaledHeight,
   -scaledHeight,
-  0.1,
-  1000
+  1,
+  2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor.value
 );
+    // When the magnification factor is below 1.0, we don't want to place the camera
+    // inside the unit sphere, so place it at least 10% further
+camera.position.z = SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor.value)
+
 //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = Math.min(scaledWidth, scaledHeight);
 camera.updateProjectionMatrix();
@@ -127,7 +131,7 @@ onMounted(async () => {
   setTimeout(async () => {
     // FlyTo current user location
     if (
-      (!isNaN(coords.value.latitude) && !isNaN(coords.value.longitude)) ||
+      (!isNaN(coords.value.latitude) && !isNaN(coords.value.longitude)) &&
       (coords.value.latitude !== Infinity &&
         coords.value.longitude !== Infinity)
     )
@@ -156,6 +160,12 @@ watch(
     camera.right = scaledWidth;
     camera.top = scaledHeight;
     camera.bottom = -scaledHeight;
+    camera.far = 2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor
+    // When the magnification factor is below 1.0, we don't want to place the camera
+    // inside the unit sphere, so place it at least 10% further
+    camera.position.z = SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor)
+    // console.debug(`Camera z-range [${camera.near}, ${camera.far}] and position`, camera.position)
+
     camera.updateProjectionMatrix();
   }
 );
@@ -185,10 +195,6 @@ watch(
   },
   { deep: true }
 );
-
-onBeforeUpdate(() => {
-  console.debug("Before update");
-});
 
 onBeforeUnmount(() => {
   if (requestAnimFrameHandle != null) {
