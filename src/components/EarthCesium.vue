@@ -1,27 +1,32 @@
 <template>
-  <VcConfigProvider
+  <vc-config-provider
     :cesium-path="vcConfig.cesiumPath"
     :locale="enUS">
-    <VcViewer
+    <!--
+      Detailed docs: https://cesium.com/learn/cesiumjs/ref-doc/Viewer.html
+      base-layer-picker shows a layer selector at the upper right corner of the canvas
+      scene-mode-picker shows a projection view selector
+    -->
+    <vc-viewer
       ref="cesiumViewer"
       id="cesium-viewer"
       @ready="onComponentReady"
       :style="viewerStyle"
       :access-token="vcConfig.accessToken"
+      :scene-mode-picker="false"
       :animation="false"
       :show-credit="true"
       :terrain="Terrain.fromWorldTerrain()"
       :base-layer-picker="true"
       >
-      <VcLayerImagery :alpha="0.7" :brightness="1">
-        <VcImageryProviderOsm></VcImageryProviderOsm>
-      </VcLayerImagery>
-      <VcNavigation/>
+      <vc-layer-imagery :alpha="0.7" :brightness="1">
+        <vc-imagery-provider-osm></vc-imagery-provider-osm>
+      </vc-layer-imagery>
       <!--vc-entity
         :position="{ lng: 108, lat: -6.2 }"
         label="Jakarta"></!--vc-entity-->
-    </VcViewer>
-  </VcConfigProvider>
+    </vc-viewer>
+  </vc-config-provider>
 </template>
 <script setup lang="ts">
 import { onMounted } from "vue";
@@ -58,9 +63,10 @@ const viewerStyle = computed(() => {
 onMounted(() => {
   cesiumViewer.value?.creatingPromise.then((obj: VcReadyObject) => {
   //   console.debug("Promise created #1", obj.Cesium);
-  //   console.debug("Promise created #2", obj.viewer);
+    console.debug("Promise created #2", obj.viewer.camera);
     createOsmBuildingsAsync().then((tileSet: Cesium3DTileset) => {
       obj.viewer.scene.primitives.add(tileSet);
+
       // obj.viewer.scene.globe.show = true
     });
   });
