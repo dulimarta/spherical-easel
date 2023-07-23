@@ -7,6 +7,8 @@ import vue from "@vitejs/plugin-vue";
 
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import cesium from "vite-plugin-cesium"
+
 export default defineConfig({
   // define: {
   //   'process.env': process.env
@@ -46,7 +48,8 @@ export default defineConfig({
       strictMessage: true /* messages should not contain HTML tags */,
       allowDynamic: true,
       bridge: true /* specify custom blocks to  work under both v8 and v9 */
-    })
+    }),
+    cesium()
   ],
   server: {
     port: 8080

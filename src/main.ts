@@ -16,6 +16,7 @@ import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { SENodule } from "./models/internal";
+import "vue-cesium/dist/index.css"
 const pinia = createPinia();
 const firebaseApp = initializeApp(firebaseConfig)
 

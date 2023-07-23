@@ -14,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
-    "types": ["vuetify", "jest", "@intlify/unplugin-vue-i18n/messages","google.maps"],
+    "types": ["jest", "google.maps", "vue-cesium/global", "vue-cesium/Cesium"],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types",

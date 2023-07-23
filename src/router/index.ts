@@ -2,12 +2,17 @@ import  { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
+import EarthCesium from "@/components/EarthCesium.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "Home",
     component: Easel
+  },
+  {
+    path: "/cs",
+    component: EarthCesium
   },
   {
     path: "/account",
