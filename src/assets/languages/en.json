@@ -272,6 +272,7 @@
     "newEarthPointAdded": "New earth point {name} added at ({lat},{long})",
     "newLatitudeAdded": "New latitude {name} at {lat}.",
     "latitudeCreationAttemptDuplicate": "This latitude has already been created.",
+    "latitudeWithZeroRadius": "Latitudes must have a non-zero radius.",
     "applyTransformationSelectTransformation": "You must select a transformation before you can use this tool.",
     "nEqualOneAngleNSect": "You must choose to divide angles into more than 1 equal pieces.",
     "nSetAngleNSect": "You are dividing angles into {number} equal pieces.",

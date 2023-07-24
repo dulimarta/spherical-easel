@@ -82,10 +82,8 @@
                 </v-menu>
               </template>
             </v-switch>
-            <AddEarthLatitudes
-              v-if="localIsEarthMode"
-              :class="['displayEarthLatitudes', 'bg-blue-lighten-2']" />
-            <AddEarthPoints
+
+            <AddEarthObject
               v-if="localIsEarthMode"
               :class="['displayEarthPoints', 'bg-blue-lighten-2']" />
           </div>
@@ -168,8 +166,7 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
-import AddEarthLatitudes from "@/components/AddEarthLatitudes.vue";
-import AddEarthPoints from "@/components/AddEarthPoints.vue";
+import AddEarthObject from "@/components/AddEarthObject.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
@@ -646,22 +643,14 @@ function setEarthModeFunction() {
 }
 .displayEarthPoints {
   position: relative;
-  top: -550px;
+  top: -450px;
   left: 12px;
   margin: 0;
   padding: 0 0em;
   border-radius: 8px;
   align-self: flex-start;
 }
-.displayEarthLatitudes {
-  position: relative;
-  top: -600px;
-  left: 12px;
-  margin: 0;
-  padding: 0 0em;
-  border-radius: 8px;
-  align-self: flex-start;
-}
+
 #earthAndCircle {
   display: flex;
   flex-direction: column;
