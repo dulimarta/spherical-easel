@@ -12,7 +12,7 @@
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
-    <v-expansion-panels style="gap:10px">
+    <v-expansion-panels style="gap:10px;padding-right: 8px;">
     <!-- <div v-for="(g, gpos) in buttonGroup" :key="gpos"> -->
           <v-expansion-panels v-for="(g,gpos) in buttonGroup" :key="gpos" >
             <v-expansion-panel  style="border-radius: 8px;">
@@ -42,9 +42,7 @@
             </v-expansion-panel-text>
           </v-expansion-panel>
     </v-expansion-panels>
-
-
-    <v-v-expansion-panels id="DeveloperToolGroup"
+    <v-expansion-panels id="DeveloperToolGroup"
       v-show="developerButtonList.length > 0 && !inProductionMode">
       <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>
@@ -62,12 +60,11 @@
           :editing="inEditMode"
           :selected="isSelected!"
           :included="true"
-
         />
         </v-item>
         </v-expansion-panel-text>
         </v-expansion-panel>
-    </v-v-expansion-panels>
+    </v-expansion-panels>
   </v-expansion-panels>
   </v-item-group>
 </template>

@@ -4,7 +4,7 @@
       {{ $t(`constructions.privateConstructions`) }}
     </div> -->
     <!--- WARNING: the "id" attribs below are needed for testing -->
-    <v-expansion-panels style="gap:10px">
+    <v-expansion-panels style="gap:10px;padding-right: 8px;">
       <v-expansion-panels>
         <v-expansion-panel style="border-radius: 8px;">
         <v-expansion-panel-title>

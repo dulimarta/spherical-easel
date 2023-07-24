@@ -2,7 +2,7 @@
   <div>
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
-      <v-expansion-panels style="gap: 10px;">
+      <v-expansion-panels style="gap: 10px;padding-right: 8px;">
       <v-expansion-panels>
         <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
@@ -28,7 +28,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
       <v-expansion-panels>
-        <v-expansion-panel style="border-radius: 8px;">
+        <v-expansion-panel style="border-radius: 8px;padding-right: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
             {{ $t("objectTree.slider") }}

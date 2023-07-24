@@ -624,7 +624,7 @@ function handleToolboxMinify(state: boolean) {
   // height: 80%;
 }
 #toolbox{
-  display: inline-block;
+  display: flex;
 }
 #toolbox-and-sphere{
   display: flex;
