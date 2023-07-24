@@ -1302,7 +1302,11 @@ export const useSEStore = defineStore({
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
     hasObjects(state): boolean {
-      return state.sePointIds.length > 0;
+      return (
+        state.sePointIds.length > 0 ||
+        state.seCircleIds.length > 0 ||
+        state.seSegmentIds.length > 0
+      ); // SELatitude and SE Longitude are not constructed with SEPoints that are put into the object tree
     },
     // inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
     // hasNoAntipode: (state): ((_: SEPoint) => boolean) => {

@@ -16,24 +16,26 @@
         :label="t('southPole')"
         @click="displayPole(Poles.SOUTH)"></v-switch>
       <v-divider :thickness="8" color="black"></v-divider>
-      <v-text-field
-        :label="t('latitude')"
-        clearable
-        density="compact"
-        :rules="[numberCheck]"
-        v-model="pointLatitude"></v-text-field>
-      <v-text-field
-        :label="t('longitude')"
-        density="compact"
-        clearable
-        v-model="pointLongitude"></v-text-field>
-      <v-btn
-        :disabled="addButtonDisabled"
-        variant="outlined"
-        density="compact"
-        @click="addEarthPoint">
-        {{ t("addPoint") }}
-      </v-btn>
+      <v-form ref="form">
+        <v-text-field
+          :label="t('latitude')"
+          clearable
+          density="compact"
+          :rules="[numberCheck]"
+          v-model="latitudeNumber"></v-text-field>
+        <v-text-field
+          :label="t('longitude')"
+          density="compact"
+          clearable
+          v-model="longitudeNumber"></v-text-field>
+        <v-btn
+          :disabled="addButtonDisabled"
+          variant="outlined"
+          density="compact"
+          @click="addEarthPoint()">
+          {{ t("addPoint") }}
+        </v-btn>
+      </v-form>
     </v-col>
   </div>
 </template>
@@ -76,8 +78,8 @@ const { geoLocationToUnitSphere } = useEarthCoordinate();
 
 let showNorthPole = ref(false);
 let showSouthPole = ref(false);
-let pointLatitude = ref("");
-let pointLongitude = ref("");
+let latitudeNumber = ref("");
+let longitudeNumber = ref("");
 
 // const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
 // const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
@@ -86,7 +88,7 @@ let seNorthPole: SEEarthPoint | undefined = undefined;
 let seSouthPole: SEEarthPoint | undefined = undefined;
 
 function numberCheck(txt: string | undefined): boolean | string {
-  if (!Number(txt)) {
+  if (typeof txt === "string" && Number.isNaN(Number(txt))) {
     return t("numbersOnly");
   } else {
     let num = Number(txt);
@@ -98,7 +100,7 @@ function numberCheck(txt: string | undefined): boolean | string {
   }
 }
 const addButtonDisabled = computed((): boolean => {
-  return pointLongitude.value === "" || pointLatitude.value === "";
+  return longitudeNumber.value === "" || latitudeNumber.value === "";
 });
 
 function addEarthPoint(): void {
@@ -111,9 +113,9 @@ function addEarthPoint(): void {
     sePoints.value.filter(
       pt =>
         pt instanceof SEEarthPoint &&
-        Math.abs(pt.latitude - Number(pointLatitude.value)) <
+        Math.abs(pt.latitude - Number(latitudeNumber.value)) <
           SETTINGS.tolerance &&
-        Math.abs(pt.longitude - Number(pointLongitude.value)) <
+        Math.abs(pt.longitude - Number(longitudeNumber.value)) <
           SETTINGS.tolerance
     ).length > 0
   ) {
@@ -124,12 +126,12 @@ function addEarthPoint(): void {
     return;
   }
   const seEarthPoint = new SEEarthPoint(
-    Number(pointLatitude.value),
-    Number(pointLongitude.value)
+    Number(latitudeNumber.value),
+    Number(longitudeNumber.value)
   );
   const coords = geoLocationToUnitSphere(
-    Number(pointLatitude.value),
-    Number(pointLongitude.value)
+    Number(latitudeNumber.value),
+    Number(longitudeNumber.value)
   );
   const poleVector = new Vector3(coords[0], coords[2], coords[1]); //Switch when merging with vue3-upgrade
   const rotationMatrix = new Matrix4();
@@ -139,7 +141,11 @@ function addEarthPoint(): void {
   const poleSELabel = new SELabel("point", seEarthPoint);
   // stylize the north pole
   poleSELabel.ref.caption =
-    "(" + pointLatitude.value + "," + pointLongitude.value + ")";
+    "(" +
+    latitudeNumber.value +
+    "\u{00B0}," +
+    longitudeNumber.value +
+    "\u{00B0})";
   poleSELabel.update();
   new AddEarthPointCommand(seEarthPoint, poleSELabel).execute();
   EventBus.fire("show-alert", {
@@ -151,30 +157,41 @@ function addEarthPoint(): void {
     },
     type: "success"
   });
-  pointLongitude.value = "";
-  pointLatitude.value = "";
-}
-// watch(
-//   () => sePoints.value,
-//   points => {
-//     const northPoleList = points
-//       .filter(
-//         pt =>
-//           pt instanceof SEEarthPoint && pt.latitude === 90 && pt.longitude === 0
-//       )
-//       .map(pt => pt as SEEarthPoint);
 
-//     if (northPoleList[0]) {
-//       seNorthPole = northPoleList[0];
-//       showNorthPole.value = northPoleList[0].showing;
-//     } else {
-//       // the north pole doesn't exist (or was deleted)
-//       seNorthPole = undefined;
-//       showNorthPole.value = false;
-//     }
-//     console.log("execute ", seNorthPole);
-//   }
-// );
+  longitudeNumber.value = "";
+  latitudeNumber.value = "";
+}
+watch(
+  () => sePoints.value,
+  points => {
+    const earthPoints = points
+      .filter(pt => pt instanceof SEEarthPoint)
+      .map(pt => pt as SEEarthPoint);
+    let northPole = earthPoints.find(
+      pt => pt.latitude === 90 && pt.longitude === 0
+    );
+    if (northPole != undefined) {
+      seNorthPole = northPole;
+      showNorthPole.value = northPole.showing;
+    } else {
+      // the north pole doesn't exist (or was deleted)
+      seNorthPole = undefined;
+      showNorthPole.value = false;
+    }
+    let southPole = earthPoints.find(
+      pt => pt.latitude === -90 && pt.longitude === 0
+    );
+    if (southPole != undefined) {
+      seSouthPole = southPole;
+      showSouthPole.value = southPole.showing;
+    } else {
+      // the South pole doesn't exist (or was deleted)
+      seSouthPole = undefined;
+      showSouthPole.value = false;
+    }
+    // console.log("execute ", seNorthPole);
+  }
+);
 
 // watch(
 //   () => seNorthPole,

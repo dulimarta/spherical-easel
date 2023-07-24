@@ -29,6 +29,7 @@ import {
 // import { SEParametric } from "./SEParametric";
 // import { SEPolygon } from "./SEPolygon";
 import { SEEarthPoint } from "./SEEarthPoint";
+import { SELatitude } from "./SELatitude";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -94,7 +95,7 @@ export class SELabel extends SENodule implements Visitable {
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
       if (parent instanceof SEEarthPoint) {
-        this.ref.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
         this.showing = true;
       } else {
         this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
@@ -111,8 +112,13 @@ export class SELabel extends SENodule implements Visitable {
       this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
       this.showing = SETTINGS.segment.showLabelsInitially;
     } else if (parent instanceof SECircle) {
-      this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
-      this.showing = SETTINGS.circle.showLabelsInitially;
+      if (parent instanceof SELatitude) {
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
+        this.showing = true;
+      } else {
+        this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
+        this.showing = SETTINGS.circle.showLabelsInitially;
+      }
     } else if (parent instanceof SEAngleMarker) {
       this.ref.initialLabelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
       this.showing = SETTINGS.angleMarker.showLabelsInitially;

@@ -12,6 +12,7 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
+
 let NODE_COUNT = 0;
 
 export abstract class SENodule implements Visitable {

@@ -10,6 +10,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SELatitude } from "@/models/SELatitude";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -85,8 +86,22 @@ export class RotationVisitor implements Visitor {
 
   // eslint-disable-next-line
   actionOnCircle(c: SECircle): boolean {
-    //Circles are completely determined by two points they depend on so no need to update them
-    return false;
+    //Circles are completely determined by two points they depend on so no need to update them unless that circle is a
+    // SELatitude where the (center && circle)points are *not* in the object tree so handle those here
+    if (c instanceof SELatitude) {
+      console.log("SELatitude actionOnCircle");
+      this.tmpVector.copy(c.circleSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      c.circleSEPoint.locationVector = this.tmpVector; // update the circle point
+
+      this.tmpVector.copy(c.centerSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      c.centerSEPoint.locationVector = this.tmpVector; // update the center point
+      c.shallowUpdate();
+      return true;
+    } else {
+      return false;
+    }
   }
   actionOnLabel(l: SELabel): boolean {
     this.tmpVector.copy(l.locationVector); // Copy the old vector location of the SEPoint

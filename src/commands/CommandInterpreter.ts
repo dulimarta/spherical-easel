@@ -48,6 +48,7 @@ import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPoin
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
 import { SetEarthModeCommand } from "./SetEarthModeCommand";
+import { AddLatitudeCommand } from "./AddLatitudeCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -78,6 +79,8 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddLatitude":
+      return AddLatitudeCommand.parse(command, noduleDictionary);
     case "AddEarthPoint":
       return AddEarthPointCommand.parse(command, noduleDictionary);
     case "AddSegment":

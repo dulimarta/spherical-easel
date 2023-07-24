@@ -82,6 +82,9 @@
                 </v-menu>
               </template>
             </v-switch>
+            <AddEarthLatitudes
+              v-if="localIsEarthMode"
+              :class="['displayEarthLatitudes', 'bg-blue-lighten-2']" />
             <AddEarthPoints
               v-if="localIsEarthMode"
               :class="['displayEarthPoints', 'bg-blue-lighten-2']" />
@@ -165,6 +168,7 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
+import AddEarthLatitudes from "@/components/AddEarthLatitudes.vue";
 import AddEarthPoints from "@/components/AddEarthPoints.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
@@ -642,7 +646,16 @@ function setEarthModeFunction() {
 }
 .displayEarthPoints {
   position: relative;
-  top: -410px;
+  top: -550px;
+  left: 12px;
+  margin: 0;
+  padding: 0 0em;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+.displayEarthLatitudes {
+  position: relative;
+  top: -600px;
   left: 12px;
   margin: 0;
   padding: 0 0em;
