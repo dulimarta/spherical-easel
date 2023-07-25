@@ -50,10 +50,13 @@
           <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
 
           <div id="earthAndCircle">
-            <EarthLayer
+            <!--EarthLayer
               v-if="isEarthMode && svgDataImage.length === 0"
               :available-height="availHeight"
-              :available-width="availWidth" />
+              :available-width="availWidth" /-->
+            <EarthCesium
+              :available-width="availWidth"
+              :available-height="availHeight" />
             <SphereFrame
               style="position: relative"
               :available-width="availWidth"
@@ -103,7 +106,8 @@
               class="mx-1"
               v-for="t in leftShortcutGroup"
               :model="t" />
-              <ShortcutIcon :disabled="!hasObjects"
+            <ShortcutIcon
+              :disabled="!hasObjects"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('resetAction')!" />
             <MessageHub />
@@ -162,6 +166,7 @@ import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
+import EarthCesium from "@/components/EarthCesium.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */

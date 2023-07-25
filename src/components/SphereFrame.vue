@@ -265,6 +265,7 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
+  boundaryCircle.stroke = "red"
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
 
@@ -297,7 +298,7 @@ onBeforeMount((): void => {
   // to avoid runtime error when the tools depend of Pinia initialization
 
   // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
-  EventBus.listen("sphere-rotate", handleSphereRotation);
+  // EventBus.listen("sphere-rotate", handleSphereRotation);
   EventBus.listen("zoom-updated", updateView);
   EventBus.listen("export-current-svg", getCurrentSVGForIcon);
   EventBus.listen("construction-loaded", animateCanvas);
