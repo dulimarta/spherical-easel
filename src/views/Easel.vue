@@ -85,7 +85,7 @@
 
             <AddEarthObject
               v-if="localIsEarthMode"
-              :class="['displayEarthPoints', 'bg-blue-lighten-2']" />
+              :class="['displayEarthObject', 'bg-blue-lighten-2']" />
           </div>
           <v-overlay
             :scrim="false"
@@ -641,7 +641,7 @@ function setEarthModeFunction() {
   border-radius: 8px;
   align-self: flex-start;
 }
-.displayEarthPoints {
+.displayEarthObject {
   position: relative;
   top: -450px;
   left: 12px;

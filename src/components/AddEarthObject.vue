@@ -22,6 +22,14 @@
         variant="outlined"
         :label="t('equator')"
         @click="displayEquator"></v-switch>
+      <v-switch
+        hide-details
+        v-model="showPrimeMeridian"
+        density="compact"
+        variant="outlined"
+        :label="t('primeMeridian')"
+        @click="displayPrimeMeridian"></v-switch>
+
       <v-divider :thickness="8" color="black"></v-divider>
 
       <v-text-field
@@ -36,27 +44,39 @@
         clearable
         :rules="[longitudeNumberCheck]"
         v-model="longitudeNumber"></v-text-field>
-      <v-btn
-        :disabled="addPointButtonDisabled"
-        variant="outlined"
-        density="compact"
-        @click="addEarthPoint()">
-        {{ t("addPoint") }}
-      </v-btn>
-      <v-btn
-        :disabled="addLatitudeButtonDisabled"
-        variant="outlined"
-        density="compact"
-        @click="addLatitudeCircle()">
-        {{ t("addLatitude") }}
-      </v-btn>
-      <v-btn
-        :disabled="addLongitudeButtonDisabled"
-        variant="outlined"
-        density="compact"
-        @click="addLongitudeSegment()">
-        {{ t("addLongitude") }}
-      </v-btn>
+      <v-col>
+        <v-row>
+          <v-btn
+            :disabled="addPointButtonDisabled"
+            variant="outlined"
+            density="compact"
+            @click="addEarthPoint()">
+            {{ t("addPoint") }}
+          </v-btn>
+        </v-row>
+      </v-col>
+      <v-col>
+        <v-row>
+          <v-btn
+            :disabled="addLatitudeButtonDisabled"
+            variant="outlined"
+            density="compact"
+            @click="addLatitudeCircle()">
+            {{ t("addLatitude") }}
+          </v-btn>
+        </v-row>
+      </v-col>
+      <v-col>
+        <v-row>
+          <v-btn
+            :disabled="addLongitudeButtonDisabled"
+            variant="outlined"
+            density="compact"
+            @click="addLongitudeSegment()">
+            {{ t("addLongitude") }}
+          </v-btn>
+        </v-row>
+      </v-col>
     </v-col>
   </div>
 </template>
@@ -77,7 +97,11 @@
   "TropicOfCapricorn": "Tropic of Capricorn",
   "arcticCircle": "Arctic Circle",
   "antarcticCircle": "Antarctic Circle",
-  "primeMeridian": "Prime Meridian"
+  "primeMeridian": "Prime Meridian",
+  "N": "N",
+  "S": "S",
+  "E": "E",
+  "W": "W"
 }
 </i18n>
 
@@ -111,6 +135,7 @@ const { inverseTotalRotationMatrix, sePoints, seCircles, seSegments } =
 const { t } = useI18n();
 const { geoLocationToUnitSphere } = useEarthCoordinate();
 
+let showPrimeMeridian = ref(false);
 let showEquator = ref(false);
 let showNorthPole = ref(false);
 let showSouthPole = ref(false);
@@ -123,6 +148,7 @@ let longitudeNumber = ref("");
 let seNorthPole: SEEarthPoint | undefined = undefined;
 let seSouthPole: SEEarthPoint | undefined = undefined;
 let seEquator: SELatitude | undefined = undefined;
+let sePrimeMeridian: SELongitude | undefined = undefined;
 
 function latitudeNumberCheck(txt: string | undefined): boolean | string {
   if (typeof txt === "string" && Number.isNaN(Number(txt))) {
@@ -189,7 +215,7 @@ function addEarthPoint(): void {
     Number(latitudeNumber.value),
     Number(longitudeNumber.value)
   );
-  const poleVector = new Vector3(coords[0], coords[2], coords[1]); //Switch when merging with vue3-upgrade
+  const poleVector = new Vector3(coords[0], -coords[2], coords[1]); //Switch when merging with vue3-upgrade
   const rotationMatrix = new Matrix4();
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
   poleVector.applyMatrix4(rotationMatrix);
@@ -198,10 +224,20 @@ function addEarthPoint(): void {
   // stylize the north pole
   poleSELabel.ref.caption =
     "(" +
-    latitudeNumber.value +
-    "\u{00B0}," +
-    longitudeNumber.value +
-    "\u{00B0})";
+    Math.abs(Number(latitudeNumber.value)) +
+    "\u{00B0} " +
+    (Number(latitudeNumber.value) !== 0
+      ? Number(latitudeNumber.value) > 0
+        ? t("N") + ", "
+        : t("S") + ", "
+      : ", ") +
+    Math.abs(Number(longitudeNumber.value)) +
+    "\u{00B0} " +
+    (Number(longitudeNumber.value) !== 0
+      ? Number(longitudeNumber.value) > 0
+        ? t("E") + ")"
+        : t("W") + ")"
+      : ")");
   poleSELabel.update();
   new AddEarthPointCommand(seEarthPoint, poleSELabel).execute();
   EventBus.fire("show-alert", {
@@ -259,7 +295,7 @@ function addLatitudeCircle(lat?: number): void {
     latitudeSELabel.ref.caption = t("antarcticCircle");
   } else {
     latitudeSELabel.ref.caption =
-      Math.abs(latitude) + "\u{00B0} " + (latitude > 0 ? "N" : "S");
+      Math.abs(latitude) + "\u{00B0} " + (latitude > 0 ? t("N") : t("S"));
   }
   //latitudeSELabel.showing = true;
   latitudeSELabel.update();
@@ -301,7 +337,7 @@ function addLongitudeSegment(long?: number): void {
     longitudeSELabel.ref.caption = t("primeMeridian");
   } else {
     longitudeSELabel.ref.caption =
-      Math.abs(longitude) + "\u{00B0}" + (longitude > 0 ? "E" : "W");
+      Math.abs(longitude) + "\u{00B0}" + (longitude > 0 ? t("E") : t("W"));
   }
   //longitudeSELabel.showing = true;
   longitudeSELabel.update();
@@ -316,6 +352,24 @@ function addLongitudeSegment(long?: number): void {
   });
 }
 
+watch(
+  () => seSegments.value,
+  segment => {
+    const meridianList = segment
+      .filter(pt => pt instanceof SELongitude && pt.longitude === 0)
+      .map(pt => pt as SELongitude);
+
+    if (meridianList[0]) {
+      sePrimeMeridian = meridianList[0];
+      showPrimeMeridian.value = meridianList[0].showing;
+    } else {
+      // the equator doesn't exist (or was deleted)
+      sePrimeMeridian = undefined;
+      showPrimeMeridian.value = false;
+    }
+    //console.log("execute ", seEquatorPole);
+  }
+);
 watch(
   () => seCircles.value,
   circle => {
@@ -418,6 +472,12 @@ onMounted(() => {
     showEquator.value = seEquator.showing;
   }
   EventBus.listen("update-equator-switch", equatorSwitch); //NP
+
+  sePrimeMeridian = findLongitudeInObjectTree(0);
+  if (sePrimeMeridian !== undefined) {
+    showPrimeMeridian.value = sePrimeMeridian.showing;
+  }
+  EventBus.listen("update-prime-meridian-switch", primeMeridianSwitch); //NP
 });
 
 //NP
@@ -431,10 +491,13 @@ function poleSwitch(e: { pole: Poles; val: boolean }) {
 function equatorSwitch(e: { val: boolean }) {
   showEquator.value = e.val;
 }
-
+function primeMeridianSwitch(e: { val: boolean }) {
+  showPrimeMeridian.value = e.val;
+}
 onBeforeUnmount((): void => {
   EventBus.unlisten("update-pole-switch"); //NP
   EventBus.unlisten("update-equator-switch"); //NP
+  EventBus.unlisten("update-prime-meridian-switch"); //NP
 });
 
 // If the user clicks undo or redo or the hide/show in the object tree or style panel,
@@ -521,7 +584,36 @@ function displayEquator(): void {
   displayCommandGroup.execute();
   EventBus.fire("update-label-and-showing-display", {}); //NP
 }
-
+function displayPrimeMeridian(): void {
+  let displayCommandGroup = new CommandGroup();
+  if (sePrimeMeridian === undefined) {
+    const cmd = setSEPrimeMeridianVariable(); // onces this executes sePrimeMeridian is defined and we can control the visibility
+    if (cmd !== undefined) {
+      displayCommandGroup.addCommand(cmd);
+    }
+  }
+  if (sePrimeMeridian !== undefined) {
+    displayCommandGroup.addCommand(
+      new SetNoduleDisplayCommand(sePrimeMeridian, !showPrimeMeridian.value)
+    ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
+    if (
+      sePrimeMeridian.label &&
+      (showPrimeMeridian.value
+        ? !SETTINGS.hideObjectHidesLabel
+        : !SETTINGS.showObjectShowsLabel)
+    ) {
+      displayCommandGroup.addCommand(
+        new SetNoduleDisplayCommand(
+          sePrimeMeridian.label,
+          !showPrimeMeridian.value
+        )
+        // also hide/shows the label if needed
+      );
+    }
+  }
+  displayCommandGroup.execute();
+  EventBus.fire("update-label-and-showing-display", {}); //NP
+}
 //Return the command to add the north pole to the object tree so that it can be grouped with the other hide/show commands.
 function setSEPoleVariable(pole: Poles): undefined | Command {
   //Find the north or south pole in the store of sePoints, if it exists
@@ -571,6 +663,29 @@ function setSEEquatorVariable(): undefined | Command {
     latitudeSELabel.showing = true;
     latitudeSELabel.update();
     cmd = new AddLatitudeCommand(seEquator, latitudeSELabel);
+
+    //Now set the pole into the local variable so it can be accessed in this component
+
+    return cmd;
+  }
+}
+//Return the command to add the prime meridian to the object tree so that it can be grouped with the other hide/show commands.
+function setSEPrimeMeridianVariable(): undefined | Command {
+  //Find the equator in the store of sePoints, if it exists
+  sePrimeMeridian = findLongitudeInObjectTree(0);
+  // If the equator already exists then this next code block will not execute (because findEquatorInObjectTree will return the equator) so you cannot
+  // create two equators
+  let cmd: Command | undefined = undefined;
+  if (sePrimeMeridian === undefined) {
+    // Initialize/create the equator and add it to the object tree
+    sePrimeMeridian = new SELongitude(0);
+    const latitudeSELabel = new SELabel("circle", sePrimeMeridian);
+    // stylize the latitude
+    latitudeSELabel.ref.caption = t("equator");
+
+    latitudeSELabel.showing = true;
+    latitudeSELabel.update();
+    cmd = new AddLongitudeCommand(sePrimeMeridian, latitudeSELabel);
 
     //Now set the pole into the local variable so it can be accessed in this component
 

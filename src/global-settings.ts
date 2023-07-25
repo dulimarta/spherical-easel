@@ -920,6 +920,13 @@ export const SETTINGS = {
         filePath: "../../icons/iconSegmentPaths.svg"
       }
     },
+    earthLongitude: {
+      props: {
+        mdiIcon: "mdi-longitude",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
+      }
+    },
     circle: {
       props: {
         mdiIcon: false,
@@ -928,6 +935,13 @@ export const SETTINGS = {
           ["point", "front", "back"]
         ],
         filePath: "../../icons/iconCirclePaths.svg"
+      }
+    },
+    earthLatitude: {
+      props: {
+        mdiIcon: "mdi-latitude",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
       }
     },
     antipodalPoint: {

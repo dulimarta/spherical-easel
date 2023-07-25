@@ -184,6 +184,8 @@ import { useI18n } from "vue-i18n";
 import SETTINGS from "@/global-settings";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Poles } from "@/types";
+import { SELatitude } from "@/models/SELatitude";
+import { SELongitude } from "@/models/SELongitude";
 const seStore = useSEStore();
 const { actionMode, isEarthMode } = storeToRefs(seStore);
 const props = defineProps<{
@@ -202,6 +204,8 @@ let nodeType = "";
 
 let isNorthPole = false; //NP
 let isSouthPole = false;
+let isEquator = false;
+let isPrimeMeridian = false;
 let curve: SEParametric | null = null;
 let curvePoint: SEParametricTracePoint | null = null;
 const parametricTime = ref(0);
@@ -269,6 +273,12 @@ onBeforeMount(() => {
     // All the SECircle subclasses with SECircle last
     iconName.value = "$transformedCircle";
     nodeType = t(`objects.circles`, 3);
+  } else if (props.node instanceof SELatitude) {
+    iconName.value = "$earthLatitude";
+    nodeType = t(`objects.circle`, 3);
+    if (props.node.latitude == 0) {
+      isEquator = true;
+    }
   } else if (props.node instanceof SECircle) {
     iconName.value = "$circle";
     nodeType = t(`objects.circles`, 3);
@@ -320,6 +330,12 @@ onBeforeMount(() => {
     iconName.value = "$transformedSegment";
     nodeName = props.node.name;
     nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SELongitude) {
+    iconName.value = "$earthLongitude";
+    nodeType = t(`objects.segments`, 3);
+    if (props.node.longitude == 0) {
+      isPrimeMeridian = true;
+    }
   } else if (props.node instanceof SESegment) {
     iconName.value = "$segment";
     nodeType = t(`objects.segments`, 3);
@@ -449,6 +465,10 @@ function toggleVisibility(): void {
       pole: Poles.SOUTH,
       val: props.node.showing
     });
+  } else if (isEquator) {
+    EventBus.fire("update-equator-switch", { val: props.node.showing });
+  } else if (isPrimeMeridian) {
+    EventBus.fire("update-prime-meridian-switch", { val: props.node.showing });
   }
 }
 
