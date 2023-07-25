@@ -30,6 +30,7 @@ import {
 // import { SEPolygon } from "./SEPolygon";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SELatitude } from "./SELatitude";
+import { SELongitude } from "./SELongitude";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -109,8 +110,13 @@ export class SELabel extends SENodule implements Visitable {
       this.ref.initialLabelDisplayMode = SETTINGS.line.defaultLabelMode;
       this.showing = SETTINGS.line.showLabelsInitially;
     } else if (parent instanceof SESegment) {
-      this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
-      this.showing = SETTINGS.segment.showLabelsInitially;
+      if (parent instanceof SELongitude) {
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
+        this.showing = true;
+      } else {
+        this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
+        this.showing = SETTINGS.segment.showLabelsInitially;
+      }
     } else if (parent instanceof SECircle) {
       if (parent instanceof SELatitude) {
         this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;

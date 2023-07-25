@@ -100,39 +100,10 @@ export class SELatitude extends SECircle {
     return this.label?.ref.shortUserName ?? "No Label Short Name In SECircle";
   }
 
-  public shallowUpdate(): void {
-    // the location of the center and circle points in a rotation is done via RotationVistor
-    // const tempVec = new Vector3();
-    // tempVec.copy(this._centerSEPoint.locationVector);
-    // const rotationMatrix = new Matrix4();
-    // rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
-    // tempVec.applyMatrix4(rotationMatrix);
-    // this._centerSEPoint.locationVector = tempVec;
-
-    // tempVec.copy(this._circleSEPoint.locationVector);
-    // tempVec.applyMatrix4(rotationMatrix);
-    // this._circleSEPoint.locationVector = tempVec;
-
-    // //update the centerVector and the radius
-    const newRadius = this._centerSEPoint.locationVector.angleTo(
-      this._circleSEPoint.locationVector
-    );
-    this.ref.circleRadius = newRadius;
-    this.ref.centerVector = this._centerSEPoint.locationVector;
-    // display the new circle with the updated values
-    this.ref.updateDisplay();
-
-    if (this.showing) {
-      this.ref.setVisible(true);
-    } else {
-      this.ref.setVisible(false);
-    }
-  }
-
   public isFreeToMove(): boolean {
     return false;
   }
-  public isNonFreeCirle(): boolean {
+  public isNonFreeCircle(): boolean {
     return true;
   }
 }

@@ -339,7 +339,7 @@ export abstract class SENodule implements Visitable {
     if (
       this.isNonFreeLine() ||
       this.isNonFreePoint() ||
-      this.isNonFreeCirle() ||
+      this.isNonFreeCircle() ||
       this.isNonFreeSegment() ||
       this.isNonFreeEllipse()
     ) {
@@ -359,7 +359,7 @@ export abstract class SENodule implements Visitable {
     return false;
   }
 
-  public isNonFreeCirle(): boolean {
+  public isNonFreeCircle(): boolean {
     return false;
   }
 

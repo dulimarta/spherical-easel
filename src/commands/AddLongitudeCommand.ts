@@ -4,54 +4,54 @@ import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels } from "@/types/Styles";
-import { SELatitude } from "@/models/SELatitude";
+import { SELongitude } from "@/models/SELongitude";
 
-export class AddLatitudeCommand extends Command {
-  private seLatitude: SELatitude;
+export class AddLongitudeCommand extends Command {
+  private seLongitude: SELongitude;
   private seLabel: SELabel;
-  private latitude: number;
+  private longitude: number;
 
-  constructor(seLatitude: SELatitude, seLabel: SELabel) {
+  constructor(seLongitude: SELongitude, seLabel: SELabel) {
     super();
-    this.seLatitude = seLatitude;
-    this.latitude = this.seLatitude.latitude;
+    this.seLongitude = seLongitude;
+    this.longitude = this.seLongitude.longitude;
     this.seLabel = seLabel;
   }
 
   do(): void {
     Command.store.addLabel(this.seLabel);
-    this.seLatitude.registerChild(this.seLabel);
-    Command.store.addCircle(this.seLatitude);
+    this.seLongitude.registerChild(this.seLabel);
+    Command.store.addSegment(this.seLongitude);
   }
 
   saveState(): void {
-    this.lastState = this.seLatitude.id;
+    this.lastState = this.seLongitude.id;
   }
 
   restoreState(): void {
-    Command.store.removeCircle(this.lastState);
-    this.seLatitude.unregisterChild(this.seLabel);
+    Command.store.removeSegment(this.lastState);
+    this.seLongitude.unregisterChild(this.seLabel);
     Command.store.removeLabel(this.seLabel.id);
   }
 
   toOpcode(): null | string | Array<string> {
     return [
-      "AddLatitude",
+      "AddLongitude",
       // Any attribute that could possibly have a "= or "&" should be run through Command.symbolToASCIIDec
       // All plottable objects have these attributes
-      "objectName=" + Command.symbolToASCIIDec(this.seLatitude.name),
-      "objectExists=" + this.seLatitude.exists,
-      "objectShowing=" + this.seLatitude.showing,
+      "objectName=" + Command.symbolToASCIIDec(this.seLongitude.name),
+      "objectExists=" + this.seLongitude.exists,
+      "objectShowing=" + this.seLongitude.showing,
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLatitude.ref.currentStyleState(StyleEditPanels.Front)
+            this.seLongitude.ref.currentStyleState(StyleEditPanels.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLatitude.ref.currentStyleState(StyleEditPanels.Back)
+            this.seLongitude.ref.currentStyleState(StyleEditPanels.Back)
           )
         ),
       // All labels have these attributes
@@ -66,7 +66,7 @@ export class AddLatitudeCommand extends Command {
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
-      "earthLatitude=" + this.seLatitude.latitude.toFixed(9)
+      "earthLongitude=" + this.seLongitude.longitude.toFixed(9)
     ].join("&");
   }
 
@@ -79,29 +79,29 @@ export class AddLatitudeCommand extends Command {
       const parts = token.split("=");
       propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
     });
-    //make the circle
+    //make the segment
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
-    const latitude = Number(propMap.get("earthLatitude"));
-    if (latitude !== undefined) {
-      const seLatitude = new SELatitude(latitude);
+    const longitude = Number(propMap.get("earthLongitude"));
+    if (longitude !== undefined) {
+      const seLongitude = new SELongitude(longitude);
       // console.debug(`Point front style string ${pointFrontStyleString}`);
       if (pointFrontStyleString !== undefined) {
-        seLatitude.updatePlottableStyle(
+        seLongitude.updatePlottableStyle(
           StyleEditPanels.Front,
           JSON.parse(pointFrontStyleString)
         );
       }
       // console.debug(`Point back style string ${pointBackStyleString}`);
       if (pointBackStyleString !== undefined) {
-        seLatitude.updatePlottableStyle(
+        seLongitude.updatePlottableStyle(
           StyleEditPanels.Back,
           JSON.parse(pointBackStyleString)
         );
       }
 
       //make the label
-      const seLabel = new SELabel("circle", seLatitude);
+      const seLabel = new SELabel("segment", seLongitude);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
       seLabel.locationVector.copy(seLabelLocation);
@@ -119,12 +119,12 @@ export class AddLatitudeCommand extends Command {
         // console.debug(
         //   `old name ${seEarthPoint.name}, new name ${propMap.get("objectName")}`
         // );
-        seLatitude.name = propMap.get("objectName") ?? "";
-        seLatitude.showing = propMap.get("objectShowing") === "true";
-        seLatitude.exists = propMap.get("objectExists") === "true";
-        objMap.set(seLatitude.name, seLatitude);
+        seLongitude.name = propMap.get("objectName") ?? "";
+        seLongitude.showing = propMap.get("objectShowing") === "true";
+        seLongitude.exists = propMap.get("objectExists") === "true";
+        objMap.set(seLongitude.name, seLongitude);
       } else {
-        throw new Error("AddLatitude: Circle name doesn't exist");
+        throw new Error("AddLongitude: Segment name doesn't exist");
       }
 
       //put the label in the object map
@@ -134,11 +134,11 @@ export class AddLatitudeCommand extends Command {
         seLabel.exists = propMap.get("labelExists") === "true";
         objMap.set(seLabel.name, seLabel);
       } else {
-        throw new Error("AddLatitude: Label Name doesn't exist");
+        throw new Error("AddLongitude: Label Name doesn't exist");
       }
-      return new AddLatitudeCommand(seLatitude, seLabel);
+      return new AddLongitudeCommand(seLongitude, seLabel);
     } else {
-      throw new Error("AddLatitudeCommand: Latitude undefined");
+      throw new Error("AddLongitudeCommand: Longitude undefined");
     }
   }
 }

@@ -230,8 +230,8 @@ export type SavedNames =
   | "setValueDisplayModeOldValue"
   | "setValueDisplayModeNewValue"
   | "pointVisibleBefore"
-  | "earthPointLatitude"
-  | "earthPointLongitude";
+  | "earthLatitude"
+  | "earthLongitude";
 
 export type ActionMode =
   | "angle"

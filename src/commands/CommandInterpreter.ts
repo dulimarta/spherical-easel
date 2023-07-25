@@ -49,6 +49,7 @@ import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
 import { SetEarthModeCommand } from "./SetEarthModeCommand";
 import { AddLatitudeCommand } from "./AddLatitudeCommand";
+import { AddLongitudeCommand } from "./AddLongitudeCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -79,6 +80,8 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddLongitude":
+      return AddLongitudeCommand.parse(command, noduleDictionary);
     case "AddLatitude":
       return AddLatitudeCommand.parse(command, noduleDictionary);
     case "AddEarthPoint":

@@ -90,8 +90,8 @@ export class AddEarthPointCommand extends Command {
       "labelExists=" + this.seLabel.exists,
       // Object specific attributes
       "pointVector=" + this.seEarthPoint.locationVector.toFixed(9),
-      "earthPointLatitude=" + this.seEarthPoint.latitude.toFixed(9),
-      "earthPointLongitude=" + this.seEarthPoint.longitude.toFixed(9)
+      "earthLatitude=" + this.seEarthPoint.latitude.toFixed(9),
+      "earthLongitude=" + this.seEarthPoint.longitude.toFixed(9)
     ].join("&");
   }
 
@@ -109,8 +109,8 @@ export class AddEarthPointCommand extends Command {
     seEarthPointLocation.from(propMap.get("pointVector")); // convert to vector
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
-    const latitude = Number(propMap.get("earthPointLatitude"));
-    const longitude = Number(propMap.get("earthPointLongitude"));
+    const latitude = Number(propMap.get("earthLatitude"));
+    const longitude = Number(propMap.get("earthLongitude"));
     if (latitude !== undefined && longitude !== undefined) {
       const seEarthPoint = new SEEarthPoint(longitude, latitude);
       seEarthPoint.locationVector.copy(seEarthPointLocation);

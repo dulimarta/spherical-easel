@@ -11,6 +11,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SELatitude } from "@/models/SELatitude";
+import { SELongitude } from "@/models/SELongitude";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -80,8 +81,26 @@ export class RotationVisitor implements Visitor {
     // s.ref.startVector = this.tmpVector;
 
     // s.ref.updateDisplay();
-    return false;
     // }
+    if (s instanceof SELongitude) {
+      console.log("SELatitude actionOnCircle");
+      this.tmpVector.copy(s.startSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.startSEPoint.locationVector = this.tmpVector; // update the start point
+
+      this.tmpVector.copy(s.endSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.endSEPoint.locationVector = this.tmpVector; // update the end point
+
+      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.normalVector = this.tmpVector; // update the end point
+
+      s.shallowUpdate();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // eslint-disable-next-line
