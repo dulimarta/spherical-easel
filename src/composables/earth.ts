@@ -2,6 +2,7 @@ import { Matrix4, Quaternion, Vector3 } from "three";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 
+const tempVec3 = new Vector3(0, 0, 1);
 export function useEarthCoordinate() {
 
   const { inverseTotalRotationMatrix } = storeToRefs(useSEStore())
@@ -12,6 +13,17 @@ export function useEarthCoordinate() {
   // pointing up to the sky (our Y-plus axis).
   // Swapping the ycor and zcor below implies a 90-deg rotation around the X-axis
   // to match two two coordinate frames
+
+  function getLocationAtCameraCenter(): number[] {
+    tempVec3.set(0, 0, 1) // Reset to Global Z-pos direction
+    tempVec3.applyMatrix4(inverseTotalRotationMatrix.value)
+
+    const latRad = Math.asin(tempVec3.y)
+    const cosLat = Math.cos(latRad)
+
+    const lngRad = Math.atan2(-tempVec3.z / cosLat, tempVec3.x / cosLat)
+    return [latRad.toDegrees(), lngRad.toDegrees()]
+  }
 
   function geoLocationToUnitSphere(latDegree: number, lngDegree: number): number[] {
     const latRad = latDegree.toRadians()
@@ -68,5 +80,5 @@ export function useEarthCoordinate() {
       }, 20)
     })
   }
-  return {geoLocationToUnitSphere, flyTo}
+  return {geoLocationToUnitSphere, flyTo, getLocationAtCameraCenter}
 }

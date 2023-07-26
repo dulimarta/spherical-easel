@@ -32,7 +32,7 @@
         :base-layer-picker="true"
         :scene3-d-only="true"
         :use-default-render-loop="true">
-        <vc-layer-imagery :alpha="0.1" :brightness="1">
+        <vc-layer-imagery :alpha="0.6" :brightness="1">
           <vc-imagery-provider-osm></vc-imagery-provider-osm>
         </vc-layer-imagery>
         <!--vc-entity
@@ -66,15 +66,15 @@ import {
   Matrix4,
   PerspectiveFrustum,
   Scene,
-  Cartesian3
+  Cartesian3,
+Cartographic
 } from "cesium";
 import enUS from "vue-cesium/es/locale/lang/en-us";
 import type { VcReadyObject } from "vue-cesium/es/utils/types";
 import { computed, watch } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import { nextTick } from "vue";
-import ConstructionLoader from "./ConstructionLoader.vue";
+import { useEarthCoordinate } from "@/composables/earth";
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -82,10 +82,13 @@ type ComponentProps = {
 const store = useSEStore();
 const { inverseTotalRotationMatrix, zoomMagnificationFactor } =
   storeToRefs(store);
+const {getLocationAtCameraCenter} = useEarthCoordinate()
 const { mainRect } = useLayout();
 const display = useDisplay();
 const threeRotationMatrix = new THREE.Matrix4();
 const cesiumRotationMatrix = new Matrix4();
+const tmpCartographic = new Cartographic()
+  const tmpCartesian3 = new Cartesian3()
 let camera: Camera;
 let scene: Scene;
 let viewer: Viewer;
@@ -106,6 +109,14 @@ const viewerStyle = computed(() => {
   };
 });
 
+function flyToCameraCenter() {
+  const geo = getLocationAtCameraCenter() // geo[0]:latitude geo[1]:longitude
+  console.debug("Geo Loc at eye", geo)
+  Cartographic.fromDegrees(geo[1], geo[0], 6.371e+6, tmpCartographic)
+  Cartographic.toCartesian(tmpCartographic, undefined, tmpCartesian3)
+  camera.flyTo({destination: tmpCartesian3})
+}
+
 onMounted(() => {
   cesiumViewer.value?.creatingPromise.then((obj: VcReadyObject) => {
     // console.debug("Promise created #1", obj.Cesium);
@@ -120,6 +131,7 @@ onMounted(() => {
     // viewer.scene.debugShowFrustums = true
     viewer.scene.requestRenderMode = true;
     camera = obj.viewer.camera;
+    flyToCameraCenter()
     // camera.switchToOrthographicFrustum()
     createOsmBuildingsAsync().then((tileSet: Cesium3DTileset) => {
       obj.viewer.scene.primitives.add(tileSet);
@@ -149,25 +161,26 @@ watch(
 
 watch(
   () => inverseTotalRotationMatrix.value.elements,
-  async (elems: Array<number>) => {
-    console.debug("Rotation matrix changes");
-    const tmpVec = new THREE.Vector3(0, 1, 0);
-    tmpVec.applyMatrix4(inverseTotalRotationMatrix.value);
-    threeRotationMatrix.fromArray(elems);
-    // threeRotationMatrix.invert()
-    // The following Matrix4 is from Cesium
-    Matrix4.fromRowMajorArray(
-      threeRotationMatrix.elements,
-      cesiumRotationMatrix
-    );
-    console.debug("Camera before", camera.viewMatrix);
-    // Using setView() does not seem to work
-    // Using flyTo() requires calculation of the correct destination
-    camera.flyTo({
-      destination: Cartesian3.fromArray(tmpVec.toArray())
-      // endTransform: cesiumRotationMatrix
-    });
-    console.debug("Camera after", camera.viewMatrix);
+   (elems: Array<number>) => {
+     console.debug("Rotation matrix changes");
+    flyToCameraCenter()
+    // const tmpVec = new THREE.Vector3(0, 1, 0);
+    // tmpVec.applyMatrix4(inverseTotalRotationMatrix.value);
+    // threeRotationMatrix.fromArray(elems);
+    // // threeRotationMatrix.invert()
+    // // The following Matrix4 is from Cesium
+    // Matrix4.fromRowMajorArray(
+    //   threeRotationMatrix.elements,
+    //   cesiumRotationMatrix
+    // );
+    // console.debug("Camera before", camera.viewMatrix);
+    // // Using setView() does not seem to work
+    // // Using flyTo() requires calculation of the correct destination
+    // camera.flyTo({
+    //   destination: Cartesian3.fromArray(tmpVec.toArray())
+    //   // endTransform: cesiumRotationMatrix
+    // });
+    // console.debug("Camera after", camera.viewMatrix);
     // scene.render()
     // viewer.resize()
     // viewer.render()
