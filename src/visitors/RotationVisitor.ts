@@ -83,14 +83,17 @@ export class RotationVisitor implements Visitor {
     // s.ref.updateDisplay();
     // }
     if (s instanceof SELongitude) {
-      console.log("SELatitude actionOnCircle");
-      this.tmpVector.copy(s.startSEPoint.locationVector); // Copy the old vector location of the SEPoint
-      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-      s.startSEPoint.locationVector = this.tmpVector; // update the start point
+      //console.log("SELatitude actionOnCircle");
 
-      this.tmpVector.copy(s.endSEPoint.locationVector); // Copy the old vector location of the SEPoint
-      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-      s.endSEPoint.locationVector = this.tmpVector; // update the end point
+      //North pole *always* - The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(s.startSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // s.startSEPoint.locationVector = this.tmpVector; // update the start point
+
+      //South pole *always* - The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(s.endSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // s.endSEPoint.locationVector = this.tmpVector; // update the end point
 
       this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
       this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
@@ -113,9 +116,11 @@ export class RotationVisitor implements Visitor {
       this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
       c.circleSEPoint.locationVector = this.tmpVector; // update the circle point
 
-      this.tmpVector.copy(c.centerSEPoint.locationVector); // Copy the old vector location of the SEPoint
-      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-      c.centerSEPoint.locationVector = this.tmpVector; // update the center point
+      // The center is *always* the north pole.
+      // The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(c.centerSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // c.centerSEPoint.locationVector = this.tmpVector; // update the center point
       c.shallowUpdate();
       return true;
     } else {

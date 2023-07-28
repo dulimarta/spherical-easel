@@ -21,53 +21,56 @@ export class SELatitude extends SECircle {
   constructor(latitude: number) {
     // (center|circle)SEPoint are never added to the object tree, they are never displayed, they are never registered
     // they *could* be updated in the update() method, but in this case they are not because they are fixed (in other classes
-    //  like tangent line, these hidden SEPoint may have *only* there location updated)
+    //  like tangent line, these hidden SEPoint may have *only* there location updated via a rotation visitor)
 
-    // North Pole
-    const centerSEPoint = new SEPoint(true); // Should never be displayed
-    centerSEPoint.showing = false; // this never changes
-    centerSEPoint.exists = true; // this never changes
-
-    // function geoLocationToUnitSphere(
-    //   latDegree: number,
-    //   lngDegree: number
-    // ): number[] {
-    //   const latRad = latDegree.toRadians();
-    //   const lngRad = lngDegree.toRadians();
-    //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
-    //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
-    //   const ycor = Math.sin(latRad);
-    //   return [xcor, ycor, zcor];
-    // }
-
-    //Setup the north pole location
-    const northPole = geoLocationToUnitSphere(90, 0);
-    const northPoleVector = new Vector3(
-      northPole[0],
-      northPole[2],
-      northPole[1] // Switch when merging with vue3-upgrade
-    ); // this never changes from the north pole
+    const northPoleVector = new Vector3();
     const rotationMatrix = new Matrix4();
     rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
-    northPoleVector.applyMatrix4(rotationMatrix);
-    centerSEPoint.locationVector = northPoleVector;
 
+    // North Pole - create it as a static object if it doesn't exist already
+    if (SENodule.unregisteredSEPointNorthPole === undefined) {
+      SENodule.unregisteredSEPointNorthPole = new SEPoint(true); // Should never be displayed
+      SENodule.unregisteredSEPointNorthPole.showing = false; // this never changes
+      SENodule.unregisteredSEPointNorthPole.exists = true; // this never changes
+
+      // function geoLocationToUnitSphere(
+      //   latDegree: number,
+      //   lngDegree: number
+      // ): number[] {
+      //   const latRad = latDegree.toRadians();
+      //   const lngRad = lngDegree.toRadians();
+      //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
+      //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
+      //   const ycor = Math.sin(latRad);
+      //   return [xcor, ycor, zcor];
+      // }
+
+      //Setup the north pole location
+      const northPoleArray = geoLocationToUnitSphere(90, 0);
+      northPoleVector.set(
+        northPoleArray[0],
+        northPoleArray[2],
+        northPoleArray[1] // Switch when merging with vue3-upgrade
+      ); // this never changes from the north pole
+      northPoleVector.applyMatrix4(rotationMatrix);
+      SENodule.unregisteredSEPointNorthPole.locationVector = northPoleVector;
+    }
     //Circle Point
     const circleSEPoint = new SEPoint(true); // Should never be displayed
-    centerSEPoint.showing = false; // this never changes
-    centerSEPoint.exists = true; // this never changes
+    circleSEPoint.showing = false; // this never changes
+    circleSEPoint.exists = true; // this never changes
 
     //Set up the circle point location
-    const pointLocation = geoLocationToUnitSphere(latitude, 0);
+    const pointLocationArray = geoLocationToUnitSphere(latitude, 0);
     const pointLocationVector = new Vector3(
-      pointLocation[0],
-      pointLocation[2],
-      pointLocation[1] // Switch when merging with vue3-upgrade
+      pointLocationArray[0],
+      pointLocationArray[2],
+      pointLocationArray[1] // Switch when merging with vue3-upgrade
     ); // this never changes
     pointLocationVector.applyMatrix4(rotationMatrix);
     circleSEPoint.locationVector = pointLocationVector;
 
-    super(centerSEPoint, circleSEPoint, true);
+    super(SENodule.unregisteredSEPointNorthPole, circleSEPoint, true);
     this._latitude = latitude;
     //turn off the fill of the ref circle
     SENodule.store.changeStyle({

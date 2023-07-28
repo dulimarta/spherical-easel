@@ -1,49 +1,53 @@
 <template>
   <div>
     <v-col>
-      <v-switch
-        hide-details
-        v-model="showNorthPole"
-        density="compact"
-        variant="outlined"
-        :label="t('northPole')"
-        @click="displayPole(Poles.NORTH)"></v-switch>
-      <v-switch
-        hide-details
-        v-model="showSouthPole"
-        density="compact"
-        variant="outlined"
-        :label="t('southPole')"
-        @click="displayPole(Poles.SOUTH)"></v-switch>
-      <v-switch
-        hide-details
-        v-model="showEquator"
-        density="compact"
-        variant="outlined"
-        :label="t('equator')"
-        @click="displayEquator"></v-switch>
-      <v-switch
-        hide-details
-        v-model="showPrimeMeridian"
-        density="compact"
-        variant="outlined"
-        :label="t('primeMeridian')"
-        @click="displayPrimeMeridian"></v-switch>
-
+      <v-col>
+        <v-switch
+          hide-details
+          v-model="showNorthPole"
+          density="compact"
+          variant="outlined"
+          :label="t('northPole')"
+          @click="displayPole(Poles.NORTH)"></v-switch>
+        <v-switch
+          hide-details
+          v-model="showSouthPole"
+          density="compact"
+          variant="outlined"
+          :label="t('southPole')"
+          @click="displayPole(Poles.SOUTH)"></v-switch>
+        <v-switch
+          hide-details
+          v-model="showEquator"
+          density="compact"
+          variant="outlined"
+          :label="t('equator')"
+          @click="displayEquator"></v-switch>
+        <v-switch
+          hide-details
+          v-model="showPrimeMeridian"
+          density="compact"
+          variant="outlined"
+          :label="t('primeMeridian')"
+          @click="displayPrimeMeridian"></v-switch>
+      </v-col>
+      <v-spacer></v-spacer>
       <v-divider :thickness="8" color="black"></v-divider>
-
-      <v-text-field
-        :label="t('latitude')"
-        clearable
-        density="compact"
-        :rules="[latitudeNumberCheck]"
-        v-model="latitudeNumber"></v-text-field>
-      <v-text-field
-        :label="t('longitude')"
-        density="compact"
-        clearable
-        :rules="[longitudeNumberCheck]"
-        v-model="longitudeNumber"></v-text-field>
+      <v-spacer></v-spacer>
+      <v-col>
+        <v-text-field
+          :label="t('latitude')"
+          clearable
+          density="compact"
+          :rules="[latitudeNumberCheck]"
+          v-model="latitudeNumber"></v-text-field>
+        <v-text-field
+          :label="t('longitude')"
+          density="compact"
+          clearable
+          :rules="[longitudeNumberCheck]"
+          v-model="longitudeNumber"></v-text-field>
+      </v-col>
       <v-col>
         <v-row>
           <v-btn
@@ -121,17 +125,26 @@ import SETTINGS from "@/global-settings";
 import { Command } from "@/commands/Command";
 import { SENodule } from "@/models/SENodule";
 import EventBus from "@/eventHandlers/EventBus";
-import { Poles } from "@/types/index";
+import { Poles, SEIntersectionReturnType } from "@/types/index";
 import { useEarthCoordinate } from "@/composables/earth";
 import { SELongitude } from "@/models/SELongitude";
 import { AddLongitudeCommand } from "@/commands/AddLongitudeCommand";
 import { SESegment } from "@/models/SESegment";
 import { SELatitude } from "@/models/SELatitude";
 import { AddLatitudeCommand } from "@/commands/AddLatitudeCommand";
+import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
+import SegmentHandler from "@/eventHandlers/SegmentHandler";
 
 const store = useSEStore();
-const { inverseTotalRotationMatrix, sePoints, seCircles, seSegments } =
-  storeToRefs(store);
+const {
+  inverseTotalRotationMatrix,
+  sePoints,
+  seCircles,
+  seSegments,
+  createAllIntersectionsWithSegment,
+  createAllIntersectionsWithCircle
+} = storeToRefs(store);
 const { t } = useI18n();
 const { geoLocationToUnitSphere } = useEarthCoordinate();
 
@@ -299,7 +312,12 @@ function addLatitudeCircle(lat?: number): void {
   }
   //latitudeSELabel.showing = true;
   latitudeSELabel.update();
-  new AddLatitudeCommand(seLatitude, latitudeSELabel).execute();
+  const cmdGroup = new CommandGroup();
+  cmdGroup.addCommand(new AddLatitudeCommand(seLatitude, latitudeSELabel));
+
+  // new create the intersections with all existing objects
+  cmdGroup.addCommand(getCircleIntersectionsCommands(seLatitude)).execute();
+
   EventBus.fire("show-alert", {
     key: "handlers.newLatitudeAdded",
     keyOptions: {
@@ -339,9 +357,32 @@ function addLongitudeSegment(long?: number): void {
     longitudeSELabel.ref.caption =
       Math.abs(longitude) + "\u{00B0}" + (longitude > 0 ? t("E") : t("W"));
   }
-  //longitudeSELabel.showing = true;
+  // Set the initial position of the label on the equator
+  //Setup the label location on the longitude and the equator
+  const labelLocationArray = geoLocationToUnitSphere(0, longitude);
+  const labelLocationVector = new Vector3(
+    labelLocationArray[0],
+    -labelLocationArray[2], // Why is this minus necessary? Because it put the label in the right place maybe it will not be necessary when merging with vue3-update
+    labelLocationArray[1] // Switch when merging with vue3-upgrade
+  );
+  console.log("longitude label location 0 ", labelLocationVector.toFixed(2));
+  const rotationMatrix = new Matrix4();
+  rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
+  labelLocationVector.applyMatrix4(rotationMatrix).normalize();
+  longitudeSELabel.locationVector = labelLocationVector;
+  console.log(
+    "longitude label location ",
+    longitudeSELabel.locationVector.toFixed(2)
+  );
+
   longitudeSELabel.update();
-  new AddLongitudeCommand(seLongitude, longitudeSELabel).execute();
+
+  const cmdGroup = new CommandGroup();
+  cmdGroup.addCommand(new AddLongitudeCommand(seLongitude, longitudeSELabel));
+
+  // new create the intersections with all existing objects
+  cmdGroup.addCommand(getSegmentIntersectionsCommands(seLongitude)).execute();
+
   EventBus.fire("show-alert", {
     key: "handlers.newLongitudeAdded",
     keyOptions: {
@@ -652,7 +693,7 @@ function setSEEquatorVariable(): undefined | Command {
   seEquator = findLatitudeInObjectTree(0);
   // If the equator already exists then this next code block will not execute (because findEquatorInObjectTree will return the equator) so you cannot
   // create two equators
-  let cmd: Command | undefined = undefined;
+  let cmd: CommandGroup | undefined = undefined;
   if (seEquator === undefined) {
     // Initialize/create the equator and add it to the object tree
     seEquator = new SELatitude(0);
@@ -662,12 +703,13 @@ function setSEEquatorVariable(): undefined | Command {
 
     latitudeSELabel.showing = true;
     latitudeSELabel.update();
-    cmd = new AddLatitudeCommand(seEquator, latitudeSELabel);
+    cmd = new CommandGroup();
+    cmd.addCommand(new AddLatitudeCommand(seEquator, latitudeSELabel));
 
-    //Now set the pole into the local variable so it can be accessed in this component
-
-    return cmd;
+    // new create the intersections with all existing objects
+    cmd.addCommand(getCircleIntersectionsCommands(seEquator));
   }
+  return cmd;
 }
 //Return the command to add the prime meridian to the object tree so that it can be grouped with the other hide/show commands.
 function setSEPrimeMeridianVariable(): undefined | Command {
@@ -675,21 +717,127 @@ function setSEPrimeMeridianVariable(): undefined | Command {
   sePrimeMeridian = findLongitudeInObjectTree(0);
   // If the equator already exists then this next code block will not execute (because findEquatorInObjectTree will return the equator) so you cannot
   // create two equators
-  let cmd: Command | undefined = undefined;
+  let cmd: CommandGroup | undefined = undefined;
   if (sePrimeMeridian === undefined) {
     // Initialize/create the equator and add it to the object tree
     sePrimeMeridian = new SELongitude(0);
-    const latitudeSELabel = new SELabel("circle", sePrimeMeridian);
+    const longitudeSELabel = new SELabel("segment", sePrimeMeridian);
     // stylize the latitude
-    latitudeSELabel.ref.caption = t("equator");
+    longitudeSELabel.ref.caption = t("primeMeridian");
+    // Set the initial position of the label on the equator
+    //Setup the label location on the longitude and the equator
+    const labelLocationArray = geoLocationToUnitSphere(0, 0);
+    const labelLocationVector = new Vector3(
+      labelLocationArray[0],
+      labelLocationArray[2],
+      labelLocationArray[1] // Switch when merging with vue3-upgrade
+    );
+    const rotationMatrix = new Matrix4();
+    rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
+    labelLocationVector.applyMatrix4(rotationMatrix).normalize();
+    longitudeSELabel.locationVector = labelLocationVector;
 
-    latitudeSELabel.showing = true;
-    latitudeSELabel.update();
-    cmd = new AddLongitudeCommand(sePrimeMeridian, latitudeSELabel);
+    longitudeSELabel.showing = true;
+    longitudeSELabel.update();
+    cmd = new CommandGroup();
+    cmd.addCommand(new AddLongitudeCommand(sePrimeMeridian, longitudeSELabel));
 
-    //Now set the pole into the local variable so it can be accessed in this component
-
-    return cmd;
+    // new create the intersections with all existing objects
+    cmd.addCommand(getSegmentIntersectionsCommands(sePrimeMeridian));
   }
+  return cmd;
+}
+
+//primeMeridian switch not working
+// The intersection of a longitude and equation is available even though equator is hidden
+
+// create all the intersections with the segment/longitude being added
+function getSegmentIntersectionsCommands(
+  newSESegment: SELongitude
+): CommandGroup {
+  const segmentGroup = new CommandGroup();
+  createAllIntersectionsWithSegment
+    .value(newSESegment, []) // empty array of new points created
+    .forEach((item: SEIntersectionReturnType) => {
+      if (item.existingIntersectionPoint) {
+        segmentGroup.addCommand(
+          new AddIntersectionPointOtherParent(
+            item.SEIntersectionPoint,
+            item.parent1
+          )
+        );
+      } else {
+        // Create the plottable label
+        const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.segment.initialLabelOffset,
+            SETTINGS.segment.initialLabelOffset,
+            0
+          )
+        );
+
+        segmentGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+        newSELabel.showing = false;
+        if (item.createAntipodalPoint) {
+          SegmentHandler.addCreateAntipodeCommand(
+            item.SEIntersectionPoint,
+            segmentGroup
+          );
+        }
+      }
+    });
+  return segmentGroup;
+}
+
+// create all the intersections with the circle/latitude being added
+function getCircleIntersectionsCommands(newSECircle: SELatitude): CommandGroup {
+  const circleGroup = new CommandGroup();
+  createAllIntersectionsWithCircle
+    .value(newSECircle, []) // empty array of new points created
+    .forEach((item: SEIntersectionReturnType) => {
+      if (item.existingIntersectionPoint) {
+        circleGroup.addCommand(
+          new AddIntersectionPointOtherParent(
+            item.SEIntersectionPoint,
+            item.parent1
+          )
+        );
+      } else {
+        // Create the plottable label
+        const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.segment.initialLabelOffset,
+            SETTINGS.segment.initialLabelOffset,
+            0
+          )
+        );
+
+        circleGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+        newSELabel.showing = false;
+        if (item.createAntipodalPoint) {
+          SegmentHandler.addCreateAntipodeCommand(
+            item.SEIntersectionPoint,
+            circleGroup
+          );
+        }
+      }
+    });
+  return circleGroup;
 }
 </script>

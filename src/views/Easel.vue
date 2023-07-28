@@ -643,7 +643,7 @@ function setEarthModeFunction() {
 }
 .displayEarthObject {
   position: relative;
-  top: -450px;
+  top: -550px;
   left: 12px;
   margin: 0;
   padding: 0 0em;
