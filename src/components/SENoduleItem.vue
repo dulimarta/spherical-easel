@@ -262,6 +262,11 @@ onBeforeMount(() => {
   } else if (props.node instanceof SEPoint) {
     iconName.value = "$point";
     nodeType = t(`objects.points`, 3);
+    if (props.node.locationVector.z == 1) {
+      isNorthPole = true;
+    } else if (props.node.locationVector.z == -1) {
+      isSouthPole = true;
+    }
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&

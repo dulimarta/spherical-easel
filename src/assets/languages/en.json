@@ -447,6 +447,7 @@
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
     "freePoint": "Free point",
     "earthPoint": "Fixed earth location with latitude {lat} and longitude {long}.",
+    "earthPointPole": "Pole with latitude {lat}.",
     "perpendicularLineThru": "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     "tangentLineThru": "Tangent line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     "deleteNode": "Delete the selected object.",

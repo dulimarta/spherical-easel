@@ -29,12 +29,21 @@ export class SEEarthPoint extends SEPoint {
     return this._latitude;
   }
   public get noduleDescription(): string {
-    return String(
-      i18n.global.t(`objectTree.earthPoint`, {
-        lat: String(this._latitude + "\u{00B0}"),
-        long: String(this._longitude + "\u{00B0}")
-      })
-    );
+    if (Math.abs(this._latitude) !== 90) {
+      return String(
+        i18n.global.t(`objectTree.earthPoint`, {
+          lat: String(this._latitude + "\u{00B0}"),
+          long: String(this._longitude + "\u{00B0}")
+        })
+      );
+    } else {
+      // this is a pole
+      return String(
+        i18n.global.t(`objectTree.earthPointPole`, {
+          lat: String(this._latitude + "\u{00B0}")
+        })
+      );
+    }
   }
 
   public get noduleItemText(): string {

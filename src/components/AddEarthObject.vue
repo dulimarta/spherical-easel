@@ -135,6 +135,10 @@ import { AddLatitudeCommand } from "@/commands/AddLatitudeCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
+import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 const store = useSEStore();
 const {
@@ -158,8 +162,8 @@ let longitudeNumber = ref("");
 // const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
 // const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
 
-let seNorthPole: SEEarthPoint | undefined = undefined;
-let seSouthPole: SEEarthPoint | undefined = undefined;
+let seNorthPole: SEEarthPoint | SEPoint | undefined = undefined;
+let seSouthPole: SEEarthPoint | SEPoint | undefined = undefined;
 let seEquator: SELatitude | undefined = undefined;
 let sePrimeMeridian: SELongitude | undefined = undefined;
 
@@ -365,15 +369,15 @@ function addLongitudeSegment(long?: number): void {
     -labelLocationArray[2], // Why is this minus necessary? Because it put the label in the right place maybe it will not be necessary when merging with vue3-update
     labelLocationArray[1] // Switch when merging with vue3-upgrade
   );
-  console.log("longitude label location 0 ", labelLocationVector.toFixed(2));
+  //console.log("longitude label location 0 ", labelLocationVector.toFixed(2));
   const rotationMatrix = new Matrix4();
   rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
   labelLocationVector.applyMatrix4(rotationMatrix).normalize();
   longitudeSELabel.locationVector = labelLocationVector;
-  console.log(
-    "longitude label location ",
-    longitudeSELabel.locationVector.toFixed(2)
-  );
+  // console.log(
+  //   "longitude label location ",
+  //   longitudeSELabel.locationVector.toFixed(2)
+  // );
 
   longitudeSELabel.update();
 
@@ -395,10 +399,10 @@ function addLongitudeSegment(long?: number): void {
 
 watch(
   () => seSegments.value,
-  segment => {
-    const meridianList = segment
-      .filter(pt => pt instanceof SELongitude && pt.longitude === 0)
-      .map(pt => pt as SELongitude);
+  segments => {
+    const meridianList = segments
+      .filter(seg => seg instanceof SELongitude && seg.longitude === 0)
+      .map(seg => seg as SELongitude);
 
     if (meridianList[0]) {
       sePrimeMeridian = meridianList[0];
@@ -469,15 +473,31 @@ watch(
 //   { deep: true }
 // );
 
-function findPoleInObjectTree(pole: Poles): SEEarthPoint | undefined {
-  const seEarthPoints = sePoints.value
-    .filter(pt => pt instanceof SEEarthPoint)
-    .map(pt => pt as SEEarthPoint);
-  return seEarthPoints.find(
-    pt =>
-      Math.abs(pt.latitude - (Poles.NORTH === pole ? 90 : -90)) <
+function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
+  // The north and south pole are not necessarily earth points
+  // if you create two longitudes then the intersection SEPoints are exactly the north and south poles
+
+  // const seEarthPoints = sePoints.value
+  //   .filter(pt => pt instanceof SEEarthPoint)
+  //   .map(pt => pt as SEEarthPoint);
+  // return seEarthPoints.find(
+  //   pt =>
+  //     Math.abs(pt.latitude - (Poles.NORTH === pole ? 90 : -90)) <
+  //     SETTINGS.tolerance
+  // );
+  // change with vue3-upgrade
+  return sePoints.value.find(pt => {
+    console.log("point z value ", pt.locationVector.z);
+    if (
+      Math.abs(pt.locationVector.z - (Poles.NORTH === pole ? 1 : -1)) <
       SETTINGS.tolerance
-  );
+    ) {
+      console.log(Poles.NORTH === pole ? "North" : "south", "pole found");
+      return true;
+    } else {
+      return false;
+    }
+  });
 }
 function findLatitudeInObjectTree(lat: number): SELatitude | undefined {
   const seLatitudes = seCircles.value
@@ -553,10 +573,22 @@ function displayPole(pole: Poles) {
         displayCommandGroup.addCommand(cmd);
       }
     }
+    console.log("display pole north", seNorthPole);
     if (seNorthPole !== undefined) {
-      displayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(seNorthPole, !showNorthPole.value)
-      ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
+      if (seNorthPole instanceof SEEarthPoint) {
+        displayCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(seNorthPole, !showNorthPole.value)
+        );
+      } else if (
+        seNorthPole instanceof SEIntersectionPoint &&
+        seNorthPole.isUserCreated === false
+      ) {
+        // seNorthPole is an intersection point
+        displayCommandGroup.addCommand(
+          new SetPointUserCreatedValueCommand(seNorthPole, true, true)
+        );
+      }
+      // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
         seNorthPole.label &&
         (showNorthPole.value
@@ -579,9 +611,19 @@ function displayPole(pole: Poles) {
       }
     }
     if (seSouthPole !== undefined) {
-      displayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(seSouthPole, !showSouthPole.value)
-      ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
+      if (seSouthPole instanceof SEEarthPoint) {
+        displayCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(seSouthPole, !showSouthPole.value)
+        );
+      } else if (
+        seSouthPole instanceof SEIntersectionPoint &&
+        seSouthPole.isUserCreated === false
+      ) {
+        // seSouthPole is an intersection point
+        displayCommandGroup.addCommand(
+          new SetPointUserCreatedValueCommand(seSouthPole, true, true)
+        );
+      } // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
         seSouthPole.label &&
         (showSouthPole.value
@@ -677,7 +719,7 @@ function setSEPoleVariable(pole: Poles): undefined | Command {
     poleSELabel.ref.caption =
       pole === Poles.NORTH ? t("northPole") : t("southPole");
     poleSELabel.update();
-    cmd = new AddEarthPointCommand(sePole, poleSELabel);
+    cmd = new AddEarthPointCommand(sePole as SEEarthPoint, poleSELabel);
   }
   //Now set the pole into the local variable so it can be accessed in this component
   if (pole === Poles.NORTH) {

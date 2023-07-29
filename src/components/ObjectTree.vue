@@ -34,7 +34,18 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="sePoints.length > 0">
+          v-show="
+            sePoints.filter(n => {
+              if (
+                n instanceof SEIntersectionPoint ||
+                n instanceof SEAntipodalPoint
+              ) {
+                return n.isUserCreated && n.exists;
+              } else {
+                return n.exists;
+              }
+            }).length > 0
+          ">
           <SENoduleList
             i18LabelKey="objects.points"
             :children="sePoints"></SENoduleList>
@@ -85,7 +96,8 @@
           :elevation="4"
           class="my-3"
           v-show="seParametrics.length > 0">
-          <SENoduleList i18LabelKey="objects.parametrics"
+          <SENoduleList
+            i18LabelKey="objects.parametrics"
             :children="seParametrics"></SENoduleList>
         </v-sheet>
         <v-sheet
@@ -104,7 +116,8 @@
           :elevation="4"
           class="my-3"
           v-show="showExpressionSheet">
-          <SENoduleList i18LabelKey="objects.measurements"
+          <SENoduleList
+            i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
         </v-sheet>
         <!--v-sheet rounded
@@ -116,6 +129,7 @@
             :children="calculations"
             @object-select="onExpressionSelect"></SENoduleList>
         </v-sheet-->
+
         <span class="text-body-2 ma-2" v-show="zeroObjects">
           {{ $t("objectTree.noObjectsInDatabase") }}
         </span>
@@ -132,7 +146,8 @@ import SliderForm from "@/components/SliderForm.vue";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
-
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 const seStore = useSEStore();
 const {
@@ -155,7 +170,8 @@ const zeroObjects = computed((): boolean => {
   //   `Object Tree: ZeroObjects -- number of objects ${seNodules.length}`
   // );
   return (
-    seNodules.value.filter(n => n.exists).length === 0 && expressions.value.length === 0
+    seNodules.value.filter(n => n.exists).length === 0 &&
+    expressions.value.length === 0
   );
 });
 

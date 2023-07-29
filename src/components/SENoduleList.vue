@@ -2,11 +2,14 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
-      <span v-if="children.length === 1" class="text-subtitle-1">{{
-        $t(i18LabelKey, 1)
-      }}</span>
+      <span v-if="children.length === 1" class="text-subtitle-1">
+        {{ $t(i18LabelKey, 1) }}
+      </span>
       <span v-else class="text-subtitle-1">{{ $t(i18LabelKey, 0) }}</span>
-      <v-btn size="small" v-show="hasExistingChildren" @click="expanded = !expanded">
+      <v-btn
+        size="small"
+        v-show="hasExistingChildren"
+        @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
       </v-btn>
@@ -14,7 +17,7 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="n in existingChildren" :key="n.id">
+        <template v-for="n in existingChildren" :key="num">
           <!-- content goes here -->
           <SENoduleItem
             :node="n"
@@ -32,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
@@ -42,25 +45,50 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
+
 const props = defineProps<{
   children: SENodule[];
   i18LabelKey: string;
 }>(); /** When defined, label takes over the node name */
 
 const seStore = useSEStore();
-const { actionMode } = storeToRefs(seStore);
+const { actionMode, sePoints } = storeToRefs(seStore);
 
 const expanded = ref(false);
+const templateKey = ref(0);
+const num = ref(
+  sePoints.value.filter(
+    pt =>
+      (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) &&
+      pt.isUserCreated &&
+      pt.exists
+  )
+);
 onBeforeMount((): void => {
   EventBus.listen("expand-measurement-sheet", expandMeasurementSheet);
   EventBus.listen("expand-transformation-sheet", expandTransformationSheet);
 });
 
-const toSlider = (n: SENodule): SESlider => n as SESlider
+watch(
+  () =>
+    sePoints.value.filter(
+      pt =>
+        (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) &&
+        pt.isUserCreated &&
+        pt.exists
+    ),
+  () => {
+    console.log("watcher", templateKey.value);
+    templateKey.value = 1 - templateKey.value;
+  },
+  { deep: true }
+);
+
+const toSlider = (n: SENodule): SESlider => n as SESlider;
 
 const hasExistingChildren = computed((): boolean => {
-  // console.debug(" length", this.existingChildren.length);
-  //this.existingChildren.forEach(node => console.debug(node.name));
+  console.debug(" length", existingChildren.value.length);
+  existingChildren.value.forEach(node => console.debug(node.name));
   return existingChildren.value.length > 0;
 });
 
@@ -71,9 +99,12 @@ const hasExistingChildren = computed((): boolean => {
 const existingChildren = computed((): SENodule[] => {
   return props.children
     .filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint)
+      //return noduleUserCreatedAndExist.value(n);
+      if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
         return n.isUserCreated && n.exists;
-      else return n.exists;
+      } else {
+        return n.exists;
+      }
     })
     .sort((a, b) => {
       let aLabelString = a.name;
@@ -95,6 +126,13 @@ const existingChildren = computed((): SENodule[] => {
       }
     });
 });
+// const noduleUserCreatedAndExist = computed(() => (n: SENodule): boolean => {
+//   if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
+//     return n.isUserCreated && n.exists;
+//   } else {
+//     return n.exists;
+//   }
+// });
 //When the user activates the measured circle tool
 // the object tool tab is open and the existing measurements sheet is expanded and the others are closed
 function expandMeasurementSheet(): void {
