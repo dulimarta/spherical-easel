@@ -97,7 +97,10 @@
     {{ t("copyURL", { docId: sharedDocId }) }}
   </Dialog>
 
-  <v-snackbar v-model="showDeleteWarning" :timeout="DELETE_DELAY">
+  <v-snackbar
+    v-model="showDeleteWarning"
+    location="top"
+    :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
@@ -186,7 +189,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     script = props.items[pos].parsedScript;
     rotationMatrix = props.items[pos].sphereRotationMatrix;
     if (props.items[pos].tools) toolSet = props.items[pos].tools;
-  }
+  } else rotationMatrix = new Matrix4();
   if (toolSet === undefined) {
     console.debug("Include all tools");
     acctStore.resetToolset(true); /* include all tools */
@@ -209,7 +212,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    seStore.setRotationMatrix(rotationMatrix!);
+    seStore.setRotationMatrix(rotationMatrix);
     run(script);
     //seStore.rotateSphere(rotationMatrix!.invert());
     seStore.clearUnsavedFlag();

@@ -108,6 +108,10 @@
               class="mx-1"
               v-for="t in leftShortcutGroup"
               :model="t" />
+            <ShortcutIcon
+              :disabled="!hasObjects"
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('resetAction')!" />
             <MessageHub />
             <ShortcutIcon
               class="mx-1"
@@ -137,15 +141,14 @@
       :no-action="doLeave">
       {{ t(`constructions.unsavedConstructionMsg`) }}
     </Dialog>
-    <Dialog
-      ref="clearConstructionDialog"
-      :title="t('constructions.confirmReset')"
-      :yes-text="t('constructions.proceed')"
-      :yes-action="() => resetSphere()"
-      :no-text="t('constructions.cancel')"
-      max-width="40%">
-      <p>{{ t(`constructions.clearConstructionMsg`) }}</p>
-    </Dialog>
+    <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
+      {{ t("clearConstructionMessage") }}
+      <template #actions>
+        <v-btn @click="cancelClearConstruction" color="warning">
+          {{ t("undo") }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -222,6 +225,7 @@ import { SEAngleMarker } from "@/models/internal";
 import { SetEarthModeCommand } from "@/commands/SetEarthModeCommand";
 
 const LEFT_PANE_PERCENTAGE = 25;
+const DELETE_DELAY = 5000; // in milliseconds
 const appDB = getFirestore();
 // const appAuth = getAuth();
 const appStorage = getStorage();
@@ -256,8 +260,7 @@ const contentHeightStyle = computed(() => ({
 
 const leftShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("undoAction")!,
-  TOOL_DICTIONARY.get("redoAction")!,
-  TOOL_DICTIONARY.get("resetAction")!
+  TOOL_DICTIONARY.get("redoAction")!
 ]);
 const rightShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("zoomOut")!,
@@ -278,9 +281,10 @@ let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
-const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
+const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
 const svgDataImageAspectRatio = ref(1);
+let constructionClearTimer: any;
 
 //#region magnificationUpdate
 onBeforeMount(() => {
@@ -367,6 +371,7 @@ onMounted((): void => {
 
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
+  EventBus.listen("initiate-clear-construction", handleResetSphere);
   window.addEventListener("keydown", handleKeyDown);
 });
 
@@ -395,23 +400,32 @@ function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
 }
 
-function onWindowResized(): void {
-  console.debug("onWindowResized()");
-  adjustCanvasSize();
+// function onWindowResized(): void {
+//   console.debug("onWindowResized()");
+//   adjustCanvasSize();
+// }
+
+function handleResetSphere(): void {
+  clearConstructionWarning.value = true;
+  constructionClearTimer = setTimeout(() => {
+    seStore.removeAllFromLayers();
+    seStore.init();
+    Command.commandHistory.splice(0);
+    Command.redoHistory.splice(0);
+    SENodule.resetAllCounters();
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
+    // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+  }, DELETE_DELAY);
 }
 
-function resetSphere(): void {
-  clearConstructionDialog.value?.hide();
-  seStore.removeAllFromLayers();
-  seStore.init();
-  Command.commandHistory.splice(0);
-  Command.redoHistory.splice(0);
-  SENodule.resetAllCounters();
-  EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
-  EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
-  // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+function cancelClearConstruction() {
+  if (constructionClearTimer) {
+    clearTimeout(constructionClearTimer);
+    constructionClearTimer = null;
+  }
+  clearConstructionWarning.value = false;
 }
-
 function handleKeyDown(keyEvent: KeyboardEvent): void {
   // TO DO: test this on PC
   if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
@@ -657,3 +671,9 @@ function setEarthModeFunction() {
   align-items: center;
 }
 </style>
+<i18n locale="en">
+{
+  "clearConstructionMessage": "The current construction will be cleared",
+  "undo": "Undo"
+}
+</i18n>

@@ -151,7 +151,9 @@
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
-      <v-btn @click="cancelDeleteMessages" color="warning">{{t('undo')}}</v-btn>
+      <v-btn @click="cancelDeleteMessages" color="warning">
+        {{ t("undo") }}
+      </v-btn>
     </template>
   </v-snackbar>
 </template>
@@ -174,7 +176,7 @@ type MessageType = {
 type AlertType = "success" | "info" | "error" | "warning";
 
 const DELETE_DELAY = 3000;
-const { t } = useI18n({useScope: 'local'});
+const { t } = useI18n({ useScope: "local" });
 const filterMenuVisible = ref(false);
 const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
@@ -270,9 +272,7 @@ function cancelDeleteMessages() {
 <style scoped>
 #msg-display-area {
   /* padding: 4px; */
-  width: 25em;
-  max-height: 60px;
-  height: 100%; /* Needed to place the alert vertically centered */
+  width: 35em;
   overflow-y: auto;
 }
 #msghub {

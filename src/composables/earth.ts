@@ -21,6 +21,13 @@ export function geoLocationToUnitSphere(
 export function useEarthCoordinate() {
   const { inverseTotalRotationMatrix } = storeToRefs(useSEStore());
 
+  // The TwoJS drawing canvas is our assumed XY-plane, and our unit sphere is
+  // initially position with its north pole(Z - plus axis) pointing towards the viewer.
+  // However, the ThreeJS sphere wrapped with the earth texture shows its north pole
+  // pointing up to the sky (our Y-plus axis).
+  // Swapping the ycor and zcor below implies a 90-deg rotation around the X-axis
+  // to match two two coordinate frames
+
   function geoLocationToUnitSphere(
     latDegree: number,
     lngDegree: number
@@ -35,6 +42,8 @@ export function useEarthCoordinate() {
 
   // Rotate the earth to bring the desired geo location to the front view
   function flyTo(latDegree: number, lngDegree: number): Promise<void> {
+    console.debug("Fly to", latDegree, lngDegree);
+    const FLYOVER_SPEED = 30; // degrees/seconds
     const frontCoord = new Vector3();
     frontCoord.set(0, 0, 1);
     frontCoord.applyMatrix4(inverseTotalRotationMatrix.value);
@@ -57,23 +66,21 @@ export function useEarthCoordinate() {
 
     // Determine final quaternion
     const rotationAngle = flyToCoord.distanceTo(frontCoord);
-
+    const travelTime = rotationAngle.toDegrees() / FLYOVER_SPEED; // number of seconds
+    const numFrames = (travelTime * 1000) / 20; // update interval 20 milliseconds
+    const deltaT = 1 / numFrames;
     const rotationAxis = new Vector3()
       .crossVectors(flyToCoord, frontCoord)
       .normalize();
-    console.debug(
-      "Rotate around " +
-        rotationAxis.toFixed(2) +
-        " by " +
-        rotationAngle.toDegrees() +
-        " degrees"
-    );
+    // console.debug("Rotate around " + rotationAxis.toFixed(2) + " by " + rotationAngle.toDegrees() + " degrees")
+
+    // Ignore short fly over
     if (Math.abs(rotationAngle.toDegrees()) < 5) return Promise.reject();
     toQuat.setFromAxisAngle(rotationAxis, rotationAngle);
     return new Promise(resolve => {
       let t = 0;
       const updateTimer = setInterval(() => {
-        t += 0.01;
+        t += deltaT;
         interQuat.slerpQuaternions(fromQuat, toQuat, t);
         tmpMatrix.makeRotationFromQuaternion(interQuat);
         tmpMatrix.invert();
@@ -82,7 +89,7 @@ export function useEarthCoordinate() {
           resolve();
           clearInterval(updateTimer);
         }
-      }, 16);
+      }, 20);
     });
   }
   return { geoLocationToUnitSphere, flyTo };

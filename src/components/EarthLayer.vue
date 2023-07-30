@@ -24,7 +24,7 @@ import {
 import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import {DateTime} from "luxon"
+import { DateTime } from "luxon";
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -36,12 +36,6 @@ const { zoomMagnificationFactor, zoomTranslation, inverseTotalRotationMatrix } =
 let requestAnimFrameHandle: number | null = null;
 
 const rotationMatrix = new Matrix4(); // temporary matrix for rotating the sphere
-// The TwoJS drawing canvas is our assumed XY-plane, and our unit sphere is
-// initially position with its north pole(Z - plus axis) pointing towards the viewer.
-// However, the ThreeJS sphere wrapped with the earth texture shows its north pole
-// pointing up to the sky (our Y-plus axis).
-// A rotation by 90 degrees is required to lineup both north poles
-const ROTATION_X90 = new Matrix4().makeRotationX(Math.PI / 2);
 const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
@@ -65,9 +59,14 @@ const camera = new OrthographicCamera(
   scaledWidth,
   scaledHeight,
   -scaledHeight,
-  0.1,
-  1000
+  1,
+  2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor.value
 );
+// When the magnification factor is below 1.0, we don't want to place the camera
+// inside the unit sphere, so place it at least 10% further
+camera.position.z =
+  SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor.value);
+
 //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = Math.min(scaledWidth, scaledHeight);
 camera.updateProjectionMatrix();
@@ -100,16 +99,12 @@ onMounted(async () => {
   // Position the Point light based on the estimated
   // current position of the sun?
   // const sunGeoPosition = estimateSunGeoPosition();
-  const sunLng = estimateSunGP()
+  const sunLng = estimateSunGP();
   // console.debug(`Sun longitude: ${sunGeoPosition.lon.toDegrees()} degrees`)
   // (1,0,0) => Equator GMT-0
   // (0,1,0) => North Pole   (0,-1,0) => South Pole
   // (0,0,1) => Equator GMT-6
-  light.position.set(
-    num * Math.cos(sunLng),
-    0,
-    num * Math.sin(sunLng)
-  );
+  light.position.set(num * Math.cos(sunLng), 0, num * Math.sin(sunLng));
   // light.setRotationFromEuler(sunEulerRotation)
   // light.updateMatrix()
   // To fix the light to the earth, add it to the earth not the scene
@@ -127,6 +122,16 @@ onMounted(async () => {
   renderer.setSize(prop.availableWidth, prop.availableHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
+  setTimeout(async () => {
+    // FlyTo current user location
+    if (
+      !isNaN(coords.value.latitude) &&
+      !isNaN(coords.value.longitude) &&
+      coords.value.latitude !== Infinity &&
+      coords.value.longitude !== Infinity
+    )
+      await flyTo(coords.value.latitude, coords.value.longitude);
+  }, 2000);
   animate();
 });
 
@@ -150,6 +155,13 @@ watch(
     camera.right = scaledWidth;
     camera.top = scaledHeight;
     camera.bottom = -scaledHeight;
+    camera.far = 2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor;
+    // When the magnification factor is below 1.0, we don't want to place the camera
+    // inside the unit sphere, so place it at least 10% further
+    camera.position.z =
+      SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor);
+    // console.debug(`Camera z-range [${camera.near}, ${camera.far}] and position`, camera.position)
+
     camera.updateProjectionMatrix();
   }
 );
@@ -189,18 +201,25 @@ onBeforeUnmount(() => {
 
 // Reference: https://astronomy.stackexchange.com/questions/20560/how-to-calculate-the-position-of-the-sun-in-long-lat/20585#20585
 function estimateSunGP() {
-  const now = DateTime.now()
+  const now = DateTime.now();
   // console.debug("Offset ", now.offset, "UTC offset", now.toUTC().offset)
-  const startOfYear = now.startOf('year')
-  const endOfYear = now.endOf('year')
-  const percentageOfYear =  startOfYear.diffNow().milliseconds / endOfYear.diff(startOfYear).milliseconds
-  const nowInUTC = now.toUTC()
-  console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime())
-  const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12)
+  const startOfYear = now.startOf("year");
+  const endOfYear = now.endOf("year");
+  const percentageOfYear =
+    startOfYear.diffNow().milliseconds /
+    endOfYear.diff(startOfYear).milliseconds;
+  const nowInUTC = now.toUTC();
+  console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime());
+  const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12);
   // 15 degrees in 60 minutes => 1 degree in 4 minutes
-  const sunLongitude = utcMinutesUntilNoon/4
-  console.debug("Number of UTC elapse minutes", utcMinutesUntilNoon, "Sun estimate longitude", sunLongitude)
-  return sunLongitude * Math.PI / 180
+  const sunLongitude = utcMinutesUntilNoon / 4;
+  console.debug(
+    "Number of UTC elapse minutes",
+    utcMinutesUntilNoon,
+    "Sun estimate longitude",
+    sunLongitude
+  );
+  return (sunLongitude * Math.PI) / 180;
 }
 function estimateSunGeoPosition() {
   const now = new Date();
