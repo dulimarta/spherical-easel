@@ -232,7 +232,7 @@ function addEarthPoint(): void {
     Number(latitudeNumber.value),
     Number(longitudeNumber.value)
   );
-  const poleVector = new Vector3(coords[0], -coords[2], coords[1]); //Switch when merging with vue3-upgrade
+  const poleVector = new Vector3(coords[0], coords[1], coords[2]);
   const rotationMatrix = new Matrix4();
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
   poleVector.applyMatrix4(rotationMatrix);
@@ -366,8 +366,8 @@ function addLongitudeSegment(long?: number): void {
   const labelLocationArray = geoLocationToUnitSphere(0, longitude);
   const labelLocationVector = new Vector3(
     labelLocationArray[0],
-    -labelLocationArray[2], // Why is this minus necessary? Because it put the label in the right place maybe it will not be necessary when merging with vue3-update
-    labelLocationArray[1] // Switch when merging with vue3-upgrade
+    labelLocationArray[1],
+    labelLocationArray[2]
   );
   //console.log("longitude label location 0 ", labelLocationVector.toFixed(2));
   const rotationMatrix = new Matrix4();
@@ -485,7 +485,7 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
   //     Math.abs(pt.latitude - (Poles.NORTH === pole ? 90 : -90)) <
   //     SETTINGS.tolerance
   // );
-  // change with vue3-upgrade
+  // change with vue3-upgrade???
   return sePoints.value.find(pt => {
     console.log("point z value ", pt.locationVector.z);
     if (
@@ -771,8 +771,8 @@ function setSEPrimeMeridianVariable(): undefined | Command {
     const labelLocationArray = geoLocationToUnitSphere(0, 0);
     const labelLocationVector = new Vector3(
       labelLocationArray[0],
-      labelLocationArray[2],
-      labelLocationArray[1] // Switch when merging with vue3-upgrade
+      labelLocationArray[1],
+      labelLocationArray[2]
     );
     const rotationMatrix = new Matrix4();
     rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();

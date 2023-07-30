@@ -25,6 +25,11 @@ import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
+import { useEarthCoordinate } from "@/composables/earth";
+import { useGeolocation } from "@vueuse/core";
+const { coords } = useGeolocation();
+const { flyTo } = useEarthCoordinate();
+
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -111,7 +116,7 @@ onMounted(async () => {
   earth.add(light);
   earth.rotation.x = Math.PI / 2;
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-  rotationMatrix.multiply(ROTATION_X90);
+  // rotationMatrix.multiply(ROTATION_X90);
   earth.setRotationFromMatrix(rotationMatrix);
 
   scene.add(earth);
@@ -171,7 +176,7 @@ watch(
   () => inverseTotalRotationMatrix.value.elements,
   () => {
     rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
-    rotationMatrix.multiply(ROTATION_X90);
+    //rotationMatrix.multiply(ROTATION_X90);
     earth.setRotationFromMatrix(rotationMatrix);
   },
   { deep: true }

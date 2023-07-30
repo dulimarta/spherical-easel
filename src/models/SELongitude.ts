@@ -49,8 +49,8 @@ export class SELongitude extends SESegment {
       const northPoleArray = geoLocationToUnitSphere(90, 0);
       northPoleVector.set(
         northPoleArray[0],
-        northPoleArray[2],
-        northPoleArray[1] // Switch when merging with vue3-upgrade
+        northPoleArray[1],
+        northPoleArray[2]
       ); // this never changes from the north pole
       northPoleVector.applyMatrix4(rotationMatrix);
       SENodule.unregisteredSEPointNorthPole.locationVector = northPoleVector;
@@ -83,8 +83,8 @@ export class SELongitude extends SESegment {
       const southPoleArray = geoLocationToUnitSphere(-90, 0);
       southPoleVector.set(
         southPoleArray[0],
-        southPoleArray[2],
-        southPoleArray[1] // Switch when merging with vue3-upgrade
+        southPoleArray[1],
+        southPoleArray[2]
       ); // this never changes from the South pole
       southPoleVector.applyMatrix4(rotationMatrix);
       SENodule.unregisteredSEPointSouthPole.locationVector = southPoleVector;
@@ -99,8 +99,8 @@ export class SELongitude extends SESegment {
     const segmentNormalVector = new Vector3();
     tempVec.set(
       Math.cos(longitudeDegree.toRadians()),
-      Math.sin(longitudeDegree.toRadians()),
-      0 // Switch when merging with vue3-upgrade
+      0,
+      -Math.sin(longitudeDegree.toRadians())
     );
     tempVec.applyMatrix4(rotationMatrix);
     segmentNormalVector.crossVectors(northPoleVector, tempVec).normalize();

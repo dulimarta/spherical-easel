@@ -49,8 +49,8 @@ export class SELatitude extends SECircle {
       const northPoleArray = geoLocationToUnitSphere(90, 0);
       northPoleVector.set(
         northPoleArray[0],
-        northPoleArray[2],
-        northPoleArray[1] // Switch when merging with vue3-upgrade
+        northPoleArray[1],
+        northPoleArray[2]
       ); // this never changes from the north pole
       northPoleVector.applyMatrix4(rotationMatrix);
       SENodule.unregisteredSEPointNorthPole.locationVector = northPoleVector;
@@ -64,8 +64,8 @@ export class SELatitude extends SECircle {
     const pointLocationArray = geoLocationToUnitSphere(latitude, 0);
     const pointLocationVector = new Vector3(
       pointLocationArray[0],
-      pointLocationArray[2],
-      pointLocationArray[1] // Switch when merging with vue3-upgrade
+      pointLocationArray[1],
+      pointLocationArray[2]
     ); // this never changes
     pointLocationVector.applyMatrix4(rotationMatrix);
     circleSEPoint.locationVector = pointLocationVector;
