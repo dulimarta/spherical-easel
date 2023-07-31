@@ -33,6 +33,7 @@
           rounded
           color="accent"
           :elevation="4"
+          :key="pointsKey"
           class="my-3"
           v-show="
             sePoints.filter(n => {
@@ -138,7 +139,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import SENoduleList from "@/components/SENoduleList.vue";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import ParametricForm from "@/components/ParametricForm.vue";
@@ -164,7 +165,36 @@ const {
 } = storeToRefs(seStore);
 
 let displayExpressionSheetAgain = true;
+const pointsKey = ref(0);
 
+// const userCreatedPoints = computed(() => {
+//   return sePoints.value.filter(
+//     pt =>
+//       (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) &&
+//       pt.isUserCreated &&
+//       pt.exists
+//   );
+// });
+
+// watch(
+//   userCreatedPoints,
+//   (points: SEPoint[]) => {
+//     console.log("watched!!!!");
+//     if (
+//       points.some(
+//         pt =>
+//           (pt instanceof SEIntersectionPoint ||
+//             pt instanceof SEAntipodalPoint) &&
+//           pt.isUserCreated &&
+//           pt.exists
+//       )
+//     ) {
+//       console.log("key change");
+//       templateKey.value = 1 - templateKey.value;
+//     }
+//   },
+//   { deep: true }
+// );
 const zeroObjects = computed((): boolean => {
   // console.debug(
   //   `Object Tree: ZeroObjects -- number of objects ${seNodules.length}`
@@ -174,7 +204,24 @@ const zeroObjects = computed((): boolean => {
     expressions.value.length === 0
   );
 });
-
+onBeforeMount((): void => {
+  EventBus.listen("update-points-user-created", updateKey);
+});
+// If we don't do use this event bus system then we get the following issue:
+// 1. Draw two line segments that appear to intersect. (This creates points p1, p2, p3, p4 and segments ls1, ls2)
+// 2. Turn on the point tool
+// 3. Open the object tree and open the points sheet. You should see  points p1, p2, p3, and p4 listed
+// 4. Click on the location of the intersection of the two line segments (with the point tool still active).
+//     This creates point p5 which is *not* displayed in the points sheet in the object tree.  You can check
+//     that p5 is in the object tree by clicking at a empty location on the sphere — when you do this *two*
+//      new entries appear in the points list.
+function updateKey(): void {
+  //console.log("update");
+  pointsKey.value = pointsKey.value - 1;
+}
+onBeforeUnmount((): void => {
+  EventBus.unlisten("update-points-user-created");
+});
 const showExpressionSheet = computed((): boolean => {
   //This message will appear once each time the number of expressions is zero and the measure circle tool is active
   // console.log("here show expression sheet");

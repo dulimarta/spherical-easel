@@ -17,7 +17,7 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="n in existingChildren" :key="num">
+        <template v-for="n in existingChildren" :key="n.id">
           <!-- content goes here -->
           <SENoduleItem
             :node="n"
@@ -52,37 +52,14 @@ const props = defineProps<{
 }>(); /** When defined, label takes over the node name */
 
 const seStore = useSEStore();
-const { actionMode, sePoints } = storeToRefs(seStore);
+const { actionMode } = storeToRefs(seStore);
 
 const expanded = ref(false);
-const templateKey = ref(0);
-const num = ref(
-  sePoints.value.filter(
-    pt =>
-      (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) &&
-      pt.isUserCreated &&
-      pt.exists
-  )
-);
+
 onBeforeMount((): void => {
   EventBus.listen("expand-measurement-sheet", expandMeasurementSheet);
   EventBus.listen("expand-transformation-sheet", expandTransformationSheet);
 });
-
-watch(
-  () =>
-    sePoints.value.filter(
-      pt =>
-        (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) &&
-        pt.isUserCreated &&
-        pt.exists
-    ),
-  () => {
-    console.log("watcher", templateKey.value);
-    templateKey.value = 1 - templateKey.value;
-  },
-  { deep: true }
-);
 
 const toSlider = (n: SENodule): SESlider => n as SESlider;
 
@@ -91,10 +68,6 @@ const hasExistingChildren = computed((): boolean => {
   existingChildren.value.forEach(node => console.debug(node.name));
   return existingChildren.value.length > 0;
 });
-
-// name(node: SENodule): string {
-//   return node?.name ?? "None";
-// }
 
 const existingChildren = computed((): SENodule[] => {
   return props.children

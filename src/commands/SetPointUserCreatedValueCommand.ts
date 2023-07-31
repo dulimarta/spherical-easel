@@ -7,6 +7,7 @@ import SETTINGS from "@/global-settings";
 // import { SENodule } from "@/models/SENodule";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import EventBus from "@/eventHandlers/EventBus";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -74,6 +75,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     }
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
+    EventBus.fire("update-points-user-created", {});
   }
 
   saveState(): void {
@@ -122,6 +124,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
+    EventBus.fire("update-points-user-created", {});
   }
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation

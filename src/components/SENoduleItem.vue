@@ -186,8 +186,10 @@ import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Poles } from "@/types";
 import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
+import { Vector3 } from "three";
 const seStore = useSEStore();
-const { actionMode, isEarthMode } = storeToRefs(seStore);
+const { actionMode, isEarthMode, inverseTotalRotationMatrix } =
+  storeToRefs(seStore);
 const props = defineProps<{
   node: SENodule;
 }>();
@@ -213,7 +215,7 @@ const parametricTMin = ref(0);
 const parametricTMax = ref(1);
 const parametricTStep = ref(0.01);
 const supportsClipboard = ref(false); //For copying the value of a measurement to the clipboard
-
+const tempVec = new Vector3();
 /**
  * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
  */
@@ -227,17 +229,24 @@ onBeforeMount(() => {
   } else {
     nodeName = props.node.name;
   }
+  //NP find the north and south pole
+  if (props.node instanceof SEPoint) {
+    tempVec.copy(props.node.locationVector);
+    // transform the pt back to standard position
+    tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
+    if (Math.abs(tempVec.y - 1) < SETTINGS.tolerance) {
+      console.log("object tree - found north pole");
+      isNorthPole = true;
+    } else if (Math.abs(tempVec.y + 1) < SETTINGS.tolerance) {
+      console.log("object tree - found south pole");
+      isSouthPole = true;
+    }
+  }
   if (false) {
   } else if (props.node instanceof SEEarthPoint) {
     // All the point subclasses with SEPoint last
     iconName.value = "$earthPoint";
     nodeType = t(`objects.points`, 3);
-    //NP
-    if (props.node.latitude == 90 && props.node.longitude == 0) {
-      isNorthPole = true;
-    } else if (props.node.latitude == -90 && props.node.longitude == 0) {
-      isSouthPole = true;
-    }
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
     nodeType = t(`objects.points`, 3);
@@ -262,11 +271,6 @@ onBeforeMount(() => {
   } else if (props.node instanceof SEPoint) {
     iconName.value = "$point";
     nodeType = t(`objects.points`, 3);
-    if (props.node.locationVector.z == 1) {
-      isNorthPole = true;
-    } else if (props.node.locationVector.z == -1) {
-      isSouthPole = true;
-    }
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&

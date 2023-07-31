@@ -125,7 +125,11 @@ import SETTINGS from "@/global-settings";
 import { Command } from "@/commands/Command";
 import { SENodule } from "@/models/SENodule";
 import EventBus from "@/eventHandlers/EventBus";
-import { Poles, SEIntersectionReturnType } from "@/types/index";
+import {
+  LabelDisplayMode,
+  Poles,
+  SEIntersectionReturnType
+} from "@/types/index";
 import { useEarthCoordinate } from "@/composables/earth";
 import { SELongitude } from "@/models/SELongitude";
 import { AddLongitudeCommand } from "@/commands/AddLongitudeCommand";
@@ -139,6 +143,10 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { StyleEditPanels } from "@/types/Styles";
+import Highlighter from "@/eventHandlers/Highlighter";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 const store = useSEStore();
 const {
@@ -151,6 +159,7 @@ const {
 } = storeToRefs(store);
 const { t } = useI18n();
 const { geoLocationToUnitSphere } = useEarthCoordinate();
+const tempVec = new Vector3();
 
 let showPrimeMeridian = ref(false);
 let showEquator = ref(false);
@@ -162,10 +171,16 @@ let longitudeNumber = ref("");
 // const seNorthPole = ref<SEEarthPoint | undefined>(undefined);
 // const seSouthPole = ref<SEEarthPoint | undefined>(undefined);
 
-let seNorthPole: SEEarthPoint | SEPoint | undefined = undefined;
-let seSouthPole: SEEarthPoint | SEPoint | undefined = undefined;
+let seNorthPole: SEAntipodalPoint | SEEarthPoint | SEPoint | undefined =
+  undefined;
+let seSouthPole: SEAntipodalPoint | SEEarthPoint | SEPoint | undefined =
+  undefined;
 let seEquator: SELatitude | undefined = undefined;
 let sePrimeMeridian: SELongitude | undefined = undefined;
+
+// These variables are set to true, the poles will not change captions
+let northPoleLabelSetOnce = false;
+let southPoleLabelSetOnce = false;
 
 function latitudeNumberCheck(txt: string | undefined): boolean | string {
   if (typeof txt === "string" && Number.isNaN(Number(txt))) {
@@ -321,6 +336,8 @@ function addLatitudeCircle(lat?: number): void {
 
   // new create the intersections with all existing objects
   cmdGroup.addCommand(getCircleIntersectionsCommands(seLatitude)).execute();
+  //turn off the display of all newly created but not user created points
+  store.unglowAllSENodules();
 
   EventBus.fire("show-alert", {
     key: "handlers.newLatitudeAdded",
@@ -386,6 +403,8 @@ function addLongitudeSegment(long?: number): void {
 
   // new create the intersections with all existing objects
   cmdGroup.addCommand(getSegmentIntersectionsCommands(seLongitude)).execute();
+  //turn off the display of all newly created but not user created points
+  store.unglowAllSENodules();
 
   EventBus.fire("show-alert", {
     key: "handlers.newLongitudeAdded",
@@ -476,23 +495,58 @@ watch(
 function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
   // The north and south pole are not necessarily earth points
   // if you create two longitudes then the intersection SEPoints are exactly the north and south poles
-
-  // const seEarthPoints = sePoints.value
-  //   .filter(pt => pt instanceof SEEarthPoint)
-  //   .map(pt => pt as SEEarthPoint);
-  // return seEarthPoints.find(
-  //   pt =>
-  //     Math.abs(pt.latitude - (Poles.NORTH === pole ? 90 : -90)) <
-  //     SETTINGS.tolerance
-  // );
-  // change with vue3-upgrade???
+  // Standard/initial position:
+  //     The plus y axis is our north pole, so the x axis points at the viewer and the
+  //     positive z axis is to the left
   return sePoints.value.find(pt => {
-    console.log("point z value ", pt.locationVector.z);
+    tempVec.copy(pt.locationVector);
+    // transform the pt back to standard position
+    tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
+    console.log("point y value ", tempVec.y);
     if (
-      Math.abs(pt.locationVector.z - (Poles.NORTH === pole ? 1 : -1)) <
-      SETTINGS.tolerance
+      Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
     ) {
-      console.log(Poles.NORTH === pole ? "North" : "south", "pole found");
+      console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
+      if (pt.label) {
+        if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
+          pt.label.ref.caption = t("northPole");
+          northPoleLabelSetOnce = true;
+          // set the label display mode
+          new StyleNoduleCommand(
+            [pt.label.ref],
+            StyleEditPanels.Label,
+            [
+              {
+                labelDisplayMode: LabelDisplayMode.CaptionOnly
+              }
+            ],
+            [
+              {
+                labelDisplayMode: pt.label.ref.labelDisplayMode
+              }
+            ]
+          ).execute();
+        } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
+          pt.label.ref.caption = t("southPole");
+          southPoleLabelSetOnce = true;
+          // set the label display mode
+          new StyleNoduleCommand(
+            [pt.label.ref],
+            StyleEditPanels.Label,
+            [
+              {
+                labelDisplayMode: LabelDisplayMode.CaptionOnly
+              }
+            ],
+            [
+              {
+                labelDisplayMode: pt.label.ref.labelDisplayMode
+              }
+            ]
+          ).execute();
+        }
+      }
+      pt.update();
       return true;
     } else {
       return false;
@@ -543,6 +597,7 @@ onMounted(() => {
 
 //NP
 function poleSwitch(e: { pole: Poles; val: boolean }) {
+  console.log("message received");
   if (e.pole == Poles.NORTH) {
     showNorthPole.value = e.val;
   } else {
@@ -575,12 +630,9 @@ function displayPole(pole: Poles) {
     }
     console.log("display pole north", seNorthPole);
     if (seNorthPole !== undefined) {
-      if (seNorthPole instanceof SEEarthPoint) {
-        displayCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(seNorthPole, !showNorthPole.value)
-        );
-      } else if (
-        seNorthPole instanceof SEIntersectionPoint &&
+      if (
+        (seNorthPole instanceof SEIntersectionPoint ||
+          seNorthPole instanceof SEAntipodalPoint) &&
         seNorthPole.isUserCreated === false
       ) {
         // seNorthPole is an intersection point
@@ -588,6 +640,9 @@ function displayPole(pole: Poles) {
           new SetPointUserCreatedValueCommand(seNorthPole, true, true)
         );
       }
+      displayCommandGroup.addCommand(
+        new SetNoduleDisplayCommand(seNorthPole, !showNorthPole.value)
+      );
       // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
         seNorthPole.label &&
@@ -611,19 +666,19 @@ function displayPole(pole: Poles) {
       }
     }
     if (seSouthPole !== undefined) {
-      if (seSouthPole instanceof SEEarthPoint) {
-        displayCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(seSouthPole, !showSouthPole.value)
-        );
-      } else if (
-        seSouthPole instanceof SEIntersectionPoint &&
+      if (
+        (seSouthPole instanceof SEIntersectionPoint ||
+          seSouthPole instanceof SEAntipodalPoint) &&
         seSouthPole.isUserCreated === false
       ) {
         // seSouthPole is an intersection point
         displayCommandGroup.addCommand(
           new SetPointUserCreatedValueCommand(seSouthPole, true, true)
         );
-      } // also hides the label if SETTINGS.hideObjectHidesLabel is true
+      }
+      displayCommandGroup.addCommand(
+        new SetNoduleDisplayCommand(seSouthPole, !showSouthPole.value)
+      ); // also hides the label if SETTINGS.hideObjectHidesLabel is true
       if (
         seSouthPole.label &&
         (showSouthPole.value
@@ -665,6 +720,8 @@ function displayEquator(): void {
     }
   }
   displayCommandGroup.execute();
+  //turn off the display of all newly created but not user created points
+  store.unglowAllSENodules();
   EventBus.fire("update-label-and-showing-display", {}); //NP
 }
 function displayPrimeMeridian(): void {
@@ -695,31 +752,44 @@ function displayPrimeMeridian(): void {
     }
   }
   displayCommandGroup.execute();
+  //turn off the display of all newly created but not user created points
+  store.unglowAllSENodules();
   EventBus.fire("update-label-and-showing-display", {}); //NP
 }
 //Return the command to add the north pole to the object tree so that it can be grouped with the other hide/show commands.
-function setSEPoleVariable(pole: Poles): undefined | Command {
+function setSEPoleVariable(pole: Poles): undefined | CommandGroup {
   //Find the north or south pole in the store of sePoints, if it exists
   let sePole = findPoleInObjectTree(pole);
   // If the north or south pole already exists then this next code block will not execute (because findPoleInObjectTree will return the pole) so you cannot
   // create two points at either pole
-  let cmd: Command | undefined = undefined;
+  let cmdGroup: CommandGroup | undefined = undefined;
   if (sePole === undefined) {
     // Initialize/create the north pole and add it to the object tree
-    sePole =
-      pole === Poles.NORTH ? new SEEarthPoint(90, 0) : new SEEarthPoint(-90, 0);
-    const poleVector =
-      pole === Poles.NORTH ? new Vector3(0, 0, 1) : new Vector3(0, 0, -1);
+    sePole = new SEEarthPoint(pole === Poles.NORTH ? 90 : -90, 0);
+    const poleVector = new Vector3(0, pole === Poles.NORTH ? 1 : -1, 0);
     const rotationMatrix = new Matrix4();
     rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
     poleVector.applyMatrix4(rotationMatrix);
     sePole.locationVector = poleVector;
+
     const poleSELabel = new SELabel("point", sePole);
-    // stylize the north pole
-    poleSELabel.ref.caption =
-      pole === Poles.NORTH ? t("northPole") : t("southPole");
+    // stylize the pole
+
+    if (pole === Poles.NORTH) {
+      poleSELabel.ref.caption = t("northPole");
+      northPoleLabelSetOnce = true;
+    } else {
+      poleSELabel.ref.caption = t("southPole");
+      southPoleLabelSetOnce = true;
+    }
+
     poleSELabel.update();
-    cmd = new AddEarthPointCommand(sePole as SEEarthPoint, poleSELabel);
+    cmdGroup = new CommandGroup();
+    cmdGroup.addCommand(
+      new AddEarthPointCommand(sePole as SEEarthPoint, poleSELabel)
+    );
+    // create the antipode also
+    Highlighter.addCreateAntipodeCommand(sePole, cmdGroup);
   }
   //Now set the pole into the local variable so it can be accessed in this component
   if (pole === Poles.NORTH) {
@@ -727,7 +797,7 @@ function setSEPoleVariable(pole: Poles): undefined | Command {
   } else {
     seSouthPole = sePole;
   }
-  return cmd;
+  return cmdGroup;
 }
 //Return the command to add the equator to the object tree so that it can be grouped with the other hide/show commands.
 function setSEEquatorVariable(): undefined | Command {

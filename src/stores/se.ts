@@ -456,7 +456,7 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
       this.inverseTotalRotationMatrix.identity();
-      this.isEarthMode = false
+      this.isEarthMode = false;
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -1077,6 +1077,7 @@ export const useSEStore = defineStore({
     },
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
+      console.log("unglow all");
       seNodules.forEach(p => {
         if (!p.selected && p.exists) {
           p.glowing = false;
