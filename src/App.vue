@@ -78,21 +78,6 @@
     </p>
   </Dialog>
 
-<<<<<<< HEAD
-  <!--Dialog
-      ref="shareConstructionDialog"
-      :title="i18nText('constructions.shareConstructionDialog')"
-      :yesText="i18nText('constructions.exportConstructionDialog')"
-      :yes-action="() => doExportConstructionDialog()"
-      :no-text="i18nText('constructions.cancel')"
-      max-width="40%"
-      content-class="shareConstructionClass">
-      <p>
-        {{ i18nText("constructions.shareLinkDialog") }}
-      </p>
-=======
-
->>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 
 </template>
 
