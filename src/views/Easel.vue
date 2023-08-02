@@ -647,8 +647,8 @@ function setEarthModeFunction() {
 /* Use class instead of id when applying to a vuetify builtin component.
  * Looks like IDs are not preserved after built */
 .earthToggler {
-  position: relative;
-  top: -56px;
+  position: absolute;
+  bottom: 88px;
   left: 12px;
   margin: 0;
   padding: 0 1em;
@@ -656,8 +656,8 @@ function setEarthModeFunction() {
   align-self: flex-start;
 }
 .displayEarthObject {
-  position: relative;
-  top: -550px;
+  position: absolute;
+  bottom: 140px;
   left: 12px;
   margin: 0;
   padding: 0 0em;

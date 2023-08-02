@@ -1,87 +1,67 @@
 <template>
-  <div>
-    <v-col>
-      <v-col>
-        <v-switch
-          hide-details
-          v-model="showNorthPole"
-          density="compact"
-          variant="outlined"
-          :label="t('northPole')"
-          @click="displayPole(Poles.NORTH)"></v-switch>
-        <v-switch
-          hide-details
-          v-model="showSouthPole"
-          density="compact"
-          variant="outlined"
-          :label="t('southPole')"
-          @click="displayPole(Poles.SOUTH)"></v-switch>
-        <v-switch
-          hide-details
-          v-model="showEquator"
-          density="compact"
-          variant="outlined"
-          :label="t('equator')"
-          @click="displayEquator"></v-switch>
-        <v-switch
-          hide-details
-          v-model="showPrimeMeridian"
-          density="compact"
-          variant="outlined"
-          :label="t('primeMeridian')"
-          @click="displayPrimeMeridian"></v-switch>
-      </v-col>
-      <v-spacer></v-spacer>
-      <v-divider :thickness="8" color="black"></v-divider>
-      <v-spacer></v-spacer>
-      <v-col>
-        <v-text-field
-          :label="t('latitude')"
-          clearable
-          density="compact"
-          :rules="[latitudeNumberCheck]"
-          v-model="latitudeNumber"></v-text-field>
-        <v-text-field
-          :label="t('longitude')"
-          density="compact"
-          clearable
-          :rules="[longitudeNumberCheck]"
-          v-model="longitudeNumber"></v-text-field>
-      </v-col>
-      <v-col>
-        <v-row>
-          <v-btn
-            :disabled="addPointButtonDisabled"
-            variant="outlined"
-            density="compact"
-            @click="addEarthPoint()">
-            {{ t("addPoint") }}
-          </v-btn>
-        </v-row>
-      </v-col>
-      <v-col>
-        <v-row>
-          <v-btn
-            :disabled="addLatitudeButtonDisabled"
-            variant="outlined"
-            density="compact"
-            @click="addLatitudeCircle()">
-            {{ t("addLatitude") }}
-          </v-btn>
-        </v-row>
-      </v-col>
-      <v-col>
-        <v-row>
-          <v-btn
-            :disabled="addLongitudeButtonDisabled"
-            variant="outlined"
-            density="compact"
-            @click="addLongitudeSegment()">
-            {{ t("addLongitude") }}
-          </v-btn>
-        </v-row>
-      </v-col>
-    </v-col>
+  <div id="earthobject">
+    <v-switch
+      hide-details
+      v-model="showNorthPole"
+      density="compact"
+      variant="outlined"
+      :label="t('northPole')"
+      @click="displayPole(Poles.NORTH)"></v-switch>
+    <v-switch
+      hide-details
+      v-model="showSouthPole"
+      density="compact"
+      variant="outlined"
+      :label="t('southPole')"
+      @click="displayPole(Poles.SOUTH)"></v-switch>
+    <v-switch
+      hide-details
+      v-model="showEquator"
+      density="compact"
+      variant="outlined"
+      :label="t('equator')"
+      @click="displayEquator"></v-switch>
+    <v-switch
+      hide-details
+      v-model="showPrimeMeridian"
+      density="compact"
+      variant="outlined"
+      :label="t('primeMeridian')"
+      @click="displayPrimeMeridian"></v-switch>
+    <v-divider :thickness="8" color="black" class="mb-2"></v-divider>
+    <v-text-field
+      :label="t('latitude')"
+      clearable
+      density="compact"
+      :rules="[latitudeNumberCheck]"
+      v-model="latitudeNumber"></v-text-field>
+    <v-text-field
+      :label="t('longitude')"
+      density="compact"
+      clearable
+      :rules="[longitudeNumberCheck]"
+      v-model="longitudeNumber"></v-text-field>
+    <v-btn
+      :disabled="addPointButtonDisabled"
+      variant="outlined"
+      density="compact"
+      @click="addEarthPoint()">
+      {{ t("addPoint") }}
+    </v-btn>
+    <v-btn
+      :disabled="addLatitudeButtonDisabled"
+      variant="outlined"
+      density="compact"
+      @click="addLatitudeCircle()">
+      {{ t("addLatitude") }}
+    </v-btn>
+    <v-btn
+      :disabled="addLongitudeButtonDisabled"
+      variant="outlined"
+      density="compact"
+      @click="addLongitudeSegment()">
+      {{ t("addLongitude") }}
+    </v-btn>
   </div>
 </template>
 <i18n lang="json" locale="en">
@@ -89,7 +69,7 @@
   "northPole": "North Pole",
   "southPole": "South Pole",
   "latitude": "Degrees Latitude",
-  "longitude": "Degrees longitude",
+  "longitude": "Degrees Longitude",
   "numbersOnly": "Enter only numbers",
   "latitudeRange": "Latitude must be between -90 and 90 degrees",
   "longitudeRange": "Longitude must be between -180 and 180 degrees",
@@ -109,7 +89,15 @@
 }
 </i18n>
 
-<style></style>
+<style scoped>
+#earthobject {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75em;
+  background: yellow;
+  min-width: 12em;
+}
+</style>
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { Vector3, Matrix4 } from "three";
