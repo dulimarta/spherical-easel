@@ -52,7 +52,7 @@
       display and other global options-->
       <AuthenticatedUserToolbox />
       <LanguageSelector/>
-    </v-app-bar>
+    <!-- </v-app-bar> -->
 
     <!--
       This is the main window of the app. All other components are display on top of this element
@@ -381,17 +381,6 @@ function exportDimensionsCheck(txt: string | undefined): boolean {
   return true;
 }
 
-<<<<<<< HEAD
-function showSaveConstructionDialog() {
-  saveConstructionDialog.value?.show();
-}
-
-function copyShareLink(): void {
-  shareLinkReference.value?.focus();
-  document.execCommand("copy");
-}
-=======
->>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 </script>
 
 <style lang="scss">
