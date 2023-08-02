@@ -50,54 +50,9 @@
 
     <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
-<<<<<<< HEAD
-
-    <!-- <AuthenticatedUserToolbox />
-      <template v-if="false"> -->
-
-    <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
-    <!--v-btn icon variant="text" size="medium">
-          <v-tooltip location="bottom" activator="parent">
-            Logout
-          </v-tooltip>
-          <v-icon
-            @click="showShareConstructionDialog">
-            mdi-location-exit
-          </v-icon>
-        </!--v-btn>
-        <v-btn icon variant="text" size="medium">
-          <v-tooltip location="bottom" activator="parent">
-            Share Construction
-          </v-tooltip>
-          <v-icon
-            v-show="showExport"
-            @click="showShareConstructionDialog">
-            mdi-share
-          </v-icon>
-        </--v-btn>
-        <v-btn-- icon variant="text">
-          <v-tooltip location="bottom" activator="parent">
-            Save Construction
-          </v-tooltip>
-          <v-icon
-            v-if="whoami !== ''"
-            :disabled="!hasObjects"
-            @click="showSaveConstructionDialog">
-            mdi-content-save
-          </v-icon>
-        </v-btn-->
-
-    <!-- </template>
-      <LanguageSelector />
-      <router-link to="/settings/">
-        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
-      </router-link>
-    </v-app-bar> -->
-=======
       <AuthenticatedUserToolbox />
       <LanguageSelector/>
     </v-app-bar>
->>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 
     <!--
       This is the main window of the app. All other components are display on top of this element
