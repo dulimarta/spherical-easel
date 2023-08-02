@@ -72,7 +72,7 @@ export class AddCalculationCommand extends AddExpressionCommand {
     if (
       calculationParents.every(exp => exp !== undefined) &&
       calculationExpression &&
-      valueDisplayMode
+      typeof valueDisplayMode === "number"
     ) {
       const calculation = new SECalculation(calculationExpression);
       calculation.valueDisplayMode = valueDisplayMode;

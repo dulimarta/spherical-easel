@@ -2,10 +2,10 @@ import { SEPoint } from "./SEPoint";
 export class SEEarthPoint extends SEPoint {
   private _longitude: number;
   private _latitude: number;
-  constructor(/*point: Point,*/ longitude: number, latitude: number) {
+  constructor(latitudeDegree: number, longitudeDegree: number) {
     super(true); /* Non-Free Point */
-    this._longitude = longitude;
-    this._latitude = latitude;
+    this._longitude = longitudeDegree;
+    this._latitude = latitudeDegree;
     // point.updateDisplay();
   }
   get longitude(): number {

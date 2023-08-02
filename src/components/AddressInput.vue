@@ -64,30 +64,7 @@ import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
-import { SEPoint } from "@/models/internal";
-const seStore = useSEStore();
-const emit = defineEmits( ["update:point","update:placeId"]);
-const props = defineProps({
-  isLine: {
-    type: Boolean,
-    default: false
-  },
-  point:{
-    type:SEPoint,
-    default:undefined
-  },
-  trigger:{
-    type: Boolean,
-    default: false
-  },
-  placeId:{
-    type:String,
-    default:""
-  }
-})
-const {
-  isEarthMode
-} = storeToRefs(seStore);
+import { useEarthCoordinate } from "@/composables/earth";
 type AddressPair = {
   description: string;
   placeId: string;
@@ -95,7 +72,7 @@ type AddressPair = {
 const store = useSEStore();
 const { inverseTotalRotationMatrix } = storeToRefs(store);
 const { t } = useI18n()
-
+const {geoLocationToUnitSphere} = useEarthCoordinate()
 const addrPlaceId = ref("");
 const addressError = ref("");
 const addrInput: Ref<HTMLInputElement | null> = ref(null);
@@ -116,6 +93,7 @@ let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
   placesInspector = new PlacesService(addrInput.value!);
+
 });
 
 watch(
@@ -167,15 +145,14 @@ function getPlaceDetails() {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
         if (place?.geometry?.location) {
-          const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
-          const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;
-          const xcor = Math.cos(latRad) * Math.cos(lngRad);
-          const ycor = Math.cos(latRad) * Math.sin(lngRad);
-          const zcor = Math.sin(latRad);
+          const latDegree = place.geometry?.location.lat()
+          const lngDegree = place.geometry?.location.lng()
+
+          const coords = geoLocationToUnitSphere(latDegree, lngDegree)
 
           // caption
-          const vtx = new SEEarthPoint(lngRad, latRad);
-          const pointVector = new THREE.Vector3(xcor, ycor, zcor);
+          const vtx = new SEEarthPoint(latDegree, lngDegree);
+          const pointVector = new THREE.Vector3(coords[0], coords[1], coords[2]);
           pointVector.normalize();
           const rotationMatrix = new THREE.Matrix4();
           rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();

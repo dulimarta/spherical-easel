@@ -52,7 +52,7 @@
 
           <div id="earthAndCircle">
             <EarthLayer
-              v-if="isEarthMode"
+              v-if="isEarthMode && svgDataImage.length === 0"
               :available-height="availHeight"
               :available-width="availWidth" />
             <SphereFrame
@@ -75,24 +75,17 @@
               id="previewImage"
               class="previewImage"
               :src="svgDataImage"
-              :width="overlayHeight * 1.5"
+              :width="overlayHeight * svgDataImageAspectRatio"
               :height="overlayHeight" />
           </v-overlay>
           <div id="msghub">
-            <div id="undoPanel">
-
-              <div v-for="(t,index) in leftShortcutGroup" style="display: flex;">
-                <ShortcutIcon
-                  :isShortcutTool="true"
-                  class="mx-1"
-                  :model="t"
-                />
-                <div class="horizontalLine" v-if="index<2"></div>
-              </div>
-
-
-            </div>
-
+            <ShortcutIcon
+              class="mx-1"
+              v-for="t in leftShortcutGroup"
+              :model="t" />
+              <ShortcutIcon :disabled="!hasObjects"
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('resetAction')!" />
             <MessageHub />
             <div id="zoomPanel" class="pr-5">
               <div style="display: flex;">
@@ -139,15 +132,14 @@
       :no-action="doLeave">
       {{ t(`constructions.unsavedConstructionMsg`) }}
     </Dialog>
-    <Dialog
-      ref="clearConstructionDialog"
-      :title="t('constructions.confirmReset')"
-      :yes-text="t('constructions.proceed')"
-      :yes-action="() => resetSphere()"
-      :no-text="t('constructions.cancel')"
-      max-width="40%">
-      <p>{{ t(`constructions.clearConstructionMsg`) }}</p>
-    </Dialog>
+    <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
+      {{ t("clearConstructionMessage") }}
+      <template #actions>
+        <v-btn @click="cancelClearConstruction" color="warning">
+          {{ t("undo") }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -180,7 +172,11 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+import {
+  ConstructionInFirestore,
+  PublicConstructionInFirestore,
+  SphericalConstruction
+} from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 import {
   getFirestore,
@@ -212,6 +208,7 @@ import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
 const LEFT_PANE_PERCENTAGE = 25;
+const DELETE_DELAY = 5000; // in milliseconds
 const appDB = getFirestore();
 // const appAuth = getAuth();
 const appStorage = getStorage();
@@ -228,7 +225,6 @@ const {
   seNodules,
   temporaryNodules,
   hasObjects,
-  actionMode,
   canvasHeight,
   canvasWidth,
   zoomMagnificationFactor,
@@ -247,8 +243,7 @@ const contentHeightStyle = computed(() => ({
 
 const leftShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("undoAction")!,
-  TOOL_DICTIONARY.get("redoAction")!,
-  TOOL_DICTIONARY.get("resetAction")!
+  TOOL_DICTIONARY.get("redoAction")!
 ]);
 const rightShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("zoomOut")!,
@@ -268,8 +263,10 @@ let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
 
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
-const clearConstructionDialog: Ref<DialogAction | null> = ref(null);
+const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
+const svgDataImageAspectRatio = ref(1);
+let constructionClearTimer: any;
 
 //#region magnificationUpdate
 onBeforeMount(() => {
@@ -282,6 +279,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
+    svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
     constructionInfo.value.author = s.author;
     constructionInfo.value.count = s.objectCount;
   } else {
@@ -314,10 +312,17 @@ function loadDocument(docId: string): void {
   SENodule.resetAllCounters();
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
   // load the script from public collection
-  getDoc(doc(appDB, "constructions", docId)).then(
-    async (doc: DocumentSnapshot) => {
-      if (doc.exists()) {
-        const { script } = doc.data() as ConstructionInFirestore;
+  getDoc(doc(appDB, "constructions", docId))
+    .then((ds: DocumentSnapshot) => {
+      const { author, constructionDocId } =
+        ds.data() as PublicConstructionInFirestore;
+      return getDoc(
+        doc(appDB, "users", author, "constructions", constructionDocId)
+      );
+    })
+    .then(async (ds: DocumentSnapshot) => {
+      if (ds.exists()) {
+        const { script } = ds.data() as ConstructionInFirestore;
         // Check whether the script is inline or stored in Firebase storage
         if (script.startsWith("https:")) {
           // The script must be fetched from Firebase storage
@@ -338,8 +343,7 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
-    }
-  );
+    });
 }
 
 /** mounted() is part of VueJS lifecycle hooks */
@@ -349,6 +353,7 @@ onMounted((): void => {
 
   if (props.documentId) loadDocument(props.documentId);
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
+  EventBus.listen("initiate-clear-construction", handleResetSphere);
   window.addEventListener("keydown", handleKeyDown);
 });
 
@@ -377,23 +382,32 @@ function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
 }
 
-function onWindowResized(): void {
-  console.debug("onWindowResized()");
-  adjustCanvasSize();
+// function onWindowResized(): void {
+//   console.debug("onWindowResized()");
+//   adjustCanvasSize();
+// }
+
+function handleResetSphere(): void {
+  clearConstructionWarning.value = true;
+  constructionClearTimer = setTimeout(() => {
+    seStore.removeAllFromLayers();
+    seStore.init();
+    Command.commandHistory.splice(0);
+    Command.redoHistory.splice(0);
+    SENodule.resetAllCounters();
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
+    // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+  }, DELETE_DELAY);
 }
 
-function resetSphere(): void {
-  clearConstructionDialog.value?.hide();
-  seStore.removeAllFromLayers();
-  seStore.init();
-  Command.commandHistory.splice(0);
-  Command.redoHistory.splice(0);
-  SENodule.resetAllCounters();
-  EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
-  EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
-  // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+function cancelClearConstruction() {
+  if (constructionClearTimer) {
+    clearTimeout(constructionClearTimer);
+    constructionClearTimer = null;
+  }
+  clearConstructionWarning.value = false;
 }
-
 function handleKeyDown(keyEvent: KeyboardEvent): void {
   // TO DO: test this on PC
   if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
@@ -484,7 +498,7 @@ onBeforeRouteLeave(
     toRoute: RouteLocationNormalized,
     fromRoute: RouteLocationNormalized
   ): boolean => {
-    if (hasObjects && !confirmedLeaving) {
+    if (hasObjects.value && !confirmedLeaving) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;
       return false;
@@ -636,3 +650,9 @@ function handleToolboxMinify(state: boolean) {
   height: 100%;
 }
 </style>
+<i18n locale="en">
+{
+  "clearConstructionMessage": "The current construction will be cleared",
+  "undo": "Undo"
+}
+</i18n>

@@ -135,6 +135,7 @@ div#appSetting {
   grid-template-columns: 1fr 3fr; // align-items: baseline;
 }
 </style>
+
 <script lang="ts" setup>
 // import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";

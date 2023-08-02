@@ -1,6 +1,6 @@
-import { defineConfig } from "vite"
-import {resolve} from "path"
-import vue from "@vitejs/plugin-vue"
+import { defineConfig } from "vite";
+import { resolve } from "path";
+import vue from "@vitejs/plugin-vue";
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
 // import Components from "unplugin-vue-components/vite"
@@ -35,13 +35,15 @@ export default defineConfig({
     // i18n({
     //   path: resolve(__dirname, "./src")
     // }),
-    vuetify({ autoImport: true ,       styles: {
-      configFile: "src/scss/settings.scss"
-    }
-}),
+    vuetify({
+      autoImport: true,
+      styles: {
+        configFile: "src/scss/app.scss"
+      }
+    }),
     VueI18nPlugin({
-      include: [resolve(__dirname, './src/assets/languages/**')],
-      strictMessage: true, /* messages should not contain HTML tags */
+      include: [resolve(__dirname, "./src/assets/languages/**")],
+      strictMessage: true /* messages should not contain HTML tags */,
       allowDynamic: true,
       bridge: true /* specify custom blocks to  work under both v8 and v9 */
     })

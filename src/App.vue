@@ -50,6 +50,7 @@
 
     <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
+<<<<<<< HEAD
 
     <!-- <AuthenticatedUserToolbox />
       <template v-if="false"> -->
@@ -92,6 +93,11 @@
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
     </v-app-bar> -->
+=======
+      <AuthenticatedUserToolbox />
+      <LanguageSelector/>
+    </v-app-bar>
+>>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 
     <!--
       This is the main window of the app. All other components are display on top of this element
@@ -117,6 +123,7 @@
     </p>
   </Dialog>
 
+<<<<<<< HEAD
   <!--Dialog
       ref="shareConstructionDialog"
       :title="i18nText('constructions.shareConstructionDialog')"
@@ -128,62 +135,10 @@
       <p>
         {{ i18nText("constructions.shareLinkDialog") }}
       </p>
+=======
 
-      <input ref="shareLinkReference" readonly :value="shareLink" />
-      <button @click="copyShareLink">Copy</button>
-    </!--Dialog>
+>>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 
-    <Dialog
-      ref="exportConstructionDialog"
-      :title="i18nText('constructions.exportConstructionDialog')"
-      :yesText="i18nText('constructions.exportConstructionDialog')"
-      :no-text="i18nText('constructions.cancel')"
-      :yes-action="() => doExportButton()"
-      :isDisabled="disableButton"
-      max-width="60%">
-      <v-row align="center" justify="space-between">
-        <v-col cols="10" xs="10" sm="10" md="2" lg="3" xl="3">
-          <div>
-            <img id="preview" />
-          </div>
-        </v-col>
-        <v-col cols="10" xs="10" sm="10" md="4" lg="6" xl="6">
-          <v-row>
-            <v-col class="pr-4">
-              <p>{{ i18nText("constructions.sliderFileDimensions") }}</p>
-              <v-slider
-                v-model="slider"
-                class="align-center"
-                :max="sliderMax"
-                :min="sliderMin"
-                hide-details
-                >{{ i18nText("constructions.displaySlider") }}
-                <template v-slot:append>
-                  <v-text-field
-                    type="number"
-                    v-model="slider"
-                    class="mt-0 pt-0"
-                    hide-details
-                    single-line
-                    style="width: 120px"
-                    :rules="[exportDimensionsCheck]"
-                    @keypress.stop></v-text-field>
-                </template>
-              </v-slider>
-            </v-col>
-          </v-row>
-
-          <v-col class="d-flex" cols="12" sm="6">
-            <v-select
-              :items="formats"
-              label="Format"
-              v-model="selectedFormat"
-              :rules="[exportDimensionsCheck]"
-              solo></v-select>
-          </v-col>
-        </v-col>
-      </v-row>
-    </Dialog-->
 </template>
 
 <!--
@@ -204,28 +159,15 @@ import {
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import LanguageSelector from "./components/LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
-import { ConstructionInFirestore } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
-import { User, getAuth, Unsubscribe } from "firebase/auth";
+import { getAuth, Unsubscribe } from "firebase/auth";
 import {
-  DocumentReference,
-  DocumentSnapshot,
-  getFirestore,
-  doc,
-  collection,
-  getDoc,
-  addDoc,
-  updateDoc
+  getFirestore
 } from "firebase/firestore";
 import {
-  FirebaseStorage,
-  UploadTaskSnapshot,
   getStorage,
-  ref as storageRef,
-  uploadString,
-  getDownloadURL
+  ref as storageRef
 } from "firebase/storage";
-import { Command } from "./commands/Command";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { detect } from "detect-browser";
@@ -236,8 +178,8 @@ import d3ToPng from "d3-svg-to-png";
 import GIF from "gif.js";
 import { useI18n } from "vue-i18n";
 const appAuth = getAuth();
-const appDB = getFirestore();
-const appStorage = getStorage();
+// const appDB = getFirestore();
+// const appStorage = getStorage();
 import { useRouter } from "vue-router";
 
 // Register vue router in-component navigation guard functions
@@ -258,26 +200,14 @@ const { svgCanvas, inverseTotalRotationMatrix, hasObjects } =
 const router = useRouter();
 
 let clientBrowser: any;
-const description = ref("");
-const publicConstruction = ref(false);
 const logoutDialog: Ref<DialogAction | null> = ref(null);
-const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
-const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
+// const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
-const shareLinkReference: Ref<HTMLElement | null> = ref(null);
-let footerColor = "accent";
-let authSubscription!: Unsubscribe;
 const whoami = ref("");
 const uid = ref("");
 let svgRoot: SVGElement;
 const selectedFormat = ref("");
 const slider = ref(600);
-const sliderMin = 200;
-const sliderMax = 1200;
-const shareLink = ref("--Placeholder for share link--");
-const disableButton = ref(false);
-// lastText = "";
-// count = 0;
 
 /* User account feature is initialy disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
@@ -295,36 +225,7 @@ const baseURL = computed((): string => {
   return import.meta.env.BASE_URL ?? "";
 });
 
-/***
-function keyHandler(ev: KeyboardEvent): void {
-  if (ev.repeat) return; // Ignore repeated events on the same key
-  if (!ev.altKey) return;
-  if (!ev.ctrlKey) return;
-
-  if (ev.code === "KeyS" && acceptedKeys === 0) {
-    console.info("'S' is accepted");
-    acceptedKeys = 1;
-  } else if (ev.code === "KeyE" && acceptedKeys === 1) {
-    acceptedKeys = 2;
-    // Directly setting the accountEnable flag here does not trigger
-    // a UI update even after calling $forceUpdate()
-    // Firing an event seems to solve the problem
-    EventBus.fire("secret-key-detected", {});
-  } else {
-    acceptedKeys = 0;
-  }
-}
-***/
-
 onBeforeMount((): void => {
-  // window.addEventListener("keydown", keyHandler);
-  // EventBus.listen("secret-key-detected", () => {
-  //   console.log("Got the secret key");
-  //   accountEnabled.value = true;
-  //   acceptedKeys = 0;
-  //   // $forceUpdate();
-  // });
-  // EventBus.listen("share-construction-requested", doShare);
   clientBrowser = detect();
   acctStore.resetToolset();
   //ACStore.resetToolset();
@@ -337,15 +238,9 @@ onBeforeMount((): void => {
 onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
   // SEStore.init();
-  EventBus.listen("set-footer-color", setFooterColor);
-
   // Get the top-level SVG element
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 });
-
-function setFooterColor(e: { color: string }): void {
-  footerColor = e.color;
-}
 
 async function doLogout(): Promise<void> {
   await appAuth.signOut();
@@ -356,24 +251,8 @@ async function doLogout(): Promise<void> {
   acctStore.parseAndSetFavoriteTools("");
 }
 
-// additionalFooterText(e: { text: string }): void {
-// console.debug("apply transform", e.text);
-// applyTransformationText = e.text;
-// }
-
-// function doLoginOrCheck(): void {
-//   if (appAuth.currentUser !== null) {
-//     logoutDialog.value?.show();
-//   } else {
-//     router.replace({ path: "/account" });
-//   }
-// }
-function showShareConstructionDialog() {
-  shareConstructionDialog.value?.show();
-}
-
 async function doExportConstructionDialog(): Promise<void> {
-  shareConstructionDialog.value?.hide();
+  // shareConstructionDialog.value?.hide();
   exportConstructionDialog.value?.show();
 
   // copy sphere construction svg and get URL, then set the preview img src as that URL
@@ -562,6 +441,7 @@ function exportDimensionsCheck(txt: string | undefined): boolean {
   return true;
 }
 
+<<<<<<< HEAD
 function showSaveConstructionDialog() {
   saveConstructionDialog.value?.show();
 }
@@ -570,6 +450,8 @@ function copyShareLink(): void {
   shareLinkReference.value?.focus();
   document.execCommand("copy");
 }
+=======
+>>>>>>> 7a80ce2e8bcc72e575b7d55e5c2615e9c00ca077
 </script>
 
 <style lang="scss">
@@ -610,11 +492,11 @@ function copyShareLink(): void {
   }
 }
 
-.shareConstructionClass {
-  width: 300px;
-  margin-top: 50px;
-  margin-bottom: auto;
-  margin-right: 30px;
-  margin-left: auto;
-}
+// .shareConstructionClass {
+//   width: 300px;
+//   margin-top: 50px;
+//   margin-bottom: auto;
+//   margin-right: 30px;
+//   margin-left: auto;
+// }
 </style>

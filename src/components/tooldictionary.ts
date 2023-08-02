@@ -38,7 +38,7 @@ TOOL_DICTIONARY
     toolTipMessage: "buttons.ResetSphereActionToolTipMessage",
     toolUseMessage: "buttons.ResetSphereActionToolUseMessage",
     clickFunc: () => {
-      EventBus.fire("display-clear-construction-dialog-box", {});
+      EventBus.fire("initiate-clear-construction", {});
     }
   });
 

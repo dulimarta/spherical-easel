@@ -31,7 +31,7 @@
               v-slot="{ isSelected, toggle }"
               :value="btn.action">
               <ToolButton
-                @click="toggle as () => void"
+                @click="toggle"
                 :button="btn"
                 :selected="isSelected!"
                 :included="toolIncluded(btn.action)"
@@ -53,7 +53,7 @@
         <v-expansion-panel-text>
         <v-item v-slot="{ isSelected, toggle }">
         <ToolButton
-          @click="toggle as () => void"
+          @click="toggle"
           v-for="(button, pos) in developerButtonList"
           :key="pos"
           :button="button"
@@ -183,7 +183,7 @@ function toolSelectionChanged() {
       );
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
-      seStore.setButton(whichButton);
+      // seStore.setButton(whichButton);
       seStore.setActionMode(selectedTool.value!);
     }
   } else {
@@ -248,8 +248,7 @@ const developerButtonList: ToolButtonType[] = [
 ];
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
 .button-group {
   display: flex;
   flex-direction: row;

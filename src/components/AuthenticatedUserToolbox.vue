@@ -1,5 +1,4 @@
 <template>
-  {{ loginEnabled }}
   <template v-if="loginEnabled">
     {{ userDisplayedName }} {{ userEmail }}
     <v-avatar
@@ -17,23 +16,36 @@
       <v-icon>mdi-account</v-icon>
     </v-btn>
     <template v-if="appAuth.currentUser !== null">
-      <HintButton v-if="constructionDocId" tooltip="Share saved cons">
-        <template #icon>mdi-share</template>
-      </HintButton>
+      <router-link to="/settings/">
+        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
+      </router-link>
       <HintButton
         :disabled="!hasObjects"
         @click="() => saveConstructionDialog?.show()"
         tooltip="Save construction">
         <template #icon>mdi-content-save</template>
       </HintButton>
-      <HintButton v-if="constructionDocId" tooltip="Export Construction">
-        <template #icon>mdi-file-export</template>
-      </HintButton>
     </template>
+  </template>
+  <template v-if="constructionDocId">
+    <HintButton
+      tooltip="Share saved cons"
+      v-if="isPublicConstruction(constructionDocId)">
+      <template #icon>mdi-share-variant</template>
+    </HintButton>
+    <HintButton
+      @click="() => exportConstructionDialog?.show()"
+      tooltip="Export Construction">
+      <template #icon>mdi-file-export</template>
+    </HintButton>
   </template>
   <Dialog
     ref="saveConstructionDialog"
-    :title="t('saveConstructionDialogTitle')"
+    :title="
+      isSavedAsPublicConstruction
+        ? t('savePublicConstructionDialogTitle')
+        : t('savePrivateConstructionDialogTitle')
+    "
     :yes-text="t('saveAction')"
     :no-text="t('cancelAction')"
     :yes-action="doSave"
@@ -44,14 +56,73 @@
       clearable
       counter
       persistent-hint
-      :label="t('construction.description')"
+      :label="t('construction.saveDescription')"
       required
       v-model="constructionDescription"
       @keypress.stop></v-text-field>
     <v-switch
-      v-model="isPublicConstruction"
+      v-model="isSavedAsPublicConstruction"
       :disabled="appAuth.currentUser?.uid.length === 0"
       :label="t('construction.makePublic')"></v-switch>
+    <v-switch
+      v-if="isMyOwnConstruction"
+      v-model="shouldSaveOverwrite"
+      :disabled="appAuth.currentUser?.uid.length === 0"
+      :label="
+        t('construction.saveOverwrite', { docId: constructionDocId })
+      "></v-switch>
+  </Dialog>
+  <Dialog
+    ref="exportConstructionDialog"
+    :title="t('exportConstructionDialogTitle')"
+    :yes-text="t('exportAction')"
+    :no-text="t('cancelAction')"
+    :yes-action="doExport"
+    max-width="60%">
+    <v-row align="center" justify="space-between">
+      <v-col cols="6" v-if="currentConstructionPreview">
+        <img id="preview" :src="currentConstructionPreview" width="400" />
+      </v-col>
+      <v-col cols="6">
+        <v-row class="green">
+          <v-col cols="8" class="pr-4">
+            <p>
+              {{
+                t("sliderFileDimensions", {
+                  widthHeight: `${(
+                    (svgExportHeight * canvasWidth) /
+                    canvasHeight
+                  ).toFixed(0)}x${svgExportHeight}`
+                })
+              }}
+            </p>
+            <v-slider
+              v-model="svgExportHeight"
+              class="align-center"
+              :max="1500"
+              :min="100"
+              :step="8"
+              hide-details></v-slider>
+          </v-col>
+          <v-col cols="4">
+            <v-text-field
+              type="number"
+              v-model="svgExportHeight"
+              class="mt-0 pt-0"
+              hide-details
+              single-line
+              @keypress.stop></v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="4">
+            <v-select
+              :items="['SVG', 'PNG', 'JPEG', 'GIF', 'BMP']"
+              :label="t('exportFormat')"
+              v-model="selectedExportFormat"
+              solo></v-select>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
   </Dialog>
 </template>
 <script setup lang="ts">
@@ -77,7 +148,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
 import { Command } from "@/commands/Command";
-import { ConstructionInFirestore } from "@/types";
+import { ConstructionInFirestore, SphericalConstruction } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import {
   uploadString,
@@ -85,10 +156,13 @@ import {
   ref as storageRef,
   getStorage
 } from "firebase/storage";
+import { useConstruction } from "@/composables/constructions";
+import FileSaver from "file-saver";
+import { computed, watch } from "vue";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
-  COMPLETE
+  COMPLETE // Accept "SE"
 }
 const acctStore = useAccountStore();
 const seStore = useSEStore();
@@ -100,9 +174,20 @@ const {
   constructionDocId,
   includedTools
 } = storeToRefs(acctStore);
-const { hasObjects, inverseTotalRotationMatrix, svgCanvas } =
-  storeToRefs(seStore);
+const {
+  hasObjects,
+  inverseTotalRotationMatrix,
+  svgCanvas,
+  canvasHeight,
+  canvasWidth,
+  isEarthMode
+} = storeToRefs(seStore);
 const { t } = useI18n();
+const {
+  currentConstructionPreview,
+  isPublicConstruction,
+  privateConstructions
+} = useConstruction();
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -110,9 +195,14 @@ const appStorage = getStorage();
 const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
-const isPublicConstruction = ref(false);
+const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
+const isSavedAsPublicConstruction = ref(false);
+const shouldSaveOverwrite = ref(false);
+const selectedExportFormat = ref("");
+const svgExportHeight = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
+
 onKeyDown(
   true, // true: accept all keys
   (event: KeyboardEvent) => {
@@ -135,7 +225,40 @@ onKeyDown(
       event.preventDefault();
     }
   },
-  { dedupe: true }
+  { dedupe: true } // ignore repeated key events when keys are held down
+);
+
+const isMyOwnConstruction = computed((): boolean => {
+  // Confirm if the current construction is in my private list
+  if (constructionDocId.value === null) return false;
+  const pos =
+    privateConstructions.value?.findIndex(
+      (c: SphericalConstruction) => c.id === constructionDocId.value
+    ) ?? -1;
+  return pos >= 0;
+});
+
+watch(
+  () => constructionDocId.value,
+  () => {
+    // When the construction selection changes, reset the constructionDescription
+    constructionDescription.value = "";
+  }
+);
+
+watch(
+  () => shouldSaveOverwrite.value,
+  overWrite => {
+    if (!overWrite || privateConstructions.value === null)
+      constructionDescription.value = "";
+    else {
+      const pos = privateConstructions.value.findIndex(
+        (c: SphericalConstruction) => c.id === constructionDocId.value
+      );
+      constructionDescription.value =
+        pos >= 0 ? privateConstructions.value[pos].description : "";
+    }
+  }
 );
 
 onMounted(() => {
@@ -165,6 +288,7 @@ onMounted(() => {
           }
         }
       });
+      acctStore.loginEnabled = true;
     } else {
       acctStore.userEmail = undefined;
       acctStore.userProfilePictureURL = undefined;
@@ -178,6 +302,7 @@ onBeforeUnmount(() => {
     authSubscription = null;
   }
 });
+
 async function doLoginOrLogout() {
   if (appAuth.currentUser !== null) {
     await appAuth.signOut();
@@ -191,7 +316,7 @@ async function doLoginOrLogout() {
 
 async function doSave(): Promise<void> {
   if (svgRoot === undefined) {
-    // By the time doSave() is called svgCanvas must have been set
+    // By the time doSave() is called, svgCanvas must have been set
     // to it is safe to non-null assert svgCanvas.value
     svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
   }
@@ -235,30 +360,64 @@ async function doSave(): Promise<void> {
   const svgBlob = new Blob([svgElement.outerHTML], {
     type: "image/svg+xml;charset=utf-8"
   });
-  const svgPreviewData = await toBase64(svgBlob);
-  console.log(svgPreviewData); // TODO delete
+  const svgDataUrl = await toBase64(svgBlob);
+  let previewData: string;
 
-  // const svgURL = URL.createObjectURL(svgBlob);
-  // FileSaver.saveAs(svgURL, "hans.svg");
+  if (isEarthMode.value) {
+    // In earth mode, the preview has to capture both the
+    // the earth ThreeJS and the unit sphere TwoJS layers
+    // Our trick below is to draw both layers (in the correct order)
+    // into an offline canvas and then convert to a data image
+    const earthCanvas = document.getElementById("earth") as HTMLCanvasElement;
+    previewData = await mergeIntoImageUrl(
+      // Must be specified in the correct order, the first item
+      // in the array will be drawn to the offline canvas first
+      [earthCanvas.toDataURL(), svgDataUrl],
+      canvasWidth.value,
+      canvasHeight.value,
+      "png"
+    );
+    // FileSaver.saveAs(previewData, "hans.png");
+  } else {
+    previewData = svgDataUrl
+  }
 
   /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
        Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
     */
-  addDoc(
-    // Task #1
-    collection(appDB, collectionPath),
-    {
-      version: "1",
-      dateCreated: new Date().toISOString(),
-      author: userEmail.value,
-      description: constructionDescription.value,
-      rotationMatrix: JSON.stringify(rotationMat.value.elements),
-      tools: includedTools.value,
-      script: "" // Use an empty string (for type checking only)
-    } as ConstructionInFirestore
-  )
+  let saveTask: Promise<DocumentReference>;
+  const constructionDetails: ConstructionInFirestore = {
+    version: "1",
+    dateCreated: new Date().toISOString(),
+    author: userEmail.value!,
+    description: constructionDescription.value,
+    rotationMatrix: JSON.stringify(rotationMat.value.elements),
+    tools: includedTools.value,
+    aspectRatio: canvasWidth.value / canvasHeight.value,
+    // Use an empty string (for type checking only)
+    // the actual script will be determine below
+    script: "",
+    preview: ""
+  };
+
+  // Task #1
+  if (shouldSaveOverwrite.value) {
+    const targetDoc = doc(
+      appDB,
+      collectionPath.concat("/" + constructionDocId.value)
+    );
+    // Task #1a: update the existing construction
+    saveTask = updateDoc(targetDoc, constructionDetails as any).then(
+      () => targetDoc
+    );
+  } else {
+    // Task #1b: save as a new construction
+    saveTask = addDoc(collection(appDB, collectionPath), constructionDetails);
+  }
+
+  saveTask
     .then((constructionDoc: DocumentReference) => {
       acctStore.constructionDocId = constructionDoc.id;
       /* Task #2 */
@@ -272,11 +431,11 @@ async function doSave(): Promise<void> {
 
       /* Task #3 */
       const svgPromise: Promise<string> =
-        svgPreviewData.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(svgPreviewData)
+        previewData.length < FIELD_SIZE_LIMIT
+          ? Promise.resolve(previewData)
           : uploadString(
               storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              svgPreviewData
+              previewData
             ).then(t => getDownloadURL(t.ref));
 
       /* Wrap the result from the three tasks as a new Promise */
@@ -284,13 +443,14 @@ async function doSave(): Promise<void> {
     })
     .then(async ([docId, scriptData, svgData]) => {
       const constructionDoc = doc(appDB, collectionPath, docId);
+      /* Task #4 */
       // Pass on the document ID to be included in the alert message
-      if (isPublicConstruction.value) {
+      if (isSavedAsPublicConstruction.value) {
         const publicConstructionDoc = await addDoc(
           collection(appDB, "/constructions/"),
           {
             author: userUid,
-            constructionId: docId // construction document under the user sub-collection
+            constructionDocId: docId // construction document under the user sub-collection
           }
         );
         await updateDoc(constructionDoc, {
@@ -325,17 +485,84 @@ async function doSave(): Promise<void> {
 
   saveConstructionDialog.value?.hide();
 }
+
+async function mergeIntoImageUrl(
+  sourceURLs: Array<string>,
+  // fileName: string,
+  imageWidth: number,
+  imageHeight: number,
+  imageFormat: string
+): Promise<string> {
+  // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
+  const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
+  offlineCanvas.width = imageWidth;
+  offlineCanvas.height = imageHeight;
+  // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
+  // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
+  const graphicsCtx = offlineCanvas.getContext("2d");
+  const imageExtension = imageFormat.toLowerCase();
+  const drawTasks= sourceURLs.map((dataUrl: string, index: number): Promise<string> => {
+    return new Promise(resolve => {
+      const offlineImage = new Image();
+      offlineImage.addEventListener("load", () => {
+        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
+        resolve(dataUrl);
+      });
+      // Similar to <img :src="dataUrl" /> but programmatically
+      offlineImage.src = dataUrl;
+    });
+  });
+  await Promise.all(drawTasks)
+  const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
+
+  return imgURL;
+}
+
+function doExport() {
+  if (svgRoot === undefined) {
+    // By the time doSave() is called svgCanvas must have been set
+    // to it is safe to non-null assert svgCanvas.value
+    svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+  }
+  const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const svgBlob = new Blob([svgElement.outerHTML], {
+    type: "image/svg+xml;charset=utf-8"
+  });
+  const svgURL = URL.createObjectURL(svgBlob);
+
+  if (selectedExportFormat.value === "SVG") {
+    // await nextTick()
+    FileSaver.saveAs(svgURL, "construction.svg");
+  } else {
+    mergeIntoImageUrl(
+      [svgURL],
+      canvasWidth.value,
+      canvasHeight.value,
+      selectedExportFormat.value
+    ).then((imageUrl: string) => {
+      FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
+    });
+  }
+}
 </script>
 <i18n locale="en">
 {
-  "saveConstructionDialogTitle": "Save Construction",
+  "savePrivateConstructionDialogTitle": "Save Private Construction",
+  "savePublicConstructionDialogTitle": "Save Public Construction",
+  "exportConstructionDialogTitle": "Export Construction",
+  "exportAction": "Export",
   "saveAction": "Save",
   "cancelAction": "Cancel",
   "unknownEmail": "Unknown email",
   "construction": {
-    "description": "Description",
-    "makePublic": "Make Construction Publicly Available",
+    "saveDescription": "Description",
+    "saveOverwrite": "Overwrite the existing construction {docId}",
+    "makePublic": "Make construction publicly available",
     "firestoreSaveError": "Construction was not saved: {error}"
-  }
+  },
+  "sliderFileDimensions": "Exported file size {widthHeight}",
+  "exportFormat": "Image Format"
 }
 </i18n>

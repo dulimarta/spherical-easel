@@ -53,7 +53,7 @@ type PiniaAppState = {
   isEarthMode: boolean;
   actionMode: ActionMode;
   previousActionMode: ActionMode;
-  buttonSelection: any;
+  // buttonSelection: any;
   // previousActiveToolName: string;
   zoomMagnificationFactor: number;
   zoomTranslation: number[];
@@ -392,7 +392,7 @@ export const useSEStore = defineStore({
     actionMode: "rotate",
     previousActionMode: "rotate",
     // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
-    buttonSelection: {},
+    // buttonSelection: {},
     // previousActiveToolName: "",
     svgCanvas: null,
     hasUnsavedNodules: false,
@@ -456,6 +456,7 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
       this.inverseTotalRotationMatrix.identity();
+      this.isEarthMode = false
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -481,9 +482,9 @@ export const useSEStore = defineStore({
     //   // TODO
     // },
 
-    setButton(buttonSelection: ToolButtonType): void {
-      this.buttonSelection = buttonSelection;
-    },
+    // setButton(buttonSelection: ToolButtonType): void {
+    //   this.buttonSelection = buttonSelection;
+    // },
 
     setActionMode(mode: ActionMode): void {
       // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)

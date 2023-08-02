@@ -1,4 +1,4 @@
-import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
+import { defineStore } from "pinia";
 import {
   AccountState,
   ActionMode,
@@ -16,10 +16,7 @@ function insertAscending(newItem: string, arr: string[]): void {
   else arr.splice(k, 0, newItem); // insert in the middle somewhere
 }
 
-const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [
-  [],
-  [],
-];
+const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", {
@@ -34,8 +31,14 @@ export const useAccountStore = defineStore("acct", {
     includedTools: [],
     excludedTools: [],
     favoriteTools: DEFAULT_TOOL_NAMES,
-    constructionDocId: null
+    constructionDocId: null,
+    constructionSaved: false
   }),
+  getters: {
+    hasUnsavedWork(state): boolean {
+      return false;
+    }
+  },
   actions: {
     resetToolset(includeAll = true): void {
       this.includedTools.splice(0);
@@ -67,12 +70,12 @@ export const useAccountStore = defineStore("acct", {
       if (favTools.trim().length > 0) {
         this.favoriteTools = favTools
           .split("#")
-          .map((fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[])
+          .map(
+            (fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[]
+          );
         if (this.favoriteTools.length !== 2)
-          this.favoriteTools = DEFAULT_TOOL_NAMES
-      }
-      else
-        this.favoriteTools = DEFAULT_TOOL_NAMES
+          this.favoriteTools = DEFAULT_TOOL_NAMES;
+      } else this.favoriteTools = DEFAULT_TOOL_NAMES;
     }
   }
 });

@@ -152,7 +152,12 @@ export class AddAngleMarkerCommand extends Command {
       | ValueDisplayMode
       | undefined;
 
-    if (firstParent && secondParent && mode && valueDisplayMode) {
+    if (
+      firstParent &&
+      secondParent &&
+      mode &&
+      typeof valueDisplayMode === "number"
+    ) {
       const seAngleMarker = new SEAngleMarker(
         mode,
         AddAngleMarkerCommand.store.zoomMagnificationFactor,
