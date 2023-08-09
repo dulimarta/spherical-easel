@@ -137,7 +137,8 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEPolygon) {
       this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
       this.showing = SETTINGS.polygon.showLabelsInitially;
-    } else {
+    }
+    else {
       this.showing = true;
     }
   }

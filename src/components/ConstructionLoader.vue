@@ -14,10 +14,13 @@
         <v-expansion-panel-title>
           {{ t(`privateConstructions`) }}
         </v-expansion-panel-title>
-        <v-expansion-panel-text>
+        <v-expansion-panel-text v-if="firebaseUid && firebaseUid.length > 0">
           <ConstructionList
             :allow-sharing="true"
             :items="displayedPrivateConstructions" />
+        </v-expansion-panel-text>
+        <v-expansion-panel-text v-else>
+         Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel value="public">
@@ -30,7 +33,8 @@
             :allow-sharing="false" />
         </v-expansion-panel-text>
       </v-expansion-panel>
-    </v-expansion-panels>
+      </v-expansion-panels>
+    <!-- </v-expansion-panels> -->
   </div>
 </template>
 

@@ -4,13 +4,12 @@
     icon
     size="small"
     v-if="minified"
-    class="bg-blue"
-    style="position: fixed; right: 0"
+    style="position: fixed; right: 0; border-radius: 8px;background-color: #002108;color: white;"
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
       {{ t("showDrawer") }}
     </v-tooltip>
-    <v-icon>mdi-chevron-double-left</v-icon>
+    <v-icon>mdi-palette</v-icon>
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">

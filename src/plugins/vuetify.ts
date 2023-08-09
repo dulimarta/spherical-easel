@@ -5,6 +5,7 @@ import {
   IconProps
 } from "vuetify";
 import "vuetify/styles";
+import "@/scss/settings.scss";
 import { customIcons } from "./iconAliases";
 // import colors from "vuetify/es5/util/colors";
 

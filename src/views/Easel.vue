@@ -18,24 +18,28 @@
   <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
   background-color: transparent;">
   </!--v-navigation-drawer-->
-  <div>
-    <Splitpanes
+  <div id="toolbox-and-sphere">
+   <!-- <Splitpanes
       :style="contentHeightStyle"
       class="default-theme"
       @resize="dividerMoved"
-      :push-other-panes="false">
+      :push-other-panes="false"> -->
       <!-- Use the left page for the toolbox -->
-      <Pane
+      <!-- <Pane
         ref="leftPane"
         min-size="5"
         max-size="35"
-        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE">
-        <Toolbox
+        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE"> -->
+        <div id="toolbox">
+          <Toolbox
           id="toolbox"
           ref="toolbox"
           @minify-toggled="handleToolboxMinify" />
-      </Pane>
-      <Pane>
+        </div>
+
+      <!-- </Pane> -->
+
+      <!-- <Pane> -->
         <!-- Use the right pane mainly for the canvas and style panel -->
         <!--
         When minified, the style panel takes only 5% of the remaining width
@@ -44,10 +48,7 @@
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
-          <!--AddressInput
-            v-if="isEarthMode"
-            style="position: absolute; bottom: 0; z-index: 100" /-->
-          <!--AddressInput v-if="isEarthMode" style="position: absolute; bottom: 0; z-index: 100;"/-->
+
 
           <div id="earthAndCircle">
             <EarthLayer
@@ -113,25 +114,42 @@
               class="mx-1"
               :model="TOOL_DICTIONARY.get('resetAction')!" />
             <MessageHub />
-            <ShortcutIcon
+            <div id="zoomPanel" class="pr-5">
+              <div style="display: flex;">
+                <ShortcutIcon
+              :isShortcutTool="true"
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomFit')!" />
+              <div class="horizontalLine"></div>
+              </div>
+              <div style="display: flex;">
+              <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('zoomOut')!" />
-            <span>{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
-            <v-slider
+              <div class="horizontalLine"></div>
+              </div>
+              <div style="display: flex;">
+              <ShortcutIcon
+              :isShortcutTool="true"
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomIn')!" />
+              <div class="horizontalLine"></div>
+                </div>
+            <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
+            <!-- <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
               :max="2"
-              style="min-width: 100px" />
-            <ShortcutIcon
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomIn')!" />
-            <ShortcutIcon
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomFit')!" />
+              style="min-width: 100px" /> -->
+
+
+            </div>
+
           </div>
         </div>
-      </Pane>
-    </Splitpanes>
+      <!-- </Pane> -->
+   <!-- </Splitpanes> -->
     <Dialog
       ref="unsavedWorkDialog"
       max-width="40%"
@@ -165,7 +183,6 @@ import {
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
-import AddressInput from "@/components/AddressInput.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
@@ -577,6 +594,7 @@ function setEarthModeFunction() {
   height: 100%;
   display: flex;
   justify-content: flex-start;
+  background-color: white;
   // NOTE: DO NOT use column-reverse, otherwise the z-index of Vuetify
   // v-card will be below the TwoJS SVG layers
   flex-direction: column;
@@ -592,8 +610,11 @@ function setEarthModeFunction() {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
-}
+  align-items: stretch;
+  gap: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  }
 
 #toolbox {
   height: 100%;
@@ -646,6 +667,7 @@ function setEarthModeFunction() {
 
 /* Use class instead of id when applying to a vuetify builtin component.
  * Looks like IDs are not preserved after built */
+
 .earthToggler {
   position: absolute;
   bottom: 88px;
@@ -669,6 +691,43 @@ function setEarthModeFunction() {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+#undoPanel{
+  border-radius: 8px;
+  border: solid white;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+}
+#zoomPanel{
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  border: solid white;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.horizontalLine{
+  background-color: black;
+  width: 1px;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  // height: 80%;
+}
+#toolbox{
+  display: flex;
+}
+#toolbox-and-sphere{
+  display: flex;
+  position:fixed;
+
+  flex-direction: row;
+  width: 100%;
+  justify-content: stretch;
+  height: 100%;
 }
 </style>
 <i18n locale="en">

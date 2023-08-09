@@ -12,12 +12,19 @@
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
-    <div v-for="(g, gpos) in buttonGroup" :key="gpos">
-      <template v-if="g.children.length > 0">
-        <h3 class="body-1 font-weight-bold button-group-heading">
-          {{ $t(`toolGroups.${g.group}`) }}
-        </h3>
-        <div class="button-group">
+    <v-expansion-panels style="gap:10px;padding-right: 8px;">
+    <!-- <div v-for="(g, gpos) in buttonGroup" :key="gpos"> -->
+          <v-expansion-panels v-for="(g,gpos) in buttonGroup" :key="gpos" >
+            <v-expansion-panel  style="border-radius: 8px;">
+            <div v-if="g.children.length>0">
+            </div>
+            <v-expansion-panel-title>
+              <h3 class="body-1 font-weight-bold button-group-heading">
+                {{ $t(`toolGroups.${g.group}`) }}
+              </h3>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div class="button-group">
           <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
           <template v-for="btn in g.children" :key="btn.action">
             <v-item
@@ -32,16 +39,19 @@
             </v-item>
           </template>
         </div>
-      </template>
-    </div>
-
-    <div
-      id="DeveloperToolGroup"
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+    </v-expansion-panels>
+    <v-expansion-panels id="DeveloperToolGroup"
       v-show="developerButtonList.length > 0 && !inProductionMode">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.DeveloperOnlyTools") }}
-      </h3>
-      <v-item v-slot="{ isSelected, toggle }">
+      <v-expansion-panel style="border-radius: 8px;">
+        <v-expansion-panel-title>
+          <h3 class="body-1 font-weight-bold">
+            {{ $t("toolGroups.DeveloperOnlyTools") }}
+          </h3>
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+        <v-item v-slot="{ isSelected, toggle }">
         <ToolButton
           @click="toggle"
           v-for="(button, pos) in developerButtonList"
@@ -49,9 +59,13 @@
           :button="button"
           :editing="inEditMode"
           :selected="isSelected!"
-          :included="true" />
-      </v-item>
-    </div>
+          :included="true"
+        />
+        </v-item>
+        </v-expansion-panel-text>
+        </v-expansion-panel>
+    </v-expansion-panels>
+  </v-expansion-panels>
   </v-item-group>
 </template>
 
@@ -243,4 +257,5 @@ const developerButtonList: ToolButtonType[] = [
 .button-group-heading {
   margin-top: 0.5em;
 }
+
 </style>

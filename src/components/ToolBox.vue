@@ -3,7 +3,8 @@
     tabs-->
   <!-- This the not minimized left drawer containing two tabs -->
   <!-- <CurrentToolSelection/> -->
-  <transition name="slide-out" mode="out-in">
+
+  <!-- <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
       <v-container>
         <v-row align="center">
@@ -63,7 +64,70 @@
         <v-icon>$constructionsTab</v-icon>
       </div>
     </div>
-  </transition>
+  </transition> -->
+
+  <v-card>
+    <v-layout>
+      <v-navigation-drawer :expand-on-hover="expandOnHover" :rail="rail" style="background-color: #002108; color: white;">
+        <v-list>
+          <v-list-item
+            prepend-avatar="@/assets/SphericalEaselLogo.gif"
+            title="Spherical Easle"></v-list-item>
+        </v-list>
+        <v-divider color="#BDF3CB" ></v-divider>
+
+        <v-list density="compact" nav :selected="activeItem" active-class="active">
+          <v-list-item
+            @click="setHover(0)"
+            prepend-icon="mdi-tools"
+            title="Tools"
+            value="tools"></v-list-item>
+          <v-list-item
+            @click="setHover(1)"
+            prepend-icon="mdi-axis"
+            title="Objects"
+            value="object"></v-list-item>
+          <v-list-item
+            @click="setHover(2)"
+            prepend-icon="mdi-diameter"
+            title="Construction"
+            value="construction"></v-list-item>
+          <v-list-item
+            @click="setHover(3)"
+            prepend-icon="mdi-earth"
+            title="Earth"
+            value="earth"></v-list-item>
+        </v-list>
+
+        <template v-slot:append>
+          <v-divider color="#BDF3CB" ></v-divider>
+
+          <v-list density="compact" nav>
+            <v-list-item
+              prepend-icon="mdi-translate-variant"
+              title="English"
+              ></v-list-item>
+            <v-list-item
+              prepend-icon="mdi-account-circle"
+              title="Hans Dulimatar"></v-list-item>
+          </v-list>
+        </template>
+      </v-navigation-drawer>
+      <v-navigation-drawer v-show="show" width="295" :style="{backgroundColor: show? '#B9D9C1':'white',border:show?'':'0px'}" style="padding-left:8px;padding-top: 8px;">
+        <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
+
+        <ToolGroups v-if="activeItem[0]===0"/>
+        <ObjectTree v-if="activeItem[0]===1"/>
+        <ConstructionLoader v-if="activeItem[0]===2"/>
+        <EarthToolVue v-if="activeItem[0]===3"/>
+        <!-- <v-list>
+          <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
+        </v-list> -->
+      </v-navigation-drawer>
+
+      <v-main :style="{ height: height + 'px' }"></v-main>
+    </v-layout>
+  </v-card>
 </template>
 
 <script lang="ts" setup>
@@ -72,32 +136,67 @@ import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
-import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
-
+// import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
+import EarthToolVue from "@/components/EarthTool.vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
+// import { computed } from "vue";
+// import { set } from "@vueuse/core";
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
-
+const { height, width, name } = useDisplay();
+// eslint-disable-next-line no-unused-vars
+const temp = ref("0px");
+const rail = ref(true);
+const show = ref(false);
+const activeItem = ref([]);
+// eslint-disable-next-line no-unused-vars
+const headerItem = ["Tools", "Objects", "Construction", "Earth"];
+const expandOnHover = ref(true);
+// const screenStyle = computed(() => {
+//   return {
+//     height: height.value + "px"
+//   };
+// });
 // ('layers')')
-
+function setHover(newActive:number):void{
+  rail.value = true;
+  expandOnHover.value = false;
+  if(newActive === activeItem.value[0]){
+    activeItem.value.pop();
+    setTimeout(() => {
+    show.value = !show.value;
+    }, 100);
+  }else if(activeItem.value.length === 0){
+    (activeItem.value as Array<number>).push(newActive);
+    setTimeout(() => {
+    show.value = !show.value;
+    }, 100);
+  }
+  else{
+    activeItem.value.pop();
+    (activeItem.value as Array<number>).push(newActive);
+  }
+  setTimeout(() => {
+    expandOnHover.value = true;
+  }, 1000);
+}
 const minified = ref(false);
 const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
 const activeLeftDrawerTab = ref(0);
-
 onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
 });
 
 onMounted((): void => {
   const { mainRect } = useLayout();
-  const { height, width, name } = useDisplay();
-  console.debug("Layout details", mainRect.value);
-  console.debug("Display details", height.value, width.value, name.value);
+  console.log("Layout details", mainRect);
+  console.log("Display details", height.value, width.value, name.value);
+  activeItem.value = [];
   // this.scene = this.layers[LAYER.midground];
 });
 
@@ -158,4 +257,10 @@ onBeforeUnmount((): void => {
   opacity: 0;
   transform: translateX(-100%);
 }
+.active{
+  background-color: #BDF3CB;
+  color: black;
+}
+
+
 </style>

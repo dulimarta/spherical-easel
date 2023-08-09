@@ -14,7 +14,8 @@
     <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
-    <v-app-bar color="primary" density="compact">
+
+    <!-- <v-app-bar color="primary" density="compact">
       <template #prepend>
         <router-link to="/">
           <v-img
@@ -28,27 +29,30 @@
         </router-link>
         <a href="/docs/">
           <v-icon class="ml-2" color="white">mdi-help-circle</v-icon>
-          <v-tooltip location="bottom" activator="parent">Open Documentation</v-tooltip>
+          <v-tooltip location="bottom" activator="parent">
+            Open Documentation
+          </v-tooltip>
         </a>
       </template>
-      <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title>
-      <!--- TODO: Change the URL to match the hosting site
+      <v-app-bar-title>{{ t("main.SphericalEaselMainTitle") }}</v-app-bar-title> -->
+
+    <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-      <!-- Use <a> For GitLab -->
-      <!--a :href="`${baseURL}/docs`">
+    <!-- Use <a> For GitLab -->
+    <!--a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
                 v-bind="props">mdi-help-circle</v-icon>
             </a-->
 
-      <v-spacer></v-spacer>
+    <!-- <v-spacer></v-spacer> -->
 
-      <!-- This will open up the global settings view setting the language, decimals
+    <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <AuthenticatedUserToolbox />
       <LanguageSelector/>
-    </v-app-bar>
+    <!-- </v-app-bar> -->
 
     <!--
       This is the main window of the app. All other components are display on top of this element
@@ -58,23 +62,21 @@
       <!-- <MessageHub></MessageHub> -->
       <router-view />
       <!-- this is the spot where the views controlled by Vue Router will be rendered -->
-
     </v-main>
   </v-app>
 
   <Dialog
-      ref="logoutDialog"
-      :title="t('constructions.confirmLogout')"
-      :yes-text="t('constructions.proceed')"
-      :yes-action="() => doLogout()"
-      :no-text="t('constructions.cancel')"
-      style=""
-      max-width="40%">
-      <p>
-        {{ t("constructions.logoutDialog") }}
-      </p>
-    </Dialog>
-
+    ref="logoutDialog"
+    :title="t('constructions.confirmLogout')"
+    :yes-text="t('constructions.proceed')"
+    :yes-action="() => doLogout()"
+    :no-text="t('constructions.cancel')"
+    style=""
+    max-width="40%">
+    <p>
+      {{ t("constructions.logoutDialog") }}
+    </p>
+  </Dialog>
 
 
 </template>
@@ -94,7 +96,7 @@ import {
   onBeforeUnmount,
   nextTick
 } from "vue";
-import Dialog, { DialogAction } from "@/components/Dialog.vue"
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import LanguageSelector from "./components/LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
 import EventBus from "@/eventHandlers/EventBus";
@@ -186,7 +188,7 @@ async function doLogout(): Promise<void> {
   userRole.value = undefined;
   uid.value = "";
   whoami.value = "";
-  acctStore.parseAndSetFavoriteTools("")
+  acctStore.parseAndSetFavoriteTools("");
 }
 
 async function doExportConstructionDialog(): Promise<void> {

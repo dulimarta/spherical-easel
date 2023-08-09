@@ -1,10 +1,12 @@
+
 <template>
-  <div>
+  <div style="display: flex; padding:5px;">
     <v-autocomplete
       ref="addrInput"
       v-model="addrPlaceId"
       v-model:search="addressSearch"
       :items="predictedAddresses"
+      :disabled="!isEarthMode"
       item-title="description"
       item-value="placeId"
       :hide-details="addressError.length === 0"
@@ -13,12 +15,16 @@
       density="compact"
       :label="t('enterAddress')"
       style="width: 30em">
-      <template #append>
-        <v-icon @click="getPlaceDetails">mdi-check</v-icon>
+      <template #append v-if="!isLine" >
+        <v-btn  @click="getPlaceDetails" :disabled="addrPlaceId===null||addrPlaceId.length===0">
+          <v-icon>mdi-map-marker</v-icon>
+        </v-btn>
+
       </template>
     </v-autocomplete>
   </div>
 </template>
+
 <i18n lang="json" locale="en">
 {
   "enterAddress": "Enter address",
@@ -44,10 +50,10 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 10px;
-  background-color: white;
+  background-color: black;
 }
 </style>
-<script setup lang="ts">
+ <script setup lang="ts">
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
@@ -76,7 +82,7 @@ const addrInput: Ref<HTMLInputElement | null> = ref(null);
 const predictedAddresses: Ref<Array<AddressPair>> = ref([]);
 const addressSearch: Ref<string | undefined> = ref(undefined);
 const apiKey = import.meta.env.VITE_APP_GOOGLE_MAP_API_KEY;
-console.debug("Address input using API", apiKey);
+console.log("Address input using API", apiKey);
 const loader = new Loader({
   apiKey,
   version: "weekly"
@@ -85,6 +91,7 @@ const { AutocompleteService, PlacesService } = await loader.importLibrary(
   "places"
 );
 const addressPredictor = new AutocompleteService();
+// eslint-disable-next-line no-undef
 let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
@@ -97,7 +104,20 @@ watch(
     if (addr) searchAddress(addr);
   }
 );
-
+watch(
+  ()=>props.trigger,
+  ()=>{
+    if(props.isLine){
+      getPlaceDetails()
+    }
+  }
+)
+watch(
+  ()=>addrPlaceId.value,
+  ()=>{
+      emit("update:placeId",addrPlaceId.value)
+  }
+)
 function searchAddress(v: string) {
   addressError.value = "";
   addressPredictor
@@ -123,6 +143,7 @@ function getPlaceDetails() {
       fields: ["name", "geometry", "formatted_address"]
     },
     (place, status) => {
+      // eslint-disable-next-line no-undef
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
         // Make sure that this location doesn't exist already
@@ -174,11 +195,15 @@ function getPlaceDetails() {
           pointCommandGroup.execute();
           // pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
           newSELabel.update();
+          emit("update:point", vtx);
         }
       } else {
         addressError.value = t("addressDetailsUnknown");
       }
     }
   );
+  addrPlaceId.value="";
+  addressSearch.value="";
+  predictedAddresses.value=[];
 }
 </script>

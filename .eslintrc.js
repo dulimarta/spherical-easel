@@ -1,21 +1,24 @@
 module.exports = {
   root: true,
+  parser: "vue-eslint-parser",
+  parserOptions: {
+      parser: "@typescript-eslint/parser",
+      ecmaVersion: 2020,
+  },
   env: {
-    // node: true,
-    es2021: true,
+    browser: true, es2020: true, node:true
   },
   extends: [
-    "eslint:recommend",
+    "eslint:recommended",
     "plugin:vue/vue3-essential",
     "prettier"
   ],
-  parserOptions: {
-    ecmaVersion: 2020
-  },
+  plugins: ["@typescript-eslint", "prettier"],
   rules: {
     // "vue/multi-word-component-names": "off"
     "vue/no-unused-vars": "error",
-    "space-before-function-paren": "off"
+    "space-before-function-paren": "off",
+    "vue/multi-word-component-names":"off"
   },
   overrides: [
     {
