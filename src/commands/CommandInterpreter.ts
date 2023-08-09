@@ -6,6 +6,7 @@ import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
 import { AddLineCommand } from "./AddLineCommand";
 import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThruPointCommand";
 import { AddPointCommand } from "./AddPointCommand";
+import { AddEarthPointCommand } from "./AddEarthPointCommand";
 import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneOrTwoDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
@@ -46,6 +47,9 @@ import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
 import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
+import { SetEarthModeCommand } from "./SetEarthModeCommand";
+import { AddLatitudeCommand } from "./AddLatitudeCommand";
+import { AddLongitudeCommand } from "./AddLongitudeCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -76,6 +80,12 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddLongitude":
+      return AddLongitudeCommand.parse(command, noduleDictionary);
+    case "AddLatitude":
+      return AddLatitudeCommand.parse(command, noduleDictionary);
+    case "AddEarthPoint":
+      return AddEarthPointCommand.parse(command, noduleDictionary);
     case "AddSegment":
       return AddSegmentCommand.parse(command, noduleDictionary);
     case "AddLine":
@@ -162,6 +172,8 @@ function executeIndividual(command: string): Command {
       );
     case "SetNoduleDisplay":
       return SetNoduleDisplayCommand.parse(command, noduleDictionary);
+    case "SetEarthMode":
+      return SetEarthModeCommand.parse(command, noduleDictionary);
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
 

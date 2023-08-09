@@ -124,21 +124,21 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       return String(
         i18n.global.t(`objectTree.bigonWithEdges`, {
           edges: edgeNames,
-          val: this._area
+          val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })
       );
     } else if (this._seEdgeSegments.length === 3) {
       return String(
         i18n.global.t(`objectTree.triangleWithEdges`, {
           edges: edgeNames,
-          val: this._area
+          val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })
       );
     } else {
       return String(
         i18n.global.t(`objectTree.polygonWithEdges`, {
           edges: edgeNames,
-          val: this._area
+          val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })
       );
     }
@@ -149,7 +149,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this.name +
       " - " +
       this.label?.ref.shortUserName +
-      `: ${this.prettyValue}`
+      `: ${this.prettyValue()}`
     );
   }
 
@@ -158,6 +158,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     return this._valueDisplayMode;
   }
   set valueDisplayMode(vdm: ValueDisplayMode) {
+    console.log("Set the vdm in polygon");
     this._valueDisplayMode = vdm;
     // move the vdm to the plottable label
     if (this.label) {
@@ -613,6 +614,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   }
 
   public isLabelable(): boolean {
+    return true;
+  }
+  public isPolygon(): boolean {
     return true;
   }
 }

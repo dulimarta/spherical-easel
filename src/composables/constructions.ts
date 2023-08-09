@@ -64,7 +64,7 @@ async function parseDocument(
   let parsedScript: ConstructionScript | undefined = undefined;
   const trimmedScript = remoteDoc.script.trim();
   if (trimmedScript.startsWith("https")) {
-    // Fetch the actual script from Firebase Storagee
+    // Fetch the actual script from Firebase Storage
     const scriptText = await getDownloadURL(
       storageRef(appStorage, trimmedScript)
     )
@@ -221,25 +221,28 @@ export function useConstruction() {
           privateColl,
           (snapshot: QuerySnapshot) => {
             snapshot.docChanges().forEach(async (chg: DocumentChange) => {
-              const aDoc = chg.doc.data() as ConstructionInFirestore
+              const aDoc = chg.doc.data() as ConstructionInFirestore;
               switch (chg.type) {
                 case "added":
-                  const sph = await parseDocument(chg.doc.id, aDoc)
-                  privateConstructions.value?.push(sph)
+                  const sph = await parseDocument(chg.doc.id, aDoc);
+                  privateConstructions.value?.push(sph);
                   break;
                 case "removed":
                   if (privateConstructions.value) {
-                    const pos = privateConstructions.value?.findIndex((c: SphericalConstruction) => c.id === chg.doc.id)
-                    if (pos >= 0)
-                      privateConstructions.value?.splice(pos, 1)
+                    const pos = privateConstructions.value?.findIndex(
+                      (c: SphericalConstruction) => c.id === chg.doc.id
+                    );
+                    if (pos >= 0) privateConstructions.value?.splice(pos, 1);
                   }
                   break;
                 case "modified":
                   if (privateConstructions.value) {
-                    const pos = privateConstructions.value?.findIndex((c: SphericalConstruction) => c.id === chg.doc.id)
-                    const sph = await parseDocument(chg.doc.id, aDoc)
+                    const pos = privateConstructions.value?.findIndex(
+                      (c: SphericalConstruction) => c.id === chg.doc.id
+                    );
+                    const sph = await parseDocument(chg.doc.id, aDoc);
                     if (pos >= 0)
-                      privateConstructions.value?.splice(pos, 1, sph)
+                      privateConstructions.value?.splice(pos, 1, sph);
                   }
                   break;
               }

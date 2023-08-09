@@ -27,13 +27,15 @@
                   shakeMeasurementDisplay,
                   shakeTransformationDisplay
                 ]">
-                <span class="text-truncate ml-1">{{ node.noduleItemText }}</span>
+                <span class="text-truncate ml-1">
+                  {{ node.noduleItemText }}
+                </span>
               </div>
             </template>
-            <span>q{{ node.noduleDescription }}/ {{ nodeName }}</span>
+            <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
           </v-tooltip>
         </v-col>
-        <!--v-col justify="end">
+        <v-col justify="end">
           <v-row align="center" no-gutters>
             <v-col>
               <v-tooltip location="end">
@@ -43,20 +45,20 @@
                     v-if="isMeasurement && supportsClipboard"
                     v-bind="props"
                     @click="copyToClipboard">
-                    <v-icon size="small">
-                      $copyToClipboard
-                    </v-icon>
+                    <v-icon size="small">$copyToClipboard</v-icon>
                   </div>
                 </template>
                 <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
               </v-tooltip>
-            </v-col-->
+            </v-col>
+          </v-row>
+        </v-col>
         <v-col>
           <v-tooltip location="end">
             <template v-slot:activator="{ props }">
               <div
                 id="_test_toggle_format"
-                v-if="isExpressionAndNotCoordinate"
+                v-if="isExpressionAndNotCoordinateNotEarthMode"
                 v-bind="props"
                 @click="cycleValueDisplayMode">
                 <v-icon size="small">$cycleNodeValueDisplayMode</v-icon>
@@ -73,7 +75,7 @@
                 v-if="isPlottable"
                 v-bind="props"
                 @click="toggleVisibility"
-                size="small"
+                size="tiny"
                 :icon="node.showing ? '$hideNode' : '$showNode'"
                 :key="visibilityUpdateKey"
                 :style="{ color: node.showing ? 'gray' : 'black' }" />
@@ -126,7 +128,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onBeforeMount,
+  onMounted,
+  ref,
+  Ref,
+  watch
+} from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -171,22 +181,33 @@ import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
+import SETTINGS from "@/global-settings";
+import { SEEarthPoint } from "@/models/SEEarthPoint";
+import { Poles } from "@/types";
+import { SELatitude } from "@/models/SELatitude";
+import { SELongitude } from "@/models/SELongitude";
+import { Vector3 } from "three";
 const seStore = useSEStore();
-const { actionMode } = storeToRefs(seStore);
+const { actionMode, isEarthMode, inverseTotalRotationMatrix } =
+  storeToRefs(seStore);
 const props = defineProps<{
   node: SENodule;
 }>();
 const emit = defineEmits(["object-select"]);
 const { t } = useI18n();
 
-const visibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
-const labelVisibilityUpdateKey = ref(1); //If we don't use this, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
+const visibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
+const labelVisibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
 const iconName = ref("mdi-help");
 // const rotationMatrix = new Matrix4();
 // private traceLocation = new Vector3();
 let nodeName = "";
 let nodeType = "";
 
+let isNorthPole = false; //NP
+let isSouthPole = false;
+let isEquator = false;
+let isPrimeMeridian = false;
 let curve: SEParametric | null = null;
 let curvePoint: SEParametricTracePoint | null = null;
 const parametricTime = ref(0);
@@ -194,7 +215,7 @@ const parametricTMin = ref(0);
 const parametricTMax = ref(1);
 const parametricTStep = ref(0.01);
 const supportsClipboard = ref(false); //For copying the value of a measurement to the clipboard
-
+const tempVec = new Vector3();
 /**
  * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
  */
@@ -205,32 +226,51 @@ onBeforeMount(() => {
   }
   if (props.node.isLabelable()) {
     nodeName = (props.node as any).label?.ref.shortUserName ?? "";
+  } else {
+    nodeName = props.node.name;
+  }
+  //NP find the north and south pole
+  if (props.node instanceof SEPoint) {
+    tempVec.copy(props.node.locationVector);
+    // transform the pt back to standard position
+    tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
+    if (Math.abs(tempVec.y - 1) < SETTINGS.tolerance) {
+      console.log("object tree - found north pole");
+      isNorthPole = true;
+    } else if (Math.abs(tempVec.y + 1) < SETTINGS.tolerance) {
+      console.log("object tree - found south pole");
+      isSouthPole = true;
+    }
   }
   if (false) {
-  } else if (props.node instanceof SEAngleMarker) {
-    iconName.value = "$angle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.angleMarkers`, 3);
+  } else if (props.node instanceof SEEarthPoint) {
+    // All the point subclasses with SEPoint last
+    iconName.value = "$earthPoint";
+    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SECircle) {
-    iconName.value = "$circle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SEEllipse) {
-    iconName.value = "$ellipse";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.ellipses`, 3);
   } else if (props.node instanceof SEIntersectionPoint) {
     iconName.value = "$intersect";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEInversion) {
-    iconName.value = "$inversion";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.transformations`, 3);
+  } else if (props.node instanceof SENSectPoint) {
+    iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPolarPoint) {
+    iconName.value = "$polar";
+    nodeType = t(`objects.points`, 3);
+  } else if (
+    props.node instanceof SETransformedPoint ||
+    props.node instanceof SEInversionCircleCenter
+  ) {
+    iconName.value = "$transformedPoint";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
+    iconName.value = "$pointOnObject";
+    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEPoint) {
+    iconName.value = "$point";
+    nodeType = t(`objects.points`, 3);
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&
@@ -239,104 +279,99 @@ onBeforeMount(() => {
       props.node.centerSEPoint.parentTransformation.name ===
         props.node.circleSEPoint.parentTransformation.name)
   ) {
+    // All the SECircle subclasses with SECircle last
     iconName.value = "$transformedCircle";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
+    nodeType = t(`objects.circles`, 3);
+  } else if (props.node instanceof SELatitude) {
+    iconName.value = "$earthLatitude";
+    nodeType = t(`objects.circle`, 3);
+    if (props.node.latitude == 0) {
+      isEquator = true;
+    }
+  } else if (props.node instanceof SECircle) {
+    iconName.value = "$circle";
     nodeType = t(`objects.circles`, 3);
   } else if (props.node instanceof SEIsometryEllipse) {
+    // All the SEEllipse subclasses with SEEllipse last
     iconName.value = "$transformedEllipse";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.ellipses`, 3);
-  } else if (props.node instanceof SEIsometryLine) {
-    iconName.value = "$transformedLine";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEIsometrySegment) {
-    iconName.value = "$transformedSegment";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SELine) {
-    iconName.value = "$line";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SENSectLine) {
-    iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SENSectPoint) {
-    iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
-  } else if (props.node instanceof SEPerpendicularLineThruPoint) {
-    iconName.value = "$perpendicular";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEPoint) {
-    iconName.value = "$point";
-  } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
-    iconName.value = "$pointOnObject";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
+  } else if (props.node instanceof SEEllipse) {
+    iconName.value = "$ellipse";
+    nodeType = t(`objects.ellipses`, 3);
+  } else if (props.node instanceof SEInversion) {
+    // All the transformation classes
+    iconName.value = "$inversion";
+    nodeType = t(`objects.transformations`, 3);
   } else if (props.node instanceof SEPointReflection) {
     iconName.value = "$pointReflection";
-    nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  } else if (props.node instanceof SEPolarLine) {
-    iconName.value = "$polar";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (props.node instanceof SEPolarPoint) {
-    iconName.value = "$polar";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SEReflection) {
     iconName.value = "$reflection";
-    nodeName = props.node.name; // props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
   } else if (props.node instanceof SERotation) {
     iconName.value = "$rotation";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
-  } else if (props.node instanceof SESegment) {
-    iconName.value = "$segment";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.segments`, 3);
-  } else if (props.node instanceof SETangentLineThruPoint) {
-    iconName.value = "$tangent";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.lines`, 3);
-  } else if (
-    props.node instanceof SETransformedPoint ||
-    props.node instanceof SEInversionCircleCenter
-  ) {
-    iconName.value = "$transformedPoint";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.points`, 3);
   } else if (props.node instanceof SETranslation) {
     iconName.value = "$translation";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.transformations`, 3);
+  } // All the SELine subclasses with SELine last
+  else if (props.node instanceof SEPerpendicularLineThruPoint) {
+    iconName.value = "$perpendicular";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEIsometryLine) {
+    iconName.value = "$transformedLine";
+    nodeName = props.node.name;
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SENSectLine) {
+    iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SEPolarLine) {
+    iconName.value = "$polar";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SETangentLineThruPoint) {
+    iconName.value = "$tangent";
+    nodeType = t(`objects.lines`, 3);
+  } else if (props.node instanceof SELine) {
+    iconName.value = "$line";
+    nodeType = t(`objects.lines`, 3);
+  } //All the SESegment subclasses with SESegment last
+  else if (props.node instanceof SEIsometrySegment) {
+    iconName.value = "$transformedSegment";
+    nodeName = props.node.name;
+    nodeType = t(`objects.segments`, 3);
+  } else if (props.node instanceof SELongitude) {
+    iconName.value = "$earthLongitude";
+    nodeType = t(`objects.segments`, 3);
+    if (props.node.longitude == 0) {
+      isPrimeMeridian = true;
+    }
+  } else if (props.node instanceof SESegment) {
+    iconName.value = "$segment";
+    nodeType = t(`objects.segments`, 3);
+  } // All the SEExpression subclasses with SEExpression last
+  else if (props.node instanceof SEAngleMarker) {
+    iconName.value = "$angle";
+    nodeType = t(`objects.angleMarkers`, 3);
   } else if (props.node instanceof SEPolygon) {
     iconName.value =
       props.node.seEdgeSegments.length === 3
         ? "$measureTriangle"
         : "$measurePolygon";
-    // nodeName = props.node.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.triangles`, 3);
   } else if (props.node instanceof SESegmentLength) {
     iconName.value = "$segmentLength";
-    // nodeName = props.node.seSegment.label?.ref.shortUserName ?? "";
     nodeType = t(`objects.measurements`, 3);
   } else if (props.node instanceof SEPointDistance) {
     iconName.value = "$pointDistance";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
   } else if (props.node instanceof SECalculation) {
     iconName.value = "$calculationObject";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.calculations`, 3);
   } else if (props.node instanceof SEExpression) {
     iconName.value = "$measurementObject";
-    nodeName = props.node.name; //props.node.label?.ref.shortUserName ?? "";
+    nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
   }
 });
@@ -351,13 +386,24 @@ onMounted((): void => {
     parametricTStep.value = (tMax - tMin) / 100;
     onParametricTimeChanged(tMin);
   }
+  EventBus.listen("update-label-and-showing-display", updateVisibilityKeys);
+});
+
+function updateVisibilityKeys() {
+  visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
+  labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
+}
+
+onBeforeUnmount((): void => {
+  EventBus.unlisten("update-label-and-showing-display");
 });
 
 function glowMe(flag: boolean): void {
   /* If the highlighted object is plottable, we highlight
        it directly. Otherwise, we highlight its parents */
-  if (isPlottable) props.node.glowing = flag;
-  else if (props.node instanceof SESegmentLength) {
+  if (isPlottable.value) {
+    props.node.glowing = flag;
+  } else if (props.node instanceof SESegmentLength) {
     const target = props.node.parents[0] as SESegment;
     target.glowing = flag;
   } else if (props.node instanceof SEPointDistance) {
@@ -416,8 +462,23 @@ function selectMe(): void {
 
 function toggleVisibility(): void {
   new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
-  visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
-  labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
+  updateVisibilityKeys();
+  //NP
+  if (isNorthPole) {
+    EventBus.fire("update-pole-switch", {
+      pole: Poles.NORTH,
+      val: props.node.showing
+    });
+  } else if (isSouthPole) {
+    EventBus.fire("update-pole-switch", {
+      pole: Poles.SOUTH,
+      val: props.node.showing
+    });
+  } else if (isEquator) {
+    EventBus.fire("update-equator-switch", { val: props.node.showing });
+  } else if (isPrimeMeridian) {
+    EventBus.fire("update-prime-meridian-switch", { val: props.node.showing });
+  }
 }
 
 function toggleLabelDisplay(): void {
@@ -438,9 +499,11 @@ function toggleLabelDisplay(): void {
       ).execute();
     }
   }
-  labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
-  visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
+  updateVisibilityKeys();
+  // labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
+  // visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
 }
+
 function copyToClipboard(): void {
   if (props.node instanceof SEExpression) {
     navigator.clipboard.writeText(String(props.node.value)).then(() =>
@@ -486,17 +549,40 @@ function cycleValueDisplayMode(): void {
   }
   const oldValueDisplayMode = (props.node as SEExpression).valueDisplayMode;
   let newValueDisplayMode: ValueDisplayMode;
-  // Compute the next valueDisplayMode so that we cycle through the different options
-  switch (oldValueDisplayMode) {
-    case ValueDisplayMode.Number:
-      newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
-      break;
-    case ValueDisplayMode.MultipleOfPi:
-      newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
-      break;
-    case ValueDisplayMode.DegreeDecimals:
-      newValueDisplayMode = ValueDisplayMode.Number;
-      break;
+  // Compute the next valueDisplayMode so that we cycle through the different options (in earth mode it flips between km and mi)
+  if (isEarthMode.value && !(props.node instanceof SEAngleMarker)) {
+    // AngleMarkers units are never km or mi
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+      case ValueDisplayMode.MultipleOfPi:
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode = (props.node as SEExpression)
+          .postEarthModeValueDisplayMode;
+        break;
+      case ValueDisplayMode.EarthModeKilos:
+        newValueDisplayMode = ValueDisplayMode.EarthModeMiles;
+        break;
+      case ValueDisplayMode.EarthModeMiles:
+        newValueDisplayMode = ValueDisplayMode.EarthModeKilos;
+        break;
+    }
+  } else {
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+        newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
+        break;
+      case ValueDisplayMode.MultipleOfPi:
+        newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
+        break;
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode = ValueDisplayMode.Number;
+        break;
+      case ValueDisplayMode.EarthModeKilos:
+      case ValueDisplayMode.EarthModeMiles:
+        newValueDisplayMode = (props.node as SEExpression)
+          .preEarthModeValueDisplayMode;
+        break;
+    }
   }
   new SetValueDisplayModeCommand(
     props.node as SEExpression,
@@ -560,11 +646,15 @@ const isLabelHidden = (): boolean => {
   }
   return false;
 };
-const isExpressionAndNotCoordinate = computed((): boolean => {
-  return (
-    props.node instanceof SEExpression &&
-    !(props.node instanceof SEPointCoordinate)
-  );
+const isExpressionAndNotCoordinateNotEarthMode = computed((): boolean => {
+  if (isEarthMode) {
+    return props.node instanceof SEExpression; // All measurement expressions are effect by Earth mode even point coordinates
+  } else {
+    return (
+      props.node instanceof SEExpression &&
+      !(props.node instanceof SEPointCoordinate)
+    );
+  }
 });
 
 const isMeasurement = computed((): boolean => {
@@ -628,6 +718,14 @@ const shakeTransformationDisplay = computed((): string => {
     ? "shake"
     : "";
 });
+
+// const shortDisplayText = computed((): (() => string) => {
+//   return () => props.node.noduleItemText;
+// });
+
+// const definitionText = computed((): (() => string) => {
+//   return () => props.node.noduleDescription;
+// });
 </script>
 
 <style scoped lang="scss">

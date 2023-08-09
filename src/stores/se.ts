@@ -456,7 +456,7 @@ export const useSEStore = defineStore({
       this.hasUnsavedNodules = false;
       temporaryNodules.splice(0);
       this.inverseTotalRotationMatrix.identity();
-      this.isEarthMode = false
+      this.isEarthMode = false;
 
       // Note by Hans (2022-01-05): this.init() has been moved from App.vue to SphereFrame.vue
 
@@ -870,6 +870,21 @@ export const useSEStore = defineStore({
       const rotationVisitor = new RotationVisitor();
       rotationVisitor.setTransform(rotationMat);
       const updateCandidates: Array<SENodule> = [];
+      // If there are any SE(Latitude/Longitudes) then we need to update the north and south poles so that the
+      // those objects update correctly. The north|south pole SEPoint sin SENodule will have been created in the
+      //  constructor of SE(Latitude|Longitude) so if there are these objects, the appropriate SEPoint poles will be defined
+      if (SENodule.unregisteredSEPointNorthPole !== undefined) {
+        const tmpVector = new Vector3();
+        tmpVector.copy(SENodule.unregisteredSEPointNorthPole.locationVector); // Copy the old vector location of the static north pole
+        tmpVector.applyMatrix4(rotationMat); // Apply the matrix
+        SENodule.unregisteredSEPointNorthPole.locationVector = tmpVector; // update the location of the north pole
+      }
+      if (SENodule.unregisteredSEPointSouthPole !== undefined) {
+        const tmpVector = new Vector3();
+        tmpVector.copy(SENodule.unregisteredSEPointSouthPole.locationVector); // Copy the old vector location of the static south pole
+        tmpVector.applyMatrix4(rotationMat); // Apply the matrix
+        SENodule.unregisteredSEPointSouthPole.locationVector = tmpVector; // update the location of the north pole
+      }
 
       function addCandidatesFrom(parent: SENodule) {
         parent.kids.forEach((m: SENodule) => {
@@ -1062,6 +1077,7 @@ export const useSEStore = defineStore({
     },
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
+      console.log("unglow all");
       seNodules.forEach(p => {
         if (!p.selected && p.exists) {
           p.glowing = false;
@@ -1303,7 +1319,11 @@ export const useSEStore = defineStore({
     defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
       defaultStyleStatesMap,
     hasObjects(state): boolean {
-      return state.sePointIds.length > 0;
+      return (
+        state.sePointIds.length > 0 ||
+        state.seCircleIds.length > 0 ||
+        state.seSegmentIds.length > 0
+      ); // SELatitude and SE Longitude are not constructed with SEPoints that are put into the object tree
     },
     // inverseTotalRotationMatrix: (): Matrix4 => inverseTotalRotationMatrix,
     // hasNoAntipode: (state): ((_: SEPoint) => boolean) => {
@@ -4067,4 +4087,4 @@ export const useSEStore = defineStore({
 //   StoreGetters<ReturnType<typeof useSEStore>> &
 //   StoreState<ReturnType<typeof useSEStore>>;
 
-export type SEStoreType = ReturnType<typeof useSEStore>
+export type SEStoreType = ReturnType<typeof useSEStore>;

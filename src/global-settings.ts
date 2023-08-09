@@ -920,6 +920,13 @@ export const SETTINGS = {
         filePath: "../../icons/iconSegmentPaths.svg"
       }
     },
+    earthLongitude: {
+      props: {
+        mdiIcon: "mdi-longitude",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
+      }
+    },
     circle: {
       props: {
         mdiIcon: false,
@@ -930,11 +937,25 @@ export const SETTINGS = {
         filePath: "../../icons/iconCirclePaths.svg"
       }
     },
+    earthLatitude: {
+      props: {
+        mdiIcon: "mdi-latitude",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
+      }
+    },
     antipodalPoint: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front"]],
         filePath: "../../icons/iconAntipodalPointPaths.svg"
+      }
+    },
+    earthPoint: {
+      props: {
+        mdiIcon: "mdi-map-marker",
+        emphasizeTypes: [[]] as string[][],
+        filePath: ""
       }
     },
     polar: {
@@ -1413,6 +1434,11 @@ export const SETTINGS = {
   toolUse: {
     delay: 3000,
     display: true // controls if they should be displayed
+  },
+  earthMode: {
+    defaultEarthModeUnits: "km", // The other option is idiot units of miles (mi)
+    radiusMiles: 3959,
+    radiusKilometers: 6371
   },
   parameterization: {
     useNewtonsMethod: false, // When finding the zeros, should we use newton's method?  If false we use bisections

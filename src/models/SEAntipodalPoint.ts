@@ -19,7 +19,7 @@ export class SEAntipodalPoint extends SEPoint {
    * @param antipodalPointParent The parent
    */
   constructor(antipodalPointParent: SEPoint, isUserCreated: boolean) {
-    super(true); // Non free point
+    super(true); // Non free point and the plottable is created
     this._antipodalPointParent = antipodalPointParent;
     if (isUserCreated) {
       this._isUserCreated = true;
@@ -119,6 +119,7 @@ export class SEAntipodalPoint extends SEPoint {
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
   set glowing(b: boolean) {
+    //console.log("SEAntipode::object:", this.name, " ref id ", this.ref?.id);
     if (!this._isUserCreated) {
       this.ref.setVisible(b);
     } else {

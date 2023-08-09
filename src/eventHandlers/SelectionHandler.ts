@@ -532,7 +532,6 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangleSelection.splice(0);
   }
 
-
   activate(): void {
     window.addEventListener("keydown", this.keyPressHandler);
     this.currentSelection.splice(0);

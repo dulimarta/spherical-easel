@@ -12,6 +12,9 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
+import { SEEarthPoint } from "./SEEarthPoint";
+import { SEPoint } from "./SEPoint";
+
 let NODE_COUNT = 0;
 
 export abstract class SENodule implements Visitable {
@@ -277,6 +280,15 @@ export abstract class SENodule implements Visitable {
     }
   }
 
+  // The unregistered SEPoint North/South is used in the SELatitude and SELongitude classes for either
+  // the center of the circle or the endpoints of the segment. It is updated by the rotation visitor for
+  // sphere rotations *only* (not moves because SELatitudes|Longitudes can't ever be moved).
+  // These objects will need to updated each time a rotation visitor is created in the store (se.ts) - if they exist of course
+  // We use these static objects so that every SELatitude and SELongitude doesn't have its own copy of these.
+  // These SEPoints are never displayed or put into the DAG/object tree
+  public static unregisteredSEPointNorthPole: SEPoint | undefined = undefined;
+  public static unregisteredSEPointSouthPole: SEPoint | undefined = undefined;
+
   public setOutOfDate(b: boolean): void {
     this._outOfDate = b;
   }
@@ -338,7 +350,7 @@ export abstract class SENodule implements Visitable {
     if (
       this.isNonFreeLine() ||
       this.isNonFreePoint() ||
-      this.isNonFreeCirle() ||
+      this.isNonFreeCircle() ||
       this.isNonFreeSegment() ||
       this.isNonFreeEllipse()
     ) {
@@ -358,7 +370,7 @@ export abstract class SENodule implements Visitable {
     return false;
   }
 
-  public isNonFreeCirle(): boolean {
+  public isNonFreeCircle(): boolean {
     return false;
   }
 
@@ -373,6 +385,11 @@ export abstract class SENodule implements Visitable {
   public isTransformation(): boolean {
     return false;
   }
+
+  public isPolygon(): boolean {
+    return false;
+  }
+
   //Getters and Setters
 
   public abstract get noduleItemText(): string;
@@ -409,19 +426,21 @@ export abstract class SENodule implements Visitable {
 
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
+    //console.log("SENodule set glow of ", this.name, " to ", b);
+    //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref?.glowingDisplay();
-    } else this.ref?.normalDisplay();
-    // TODO: not glowing implies not selected?
-    // this.selected = false;
+    } else {
+      this.ref?.normalDisplay();
+    }
   }
 
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
-    console.debug("SENodule::selected() arg", b);
+    console.log("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
     if (!this._showing) return;
     this._selected = b;

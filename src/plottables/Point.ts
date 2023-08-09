@@ -109,10 +109,10 @@ export default class Point extends Nodule {
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
     // The points are not initially glowing but are visible for the temporary object
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = false;
+    // this.frontPoint.visible = true;
+    // this.glowingFrontPoint.visible = false;
+    // this.backPoint.visible = true;
+    // this.glowingBackPoint.visible = false;
 
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
@@ -184,6 +184,7 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
+    //console.log("frt normal disp point front id:", this.frontPoint.id);
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -287,6 +288,7 @@ export default class Point extends Nodule {
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const radiusPercentFront = frontStyle?.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
+
     this.frontPoint.scale = (Point.pointScaleFactor * radiusPercentFront) / 100;
 
     this.backPoint.scale =
@@ -316,8 +318,11 @@ export default class Point extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
+    // console.log("before point fill frt: ", this.frontPoint.fill);
+    // console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
+        // console.log("temp front id ", this.frontPoint.id);
         // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
@@ -345,14 +350,17 @@ export default class Point extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
+        // console.log("NONtemp front id ", this.frontPoint.id);
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
+          //console.log("Point Fill color before: ", frontStyle.fillColor);
           this.frontPoint.fill =
             frontStyle.fillColor ?? SETTINGS.point.drawn.fillColor.front;
+          //console.log("Point Fill color after: ", this.frontPoint.fill);
         }
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
@@ -441,5 +449,7 @@ export default class Point extends Nodule {
         break;
       }
     }
+    // console.log("after point fill frt: ", this.frontPoint.fill);
+    // console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
   }
 }

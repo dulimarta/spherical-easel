@@ -5,6 +5,7 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
+import { SEStoreType } from "@/stores/se";
 //import { Group } from "two.js/src/group";
 
 export enum DisplayStyle {
@@ -18,6 +19,18 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
+  //public static NODULE_COUNT = 0;
+  static store: SEStoreType;
+  //public id = 0;
+
+  constructor() {
+    // this.id = Nodule.NODULE_COUNT;
+    // Nodule.NODULE_COUNT++;
+  }
+
+  static setGlobalStore(store: SEStoreType): void {
+    Nodule.store = store;
+  }
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */

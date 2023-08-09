@@ -9,6 +9,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { LabelDisplayMode, ValueDisplayMode } from "@/types";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 // import { Group } from "two.js/src/group";
 
 export default class SegmentLengthHandler extends Highlighter {
@@ -115,6 +117,21 @@ export default class SegmentLengthHandler extends Highlighter {
             ]
           )
         );
+        if (Highlighter.store.isEarthMode) {
+          const newValueDisplayMode =
+            SETTINGS.earthMode.defaultEarthModeUnits === "km"
+              ? ValueDisplayMode.EarthModeKilos
+              : ValueDisplayMode.EarthModeMiles;
+          if (newValueDisplayMode !== lenMeasure.valueDisplayMode) {
+            segmentCommandGroup.addCommand(
+              new SetValueDisplayModeCommand(
+                lenMeasure,
+                lenMeasure.valueDisplayMode,
+                newValueDisplayMode
+              )
+            );
+          }
+        }
       }
       segmentCommandGroup.execute();
       // make the change show up in the sphere

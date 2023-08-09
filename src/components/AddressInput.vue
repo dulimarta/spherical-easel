@@ -58,21 +58,24 @@ import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AddPointCommand } from "@/commands/AddPointCommand";
+import { AddEarthPointCommand } from "@/commands/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
-import { useEarthCoordinate } from "@/composables/earth";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPoint } from "@/models/SEPoint";
+import EventBus from "@/eventHandlers/EventBus";
+
 type AddressPair = {
   description: string;
   placeId: string;
 };
 const store = useSEStore();
-const { inverseTotalRotationMatrix } = storeToRefs(store);
-const { t } = useI18n()
-const {geoLocationToUnitSphere} = useEarthCoordinate()
+const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
+const { t } = useI18n();
+
 const addrPlaceId = ref("");
 const addressError = ref("");
 const addrInput: Ref<HTMLInputElement | null> = ref(null);
@@ -93,7 +96,6 @@ let placesInspector: google.maps.places.PlacesService;
 
 onMounted(async () => {
   placesInspector = new PlacesService(addrInput.value!);
-
 });
 
 watch(
@@ -117,7 +119,7 @@ watch(
   }
 )
 function searchAddress(v: string) {
-  addressError.value = ""
+  addressError.value = "";
   addressPredictor
     .getPlacePredictions({ input: v })
     .then(response => {
@@ -128,7 +130,7 @@ function searchAddress(v: string) {
       }));
     })
     .catch(err => {
-      addressError.value = t('addressPredictionError') + err
+      addressError.value = t("addressPredictionError") + err;
     });
 }
 
@@ -144,15 +146,38 @@ function getPlaceDetails() {
       // eslint-disable-next-line no-undef
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
+        // Make sure that this location doesn't exist already
+        const earthPoints = sePoints.value
+          .filter(pt => pt instanceof SEEarthPoint)
+          .map(pt => pt as SEEarthPoint);
+        if (
+          earthPoints.some(
+            pt =>
+              place?.geometry?.location &&
+              pt.latitude === place.geometry?.location.lat() &&
+              pt.longitude === place.geometry?.location.lng()
+          )
+        ) {
+          EventBus.fire("show-alert", {
+            key: `handlers.pointCreationAttemptDuplicate`,
+            keyOptions: {},
+            type: "error"
+          });
+          return;
+        }
         if (place?.geometry?.location) {
-          const latDegree = place.geometry?.location.lat()
-          const lngDegree = place.geometry?.location.lng()
-
-          const coords = geoLocationToUnitSphere(latDegree, lngDegree)
+          const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
+          const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;
+          const xcor = Math.cos(latRad) * Math.cos(lngRad);
+          const ycor = Math.cos(latRad) * Math.sin(lngRad);
+          const zcor = Math.sin(latRad);
 
           // caption
-          const vtx = new SEEarthPoint(latDegree, lngDegree);
-          const pointVector = new THREE.Vector3(coords[0], coords[1], coords[2]);
+          const vtx = new SEEarthPoint(
+            place.geometry?.location.lng(),
+            place.geometry?.location.lat()
+          );
+          const pointVector = new THREE.Vector3(xcor, ycor, zcor);
           pointVector.normalize();
           const rotationMatrix = new THREE.Matrix4();
           rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
@@ -162,16 +187,18 @@ function getPlaceDetails() {
 
           //caption change here
           const newSELabel = new SELabel("point", vtx);
-          newSELabel.ref.caption = placeCaption ?? t('noFormattedAddress')
+          newSELabel.ref.caption = placeCaption ?? t("noFormattedAddress");
           const pointCommandGroup = new CommandGroup();
-          pointCommandGroup.addCommand(new AddPointCommand(vtx, newSELabel));
+          pointCommandGroup.addCommand(
+            new AddEarthPointCommand(vtx, newSELabel)
+          );
           pointCommandGroup.execute();
           // pointLabel.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
           newSELabel.update();
           emit("update:point", vtx);
         }
       } else {
-        addressError.value = t('addressDetailsUnknown')
+        addressError.value = t("addressDetailsUnknown");
       }
     }
   );

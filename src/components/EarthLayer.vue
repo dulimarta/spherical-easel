@@ -19,10 +19,9 @@ import {
   Mesh,
   AmbientLight,
   PointLight,
-  WebGLRenderer,
-  AxesHelper
+  WebGLRenderer
 } from "three";
-import { watch, onMounted, onBeforeUnmount, onBeforeUpdate } from "vue";
+import { watch, onMounted, onBeforeUnmount } from "vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
@@ -30,6 +29,7 @@ import { useEarthCoordinate } from "@/composables/earth";
 import { useGeolocation } from "@vueuse/core";
 const { coords } = useGeolocation();
 const { flyTo } = useEarthCoordinate();
+
 type EarthLayerProps = {
   availableWidth: number;
   availableHeight: number;
@@ -44,17 +44,12 @@ const rotationMatrix = new Matrix4(); // temporary matrix for rotating the spher
 const textureLoader = new TextureLoader(/*textureManager*/);
 
 let renderer: THREE.WebGLRenderer;
-const axes = new AxesHelper(400); // For debugging?
 const scene = new Scene();
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 const light = new PointLight(0xffffff, 1);
 
 scene.add(ambientLight);
 
-// ThreeJS Sphere coordinate frame
-// Positive-X axis => latitude 0-degrees (south of Ghana)
-// Positive-Y axis => north pole
-// Positive-Z axis => latitude 90-degree (west of ecuador)
 const geometry = new SphereGeometry(
   SETTINGS.boundaryCircle.radius,
   200 /* number of longitude segments */,
@@ -72,9 +67,10 @@ const camera = new OrthographicCamera(
   1,
   2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor.value
 );
-    // When the magnification factor is below 1.0, we don't want to place the camera
-    // inside the unit sphere, so place it at least 10% further
-camera.position.z = SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor.value)
+// When the magnification factor is below 1.0, we don't want to place the camera
+// inside the unit sphere, so place it at least 10% further
+camera.position.z =
+  SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor.value);
 
 //  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = Math.min(scaledWidth, scaledHeight);
@@ -104,26 +100,29 @@ onMounted(async () => {
     bumpScale: 10
   });
   earth = new Mesh(geometry, material);
-  earth.add(axes);
-
   const num = Math.max(prop.availableHeight, prop.availableWidth);
   // Position the Point light based on the estimated
   // current position of the sun?
   // const sunGeoPosition = estimateSunGeoPosition();
   const sunLng = estimateSunGP();
+  // console.debug(`Sun longitude: ${sunGeoPosition.lon.toDegrees()} degrees`)
+  // (1,0,0) => Equator GMT-0
+  // (0,1,0) => North Pole   (0,-1,0) => South Pole
+  // (0,0,1) => Equator GMT-6
   light.position.set(num * Math.cos(sunLng), 0, num * Math.sin(sunLng));
   // light.setRotationFromEuler(sunEulerRotation)
   // light.updateMatrix()
   // To fix the light to the earth, add it to the earth not the scene
   earth.add(light);
+  earth.rotation.x = Math.PI / 2;
   rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+  // rotationMatrix.multiply(ROTATION_X90);
   earth.setRotationFromMatrix(rotationMatrix);
 
   scene.add(earth);
 
   renderer = new WebGLRenderer({
-    canvas: document.getElementById("earth") as HTMLCanvasElement,
-    preserveDrawingBuffer: true
+    canvas: document.getElementById("earth") as HTMLCanvasElement
   });
   renderer.setSize(prop.availableWidth, prop.availableHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -131,9 +130,10 @@ onMounted(async () => {
   setTimeout(async () => {
     // FlyTo current user location
     if (
-      (!isNaN(coords.value.latitude) && !isNaN(coords.value.longitude)) &&
-      (coords.value.latitude !== Infinity &&
-        coords.value.longitude !== Infinity)
+      !isNaN(coords.value.latitude) &&
+      !isNaN(coords.value.longitude) &&
+      coords.value.latitude !== Infinity &&
+      coords.value.longitude !== Infinity
     )
       await flyTo(coords.value.latitude, coords.value.longitude);
   }, 2000);
@@ -160,10 +160,11 @@ watch(
     camera.right = scaledWidth;
     camera.top = scaledHeight;
     camera.bottom = -scaledHeight;
-    camera.far = 2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor
+    camera.far = 2 * SETTINGS.boundaryCircle.radius * zoomMagnificationFactor;
     // When the magnification factor is below 1.0, we don't want to place the camera
     // inside the unit sphere, so place it at least 10% further
-    camera.position.z = SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor)
+    camera.position.z =
+      SETTINGS.boundaryCircle.radius * Math.max(1.1, zoomMagnificationFactor);
     // console.debug(`Camera z-range [${camera.near}, ${camera.far}] and position`, camera.position)
 
     camera.updateProjectionMatrix();
@@ -175,6 +176,7 @@ watch(
   () => inverseTotalRotationMatrix.value.elements,
   () => {
     rotationMatrix.copy(inverseTotalRotationMatrix.value).invert();
+    //rotationMatrix.multiply(ROTATION_X90);
     earth.setRotationFromMatrix(rotationMatrix);
   },
   { deep: true }
@@ -223,5 +225,27 @@ function estimateSunGP() {
     sunLongitude
   );
   return (sunLongitude * Math.PI) / 180;
+}
+function estimateSunGeoPosition() {
+  const now = new Date();
+
+  // The boilerplate: fiddling with dates
+  const startOfYear = new Date(now.getFullYear(), 0, 0).getTime();
+  const endOfYear = new Date(now.getFullYear() + 1, 0, 0).getTime();
+  const nows = now.getTime();
+  const percetageOfYear = (nows - startOfYear) / (endOfYear - startOfYear);
+
+  const secs =
+    now.getUTCMilliseconds() / 1e3 +
+    now.getUTCSeconds() +
+    60 * (now.getUTCMinutes() + 60 * now.getUTCHours());
+  const percentOfDay = secs / 86400; // leap secs? nah.
+
+  // The actual magic
+  const lat = (-percentOfDay + 0.5) * Math.PI * 2;
+  const lon = Math.sin((percetageOfYear - 0.22) * Math.PI * 2) * 0.41;
+  console.debug(`Sun geo position is ${lat.toDegrees()},${lon.toDegrees()}`);
+  // return new Euler(0, lat, lon, 'YZX')
+  return { lat, lon };
 }
 </script>

@@ -179,8 +179,7 @@ const {
   inverseTotalRotationMatrix,
   svgCanvas,
   canvasHeight,
-  canvasWidth,
-  isEarthMode
+  canvasWidth
 } = storeToRefs(seStore);
 const { t } = useI18n();
 const {
@@ -379,9 +378,10 @@ async function doSave(): Promise<void> {
     );
     // FileSaver.saveAs(previewData, "hans.png");
   } else {
-    previewData = svgDataUrl
+    previewData = svgDataUrl;
   }
 
+  const saveFunction = shouldSaveOverwrite.value ? updateDoc : addDoc;
   /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
@@ -443,7 +443,6 @@ async function doSave(): Promise<void> {
     })
     .then(async ([docId, scriptData, svgData]) => {
       const constructionDoc = doc(appDB, collectionPath, docId);
-      /* Task #4 */
       // Pass on the document ID to be included in the alert message
       if (isSavedAsPublicConstruction.value) {
         const publicConstructionDoc = await addDoc(
@@ -501,19 +500,21 @@ async function mergeIntoImageUrl(
   // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
   const graphicsCtx = offlineCanvas.getContext("2d");
   const imageExtension = imageFormat.toLowerCase();
-  const drawTasks= sourceURLs.map((dataUrl: string, index: number): Promise<string> => {
-    return new Promise(resolve => {
-      const offlineImage = new Image();
-      offlineImage.addEventListener("load", () => {
-        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
-        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
-        resolve(dataUrl);
+  const drawTasks = sourceURLs.map(
+    (dataUrl: string, index: number): Promise<string> => {
+      return new Promise(resolve => {
+        const offlineImage = new Image();
+        offlineImage.addEventListener("load", () => {
+          graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+          // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
+          resolve(dataUrl);
+        });
+        // Similar to <img :src="dataUrl" /> but programmatically
+        offlineImage.src = dataUrl;
       });
-      // Similar to <img :src="dataUrl" /> but programmatically
-      offlineImage.src = dataUrl;
-    });
-  });
-  await Promise.all(drawTasks)
+    }
+  );
+  await Promise.all(drawTasks);
   const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
 
   return imgURL;
@@ -531,7 +532,6 @@ function doExport() {
     type: "image/svg+xml;charset=utf-8"
   });
   const svgURL = URL.createObjectURL(svgBlob);
-
   if (selectedExportFormat.value === "SVG") {
     // await nextTick()
     FileSaver.saveAs(svgURL, "construction.svg");

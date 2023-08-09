@@ -379,9 +379,7 @@ export default class PolygonHandler extends Highlighter {
 
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [
-              /*newLabel*/
-            ],
+            [newSELabel.ref],
             StyleEditPanels.Label,
             [
               {

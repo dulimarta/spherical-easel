@@ -17,7 +17,10 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
-export class SEAngleMarker extends SEExpression implements Visitable, Labelable {
+export class SEAngleMarker
+  extends SEExpression
+  implements Visitable, Labelable
+{
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
@@ -237,7 +240,10 @@ export class SEAngleMarker extends SEExpression implements Visitable, Labelable 
 
   public get noduleItemText(): string {
     return (
-      this.name + ": " + this.label?.ref.shortUserName + ` ${this.prettyValue}`
+      this.name +
+      ": " +
+      this.label?.ref.shortUserName +
+      ` ${this.prettyValue()}`
     );
   }
 

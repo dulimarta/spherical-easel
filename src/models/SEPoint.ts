@@ -17,6 +17,7 @@ import { SELabel } from "./internal";
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import NonFreePoint from "@/plottables/NonFreePoint";
+import { DisplayStyle } from "@/plottables/Nodule";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
@@ -56,8 +57,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
     const p = createNonFreePoint ? new NonFreePoint() : new Point();
-    // p.stylize(DisplayStyle.ApplyCurrentVariables);
-    // p.adjustSize();
+    p.stylize(DisplayStyle.ApplyCurrentVariables);
+    p.adjustSize();
     this.ref = p;
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;

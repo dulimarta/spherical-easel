@@ -50,7 +50,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     return String(
       i18n.global.t(`objectTree.sliderValue`, {
         token: this.name,
-        val: this.prettyValue
+        val: this.prettyValue()
       })
     );
   }

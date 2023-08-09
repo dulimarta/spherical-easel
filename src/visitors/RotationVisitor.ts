@@ -10,6 +10,8 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SELatitude } from "@/models/SELatitude";
+import { SELongitude } from "@/models/SELongitude";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -79,14 +81,51 @@ export class RotationVisitor implements Visitor {
     // s.ref.startVector = this.tmpVector;
 
     // s.ref.updateDisplay();
-    return false;
     // }
+    if (s instanceof SELongitude) {
+      //console.log("SELatitude actionOnCircle");
+
+      //North pole *always* - The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(s.startSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // s.startSEPoint.locationVector = this.tmpVector; // update the start point
+
+      //South pole *always* - The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(s.endSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // s.endSEPoint.locationVector = this.tmpVector; // update the end point
+
+      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.normalVector = this.tmpVector; // update the end point
+
+      s.shallowUpdate();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // eslint-disable-next-line
   actionOnCircle(c: SECircle): boolean {
-    //Circles are completely determined by two points they depend on so no need to update them
-    return false;
+    //Circles are completely determined by two points they depend on so no need to update them unless that circle is a
+    // SELatitude where the (center && circle)points are *not* in the object tree so handle those here
+    if (c instanceof SELatitude) {
+      console.log("SELatitude actionOnCircle");
+      this.tmpVector.copy(c.circleSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      c.circleSEPoint.locationVector = this.tmpVector; // update the circle point
+
+      // The center is *always* the north pole.
+      // The static north pole is updated in se.ts if it is defined
+      // this.tmpVector.copy(c.centerSEPoint.locationVector); // Copy the old vector location of the SEPoint
+      // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      // c.centerSEPoint.locationVector = this.tmpVector; // update the center point
+      c.shallowUpdate();
+      return true;
+    } else {
+      return false;
+    }
   }
   actionOnLabel(l: SELabel): boolean {
     this.tmpVector.copy(l.locationVector); // Copy the old vector location of the SEPoint

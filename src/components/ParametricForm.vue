@@ -775,12 +775,12 @@ function addParametricCurve(): void {
           antipodalVtx.locationVector.multiplyScalar(-1);
           // Set the initial label location
           const newSEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
+          );
           // newSEAntipodalLabel.locationVector = tmpVector;
           parametricCommandGroup.addCommand(
             new AddAntipodalPointCommand(

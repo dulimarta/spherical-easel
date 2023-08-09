@@ -29,6 +29,8 @@ import {
 // import { SEParametric } from "./SEParametric";
 // import { SEPolygon } from "./SEPolygon";
 import { SEEarthPoint } from "./SEEarthPoint";
+import { SELatitude } from "./SELatitude";
+import { SELongitude } from "./SELongitude";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -94,7 +96,7 @@ export class SELabel extends SENodule implements Visitable {
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
       if (parent instanceof SEEarthPoint) {
-        this.ref.initialLabelDisplayMode = LabelDisplayMode.NameAndCaption;
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
         this.showing = true;
       } else {
         this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
@@ -108,11 +110,21 @@ export class SELabel extends SENodule implements Visitable {
       this.ref.initialLabelDisplayMode = SETTINGS.line.defaultLabelMode;
       this.showing = SETTINGS.line.showLabelsInitially;
     } else if (parent instanceof SESegment) {
-      this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
-      this.showing = SETTINGS.segment.showLabelsInitially;
+      if (parent instanceof SELongitude) {
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
+        this.showing = true;
+      } else {
+        this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
+        this.showing = SETTINGS.segment.showLabelsInitially;
+      }
     } else if (parent instanceof SECircle) {
-      this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
-      this.showing = SETTINGS.circle.showLabelsInitially;
+      if (parent instanceof SELatitude) {
+        this.ref.initialLabelDisplayMode = LabelDisplayMode.CaptionOnly;
+        this.showing = true;
+      } else {
+        this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
+        this.showing = SETTINGS.circle.showLabelsInitially;
+      }
     } else if (parent instanceof SEAngleMarker) {
       this.ref.initialLabelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
       this.showing = SETTINGS.angleMarker.showLabelsInitially;
@@ -261,11 +273,12 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = SENodule.store.canvasWidth;
+    const canvasWidth = SENodule.store.canvasWidth;
+    const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
     return (
-      boundingBox.left - canvasSize / 2 <
+      boundingBox.left - canvasWidth / 2 <
         unitIdealVector.x *
           SETTINGS.boundaryCircle.radius *
           currentMagnificationFactor +
@@ -274,8 +287,8 @@ export class SELabel extends SENodule implements Visitable {
         SETTINGS.boundaryCircle.radius *
         currentMagnificationFactor +
         zoomTranslation[0] <
-        boundingBox.right - canvasSize / 2 &&
-      boundingBox.top - canvasSize / 2 <
+        boundingBox.right - canvasWidth / 2 &&
+      boundingBox.top - canvasHeight / 2 <
         -unitIdealVector.y *
           SETTINGS.boundaryCircle.radius *
           currentMagnificationFactor +
@@ -284,7 +297,7 @@ export class SELabel extends SENodule implements Visitable {
         SETTINGS.boundaryCircle.radius *
         currentMagnificationFactor +
         zoomTranslation[1] < // minus sign because text layers are not y flipped
-        boundingBox.bottom - canvasSize / 2
+        boundingBox.bottom - canvasHeight / 2
     );
   }
 

@@ -10,6 +10,7 @@ import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SECircle } from "@/models/SECircle";
 // import { Group } from "two.js/src/group";
 
 const desiredZAxis = new Vector3();
@@ -82,7 +83,7 @@ export default class RotateHandler extends Highlighter {
   private rotateAboutObjectMode = false;
   private axisOfRotation = new Vector3();
   private oldAxisOfRotation = new Vector3();
-  private rotationObject: SEPoint | SESegment | SELine | null = null;
+  private rotationObject: SEPoint | SESegment | SELine | SECircle | null = null;
   private newObjectOfRotation = true;
   private altKeyDown = false;
 
@@ -271,6 +272,42 @@ export default class RotateHandler extends Highlighter {
             this.rotateAboutObjectMode = false;
           }
         }
+      } else if (this.hitSECircles.length > 0) {
+        // if the rotation object is null or the rotation object id is not the first filtered point id then
+        // create a new point of rotation
+        if (
+          this.rotationObject === null ||
+          this.rotationObject.id !== this.hitSECircles[0].id
+        ) {
+          //un glow and unselected the previous object of rotation
+          if (this.rotationObject !== null) {
+            this.rotationObject.glowing = false;
+            this.rotationObject.selected = false;
+          }
+          this.rotationObject = this.hitSECircles[0];
+          this.oldAxisOfRotation.copy(this.axisOfRotation);
+          this.axisOfRotation
+            .copy(this.hitSECircles[0].centerSEPoint.locationVector)
+            .normalize();
+          this.rotateAboutObjectMode = true;
+          rotationObjectTypeKey = "objects.circle";
+          rotationObjectName = this.hitSECircles[0].label?.ref.shortUserName;
+          this.newObjectOfRotation = true;
+          this.rotationObject.selected = true;
+          this.rotationObject.glowing = true;
+        } else if (this.rotationObject !== null) {
+          // move back to not rotating about an object mode
+          //un glow and unselected the previous object of rotation
+          if (this.rotationObject !== null) {
+            this.rotationObject.glowing = false;
+            this.rotationObject.selected = false;
+            rotationObjectTypeKey = "";
+            rotationObjectName = "";
+            this.newObjectOfRotation = true;
+            this.rotationObject = null;
+            this.rotateAboutObjectMode = false;
+          }
+        }
       }
 
       // display message to user if there is a new object of rotation
@@ -362,6 +399,8 @@ export default class RotateHandler extends Highlighter {
         this.hitSESegments[0].glowing = true;
       } else if (this.hitSELines.length > 0) {
         this.hitSELines[0].glowing = true;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
       }
       return;
     }
@@ -440,7 +479,7 @@ export default class RotateHandler extends Highlighter {
           this.currentSphereVector
         );
         if (tmpVector1.isZero()) {
-          console.error("The old axis of rotation was used.");
+          //console.error("The old axis of rotation was used.");
           desiredZAxis.copy(this.oldAxisOfRotation).normalize();
         } else {
           this.oldAxisOfRotation.copy(tmpVector1);

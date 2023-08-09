@@ -120,7 +120,7 @@ export class SEIsometryCircle extends SECircle {
     this.updateKids(objectState, orderedSENoduleList);
   }
 
-  public isNonFreeCirle(): boolean {
+  public isNonFreeCircle(): boolean {
     return true;
   }
 }

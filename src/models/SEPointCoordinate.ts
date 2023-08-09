@@ -12,7 +12,7 @@ export enum CoordinateSelection {
 }
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
-  readonly point: SEPoint;
+  readonly sePoint: SEPoint;
 
   /**
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
@@ -23,9 +23,10 @@ export class SEPointCoordinate extends SEExpression {
   constructor(point: SEPoint, selector: CoordinateSelection) {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.selector = selector;
-    this.point = point;
+    this.sePoint = point;
   }
   public customStyles = (): Set<string> => emptySet;
+
   public get value(): number {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
@@ -40,8 +41,8 @@ export class SEPointCoordinate extends SEExpression {
     }
   }
 
-  get sePoint(): SEPoint {
-    return this.point;
+  get point(): SEPoint {
+    return this.sePoint;
   }
 
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
@@ -49,8 +50,15 @@ export class SEPointCoordinate extends SEExpression {
     return this._valueDisplayMode;
   }
   set valueDisplayMode(vdm: ValueDisplayMode) {
+    //console.log("update VDM in point coordinate ", this.selector);
     this._valueDisplayMode = vdm;
-    // move the vdm to the plottable label, but SEPointCoordinate are not effected by the value of vdm
+    // move the vdm to the plottable label, but SEPointCoordinate are
+    // not effected by the value of vdm UNLESS in Earth mode so
+    // update the value display mode label of the SEPoint because setting this
+    // triggers an update of the label
+    if (this.sePoint.label && this.selector === CoordinateSelection.Z_VALUE) {
+      this.sePoint.label.ref.valueDisplayMode = vdm;
+    }
   }
 
   public get noduleDescription(): string {
@@ -59,7 +67,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.global.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.global.t(`objectTree.x`)),
-            pt: this.point.label?.ref.shortUserName,
+            pt: this.sePoint.label?.ref.shortUserName,
             val: this.value
           })
         );
@@ -67,7 +75,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.global.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.global.t(`objectTree.y`)),
-            pt: this.point.label?.ref.shortUserName,
+            pt: this.sePoint.label?.ref.shortUserName,
             val: this.value
           })
         );
@@ -75,7 +83,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.global.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.global.t(`objectTree.z`)),
-            pt: this.point.label?.ref.shortUserName,
+            pt: this.sePoint.label?.ref.shortUserName,
             val: this.value
           })
         );
@@ -91,8 +99,8 @@ export class SEPointCoordinate extends SEExpression {
           i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.x`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            pt: this.sePoint.label?.ref.shortUserName,
+            val: this.prettyValue()
           })
         );
       case CoordinateSelection.Y_VALUE:
@@ -100,8 +108,8 @@ export class SEPointCoordinate extends SEExpression {
           i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.y`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            pt: this.sePoint.label?.ref.shortUserName,
+            val: this.prettyValue()
           })
         );
       case CoordinateSelection.Z_VALUE:
@@ -109,8 +117,8 @@ export class SEPointCoordinate extends SEExpression {
           i18n.global.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.global.t(`objectTree.z`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.prettyValue
+            pt: this.sePoint.label?.ref.shortUserName,
+            val: this.prettyValue()
           })
         );
       default:
@@ -119,18 +127,18 @@ export class SEPointCoordinate extends SEExpression {
   }
 
   public shallowUpdate(): void {
-    this.exists = this.point.exists;
+    this.exists = this.sePoint.exists;
 
     if (this.exists) {
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
       this.invMatrix = SENodule.store.inverseTotalRotationMatrix;
       this.valueVector
-        .copy(this.point.locationVector)
+        .copy(this.sePoint.locationVector)
         .applyMatrix4(this.invMatrix);
 
       // When this updates send its value to the label
-      if (this.point.label) {
-        this.point.label.ref.value = [
+      if (this.sePoint.label) {
+        this.sePoint.label.ref.value = [
           this.valueVector.x,
           this.valueVector.y,
           this.valueVector.z

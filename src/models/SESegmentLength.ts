@@ -1,4 +1,4 @@
-import { SEExpression, SESegment } from "./internal";
+import { SEExpression, SENodule, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
@@ -11,7 +11,7 @@ export class SESegmentLength extends SEExpression {
   constructor(parent: SESegment) {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.seSegment = parent;
-    this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
+    this.valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
   public customStyles = (): Set<string> => emptySet;
   public get value(): number {
@@ -31,11 +31,10 @@ export class SESegmentLength extends SEExpression {
   }
 
   public get noduleDescription(): string {
-    // const val = ;
     return String(
       i18n.global.t(`objectTree.segmentLength`, {
         seg: this.seSegment.label?.ref.shortUserName,
-        val: this.value
+        val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
       })
     );
   }
@@ -45,7 +44,7 @@ export class SESegmentLength extends SEExpression {
       this.name +
       ": " +
       this.seSegment.label?.ref.shortUserName +
-      ` ${this.prettyValue}`
+      ` ${this.prettyValue()}`
     );
   }
 

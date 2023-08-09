@@ -60,8 +60,8 @@
                     color="secondary"
                     icon="$shareConstruction"
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
-                <!-- show delete button only for its owner -->
-                <v-btn
+                  <!-- show delete button only for its owner -->
+                  <v-btn
                     v-if="r.author === userEmail"
                     id="_test_deletefab"
                     class="mx-1"
@@ -85,7 +85,7 @@
     :yesAction="doLoadConstruction"
     no-text="Cancel"
     max-width="50%">
-    {{ t('unsavedObjects') }}
+    {{ t("unsavedObjects") }}
   </Dialog>
   <Dialog
     ref="constructionShareDialog"
@@ -94,10 +94,13 @@
     :yesAction="doShareConstruction"
     no-text="Cancel"
     max-width="50%">
-    {{ t('copyURL', {docId: sharedDocId}) }}
+    {{ t("copyURL", { docId: sharedDocId }) }}
   </Dialog>
 
-  <v-snackbar v-model="showDeleteWarning" location="top" :timeout="DELETE_DELAY">
+  <v-snackbar
+    v-model="showDeleteWarning"
+    location="top"
+    :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
@@ -126,20 +129,20 @@ const props = defineProps<{
   allowSharing: boolean;
 }>();
 const constructionLoadDialog: Ref<DialogAction | null> = ref(null);
-const constructionShareDialog: Ref<DialogAction|null> = ref(null)
+const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const appAuth = getAuth();
 const selectedDocId = ref("");
-const sharedDocId = ref("")
+const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
-const {constructionDocId} = storeToRefs(acctStore)
+const { constructionDocId } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 const { deleteConstruction } = useConstruction();
-const clipboardAPI = useClipboard()
-const readPermission = usePermission('clipboard-read')
-const writePermission = usePermission('clipboard-write')
+const clipboardAPI = useClipboard();
+const readPermission = usePermission("clipboard-read");
+const writePermission = usePermission("clipboard-write");
 let lastDocId: string | null = null;
 let deleteTimer: any;
 
@@ -169,7 +172,7 @@ function handleLoadConstruction(docId: string): void {
   selectedDocId.value = docId;
   if (hasUnsavedNodules.value) constructionLoadDialog.value?.show();
   else {
-    constructionDocId.value = docId
+    constructionDocId.value = docId;
     doLoadConstruction();
   }
 }
@@ -186,8 +189,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     script = props.items[pos].parsedScript;
     rotationMatrix = props.items[pos].sphereRotationMatrix;
     if (props.items[pos].tools) toolSet = props.items[pos].tools;
-  } else
-    rotationMatrix = new Matrix4()
+  } else rotationMatrix = new Matrix4();
   if (toolSet === undefined) {
     console.debug("Include all tools");
     acctStore.resetToolset(true); /* include all tools */
@@ -212,7 +214,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // before running the script
     seStore.setRotationMatrix(rotationMatrix);
     run(script);
-    // rotateSphere(rotationMatrix.invert());
+    //seStore.rotateSphere(rotationMatrix!.invert());
     seStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     // update all
@@ -232,7 +234,7 @@ async function doDeleteConstruction(docId: string) {
         key: t("constructionDeleted", { docId }),
         type: "success"
       });
-      else
+    else
       EventBus.fire("show-alert", {
         key: t("constructionDeleteFailed", { docId }),
         type: "error"
@@ -257,13 +259,13 @@ function cancelDelete() {
   clearTimeout(deleteTimer);
 }
 
-function handleShareConstruction(docId:string) {
-  sharedDocId.value = docId
-  constructionShareDialog.value?.show()
+function handleShareConstruction(docId: string) {
+  sharedDocId.value = docId;
+  constructionShareDialog.value?.show();
 }
 
 function doShareConstruction() {
-  clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`)
+  clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
 }
 </script>
 

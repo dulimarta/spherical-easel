@@ -52,7 +52,7 @@
 
           <div id="earthAndCircle">
             <EarthLayer
-              v-if="isEarthMode && svgDataImage.length === 0"
+              v-if="localIsEarthMode && svgDataImage.length === 0"
               :available-height="availHeight"
               :available-width="availWidth" />
             <SphereFrame
@@ -60,7 +60,33 @@
               :available-width="availWidth"
               :available-height="availHeight"
               v-show="svgDataImage.length === 0"
-              :is-earth-mode="isEarthMode" />
+              :is-earth-mode="localIsEarthMode" />
+            <v-switch
+              hide-details
+              color="primary"
+              :class="['earthToggler', 'bg-blue-lighten-2']"
+              density="compact"
+              variant="outlined"
+              v-model="localIsEarthMode"
+              @click="setEarthModeFunction()"
+              label="Earth Mode">
+              <template #append v-if="localIsEarthMode">
+                <v-icon id="placeBubble">$earthPoint</v-icon>
+                <v-menu
+                  activator="#placeBubble"
+                  location="right"
+                  :offset="[24, 16]"
+                  :close-on-content-click="false">
+                  <Suspense>
+                    <AddressInput />
+                  </Suspense>
+                </v-menu>
+              </template>
+            </v-switch>
+
+            <AddEarthObject
+              v-if="localIsEarthMode"
+              :class="['displayEarthObject', 'bg-blue-lighten-2']" />
           </div>
           <v-overlay
             :scrim="false"
@@ -83,7 +109,8 @@
               class="mx-1"
               v-for="t in leftShortcutGroup"
               :model="t" />
-              <ShortcutIcon :disabled="!hasObjects"
+            <ShortcutIcon
+              :disabled="!hasObjects"
               class="mx-1"
               :model="TOOL_DICTIONARY.get('resetAction')!" />
             <MessageHub />
@@ -150,7 +177,8 @@ import {
   onBeforeUnmount,
   onMounted,
   Ref,
-  ref
+  ref,
+  watch
 } from "vue";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
@@ -158,6 +186,7 @@ import Toolbox from "@/components/ToolBox.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
+import AddEarthObject from "@/components/AddEarthObject.vue";
 import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
@@ -206,6 +235,11 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
+import { SEExpression } from "@/models/SEExpression";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
+import { SEAngleMarker } from "@/models/internal";
+import { SetEarthModeCommand } from "@/commands/SetEarthModeCommand";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const DELETE_DELAY = 5000; // in milliseconds
@@ -258,6 +292,7 @@ const leftPane: Ref<HTMLElement | null> = ref(null);
 const toolboxMinified = ref(false);
 const previewClass = ref("");
 const constructionInfo = ref<any>({});
+const localIsEarthMode = ref(false);
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -436,7 +471,6 @@ function handleKeyDown(keyEvent: KeyboardEvent): void {
 }
 //#region resizePlottables
 function resizePlottables(e: { factor: number }): void {
-  // const oldFactor = previousZoomMagnificationFactor;
   // Update the current stroke widths/radius in each plottable class
   Line.updateCurrentStrokeWidthForZoom(e.factor);
   Segment.updateCurrentStrokeWidthForZoom(e.factor);
@@ -447,7 +481,6 @@ function resizePlottables(e: { factor: number }): void {
   Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
   Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
-  //console.debug("Resize all nodules and the temporary ones");
   // Apply the new size in each nodule in the store
   seNodules.value.forEach((p: SENodule) => {
     p.ref?.adjustSize();
@@ -492,7 +525,14 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   }
   return style;
 }
-
+//When the SetEarthModeCommand is undone, we need to watch the isEarthMode variable in the store
+// so seting isEarthMode in the store updates the localIsEarthMode variable and the vue component updates
+watch(
+  () => isEarthMode.value,
+  () => {
+    localIsEarthMode.value = !localIsEarthMode.value;
+  }
+);
 onBeforeRouteLeave(
   (
     toRoute: RouteLocationNormalized,
@@ -512,6 +552,37 @@ onBeforeRouteLeave(
 
 function handleToolboxMinify(state: boolean) {
   toolboxMinified.value = state;
+}
+
+function setEarthModeFunction() {
+  localIsEarthMode.value = !localIsEarthMode.value;
+  let setNoduleDisplayCommandGroup = new CommandGroup();
+  setNoduleDisplayCommandGroup.addCommand(
+    new SetEarthModeCommand(localIsEarthMode.value)
+  );
+  // Use the store to record the current state of the value display modes of the all SEExpression objects
+  let seExpressions = seNodules.value
+    .filter(
+      nodule =>
+        nodule instanceof SEExpression && !(nodule instanceof SEAngleMarker) // AngleMarkers units are never km or mi
+    )
+    .map(nodule => nodule as SEExpression);
+
+  if (seExpressions.length !== 0) {
+    // The click operation on the switch triggers before the isEarthMode variable
+    // is changed, so at this point in the code when the isEarthMode is false we have entered EarthMode
+    seExpressions.forEach(seExpression => {
+      let VDMArray = seExpression.recordCurrentValueDisplayModeAndUpdate(
+        localIsEarthMode.value
+      );
+      setNoduleDisplayCommandGroup.addCommand(
+        new SetValueDisplayModeCommand(seExpression, VDMArray[0], VDMArray[1])
+      );
+    });
+  }
+  // The click operation on the switch triggers before the isEarthMode variable hence the !localIsEarthMode
+
+  setNoduleDisplayCommandGroup.execute();
 }
 </script>
 <style scoped lang="scss">
@@ -598,11 +669,20 @@ function handleToolboxMinify(state: boolean) {
  * Looks like IDs are not preserved after built */
 
 .earthToggler {
-  position: relative;
-  top: -56px;
+  position: absolute;
+  bottom: 88px;
   left: 12px;
   margin: 0;
   padding: 0 1em;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+.displayEarthObject {
+  position: absolute;
+  bottom: 140px;
+  left: 12px;
+  margin: 0;
+  padding: 0 0em;
   border-radius: 8px;
   align-self: flex-start;
 }

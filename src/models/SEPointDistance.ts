@@ -21,7 +21,7 @@ export class SEPointDistance extends SEExpression {
       i18n.global.t(`objectTree.distanceBetweenPts`, {
         pt1: this.secondSEPoint.label?.ref.shortUserName,
         pt2: this.firstSEPoint.label?.ref.shortUserName,
-        val: this.value
+        val: this.prettyValue()
       })
     );
   }
@@ -30,7 +30,7 @@ export class SEPointDistance extends SEExpression {
     return String(
       i18n.global.t(`objectTree.distanceValue`, {
         token: this.name,
-        val: this.prettyValue
+        val: this.prettyValue()
       })
     );
   }

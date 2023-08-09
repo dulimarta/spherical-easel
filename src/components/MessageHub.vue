@@ -1,134 +1,152 @@
 <template>
   <div id="msghub">
-    <v-btn icon size="small" variant="text" @click="notifyMe = !notifyMe">
-      <v-icon v-if="notifyMe">mdi-bell</v-icon>
-      <v-icon v-else>mdi-bell-off</v-icon>
-    </v-btn>
-    <span>
-      <!-- Message filter -->
-      <v-badge
-        :content="selectedMessageType.length"
-        v-if="selectedMessageType.length !== messageTypes.length">
-        <v-icon id="filter-menu-popup">mdi-filter</v-icon>
-      </v-badge>
-      <v-icon v-else id="filter-menu-popup">mdi-filter</v-icon>
-      <v-tooltip
-        activator="#filter-menu-popup"
-        v-if="selectedMessageType.length !== messageTypes.length">
-        {{ selectedMessageType.map(s => s.toUpperCase()).join(", ") }}
-      </v-tooltip>
-      <v-menu
-        v-model="filterMenuVisible"
-        activator="#filter-menu-popup"
-        :close-on-content-click="false"
-        location="top"
-        offset="32">
-        <v-card class="pa-1">
-          <v-card-title v-t="'selectMsgType'"></v-card-title>
-          <v-card-text>
-            <v-checkbox
-              :label="t('selectAll')"
-              v-model="showAllType"
-              @update:model-value="doSelectAllMessageType" />
-            <div style="display: flex">
-              <v-checkbox
-                v-model="selectedMessageType"
-                class="mx-2"
-                v-for="mt in messageTypes"
-                :value="mt.value"
-                :label="mt.title"
+    <v-container class="pa-0">
+      <!--Teleport to="#app-messages"-->
+      <v-row justify="center" align="center" class="ma-0">
+        <!-- <v-col cols="auto">Message filter {{ selectedMessageType }}</v-col> -->
+        <v-col cols="auto" class="pa-0">
+          <!-- Enable/Disable notification -->
+          <v-btn icon size="small" variant="text" @click="notifyMe = !notifyMe">
+            <v-icon v-if="notifyMe">mdi-bell</v-icon>
+            <v-icon v-else>mdi-bell-off</v-icon>
+          </v-btn>
+        </v-col>
+        <v-col cols="auto">
+          <!-- Message filter -->
+          <v-badge
+            :content="selectedMessageType.length"
+            v-if="selectedMessageType.length !== messageTypes.length">
+            <v-icon id="filter-menu-popup">mdi-filter</v-icon>
+          </v-badge>
+          <v-icon v-else id="filter-menu-popup">mdi-filter</v-icon>
+          <v-tooltip
+            activator="#filter-menu-popup"
+            v-if="selectedMessageType.length !== messageTypes.length">
+            {{ selectedMessageType.map(s => s.toUpperCase()).join(", ") }}
+          </v-tooltip>
+          <v-menu
+            v-model="filterMenuVisible"
+            activator="#filter-menu-popup"
+            :close-on-content-click="false"
+            location="top"
+            offset="32">
+            <v-card class="pa-1">
+              <v-card-title v-t="'selectMsgType'"></v-card-title>
+              <v-card-text>
+                <v-checkbox
+                  :label="t('selectAll')"
+                  v-model="showAllType"
+                  @update:model-value="doSelectAllMessageType" />
+                <div style="display: flex">
+                  <v-checkbox
+                    v-model="selectedMessageType"
+                    class="mx-2"
+                    v-for="mt in messageTypes"
+                    :value="mt.value"
+                    :label="mt.title"
+                    density="compact"
+                    direction="horizontal"></v-checkbox>
+                </div>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  variant="outlined"
+                  density="comfortable"
+                  @click="filterMenuVisible = false">
+                  OK
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
+        </v-col>
+        <v-col id="msg-display-area" class="pa-0 ma-0">
+          <!-- The actual messages -->
+          <template v-if="notifyMe">
+            <v-slide-x-transition>
+              <v-alert
+                v-if="currentMsg"
+                :key="currentMsg.key"
+                class="my-1 py-0"
+                border="end"
+                variant="outlined"
+                :border-color="alertType(currentMsg)"
+                :type="alertType(currentMsg)"
                 density="compact"
-                direction="horizontal"></v-checkbox>
-            </div>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn
-              variant="outlined"
-              density="comfortable"
-              @click="filterMenuVisible = false">
-              OK
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-menu>
-    </span>
-    <span id="msg-display-area" style="height: 62px">
-      <!-- The actual messages -->
-      <!-- <v-slide-x-transition> -->
-      <v-alert
-        v-if="notifyMe"
-        :key="currentMsg.key"
-        class="my-1 py-0"
-        border="start"
-        variant="text"
-        :border-color="alertType(currentMsg)"
-        :type="alertType(currentMsg)"
-        max-height="60px"
-        :closable="filteredMessages.length > 0"
-        :icon="currentMsg.type"
-        :text="pretty(currentMsg)"
-        v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
-
-      <!-- </v-slide-x-transition> -->
-      <v-alert
-        v-else
-        color="grey"
-        :text="t('msgDisabled')"
-        class="text-white"></v-alert>
-    </span>
-    <span>
-      <!-- Expand/collapse list of messages -->
-      <v-menu
-        v-model="msgPopupVisible"
-        activator="#msg-popup"
-        :close-on-content-click="false"
-        location="top"
-        contained>
-        <v-card class="bg-white" :max-width="600">
-          <v-card-text>
-            <v-alert
-              class="my-1 py-0"
-              border="end"
-              variant="outlined"
-              :border-color="alertType(msg)"
-              v-for="(msg, index) in filteredMessages"
-              :key="`${msg.key}-${index}`"
-              closable
-              :icon="iconType(msg)"
-              :type="alertType(msg)"
-              :text="pretty(msg)"
-              v-on:update:model-value="deleteMessageByIndex(index)"></v-alert>
-          </v-card-text>
-        </v-card>
-      </v-menu>
-      <v-btn
-        id="msg-popup"
-        flat
-        icon
-        :disabled="filteredMessages.length == 0"
-        size="small">
-        <v-icon v-if="msgPopupVisible">mdi-triangle-down</v-icon>
-        <v-badge
-          v-else-if="filteredMessages.length > 1"
-          :content="filteredMessages.length">
-          <v-icon>mdi-triangle</v-icon>
-        </v-badge>
-        <v-icon v-else>mdi-triangle</v-icon>
-      </v-btn>
-    </span>
-    <!-- Delete messages -->
-    <v-btn
-      flat
-      icon
-      size="small"
-      :disabled="messages.length === 0"
-      @click="tryDeleteMessages">
-      <v-badge :content="messages.length" v-if="messages.length > 0">
-        <v-icon>mdi-trash-can</v-icon>
-      </v-badge>
-      <v-icon v-else>mdi-trash-can</v-icon>
-    </v-btn>
+                closable
+                :icon="currentMsg.type"
+                :text="pretty(currentMsg)"
+                v-on:update:model-value="deleteMessageByIndex(0)"></v-alert>
+              <v-alert v-else :text="t('noMessages')"></v-alert>
+            </v-slide-x-transition>
+          </template>
+          <v-alert
+            transition="fade-transition"
+            v-else
+            color="grey"
+            :text="t('msgDisabled')"
+            class="text-white"></v-alert>
+        </v-col>
+        <v-col cols="auto" class="pa-0">
+          <!-- Expand/collapse list of messages -->
+          <v-menu
+            v-model="msgPopupVisible"
+            activator="#msg-popup"
+            :close-on-content-click="false"
+            location="top"
+            contained>
+            <v-card class="bg-white" :max-width="600">
+              <v-card-text>
+                <v-alert
+                  class="my-1 py-0"
+                  border="end"
+                  variant="outlined"
+                  :border-color="alertType(msg)"
+                  v-for="(msg, index) in filteredMessages"
+                  :key="`${msg.key}-${index}`"
+                  density="compact"
+                  closable
+                  :icon="iconType(msg)"
+                  :type="alertType(msg)"
+                  :text="pretty(msg)"
+                  v-on:update:model-value="
+                    deleteMessageByIndex(index)
+                  "></v-alert>
+              </v-card-text>
+            </v-card>
+          </v-menu>
+          <v-btn
+            id="msg-popup"
+            flat
+            icon
+            :disabled="filteredMessages.length == 0"
+            size="small">
+            <v-icon v-if="msgPopupVisible">mdi-triangle-down</v-icon>
+            <v-badge
+              v-else-if="filteredMessages.length > 1"
+              :content="filteredMessages.length">
+              <v-icon>mdi-triangle</v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-triangle</v-icon>
+          </v-btn>
+        </v-col>
+        <v-col cols="auto" class="pa-0 mx-1">
+          <!-- Delete messages -->
+          <v-btn
+            flat
+            icon
+            size="small"
+            :disabled="messages.length === 0"
+            @click="tryDeleteMessages">
+            <v-badge :content="messages.length" v-if="messages.length > 0">
+              <v-icon>mdi-trash-can</v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-trash-can</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <!--/Teleport-->
+    </v-container>
   </div>
   <v-snackbar v-model="showPurgeMessages" :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
@@ -196,18 +214,8 @@ function doSelectAllMessageType() {
     selectedMessageType.value.push(...SETTINGS.messageTypes);
   }
 }
-
-const currentMsg = computed(
-  (): MessageType =>
-    filteredMessages.value.length > 0
-      ? filteredMessages.value[0]
-      : {
-          type: "info",
-          key: t("noMessages"),
-          secondaryMsg: "",
-          secondaryMsgKeyOptions: "",
-          timestamp: 0
-        }
+const currentMsg = computed((): MessageType | null =>
+  filteredMessages.value.length > 0 ? filteredMessages.value[0] : null
 );
 
 function shortMessage(m: MessageType): string {
@@ -269,10 +277,7 @@ function cancelDeleteMessages() {
 }
 
 #msghub {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 64px;
+  width: 80%;
   margin: auto; /* place this center in its parent */
   padding: 0;
   border: 1px solid white;

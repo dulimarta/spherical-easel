@@ -1,7 +1,9 @@
-import { h, JSXComponent } from "vue"
-import IconBase from "@/components/IconBase.vue"
+import { h, JSXComponent } from "vue";
+import IconBase from "@/components/IconBase.vue";
 
-const iconNames = [  "angle",
+const iconNames = [
+  "earthPoint",
+  "angle",
   "angleBisector",
   "antipodalPoint",
   "applyTransformation",
@@ -17,6 +19,9 @@ const iconNames = [  "angle",
   "deleteConstruction",
   "deleteNode",
   "downloadConstruction",
+  "earthLatitude",
+  "earthLongitude",
+  "earthPoint",
   "ellipse",
   "hide",
   "hideNode",
@@ -68,14 +73,18 @@ const iconNames = [  "angle",
   "undo",
   "zoomFit",
   "zoomIn",
-  "zoomOut"]
+  "zoomOut"
+];
 
 const toRecord = (n: Array<string>): Record<string, JSXComponent> => {
-  return n.reduce((acc: Record<string, JSXComponent>, curr: string, pos: number) => {
-    return {
-      ...acc,
-      [curr]: () => h(IconBase as any, { iconName: curr })
-    };
-  }, {} as Record<string, JSXComponent>);
+  return n.reduce(
+    (acc: Record<string, JSXComponent>, curr: string, pos: number) => {
+      return {
+        ...acc,
+        [curr]: () => h(IconBase as any, { iconName: curr })
+      };
+    },
+    {} as Record<string, JSXComponent>
+  );
 };
-export const customIcons = toRecord(iconNames)
+export const customIcons = toRecord(iconNames);
