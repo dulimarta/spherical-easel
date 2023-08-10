@@ -19,17 +19,6 @@
   background-color: transparent;">
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
-   <!-- <Splitpanes
-      :style="contentHeightStyle"
-      class="default-theme"
-      @resize="dividerMoved"
-      :push-other-panes="false"> -->
-      <!-- Use the left page for the toolbox -->
-      <!-- <Pane
-        ref="leftPane"
-        min-size="5"
-        max-size="35"
-        :size="toolboxMinified ? 5 : LEFT_PANE_PERCENTAGE"> -->
         <div id="toolbox">
           <Toolbox
           id="toolbox"
@@ -37,14 +26,7 @@
           @minify-toggled="handleToolboxMinify" />
         </div>
 
-      <!-- </Pane> -->
 
-      <!-- <Pane> -->
-        <!-- Use the right pane mainly for the canvas and style panel -->
-        <!--
-        When minified, the style panel takes only 5% of the remaining width
-        When expanded, it takes 30% of the remaining width
-      -->
         <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
         <div id="sphere-and-msghub">
@@ -107,7 +89,7 @@
           <div id="msghub">
             <ShortcutIcon
               class="mx-1"
-              v-for="t in leftShortcutGroup"
+              v-for="t in leftShortcutGroup" :key="t.action"
               :model="t" />
             <ShortcutIcon
               :disabled="!hasObjects"
@@ -148,16 +130,14 @@
 
           </div>
         </div>
-      <!-- </Pane> -->
-   <!-- </Splitpanes> -->
     <Dialog
       ref="unsavedWorkDialog"
       max-width="40%"
-      :title="t('constructions.confirmation')"
-      :yes-text="t('constructions.keep')"
-      :no-text="t('constructions.discard')"
+      :title="t('unsavedConstructionsConfirmation')"
+      :yes-text="t('constructionsKeep')"
+      :no-text="t('constructionsDiscard')"
       :no-action="doLeave">
-      {{ t(`constructions.unsavedConstructionMsg`) }}
+      {{ t(`unsavedConstructionsMessage`) }}
     </Dialog>
     <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
       {{ t("clearConstructionMessage") }}
@@ -180,8 +160,6 @@ import {
   ref,
   watch
 } from "vue";
-import { Splitpanes, Pane } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 
 import SphereFrame from "@/components/SphereFrame.vue";
@@ -218,7 +196,6 @@ import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import Parametric from "@/plottables/Parametric";
-import { getAuth } from "firebase/auth";
 import {
   getStorage,
   ref as storageRef,
@@ -259,8 +236,6 @@ const {
   seNodules,
   temporaryNodules,
   hasObjects,
-  canvasHeight,
-  canvasWidth,
   zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore);
@@ -271,21 +246,18 @@ const { mainRect } = useLayout();
 const display = useDisplay();
 const contentHeight = computed(() => display.height.value - mainRect.value.top);
 const overlayHeight = computed(() => contentHeight.value - 60);
-const contentHeightStyle = computed(() => ({
-  height: contentHeight.value + "px"
-}));
 
 const leftShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("undoAction")!,
   TOOL_DICTIONARY.get("redoAction")!
 ]);
-const rightShortcutGroup = computed(() => [
-  TOOL_DICTIONARY.get("zoomOut")!,
-  TOOL_DICTIONARY.get("zoomIn")!,
-  TOOL_DICTIONARY.get("zoomFit")!
-]);
+// const rightShortcutGroup = computed(() => [
+//   TOOL_DICTIONARY.get("zoomOut")!,
+//   TOOL_DICTIONARY.get("zoomIn")!,
+//   TOOL_DICTIONARY.get("zoomFit")!
+// ]);
 
-const leftPane: Ref<HTMLElement | null> = ref(null);
+// const leftPane: Ref<HTMLElement | null> = ref(null);
 // const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
@@ -401,17 +373,17 @@ onBeforeUnmount((): void => {
  * Split pane resize handler
  * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
  */
-function dividerMoved(
-  event: Array<{ min: number; max: number; size: number }>
-): void {
-  // event[0].size is the width of the left panel (in percentage)
-  // 80px is the width of the right navigation drawer
-  availWidth.value =
-    display.width.value - mainRect.value.left - mainRect.value.right - 80;
-  availHeight.value =
-    display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
-  // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
-}
+// function dividerMoved(
+//   event: Array<{ min: number; max: number; size: number }>
+// ): void {
+//   // event[0].size is the width of the left panel (in percentage)
+//   // 80px is the width of the right navigation drawer
+//   availWidth.value =
+//     display.width.value - mainRect.value.left - mainRect.value.right - 80;
+//   availHeight.value =
+//     display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
+//   // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
+// }
 
 function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
@@ -497,46 +469,21 @@ function doLeave(): void {
   if (attemptedToRoute) router.replace({ path: attemptedToRoute.path });
 }
 
-function listItemStyle(idx: number, xLoc: string, yLoc: string) {
-  //xLoc determines left or right, yLoc determines top or bottom
-  const style: any = {};
 
-  switch (idx) {
-    case 1:
-      style[yLoc] = "0px";
-      style[xLoc] = "36px";
-      break;
-    case 2:
-      style[yLoc] = "36px";
-      style[xLoc] = "0px";
-      break;
-    case 3:
-      style[yLoc] = "0px";
-      style[xLoc] = "72px";
-      break;
-    case 4:
-      style[yLoc] = "36px";
-      style[xLoc] = "36px";
-      break;
-    case 5:
-      style[yLoc] = "72px";
-      style[xLoc] = "0px";
-      break;
-  }
-  return style;
-}
 //When the SetEarthModeCommand is undone, we need to watch the isEarthMode variable in the store
-// so seting isEarthMode in the store updates the localIsEarthMode variable and the vue component updates
+// so setting isEarthMode in the store updates the localIsEarthMode variable and the vue component updates
 watch(
   () => isEarthMode.value,
   () => {
     localIsEarthMode.value = !localIsEarthMode.value;
   }
 );
+
 onBeforeRouteLeave(
   (
     toRoute: RouteLocationNormalized,
-    fromRoute: RouteLocationNormalized
+    // eslint-disable-next-line no-unused-vars
+    _: RouteLocationNormalized
   ): boolean => {
     if (hasObjects.value && !confirmedLeaving) {
       unsavedWorkDialog.value?.show();
@@ -733,6 +680,10 @@ function setEarthModeFunction() {
 <i18n locale="en">
 {
   "clearConstructionMessage": "The current construction will be cleared",
+  "unsavedConstructionsMessage": "You have unsaved constructions. Keep or discard?",
+  "unsavedConstructionsConfirmation": "Unsaved Constructions",
+  "constructionsDiscard": "Discard",
+  "constructionsKeep": "Keep",
   "undo": "Undo"
 }
 </i18n>

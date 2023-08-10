@@ -11,17 +11,6 @@
       {{ $t(model.toolTipMessage) }}
     </v-tooltip>
   </v-btn>
-  <v-btn v-else
-  variant="text"
-  v-bind="$attrs"
-  @click="invokeAction">
-  <v-icon v-bind="$attrs">{{ model.icon ?? '$' + model.action }}</v-icon>
-  <v-tooltip
-      activator="parent"
-      location="bottom">
-      {{ $t(model.toolTipMessage) }}
-    </v-tooltip>
-  </v-btn>
 </template>
 
 <script lang="ts" setup>

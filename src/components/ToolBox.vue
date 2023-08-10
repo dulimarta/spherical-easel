@@ -4,79 +4,24 @@
   <!-- This the not minimized left drawer containing two tabs -->
   <!-- <CurrentToolSelection/> -->
 
-  <!-- <transition name="slide-out" mode="out-in">
-    <div v-if="!minified" key="full">
-      <v-container>
-        <v-row align="center">
-          <v-btn icon size="x-small">
-            <v-icon @click="toggleMinify">mdi-arrow-left</v-icon>
-          </v-btn>
-          <CurrentToolSelection />
-        </v-row>
-      </v-container>
-      <v-tabs v-model="activeLeftDrawerTab" centered grow @change="switchTab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-tab class="mt-3" v-bind="props">
-              <v-icon>$toolsTab</v-icon>
-            </v-tab>
-          </template>
-          <span>{{ $t("main.ToolsTabToolTip") }}</span>
-        </v-tooltip>
-
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-tab class="mt-3" v-bind="props">
-              <v-icon>$objectsTab</v-icon>
-            </v-tab>
-          </template>
-          <span>{{ $t("main.ObjectsTabToolTip") }}</span>
-        </v-tooltip>
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-tab class="mt-3" v-bind="props">
-              <v-icon>$constructionsTab</v-icon>
-            </v-tab>
-          </template>
-          <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
-        </v-tooltip>
-      </v-tabs>
-      <v-window v-model="activeLeftDrawerTab">
-        <v-window-item>
-          <ToolGroups />
-        </v-window-item>
-        <v-window-item>
-          <ObjectTree id="objtree"></ObjectTree>
-        </v-window-item>
-        <v-window-item>
-          <ConstructionLoader id="loader"></ConstructionLoader>
-        </v-window-item>
-      </v-window>
-    </div>
-
-    <div v-else class="mini-icons" key="partial">
-      <v-btn icon size="x-small">
-        <v-icon @click="toggleMinify">mdi-arrow-right</v-icon>
-      </v-btn>
-      <div class="mini-icons px-3">
-        <v-icon>$toolsTab</v-icon>
-        <v-icon>$objectsTab</v-icon>
-        <v-icon>$constructionsTab</v-icon>
-      </div>
-    </div>
-  </transition> -->
-
   <v-card>
     <v-layout>
-      <v-navigation-drawer :expand-on-hover="expandOnHover" :rail="rail" style="background-color: #002108; color: white;">
+      <v-navigation-drawer
+        :expand-on-hover="expandOnHover"
+        :rail="rail"
+        style="background-color: #002108; color: white">
         <v-list>
           <v-list-item
             prepend-avatar="@/assets/SphericalEaselLogo.gif"
-            title="Spherical Easle"></v-list-item>
+            title="Spherical Easel"></v-list-item>
         </v-list>
-        <v-divider color="#BDF3CB" ></v-divider>
+        <v-divider color="#BDF3CB"></v-divider>
 
-        <v-list density="compact" nav :selected="activeItem" active-class="active">
+        <v-list
+          density="compact"
+          nav
+          :selected="activeItem"
+          active-class="active">
           <v-list-item
             @click="setHover(0)"
             prepend-icon="mdi-tools"
@@ -100,26 +45,27 @@
         </v-list>
 
         <template v-slot:append>
-          <v-divider color="#BDF3CB" ></v-divider>
+          <v-divider color="#BDF3CB"></v-divider>
 
           <v-list density="compact" nav>
             <v-list-item
               prepend-icon="mdi-translate-variant"
-              title="English"
-              ></v-list-item>
-            <v-list-item
-              prepend-icon="mdi-account-circle"
-              title="Hans Dulimatar"></v-list-item>
+              title="English"></v-list-item>
           </v-list>
         </template>
       </v-navigation-drawer>
-      <v-navigation-drawer v-show="show" width="295" :style="{backgroundColor: show? '#B9D9C1':'white',border:show?'':'0px'}" style="padding-left:8px;padding-top: 8px;">
+      <v-navigation-drawer
+        :width="295"
+        :style="{
+          backgroundColor: '#B9D9C1',
+          border: show ? '' : '0px'
+        }"
+        style="padding-left: 8px; padding-top: 8px">
         <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
-
-        <ToolGroups v-if="activeItem[0]===0"/>
-        <ObjectTree v-if="activeItem[0]===1"/>
-        <ConstructionLoader v-if="activeItem[0]===2"/>
-        <EarthToolVue v-if="activeItem[0]===3"/>
+        <ToolGroups v-if="activeItem === 0" />
+        <ObjectTree v-if="activeItem === 1" />
+        <ConstructionLoader v-if="activeItem === 2" />
+        <EarthToolVue v-if="activeItem === 3" />
         <!-- <v-list>
           <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
         </v-list> -->
@@ -131,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, Ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
@@ -149,12 +95,12 @@ const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
-const temp = ref("0px");
+// const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
-const activeItem = ref([]);
+const activeItem = ref(0);
 // eslint-disable-next-line no-unused-vars
-const headerItem = ["Tools", "Objects", "Construction", "Earth"];
+// const headerItem = ["Tools", "Objects", "Construction", "Earth"];
 const expandOnHover = ref(true);
 // const screenStyle = computed(() => {
 //   return {
@@ -162,30 +108,30 @@ const expandOnHover = ref(true);
 //   };
 // });
 // ('layers')')
-function setHover(newActive:number):void{
+function setHover(newActive: number): void {
   rail.value = true;
   expandOnHover.value = false;
-  if(newActive === activeItem.value[0]){
-    activeItem.value.pop();
-    setTimeout(() => {
-    show.value = !show.value;
-    }, 100);
-  }else if(activeItem.value.length === 0){
-    (activeItem.value as Array<number>).push(newActive);
-    setTimeout(() => {
-    show.value = !show.value;
-    }, 100);
-  }
-  else{
-    activeItem.value.pop();
-    (activeItem.value as Array<number>).push(newActive);
-  }
+  activeItem.value = newActive
+  // if (newActive === activeItem.value) {
+    // activeItem.value.pop();
+    // setTimeout(() => {
+    //   show.value = !show.value;
+    // }, 100);
+  // } else if (activeItem.value.length === 0) {
+    // activeItem.value.push(newActive);
+    // setTimeout(() => {
+    //   show.value = !show.value;
+    // }, 100);
+  // } else {
+    // activeItem.value.pop();
+    // activeItem.value.push(newActive);
+  // }
   setTimeout(() => {
     expandOnHover.value = true;
   }, 1000);
 }
-const minified = ref(false);
-const emit = defineEmits(["minifyToggled"]);
+// const minified = ref(false);
+// const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
 const activeLeftDrawerTab = ref(0);
 onBeforeMount((): void => {
@@ -196,7 +142,7 @@ onMounted((): void => {
   const { mainRect } = useLayout();
   console.log("Layout details", mainRect);
   console.log("Display details", height.value, width.value, name.value);
-  activeItem.value = [];
+  // activeItem.value = [];
   // this.scene = this.layers[LAYER.midground];
 });
 
@@ -218,10 +164,10 @@ function setActiveTab(e: { tabNumber: number }): void {
   activeLeftDrawerTab.value = e.tabNumber;
 }
 
-function toggleMinify() {
-  minified.value = !minified.value;
-  emit("minifyToggled", minified.value);
-}
+// function toggleMinify() {
+//   minified.value = !minified.value;
+//   emit("minifyToggled", minified.value);
+// }
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");
 });
@@ -234,7 +180,8 @@ onBeforeUnmount((): void => {
   display: flex;
   flex-direction: column;
 
-  justify-content: space-evenly; /* Center it vertically */
+  justify-content: space-evenly;
+  /* Center it vertically */
 }
 
 #objtree,
@@ -245,6 +192,7 @@ onBeforeUnmount((): void => {
   max-width: 360px;
   overflow: auto;
 }
+
 .slide-out-enter-active,
 .slide-out-leave-active {
   transition-property: all;
@@ -257,10 +205,9 @@ onBeforeUnmount((): void => {
   opacity: 0;
   transform: translateX(-100%);
 }
-.active{
-  background-color: #BDF3CB;
+
+.active {
+  background-color: #bdf3cb;
   color: black;
 }
-
-
 </style>
