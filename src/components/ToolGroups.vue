@@ -9,6 +9,7 @@
     <v-icon v-if="inEditMode">mdi-check</v-icon>
     <v-icon v-else>mdi-pencil</v-icon>
   </v-btn>
+  <CurrentToolSelection/>
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
@@ -73,6 +74,7 @@
 import { Ref, ref, onBeforeMount, watch } from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import ToolButton from "@/components/ToolButton.vue";
+import CurrentToolSelection from "./CurrentToolSelection.vue";
 import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { toolGroups } from "./toolgroups";

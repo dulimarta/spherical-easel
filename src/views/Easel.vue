@@ -1,6 +1,5 @@
 <template>
-  <div
-    style="
+  <div style="
       position: fixed;
       right: 8px;
       width: 80px;
@@ -19,130 +18,156 @@
   background-color: transparent;">
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
-        <div id="toolbox">
-          <Toolbox
-          id="toolbox"
-          ref="toolbox"
-          @minify-toggled="handleToolboxMinify" />
-        </div>
+    <div id="toolbox">
+      <AppNavigation
+        id="toolbox"
+        ref="toolbox"
+      />
+    </div>
 
 
-        <!-- Shortcut icons are placed using absolute positioning. CSS requires
+    <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
-        <div id="sphere-and-msghub">
+    <div id="sphere-and-msghub">
 
 
-          <div id="earthAndCircle">
-            <EarthLayer
-              v-if="localIsEarthMode && svgDataImage.length === 0"
-              :available-height="availHeight"
-              :available-width="availWidth" />
-            <SphereFrame
-              style="position: relative"
-              :available-width="availWidth"
-              :available-height="availHeight"
-              v-show="svgDataImage.length === 0"
-              :is-earth-mode="localIsEarthMode" />
-            <v-switch
-              hide-details
-              color="primary"
-              :class="['earthToggler', 'bg-blue-lighten-2']"
-              density="compact"
-              variant="outlined"
-              v-model="localIsEarthMode"
-              @click="setEarthModeFunction()"
-              label="Earth Mode">
-              <template #append v-if="localIsEarthMode">
-                <v-icon id="placeBubble">$earthPoint</v-icon>
-                <v-menu
-                  activator="#placeBubble"
-                  location="right"
-                  :offset="[24, 16]"
-                  :close-on-content-click="false">
-                  <Suspense>
-                    <AddressInput />
-                  </Suspense>
-                </v-menu>
-              </template>
-            </v-switch>
+      <div id="earthAndCircle">
+        <EarthLayer
+          v-if="localIsEarthMode && svgDataImage.length === 0"
+          :available-height="availHeight"
+          :available-width="availWidth"
+        />
+        <SphereFrame
+          style="position: relative"
+          :available-width="availWidth"
+          :available-height="availHeight"
+          v-show="svgDataImage.length === 0"
+          :is-earth-mode="localIsEarthMode"
+        />
+        <v-switch
+          hide-details
+          color="primary"
+          :class="['earthToggler', 'bg-blue-lighten-2']"
+          density="compact"
+          variant="outlined"
+          v-model="localIsEarthMode"
+          @click="setEarthModeFunction()"
+          label="Earth Mode"
+        >
+          <template
+            #append
+            v-if="localIsEarthMode"
+          >
+            <v-icon id="placeBubble">$earthPoint</v-icon>
+            <v-menu
+              activator="#placeBubble"
+              location="right"
+              :offset="[24, 16]"
+              :close-on-content-click="false"
+            >
+              <Suspense>
+                <AddressInput />
+              </Suspense>
+            </v-menu>
+          </template>
+        </v-switch>
 
-            <AddEarthObject
-              v-if="localIsEarthMode"
-              :class="['displayEarthObject', 'bg-blue-lighten-2']" />
+        <AddEarthObject
+          v-if="localIsEarthMode"
+          :class="['displayEarthObject', 'bg-blue-lighten-2']"
+        />
+      </div>
+      <v-overlay
+        :scrim="false"
+        contained
+        :class="['justify-center', 'align-start', previewClass]"
+        :model-value="svgDataImage.length > 0"
+      >
+        <div class="previewText">
+          <p>{{ constructionInfo.count }} objects.</p>
+          <p>Created by: {{ constructionInfo.author }}</p>
+        </div>
+        <img
+          id="previewImage"
+          class="previewImage"
+          :src="svgDataImage"
+          :width="overlayHeight * svgDataImageAspectRatio"
+          :height="overlayHeight"
+        />
+      </v-overlay>
+      <div id="msghub">
+        <ShortcutIcon
+          class="mx-1"
+          v-for="t in leftShortcutGroup"
+          :key="t.action"
+          :model="t"
+        />
+        <ShortcutIcon
+          :disabled="!hasObjects"
+          class="mx-1"
+          :model="TOOL_DICTIONARY.get('resetAction')!"
+        />
+        <MessageHub />
+        <div
+          id="zoomPanel"
+          class="pr-5"
+        >
+          <div style="display: flex;">
+            <ShortcutIcon
+              :isShortcutTool="true"
+              class="mx-1"
+              :model="TOOL_DICTIONARY.get('zoomFit')!"
+            />
+            <div class="horizontalLine"></div>
           </div>
-          <v-overlay
-            :scrim="false"
-            contained
-            :class="['justify-center', 'align-start', previewClass]"
-            :model-value="svgDataImage.length > 0">
-            <div class="previewText">
-              <p>{{ constructionInfo.count }} objects.</p>
-              <p>Created by: {{ constructionInfo.author }}</p>
-            </div>
-            <img
-              id="previewImage"
-              class="previewImage"
-              :src="svgDataImage"
-              :width="overlayHeight * svgDataImageAspectRatio"
-              :height="overlayHeight" />
-          </v-overlay>
-          <div id="msghub">
+          <div style="display: flex;">
             <ShortcutIcon
+              :isShortcutTool="true"
               class="mx-1"
-              v-for="t in leftShortcutGroup" :key="t.action"
-              :model="t" />
+              :model="TOOL_DICTIONARY.get('zoomOut')!"
+            />
+            <div class="horizontalLine"></div>
+          </div>
+          <div style="display: flex;">
             <ShortcutIcon
-              :disabled="!hasObjects"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('resetAction')!" />
-            <MessageHub />
-            <div id="zoomPanel" class="pr-5">
-              <div style="display: flex;">
-                <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomFit')!" />
-              <div class="horizontalLine"></div>
-              </div>
-              <div style="display: flex;">
-              <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomOut')!" />
-              <div class="horizontalLine"></div>
-              </div>
-              <div style="display: flex;">
-              <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomIn')!" />
-              <div class="horizontalLine"></div>
-                </div>
-            <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
-            <!-- <v-slider
+              :model="TOOL_DICTIONARY.get('zoomIn')!"
+            />
+            <div class="horizontalLine"></div>
+          </div>
+          <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
+          <!-- <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
               :max="2"
               style="min-width: 100px" /> -->
 
 
-            </div>
-
-          </div>
         </div>
+
+      </div>
+    </div>
     <Dialog
       ref="unsavedWorkDialog"
       max-width="40%"
       :title="t('unsavedConstructionsConfirmation')"
       :yes-text="t('constructionsKeep')"
       :no-text="t('constructionsDiscard')"
-      :no-action="doLeave">
+      :no-action="doLeave"
+    >
       {{ t(`unsavedConstructionsMessage`) }}
     </Dialog>
-    <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
+    <v-snackbar
+      v-model="clearConstructionWarning"
+      :timeout="DELETE_DELAY"
+    >
       {{ t("clearConstructionMessage") }}
       <template #actions>
-        <v-btn @click="cancelClearConstruction" color="warning">
+        <v-btn
+          @click="cancelClearConstruction"
+          color="warning"
+        >
           {{ t("undo") }}
         </v-btn>
       </template>
@@ -160,8 +185,7 @@ import {
   ref,
   watch
 } from "vue";
-import Toolbox from "@/components/ToolBox.vue";
-
+import AppNavigation from "@/components/AppNavigation.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
 import AddEarthObject from "@/components/AddEarthObject.vue";
@@ -261,7 +285,7 @@ const leftShortcutGroup = computed(() => [
 // const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
 
 // function buttonList = buttonList;
-const toolboxMinified = ref(false);
+// const toolboxMinified = ref(false);
 const previewClass = ref("");
 const constructionInfo = ref<any>({});
 const localIsEarthMode = ref(false);
@@ -497,9 +521,9 @@ onBeforeRouteLeave(
   }
 );
 
-function handleToolboxMinify(state: boolean) {
-  toolboxMinified.value = state;
-}
+// function handleToolboxMinify(state: boolean) {
+//   toolboxMinified.value = state;
+// }
 
 function setEarthModeFunction() {
   localIsEarthMode.value = !localIsEarthMode.value;
@@ -561,7 +585,7 @@ function setEarthModeFunction() {
   gap: 4px;
   padding-left: 5px;
   padding-right: 5px;
-  }
+}
 
 #toolbox {
   height: 100%;
@@ -579,16 +603,19 @@ function setEarthModeFunction() {
   margin: 0.5em;
   width: 20em;
 }
+
 .previewImage {
   position: absolute;
   z-index: 20;
   aspect-ratio: 1/1;
   transform: translateX(-50%);
 }
+
 .preview-fadein {
   animation-duration: 500ms;
   animation-name: preview-expand;
 }
+
 .preview-fadeout {
   animation-duration: 500ms;
   animation-name: preview-shrink;
@@ -598,6 +625,7 @@ function setEarthModeFunction() {
   0% {
     transform: scale(0.3) translateX(-100%);
   }
+
   100% {
     transform: translateX(0%) scale(1);
   }
@@ -607,6 +635,7 @@ function setEarthModeFunction() {
   0% {
     transform: scale(1) translateX(0%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -624,6 +653,7 @@ function setEarthModeFunction() {
   border-radius: 8px;
   align-self: flex-start;
 }
+
 .displayEarthObject {
   position: absolute;
   bottom: 140px;
@@ -639,44 +669,47 @@ function setEarthModeFunction() {
   flex-direction: column;
   align-items: center;
 }
-#undoPanel{
+
+#undoPanel {
   border-radius: 8px;
   border: solid white;
   display: flex;
   align-items: center;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 
 }
-#zoomPanel{
+
+#zoomPanel {
   display: flex;
   align-items: center;
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
-.horizontalLine{
+.horizontalLine {
   background-color: black;
   width: 1px;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   // height: 80%;
 }
-#toolbox{
+
+#toolbox {
   display: flex;
 }
-#toolbox-and-sphere{
+
+#toolbox-and-sphere {
   display: flex;
-  position:fixed;
+  position: fixed;
 
   flex-direction: row;
   width: 100%;
   justify-content: stretch;
   height: 100%;
-}
-</style>
+}</style>
 <i18n locale="en">
 {
   "clearConstructionMessage": "The current construction will be cleared",

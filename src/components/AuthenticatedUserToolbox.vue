@@ -1,44 +1,49 @@
 <template>
-  <template v-if="loginEnabled">
-    {{ userDisplayedName }} {{ userEmail }}
-    <v-avatar
-      v-if="userProfilePictureURL !== undefined"
-      contain
-      max-width="48"
-      :image="userProfilePictureURL"
-      @click="doLoginOrLogout"></v-avatar>
-    <v-btn
-      v-else
-      icon
-      size="x-small"
-      class="bg-yellow"
-      @click="doLoginOrLogout">
-      <v-icon>mdi-account</v-icon>
-    </v-btn>
-    <template v-if="appAuth.currentUser !== null">
-      <router-link to="/settings/">
+  <div id="authToolbox" v-if="loginEnabled" :style="{
+    alignItems: props.expandedView ? 'flex-start' : 'center'
+  }">
+    <!-- {{ userDisplayedName }} {{ userEmail }} -->
+    <template v-if="loginEnabled">
+      <v-avatar
+        size="x-small"
+        v-if="userProfilePictureURL !== undefined"
+        contain
+        max-width="48"
+        :image="userProfilePictureURL"
+        @click="doLoginOrLogout"></v-avatar>
+      <v-btn
+        v-else
+        fab
+        icon
+        size="x-small"
+        class="bg-yellow"
+        @click="doLoginOrLogout">
+        <v-icon>mdi-account</v-icon>
+      </v-btn>
+      <router-link to="/settings/" v-if="appAuth.currentUser !== null">
         <v-icon color="white" class="mx-2">mdi-cog</v-icon>
       </router-link>
       <HintButton
+        v-if="appAuth.currentUser !== null"
         :disabled="!hasObjects"
         @click="() => saveConstructionDialog?.show()"
         tooltip="Save construction">
         <template #icon>mdi-content-save</template>
       </HintButton>
     </template>
-  </template>
-  <template v-if="constructionDocId">
     <HintButton
       tooltip="Share saved cons"
-      v-if="isPublicConstruction(constructionDocId)">
+      v-if="constructionDocId && isPublicConstruction(constructionDocId)">
       <template #icon>mdi-share-variant</template>
     </HintButton>
     <HintButton
+      v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
       tooltip="Export Construction">
       <template #icon>mdi-file-export</template>
     </HintButton>
-  </template>
+  </div>
+
   <Dialog
     ref="saveConstructionDialog"
     :title="
@@ -125,6 +130,12 @@
     </v-row>
   </Dialog>
 </template>
+<style scoped>
+#authToolbox {
+  display: flex;
+  flex-direction: column;
+}
+</style>
 <script setup lang="ts">
 import { Ref, ref, onMounted, onBeforeUnmount } from "vue";
 import HintButton from "./HintButton.vue";
@@ -169,7 +180,7 @@ const seStore = useSEStore();
 const {
   loginEnabled,
   userProfilePictureURL,
-  userDisplayedName,
+  // userDisplayedName,
   userEmail,
   constructionDocId,
   includedTools
@@ -179,7 +190,7 @@ const {
   inverseTotalRotationMatrix,
   svgCanvas,
   canvasHeight,
-  canvasWidth
+  canvasWidth, isEarthMode
 } = storeToRefs(seStore);
 const { t } = useI18n();
 const {
@@ -201,7 +212,10 @@ const selectedExportFormat = ref("");
 const svgExportHeight = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
-
+type ComponentProps = {
+  expandedView: boolean
+}
+const props = defineProps<ComponentProps>()
 onKeyDown(
   true, // true: accept all keys
   (event: KeyboardEvent) => {
@@ -381,7 +395,6 @@ async function doSave(): Promise<void> {
     previewData = svgDataUrl;
   }
 
-  const saveFunction = shouldSaveOverwrite.value ? updateDoc : addDoc;
   /* Create a pipeline of Firebase tasks
        Task 1: Upload construction to Firestore
        Task 2: Upload the script to Firebase Storage (for large script)
@@ -501,7 +514,7 @@ async function mergeIntoImageUrl(
   const graphicsCtx = offlineCanvas.getContext("2d");
   const imageExtension = imageFormat.toLowerCase();
   const drawTasks = sourceURLs.map(
-    (dataUrl: string, index: number): Promise<string> => {
+    (dataUrl: string): Promise<string> => {
       return new Promise(resolve => {
         const offlineImage = new Image();
         offlineImage.addEventListener("load", () => {

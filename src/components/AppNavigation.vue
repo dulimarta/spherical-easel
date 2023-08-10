@@ -6,9 +6,12 @@
 
   <v-card>
     <v-layout>
-      <v-navigation-drawer
+      <v-navigation-drawer fixed
         :expand-on-hover="expandOnHover"
         :rail="rail"
+        :rail-width="64"
+        @mouseover="onNavigationHover"
+        @mouseleave="onNavigationHover"
         style="background-color: #002108; color: white">
         <v-list>
           <v-list-item
@@ -20,7 +23,6 @@
         <v-list
           density="compact"
           nav
-          :selected="activeItem"
           active-class="active">
           <v-list-item
             @click="setHover(0)"
@@ -46,11 +48,11 @@
 
         <template v-slot:append>
           <v-divider color="#BDF3CB"></v-divider>
-
+          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer"/>
           <v-list density="compact" nav>
-            <v-list-item
-              prepend-icon="mdi-translate-variant"
-              title="English"></v-list-item>
+            <v-list-item prepend-icon="mdi-account" :title="userEmail">
+          </v-list-item>
+              <LanguageSelector/>
           </v-list>
         </template>
       </v-navigation-drawer>
@@ -77,27 +79,32 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, Ref } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
-// import CurrentToolSelection from "@/components/CurrentToolSelection.vue";
 import EarthToolVue from "@/components/EarthTool.vue";
+import LanguageSelector from "./LanguageSelector.vue";
+import AuthenticatedUserToolbox from "./AuthenticatedUserToolbox.vue";
 import { useSEStore } from "@/stores/se";
+import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const seStore = useSEStore();
+const acctStore = useAccountStore()
 const { actionMode } = storeToRefs(seStore);
+const { userEmail } = storeToRefs(acctStore)
 // const props = defineProps<{ minified: boolean }>();
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
+const mouseOnDrawer = ref(false)
 const activeItem = ref(0);
 // eslint-disable-next-line no-unused-vars
 // const headerItem = ["Tools", "Objects", "Construction", "Earth"];
@@ -171,6 +178,10 @@ function setActiveTab(e: { tabNumber: number }): void {
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");
 });
+function onNavigationHover(e:MouseEvent) {
+mouseOnDrawer.value = e.type === "mouseover"
+
+}
 </script>
 
 <style lang="scss" scoped>
