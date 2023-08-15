@@ -417,20 +417,20 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.updateDisplay();
       }
     }
-    // else if (this.isTemporaryStartMarkerAdded) {
-    //   // Remove the temporary objects from the display.
-    //   this.temporarySegment.removeFromLayers();
-    //   this.temporaryStartMarker.removeFromLayers();
-    //   this.temporaryEndMarker.removeFromLayers();
-    //   this.isTemporaryStartMarkerAdded = false;
-    //   this.isTemporaryEndMarkerAdded = false;
-    //   this.isTemporarySegmentAdded = false;
+    else if (this.isTemporaryStartMarkerAdded) {
+      // Remove the temporary objects from the display.
+      this.temporarySegment.removeFromLayers();
+      this.temporaryStartMarker.removeFromLayers();
+      this.temporaryEndMarker.removeFromLayers();
+      this.isTemporaryStartMarkerAdded = false;
+      this.isTemporaryEndMarkerAdded = false;
+      this.isTemporarySegmentAdded = false;
 
-    //   this.snapStartMarkerToTemporaryOneDimensional = null;
-    //   this.snapEndMarkerToTemporaryOneDimensional = null;
-    //   this.snapStartMarkerToTemporaryPoint = null;
-    //   this.snapEndMarkerToTemporaryPoint = null;
-    // }
+      this.snapStartMarkerToTemporaryOneDimensional = null;
+      this.snapEndMarkerToTemporaryOneDimensional = null;
+      this.snapStartMarkerToTemporaryPoint = null;
+      this.snapEndMarkerToTemporaryPoint = null;
+    }
   }
 
   mouseReleased(event: MouseEvent): void {

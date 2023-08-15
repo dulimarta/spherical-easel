@@ -403,20 +403,20 @@ export default class LineHandler extends Highlighter {
         this.temporaryLine.updateDisplay();
       }
     }
-    // else if (this.isTemporaryStartMarkerAdded) {
-    //   // Remove the temporary objects from the display.
-    //   this.temporaryLine.removeFromLayers();
-    //   this.temporaryStartMarker.removeFromLayers();
-    //   this.temporaryEndMarker.removeFromLayers();
-    //   this.isTemporaryStartMarkerAdded = false;
-    //   this.isTemporaryEndMarkerAdded = false;
-    //   this.isTemporaryLineAdded = false;
+    else if (this.isTemporaryStartMarkerAdded) {
+      // Remove the temporary objects from the display.
+      this.temporaryLine.removeFromLayers();
+      this.temporaryStartMarker.removeFromLayers();
+      this.temporaryEndMarker.removeFromLayers();
+      this.isTemporaryStartMarkerAdded = false;
+      this.isTemporaryEndMarkerAdded = false;
+      this.isTemporaryLineAdded = false;
 
-    //   this.snapStartMarkerToTemporaryOneDimensional = null;
-    //   this.snapEndMarkerToTemporaryOneDimensional = null;
-    //   this.snapStartMarkerToTemporaryPoint = null;
-    //   this.snapEndMarkerToTemporaryPoint = null;
-    // }
+      this.snapStartMarkerToTemporaryOneDimensional = null;
+      this.snapEndMarkerToTemporaryOneDimensional = null;
+      this.snapStartMarkerToTemporaryPoint = null;
+      this.snapEndMarkerToTemporaryPoint = null;
+    }
   }
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere) {

@@ -85,6 +85,7 @@ export default class CircleHandler extends Highlighter {
     CircleHandler.store.addTemporaryNodule(this.temporaryEndMarker);
   }
 
+  // eslint-disable-next-line no-unused-vars
   mousePressed(_event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {

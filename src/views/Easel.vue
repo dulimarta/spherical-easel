@@ -190,6 +190,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
 import AddEarthObject from "@/components/AddEarthObject.vue";
 import MessageHub from "@/components/MessageHub.vue";
+import AddressInput from "@/components/AddressInput.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";

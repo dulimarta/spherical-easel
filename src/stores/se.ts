@@ -20,7 +20,6 @@ import {
   ActionMode,
   plottableType,
   SEIntersectionReturnType,
-  ToolButtonType
 } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import {
@@ -45,7 +44,7 @@ import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { defineStore, StoreActions, StoreGetters, StoreState } from "pinia";
+import { defineStore  } from "pinia";
 import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
 
@@ -98,7 +97,7 @@ const selectedSENodules: Map<number, SENodule> = new Map();
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
-const tmpVector1 = new Vector3();
+// const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
 const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
 const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
@@ -1077,7 +1076,6 @@ export const useSEStore = defineStore({
     },
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
-      console.log("unglow all");
       seNodules.forEach(p => {
         if (!p.selected && p.exists) {
           p.glowing = false;
@@ -1357,6 +1355,7 @@ export const useSEStore = defineStore({
     //     }
     //   };
     // },
+    // eslint-disable-next-line no-unused-vars
     getSENoduleById(): (_: number) => SENodule | undefined {
       return (id: number): SENodule | undefined => {
         return seNodules
@@ -1365,9 +1364,11 @@ export const useSEStore = defineStore({
       };
     },
     //#region findNearbyGetter
+    // eslint-disable-next-line no-unused-vars
     findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
       return (
         unitIdealVector: Vector3,
+        // eslint-disable-next-line no-unused-vars
         screenPosition: Two.Vector
       ): SENodule[] => {
         return seNodules.filter((obj: SENodule) => {
@@ -1382,6 +1383,7 @@ export const useSEStore = defineStore({
      */
     findIntersectionPointsByParent(
       state
+    // eslint-disable-next-line no-unused-vars
     ): (parent1Name: string, parent2Name?: string) => SEIntersectionPoint[] {
       return (
         parent1Name: string,
@@ -1416,7 +1418,9 @@ export const useSEStore = defineStore({
      * The creation of the intersection objects automatically follows this convention in assigning parents.
      */
     createAllIntersectionsWithLine(
+      // eslint-disable-next-line no-unused-vars
       state
+    // eslint-disable-next-line no-unused-vars
     ): (_l: SELine, _p: SEPoint[]) => SEIntersectionReturnType[] {
       return (
         newLine: SELine,
@@ -1963,7 +1967,9 @@ export const useSEStore = defineStore({
       };
     },
     createAllIntersectionsWithSegment(
+      // eslint-disable-next-line no-unused-vars
       state
+    // eslint-disable-next-line no-unused-vars
     ): (_s: SESegment, _p: SEPoint[]) => SEIntersectionReturnType[] {
       return (
         newSegment: SESegment,
@@ -2495,7 +2501,9 @@ export const useSEStore = defineStore({
       };
     },
     createAllIntersectionsWithCircle(
+      // eslint-disable-next-line no-unused-vars
       state
+    // eslint-disable-next-line no-unused-vars
     ): (_c: SECircle, _p: SEPoint[]) => SEIntersectionReturnType[] {
       return (
         newCircle: SECircle,
@@ -3021,7 +3029,9 @@ export const useSEStore = defineStore({
       };
     },
     createAllIntersectionsWithEllipse(
+      // eslint-disable-next-line no-unused-vars
       state
+    // eslint-disable-next-line no-unused-vars
     ): (_e: SEEllipse, _p: SEPoint[]) => SEIntersectionReturnType[] {
       return (
         newEllipse: SEEllipse,
@@ -3552,7 +3562,9 @@ export const useSEStore = defineStore({
       };
     },
     createAllIntersectionsWithParametric(
+      // eslint-disable-next-line no-unused-vars
       state
+    // eslint-disable-next-line no-unused-vars
     ): (_p: SEParametric, _s: SEPoint[]) => SEIntersectionReturnType[] {
       return (
         newParametric: SEParametric,

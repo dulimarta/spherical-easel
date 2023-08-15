@@ -10,10 +10,7 @@
  */
 
 import EventBus from "@/eventHandlers/EventBus";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 export abstract class Command {
   protected static store: SEStoreType;
@@ -121,36 +118,6 @@ export abstract class Command {
       .map(c => c.toOpcode()) // convert each command in the history to its string representation
       .filter(z => z !== null); // but include only non-null output
     return JSON.stringify(out);
-  }
-
-  static makePointAndLabel(
-    pointLocation: Vector3,
-    pointFrontStyleString: string | undefined,
-    pointBackStyleString: string | undefined,
-    labelLocation: Vector3,
-    labelStyleString: string | undefined
-  ): { point: SEPoint; label: SELabel } {
-    const point = new SEPoint();
-    point.locationVector.copy(pointLocation);
-    if (pointFrontStyleString !== undefined)
-      point.updatePlottableStyle(
-        StyleEditPanels.Front,
-        JSON.parse(pointFrontStyleString)
-      );
-    if (pointBackStyleString !== undefined)
-      point.updatePlottableStyle(
-        StyleEditPanels.Back,
-        JSON.parse(pointBackStyleString)
-      );
-
-    const label = new SELabel("point", point);
-    label.locationVector.copy(labelLocation);
-    if (labelStyleString !== undefined)
-      label.updatePlottableStyle(
-        StyleEditPanels.Label,
-        JSON.parse(labelStyleString)
-      );
-    return { point, label };
   }
 
   static setGlobalStore(store: SEStoreType): void {
