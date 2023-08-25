@@ -16,11 +16,13 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 
-const tmpVector = new Vector3();
+// const tmpVector = new Vector3();
 
 export default abstract class Highlighter extends MouseHandler {
+  // eslint-disable-next-line no-unused-vars
   abstract mousePressed(event: MouseEvent): void;
 
+  // eslint-disable-next-line no-unused-vars
   abstract mouseReleased(event: MouseEvent): void;
 
   mouseLeave(event: MouseEvent): void {

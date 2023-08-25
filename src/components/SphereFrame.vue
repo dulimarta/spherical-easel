@@ -92,7 +92,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { ActionMode } from "@/types";
 
-import colors from "vuetify/lib/util/colors";
+// import colors from "vuetify/lib/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
@@ -266,7 +266,7 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
+  // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
 
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
