@@ -64,18 +64,30 @@ import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPoint } from "@/models/SEPoint";
+import {useEarthCoordinate} from "@/composables/earth"
+// import { SEParametric } from "@/models/SEParametric";
+// import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
-
+type ComponentProps = {
+  isLine?: boolean,
+  drawLine?: boolean
+}
 type AddressPair = {
   description: string;
   placeId: string;
 };
 const store = useSEStore();
-const { inverseTotalRotationMatrix, sePoints } = storeToRefs(store);
+const { inverseTotalRotationMatrix, sePoints, isEarthMode } = storeToRefs(store);
 const { t } = useI18n();
-
+const {geoLocationToUnitSphere} = useEarthCoordinate()
+const props = withDefaults(defineProps<ComponentProps>(), {
+  isLine: false,
+  drawLine: false
+})
+const emit = defineEmits<{
+  'update:placeId': [id: string],
+  'update:point': [vtx: SEEarthPoint]
+}>()
 const addrPlaceId = ref("");
 const addressError = ref("");
 const addrInput: Ref<HTMLInputElement | null> = ref(null);
@@ -105,7 +117,7 @@ watch(
   }
 );
 watch(
-  ()=>props.trigger,
+  ()=>props.drawLine,
   ()=>{
     if(props.isLine){
       getPlaceDetails()
@@ -115,7 +127,7 @@ watch(
 watch(
   ()=>addrPlaceId.value,
   ()=>{
-      emit("update:placeId",addrPlaceId.value)
+      emit("update:placeId", addrPlaceId.value)
   }
 )
 function searchAddress(v: string) {
@@ -135,7 +147,7 @@ function searchAddress(v: string) {
 }
 
 function getPlaceDetails() {
-  // console.debug("Get details of", addrPlaceId.value);
+  console.debug("Get details of", addrPlaceId.value);
   addressError.value = "";
   placesInspector.getDetails(
     {
@@ -166,16 +178,17 @@ function getPlaceDetails() {
           return;
         }
         if (place?.geometry?.location) {
-          const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
-          const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;
-          const xcor = Math.cos(latRad) * Math.cos(lngRad);
-          const ycor = Math.cos(latRad) * Math.sin(lngRad);
-          const zcor = Math.sin(latRad);
+          // const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
+          // const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;
+          const arr = geoLocationToUnitSphere(place.geometry.location.lat(), place.geometry.location.lng())
+          const xcor = arr[0]
+          const ycor = arr[1]
+          const zcor = arr[2]
 
           // caption
           const vtx = new SEEarthPoint(
-            place.geometry?.location.lng(),
-            place.geometry?.location.lat()
+            place.geometry.location.lng(),
+            place.geometry.location.lat()
           );
           const pointVector = new THREE.Vector3(xcor, ycor, zcor);
           pointVector.normalize();

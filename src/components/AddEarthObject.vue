@@ -94,7 +94,7 @@
   display: flex;
   flex-direction: column;
   padding: 0.75em;
-  background: yellow;
+  /* background: yellow; */
   min-width: 12em;
 }
 </style>
@@ -121,7 +121,6 @@ import {
 import { useEarthCoordinate } from "@/composables/earth";
 import { SELongitude } from "@/models/SELongitude";
 import { AddLongitudeCommand } from "@/commands/AddLongitudeCommand";
-import { SESegment } from "@/models/SESegment";
 import { SELatitude } from "@/models/SELatitude";
 import { AddLatitudeCommand } from "@/commands/AddLatitudeCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
@@ -129,7 +128,6 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertIntersectionPointToAntipodalMode } from "@/commands/ConvertIntersectionPointToAntipodalMode";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";

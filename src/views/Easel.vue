@@ -44,7 +44,7 @@
           v-show="svgDataImage.length === 0"
           :is-earth-mode="localIsEarthMode"
         />
-        <v-switch
+        <!--v-switch
           hide-details
           color="primary"
           :class="['earthToggler', 'bg-blue-lighten-2']"
@@ -70,12 +70,8 @@
               </Suspense>
             </v-menu>
           </template>
-        </v-switch>
+        <v-switch-->
 
-        <AddEarthObject
-          v-if="localIsEarthMode"
-          :class="['displayEarthObject', 'bg-blue-lighten-2']"
-        />
       </div>
       <v-overlay
         :scrim="false"
@@ -188,9 +184,9 @@ import {
 import AppNavigation from "@/components/AppNavigation.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
-import AddEarthObject from "@/components/AddEarthObject.vue";
+// import AddEarthObject from "@/components/AddEarthObject.vue";
 import MessageHub from "@/components/MessageHub.vue";
-import AddressInput from "@/components/AddressInput.vue";
+// import AddressInput from "@/components/AddressInput.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
@@ -237,11 +233,6 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-import { SEExpression } from "@/models/SEExpression";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { SEAngleMarker } from "@/models/internal";
-import { SetEarthModeCommand } from "@/commands/SetEarthModeCommand";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const DELETE_DELAY = 5000; // in milliseconds
@@ -526,36 +517,7 @@ onBeforeRouteLeave(
 //   toolboxMinified.value = state;
 // }
 
-function setEarthModeFunction() {
-  localIsEarthMode.value = !localIsEarthMode.value;
-  let setNoduleDisplayCommandGroup = new CommandGroup();
-  setNoduleDisplayCommandGroup.addCommand(
-    new SetEarthModeCommand(localIsEarthMode.value)
-  );
-  // Use the store to record the current state of the value display modes of the all SEExpression objects
-  let seExpressions = seNodules.value
-    .filter(
-      nodule =>
-        nodule instanceof SEExpression && !(nodule instanceof SEAngleMarker) // AngleMarkers units are never km or mi
-    )
-    .map(nodule => nodule as SEExpression);
 
-  if (seExpressions.length !== 0) {
-    // The click operation on the switch triggers before the isEarthMode variable
-    // is changed, so at this point in the code when the isEarthMode is false we have entered EarthMode
-    seExpressions.forEach(seExpression => {
-      let VDMArray = seExpression.recordCurrentValueDisplayModeAndUpdate(
-        localIsEarthMode.value
-      );
-      setNoduleDisplayCommandGroup.addCommand(
-        new SetValueDisplayModeCommand(seExpression, VDMArray[0], VDMArray[1])
-      );
-    });
-  }
-  // The click operation on the switch triggers before the isEarthMode variable hence the !localIsEarthMode
-
-  setNoduleDisplayCommandGroup.execute();
-}
 </script>
 <style scoped lang="scss">
 #sphere-and-msghub {

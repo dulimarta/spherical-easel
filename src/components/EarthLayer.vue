@@ -43,7 +43,7 @@ let requestAnimFrameHandle: number | null = null;
 const rotationMatrix = new Matrix4(); // temporary matrix for rotating the sphere
 const textureLoader = new TextureLoader(/*textureManager*/);
 
-let renderer: THREE.WebGLRenderer;
+let renderer: WebGLRenderer;
 const scene = new Scene();
 const ambientLight = new AmbientLight(0xffffff, 0.2);
 const light = new PointLight(0xffffff, 1);
@@ -208,11 +208,11 @@ onBeforeUnmount(() => {
 function estimateSunGP() {
   const now = DateTime.now();
   // console.debug("Offset ", now.offset, "UTC offset", now.toUTC().offset)
-  const startOfYear = now.startOf("year");
-  const endOfYear = now.endOf("year");
-  const percentageOfYear =
-    startOfYear.diffNow().milliseconds /
-    endOfYear.diff(startOfYear).milliseconds;
+  // const startOfYear = now.startOf("year");
+  // const endOfYear = now.endOf("year");
+  // const percentageOfYear =
+  //   startOfYear.diffNow().milliseconds /
+  //   endOfYear.diff(startOfYear).milliseconds;
   const nowInUTC = now.toUTC();
   console.debug("Time now is ", now.toISOTime(), nowInUTC.toISOTime());
   const utcMinutesUntilNoon = nowInUTC.minute + 60 * (nowInUTC.hour - 12);
@@ -226,26 +226,26 @@ function estimateSunGP() {
   );
   return (sunLongitude * Math.PI) / 180;
 }
-function estimateSunGeoPosition() {
-  const now = new Date();
+// function estimateSunGeoPosition() {
+//   const now = new Date();
 
-  // The boilerplate: fiddling with dates
-  const startOfYear = new Date(now.getFullYear(), 0, 0).getTime();
-  const endOfYear = new Date(now.getFullYear() + 1, 0, 0).getTime();
-  const nows = now.getTime();
-  const percetageOfYear = (nows - startOfYear) / (endOfYear - startOfYear);
+//   // The boilerplate: fiddling with dates
+//   const startOfYear = new Date(now.getFullYear(), 0, 0).getTime();
+//   const endOfYear = new Date(now.getFullYear() + 1, 0, 0).getTime();
+//   const nows = now.getTime();
+//   const percetageOfYear = (nows - startOfYear) / (endOfYear - startOfYear);
 
-  const secs =
-    now.getUTCMilliseconds() / 1e3 +
-    now.getUTCSeconds() +
-    60 * (now.getUTCMinutes() + 60 * now.getUTCHours());
-  const percentOfDay = secs / 86400; // leap secs? nah.
+//   const secs =
+//     now.getUTCMilliseconds() / 1e3 +
+//     now.getUTCSeconds() +
+//     60 * (now.getUTCMinutes() + 60 * now.getUTCHours());
+//   const percentOfDay = secs / 86400; // leap secs? nah.
 
-  // The actual magic
-  const lat = (-percentOfDay + 0.5) * Math.PI * 2;
-  const lon = Math.sin((percetageOfYear - 0.22) * Math.PI * 2) * 0.41;
-  console.debug(`Sun geo position is ${lat.toDegrees()},${lon.toDegrees()}`);
-  // return new Euler(0, lat, lon, 'YZX')
-  return { lat, lon };
-}
+//   // The actual magic
+//   const lat = (-percentOfDay + 0.5) * Math.PI * 2;
+//   const lon = Math.sin((percetageOfYear - 0.22) * Math.PI * 2) * 0.41;
+//   console.debug(`Sun geo position is ${lat.toDegrees()},${lon.toDegrees()}`);
+//   // return new Euler(0, lat, lon, 'YZX')
+//   return { lat, lon };
+// }
 </script>

@@ -8,8 +8,8 @@ export function geoLocationToUnitSphere(
   latDegree: number,
   lngDegree: number
 ): number[] {
-  //const latRad = latDegree.toRadians();
-  const latRad = (latDegree * Math.PI) / 180;
+  const latRad = latDegree.toRadians();
+  // const latRad = (latDegree * Math.PI) / 180;
   // const lngRad = lngDegree.toRadians();
   const lngRad = (lngDegree * Math.PI) / 180;
   const xcor = Math.cos(latRad) * Math.cos(lngRad);
@@ -28,17 +28,17 @@ export function useEarthCoordinate() {
   // Swapping the ycor and zcor below implies a 90-deg rotation around the X-axis
   // to match two two coordinate frames
 
-  function geoLocationToUnitSphere(
-    latDegree: number,
-    lngDegree: number
-  ): number[] {
-    const latRad = latDegree.toRadians();
-    const lngRad = lngDegree.toRadians();
-    const xcor = Math.cos(latRad) * Math.cos(lngRad);
-    const zcor = -Math.cos(latRad) * Math.sin(lngRad);
-    const ycor = Math.sin(latRad);
-    return [xcor, ycor, zcor];
-  }
+  // function geoLocationToUnitSphere(
+  //   latDegree: number,
+  //   lngDegree: number
+  // ): number[] {
+  //   const latRad = latDegree.toRadians();
+  //   const lngRad = lngDegree.toRadians();
+  //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
+  //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
+  //   const ycor = Math.sin(latRad);
+  //   return [xcor, ycor, zcor];
+  // }
 
   // Rotate the earth to bring the desired geo location to the front view
   function flyTo(latDegree: number, lngDegree: number): Promise<void> {
