@@ -5,9 +5,6 @@
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": false,
   // "vetur.experimental.templateInterpolationService": true,
-  "vetur.format.defaultFormatter.js": "prettier-eslint",
-  "vetur.format.defaultFormatter.ts": "prettier-tslint",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "vetur.format.defaultFormatter.html": "js-beautify-html",
   "vetur.format.defaultFormatterOptions": {
     "js-beautify-html": {
@@ -36,6 +33,9 @@
     "statusBarItem.remoteBackground": "#905dc6",
     "statusBarItem.remoteForeground": "#e7e7e7",
     "commandCenter.border": "#e7e7e799"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

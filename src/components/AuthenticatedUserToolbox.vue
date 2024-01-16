@@ -1,7 +1,10 @@
 <template>
-  <div id="authToolbox" v-if="loginEnabled" :style="{
-    alignItems: props.expandedView ? 'flex-start' : 'center'
-  }">
+  <div
+    id="authToolbox"
+    v-if="loginEnabled"
+    :style="{
+      alignItems: props.expandedView ? 'flex-start' : 'center'
+    }">
     <!-- {{ userDisplayedName }} {{ userEmail }} -->
     <template v-if="loginEnabled">
       <v-avatar
@@ -190,7 +193,8 @@ const {
   inverseTotalRotationMatrix,
   svgCanvas,
   canvasHeight,
-  canvasWidth, isEarthMode
+  canvasWidth,
+  isEarthMode
 } = storeToRefs(seStore);
 const { t } = useI18n();
 const {
@@ -213,9 +217,9 @@ const svgExportHeight = ref(100);
 let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 type ComponentProps = {
-  expandedView: boolean
-}
-const props = defineProps<ComponentProps>()
+  expandedView: boolean;
+};
+const props = defineProps<ComponentProps>();
 onKeyDown(
   true, // true: accept all keys
   (event: KeyboardEvent) => {
@@ -513,20 +517,18 @@ async function mergeIntoImageUrl(
   // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
   const graphicsCtx = offlineCanvas.getContext("2d");
   const imageExtension = imageFormat.toLowerCase();
-  const drawTasks = sourceURLs.map(
-    (dataUrl: string): Promise<string> => {
-      return new Promise(resolve => {
-        const offlineImage = new Image();
-        offlineImage.addEventListener("load", () => {
-          graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
-          // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
-          resolve(dataUrl);
-        });
-        // Similar to <img :src="dataUrl" /> but programmatically
-        offlineImage.src = dataUrl;
+  const drawTasks = sourceURLs.map((dataUrl: string): Promise<string> => {
+    return new Promise(resolve => {
+      const offlineImage = new Image();
+      offlineImage.addEventListener("load", () => {
+        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
+        resolve(dataUrl);
       });
-    }
-  );
+      // Similar to <img :src="dataUrl" /> but programmatically
+      offlineImage.src = dataUrl;
+    });
+  });
   await Promise.all(drawTasks);
   const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
 
