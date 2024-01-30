@@ -1,11 +1,13 @@
+import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
 import {
-  AccountState,
+  // AccountState,
   ActionMode,
   ToolButtonGroup,
   ToolButtonType
 } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
+import { computed } from "vue";
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -19,71 +21,75 @@ function insertAscending(newItem: string, arr: string[]): void {
 const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
 // defineStore("hans", (): => {});
-export const useAccountStore = defineStore("acct", {
-  state: (): AccountState => ({
-    loginEnabled: false, // true when the secret key combination is detected
-    temporaryProfilePicture: "",
-    userDisplayedName: undefined,
-    userEmail: undefined,
-    userProfilePictureURL: undefined,
-    userRole: undefined,
-    /** @type { ActionMode[]} */
-    includedTools: [],
-    excludedTools: [],
-    favoriteTools: DEFAULT_TOOL_NAMES,
-    constructionDocId: null,
-    constructionSaved: false
-  }),
-  getters: {
-    hasUnsavedWork(state): boolean {
-      return false;
-    }
-  },
-  actions: {
-    resetToolset(includeAll = true): void {
-      this.includedTools.splice(0);
-      this.excludedTools.splice(0);
-      const toolNames = toolGroups
-        .flatMap((g: ToolButtonGroup) => g.children)
-        .map((t: ToolButtonType) => t.action);
-      if (includeAll) {
-        this.includedTools.push(...toolNames);
-      } else {
-        this.excludedTools.push(...toolNames);
-      }
-    },
-    includeToolName(name: ActionMode): void {
-      const pos = this.excludedTools.findIndex((tool: string) => tool === name);
-      if (pos >= 0) {
-        insertAscending(name, this.includedTools);
-        this.excludedTools.splice(pos, 1);
-      }
-    },
-    excludeToolName(name: ActionMode): void {
-      const pos = this.includedTools.findIndex((tool: string) => tool === name);
-      if (pos >= 0) {
-        insertAscending(name, this.excludedTools);
-        this.includedTools.splice(pos, 1);
-      }
-    },
-    parseAndSetFavoriteTools(favTools: string) {
-      if (favTools.trim().length > 0) {
-        this.favoriteTools = favTools
-          .split("#")
-          .map(
-            (fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[]
-          );
-        if (this.favoriteTools.length !== 2)
-          this.favoriteTools = DEFAULT_TOOL_NAMES;
-      } else this.favoriteTools = DEFAULT_TOOL_NAMES;
+export const useAccountStore = defineStore("acct", () => {
+  //state: (): AccountState => ({
+  const loginEnabled = ref(false); // true when the secret key combination is detected
+  const temporaryProfilePicture = ref("");
+  const userDisplayedName: Ref<string | undefined> = ref(undefined);
+  const userEmail: Ref<string | undefined> = ref(undefined);
+  const firebaseUid: Ref<string | undefined> = ref(undefined);
+  const userProfilePictureURL: Ref<string | undefined> = ref(undefined);
+  const userRole: Ref<string | undefined> = ref(undefined);
+  /** @type { ActionMode[]} */
+  const includedTools: Ref<ActionMode[]> = ref([]);
+  const excludedTools: Ref<ActionMode[]> = ref([]);
+  const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
+  const constructionDocId: Ref<string | null> = ref(null);
+  const constructionSaved = ref(false);
+
+  const hasUnsavedWork = computed((): boolean => false);
+
+  function resetToolset(includeAll = true): void {
+    includedTools.value.splice(0);
+    excludedTools.value.splice(0);
+    const toolNames = toolGroups
+      .flatMap((g: ToolButtonGroup) => g.children)
+      .map((t: ToolButtonType) => t.action);
+    if (includeAll) {
+      includedTools.value.push(...toolNames);
+    } else {
+      excludedTools.value.push(...toolNames);
     }
   }
+  function includeToolName(name: ActionMode): void {
+    const pos = excludedTools.value.findIndex((tool: string) => tool === name);
+    if (pos >= 0) {
+      insertAscending(name, includedTools.value);
+      excludedTools.value.splice(pos, 1);
+    }
+  }
+  function excludeToolName(name: ActionMode): void {
+    const pos = includedTools.value.findIndex((tool: string) => tool === name);
+    if (pos >= 0) {
+      insertAscending(name, excludedTools.value);
+      includedTools.value.splice(pos, 1);
+    }
+  }
+  function parseAndSetFavoriteTools(favTools: string) {
+    if (favTools.trim().length > 0) {
+      favoriteTools.value = favTools
+        .split("#")
+        .map(
+          (fav: string) => fav.split(",").map(s => s.trim()) as ActionMode[]
+        );
+      if (favoriteTools.value.length !== 2)
+        favoriteTools.value = DEFAULT_TOOL_NAMES;
+    } else favoriteTools.value = DEFAULT_TOOL_NAMES;
+  }
+  return {
+    userRole,
+    userEmail,
+    firebaseUid,
+    userDisplayedName,
+    loginEnabled,
+    userProfilePictureURL,
+    temporaryProfilePicture,
+    constructionDocId,
+    favoriteTools,
+    includedTools,
+    includeToolName,
+    excludeToolName,
+    resetToolset,
+    parseAndSetFavoriteTools
+  };
 });
-
-// export type AccountStoreType = StoreActions<
-//   ReturnType<typeof useAccountStore>
-// > &
-//   StoreGetters<ReturnType<typeof useAccountStore>> &
-//   StoreState<ReturnType<typeof useAccountStore>>;
-
-// export const useAccountStore = (): ReachableStore => useDef();

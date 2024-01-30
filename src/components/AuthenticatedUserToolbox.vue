@@ -183,7 +183,7 @@ const seStore = useSEStore();
 const {
   loginEnabled,
   userProfilePictureURL,
-  // userDisplayedName,
+  userDisplayedName,
   userEmail,
   constructionDocId,
   includedTools
@@ -323,9 +323,9 @@ onBeforeUnmount(() => {
 async function doLoginOrLogout() {
   if (appAuth.currentUser !== null) {
     await appAuth.signOut();
-    acctStore.userEmail = undefined;
-    acctStore.userProfilePictureURL = undefined;
-    acctStore.userDisplayedName = undefined;
+    userEmail.value = undefined;
+    userProfilePictureURL.value = undefined;
+    userDisplayedName.value = undefined;
   } else {
     router.replace({ path: "/account" });
   }
