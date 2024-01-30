@@ -11,7 +11,7 @@
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list lines="three">
-      <template v-for="(r, pos) in items" :key="r.id">
+      <template v-for="r in items" :key="r.id">
         <v-hover>
           <template v-slot:default="{ isHovering, props }">
             <!-- the class "constructionItem" is used for testing. Do not remove it -->

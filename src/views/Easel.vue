@@ -31,9 +31,9 @@
     <div id="sphere-and-msghub">
 
 
-      <div id="earthAndCircle">
+      <div id="earthAndCircle" v-if="svgDataImage.length === 0">
         <EarthLayer
-          v-if="localIsEarthMode && svgDataImage.length === 0"
+          v-if="localIsEarthMode"
           :available-height="availHeight"
           :available-width="availWidth"
         />
@@ -41,7 +41,6 @@
           style="position: relative"
           :available-width="availWidth"
           :available-height="availHeight"
-          v-show="svgDataImage.length === 0"
           :is-earth-mode="localIsEarthMode"
         />
         <!--v-switch
@@ -73,24 +72,22 @@
         <v-switch-->
 
       </div>
-      <v-overlay
-        :scrim="false"
-        contained
+      <div v-else
         :class="['justify-center', 'align-start', previewClass]"
         :model-value="svgDataImage.length > 0"
       >
-        <div class="previewText">
+      Aspect ratio {{ svgDataImageAspectRatio }}
+        <!--div class="previewText">
           <p>{{ constructionInfo.count }} objects.</p>
           <p>Created by: {{ constructionInfo.author }}</p>
-        </div>
+        </div-->
         <img
           id="previewImage"
-          class="previewImage"
           :src="svgDataImage"
           :width="overlayHeight * svgDataImageAspectRatio"
           :height="overlayHeight"
         />
-      </v-overlay>
+        </div>
       <div id="msghub">
         <ShortcutIcon
           class="mx-1"
@@ -300,6 +297,7 @@ onBeforeMount(() => {
 
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
+    console.debug("Previewing construction", s)
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
     svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
