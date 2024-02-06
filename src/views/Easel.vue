@@ -25,12 +25,9 @@
       />
     </div>
 
-
     <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
     <div id="sphere-and-msghub">
-
-
       <div id="earthAndCircle" v-if="svgDataImage.length === 0">
         <EarthLayer
           v-if="localIsEarthMode"

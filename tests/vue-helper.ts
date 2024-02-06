@@ -1,49 +1,40 @@
-import { createLocalVue, mount, shallowMount, VueClass } from "@vue/test-utils";
-import router from "@/router";
-import VueRouter from "vue-router";
-import Vuetify from "vuetify";
-import Vue from "vue";
+import { mount, shallowMount, VueWrapper } from "@vue/test-utils";
+// import router from "@/router";
+// import VueRouter from "vue-router";
+import { createVuetify } from "vuetify";
+import * as components from "vuetify/components"
+import * as directives from "vuetify/directives"
 
-Vue.use(Vuetify);
+const vuetify = createVuetify({ components, directives })
 
-export const createTester = () => {
-  const localVue = createLocalVue();
-  localVue.use(VueRouter);
-  localVue.use(Vuetify);
-  const store = createStore();
-  // const router = createRouter();
-  return { store, localVue };
-};
+// export const createTester = () => {
+//   const localVue = createLocalVue();
+//   localVue.use(VueRouter);
+//   localVue.use(Vuetify);
+//   const store = createStore();
+//   // const router = createRouter();
+//   return { store, localVue };
+// };
 
 export const createWrapper = (
-  component: VueClass<Vue>,
+  component: any,
   { mountOptions = {}, mockOptions = {} } = {},
   isShallow = false
-) => {
-  const { localVue, store } = createTester();
-  const vt = new Vuetify({
-    icons: {
-      iconfont: "mdiSvg"
-    }
-    // lang: {
-    //   locales: { en: localeEn },
-    //   current: "en"
-    //   // t: (msg: string) => msg
-    // }
-  });
+):VueWrapper => {
+
   const configOption = {
-    store,
-    vuetify: vt,
-    router,
-    localVue,
-    mocks: {
-      $t: (msg: string) => msg,
-      $vuetify: {
-        theme: {} as any
-      },
-      ...mockOptions
+    // store,
+    // router,
+    // mocks: {
+    //   $t: (msg: string) => msg,
+    //   $vuetify: {
+    //     theme: {} as any
+    //   },
+    //   ...mockOptions
+    // },
+    global: {
+      plugins: [vuetify],
     },
-    extensions: { plugins: [Vuetify] },
     // attachToDocument: true,
     ...mountOptions
   };

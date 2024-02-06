@@ -118,7 +118,7 @@ const router = useRouter();
 const acctStore = useAccountStore();
 const userEmail = ref("");
 const userPassword = ref("");
-const {userDisplayedName, userProfilePictureURL } = storeToRefs(acctStore)
+const {userDisplayedName, userProfilePictureURL, firebaseUid } = storeToRefs(acctStore)
 const emailRules = [
   (s: string | undefined): boolean | string => {
     if (!s) return false;
@@ -182,6 +182,7 @@ function doSignIn(): void {
     .then((cred: UserCredential) => {
       if (cred.user?.emailVerified) {
         parseUserProfile(cred.user.uid);
+        firebaseUid.value = cred.user.uid
         router.replace({
           path: "/"
         });
@@ -220,6 +221,7 @@ function doGoogleLogin(): void {
   signInWithPopup(appAuth, provider)
     .then((cred: UserCredential) => {
       parseUserProfile(cred.user.uid);
+      firebaseUid.value = cred.user.uid
       router.replace({
         path: "/"
       });

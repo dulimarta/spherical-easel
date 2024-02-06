@@ -7,6 +7,11 @@ export default mergeConfig(viteConfig, defineConfig({
     test: {
         globals: true,
         environment: "jsdom",
-        // include: ["**/*dialog.spec.ts"]
-    }
+        include: ["**/*dialog.spec.ts"],
+        server: {
+            deps: {
+                inline: ["vuetify"]
+            }
+        },
+    },
 }))

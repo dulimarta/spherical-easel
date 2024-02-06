@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-hover v-slot:default="{ hover }">
+    <v-hover v-slot:default="{ isHovering }">
       <div id="profileImage">
         <img v-if="profileImage" width="128" :src="profileImage" />
-        <v-icon v-else :color="hover ? 'primary' : 'secondary'" size="128"
+        <v-icon v-else :color="isHovering ? 'primary' : 'secondary'" size="128"
           >mdi-account
         </v-icon>
-        <v-overlay absolute :value="hover">
+        <v-overlay absolute :value="isHovering">
           <v-row>
             <v-col cols="auto">
               <v-icon @click="toPhotoCapture"> mdi-camera</v-icon>
