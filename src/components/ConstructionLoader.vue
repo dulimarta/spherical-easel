@@ -23,7 +23,17 @@
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel value="public">
+      <v-expansion-panel value="owned" class="expansion-panel--spaced">
+        <v-expansion-panel-title>
+          {{ t(`ownedConstructions`) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ConstructionList
+            :items="displayedOwnedConstructions"
+            :allow-sharing="false" />
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+      <v-expansion-panel value="public" class="expansion-panel--spaced">
         <v-expansion-panel-title>
           {{ t(`publicConstructions`) }}
         </v-expansion-panel-title>
@@ -33,12 +43,26 @@
             :allow-sharing="false" />
         </v-expansion-panel-text>
       </v-expansion-panel>
+      <v-expansion-panel value="starred" class="expansion-panel--spaced">
+        <v-expansion-panel-title>
+          {{ t(`starredConstructions`) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ConstructionList
+            :items="displayedStarredConstructions"
+            :allow-sharing="false" />
+        </v-expansion-panel-text>
+      </v-expansion-panel>
       </v-expansion-panels>
     <!-- </v-expansion-panels> -->
   </div>
 </template>
 
 <style scoped>
+.expansion-panel--spaced {
+  margin-bottom: 16px; /* gap presented when lists are collapsed*/
+}
+
 #shareTextArea {
   font-family: Courier New, Courier, monospace;
 }
@@ -52,9 +76,11 @@ import { useIdle } from "@vueuse/core";
 import { watch, computed, ref, Ref } from "vue";
 import { SphericalConstruction } from "@/types";
 const { t } = useI18n();
-const { publicConstructions, privateConstructions } = useConstruction();
+const { publicConstructions, privateConstructions, starredConstructions, ownedConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const filteredOwnedConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const filteredStarredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const searchResult = ref("");
 const searchKey = ref("");
 let lastSearchKey: string|null = null
@@ -76,6 +102,20 @@ const displayedPublicConstructions = computed(
   (): Array<SphericalConstruction> => {
     if (searchKey.value.length > 0) return filteredPublicConstructions.value;
     else return publicConstructions.value;
+  }
+);
+
+const displayedOwnedConstructions = computed(
+  (): Array<SphericalConstruction> => {
+    if (searchKey.value.length > 0) return filteredOwnedConstructions.value;
+    else return ownedConstructions.value;
+  }
+);
+
+const displayedStarredConstructions = computed(
+  (): Array<SphericalConstruction> => {
+    if (searchKey.value.length > 0) return filteredStarredConstructions.value;
+    else return starredConstructions.value;
   }
 );
 
@@ -128,7 +168,9 @@ watch(idle, () => {
 {
   "constructionDeleted": "Construction {docId} was successfully removed",
   "privateConstructions": "Private Constructions",
+  "ownedConstructions": "Owned Constructions",
   "publicConstructions": "Public Constructions",
+  "starredConstructions": "Starred Constructions",
   "failedToDelete": "Unable to delete construction {docId}",
   "searchLabel": "Search Construction",
   "foundMultiple": "Found {privateCount} private and {publicCount} public constructions",
