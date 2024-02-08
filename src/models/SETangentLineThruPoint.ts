@@ -10,9 +10,6 @@ import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
 // import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
-// import { SEEllipse } from "./SEEllipse";
-// import { SEParametric } from "./SEParametric";
 const { t } = i18n.global;
 
 export class SETangentLineThruPoint extends SELine {
