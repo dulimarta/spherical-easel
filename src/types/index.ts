@@ -594,6 +594,7 @@ export interface ConstructionInFirestore {
   publicDocId?: string; // linked to the document with structure PublicConstructionInFirebase
   // A list of enabled tool buttons associated with this construction
   tools: Array<ActionMode> | undefined;
+  stars: number;
 }
 
 /* Reference to a user's favorite tool in settings */
@@ -605,6 +606,7 @@ export interface UserProfile {
   location?: string;
   role?: string;
   favoriteTools?: string;
+  starredConstructions?: Array<string>;
 }
 
 export enum AngleMode {
