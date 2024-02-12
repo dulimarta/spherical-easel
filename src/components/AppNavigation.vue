@@ -6,7 +6,8 @@
 
   <v-card>
     <v-layout>
-      <v-navigation-drawer fixed
+      <v-navigation-drawer
+        fixed
         :expand-on-hover="expandOnHover"
         :rail="rail"
         :rail-width="64"
@@ -20,10 +21,7 @@
         </v-list>
         <v-divider color="#BDF3CB"></v-divider>
 
-        <v-list
-          density="compact"
-          nav
-          active-class="active">
+        <v-list density="compact" nav active-class="active">
           <v-list-item
             @click="setHover(0)"
             prepend-icon="mdi-tools"
@@ -48,11 +46,12 @@
 
         <template v-slot:append>
           <v-divider color="#BDF3CB"></v-divider>
-          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer"/>
+          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-account" :title="userEmail">
-          </v-list-item>
-              <LanguageSelector/>
+            <!--v-list-item
+              prepend-icon="mdi-account"
+              :title="userEmail"></v-list-item-->
+            <LanguageSelector />
           </v-list>
         </template>
       </v-navigation-drawer>
@@ -95,16 +94,16 @@ import { useDisplay } from "vuetify";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const seStore = useSEStore();
-const acctStore = useAccountStore()
+const acctStore = useAccountStore();
 const { actionMode } = storeToRefs(seStore);
-const { userEmail } = storeToRefs(acctStore)
+const { userEmail } = storeToRefs(acctStore);
 // const props = defineProps<{ minified: boolean }>();
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
-const mouseOnDrawer = ref(false)
+const mouseOnDrawer = ref(false);
 const activeItem = ref(0);
 // eslint-disable-next-line no-unused-vars
 // const headerItem = ["Tools", "Objects", "Construction", "Earth"];
@@ -118,20 +117,20 @@ const expandOnHover = ref(true);
 function setHover(newActive: number): void {
   rail.value = true;
   expandOnHover.value = false;
-  activeItem.value = newActive
+  activeItem.value = newActive;
   // if (newActive === activeItem.value) {
-    // activeItem.value.pop();
-    // setTimeout(() => {
-    //   show.value = !show.value;
-    // }, 100);
+  // activeItem.value.pop();
+  // setTimeout(() => {
+  //   show.value = !show.value;
+  // }, 100);
   // } else if (activeItem.value.length === 0) {
-    // activeItem.value.push(newActive);
-    // setTimeout(() => {
-    //   show.value = !show.value;
-    // }, 100);
+  // activeItem.value.push(newActive);
+  // setTimeout(() => {
+  //   show.value = !show.value;
+  // }, 100);
   // } else {
-    // activeItem.value.pop();
-    // activeItem.value.push(newActive);
+  // activeItem.value.pop();
+  // activeItem.value.push(newActive);
   // }
   setTimeout(() => {
     expandOnHover.value = true;
@@ -178,9 +177,8 @@ function setActiveTab(e: { tabNumber: number }): void {
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");
 });
-function onNavigationHover(e:MouseEvent) {
-mouseOnDrawer.value = e.type === "mouseover"
-
+function onNavigationHover(e: MouseEvent) {
+  mouseOnDrawer.value = e.type === "mouseover";
 }
 </script>
 

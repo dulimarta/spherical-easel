@@ -1,15 +1,15 @@
 <template>
-  <div class="pt-2">
+  <div class="pt-2 mr-2" id="zzz">
     <!--- WARNING: the "id" attribs below are needed for testing -->
-    <v-text-field
+    <v-text-field style="max-height:3em"
       type="text"
       v-model="searchKey"
       variant="outlined"
       density="compact"
       :label="t('searchLabel')"
-      :hint="searchResult"
-      class="px-2" />
-    <v-expansion-panels v-model="openPanels" :multiple="openMultiple">
+      :hint="searchResult"/>
+    <v-expansion-panels v-model="openPanels" :multiple="openMultiple"
+    style="gap:10px; padding-right: 8px; padding-left: 8px;">
       <v-expansion-panel v-if="privateConstructions !== null" value="private">
         <v-expansion-panel-title>
           {{ t(`privateConstructions`) }}
@@ -59,6 +59,12 @@
 </template>
 
 <style scoped>
+#zzz {
+  display: flex;
+  min-height: 98vh;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 .expansion-panel--spaced {
   margin-bottom: 16px; /* gap presented when lists are collapsed*/
 }
@@ -75,10 +81,14 @@ import { useConstruction } from "@/composables/constructions";
 import { useIdle } from "@vueuse/core";
 import { watch, computed, ref, Ref } from "vue";
 import { SphericalConstruction } from "@/types";
+import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
 const { t } = useI18n();
 const { publicConstructions, privateConstructions, starredConstructions, ownedConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+  const acctStore = useAccountStore()
+  const {firebaseUid} = storeToRefs(acctStore)
 const filteredOwnedConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredStarredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const searchResult = ref("");

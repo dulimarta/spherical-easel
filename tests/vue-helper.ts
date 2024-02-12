@@ -1,52 +1,45 @@
-import { createLocalVue, mount, shallowMount, VueClass } from "@vue/test-utils";
-import router from "@/router";
-import VueRouter from "vue-router";
-import Vuetify from "vuetify";
-import Vue from "vue";
-
-Vue.use(Vuetify);
-
-export const createTester = () => {
-  const localVue = createLocalVue();
-  localVue.use(VueRouter);
-  localVue.use(Vuetify);
-  const store = createStore();
-  // const router = createRouter();
-  return { store, localVue };
-};
+import { mount, shallowMount, VueWrapper } from "@vue/test-utils";
+// import { createI18n } from "vue-i18n";
+// import router from "@/router";
+// import VueRouter from "vue-router";
+import i18n from "../src/i18n";
+import { createVuetify } from "vuetify";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
+import { vi } from "vitest";
+const vuetify = createVuetify({ components, directives });
+// const i18n = createI18n({});
+// export const createTester = () => {
+//   const localVue = createLocalVue();
+//   localVue.use(VueRouter);
+//   localVue.use(Vuetify);
+//   const store = createStore();
+//   // const router = createRouter();
+//   return { store, localVue };
+// };
 
 export const createWrapper = (
-  component: VueClass<Vue>,
-  { mountOptions = {}, mockOptions = {} } = {},
+  component: any,
+  { mountOptions = {}, mockOptions = {}, globalOptions = {} } = {},
   isShallow = false
-) => {
-  const { localVue, store } = createTester();
-  const vt = new Vuetify({
-    icons: {
-      iconfont: "mdiSvg"
-    }
-    // lang: {
-    //   locales: { en: localeEn },
-    //   current: "en"
-    //   // t: (msg: string) => msg
-    // }
-  });
+): VueWrapper => {
   const configOption = {
-    store,
-    vuetify: vt,
-    router,
-    localVue,
-    mocks: {
-      $t: (msg: string) => msg,
-      $vuetify: {
-        theme: {} as any
+    i18n,
+    // store,
+    // router,
+    global: {
+      plugins: [vuetify, i18n],
+      mocks: {
+        t: vi.fn()
       },
+      ...globalOptions,
       ...mockOptions
     },
-    extensions: { plugins: [Vuetify] },
     // attachToDocument: true,
     ...mountOptions
   };
+  console.debug("Shallow mount?", isShallow);
+  console.debug("Config option ", configOption);
   return isShallow
     ? shallowMount(component, configOption)
     : mount(component, configOption);
