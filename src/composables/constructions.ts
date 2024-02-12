@@ -115,6 +115,7 @@ async function parseDocument(
     objectCount,
     author: remoteDoc.author,
     dateCreated: remoteDoc.dateCreated,
+    starCount: 255, //static value assigned for new UI starred count
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
     sphereRotationMatrix,
