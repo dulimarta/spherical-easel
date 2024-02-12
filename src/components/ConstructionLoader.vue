@@ -23,6 +23,16 @@
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
+      <v-expansion-panel v-if="starredConstructions !== null && firebaseUid && firebaseUid.length > 0" value="starred">
+      <v-expansion-panel-title>
+        {{ t(`starredConstructions`) }}
+      </v-expansion-panel-title>
+      <v-expansion-panel-text>
+        <ConstructionList
+          :allow-sharing="true"
+          :items="displayedStarredConstructions" />
+        </v-expansion-panel-text>
+      </v-expansion-panel>
       <v-expansion-panel value="public">
         <v-expansion-panel-title>
           {{ t(`publicConstructions`) }}
@@ -41,7 +51,7 @@
 <style scoped>
 #zzz {
   display: flex;
-  min-height: 98vh;
+  min-height: 100vh;
   flex-direction: column;
   justify-content: flex-start;
 }
@@ -57,7 +67,7 @@ import { SphericalConstruction } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 const { t } = useI18n();
-const { publicConstructions, privateConstructions } = useConstruction();
+const { publicConstructions, privateConstructions, starredConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   const acctStore = useAccountStore()
@@ -80,6 +90,13 @@ const displayedPrivateConstructions = computed(
 );
 
 const displayedPublicConstructions = computed(
+  (): Array<SphericalConstruction> => {
+    if (searchKey.value.length > 0) return filteredPublicConstructions.value;
+    else return publicConstructions.value;
+  }
+);
+
+const displayedStarredConstructions = computed(
   (): Array<SphericalConstruction> => {
     if (searchKey.value.length > 0) return filteredPublicConstructions.value;
     else return publicConstructions.value;
@@ -135,6 +152,7 @@ watch(idle, () => {
 {
   "constructionDeleted": "Construction {docId} was successfully removed",
   "privateConstructions": "Private Constructions",
+  "starredConstructions": "Starred Constructions",
   "publicConstructions": "Public Constructions",
   "failedToDelete": "Unable to delete construction {docId}",
   "searchLabel": "Search Construction",

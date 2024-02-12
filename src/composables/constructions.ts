@@ -49,6 +49,7 @@ const privateConstructions: Ref<Array<SphericalConstruction> | null> =
   ref(null);
 // Public constructions is never null
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 
 function isPublicConstruction(docId: string): boolean {
   const pos = publicConstructions.value.findIndex(
@@ -109,6 +110,7 @@ async function parseDocument(
     objectCount,
     author: remoteDoc.author,
     dateCreated: remoteDoc.dateCreated,
+    starCount: 255, //static value assigned for new UI starred count
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
     sphereRotationMatrix,
@@ -283,6 +285,7 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
+    starredConstructions,
     deleteConstruction,
     currentConstructionPreview,
     isPublicConstruction

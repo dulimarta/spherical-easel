@@ -17,25 +17,34 @@
             <!-- the class "constructionItem" is used for testing. Do not remove it -->
             <v-list-item
               v-bind="props"
-              class="_test_constructionItem"
+              class="_test_constructionItem custom-list-item"
               @mouseover.capture="onItemHover(r)">
+              <div class="list-item-content"></div>
               <template #prepend>
+                <div class="item-image">
                 <img
                   :src="previewOrDefault(r.preview)"
                   class="mr-1"
                   alt="preview"
                   width="64" />
+                </div>
               </template>
               <v-list-item-title class="text-truncate">
                 {{ r.description || "N/A" }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 <code>{{ r.id.substring(0, 5) }}</code>
-                <span class="text-truncate">
-                  {{ r.objectCount }} objects,
-                  {{ r.dateCreated.substring(0, 10) }}
-                  {{ r.author }}
-                </span>
+                {{ r.objectCount }} objects,
+                <span class="text-truncate"> {{ r.author }}</span> <!-- currently not seeing the CSS applied-->
+                <div class="star-rating-line">
+                  <div class="date-and-star">
+                    {{ r.dateCreated.substring(0, 10) }}
+                  </div>
+                  <div class="star-and-count">
+                    <span class="star filled">&#9733;</span> <!-- Always filled star -->
+                    {{ r.starCount }}
+                  </div>
+                </div>
               </v-list-item-subtitle>
               <v-divider />
               <!--- show a Load button as an overlay when the mouse hovers -->
@@ -270,12 +279,61 @@ function doShareConstruction() {
 </script>
 
 <style scoped>
+
 .constructionItem {
   display: inline-flex;
   flex-direction: row;
   justify-content: center;
   /* width: 100%; */
   /* background-color: red; */
+}
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.list-item-content {
+  display: flex;
+  width: 100%;
+}
+
+.item-image {
+  margin-right: 0.5rem;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.star-rating-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.date-and-star {
+  display: flex;
+  align-items: center;
+}
+
+.star-and-count {
+  display: flex;
+  align-items: center;
+  color: #4b3c11;
+}
+
+.star {
+  margin-right: 0.25rem;
+  color: #ffc107;
+}
+
+.star.filled {
+  color: #ffc107;
 }
 </style>
 <i18n locale="en">
