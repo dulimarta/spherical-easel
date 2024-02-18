@@ -43,16 +43,6 @@
             :allow-sharing="false" />
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel value="starred" class="expansion-panel--spaced">
-        <v-expansion-panel-title>
-          {{ t(`starredConstructions`) }}
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <ConstructionList
-            :items="displayedStarredConstructions"
-            :allow-sharing="false" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
       </v-expansion-panels>
     <!-- </v-expansion-panels> -->
   </div>
@@ -64,13 +54,6 @@
   min-height: 100vh;
   flex-direction: column;
   justify-content: flex-start;
-}
-.expansion-panel--spaced {
-  margin-bottom: 16px; /* gap presented when lists are collapsed*/
-}
-
-#shareTextArea {
-  font-family: Courier New, Courier, monospace;
 }
 </style>
 
@@ -89,8 +72,6 @@ const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   const acctStore = useAccountStore()
   const {firebaseUid} = storeToRefs(acctStore)
-const filteredOwnedConstructions: Ref<Array<SphericalConstruction>> = ref([]);
-const filteredStarredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const searchResult = ref("");
 const searchKey = ref("");
 let lastSearchKey: string|null = null
@@ -173,7 +154,6 @@ watch(idle, () => {
   "privateConstructions": "Private Constructions",
   "starredConstructions": "Starred Constructions",
   "publicConstructions": "Public Constructions",
-  "starredConstructions": "Starred Constructions",
   "failedToDelete": "Unable to delete construction {docId}",
   "searchLabel": "Search Construction",
   "foundMultiple": "Found {privateCount} private and {publicCount} public constructions",

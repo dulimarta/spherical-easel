@@ -49,9 +49,6 @@ const privateConstructions: Ref<Array<SphericalConstruction> | null> =
   ref(null);
 // Public constructions is never null
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
-// owned Constructions could be null
-const ownedConstructions: Ref<Array<SphericalConstruction>> = ref([]);
-// starred Constructions could be null
 const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 
 function isPublicConstruction(docId: string): boolean {
@@ -60,8 +57,6 @@ function isPublicConstruction(docId: string): boolean {
   );
   return pos >= 0;
 }
-
-//might need some functions similar to isPublicConstruction for owned and starred.
 
 async function parseDocument(
   id: string,
@@ -290,7 +285,6 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
-    ownedConstructions,
     starredConstructions,
     deleteConstruction,
     currentConstructionPreview,
