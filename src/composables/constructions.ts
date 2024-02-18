@@ -216,7 +216,7 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-        //   privateConstructions.value.splice(0) // Purge the existing items
+          privateConstructions.value.splice(0) // Purge the existing items
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {

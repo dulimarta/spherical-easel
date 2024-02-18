@@ -60,8 +60,10 @@ const { t } = useI18n();
 const { publicConstructions, privateConstructions } = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
-  const acctStore = useAccountStore()
-  const {firebaseUid} = storeToRefs(acctStore)
+const acctStore = useAccountStore()
+const {firebaseUid} = storeToRefs(acctStore)
+//grabbing user email for filtering
+const { userEmail } = storeToRefs(acctStore);
 const searchResult = ref("");
 const searchKey = ref("");
 let lastSearchKey: string|null = null
@@ -78,13 +80,30 @@ const displayedPrivateConstructions = computed(
     else return [];
   }
 );
+//new function to display filtered public constructions
+const displayedPublicConstructions = computed(() => {
+  // If there's a search, use the filtered list
+  if (searchKey.value.length > 0) {
+    return filteredPublicConstructions.value;
+  } else {
+    // If the user is logged in, filter out their own constructions
+    if (userEmail.value) {
+      return publicConstructions.value.filter(
+        (construction) => construction.author !== userEmail.value
+      );
+    } else {
+      // If no user is logged in, display all public constructions
+      return publicConstructions.value;
+    }
+  }
+});
 
-const displayedPublicConstructions = computed(
+/*const displayedPublicConstructions = computed(
   (): Array<SphericalConstruction> => {
     if (searchKey.value.length > 0) return filteredPublicConstructions.value;
     else return publicConstructions.value;
   }
-);
+); */
 
 watch(idle, () => {
   if (!idle) {
