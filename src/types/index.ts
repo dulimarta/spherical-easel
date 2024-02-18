@@ -570,6 +570,7 @@ export interface ObjectState {
 export type ConstructionScript = Array<string | Array<string>>;
 
 export interface SphericalConstruction extends ConstructionInFirestore {
+  starCount: number;
   id: string;
   parsedScript: ConstructionScript;
   sphereRotationMatrix: Matrix4;
