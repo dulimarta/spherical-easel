@@ -176,6 +176,24 @@ function parseCollection(
     });
 }
 
+
+async function makePrivate(
+  uid: string,
+  docId: string
+): Promise<boolean> {
+  const pos = publicConstructions.value.findIndex(
+    (c: SphericalConstruction) => c.id === docId
+  );
+  try{
+  const victimDetails = publicConstructions.value[pos];
+  if (victimDetails.publicDocId) 
+    await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    return Promise.resolve(true);
+  } catch (err: any) {
+    return Promise.resolve(false);
+  }
+}
+
 async function deleteConstruction(
   uid: string,
   docId: string
@@ -283,6 +301,7 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
+    makePrivate,
     deleteConstruction,
     currentConstructionPreview,
     isPublicConstruction
