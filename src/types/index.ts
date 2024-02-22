@@ -588,6 +588,7 @@ export interface ConstructionInFirestore {
   dateCreated: string;
   script: string;
   description: string;
+  starCount: number;
   rotationMatrix?: string;
   preview: string; // Either the data:image of the URL to the data:image
   aspectRatio?: number /* width / height of the screen when image was capture*/;

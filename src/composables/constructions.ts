@@ -108,6 +108,7 @@ async function parseDocument(
     parsedScript,
     objectCount,
     author: remoteDoc.author,
+    starCount: 255, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -186,7 +187,7 @@ async function makePrivate(
   );
   try{
   const victimDetails = publicConstructions.value[pos];
-  if (victimDetails.publicDocId) 
+  if (victimDetails.publicDocId)
     await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
     return Promise.resolve(true);
   } catch (err: any) {
