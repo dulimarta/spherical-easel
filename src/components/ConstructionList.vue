@@ -75,8 +75,8 @@
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
-                    color="secondary"
-                    icon="$shareConstruction"
+                    color="yellow"
+                    icon="$starConstruction"
                     @click="handleStarConstruction(r.publicDocId)"></v-btn>
                   <!-- show delete button only for its owner -->
                   <v-btn
@@ -87,6 +87,14 @@
                     icon="$deleteConstruction"
                     color="red"
                     @click="handleDeleteConstruction(r.id)"></v-btn>
+                    <v-btn
+                    v-if="r.author === userEmail"
+                    id="_test_deletefab"
+                    class="mx-1"
+                    size="small"
+                    icon="$privateConstruction"
+                    color="red"
+                    @click="makePrivate(r.id)"></v-btn>
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
                     v-if="r.author === userEmail"
@@ -150,6 +158,8 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstruction } from "@/composables/constructions";
 import { useClipboard, usePermission } from "@vueuse/core";
+import { idText } from "typescript";
+import { arrayRemove } from "firebase/firestore";
 const DELETE_DELAY = 3000;
 const props = defineProps<{
   items: Array<SphericalConstruction>;
@@ -300,6 +310,11 @@ function handleStarConstruction(docId: string) {
 
 //implement for unstarring construction
 function handleUnstarConstruction(docId: string) {
+  starredDocId.value = docId;
+  constructionShareDialog.value?.show();
+}
+
+function makePrivate(docId: string) {
   starredDocId.value = docId;
   constructionShareDialog.value?.show();
 }
