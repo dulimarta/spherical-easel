@@ -71,8 +71,6 @@
       {{ t("constructions.logoutDialog") }}
     </p>
   </Dialog>
-
-
 </template>
 
 <!--
@@ -81,12 +79,7 @@
 -->
 <script lang="ts" setup>
 /* Import the custom components */
-import {
-  Ref,
-  ref,
-  onBeforeMount,
-  onMounted,
-} from "vue";
+import { Ref, ref, onBeforeMount, onMounted } from "vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 // import LanguageSelector from "./components/LanguageSelector.vue";
 // import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
@@ -108,7 +101,6 @@ const appAuth = getAuth();
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole } = storeToRefs(acctStore);
-
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);

@@ -8,7 +8,7 @@ import vuetify from "./plugins/vuetify";
 import i18n from "./i18n";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
-import "@/extensions/se-nodule.extensions"
+import "@/extensions/se-nodule.extensions";
 import { createPinia } from "pinia";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./firebase-config";
@@ -17,8 +17,8 @@ import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { SENodule } from "./models/internal";
 import Nodule from "./plottables/Nodule";
-const pinia = createPinia();
 const firebaseApp = initializeApp(firebaseConfig);
+const pinia = createPinia();
 
 const app = createApp(App);
 app.use(vuetify);
