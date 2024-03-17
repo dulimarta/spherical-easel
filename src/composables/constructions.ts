@@ -40,9 +40,7 @@ import { ComputedRef } from "vue";
 // import { useAccountStore } from "@/stor  es/account";
 // import { storeToRefs } from "pinia";
 // const acctStore = useAccountStore();
-const userEmail = computed((): string => {
-  return appAuth.currentUser?.email ?? "";
-});
+// const { userEmail } = storeToRefs(acctStore);
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -52,6 +50,7 @@ const privateConstructions: Ref<Array<SphericalConstruction> | null> =
   ref(null);
 // Public constructions is never null
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 
 function isPublicConstruction(docId: string): boolean {
   const pos = publicConstructions.value.findIndex(
@@ -111,14 +110,14 @@ async function parseDocument(
     parsedScript,
     objectCount,
     author: remoteDoc.author,
-    starCount: 255, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
     sphereRotationMatrix,
     preview: svgData ?? "",
     publicDocId: remoteDoc.publicDocId,
-    tools: remoteDoc.tools ?? undefined
+    tools: remoteDoc.tools ?? undefined,
+    starCount: remoteDoc.starCount 
   } as SphericalConstruction);
 }
 
@@ -225,7 +224,6 @@ async function deleteConstruction(
   }
 }
 
-
 async function updateStarred(constructionId: string): Promise<void> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
@@ -275,7 +273,7 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-          privateConstructions.value.splice(0) // Purge the existing items
+        privateConstructions.value.splice(0)
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {
@@ -342,6 +340,7 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
+    starredConstructions,
     makePrivate,
     deleteConstruction,
     updateStarred,
