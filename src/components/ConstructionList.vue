@@ -321,6 +321,34 @@ function makePrivate(docId: string) {
 
 function doShareConstruction() {
   clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
+    }
+
+    function handleSaveCopy(docId: string): void {
+  //showDeleteWarning.value = true;
+  //deleteTimer = setTimeout(() => {
+        doSaveCopy(docId);
+  //}, 3500);
+}
+async function doSaveCopy(docId: string) {
+  const uid = appAuth.currentUser?.uid;
+    if (uid) {
+        const savedCopy = await doSave(uid, docId);
+        if (savedCopy)
+        EventBus.fire("show-alert", {
+            key: t("savedCopy", { docId }),
+            type: "success"
+        });
+        else
+        EventBus.fire("show-alert", {
+            key: t("saveCopyFailed", { docId }),
+            type: "error"
+        });
+    } else {
+        EventBus.fire("show-alert", {
+            key: t("saveCopyAttemptNoUid"),
+        type: "error"
+        });
+    }
 }
 </script>
 
