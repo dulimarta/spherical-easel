@@ -18,21 +18,21 @@
           <ConstructionList
             :allow-sharing="true"
             :items="displayedPrivateConstructions" />
-        </v-expansion-panel-text>
+          </v-expansion-panel-text>
         <v-expansion-panel-text v-else>
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
       <v-expansion-panel v-if="starredConstructions !== null && firebaseUid && firebaseUid.length > 0" value="starred">
-      <v-expansion-panel-title>
-        {{ t(`starredConstructions`) }}
-      </v-expansion-panel-title>
-      <v-expansion-panel-text>
-        <ConstructionList
-          :allow-sharing="true"
-          :items="displayedStarredConstructions" />
-        </v-expansion-panel-text>
-      </v-expansion-panel>
+        <v-expansion-panel-title>
+          {{ t(`starredConstructions`) }}
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ConstructionList
+            :allow-sharing="true"
+            :items="displayedStarredConstructions" />
+          </v-expansion-panel-text>
+        </v-expansion-panel>
       <v-expansion-panel value="public">
         <v-expansion-panel-title>
           {{ t(`publicConstructions`) }}
@@ -65,21 +65,30 @@ import { useIdle } from "@vueuse/core";
 import { watch, computed, ref, Ref } from "vue";
 import { SphericalConstruction } from "@/types";
 import { useAccountStore } from "@/stores/account";
+import { useUserAccountStore } from '@/stores/userAccountStore';
 import { storeToRefs } from "pinia";
+import { onMounted } from 'vue'; //trying to async call to setup UserProfile call
 const { t } = useI18n();
 const { publicConstructions, privateConstructions, starredConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const acctStore = useAccountStore()
-const {firebaseUid} = storeToRefs(acctStore)
+const { firebaseUid } = storeToRefs(acctStore)
 const searchResult = ref("");
 const searchKey = ref("");
 //grabbing user email for filtering
 const { userEmail } = storeToRefs(acctStore);
+const accountStore = useUserAccountStore();
+const uid = 'firebaseUid'; //need to figure out how to call that
+const { userProfile } = storeToRefs(useUserAccountStore());
 let lastSearchKey: string|null = null
 const openPanels: Ref<Array<string> | string> = ref("");
 const openMultiple = ref(false);
 const { idle } = useIdle(1000); // wait for 1 second idle
+
+onMounted(async () => {
+  await accountStore.fetchUserProfile(uid);
+});
 
 const displayedPrivateConstructions = computed(
   (): Array<SphericalConstruction> => {
@@ -109,22 +118,41 @@ const displayedPublicConstructions = computed(() => {
   }
 });
 
-//work in progress for displaying starred constructions. should grab the public constructions list, and filter based on whether ids match in users starred construction array list.
-async function displayedStarredConstructions(userId: string): Promise<typeof starredConstructions[]> {
-  try {
-    const allConstructions = publicConstructions.value
-    const user = firebaseUid
-    // Filter the constructions based on the starredConstructionIds
-    const starredConstructions = allConstructions.filter(construction =>
-      user.starredConstructions.includes(construction.id)
-    );
+//version that works with changes to firebase config file and a new file for userAccountStore.ts that initalizes UserProfile as a export
+//while everything compiles and runs, still no constructions are displaying
+const displayedStarredConstructions = computed(() => {
+  const starredIDs = userProfile.value?.userStarredConstructions || [];
 
-    return starredConstructions.value;
-  } catch (error) {
-    console.error("Error fetching starred constructions:", error);
-    return [];
+  if (starredIDs.length > 0) {
+    return publicConstructions.value.filter(construction =>
+      starredIDs.includes(construction.id)
+    );
   }
-}
+  return [];
+});
+
+/*const displayedStarredConstructions = computed(() => {
+  // possible version if i can directly call the userstarredconstruction
+  // Check if there is any search term entered
+  if (searchKey.value.length > 0) {
+    // filtering by description
+    return publicConstructions.value.filter(construction =>
+      construction.description.toLowerCase().includes(searchKey.value.toLowerCase()));
+  } else {
+    // Get the current user's starred construction IDs
+    const starredIDs = UserProfile.starredConstructions;
+
+    // If there are starred IDs and the user is logged in
+    if (firebaseUid.value && starredIDs && starredIDs.length > 0) {
+      const starredSet = new Set(starredIDs); // Convert to set for faster lookup
+      return publicConstructions.value.filter(construction =>
+        starredSet.has(construction.id));
+    } else {
+      // If no user is logged in, or they have no starred constructions
+      return [];
+    }
+  }
+}); */
 
 watch(idle, () => {
   if (!idle) {

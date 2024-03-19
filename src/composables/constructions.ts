@@ -116,7 +116,7 @@ async function parseDocument(
     preview: svgData ?? "",
     publicDocId: remoteDoc.publicDocId,
     tools: remoteDoc.tools ?? undefined,
-    starCount: remoteDoc.starCount 
+    starCount: remoteDoc.starCount
   } as SphericalConstruction);
 }
 
