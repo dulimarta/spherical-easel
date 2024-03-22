@@ -224,7 +224,7 @@ async function deleteConstruction(
   }
 }
 
-async function updateStarred(constructionId: string): Promise<void> {
+async function updateStarred(constructionId: string): Promise<boolean> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
   }
@@ -242,22 +242,28 @@ async function updateStarred(constructionId: string): Promise<void> {
       if (starList.includes(constructionId)) {
         // Unstar construction
         starList = starList.filter(id => id !== constructionId);
+        await updateDoc(userDocRef, {
+          starList: starList
+        });
+        return Promise.resolve(true); // Construction unstarred
       } else {
         // Star construction
         starList.push(constructionId);
+        await updateDoc(userDocRef, {
+          starList: starList
+        });
+        return Promise.resolve(true); // Construction starred
       }
-
-      // Update the starList in Firestore
-      await updateDoc(userDocRef, {
-        starList: starList
-      });
     } else {
       console.log("User document does not exist.");
+      return Promise.resolve(false); // Construction unstarred (user document doesn't exist)
     }
   } catch (error) {
     console.error("Error updating starred status:", error);
+    return Promise.resolve(false); // Construction unstarred (error occurred)
   }
 }
+
 
 
 export function useConstruction() {
