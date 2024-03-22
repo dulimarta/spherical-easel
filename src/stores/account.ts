@@ -75,7 +75,11 @@ export const useAccountStore = defineStore("acct", () => {
       if (favoriteTools.value.length !== 2)
         favoriteTools.value = DEFAULT_TOOL_NAMES;
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
+    }
+  function saveCopiedStarredConstruction(uid: String, docId: String){
+      
   }
+
   return {
     userRole,
     userEmail,
@@ -90,6 +94,7 @@ export const useAccountStore = defineStore("acct", () => {
     includeToolName,
     excludeToolName,
     resetToolset,
-    parseAndSetFavoriteTools
+    parseAndSetFavoriteTools,
+    saveCopiedStarredConstruction
   };
 });
