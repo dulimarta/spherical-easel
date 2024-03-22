@@ -79,7 +79,7 @@ const searchKey = ref("");
 //grabbing user email for filtering
 const { userEmail } = storeToRefs(acctStore);
 const accountStore = useUserAccountStore();
-const uid = 'firebaseUid'; //need to figure out how to call that
+const uid = firebaseUid.value; //need to figure out how to call that
 const { userProfile } = storeToRefs(useUserAccountStore());
 let lastSearchKey: string|null = null
 const openPanels: Ref<Array<string> | string> = ref("");
@@ -87,7 +87,7 @@ const openMultiple = ref(false);
 const { idle } = useIdle(1000); // wait for 1 second idle
 
 onMounted(async () => {
-  await accountStore.fetchUserProfile(uid);
+  await accountStore.fetchUserProfile(uid!!);
 });
 
 const displayedPrivateConstructions = computed(
