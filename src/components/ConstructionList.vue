@@ -141,6 +141,13 @@
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
     </template>
   </v-snackbar>
+
+  <v-snackbar 
+    v-model="showConstructionCopied"
+    location="top"
+    :timeout="DELETE_DELAY">
+      {{ t("ConstructionCopied") }}
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
@@ -322,9 +329,10 @@ function doShareConstruction() {
   clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
 }
 function handleMakeCopy(docId: string): void {
-    setTimeout(() => {
-        saveCopiedStarredConstruction(docId);
-    }, 3500);
+  setTimeout(() => {
+      acctStore.saveCopiedStarredConstruction(docId, appAuth.currentUser!.uid);
+  }, 3500);
+  // showConstructionCopied.value = true;
 }
 </script>
 
@@ -388,6 +396,7 @@ function handleMakeCopy(docId: string): void {
 </style>
 <i18n locale="en">
 {
+  "ConstructionCopied" : "Starred Construction {docId} is successfully copied",
   "deleteWarning": "You construction {docId} is about to be deleted",
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
   "constructionDeleted": "Construction {docId} is succesfully removed",
