@@ -1254,6 +1254,27 @@ export const SETTINGS = {
         filePath: ""
       }
     },
+    starConstruction: { //new starconstruction button
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-content-copy",
+        filePath: ""
+      }
+    },
+    privateConstruction: { //new starconstruction button
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-eye-off",
+        filePath: ""
+      }
+    },
+    unstarConstruction: {
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-broom",
+        filePath: ""
+      }
+    },
     deleteConstruction: {
       props: {
         emphasizeTypes: [[]] as string[][],

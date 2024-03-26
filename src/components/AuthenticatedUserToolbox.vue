@@ -416,7 +416,9 @@ async function doSave(): Promise<void> {
     // Use an empty string (for type checking only)
     // the actual script will be determine below
     script: "",
-    preview: ""
+    preview: "",
+    // TODO: check this may have to be grabbed from the existing doc in #1a
+    starCount: 0 
   };
 
   // Task #1
