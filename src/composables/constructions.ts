@@ -132,7 +132,6 @@ function parseCollection(
       qs.forEach(async (qd: QueryDocumentSnapshot) => {
         const remoteData = qd.data();
         let out: SphericalConstruction | null = null;
-        if (remoteData["constructionDocId"]) {
           // In a new format defined by Capstone group Fall 2022
           // public constructions are simply a reference to
           // constructions owned by a particular user
@@ -149,12 +148,6 @@ function parseCollection(
             constructionRef.constructionDocId,
             ownedDoc.data() as ConstructionInFirestore
           );
-        } else {
-          out = await parseDocument(
-            qd.id,
-            remoteData as ConstructionInFirestore
-          );
-        }
         if (out.parsedScript.length > 0) targetArr.push(out);
         else {
           console.warn(

@@ -1,5 +1,5 @@
 //testing new firebase configuration
-import { initializeApp } from 'firebase/app';
+//import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 export const firebaseConfig = {
@@ -12,7 +12,7 @@ export const firebaseConfig = {
 };
 
 //trying to get my userAccountStore setup and working with firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+//const app = initializeApp(firebaseConfig);
+//const db = getFirestore();
 
-export { db }; // Exporting the Firestore instance
+//export { db }; // Exporting the Firestore instance

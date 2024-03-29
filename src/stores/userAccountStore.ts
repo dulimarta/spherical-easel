@@ -1,7 +1,7 @@
 // userAccountStore.ts
 import { defineStore } from 'pinia';
-import { db } from "@/firebase-config";
-import { doc, getDoc } from 'firebase/firestore';
+//import { db } from "@/firebase-config";
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import { UserProfile } from '@/types';
 
 export const useUserAccountStore = defineStore('userAccount', {
@@ -10,6 +10,7 @@ export const useUserAccountStore = defineStore('userAccount', {
   }),
   actions: {
     async fetchUserProfile(uid: string) {
+      const db = getFirestore() //local setup for getfirestore variable
       const userDocRef = doc(db, 'users', uid); // Use the Firestore instance here
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
