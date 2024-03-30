@@ -160,7 +160,6 @@ import { useConstruction } from "@/composables/constructions";
 import { useClipboard, usePermission } from "@vueuse/core";
 import { idText } from "typescript";
 import { arrayRemove } from "firebase/firestore";
-const DELETE_DELAY = 3000;
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;

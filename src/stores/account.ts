@@ -76,6 +76,7 @@ export const useAccountStore = defineStore("acct", () => {
         favoriteTools.value = DEFAULT_TOOL_NAMES;
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
+
   return {
     userRole,
     userEmail,

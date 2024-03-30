@@ -40,7 +40,9 @@ import { ComputedRef } from "vue";
 // import { useAccountStore } from "@/stor  es/account";
 // import { storeToRefs } from "pinia";
 // const acctStore = useAccountStore();
-// const { userEmail } = storeToRefs(acctStore);
+const userEmail = computed((): string => {
+  return appAuth.currentUser?.email ?? "";
+});
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -110,6 +112,7 @@ async function parseDocument(
     parsedScript,
     objectCount,
     author: remoteDoc.author,
+    starCount: 255, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -224,7 +227,6 @@ async function deleteConstruction(
   }
 }
 
-async function updateStarred(constructionId: string): Promise<boolean> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
   }
@@ -242,30 +244,6 @@ async function updateStarred(constructionId: string): Promise<boolean> {
       if (starList.includes(constructionId)) {
         // Unstar construction
         starList = starList.filter(id => id !== constructionId);
-        await updateDoc(userDocRef, {
-          starList: starList
-        });
-        return Promise.resolve(true); // Construction unstarred
-      } else {
-        // Star construction
-        starList.push(constructionId);
-        await updateDoc(userDocRef, {
-          starList: starList
-        });
-        return Promise.resolve(true); // Construction starred
-      }
-    } else {
-      console.log("User document does not exist.");
-      return Promise.resolve(false); // Construction unstarred (user document doesn't exist)
-    }
-  } catch (error) {
-    console.error("Error updating starred status:", error);
-    return Promise.resolve(false); // Construction unstarred (error occurred)
-  }
-}
-
-
-
 export function useConstruction() {
   onMounted(() => {
     appAuth = getAuth();
@@ -279,7 +257,6 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-        privateConstructions.value.splice(0)
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {
@@ -346,8 +323,6 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
-    starredConstructions,
-    makePrivate,
     deleteConstruction,
     updateStarred,
     currentConstructionPreview,
