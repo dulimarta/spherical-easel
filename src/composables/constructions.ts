@@ -52,6 +52,7 @@ const privateConstructions: Ref<Array<SphericalConstruction> | null> =
   ref(null);
 // Public constructions is never null
 const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 
 function isPublicConstruction(docId: string): boolean {
   const pos = publicConstructions.value.findIndex(
@@ -118,7 +119,8 @@ async function parseDocument(
     sphereRotationMatrix,
     preview: svgData ?? "",
     publicDocId: remoteDoc.publicDocId,
-    tools: remoteDoc.tools ?? undefined
+    tools: remoteDoc.tools ?? undefined,
+    starCount: remoteDoc.starCount 
   } as SphericalConstruction);
 }
 
@@ -275,7 +277,6 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-          privateConstructions.value.splice(0) // Purge the existing items
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {
@@ -342,7 +343,6 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
-    makePrivate,
     deleteConstruction,
     updateStarred,
     currentConstructionPreview,

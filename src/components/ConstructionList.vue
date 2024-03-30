@@ -69,6 +69,15 @@
                     color="secondary"
                     icon="$shareConstruction"
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
+                   <!-- show star button only for public constructs -->
+                  <v-btn
+                    v-if="r.publicDocId"
+                    id="_test_starConstruct"
+                    class="mx-1"
+                    size="small"
+                    color="yellow"
+                    icon="$starConstruction"
+                    @click="handleStarConstruction(r.publicDocId)"></v-btn>
                   <!-- show delete button only for its owner -->
                   <v-btn
                     v-if="r.author === userEmail"
@@ -78,6 +87,23 @@
                     icon="$deleteConstruction"
                     color="red"
                     @click="handleDeleteConstruction(r.id)"></v-btn>
+                    <v-btn
+                    v-if="r.author === userEmail"
+                    id="_test_deletefab"
+                    class="mx-1"
+                    size="small"
+                    icon="$privateConstruction"
+                    color="red"
+                    @click="makePrivate(r.id)"></v-btn>
+                  <!-- show unstar button only for starred construction list items-->
+                  <v-btn
+                    v-if="r.author === userEmail"
+                    id="_test_unstarfab"
+                    class="mx-1"
+                    size="small"
+                    icon="$unstarConstruction"
+                    color="blue"
+                    @click="handleUnstarConstruction(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -132,7 +158,8 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstruction } from "@/composables/constructions";
 import { useClipboard, usePermission } from "@vueuse/core";
-const DELETE_DELAY = 3000;
+import { idText } from "typescript";
+import { arrayRemove } from "firebase/firestore";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -144,6 +171,7 @@ const acctStore = useAccountStore();
 const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
+const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const { constructionDocId } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
@@ -273,18 +301,84 @@ function handleShareConstruction(docId: string) {
   constructionShareDialog.value?.show();
 }
 
+//implement for starring construction
+function handleStarConstruction(docId: string) {
+  starredDocId.value = docId;
+  constructionShareDialog.value?.show();
+}
+
+//implement for unstarring construction
+function handleUnstarConstruction(docId: string) {
+  starredDocId.value = docId;
+  constructionShareDialog.value?.show();
+}
+
+function makePrivate(docId: string) {
+  starredDocId.value = docId;
+  constructionShareDialog.value?.show();
+}
+
 function doShareConstruction() {
   clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
 }
 </script>
 
 <style scoped>
+
 .constructionItem {
   display: inline-flex;
   flex-direction: row;
   justify-content: center;
   /* width: 100%; */
   /* background-color: red; */
+}
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.list-item-content {
+  display: flex;
+  width: 100%;
+}
+
+.item-image {
+  margin-right: 0.5rem;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.star-rating-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.date-and-star {
+  display: flex;
+  align-items: center;
+}
+
+.star-and-count {
+  display: flex;
+  align-items: center;
+  color: #4b3c11;
+}
+
+.star {
+  margin-right: 0.25rem;
+  color: #ffc107;
+}
+
+.star.filled {
+  color: #ffc107;
 }
 </style>
 <i18n locale="en">

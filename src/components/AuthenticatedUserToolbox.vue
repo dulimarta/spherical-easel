@@ -416,7 +416,9 @@ async function doSave(): Promise<void> {
     // Use an empty string (for type checking only)
     // the actual script will be determine below
     script: "",
-    preview: ""
+    preview: "",
+    // TODO: check this may have to be grabbed from the existing doc in #1a
+    starCount: 0
   };
 
   // Task #1
@@ -425,7 +427,12 @@ async function doSave(): Promise<void> {
       appDB,
       collectionPath.concat("/" + constructionDocId.value)
     );
-    // Task #1a: update the existing construction
+      // Task #1a: update the existing construction
+      getDoc(targetDoc).then((ds) => {
+        if (ds.exists()) {
+          constructionDetails.starCount = ds.data().starCount;
+        }
+      })
     saveTask = updateDoc(targetDoc, constructionDetails as any).then(
       () => targetDoc
     );
