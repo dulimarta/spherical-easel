@@ -90,7 +90,6 @@ const displayedPrivateConstructions = computed(
     else return [];
   }
 );
-
 //new function to display filtered public constructions
 const displayedPublicConstructions = computed(() => {
   // If there's a search, use the filtered list
@@ -109,22 +108,6 @@ const displayedPublicConstructions = computed(() => {
   }
 });
 
-//work in progress for displaying starred constructions. should grab the public constructions list, and filter based on whether ids match in users starred construction array list.
-async function displayedStarredConstructions(userId: string): Promise<typeof starredConstructions[]> {
-  try {
-    const allConstructions = publicConstructions.value
-    const user = firebaseUid
-    // Filter the constructions based on the starredConstructionIds
-    const starredConstructions = allConstructions.filter(construction =>
-      user.starredConstructions.includes(construction.id)
-    );
-
-    return starredConstructions.value;
-  } catch (error) {
-    console.error("Error fetching starred constructions:", error);
-    return [];
-  }
-}
 
 watch(idle, () => {
   if (!idle) {

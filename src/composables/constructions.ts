@@ -18,6 +18,7 @@ import {
   CollectionReference,
   getDocs,
   getDoc,
+  updateDoc,
   doc,
   collection,
   QuerySnapshot,
@@ -39,7 +40,9 @@ import { ComputedRef } from "vue";
 // import { useAccountStore } from "@/stor  es/account";
 // import { storeToRefs } from "pinia";
 // const acctStore = useAccountStore();
-// const { userEmail } = storeToRefs(acctStore);
+const userEmail = computed((): string => {
+  return appAuth.currentUser?.email ?? "";
+});
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -109,6 +112,7 @@ async function parseDocument(
     parsedScript,
     objectCount,
     author: remoteDoc.author,
+    starCount: 255, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -178,6 +182,23 @@ function parseCollection(
     });
 }
 
+async function makePrivate(
+  uid: string,
+  docId: string
+): Promise<boolean> {
+  const pos = publicConstructions.value.findIndex(
+    (c: SphericalConstruction) => c.id === docId
+  );
+  try{
+  const victimDetails = publicConstructions.value[pos];
+  if (victimDetails.publicDocId)
+    await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    return Promise.resolve(true);
+  } catch (err: any) {
+    return Promise.resolve(false);
+  }
+}
+
 async function deleteConstruction(
   uid: string,
   docId: string
@@ -205,6 +226,44 @@ async function deleteConstruction(
     return Promise.resolve(false);
   }
 }
+
+
+async function updateStarred(constructionId: string): Promise<void> {
+  if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+    throw new Error("User is not authenticated or UID is missing");
+  }
+
+  const uid = appAuth.currentUser.uid;
+
+  try {
+    const userDocRef = doc(appDB, "users", uid); //user's document
+    const userDoc = await getDoc(userDocRef); 
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      let starList: Array<string> = userData.starList ? userData.starList : [];
+      
+      if (starList.includes(constructionId)) {
+        // Unstar construction
+        starList = starList.filter(id => id !== constructionId);
+      } else {
+        // Star construction
+        starList.push(constructionId);
+      }
+
+      // Update the starList in Firestore
+      await updateDoc(userDocRef, {
+        starList: starList
+      });
+    } else {
+      console.log("User document does not exist.");
+    }
+  } catch (error) {
+    console.error("Error updating starred status:", error);
+  }
+}
+
+
 export function useConstruction() {
   onMounted(() => {
     appAuth = getAuth();
@@ -218,7 +277,6 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-        privateConstructions.value.splice(0)
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {
@@ -285,8 +343,8 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
-    starredConstructions,
     deleteConstruction,
+    updateStarred,
     currentConstructionPreview,
     isPublicConstruction
   };
