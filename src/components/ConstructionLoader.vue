@@ -77,7 +77,7 @@ const { userEmail } = storeToRefs(acctStore);
 const searchResult = ref("");
 const searchKey = ref("");
 //grabbing user email for filtering
-const { userEmail } = storeToRefs(acctStore);
+//const { userEmail } = storeToRefs(acctStore);
 let lastSearchKey: string|null = null
 const openPanels: Ref<Array<string> | string> = ref("");
 const openMultiple = ref(false);
