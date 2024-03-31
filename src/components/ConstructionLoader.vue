@@ -72,6 +72,8 @@ const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const acctStore = useAccountStore()
 const {firebaseUid} = storeToRefs(acctStore)
+//grabbing user email for filtering
+const { userEmail } = storeToRefs(acctStore);
 const searchResult = ref("");
 const searchKey = ref("");
 //grabbing user email for filtering
@@ -90,6 +92,7 @@ const displayedPrivateConstructions = computed(
     else return [];
   }
 );
+
 //new function to display filtered public constructions
 const displayedPublicConstructions = computed(() => {
   // If there's a search, use the filtered list
