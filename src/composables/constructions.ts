@@ -345,6 +345,7 @@ export function useConstruction() {
     privateConstructions,
     deleteConstruction,
     updateStarred,
+    makePrivate,
     currentConstructionPreview,
     isPublicConstruction
   };
