@@ -71,7 +71,7 @@
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
                    <!-- show star button only for public constructs -->
                   <v-btn
-                    v-if="r.publicDocId"
+                    v-if="r.publicDocId && r.author !== userEmail"
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
@@ -97,7 +97,7 @@
                     @click="makePrivate(r.id)"></v-btn>
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
-                    v-if="r.author === userEmail"
+                    v-if="(r.author === userEmail) && (!r.publicDocId)"
                     id="_test_unstarfab"
                     class="mx-1"
                     size="small"

@@ -101,31 +101,33 @@ const displayedPrivateConstructions = computed(
 );
 
 //new function to display filtered public constructions
-// const displayedPublicConstructions = computed(
-//   (): Array<SphericalConstruction> => {
-//   // If there's a search, use the filtered list
-//   if (searchKey.value.length > 0) {
-//     return filteredPublicConstructions.value;
-//   } else {
-//     // If the user is logged in, filter out their own constructions
-//     if (userEmail.value) {
-//       return publicConstructions.value.filter(
-//         (construction) => { console.log(construction.author, userEmail.value);
-//           return construction.author !== userEmail.value
-//         });
-//     } else {
-//       // If no user is logged in, display all public constructions
-//       return publicConstructions.value;
-//     }
-//   }
-//});
-
+//revert the console log code in lambda
 const displayedPublicConstructions = computed(
   (): Array<SphericalConstruction> => {
-    if (searchKey.value.length > 0) return filteredPublicConstructions.value;
-    else return publicConstructions.value;
+  // If there's a search, use the filtered list
+  if (searchKey.value.length > 0) {
+    return filteredPublicConstructions.value;
+  } else {
+    // If the user is logged in, filter out their own constructions
+    if (userEmail.value) {
+      return publicConstructions.value.filter(
+        (construction) => { console.log(construction.author, userEmail.value);
+          return construction.author !== userEmail.value
+        });
+    } else {
+      // If no user is logged in, display all public constructions
+      return publicConstructions.value;
+    }
   }
-);
+});
+
+//original working public display function
+// const displayedPublicConstructions = computed(
+//   (): Array<SphericalConstruction> => {
+//     if (searchKey.value.length > 0) return filteredPublicConstructions.value;
+//     else return publicConstructions.value;
+//   }
+// );
 
 //version that works with changes to firebase config file and a new file for userAccountStore.ts that initalizes UserProfile as a export
 //while everything compiles and runs, still no constructions are displaying
