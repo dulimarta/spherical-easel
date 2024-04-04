@@ -81,6 +81,7 @@ const { userEmail } = storeToRefs(acctStore);
 const accountStore = useUserAccountStore();
 const uid = firebaseUid.value; //need to figure out how to call that
 const { userProfile } = storeToRefs(useUserAccountStore());
+
 let lastSearchKey: string|null = null
 const openPanels: Ref<Array<string> | string> = ref("");
 const openMultiple = ref(false);
@@ -149,13 +150,6 @@ const displayedPublicConstructions = computed(
 //   }
 // });
 
-//original working public display function
-// const displayedPublicConstructions = computed(
-//   (): Array<SphericalConstruction> => {
-//     if (searchKey.value.length > 0) return filteredPublicConstructions.value;
-//     else return publicConstructions.value;
-//   }
-// );
 
 //version that works with changes to firebase config file and a new file for userAccountStore.ts that initalizes UserProfile as a export
 //while everything compiles and runs, still no constructions are displaying
@@ -169,29 +163,6 @@ const displayedStarredConstructions = computed(() => {
   }
   return [];
 });
-
-/*const displayedStarredConstructions = computed(() => {
-  // possible version if i can directly call the userstarredconstruction
-  // Check if there is any search term entered
-  if (searchKey.value.length > 0) {
-    // filtering by description
-    return publicConstructions.value.filter(construction =>
-      construction.description.toLowerCase().includes(searchKey.value.toLowerCase()));
-  } else {
-    // Get the current user's starred construction IDs
-    const starredIDs = UserProfile.starredConstructions;
-
-    // If there are starred IDs and the user is logged in
-    if (firebaseUid.value && starredIDs && starredIDs.length > 0) {
-      const starredSet = new Set(starredIDs); // Convert to set for faster lookup
-      return publicConstructions.value.filter(construction =>
-        starredSet.has(construction.id));
-    } else {
-      // If no user is logged in, or they have no starred constructions
-      return [];
-    }
-  }
-}); */
 
 watch(idle, () => {
   if (!idle) {

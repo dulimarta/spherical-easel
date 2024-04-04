@@ -77,7 +77,7 @@
                     size="small"
                     color="yellow"
                     icon="$starConstruction"
-                    @click="handleStarConstruction(r.publicDocId)"></v-btn>
+                    @click="handleUpdateStarrred(r.publicDocId)"></v-btn>
                   <!-- show delete button only for its owner -->
                   <v-btn
                     v-if="r.author === userEmail"
@@ -94,7 +94,7 @@
                     size="small"
                     icon="$privateConstruction"
                     color="red"
-                    @click="makePrivate(r.id)"></v-btn>
+                    @click="handleMakePrivate(r.id)"></v-btn>
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
                     v-if="starredIDs.includes(r.id)"
@@ -103,7 +103,7 @@
                     size="small"
                     icon="$unstarConstruction"
                     color="blue"
-                    @click="handleUnstarConstruction(r.id)"></v-btn>
+                    @click="handleUpdateStarrred(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -162,7 +162,6 @@ import { useUserAccountStore } from '@/stores/userAccountStore';
 const { userProfile } = storeToRefs(useUserAccountStore());
 import { idText } from "typescript";
 import { arrayRemove } from "firebase/firestore";
-const DELETE_DELAY = 3000;
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -180,6 +179,8 @@ const { constructionDocId } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 const { deleteConstruction } = useConstruction();
+const { makePrivate } =  useConstruction();
+const { updateStarred } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
@@ -289,10 +290,61 @@ async function doDeleteConstruction(docId: string) {
   }
 }
 
+async function doMakePrivate(docId: string) {
+  const uid = appAuth.currentUser?.uid;
+  if (uid) {
+    const privated = await makePrivate(uid, docId);
+    if (privated)
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivated", { docId }),
+        type: "success"
+      });
+    else
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivateFailed", { docId }),
+        type: "error"
+      });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("privateAttemptNoUid"),
+      type: "error"
+    });
+  }
+}
+
+async function doUpdateStarred(docId: string) {
+  const uid = appAuth.currentUser?.uid;
+  if (uid) {
+    const updated = await updateStarred(docId);
+    if (updated)
+      EventBus.fire("show-alert", {
+        key: t("updateStarSuccessful"),
+        type: "success"
+      });
+    else
+      EventBus.fire("show-alert", {
+        key: t("updatedStarFailed"),
+        type: "error"
+      });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarNoUid"),
+      type: "error"
+    });
+  }
+}
+
 function handleDeleteConstruction(docId: string): void {
   showDeleteWarning.value = true;
   deleteTimer = setTimeout(() => {
     doDeleteConstruction(docId);
+  }, 3500);
+}
+
+function handleMakePrivate(docId: string): void {
+  showDeleteWarning.value = true;
+  deleteTimer = setTimeout(() => {
+    doMakePrivate(docId);
   }, 3500);
 }
 
@@ -306,22 +358,13 @@ function handleShareConstruction(docId: string) {
   constructionShareDialog.value?.show();
 }
 
-//implement for starring construction
-function handleStarConstruction(docId: string) {
-  starredDocId.value = docId;
-  constructionShareDialog.value?.show();
-}
-
 //implement for unstarring construction
-function handleUnstarConstruction(docId: string) {
+function handleUpdateStarrred(docId: string) {
   starredDocId.value = docId;
+  doUpdateStarred(docId);
   constructionShareDialog.value?.show();
 }
 
-function makePrivate(docId: string) {
-  starredDocId.value = docId;
-  constructionShareDialog.value?.show();
-}
 
 function doShareConstruction() {
   clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
@@ -392,6 +435,12 @@ function doShareConstruction() {
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
   "constructionDeleted": "Construction {docId} is succesfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
+  "privateAttemptNoUid": "Attempt to private a construction when owner in unknown",
+  "constructionPrivated": "Construction {docId} is now private",
+  "constructionPrivateFailed": "Unable to make construction {docId} private",
+  "updateStarNoUid": "Attempt to unstar a construction when owner in unknown",
+  "updateStarSuccessful": "Starlist has been updated",
+  "updateStarFailed": "Unable to update starlist",
   "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
   "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",
