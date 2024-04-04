@@ -71,7 +71,7 @@
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
                    <!-- show star button only for public constructs -->
                   <v-btn
-                    v-if="r.publicDocId && r.author !== userEmail"
+                    v-if="(r.publicDocId) && (r.author !== userEmail) && (!starredIDs.includes(r.id))"
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
@@ -97,7 +97,7 @@
                     @click="makePrivate(r.id)"></v-btn>
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
-                    v-if="(r.author === userEmail) && (!r.publicDocId)"
+                    v-if="starredIDs.includes(r.id)"
                     id="_test_unstarfab"
                     class="mx-1"
                     size="small"
@@ -158,6 +158,8 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstruction } from "@/composables/constructions";
 import { useClipboard, usePermission } from "@vueuse/core";
+import { useUserAccountStore } from '@/stores/userAccountStore';
+const { userProfile } = storeToRefs(useUserAccountStore());
 import { idText } from "typescript";
 import { arrayRemove } from "firebase/firestore";
 const DELETE_DELAY = 3000;
@@ -181,6 +183,8 @@ const { deleteConstruction } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
+//setup for starred construction list
+const starredIDs = userProfile.value?.userStarredConstructions || [];
 let lastDocId: string | null = null;
 let deleteTimer: any;
 

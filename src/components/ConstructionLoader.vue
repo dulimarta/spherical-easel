@@ -100,26 +100,54 @@ const displayedPrivateConstructions = computed(
   }
 );
 
-//new function to display filtered public constructions
-//revert the console log code in lambda
 const displayedPublicConstructions = computed(
   (): Array<SphericalConstruction> => {
-  // If there's a search, use the filtered list
-  if (searchKey.value.length > 0) {
-    return filteredPublicConstructions.value;
-  } else {
-    // If the user is logged in, filter out their own constructions
-    if (userEmail.value) {
-      return publicConstructions.value.filter(
-        (construction) => { console.log(construction.author, userEmail.value);
-          return construction.author !== userEmail.value
-        });
+    // Get the current user's starred construction IDs
+    const userstarredIDs = userProfile.value?.userStarredConstructions || [];
+
+    // If there's a search, use the filtered list
+    if (searchKey.value.length > 0) {
+      return filteredPublicConstructions.value.filter(
+        // Exclude constructions that are starred by the user
+        (construction) => !userstarredIDs.includes(construction.id)
+      );
     } else {
-      // If no user is logged in, display all public constructions
-      return publicConstructions.value;
+      // If the user is logged in, filter out their own constructions and the starred ones
+      if (userEmail.value) {
+        return publicConstructions.value.filter(
+          (construction) => construction.author !== userEmail.value && !userstarredIDs.includes(construction.id)
+        );
+      } else {
+        // If no user is logged in, display all public constructions excluding starred ones
+        return publicConstructions.value.filter(
+          (construction) => !userstarredIDs.includes(construction.id)
+        );
+      }
     }
   }
-});
+);
+
+//working function to display filtered public constructions
+//revert the console log code in lambda
+// const displayedPublicConstructions = computed(
+//   (): Array<SphericalConstruction> => {
+
+//   // If there's a search, use the filtered list
+//   if (searchKey.value.length > 0) {
+//     return filteredPublicConstructions.value;
+//   } else {
+//     // If the user is logged in, filter out their own constructions
+//     if (userEmail.value) {
+//       return publicConstructions.value.filter(
+//         (construction) => { console.log(construction.author, userEmail.value);
+//           return construction.author !== userEmail.value
+//         });
+//     } else {
+//       // If no user is logged in, display all public constructions
+//       return publicConstructions.value;
+//     }
+//   }
+// });
 
 //original working public display function
 // const displayedPublicConstructions = computed(
