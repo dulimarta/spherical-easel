@@ -8,6 +8,7 @@ import {
 } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
 import { computed } from "vue";
+import { UserProfile } from '@/types/index'; // Import UserProfile interface
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -36,7 +37,6 @@ export const useAccountStore = defineStore("acct", () => {
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
   const constructionSaved = ref(false);
-
   const hasUnsavedWork = computed((): boolean => false);
 
   function resetToolset(includeAll = true): void {
