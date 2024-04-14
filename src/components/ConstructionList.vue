@@ -70,14 +70,14 @@
                     icon="$shareConstruction"
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
                    <!-- show star button only for public constructs -->
-                  <v-btn
+                   <v-btn
                     v-if="r.publicDocId"
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
                     color="yellow"
                     icon="$starConstruction"
-                    @click="handleUpdateStarrred(r.publicDocId)"></v-btn>
+                  @click="handleUpdateStarred(r.publicDocId)"></v-btn>
                   <!-- show delete button only for its owner -->
                   <v-btn
                     v-if="r.author === userEmail"
@@ -86,7 +86,7 @@
                     size="small"
                     icon="$deleteConstruction"
                     color="red"
-                    @click="handleDeleteConstruction(r.id)"></v-btn>
+                    @click="handleUpdateStarred(r.id)"></v-btn>
                     <v-btn
                     v-if="r.author === userEmail"
                     id="_test_deletefab"
@@ -355,10 +355,19 @@ function handleShareConstruction(docId: string) {
 }
 
 //implement for unstarring construction
-function handleUpdateStarrred(docId: string) {
-  starredDocId.value = docId;
-  doUpdateStarred(docId);
-  constructionShareDialog.value?.show();
+async function handleUpdateStarred(docId: string): Promise<void> {
+  const updated = await updateStarred(docId);
+  if (updated) {
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
 }
 
 
