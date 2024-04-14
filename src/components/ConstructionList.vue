@@ -86,7 +86,7 @@
                     size="small"
                     icon="$deleteConstruction"
                     color="red"
-                    @click="handleUpdateStarred(r.id)"></v-btn>
+                    @click="handleDeleteConstruction(r.id)"></v-btn>
                     <v-btn
                     v-if="r.author === userEmail"
                     id="_test_deletefab"

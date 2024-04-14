@@ -111,8 +111,7 @@ async function parseDocument(
     script: trimmedScript,
     parsedScript,
     objectCount,
-    author: remoteDoc.author,
-    starCount: 255, //static value assigned for new UI starred count
+    author: remoteDoc.author, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -120,7 +119,7 @@ async function parseDocument(
     preview: svgData ?? "",
     publicDocId: remoteDoc.publicDocId,
     tools: remoteDoc.tools ?? undefined,
-   // starCount: remoteDoc.starCount 
+    starCount: remoteDoc.starCount 
   } as SphericalConstruction);
 }
 
