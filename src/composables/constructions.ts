@@ -111,8 +111,7 @@ async function parseDocument(
     script: trimmedScript,
     parsedScript,
     objectCount,
-    author: remoteDoc.author,
-    starCount: 255, //static value assigned for new UI starred count
+    author: remoteDoc.author, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -175,20 +174,26 @@ function parseCollection(
     });
 }
 
-async function makePrivate(
-  uid: string,
-  docId: string
-): Promise<boolean> {
-  const pos = publicConstructions.value.findIndex(
-    (c: SphericalConstruction) => c.id === docId
-  );
-  try{
-  const victimDetails = publicConstructions.value[pos];
-  if (victimDetails.publicDocId)
-    await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
-    return Promise.resolve(true);
-  } catch (err: any) {
-    return Promise.resolve(false);
+async function makePrivate(uid: string, docId: string): Promise<boolean> {
+  try {
+    const pos = publicConstructions.value.findIndex((c: SphericalConstruction) => c.id === docId);
+    if (pos === -1) {
+      // Document with given docId not found
+      return false;
+    }
+
+    const victimDetails = publicConstructions.value[pos];
+    if (victimDetails.publicDocId) {
+      // Delete the document from the "constructions" collection
+      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+      return true; // Deletion successful
+    } else {
+      // Public document ID not found, cannot delete
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting construction:", error);
+    return false; // Deletion failed
   }
 }
 
@@ -221,7 +226,7 @@ async function deleteConstruction(
 }
 
 
-async function updateStarred(constructionId: string): Promise<void> {
+async function updateStarred(constructionId: string): Promise<boolean> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
   }
@@ -234,27 +239,32 @@ async function updateStarred(constructionId: string): Promise<void> {
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      let starList: Array<string> = userData.starList ? userData.starList : [];
+      let starredConstructions: Array<string> = userData.starredConstructions ? userData.starredConstructions : [];
       
-      if (starList.includes(constructionId)) {
+      if (starredConstructions.includes(constructionId)) {
         // Unstar construction
-        starList = starList.filter(id => id !== constructionId);
+        starredConstructions = starredConstructions.filter(id => id !== constructionId);
       } else {
         // Star construction
-        starList.push(constructionId);
+        starredConstructions.push(constructionId);
       }
 
-      // Update the starList in Firestore
+      // Update the starredConstructions in Firestore
       await updateDoc(userDocRef, {
-        starList: starList
+        starredConstructions: starredConstructions
       });
+
+      return true; // Return true for successful update
     } else {
       console.log("User document does not exist.");
+      return false; // Return false if user document does not exist
     }
   } catch (error) {
     console.error("Error updating starred status:", error);
+    return false; // Return false for any errors
   }
 }
+
 
 
 export function useConstruction() {
