@@ -172,7 +172,7 @@ watch(idle, () => {
   if (lastSearchKey === searchKey.value) return
   if (searchKey.value.length > 0) {
     lastSearchKey = searchKey.value
-    // openPanels.value.splice(0);
+    //openPanels.value.splice(0);
     searchResult.value = "";
     const matchFound = [];
     const privateMatch = privateConstructions.value?.filter(

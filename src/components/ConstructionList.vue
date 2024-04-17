@@ -103,7 +103,7 @@
                     size="small"
                     icon="$unstarConstruction"
                     color="blue"
-                    @click="handleUpdateStarrred(r.id)"></v-btn>
+                    @click="handleUpdateStarred(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>

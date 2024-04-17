@@ -235,12 +235,12 @@ async function updateStarred(constructionId: string): Promise<boolean> {
 
   try {
     const userDocRef = doc(appDB, "users", uid); //user's document
-    const userDoc = await getDoc(userDocRef); 
+    const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
       let starredConstructions: Array<string> = userData.starredConstructions ? userData.starredConstructions : [];
-      
+
       if (starredConstructions.includes(constructionId)) {
         // Unstar construction
         starredConstructions = starredConstructions.filter(id => id !== constructionId);
@@ -346,6 +346,7 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
+    starredConstructions,
     deleteConstruction,
     updateStarred,
     makePrivate,
