@@ -69,7 +69,7 @@ import { useUserAccountStore } from '@/stores/userAccountStore';
 import { storeToRefs } from "pinia";
 import { onMounted } from 'vue'; //trying to async call to setup UserProfile call
 const { t } = useI18n();
-const { publicConstructions, privateConstructions } = useConstruction();
+const { publicConstructions, privateConstructions, starredConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const acctStore = useAccountStore()
@@ -88,7 +88,7 @@ const openMultiple = ref(false);
 const { idle } = useIdle(1000); // wait for 1 second idle
 
 onMounted(async () => {
-  await accountStore.fetchUserProfile(uid!!);
+  await accountStore.fetchUserProfile(uid!);
 });
 
 const displayedPrivateConstructions = computed(
@@ -103,27 +103,17 @@ const displayedPrivateConstructions = computed(
 
 const displayedPublicConstructions = computed(
   (): Array<SphericalConstruction> => {
-    // Get the current user's starred construction IDs
-    const userstarredIDs = userProfile.value?.userStarredConstructions || [];
-
-    // If there's a search, use the filtered list
-    if (searchKey.value.length > 0) {
-      return filteredPublicConstructions.value.filter(
-        // Exclude constructions that are starred by the user
-        (construction) => !userstarredIDs.includes(construction.id)
+        // If there's a search, use the filtered list
+  if (searchKey.value.length > 0) {
+    return filteredPublicConstructions.value;
+  } else if (userEmail.value) {
+      const userstarredIDs = userProfile.value?.userStarredConstructions || [];
+      return publicConstructions.value.filter(
+        (construction) => construction.author !== userEmail.value && !userstarredIDs.includes(construction.id)
       );
     } else {
-      // If the user is logged in, filter out their own constructions and the starred ones
-      if (userEmail.value) {
-        return publicConstructions.value.filter(
-          (construction) => construction.author !== userEmail.value && !userstarredIDs.includes(construction.id)
-        );
-      } else {
-        // If no user is logged in, display all public constructions excluding starred ones
-        return publicConstructions.value.filter(
-          (construction) => !userstarredIDs.includes(construction.id)
-        );
-      }
+      // If no user is logged in, display all public constructions
+      return publicConstructions.value;
     }
   }
 );
