@@ -103,7 +103,7 @@
                     size="small"
                     icon="$unstarConstruction"
                     color="blue"
-                    @click="handleUpdateStarred(r.id)"></v-btn>
+                    @click="handleUpdateUnstarred(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -180,7 +180,8 @@ const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 const { deleteConstruction } = useConstruction();
 const { makePrivate } =  useConstruction();
-const { updateStarred } = useConstruction();
+const { starConstruction } = useConstruction();
+const { unstarConstruction } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
@@ -313,27 +314,27 @@ async function doMakePrivate(docId: string) {
   }
 }
 
-async function doUpdateStarred(docId: string) {
-  const uid = appAuth.currentUser?.uid;
-  if (uid) {
-    const updated = await updateStarred(docId);
-    if (updated)
-      EventBus.fire("show-alert", {
-        key: t("updateStarSuccessful"),
-        type: "success"
-      });
-    else
-      EventBus.fire("show-alert", {
-        key: t("updatedStarFailed"),
-        type: "error"
-      });
-  } else {
-    EventBus.fire("show-alert", {
-      key: t("updateStarNoUid"),
-      type: "error"
-    });
-  }
-}
+// async function doUpdateStarred(docId: string) {
+//   const uid = appAuth.currentUser?.uid;
+//   if (uid) {
+//     const updated = await updateStarred(docId);
+//     if (updated)
+//       EventBus.fire("show-alert", {
+//         key: t("updateStarSuccessful"),
+//         type: "success"
+//       });
+//     else
+//       EventBus.fire("show-alert", {
+//         key: t("updatedStarFailed"),
+//         type: "error"
+//       });
+//   } else {
+//     EventBus.fire("show-alert", {
+//       key: t("updateStarNoUid"),
+//       type: "error"
+//     });
+//   }
+// }
 
 function handleDeleteConstruction(docId: string): void {
   showDeleteWarning.value = true;
@@ -361,7 +362,22 @@ function handleShareConstruction(docId: string) {
 
 //implement for unstarring construction
 async function handleUpdateStarred(docId: string): Promise<void> {
-  const updated = await updateStarred(docId);
+  const updated = await starConstruction(docId);
+  if (updated) {
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
+}
+
+async function handleUpdateUnstarred(docId: string): Promise<void> {
+  const updated = await unstarConstruction(docId);
   if (updated) {
     EventBus.fire("show-alert", {
       key: t("updateStarSuccessful"),
