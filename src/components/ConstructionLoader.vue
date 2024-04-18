@@ -23,7 +23,7 @@
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel v-if= firebaseUid && firebaseUid.length > 0" value="starred"> <!-- "starredConstructions !== null &&-->
+      <v-expansion-panel v-if= " firebaseUid && firebaseUid.length > 0" value="starred"> <!-- "starredConstructions !== null &&-->
         <v-expansion-panel-title>
           {{ t(`starredConstructions`) }}
         </v-expansion-panel-title>
