@@ -71,7 +71,7 @@
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
                    <!-- show star button only for public constructs -->
                    <v-btn
-                    v-if="r.publicDocId"
+                   v-if="(r.publicDocId) && (r.author !== userEmail) && (!starredIDs.includes(r.id))"
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
@@ -188,6 +188,7 @@ const writePermission = usePermission("clipboard-write");
 const starredIDs = userProfile.value?.userStarredConstructions || [];
 let lastDocId: string | null = null;
 let deleteTimer: any;
+const DELETE_DELAY = 3000;
 
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";

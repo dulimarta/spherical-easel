@@ -23,7 +23,7 @@
          Nothing here
         </v-expansion-panel-text>
       </v-expansion-panel>
-      <v-expansion-panel v-if="starredConstructions !== null && firebaseUid && firebaseUid.length > 0" value="starred">
+      <v-expansion-panel v-if= firebaseUid && firebaseUid.length > 0" value="starred"> <!-- "starredConstructions !== null &&-->
         <v-expansion-panel-title>
           {{ t(`starredConstructions`) }}
         </v-expansion-panel-title>
@@ -69,7 +69,7 @@ import { useUserAccountStore } from '@/stores/userAccountStore';
 import { storeToRefs } from "pinia";
 import { onMounted } from 'vue'; //trying to async call to setup UserProfile call
 const { t } = useI18n();
-const { publicConstructions, privateConstructions, starredConstructions} = useConstruction();
+const { publicConstructions, privateConstructions } = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const acctStore = useAccountStore()

@@ -225,7 +225,6 @@ async function deleteConstruction(
   }
 }
 
-
 async function updateStarred(constructionId: string): Promise<boolean> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
@@ -264,8 +263,6 @@ async function updateStarred(constructionId: string): Promise<boolean> {
     return false; // Return false for any errors
   }
 }
-
-
 
 export function useConstruction() {
   onMounted(() => {
