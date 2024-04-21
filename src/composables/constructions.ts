@@ -174,21 +174,23 @@ function parseCollection(
     });
 }
 
-async function makePrivate(uid: string, docId: string): Promise<boolean> {
+async function makePrivate(docId: string): Promise<boolean> {
   try {
-    const pos = publicConstructions.value.findIndex((c: SphericalConstruction) => c.id === docId);
-    if (pos === -1) {
-      // Document with given docId not found
-      return false;
+    const user = appAuth.currentUser;
+
+    if (!user) {
+      console.error("User is not logged in.");
+      return false; // User is not authenticated
     }
 
-    const victimDetails = publicConstructions.value[pos];
-    if (victimDetails.publicDocId) {
-      // Delete the document from the "constructions" collection
-      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    const docRef = doc(appDB, "constructions", docId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      await deleteDoc(docRef);
       return true; // Deletion successful
     } else {
-      // Public document ID not found, cannot delete
+      // Document with given docId not found
       return false;
     }
   } catch (error) {
@@ -225,8 +227,60 @@ async function deleteConstruction(
   }
 }
 
+// async function updateStarred(constructionId: string): Promise<boolean> {
+//   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+//     throw new Error("User is not authenticated or UID is missing");
+//   }
 
-async function updateStarred(constructionId: string): Promise<boolean> {
+//   const uid = appAuth.currentUser.uid;
+
+//   try {
+//     const userDocRef = doc(appDB, "users", uid); //user's document
+//     const userDoc = await getDoc(userDocRef);
+
+//     if (userDoc.exists()) {
+//       const userData = userDoc.data();
+//       let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+//       // Fetch the construction document
+//       const constructionDocRef = doc(appDB, "constructions", constructionId);
+//       const constructionDocSnap = await getDoc(constructionDocRef);
+
+//       if (constructionDocSnap.exists()) {
+//         const constructionData = constructionDocSnap.data();
+//         const constructionDocId = constructionData.constructionDocId;
+
+//         const index = userStarredConstructions.indexOf(constructionDocId);
+//         if (index !== -1) {
+//           // If construction is already starred, unstar it
+//           userStarredConstructions.splice(index, 1);
+//         } else {
+//           // If construction is not starred, star it
+//           userStarredConstructions.push(constructionDocId);
+//         }
+
+//         // Update the userStarredConstructions in Firestore
+//         await updateDoc(userDocRef, {
+//           userStarredConstructions: userStarredConstructions
+//         });
+
+//         return true; // Return true for successful update
+//       } else {
+//         console.log("Construction document does not exist.");
+//         return false; // Return false if construction document does not exist
+//       }
+//     } else {
+//       console.log("User document does not exist.");
+//       return false; // Return false if user document does not exist
+//     }
+//   } catch (error) {
+//     console.error("Error updating starred status:", error);
+//     return false; // Return false for any errors
+//   }
+// }
+
+// Function to star a construction
+async function starConstruction(constructionId: string): Promise<boolean> {
   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
     throw new Error("User is not authenticated or UID is missing");
   }
@@ -234,38 +288,89 @@ async function updateStarred(constructionId: string): Promise<boolean> {
   const uid = appAuth.currentUser.uid;
 
   try {
-    const userDocRef = doc(appDB, "users", uid); //user's document
-    const userDoc = await getDoc(userDocRef); 
+    const userDocRef = doc(appDB, "users", uid); // User's document
+    const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      let starredConstructions: Array<string> = userData.starredConstructions ? userData.starredConstructions : [];
-      
-      if (starredConstructions.includes(constructionId)) {
-        // Unstar construction
-        starredConstructions = starredConstructions.filter(id => id !== constructionId);
+      let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+      // Fetch the construction document
+      const constructionDocRef = doc(appDB, "constructions", constructionId);
+      const constructionDocSnap = await getDoc(constructionDocRef);
+
+      if (constructionDocSnap.exists()) {
+        const constructionData = constructionDocSnap.data();
+        const constructionDocId = constructionData.constructionDocId;
+
+        if (!userStarredConstructions.includes(constructionDocId)) {
+          // Add constructionDocId to the list of starred constructions
+          userStarredConstructions.push(constructionDocId);
+
+          // Update the userStarredConstructions in Firestore
+          await updateDoc(userDocRef, {
+            userStarredConstructions: userStarredConstructions
+          });
+
+          return true; // Return true for successful update
+        } else {
+          console.log("Construction is already starred.");
+          return false; // Return false if construction is already starred
+        }
       } else {
-        // Star construction
-        starredConstructions.push(constructionId);
+        console.log("Construction document does not exist.");
+        return false; // Return false if construction document does not exist
       }
-
-      // Update the starredConstructions in Firestore
-      await updateDoc(userDocRef, {
-        starredConstructions: starredConstructions
-      });
-
-      return true; // Return true for successful update
     } else {
       console.log("User document does not exist.");
       return false; // Return false if user document does not exist
     }
   } catch (error) {
-    console.error("Error updating starred status:", error);
+    console.error("Error starring construction:", error);
     return false; // Return false for any errors
   }
 }
 
+// Function to unstar a construction
+async function unstarConstruction(constructionDocId: string): Promise<boolean> {
+  if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+    throw new Error("User is not authenticated or UID is missing");
+  }
 
+  const uid = appAuth.currentUser.uid;
+
+  try {
+    const userDocRef = doc(appDB, "users", uid); // User's document
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+      const index = userStarredConstructions.indexOf(constructionDocId);
+      if (index !== -1) {
+        // If construction is starred, unstar it
+        userStarredConstructions.splice(index, 1);
+
+        // Update the userStarredConstructions in Firestore
+        await updateDoc(userDocRef, {
+          userStarredConstructions: userStarredConstructions
+        });
+
+        return true; // Return true for successful update
+      } else {
+        console.log("Construction is not starred.");
+        return false; // Return false if construction is not starred
+      }
+    } else {
+      console.log("User document does not exist.");
+      return false; // Return false if user document does not exist
+    }
+  } catch (error) {
+    console.error("Error unstarring construction:", error);
+    return false; // Return false for any errors
+  }
+}
 
 export function useConstruction() {
   onMounted(() => {
@@ -346,8 +451,10 @@ export function useConstruction() {
   return {
     publicConstructions,
     privateConstructions,
+    starredConstructions,
     deleteConstruction,
-    updateStarred,
+    starConstruction,
+    unstarConstruction,
     makePrivate,
     currentConstructionPreview,
     isPublicConstruction

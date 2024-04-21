@@ -71,7 +71,7 @@
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
                    <!-- show star button only for public constructs -->
                    <v-btn
-                    v-if="r.publicDocId"
+                   v-if="(r.publicDocId) && (r.author !== userEmail) && (!starredIDs.includes(r.id))"
                     id="_test_starConstruct"
                     class="mx-1"
                     size="small"
@@ -88,13 +88,13 @@
                     color="red"
                     @click="handleDeleteConstruction(r.id)"></v-btn>
                     <v-btn
-                    v-if="r.author === userEmail"
+                    v-if="r.publicDocId"
                     id="_test_deletefab"
                     class="mx-1"
                     size="small"
                     icon="$privateConstruction"
                     color="red"
-                    @click="handleMakePrivate(r.id)"></v-btn>
+                    @click="handleMakePrivate(r.publicDocId)"></v-btn>
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
                     v-if="starredIDs.includes(r.id)"
@@ -103,7 +103,7 @@
                     size="small"
                     icon="$unstarConstruction"
                     color="blue"
-                    @click="handleUpdateStarrred(r.id)"></v-btn>
+                    @click="handleUpdateUnstarred(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -137,6 +137,16 @@
     location="top"
     :timeout="DELETE_DELAY">
     {{ t("deleteWarning") }}
+    <template #actions>
+      <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
+    </template>
+  </v-snackbar>
+
+  <v-snackbar
+    v-model="showPrivateWarning"
+    location="top"
+    :timeout="DELETE_DELAY">
+    {{ t("privateWarning") }}
     <template #actions>
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
     </template>
@@ -175,12 +185,15 @@ const selectedDocId = ref("");
 const sharedDocId = ref("");
 const starredDocId = ref("");
 const showDeleteWarning = ref(false);
+const showPrivateWarning = ref(false);
 const { constructionDocId } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
-const { deleteConstruction } = useConstruction();
-const { makePrivate } =  useConstruction();
-const { updateStarred } = useConstruction();
+// const { deleteConstruction } = useConstruction();
+// const { makePrivate } =  useConstruction();
+// const { starConstruction } = useConstruction();
+// const { unstarConstruction } = useConstruction();
+const { deleteConstruction, makePrivate, starConstruction, unstarConstruction } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
@@ -188,6 +201,7 @@ const writePermission = usePermission("clipboard-write");
 const starredIDs = userProfile.value?.userStarredConstructions || [];
 let lastDocId: string | null = null;
 let deleteTimer: any;
+const DELETE_DELAY = 3000;
 
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
@@ -290,49 +304,20 @@ async function doDeleteConstruction(docId: string) {
   }
 }
 
-async function doMakePrivate(docId: string) {
-  const uid = appAuth.currentUser?.uid;
-  if (uid) {
-    const privated = await makePrivate(uid, docId);
-    if (privated)
-      EventBus.fire("show-alert", {
-        key: t("constructionPrivated", { docId }),
-        type: "success"
-      });
-    else
-      EventBus.fire("show-alert", {
-        key: t("constructionPrivateFailed", { docId }),
-        type: "error"
-      });
-  } else {
+async function doMakePrivate(publicDocId: string) {
+  const privated = await makePrivate(publicDocId);
+  if (privated)
     EventBus.fire("show-alert", {
-      key: t("privateAttemptNoUid"),
+      key: t("constructionPrivated", { publicDocId }),
+      type: "success"
+    });
+  else
+    EventBus.fire("show-alert", {
+      key: t("constructionPrivateFailed", { publicDocId }),
       type: "error"
     });
-  }
 }
 
-async function doUpdateStarred(docId: string) {
-  const uid = appAuth.currentUser?.uid;
-  if (uid) {
-    const updated = await updateStarred(docId);
-    if (updated)
-      EventBus.fire("show-alert", {
-        key: t("updateStarSuccessful"),
-        type: "success"
-      });
-    else
-      EventBus.fire("show-alert", {
-        key: t("updatedStarFailed"),
-        type: "error"
-      });
-  } else {
-    EventBus.fire("show-alert", {
-      key: t("updateStarNoUid"),
-      type: "error"
-    });
-  }
-}
 
 function handleDeleteConstruction(docId: string): void {
   showDeleteWarning.value = true;
@@ -341,15 +326,20 @@ function handleDeleteConstruction(docId: string): void {
   }, 3500);
 }
 
-function handleMakePrivate(docId: string): void {
-  showDeleteWarning.value = true;
+function handleMakePrivate(publicDocId: string): void {
+  showPrivateWarning.value = true;
   deleteTimer = setTimeout(() => {
-    doMakePrivate(docId);
+    doMakePrivate(publicDocId);
   }, 3500);
 }
 
 function cancelDelete() {
   showDeleteWarning.value = false;
+  clearTimeout(deleteTimer);
+}
+
+function cancelPrivate() {
+  showPrivateWarning.value = false;
   clearTimeout(deleteTimer);
 }
 
@@ -360,7 +350,22 @@ function handleShareConstruction(docId: string) {
 
 //implement for unstarring construction
 async function handleUpdateStarred(docId: string): Promise<void> {
-  const updated = await updateStarred(docId);
+  const updated = await starConstruction(docId);
+  if (updated) {
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
+}
+
+async function handleUpdateUnstarred(docId: string): Promise<void> {
+  const updated = await unstarConstruction(docId);
   if (updated) {
     EventBus.fire("show-alert", {
       key: t("updateStarSuccessful"),
@@ -444,9 +449,10 @@ function doShareConstruction() {
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
   "constructionDeleted": "Construction {docId} is succesfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
+  "privateWarning": "Your construction {publicDocId} is about to be made private",
   "privateAttemptNoUid": "Attempt to private a construction when owner in unknown",
-  "constructionPrivated": "Construction {docId} is now private",
-  "constructionPrivateFailed": "Unable to make construction {docId} private",
+  "constructionPrivated": "Construction {publicDocId} is now private",
+  "constructionPrivateFailed": "Unable to make construction {publicDocId} private",
   "updateStarNoUid": "Attempt to unstar a construction when owner in unknown",
   "updateStarSuccessful": "Starlist has been updated",
   "updateStarFailed": "Unable to update starlist",
