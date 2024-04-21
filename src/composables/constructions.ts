@@ -174,21 +174,23 @@ function parseCollection(
     });
 }
 
-async function makePrivate(uid: string, docId: string): Promise<boolean> {
+async function makePrivate(docId: string): Promise<boolean> {
   try {
-    const pos = publicConstructions.value.findIndex((c: SphericalConstruction) => c.id === docId);
-    if (pos === -1) {
-      // Document with given docId not found
-      return false;
+    const user = appAuth.currentUser;
+
+    if (!user) {
+      console.error("User is not logged in.");
+      return false; // User is not authenticated
     }
 
-    const victimDetails = publicConstructions.value[pos];
-    if (victimDetails.publicDocId) {
-      // Delete the document from the "constructions" collection
-      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    const docRef = doc(appDB, "constructions", docId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      await deleteDoc(docRef);
       return true; // Deletion successful
     } else {
-      // Public document ID not found, cannot delete
+      // Document with given docId not found
       return false;
     }
   } catch (error) {

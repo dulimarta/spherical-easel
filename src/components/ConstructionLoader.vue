@@ -202,7 +202,7 @@ watch(idle, () => {
 <i18n locale="en">
 {
   "constructionDeleted": "Construction {docId} was successfully removed",
-  "privateConstructions": "Private Constructions",
+  "privateConstructions": "Owned Constructions",
   "starredConstructions": "Starred Constructions",
   "publicConstructions": "Public Constructions",
   "failedToDelete": "Unable to delete construction {docId}",
