@@ -88,13 +88,13 @@
                     color="red"
                     @click="handleDeleteConstruction(r.id)"></v-btn>
                     <v-btn
-                    v-if="r.author === userEmail"
+                    v-if="(r.publicDocId) && (r.author === userEmail)"
                     id="_test_deletefab"
                     class="mx-1"
                     size="small"
                     icon="$privateConstruction"
                     color="red"
-                    @click="handleMakePrivate(r.id)"></v-btn> <!-- converted to r.id instead r.publicDocId -->
+                    @click="handleMakePrivate(r.publicDocId)"></v-btn> <!-- converted to r.id instead r.publicDocId -->
                   <!-- show unstar button only for starred construction list items-->
                   <v-btn
                     v-if="starredIDs.includes(r.id)"

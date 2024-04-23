@@ -1257,7 +1257,7 @@ export const SETTINGS = {
     starConstruction: { //new starconstruction button
       props: {
         emphasizeTypes: [[]] as string[][],
-        mdiIcon: "mdi-content-copy",
+        mdiIcon: "mdi-star-outline",
         filePath: ""
       }
     },
@@ -1271,7 +1271,7 @@ export const SETTINGS = {
     unstarConstruction: {
       props: {
         emphasizeTypes: [[]] as string[][],
-        mdiIcon: "mdi-broom",
+        mdiIcon: "mdi-star-off-outline",
         filePath: ""
       }
     },
