@@ -546,8 +546,9 @@ onBeforeRouteLeave(
 }
 
 #toolbox {
-  height: 100%;
-  overflow: auto;
+  // height: 100%;
+  // overflow: auto;
+  // display: flex;
 }
 
 .previewText {
@@ -653,10 +654,6 @@ onBeforeRouteLeave(
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   // height: 80%;
-}
-
-#toolbox {
-  display: flex;
 }
 
 #toolbox-and-sphere {

@@ -1,5 +1,4 @@
 <template>
-  <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
       <span v-if="children.length === 1" class="text-subtitle-1">
@@ -31,7 +30,6 @@
         </template>
       </div>
     </transition>
-  </div>
 </template>
 
 <script lang="ts" setup>

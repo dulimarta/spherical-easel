@@ -4,8 +4,7 @@
   <!-- This the not minimized left drawer containing two tabs -->
   <!-- <CurrentToolSelection/> -->
 
-  <v-card>
-    <v-layout>
+  <v-app>
       <v-navigation-drawer
         fixed
         :expand-on-hover="expandOnHover"
@@ -48,15 +47,12 @@
           <v-divider color="#BDF3CB"></v-divider>
           <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
           <v-list density="compact" nav>
-            <!--v-list-item
-              prepend-icon="mdi-account"
-              :title="userEmail"></v-list-item-->
             <LanguageSelector />
           </v-list>
         </template>
       </v-navigation-drawer>
       <v-navigation-drawer
-        :width="295"
+        width="320"
         :style="{
           backgroundColor: '#B9D9C1',
           border: show ? '' : '0px'
@@ -71,10 +67,8 @@
           <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
         </v-list> -->
       </v-navigation-drawer>
-
       <v-main :style="{ height: height + 'px' }"></v-main>
-    </v-layout>
-  </v-card>
+    </v-app>
 </template>
 
 <script lang="ts" setup>
