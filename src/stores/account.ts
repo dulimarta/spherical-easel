@@ -36,7 +36,6 @@ export const useAccountStore = defineStore("acct", () => {
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
   const constructionSaved = ref(false);
-
   const hasUnsavedWork = computed((): boolean => false);
 
   function resetToolset(includeAll = true): void {
@@ -76,6 +75,7 @@ export const useAccountStore = defineStore("acct", () => {
         favoriteTools.value = DEFAULT_TOOL_NAMES;
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
+
   return {
     userRole,
     userEmail,

@@ -18,6 +18,7 @@ import {
   CollectionReference,
   getDocs,
   getDoc,
+  updateDoc,
   doc,
   collection,
   QuerySnapshot,
@@ -39,7 +40,9 @@ import { ComputedRef } from "vue";
 // import { useAccountStore } from "@/stor  es/account";
 // import { storeToRefs } from "pinia";
 // const acctStore = useAccountStore();
-// const { userEmail } = storeToRefs(acctStore);
+const userEmail = computed((): string => {
+  return appAuth.currentUser?.email ?? "";
+});
 let appAuth: Auth;
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -108,7 +111,7 @@ async function parseDocument(
     script: trimmedScript,
     parsedScript,
     objectCount,
-    author: remoteDoc.author,
+    author: remoteDoc.author, //static value assigned for new UI starred count
     dateCreated: remoteDoc.dateCreated,
     description: remoteDoc.description,
     aspectRatio: remoteDoc.aspectRatio ?? 1,
@@ -116,7 +119,7 @@ async function parseDocument(
     preview: svgData ?? "",
     publicDocId: remoteDoc.publicDocId,
     tools: remoteDoc.tools ?? undefined,
-    starCount: remoteDoc.starCount 
+    starCount: remoteDoc.starCount
   } as SphericalConstruction);
 }
 
@@ -132,7 +135,6 @@ function parseCollection(
       qs.forEach(async (qd: QueryDocumentSnapshot) => {
         const remoteData = qd.data();
         let out: SphericalConstruction | null = null;
-        if (remoteData["constructionDocId"]) {
           // In a new format defined by Capstone group Fall 2022
           // public constructions are simply a reference to
           // constructions owned by a particular user
@@ -149,12 +151,6 @@ function parseCollection(
             constructionRef.constructionDocId,
             ownedDoc.data() as ConstructionInFirestore
           );
-        } else {
-          out = await parseDocument(
-            qd.id,
-            remoteData as ConstructionInFirestore
-          );
-        }
         if (out.parsedScript.length > 0) targetArr.push(out);
         else {
           console.warn(
@@ -176,6 +172,31 @@ function parseCollection(
         });
       }
     });
+}
+
+async function makePrivate(docId: string): Promise<boolean> {
+  try {
+    const user = appAuth.currentUser;
+
+    if (!user) {
+      console.error("User is not logged in.");
+      return false; // User is not authenticated
+    }
+
+    const docRef = doc(appDB, "constructions", docId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      await deleteDoc(docRef);
+      return true; // Deletion successful
+    } else {
+      // Document with given docId not found
+      return false;
+    }
+  } catch (error) {
+    console.error("Error deleting construction:", error);
+    return false; // Deletion failed
+  }
 }
 
 async function deleteConstruction(
@@ -205,6 +226,152 @@ async function deleteConstruction(
     return Promise.resolve(false);
   }
 }
+
+// async function updateStarred(constructionId: string): Promise<boolean> {
+//   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+//     throw new Error("User is not authenticated or UID is missing");
+//   }
+
+//   const uid = appAuth.currentUser.uid;
+
+//   try {
+//     const userDocRef = doc(appDB, "users", uid); //user's document
+//     const userDoc = await getDoc(userDocRef);
+
+//     if (userDoc.exists()) {
+//       const userData = userDoc.data();
+//       let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+//       // Fetch the construction document
+//       const constructionDocRef = doc(appDB, "constructions", constructionId);
+//       const constructionDocSnap = await getDoc(constructionDocRef);
+
+//       if (constructionDocSnap.exists()) {
+//         const constructionData = constructionDocSnap.data();
+//         const constructionDocId = constructionData.constructionDocId;
+
+//         const index = userStarredConstructions.indexOf(constructionDocId);
+//         if (index !== -1) {
+//           // If construction is already starred, unstar it
+//           userStarredConstructions.splice(index, 1);
+//         } else {
+//           // If construction is not starred, star it
+//           userStarredConstructions.push(constructionDocId);
+//         }
+
+//         // Update the userStarredConstructions in Firestore
+//         await updateDoc(userDocRef, {
+//           userStarredConstructions: userStarredConstructions
+//         });
+
+//         return true; // Return true for successful update
+//       } else {
+//         console.log("Construction document does not exist.");
+//         return false; // Return false if construction document does not exist
+//       }
+//     } else {
+//       console.log("User document does not exist.");
+//       return false; // Return false if user document does not exist
+//     }
+//   } catch (error) {
+//     console.error("Error updating starred status:", error);
+//     return false; // Return false for any errors
+//   }
+// }
+
+// Function to star a construction
+async function starConstruction(constructionId: string): Promise<boolean> {
+  if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+    throw new Error("User is not authenticated or UID is missing");
+  }
+
+  const uid = appAuth.currentUser.uid;
+
+  try {
+    const userDocRef = doc(appDB, "users", uid); // User's document
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+      // Fetch the construction document
+      const constructionDocRef = doc(appDB, "constructions", constructionId);
+      const constructionDocSnap = await getDoc(constructionDocRef);
+
+      if (constructionDocSnap.exists()) {
+        const constructionData = constructionDocSnap.data();
+        const constructionDocId = constructionData.constructionDocId;
+
+        if (!userStarredConstructions.includes(constructionDocId)) {
+          // Add constructionDocId to the list of starred constructions
+          userStarredConstructions.push(constructionDocId);
+
+          // Update the userStarredConstructions in Firestore
+          await updateDoc(userDocRef, {
+            userStarredConstructions: userStarredConstructions
+          });
+
+          return true; // Return true for successful update
+        } else {
+          console.log("Construction is already starred.");
+          return false; // Return false if construction is already starred
+        }
+      } else {
+        console.log("Construction document does not exist.");
+        return false; // Return false if construction document does not exist
+      }
+    } else {
+      console.log("User document does not exist.");
+      return false; // Return false if user document does not exist
+    }
+  } catch (error) {
+    console.error("Error starring construction:", error);
+    return false; // Return false for any errors
+  }
+}
+
+// Function to unstar a construction
+async function unstarConstruction(constructionDocId: string): Promise<boolean> {
+  if (!appAuth.currentUser || !appAuth.currentUser.uid) {
+    throw new Error("User is not authenticated or UID is missing");
+  }
+
+  const uid = appAuth.currentUser.uid;
+
+  try {
+    const userDocRef = doc(appDB, "users", uid); // User's document
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      let userStarredConstructions: Array<string> = userData.userStarredConstructions ? userData.userStarredConstructions : [];
+
+      const index = userStarredConstructions.indexOf(constructionDocId);
+      if (index !== -1) {
+        // If construction is starred, unstar it
+        userStarredConstructions.splice(index, 1);
+
+        // Update the userStarredConstructions in Firestore
+        await updateDoc(userDocRef, {
+          userStarredConstructions: userStarredConstructions
+        });
+
+        return true; // Return true for successful update
+      } else {
+        console.log("Construction is not starred.");
+        return false; // Return false if construction is not starred
+      }
+    } else {
+      console.log("User document does not exist.");
+      return false; // Return false if user document does not exist
+    }
+  } catch (error) {
+    console.error("Error unstarring construction:", error);
+    return false; // Return false for any errors
+  }
+}
+
 export function useConstruction() {
   onMounted(() => {
     appAuth = getAuth();
@@ -218,7 +385,6 @@ export function useConstruction() {
         const privateColl = collection(appDB, "users", u.uid, "constructions");
         if (privateConstructions.value === null)
           privateConstructions.value = []; // Create a new empty array
-        //   privateConstructions.value.splice(0) // Purge the existing items
         snapShotUnsubscribe = onSnapshot(
           privateColl,
           (snapshot: QuerySnapshot) => {
@@ -257,6 +423,41 @@ export function useConstruction() {
     });
     const publicColl = collection(appDB, "constructions");
     parseCollection(publicColl, publicConstructions.value);
+    // TODO: finish public construction listener
+    /**
+    const publicSnapshot = onSnapshot(
+      publicColl,
+      (snapshot: QuerySnapshot) => {
+        snapshot.docChanges().forEach(async (chg: DocumentChange) => {
+          const aDoc = chg.doc.data() as ConstructionInFirestore;
+          switch (chg.type) {
+            case "added":
+              const sph = await parseDocument(chg.doc.id, aDoc);
+              publicConstructions.value?.push(sph);
+              break;
+            case "removed":
+              if (publicConstructions.value) {
+                const pos = publicConstructions.value?.findIndex(
+                  (c: SphericalConstruction) => c.id === aDoc.publicDocId
+                );
+                if (pos >= 0) publicConstructions.value?.splice(pos, 1);
+              }
+              break;
+            case "modified":
+              if (publicConstructions.value) {
+                const pos = publicConstructions.value?.findIndex(
+                  (c: SphericalConstruction) => c.id === chg.doc.id
+                );
+                const sph = await parseDocument(chg.doc.id, aDoc);
+                if (pos >= 0)
+                  publicConstructions.value?.splice(pos, 1, sph);
+              }
+              break;
+          }
+        });
+      }
+    );
+     */
   });
   const acctStore = useAccountStore();
   const { constructionDocId } = storeToRefs(acctStore);
@@ -287,6 +488,9 @@ export function useConstruction() {
     privateConstructions,
     starredConstructions,
     deleteConstruction,
+    starConstruction,
+    unstarConstruction,
+    makePrivate,
     currentConstructionPreview,
     isPublicConstruction
   };

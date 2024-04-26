@@ -73,7 +73,10 @@ const iconNames = [
   "undo",
   "zoomFit",
   "zoomIn",
-  "zoomOut"
+  "zoomOut",
+  "starConstruction",
+  "unstarConstruction",
+  "privateConstruction"
 ];
 
 const toRecord = (n: Array<string>): Record<string, JSXComponent> => {
