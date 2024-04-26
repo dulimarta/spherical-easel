@@ -423,6 +423,41 @@ export function useConstruction() {
     });
     const publicColl = collection(appDB, "constructions");
     parseCollection(publicColl, publicConstructions.value);
+    // TODO: finish public construction listener
+    /**
+    const publicSnapshot = onSnapshot(
+      publicColl,
+      (snapshot: QuerySnapshot) => {
+        snapshot.docChanges().forEach(async (chg: DocumentChange) => {
+          const aDoc = chg.doc.data() as ConstructionInFirestore;
+          switch (chg.type) {
+            case "added":
+              const sph = await parseDocument(chg.doc.id, aDoc);
+              publicConstructions.value?.push(sph);
+              break;
+            case "removed":
+              if (publicConstructions.value) {
+                const pos = publicConstructions.value?.findIndex(
+                  (c: SphericalConstruction) => c.id === aDoc.publicDocId
+                );
+                if (pos >= 0) publicConstructions.value?.splice(pos, 1);
+              }
+              break;
+            case "modified":
+              if (publicConstructions.value) {
+                const pos = publicConstructions.value?.findIndex(
+                  (c: SphericalConstruction) => c.id === chg.doc.id
+                );
+                const sph = await parseDocument(chg.doc.id, aDoc);
+                if (pos >= 0)
+                  publicConstructions.value?.splice(pos, 1, sph);
+              }
+              break;
+          }
+        });
+      }
+    );
+     */
   });
   const acctStore = useAccountStore();
   const { constructionDocId } = storeToRefs(acctStore);
