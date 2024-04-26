@@ -301,7 +301,16 @@ export type IconNames =
   | "undo"
   | "redo"
   | "copyToClipboard"
-  | "notifications";
+  | "notifications"
+  | "earthPoint"
+  | "earthLatitude"
+  | "earthLongitude"
+  | "parametric"
+  | "transformedCircle"
+  | "transformedEllipse"
+  | "transformedLine"
+  | "transformedPoint"
+  | "transformedSegment";
 
 export enum Poles {
   NORTH,

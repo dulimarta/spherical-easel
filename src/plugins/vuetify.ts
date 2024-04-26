@@ -7,7 +7,7 @@ import {
 import "vuetify/styles";
 import "@/scss/settings.scss";
 import { customIcons } from "./iconAliases";
-// import colors from "vuetify/es5/util/colors";
+import colors from "vuetify/util/colors";
 
 /* This allows us to set the global style variables to adjust the look and feel of the
 app from one central place. */
@@ -34,7 +34,13 @@ export default createVuetify({
     }
   },
   theme: {
+    defaultTheme: "SECustomTheme",
     themes: {
+      SECustomTheme: {
+        colors: {
+          // accent: colors.orange.lighten4
+        }
+      },
       light: {
         /* TODO: PICK BETTER COLORS!!!!! */
         // primary: colors.blue.base,

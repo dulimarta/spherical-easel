@@ -1,129 +1,99 @@
 <template>
-  <div>
-    <v-container
-      class="node"
-      @mouseenter="glowMe(true)"
-      @mouseleave="glowMe(false)">
-      <v-row density="compact" justify="start" class="pa-0">
-        <v-col cols="auto">
-          <v-icon
-            size="medium"
-            :icon="iconName"
-            :class="animationClassName"></v-icon>
+  <div @mouseenter="glowMe(true)" @mouseleave="glowMe(false)" class="node">
+    <v-icon size="medium" :icon="iconName" :class="animationClassName"></v-icon>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <div
+          id="_test_selection"
+          class="contentText"
+          @click="selectMe"
+          v-bind="props"
+          :class="[
+            showClass,
+            shakeMeasurementDisplay,
+            shakeTransformationDisplay
+          ]">
+          <span class="text-truncate ml-1">
+            {{ node.noduleItemText }}
+          </span>
+        </div>
+      </template>
+      <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
+    </v-tooltip>
+    <span style="flex-grow: 1;">
+      <!-- This is a spacer to push both groups to the left and right-->
+    </span>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <div
+          id="_test_copy_to_clipboard"
+          v-if="isMeasurement && supportsClipboard"
+          v-bind="props"
+          @click="copyToClipboard">
+          <v-icon size="small">mdi-content-copy</v-icon>
+        </div>
+      </template>
+      <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
+    </v-tooltip>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <div
+          id="_test_toggle_format"
+          v-if="isExpressionAndNotCoordinateNotEarthMode"
+          v-bind="props"
+          @click="cycleValueDisplayMode">
+          <v-icon size="small">mdi-autorenew</v-icon>
+        </div>
+      </template>
+      <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+    </v-tooltip>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <v-icon
+          id="_test_toggle_visibility"
+          v-if="isPlottable"
+          v-bind="props"
+          @click="toggleVisibility"
+          size="small"
+          :icon="node.showing ? 'mdi-eye-off' : 'mdi-eye'"
+          :key="visibilityUpdateKey"
+          :style="{ color: node.showing ? 'gray' : 'black' }" />
+      </template>
+      <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+    </v-tooltip>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <v-icon
+          id="_toggle_label_display"
+          v-if="isPlottable"
+          v-bind="props"
+          @click="toggleLabelDisplay"
+          size="small"
+          :icon="
+            isLabelHidden() ? 'mdi-label-outline' : 'mdi-label-off-outline'
+          "
+          :style="{ color: isLabelHidden() ? 'inherit' : 'gray' }"
+          :key="labelVisibilityUpdateKey"></v-icon>
+      </template>
+      <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
+    </v-tooltip>
+    <v-tooltip location="end">
+      <template v-slot:activator="{ props }">
+        <div id="_delete_node" v-bind="props" @click="deleteNode">
+          <v-icon size="small" icon="mdi-delete" />
+        </div>
+      </template>
+      <span>{{ $t(`objectTree.deleteNode`) }}</span>
+    </v-tooltip>
           <!--v-icon v-else-if="isParametric" medium>
             $parametric
-          </v-icon-->
-        </v-col>
-        <v-col class="text-truncate">
-          <v-tooltip location="end">
-            <template v-slot:activator="{ props }">
-              <div
-                id="_test_selection"
-                class="contentText"
-                @click="selectMe"
-                v-bind="props"
-                :class="[
-                  showClass,
-                  shakeMeasurementDisplay,
-                  shakeTransformationDisplay
-                ]">
-                <span class="text-truncate ml-1">
-                  {{ node.noduleItemText }}
-                </span>
-              </div>
-            </template>
-            <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
-          </v-tooltip>
-        </v-col>
-        <v-col justify="end">
-          <v-row align="center" no-gutters>
-            <v-col>
-              <v-tooltip location="end">
-                <template v-slot:activator="{ props }">
-                  <div
-                    id="_test_copy_to_clipboard"
-                    v-if="isMeasurement && supportsClipboard"
-                    v-bind="props"
-                    @click="copyToClipboard">
-                    <v-icon size="small">$copyToClipboard</v-icon>
-                  </div>
-                </template>
-                <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-col>
-        <v-col>
-          <v-tooltip location="end">
-            <template v-slot:activator="{ props }">
-              <div
-                id="_test_toggle_format"
-                v-if="isExpressionAndNotCoordinateNotEarthMode"
-                v-bind="props"
-                @click="cycleValueDisplayMode">
-                <v-icon size="small">$cycleNodeValueDisplayMode</v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
-          </v-tooltip>
-        </v-col>
-        <v-col>
-          <v-tooltip location="end">
-            <template v-slot:activator="{ props }">
-              <v-icon
-                id="_test_toggle_visibility"
-                v-if="isPlottable"
-                v-bind="props"
-                @click="toggleVisibility"
-                size="tiny"
-                :icon="node.showing ? '$hideNode' : '$showNode'"
-                :key="visibilityUpdateKey"
-                :style="{ color: node.showing ? 'gray' : 'black' }" />
-            </template>
-            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-          </v-tooltip>
-        </v-col>
-        <v-col>
-          <v-tooltip location="end">
-            <template v-slot:activator="{ props }">
-              <v-icon
-                id="_toggle_label_display"
-                v-if="isPlottable"
-                v-bind="props"
-                @click="toggleLabelDisplay"
-                size="small"
-                :icon="isLabelHidden() ? '$showNodeLabel' : '$hideNodeLabel'"
-                :style="{ color: isLabelHidden() ? 'inherit' : 'gray' }"
-                :key="labelVisibilityUpdateKey"></v-icon>
-            </template>
-            <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
-          </v-tooltip>
-        </v-col>
-        <v-col>
-          <v-tooltip location="end">
-            <template v-slot:activator="{ props }">
-              <div id="_delete_node" v-bind="props" @click="deleteNode">
-                <v-icon size="small" icon="$deleteNode" />
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.deleteNode`) }}</span>
-          </v-tooltip>
-        </v-col>
-      </v-row>
-      <!--v-row v-if="isParametric">
-        <v-col cols="auto"> t = {{ parametricTime.toFixed(3) }} </v-col>
-        <v-col>
+          </v-icon>
           <v-slider
             v-model="parametricTime"
             :min="parametricTMin"
             :max="parametricTMax"
             :step="parametricTStep" />
-        </v-col>
-        <v-col cols="auto">
-          <v-icon @click="animateCurvePoint">mdi-run</v-icon>
-        </v-col>
-      </v-row-->
-    </v-container>
+          <v-icon @click="animateCurvePoint">mdi-run</v-icon-->
   </div>
 </template>
 
@@ -729,6 +699,8 @@ const shakeTransformationDisplay = computed((): string => {
 </script>
 
 <style scoped lang="scss">
+// @use "../scss/settings.scss";
+
 .shake {
   animation: shake 2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   transform: translate3d(0, 0, 0);
@@ -758,23 +730,31 @@ const shakeTransformationDisplay = computed((): string => {
 }
 .node,
 .visibleNode {
-  // display: flex;
-  // flex-direction: row;
+  padding-left: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   // align-items: center;
   // margin: 0 0.25em;
-  background-color: white;
-  .contentText {
-    // Expand to fill in the remaining available space
-    // flex-grow: 1;
-  }
-  v-icon {
-    // Icons should not grow, just fit to content
-    // flex-grow: 0;
-  }
+  // .contentText {
+  //   // Expand to fill in the remaining available space
+  //   // flex-grow: 1;
+  // }
+  // v-icon {
+  //   // Icons should not grow, just fit to content
+  //   // flex-grow: 0;
+  // }
   &:hover {
     /* Change background on mouse hover only for nodes
-       i.e. do not change bbackground on labels */
-    background-color: var(--v-accent-lighten1);
+       i.e. do not change background on labels */
+    // background-color: var(--v-theme-primary);
+    background-color: lightgray;
   }
+}
+.node :hover {
+  // background-color: green;
 }
 </style>
