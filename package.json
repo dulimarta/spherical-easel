@@ -11,8 +11,9 @@
     "app:build": "bunx --bun vite build",
     "build": "bun run app:build",
     "check:links": "vuepress check-md ./docs",
-    "docs:build": "vuepress build docs",
-    "docs:serve": "vuepress dev docs --debug",
+    "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress dev docs --debug",
+    "docs:preview": "vitepress preview docs",
     "i18n:report": "vue-i18n-extract report"
   },
   "dependencies": {
@@ -72,10 +73,9 @@
     "typescript": "4.7",
     "vite": "^4.5.1",
     "vite-plugin-vuetify": "^1.0.2",
+    "vitepress": "^1.1.4",
     "vue-eslint-parser": "^9.3.1",
-    "vue-i18n-extract": "^2.0.7",
-    "vuepress-plugin-check-md": "^0.0.2",
-    "vuepress-plugin-mathjax": "^1.2.8"
+    "vue-i18n-extract": "^2.0.7"
   },
   "browserslist": [
     "> 1%",

@@ -9,10 +9,10 @@
    npm -v          # version 6.13.2 (or newer)
    ```
 
-2. Download and install [Yarn](https://classic.yarnpkg.com/en/docs/install#mac-stable). Verify `yarn` installation by typing
+2. Download and install [Bun](https://bun.sh). Verify `bun` installation by typing
 
    ```bash
-   yarn -v         # version 1.22.4 (or newer)
+   bun -v         # version 1.1.x (or newer)
    ```
 
 ## Setting Up for Development
@@ -21,24 +21,25 @@ In the project top directory. Type `yarn install` to install external dependenci
 
 ```bash
 # Install external dependencies (required for the first time)
-yarn install
+bun install
 ```
 
 ### Compiles and hot-reloads for development
 
 ```bash
 # Start the app on a local server
-yarn serve
+bun run app:serve
+# Start both the app server and vitepress server
+bun run serve
 ```
 
-After typing `yarn serve`, use your browser to open `localhost:8080` (or whatever port number used by `yarn serve`).
+After typing `bun run app:serve`, use your browser to open `localhost:8080` (or whatever port number used by `yarn serve`).
 
 ### Optional commands
 
 ```bash
-yarn build        # to build for production
-yarn docs:build   # to build the documentation
-yarn lint         # to run linter program
+bun run build        # to build for production
+bun run docs:build   # to build the documentation
 ```
 
 ### Documentation

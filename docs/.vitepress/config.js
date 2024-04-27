@@ -1,8 +1,8 @@
-const path = require("path","@vuepress/utils");
-const { convertTypeAcquisitionFromJson } = require("typescript");
-const projectRoot = process.cwd();
-const alias = path.resolve(projectRoot, 'src');
-module.exports = {
+// const path = require("path","@vuepress/utils");
+// const { convertTypeAcquisitionFromJson } = require("typescript");
+// const projectRoot = process.cwd();
+// const alias = path.resolve(projectRoot, 'src');
+export default {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "dist/docs",
   // The following setting for "base" works on hosts which allow us to publish
@@ -31,13 +31,13 @@ module.exports = {
 
   // This section is needed so that the plugin containers work (i.e. the :::tool-title etc in the markdown)
   markdown: {
-    extendMarkdown: md => {
-      // use more markdown-it plugins!
-      md.use(require("markdown-it-texmath"));
-    },
-    extendMarkdown: md => {
-      md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
-    }
+    // extendMarkdown: md => {
+    //   // use more markdown-it plugins!
+    //   md.use(require("markdown-it-texmath"));
+    // },
+    // extendMarkdown: md => {
+    //   md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
+    // }
   },
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
