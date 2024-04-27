@@ -20,6 +20,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+.vs
 
 # TypeScript compiler output
 ts-out

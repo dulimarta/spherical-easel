@@ -17,25 +17,34 @@
             <!-- the class "constructionItem" is used for testing. Do not remove it -->
             <v-list-item
               v-bind="props"
-              class="_test_constructionItem"
+              class="_test_constructionItem custom-list-item"
               @mouseover.capture="onItemHover(r)">
+              <div class="list-item-content"></div>
               <template #prepend>
+                <div class="item-image">
                 <img
                   :src="previewOrDefault(r.preview)"
                   class="mr-1"
                   alt="preview"
                   width="64" />
+                </div>
               </template>
               <v-list-item-title class="text-truncate">
                 {{ r.description || "N/A" }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 <code>{{ r.id.substring(0, 5) }}</code>
-                <span class="text-truncate">
-                  {{ r.objectCount }} objects,
-                  {{ r.dateCreated.substring(0, 10) }}
-                  {{ r.author }}
-                </span>
+                {{ r.objectCount }} objects,
+                <span class="text-truncate"> {{ r.author }}</span> <!-- currently not seeing the CSS applied-->
+                <div class="star-rating-line">
+                  <div class="date-and-star">
+                    {{ r.dateCreated.substring(0, 10) }}
+                  </div>
+                  <div class="star-and-count">
+                    <span class="star filled">&#9733;</span> <!-- Always filled star -->
+                    {{ r.starCount }}
+                  </div>
+                </div>
               </v-list-item-subtitle>
               <v-divider />
               <!--- show a Load button as an overlay when the mouse hovers -->
@@ -60,6 +69,15 @@
                     color="secondary"
                     icon="$shareConstruction"
                     @click="handleShareConstruction(r.publicDocId)"></v-btn>
+                   <!-- show star button only for public constructs -->
+                   <v-btn
+                   v-if="(r.publicDocId) && (r.author !== userEmail) && (!starredIDs.includes(r.id))"
+                    id="_test_starConstruct"
+                    class="mx-1"
+                    size="small"
+                    color="yellow"
+                    icon="$starConstruction"
+                  @click="handleUpdateStarred(r.publicDocId)"></v-btn>
                   <!-- show delete button only for its owner -->
                   <v-btn
                     v-if="r.author === userEmail"
@@ -69,6 +87,23 @@
                     icon="$deleteConstruction"
                     color="red"
                     @click="handleDeleteConstruction(r.id)"></v-btn>
+                    <v-btn
+                    v-if="(r.publicDocId) && (r.author === userEmail)"
+                    id="_test_deletefab"
+                    class="mx-1"
+                    size="small"
+                    icon="$privateConstruction"
+                    color="red"
+                    @click="handleMakePrivate(r.publicDocId)"></v-btn> <!-- converted to r.id instead r.publicDocId -->
+                  <!-- show unstar button only for starred construction list items-->
+                  <v-btn
+                    v-if="starredIDs.includes(r.id)"
+                    id="_test_unstarfab"
+                    class="mx-1"
+                    size="small"
+                    icon="$unstarConstruction"
+                    color="blue"
+                    @click="handleUpdateUnstarred(r.id)"></v-btn>
                 </div>
               </v-overlay>
             </v-list-item>
@@ -106,6 +141,16 @@
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
     </template>
   </v-snackbar>
+
+  <v-snackbar
+    v-model="showPrivateWarning"
+    location="top"
+    :timeout="DELETE_DELAY">
+    {{ t("privateWarning") }}
+    <template #actions>
+      <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
@@ -123,7 +168,10 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstruction } from "@/composables/constructions";
 import { useClipboard, usePermission } from "@vueuse/core";
-const DELETE_DELAY = 3000;
+import { useUserAccountStore } from '@/stores/userAccountStore';
+const { userProfile } = storeToRefs(useUserAccountStore());
+import { idText } from "typescript";
+import { arrayRemove } from "firebase/firestore";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -135,16 +183,25 @@ const acctStore = useAccountStore();
 const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
+const starredDocId = ref("");
 const showDeleteWarning = ref(false);
+const showPrivateWarning = ref(false);
 const { constructionDocId } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
-const { deleteConstruction } = useConstruction();
+// const { deleteConstruction } = useConstruction();
+// const { makePrivate } =  useConstruction();
+// const { starConstruction } = useConstruction();
+// const { unstarConstruction } = useConstruction();
+const { deleteConstruction, makePrivate, starConstruction, unstarConstruction } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
+//setup for starred construction list
+const starredIDs = userProfile.value?.userStarredConstructions || [];
 let lastDocId: string | null = null;
 let deleteTimer: any;
+const DELETE_DELAY = 3000;
 
 const userEmail = computed((): string => {
   return appAuth.currentUser?.email ?? "";
@@ -247,10 +304,32 @@ async function doDeleteConstruction(docId: string) {
   }
 }
 
+async function doMakePrivate(publicDocId: string) {
+  const privated = await makePrivate(publicDocId);
+  if (privated)
+    EventBus.fire("show-alert", {
+      key: t("constructionPrivated", { publicDocId }),
+      type: "success"
+    });
+  else
+    EventBus.fire("show-alert", {
+      key: t("constructionPrivateFailed", { publicDocId }),
+      type: "error"
+    });
+}
+
+
 function handleDeleteConstruction(docId: string): void {
   showDeleteWarning.value = true;
   deleteTimer = setTimeout(() => {
     doDeleteConstruction(docId);
+  }, 3500);
+}
+
+function handleMakePrivate(publicDocId: string): void {
+  showPrivateWarning.value = true;
+  deleteTimer = setTimeout(() => {
+    doMakePrivate(publicDocId);
   }, 3500);
 }
 
@@ -259,10 +338,47 @@ function cancelDelete() {
   clearTimeout(deleteTimer);
 }
 
+function cancelPrivate() {
+  showPrivateWarning.value = false;
+  clearTimeout(deleteTimer);
+}
+
 function handleShareConstruction(docId: string) {
   sharedDocId.value = docId;
   constructionShareDialog.value?.show();
 }
+
+//implement for unstarring construction
+async function handleUpdateStarred(docId: string): Promise<void> {
+  const updated = await starConstruction(docId);
+  if (updated) {
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
+}
+
+async function handleUpdateUnstarred(docId: string): Promise<void> {
+  const updated = await unstarConstruction(docId);
+  if (updated) {
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
+}
+
 
 function doShareConstruction() {
   clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
@@ -270,12 +386,61 @@ function doShareConstruction() {
 </script>
 
 <style scoped>
+
 .constructionItem {
   display: inline-flex;
   flex-direction: row;
   justify-content: center;
   /* width: 100%; */
   /* background-color: red; */
+}
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.list-item-content {
+  display: flex;
+  width: 100%;
+}
+
+.item-image {
+  margin-right: 0.5rem;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.star-rating-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.date-and-star {
+  display: flex;
+  align-items: center;
+}
+
+.star-and-count {
+  display: flex;
+  align-items: center;
+  color: #4b3c11;
+}
+
+.star {
+  margin-right: 0.25rem;
+  color: #ffc107;
+}
+
+.star.filled {
+  color: #ffc107;
 }
 </style>
 <i18n locale="en">
@@ -284,6 +449,13 @@ function doShareConstruction() {
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
   "constructionDeleted": "Construction {docId} is succesfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
+  "privateWarning": "Your construction {publicDocId} is about to be made private",
+  "privateAttemptNoUid": "Attempt to private a construction when owner in unknown",
+  "constructionPrivated": "Construction {publicDocId} is now private",
+  "constructionPrivateFailed": "Unable to make construction {publicDocId} private",
+  "updateStarNoUid": "Attempt to unstar a construction when owner in unknown",
+  "updateStarSuccessful": "Starlist has been updated",
+  "updateStarFailed": "Unable to update starlist",
   "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
   "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",

@@ -579,6 +579,7 @@ export interface ObjectState {
 export type ConstructionScript = Array<string | Array<string>>;
 
 export interface SphericalConstruction extends ConstructionInFirestore {
+  starCount: number;
   id: string;
   parsedScript: ConstructionScript;
   sphereRotationMatrix: Matrix4;
@@ -597,6 +598,7 @@ export interface ConstructionInFirestore {
   dateCreated: string;
   script: string;
   description: string;
+  starCount: number;
   rotationMatrix?: string;
   preview: string; // Either the data:image of the URL to the data:image
   aspectRatio?: number /* width / height of the screen when image was capture*/;
@@ -614,7 +616,7 @@ export interface UserProfile {
   location?: string;
   role?: string;
   favoriteTools?: string;
-  starredConstructionIds: Array<string>;
+  userStarredConstructions?: Array<string>;
 }
 
 export enum AngleMode {
