@@ -88,7 +88,9 @@ const openMultiple = ref(false);
 const { idle } = useIdle(1000); // wait for 1 second idle
 
 onMounted(async () => {
-  await accountStore.fetchUserProfile(uid!);
+  if (uid) {
+    await accountStore.fetchUserProfile(uid!);
+  }
 });
 
 const displayedPrivateConstructions = computed(

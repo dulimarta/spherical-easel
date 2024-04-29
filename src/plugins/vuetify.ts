@@ -6,6 +6,7 @@ import {
 } from "vuetify";
 import "vuetify/styles";
 import "@/scss/settings.scss";
+import {mdi} from "vuetify/iconsets/mdi"
 import { customIcons } from "./iconAliases";
 import colors from "vuetify/util/colors";
 
@@ -17,6 +18,7 @@ export default createVuetify({
     defaultSet: "mdi", // builtin sets: faSvg, fa, fa4, mdi, mdi, mdiSvg
     aliases: customIcons,
     sets: {
+      mdi
       // Is the following block used at all?
       // se_custom: {
       //   component: (props: IconProps, ctx) => {

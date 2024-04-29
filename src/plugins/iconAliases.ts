@@ -1,4 +1,4 @@
-import { h, JSXComponent } from "vue";
+import { h} from "vue";
 import IconBase from "@/components/IconBase.vue";
 
 const iconNames = [
@@ -52,7 +52,6 @@ const iconNames = [
   "rotate",
   "rotation",
   "segment",
-  "segment",
   "segmentLength",
   "select",
   "shareConstruction",
@@ -79,15 +78,15 @@ const iconNames = [
   "privateConstruction"
 ];
 
-const toRecord = (n: Array<string>): Record<string, JSXComponent> => {
+const toRecord = (n: Array<string>): Record<string, any> => {
   return n.reduce(
-    (acc: Record<string, JSXComponent>, curr: string, pos: number) => {
+    (acc: Record<string, any>, curr: string, pos: number) => {
       return {
         ...acc,
         [curr]: () => h(IconBase as any, { iconName: curr })
       };
     },
-    {} as Record<string, JSXComponent>
+    {} as Record<string, any>
   );
 };
 export const customIcons = toRecord(iconNames);

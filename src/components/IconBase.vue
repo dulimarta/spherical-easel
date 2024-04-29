@@ -43,9 +43,10 @@ onMounted((): void => {
   } else {
     iconSizeValue.value = props.iconSize ?? SETTINGS.icons.defaultIconSize;
   }
-  filePath = SETTINGS.icons[props.iconName].props.filePath;
-  emphasizeTypes = SETTINGS.icons[props.iconName].props.emphasizeTypes;
-  mdiIcon.value = SETTINGS.icons[props.iconName].props.mdiIcon;
+  const zIcons = SETTINGS.icons as Record<string,any>
+  filePath = zIcons[props.iconName].props.filePath;
+  emphasizeTypes = zIcons[props.iconName].props.emphasizeTypes;
+  mdiIcon.value = zIcons[props.iconName].props.mdiIcon;
   if (typeof mdiIcon.value !== "string") {
     doneFetching = false;
     // By default, axios assumes a JSON response and the input will be parsed as JSON.

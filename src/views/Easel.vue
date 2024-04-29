@@ -1,5 +1,6 @@
 <template>
-  <div style="
+  <div
+    style="
       position: fixed;
       right: 8px;
       width: 80px;
@@ -19,10 +20,7 @@
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
     <div id="toolbox">
-      <AppNavigation
-        id="toolbox"
-        ref="toolbox"
-      />
+      <AppNavigation id="toolbox" ref="toolbox" />
     </div>
 
     <!-- Shortcut icons are placed using absolute positioning. CSS requires
@@ -32,14 +30,12 @@
         <EarthLayer
           v-if="localIsEarthMode"
           :available-height="availHeight"
-          :available-width="availWidth"
-        />
+          :available-width="availWidth" />
         <SphereFrame
           style="position: relative"
           :available-width="availWidth"
           :available-height="availHeight"
-          :is-earth-mode="localIsEarthMode"
-        />
+          :is-earth-mode="localIsEarthMode" />
         <!--v-switch
           hide-details
           color="primary"
@@ -67,75 +63,63 @@
             </v-menu>
           </template>
         <v-switch-->
-
       </div>
-      <div v-else
-        :class="['justify-center', 'align-start', previewClass]"
-        :model-value="svgDataImage.length > 0"
-      >
-      Aspect ratio {{ svgDataImageAspectRatio }}
+      <div
+        v-else
+        :class="['justify-center', 'align-start', previewClass]">
+        <!--Aspect ratio {{ svgDataImageAspectRatio }} -->
         <!--div class="previewText">
           <p>{{ constructionInfo.count }} objects.</p>
           <p>Created by: {{ constructionInfo.author }}</p>
-        </div-->
+        </!--div-->
         <img
           id="previewImage"
           :src="svgDataImage"
           :width="overlayHeight * svgDataImageAspectRatio"
-          :height="overlayHeight"
-        />
-        </div>
+          :height="overlayHeight" />
+      </div>
       <div id="msghub">
         <ShortcutIcon
           class="mx-1"
           v-for="t in leftShortcutGroup"
           :key="t.action"
-          :model="t"
-        />
+          :model="t" />
         <ShortcutIcon
           :disabled="!hasObjects"
           class="mx-1"
-          :model="TOOL_DICTIONARY.get('resetAction')!"
-        />
+          :model="TOOL_DICTIONARY.get('resetAction')!" />
         <MessageHub />
-        <div
-          id="zoomPanel"
-          class="pr-5"
-        >
-          <div style="display: flex;">
+        <div id="zoomPanel" class="pr-5">
+          <div style="display: flex">
             <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomFit')!"
-            />
+              :model="TOOL_DICTIONARY.get('zoomFit')!" />
             <div class="horizontalLine"></div>
           </div>
-          <div style="display: flex;">
+          <div style="display: flex">
             <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomOut')!"
-            />
+              :model="TOOL_DICTIONARY.get('zoomOut')!" />
             <div class="horizontalLine"></div>
           </div>
-          <div style="display: flex;">
+          <div style="display: flex">
             <ShortcutIcon
               :isShortcutTool="true"
               class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomIn')!"
-            />
+              :model="TOOL_DICTIONARY.get('zoomIn')!" />
             <div class="horizontalLine"></div>
           </div>
-          <span style="padding-left: 15px;">{{ (100 * zoomMagnificationFactor).toFixed(2) }}</span>
+          <span style="padding-left: 15px">
+            {{ (100 * zoomMagnificationFactor).toFixed(2) }}
+          </span>
           <!-- <v-slider
               v-model="zoomMagnificationFactor"
               :min="0.1"
               :max="2"
               style="min-width: 100px" /> -->
-
-
         </div>
-
       </div>
     </div>
     <Dialog
@@ -144,20 +128,13 @@
       :title="t('unsavedConstructionsConfirmation')"
       :yes-text="t('constructionsKeep')"
       :no-text="t('constructionsDiscard')"
-      :no-action="doLeave"
-    >
+      :no-action="doLeave">
       {{ t(`unsavedConstructionsMessage`) }}
     </Dialog>
-    <v-snackbar
-      v-model="clearConstructionWarning"
-      :timeout="DELETE_DELAY"
-    >
+    <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
       {{ t("clearConstructionMessage") }}
       <template #actions>
-        <v-btn
-          @click="cancelClearConstruction"
-          color="warning"
-        >
+        <v-btn @click="cancelClearConstruction" color="warning">
           {{ t("undo") }}
         </v-btn>
       </template>
@@ -294,7 +271,12 @@ onBeforeMount(() => {
 
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
-    console.debug("Previewing construction", s)
+    console.debug(
+      "Previewing construction",
+      s.id,
+      " preview image ",
+      s.preview
+    );
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
     svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
@@ -480,7 +462,6 @@ function doLeave(): void {
   if (attemptedToRoute) router.replace({ path: attemptedToRoute.path });
 }
 
-
 //When the SetEarthModeCommand is undone, we need to watch the isEarthMode variable in the store
 // so setting isEarthMode in the store updates the localIsEarthMode variable and the vue component updates
 watch(
@@ -511,8 +492,6 @@ onBeforeRouteLeave(
 // function handleToolboxMinify(state: boolean) {
 //   toolboxMinified.value = state;
 // }
-
-
 </script>
 <style scoped lang="scss">
 #sphere-and-msghub {
@@ -635,8 +614,9 @@ onBeforeRouteLeave(
   display: flex;
   align-items: center;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #zoomPanel {
@@ -645,7 +625,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 .horizontalLine {
@@ -664,7 +646,8 @@ onBeforeRouteLeave(
   width: 100%;
   justify-content: stretch;
   height: 100%;
-}</style>
+}
+</style>
 <i18n locale="en">
 {
   "clearConstructionMessage": "The current construction will be cleared",
