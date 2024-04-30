@@ -173,12 +173,8 @@ import { run } from "@/commands/CommandInterpreter";
 import { SENodule } from "@/models/internal";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
-import { useConstruction } from "@/composables/constructions";
+import {useConstructionStore} from "@/stores/construction"
 import { useClipboard, usePermission } from "@vueuse/core";
-import { useUserAccountStore } from "@/stores/userAccountStore";
-const { userProfile } = storeToRefs(useUserAccountStore());
-import { idText } from "typescript";
-import { arrayRemove } from "firebase/firestore";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -187,25 +183,27 @@ const constructionLoadDialog: Ref<DialogAction | null> = ref(null);
 const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
+const constructionStore = useConstructionStore()
 const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
-const { constructionDocId } = storeToRefs(acctStore);
+const { constructionDocId, userProfile } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
+const {publicConstructions} = storeToRefs(constructionStore)
 const { t } = useI18n({ useScope: "local" });
 // const { deleteConstruction } = useConstruction();
 // const { makePrivate } =  useConstruction();
 // const { starConstruction } = useConstruction();
 // const { unstarConstruction } = useConstruction();
-const {
-  deleteConstruction,
-  makePrivate,
-  starConstruction,
-  unstarConstruction
-} = useConstruction();
+// const {
+//   deleteConstruction,
+//   makePrivate,
+//   starConstruction,
+//   unstarConstruction
+// } = useConstruction();
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
@@ -301,7 +299,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
 async function doDeleteConstruction(docId: string) {
   const uid = appAuth.currentUser?.uid;
   if (uid) {
-    const deleted = await deleteConstruction(uid, docId);
+    const deleted = await constructionStore.deleteConstruction(uid, docId);
     if (deleted)
       EventBus.fire("show-alert", {
         key: t("constructionDeleted", { docId }),
@@ -321,7 +319,7 @@ async function doDeleteConstruction(docId: string) {
 }
 
 async function doMakePrivate(publicDocId: string) {
-  const privated = await makePrivate(publicDocId);
+  const privated = await constructionStore.makePrivate(publicDocId);
   if (privated)
     EventBus.fire("show-alert", {
       key: t("constructionPrivated", { publicDocId }),
@@ -368,7 +366,7 @@ function handleShareConstruction(docId: string | undefined) {
 //implement for unstarring construction
 async function handleUpdateStarred(docId: string | undefined): Promise<void> {
   if (!docId) return;
-  const updated = await starConstruction(docId);
+  const updated = await constructionStore.starConstruction(docId);
   if (updated) {
     EventBus.fire("show-alert", {
       key: t("updateStarSuccessful"),
@@ -383,7 +381,7 @@ async function handleUpdateStarred(docId: string | undefined): Promise<void> {
 }
 
 async function handleUpdateUnstarred(docId: string): Promise<void> {
-  const updated = await unstarConstruction(docId);
+  const updated = await constructionStore.unstarConstruction(docId);
   if (updated) {
     EventBus.fire("show-alert", {
       key: t("updateStarSuccessful"),

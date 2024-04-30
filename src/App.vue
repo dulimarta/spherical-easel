@@ -89,6 +89,7 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 
 import { useI18n } from "vue-i18n";
+import { useConstructionStore } from "./stores/construction";
 const appAuth = getAuth();
 
 // Register vue router in-component navigation guard functions
@@ -101,6 +102,8 @@ const appAuth = getAuth();
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole } = storeToRefs(acctStore);
+const constructionStore = useConstructionStore()
+constructionStore.initialize()
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);

@@ -7,7 +7,8 @@ import {
   ToolButtonType
 } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
-import { computed } from "vue";
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { UserProfile } from '@/types';
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -22,7 +23,6 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", () => {
-  //state: (): AccountState => ({
   const loginEnabled = ref(false); // true when the secret key combination is detected
   const temporaryProfilePicture = ref("");
   const userDisplayedName: Ref<string | undefined> = ref(undefined);
@@ -33,10 +33,11 @@ export const useAccountStore = defineStore("acct", () => {
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
+  const userProfile: Ref<UserProfile|null> = ref(null)
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
-  const constructionSaved = ref(false);
-  const hasUnsavedWork = computed((): boolean => false);
+  // const constructionSaved = ref(false);
+  // const hasUnsavedWork = computed((): boolean => false);
 
   function resetToolset(includeAll = true): void {
     includedTools.value.splice(0);
@@ -76,6 +77,18 @@ export const useAccountStore = defineStore("acct", () => {
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
 
+  async function fetchUserProfile(uid: string) {
+    const db = getFirestore() //local setup for getfirestore variable
+    const userDocRef = doc(db, 'users', uid); // Use the Firestore instance here
+    const userDocSnap = await getDoc(userDocRef);
+    if (userDocSnap.exists()) {
+      userProfile.value = userDocSnap.data();
+    } else {
+      console.log("No such user profile!");
+    }
+
+  }
+
   return {
     userRole,
     userEmail,
@@ -90,6 +103,8 @@ export const useAccountStore = defineStore("acct", () => {
     includeToolName,
     excludeToolName,
     resetToolset,
-    parseAndSetFavoriteTools
+    parseAndSetFavoriteTools,
+    userProfile,
+    fetchUserProfile
   };
 });

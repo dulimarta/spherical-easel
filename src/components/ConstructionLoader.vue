@@ -10,7 +10,7 @@
       :hint="searchResult"/>
     <v-expansion-panels v-model="openPanels" :multiple="openMultiple"
     style="gap:10px; padding-right: 8px; padding-left: 8px;">
-      <v-expansion-panel v-if="privateConstructions !== null" value="private">
+      <v-expansion-panel v-if="privateConstructions.length > 0" value="private">
         <v-expansion-panel-title>
           {{ t(`privateConstructions`) }}
         </v-expansion-panel-title>
@@ -60,27 +60,25 @@
 <script lang="ts" setup>
 import ConstructionList from "@/components/ConstructionList.vue";
 import { useI18n } from "vue-i18n";
-import { useConstruction } from "@/composables/constructions";
+import { useConstructionStore } from "@/stores/construction";
 import { useIdle } from "@vueuse/core";
 import { watch, computed, ref, Ref } from "vue";
 import { SphericalConstruction } from "@/types";
 import { useAccountStore } from "@/stores/account";
-import { useUserAccountStore } from '@/stores/userAccountStore';
 import { storeToRefs } from "pinia";
 import { onMounted } from 'vue'; //trying to async call to setup UserProfile call
 const { t } = useI18n();
-const { publicConstructions, privateConstructions, starredConstructions} = useConstruction();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const acctStore = useAccountStore()
+const constructionStore = useConstructionStore()
+const { publicConstructions, privateConstructions, starredConstructions} = storeToRefs(constructionStore)
 const { firebaseUid } = storeToRefs(acctStore)
 const searchResult = ref("");
 const searchKey = ref("");
 //grabbing user email for filtering
-const { userEmail } = storeToRefs(acctStore);
-const accountStore = useUserAccountStore();
+const { userEmail, userProfile } = storeToRefs(acctStore);
 const uid = firebaseUid.value; //need to figure out how to call that
-const { userProfile } = storeToRefs(useUserAccountStore());
 
 let lastSearchKey: string|null = null
 const openPanels: Ref<Array<string> | string> = ref("");
@@ -89,7 +87,7 @@ const { idle } = useIdle(1000); // wait for 1 second idle
 
 onMounted(async () => {
   if (uid) {
-    await accountStore.fetchUserProfile(uid!);
+    await acctStore.fetchUserProfile(uid!);
   }
 });
 

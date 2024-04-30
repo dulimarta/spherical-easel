@@ -36,7 +36,7 @@
     </template>
     <HintButton
       tooltip="Share saved cons"
-      v-if="constructionDocId && isPublicConstruction(constructionDocId)">
+      v-if="constructionDocId /*&& isPublicConstruction(constructionDocId)*/">
       <template #icon>mdi-share-variant</template>
     </HintButton>
     <HintButton
@@ -170,7 +170,7 @@ import {
   ref as storageRef,
   getStorage
 } from "firebase/storage";
-import { useConstruction } from "@/composables/constructions";
+import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 enum SecretKeyState {
@@ -180,6 +180,7 @@ enum SecretKeyState {
 }
 const acctStore = useAccountStore();
 const seStore = useSEStore();
+const constructionStore = useConstructionStore()
 const {
   loginEnabled,
   userProfilePictureURL,
@@ -197,11 +198,12 @@ const {
   isEarthMode
 } = storeToRefs(seStore);
 const { t } = useI18n();
-const {
-  currentConstructionPreview,
-  isPublicConstruction,
-  privateConstructions
-} = useConstruction();
+// const {
+//   currentConstructionPreview,
+//   isPublicConstruction,
+//   privateConstructions
+// } = useConstruction();
+const {privateConstructions, currentConstructionPreview } = storeToRefs(constructionStore)
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
