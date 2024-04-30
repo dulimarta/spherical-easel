@@ -2,7 +2,7 @@
   <!-- Use v-bind="$attrs" to pass thru incoming attributes to v-btn.
       Be sure NOT to place it as the last attr -->
   <v-btn
-    v-bind="attr"
+    v-bind="$attrs"
     class="text-subtitle-2"
     ripple
     icon

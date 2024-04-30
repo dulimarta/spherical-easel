@@ -29,7 +29,11 @@ import {
   onSnapshot,
   Firestore,
   deleteDoc,
-  DocumentChange
+  DocumentChange,
+  FieldValue,
+  deleteField,
+  addDoc,
+  DocumentReference
 } from "firebase/firestore";
 import "@/extensions/array-extensions";
 import axios, { AxiosResponse } from "axios";
@@ -125,7 +129,9 @@ export const useConstructionStore = defineStore("construction", () => {
       // (1) Build the private array
       const privateColl = collection(appDB, "users", uid, "constructions");
       await parsePrivateCollection(privateColl, privateConstructions.value);
-      starredConstructionIDs.push(...await acctStore.fetchStarredConstructions(uid));
+      starredConstructionIDs.push(
+        ...(await acctStore.fetchStarredConstructions(uid))
+      );
       const [starred, unstarred] = publicConstructions.value.partition(z =>
         starredConstructionIDs.some(s => s === z.publicDocId)
       );
@@ -152,9 +158,9 @@ export const useConstructionStore = defineStore("construction", () => {
       privateConstructions.value.splice(0);
       publicConstructions.value.push(...myPublicDocs);
     }
-    sortConstructionArray(privateConstructions.value)
-    sortConstructionArray(starredConstructions.value)
-    sortConstructionArray(publicConstructions.value)
+    sortConstructionArray(privateConstructions.value);
+    sortConstructionArray(starredConstructions.value);
+    sortConstructionArray(publicConstructions.value);
   });
 
   async function parsePublicCollection(
@@ -166,37 +172,44 @@ export const useConstructionStore = defineStore("construction", () => {
     const erroneousDocs: Array<string> = [];
     const qs: QuerySnapshot = await getDocs(constructionCollection);
 
-    const parseTasks: Array<Promise<SphericalConstruction>> = qs.docs.map(async (qd: QueryDocumentSnapshot) => {
-      const remoteData = qd.data();
-      let out: SphericalConstruction | null = null;
-      // In a new format defined by Capstone group Fall 2022
-      // public constructions are simply a reference to
-      // constructions owned by a particular user
-      const constructionRef = remoteData as PublicConstructionInFirestore;
-      // publicMap.set(qd.id, constructionRef)
-      const ownedDocRef = doc(
-        appDB,
-        "users",
-        constructionRef.author,
-        "constructions",
-        constructionRef.constructionDocId
-      );
-      const ownedDoc = await getDoc(ownedDocRef);
-      return parseDocument(
-        constructionRef.constructionDocId,
-        ownedDoc.data() as ConstructionInFirestore
-      );
-      // if (out.parsedScript.length > 0) targetArr.push(out);
-      // else {
-      //   console.warn(
-      //     `Construction ${constructionCollection.path}.${qd.id} contains no script`
-      //   );
-      //   erroneousDocs.push(qd.id);
-      // }
-    });
+    const parseTasks: Array<Promise<SphericalConstruction>> = qs.docs.map(
+      async (qd: QueryDocumentSnapshot) => {
+        const remoteData = qd.data();
+        let out: SphericalConstruction | null = null;
+        // In a new format defined by Capstone group Fall 2022
+        // public constructions are simply a reference to
+        // constructions owned by a particular user
+        const constructionRef = remoteData as PublicConstructionInFirestore;
+        // publicMap.set(qd.id, constructionRef)
+        const ownedDocRef = doc(
+          appDB,
+          "users",
+          constructionRef.author,
+          "constructions",
+          constructionRef.constructionDocId
+        );
+        const ownedDoc = await getDoc(ownedDocRef);
+        return parseDocument(
+          constructionRef.constructionDocId,
+          ownedDoc.data() as ConstructionInFirestore
+        );
+        // if (out.parsedScript.length > 0) targetArr.push(out);
+        // else {
+        //   console.warn(
+        //     `Construction ${constructionCollection.path}.${qd.id} contains no script`
+        //   );
+        //   erroneousDocs.push(qd.id);
+        // }
+      }
+    );
 
-    const constructionArr: Array<SphericalConstruction> = await Promise.all(parseTasks)
-    targetArr.push(...constructionArr.filter((c: SphericalConstruction) => c.parsedScript.length > 0))
+    const constructionArr: Array<SphericalConstruction> =
+      await Promise.all(parseTasks);
+    targetArr.push(
+      ...constructionArr.filter(
+        (c: SphericalConstruction) => c.parsedScript.length > 0
+      )
+    );
     // Sort by creation date
     // targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
     //   a.dateCreated.localeCompare(b.dateCreated)
@@ -220,20 +233,27 @@ export const useConstructionStore = defineStore("construction", () => {
     // const erroneousDocs: Array<string> = [];
     const qs: QuerySnapshot = await getDocs(constructionCollection);
 
-    const parseTask: Array<Promise<SphericalConstruction>> =  qs.docs.map(async (qd: QueryDocumentSnapshot) => {
-      const remoteData = qd.data();
-      return parseDocument(qd.id, remoteData as ConstructionInFirestore);
-      // if (out.parsedScript.length > 0) targetArr.push(out);
-      // else {
-      //   console.warn(
-      //     `Construction ${constructionCollection.path}.${qd.id} contains no script`
-      //   );
-      //   erroneousDocs.push(qd.id);
-      // }
-    });
+    const parseTask: Array<Promise<SphericalConstruction>> = qs.docs.map(
+      async (qd: QueryDocumentSnapshot) => {
+        const remoteData = qd.data();
+        return parseDocument(qd.id, remoteData as ConstructionInFirestore);
+        // if (out.parsedScript.length > 0) targetArr.push(out);
+        // else {
+        //   console.warn(
+        //     `Construction ${constructionCollection.path}.${qd.id} contains no script`
+        //   );
+        //   erroneousDocs.push(qd.id);
+        // }
+      }
+    );
 
-    const constructionArray: Array<SphericalConstruction> = await Promise.all(parseTask)
-    targetArr.push(...constructionArray.filter((s:SphericalConstruction) => s.parsedScript.length > 0))
+    const constructionArray: Array<SphericalConstruction> =
+      await Promise.all(parseTask);
+    targetArr.push(
+      ...constructionArray.filter(
+        (s: SphericalConstruction) => s.parsedScript.length > 0
+      )
+    );
 
     // Sort by creation date
     // targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
@@ -289,30 +309,49 @@ export const useConstructionStore = defineStore("construction", () => {
   }
 
   async function makePrivate(docId: string): Promise<boolean> {
-    try {
-      const user = appAuth.currentUser;
-
-      if (!user) {
-        console.error("User is not logged in.");
-        return false; // User is not authenticated
-      }
-
-      const docRef = doc(appDB, "constructions", docId);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        await deleteDoc(docRef);
-        return true; // Deletion successful
-      } else {
-        // Document with given docId not found
-        return false;
-      }
-    } catch (error) {
-      console.error("Error deleting construction:", error);
-      return false; // Deletion failed
+    const pos = privateConstructions.value.findIndex(s => s.id === docId);
+    if (pos >= 0) {
+      const ownedDocRef = doc(
+        appDB,
+        "users",
+        firebaseUid.value!!,
+        "constructions",
+        docId
+      );
+      const publicDoc = privateConstructions.value[pos].publicDocId!!;
+      const publicDocRef = doc(appDB, "constructions", publicDoc);
+      await updateDoc(ownedDocRef, { publicDocId: deleteField() });
+      await deleteDoc(publicDocRef);
+      privateConstructions.value[pos].publicDocId = undefined
+      return true;
+    } else {
+      return false;
     }
   }
 
+  async function makePublic(docId: string): Promise<boolean> {
+    const pos = privateConstructions.value.findIndex(s => s.id === docId);
+    if (pos >= 0) {
+      const pubConstruction = collection(appDB, "constructions")
+      const publicDoc: PublicConstructionInFirestore = {
+        author: firebaseUid.value!!,
+        constructionDocId: docId
+      }
+      const q: DocumentReference = await addDoc(pubConstruction, publicDoc)
+      const ownedDocRef = doc(
+        appDB,
+        "users",
+        firebaseUid.value!!,
+        "constructions",
+        docId
+      );
+
+      await updateDoc(ownedDocRef, { publicDocId: q.id })
+      privateConstructions.value[pos].publicDocId = q.id
+      return true
+    } else
+    return false;
+  }
   async function updateStarredArrayInFirebase(
     arr: Array<string>
   ): Promise<void> {
@@ -361,6 +400,7 @@ export const useConstructionStore = defineStore("construction", () => {
     currentConstructionPreview,
     deleteConstruction,
     makePrivate,
+    makePublic,
     starConstruction,
     unstarConstruction
   };

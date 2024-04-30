@@ -11,10 +11,11 @@
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <v-list lines="three" @mouseleave="onListLeave">
-      <template v-for="(r, pos) in items" :key="r.id" >
+      <template v-for="(r, pos) in items" :key="r.id">
         <!-- <template>  -->
         <v-hover v-slot:default="{ isHovering, props }">
-          <v-list-item @mouseover.capture="onItemHover(r)"
+          <v-list-item
+            @mouseover.capture="onItemHover(r)"
             class="_test_constructionItem custom-list-item"
             v-bind="props">
             <template #prepend>
@@ -35,57 +36,104 @@
               scrim="#00007F">
               <!-- the class "constructionItem" is used for testing. Do not remove it -->
               <div class="constructionItem">
-                <v-btn
-                  id="_test_loadfab"
-                  class="mx-1"
-                  size="x-small"
-                  color="secondary"
-                  icon="mdi-file-document-edit"
-                  @click="handleLoadConstruction(r.id)"></v-btn>
-                <v-btn
-                  v-if="r.publicDocId"
-                  id="_test_sharefab"
-                  class="mx-1"
-                  size="x-small"
-                  color="secondary"
-                  icon="mdi-share"
-                  @click="handleShareConstruction(r.publicDocId)"></v-btn>
-                <!-- show star button only for public constructs and not mine -->
-                <v-btn
-                v-if="firebaseUid && r.author !== userEmail && !inMyStarredList(r.publicDocId)"
-                  id="_test_starConstruct"
-                  class="mx-1"
-                  size="x-small"
-                  color="yellow"
-                  icon="mdi-star"
-                  @click="handleUpdateStarred(r.publicDocId)"></v-btn>
-                <!-- show delete button only for its owner -->
-                <v-btn
-                  v-if="r.author === userEmail"
-                  id="_test_deletefab"
-                  class="mx-1"
-                  size="x-small"
-                  icon="mdi-trash-can"
-                  color="red"
-                  @click="handleDeleteConstruction(r.id)"></v-btn>
-                <v-btn
-                  v-if="r.publicDocId && r.author === userEmail"
-                  id="_test_deletefab"
-                  class="mx-1"
-                  size="x-small"
-                  icon="mdi-eye-off"
-                  color="red"
-                  @click="handleMakePrivate(r.publicDocId)"></v-btn>
-                <!-- converted to r.id instead r.publicDocId -->
-                <!-- show unstar button only for starred construction list items-->
-                <v-btn
-                  v-if="inMyStarredList(r.publicDocId)"
-                  id="_test_unstarfab"
-                  class="mx-1"
-                  size="x-small"
-                  icon="mdi-star-off"
-                  color="blue"
-                  @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
+                <v-tooltip text="Load" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      id="_test_loadfab"
+                      class="mx-1"
+                      size="x-small"
+                      color="secondary"
+                      icon="mdi-file-document-edit"
+                      @click="handleLoadConstruction(r.id)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Share" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      v-if="r.publicDocId"
+                      id="_test_sharefab"
+                      class="mx-1"
+                      size="x-small"
+                      color="secondary"
+                      icon="mdi-share"
+                      @click="handleShareConstruction(r.publicDocId)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Star" location="top">
+                  <template #activator="props">
+                    <!-- show star button only for public constructs and not mine -->
+                    <v-btn
+                      v-bind="props"
+                      v-if="
+                        firebaseUid &&
+                        r.author !== userEmail &&
+                        !inMyStarredList(r.publicDocId)
+                      "
+                      id="_test_starConstruct"
+                      class="mx-1"
+                      size="x-small"
+                      color="yellow"
+                      icon="mdi-star"
+                      @click="handleUpdateStarred(r.publicDocId)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Delete" location="top">
+                  <template #activator="{ props }">
+                    <!-- show delete button only for its owner -->
+                    <v-btn
+                      v-bind="props"
+                      v-if="r.author === userEmail"
+                      id="_test_deletefab"
+                      class="mx-1"
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      color="red"
+                      @click="handleDeleteConstruction(r.id)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Make private" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      v-if="r.publicDocId && r.author === userEmail"
+                      id="_test_make_private"
+                      class="mx-1"
+                      size="x-small"
+                      icon="mdi-lock"
+                      color="yellow"
+                      @click="handleMakePrivate(r.id)"></v-btn>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Make public" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      v-if="!r.publicDocId && r.author === userEmail"
+                      id="_test_make_public"
+                      class="mx-1"
+                      size="x-small"
+                      icon="mdi-lock-off"
+                      color="yellow"
+                      @click="handleMakePublic(r.id)"></v-btn>
+                    <!-- converted to r.id instead r.publicDocId -->
+                    <!-- show unstar button only for starred construction list items-->
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Unstar" location="top">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      v-if="inMyStarredList(r.publicDocId)"
+                      id="_test_unstarfab"
+                      class="mx-1"
+                      size="x-small"
+                      icon="mdi-star-off"
+                      color="blue"
+                      @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
+                  </template>
+                </v-tooltip>
               </div>
             </v-overlay>
             <v-list-item-title class="text-truncate">
@@ -137,7 +185,7 @@
   <v-snackbar
     v-model="showDeleteWarning"
     location="top"
-    :timeout="DELETE_DELAY">
+    :timeout="ACTION_DELAY">
     {{ t("deleteWarning") }}
     <template #actions>
       <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
@@ -147,10 +195,19 @@
   <v-snackbar
     v-model="showPrivateWarning"
     location="top"
-    :timeout="DELETE_DELAY">
+    :timeout="ACTION_DELAY">
     {{ t("privateWarning") }}
     <template #actions>
-      <v-btn @click="cancelDelete" color="warning">{{ t("undo") }}</v-btn>
+      <v-btn @click="cancelMakePrivate" color="warning">{{ t("undo") }}</v-btn>
+    </template>
+  </v-snackbar>
+  <v-snackbar
+    v-model="showPublicWarning"
+    location="top"
+    :timeout="ACTION_DELAY">
+    {{ t("publicWarning") }}
+    <template #actions>
+      <v-btn @click="cancelMakePublic" color="warning">{{ t("undo") }}</v-btn>
     </template>
   </v-snackbar>
 </template>
@@ -167,9 +224,8 @@ import { run } from "@/commands/CommandInterpreter";
 import { SENodule } from "@/models/internal";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
-import {useConstructionStore} from "@/stores/construction"
+import { useConstructionStore } from "@/stores/construction";
 import { useClipboard, usePermission } from "@vueuse/core";
-import { doc } from "firebase/firestore";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -178,14 +234,15 @@ const constructionLoadDialog: Ref<DialogAction | null> = ref(null);
 const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
-const constructionStore = useConstructionStore()
-const {starredConstructions } = storeToRefs(constructionStore)
+const constructionStore = useConstructionStore();
+const { starredConstructions } = storeToRefs(constructionStore);
 // const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 // const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
+const showPublicWarning = ref(false)
 const { constructionDocId, userEmail, firebaseUid } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
@@ -195,8 +252,8 @@ const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
 //setup for starred construction list
 let lastDocId: string | null = null;
-let deleteTimer: any;
-const DELETE_DELAY = 3000;
+let actionTimer: any;
+const ACTION_DELAY = 3000;
 
 // const userEmail = computed((): string => {
 //   return appAuth.currentUser?.email ?? "";
@@ -208,8 +265,10 @@ function previewOrDefault(dataUrl: string | undefined): string {
 
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
-  if (!docId) return false
-  return starredConstructions.value.findIndex(z => z.publicDocId === docId) >= 0
+  if (!docId) return false;
+  return (
+    starredConstructions.value.findIndex(z => z.publicDocId === docId) >= 0
+  );
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
@@ -288,7 +347,10 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
 
 async function doDeleteConstruction(docId: string) {
   if (firebaseUid.value) {
-    const deleted = await constructionStore.deleteConstruction(firebaseUid.value, docId);
+    const deleted = await constructionStore.deleteConstruction(
+      firebaseUid.value,
+      docId
+    );
     if (deleted)
       EventBus.fire("show-alert", {
         key: t("constructionDeleted", { docId }),
@@ -307,43 +369,61 @@ async function doDeleteConstruction(docId: string) {
   }
 }
 
-async function doMakePrivate(publicDocId: string) {
-  const privated = await constructionStore.makePrivate(publicDocId);
-  if (privated)
-    EventBus.fire("show-alert", {
-      key: t("constructionPrivated", { publicDocId }),
-      type: "success"
-    });
-  else
-    EventBus.fire("show-alert", {
-      key: t("constructionPrivateFailed", { publicDocId }),
-      type: "error"
-    });
-}
-
 function handleDeleteConstruction(docId: string): void {
   showDeleteWarning.value = true;
-  deleteTimer = setTimeout(() => {
+  actionTimer = setTimeout(() => {
     doDeleteConstruction(docId);
-  }, 3500);
+  }, ACTION_DELAY);
 }
 
-function handleMakePrivate(publicDocId: string | undefined): void {
-  if (!publicDocId) return;
+function handleMakePrivate(docId: string): void {
   showPrivateWarning.value = true;
-  deleteTimer = setTimeout(() => {
-    doMakePrivate(publicDocId);
-  }, 3500);
+  actionTimer = setTimeout(async () => {
+    const success = await constructionStore.makePrivate(docId);
+    if (success)
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivated", { docId }),
+        type: "success"
+      });
+    else
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivateFailed", { docId }),
+        type: "error"
+      });
+  }, ACTION_DELAY);
+}
+
+function handleMakePublic(docId: string) {
+  showPublicWarning.value = true;
+  actionTimer = setTimeout(async () => {
+    const success = await constructionStore.makePublic(docId);
+    if (success)
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivated", { docId }),
+        type: "success"
+      });
+    else
+      EventBus.fire("show-alert", {
+        key: t("constructionPrivateFailed", { docId }),
+        type: "error"
+      });
+  }, ACTION_DELAY);
+
 }
 
 function cancelDelete() {
   showDeleteWarning.value = false;
-  clearTimeout(deleteTimer);
+  clearTimeout(actionTimer);
 }
 
-function cancelPrivate() {
+function cancelMakePrivate() {
   showPrivateWarning.value = false;
-  clearTimeout(deleteTimer);
+  clearTimeout(actionTimer);
+}
+
+function cancelMakePublic() {
+  showPublicWarning.value = false;
+  clearTimeout(actionTimer);
 }
 
 function handleShareConstruction(docId: string | undefined) {
@@ -352,14 +432,15 @@ function handleShareConstruction(docId: string | undefined) {
   constructionShareDialog.value?.show();
 }
 
-async function handleUpdateStarred(publicDocId: string | undefined): Promise<void> {
-  if (publicDocId)
-    await constructionStore.starConstruction(publicDocId);
+async function handleUpdateStarred(
+  publicDocId: string | undefined
+): Promise<void> {
+  if (publicDocId) await constructionStore.starConstruction(publicDocId);
   // if (updated) {
-    // EventBus.fire("show-alert", {
-    //   key: t("updateStarSuccessful"),
-    //   type: "success"
-    // });
+  // EventBus.fire("show-alert", {
+  //   key: t("updateStarSuccessful"),
+  //   type: "success"
+  // });
   // } else {
   //   EventBus.fire("show-alert", {
   //     key: t("updateStarFailed"),
@@ -369,8 +450,7 @@ async function handleUpdateStarred(publicDocId: string | undefined): Promise<voi
 }
 
 async function handleUpdateUnstarred(docId: string | undefined): Promise<void> {
-  if (docId)
-    constructionStore.unstarConstruction(docId);
+  if (docId) constructionStore.unstarConstruction(docId);
   // if (updated) {
   //   EventBus.fire("show-alert", {
   //     key: t("updateStarSuccessful"),
@@ -450,16 +530,17 @@ function doShareConstruction() {
 {
   "deleteWarning": "You construction {docId} is about to be deleted",
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
-  "constructionDeleted": "Construction {docId} is succesfully removed",
+  "constructionDeleted": "Construction {docId} is successfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
-  "privateWarning": "Your construction {publicDocId} is about to be made private",
+  "privateWarning": "Your construction {docId} is about to be made private",
+  "publicWarning": "Your construction {docId} is about to be made public",
   "privateAttemptNoUid": "Attempt to private a construction when owner in unknown",
-  "constructionPrivated": "Construction {publicDocId} is now private",
-  "constructionPrivateFailed": "Unable to make construction {publicDocId} private",
+  "constructionPrivated": "Construction {docId} is now private",
+  "constructionPrivateFailed": "Unable to make construction {docId} private",
   "updateStarNoUid": "Attempt to unstar a construction when owner in unknown",
   "updateStarSuccessful": "Starlist has been updated",
   "updateStarFailed": "Unable to update starlist",
-  "constructionLoaded": "Construction {docId} is succesfully loaded to canvas",
+  "constructionLoaded": "Construction {docId} is successfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
   "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",
   "unsavedObjects": "Loading a new construction will delete the unsaved work",
