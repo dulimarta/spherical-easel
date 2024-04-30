@@ -7,7 +7,7 @@ import {
   ToolButtonType
 } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { DocumentSnapshot, doc, getDoc, getFirestore } from 'firebase/firestore';
 import { UserProfile } from '@/types';
 
 // Declare helper functions OUTSIDE the store definition
@@ -23,6 +23,7 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", () => {
+  const appDB = getFirestore()
   const loginEnabled = ref(false); // true when the secret key combination is detected
   const temporaryProfilePicture = ref("");
   const userDisplayedName: Ref<string | undefined> = ref(undefined);
@@ -33,7 +34,7 @@ export const useAccountStore = defineStore("acct", () => {
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
-  const userProfile: Ref<UserProfile|null> = ref(null)
+  const userStarredConstructions: Ref<string[]> = ref([])
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
   // const constructionSaved = ref(false);
@@ -77,17 +78,32 @@ export const useAccountStore = defineStore("acct", () => {
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
 
-  async function fetchUserProfile(uid: string) {
-    const db = getFirestore() //local setup for getfirestore variable
-    const userDocRef = doc(db, 'users', uid); // Use the Firestore instance here
-    const userDocSnap = await getDoc(userDocRef);
-    if (userDocSnap.exists()) {
-      userProfile.value = userDocSnap.data();
-    } else {
-      console.log("No such user profile!");
-    }
-
+  function parseUserProfile(uid: string) {
+    firebaseUid.value = uid
+    getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
+      if (ds?.exists()) {
+        const uProfile = ds.data() as UserProfile;
+        // console.debug("User Profile Details from Firestore", uProfile);
+        const { favoriteTools, displayName, profilePictureURL } = uProfile;
+        if (userDisplayedName.value === undefined)
+          userDisplayedName.value = displayName
+        if (userProfilePictureURL.value === undefined)
+          userProfilePictureURL.value = profilePictureURL
+        userStarredConstructions.value = uProfile.userStarredConstructions ?? []
+        parseAndSetFavoriteTools(favoriteTools ?? "#")
+      }
+    });
   }
+  // async function fetchUserProfile(uid: string) {
+  //   const userDocRef = doc(appDB, 'users', uid); // Use the Firestore instance here
+  //   const userDocSnap = await getDoc(userDocRef);
+  //   if (userDocSnap.exists()) {
+  //     userProfile.value = userDocSnap.data();
+  //   } else {
+  //     console.log("No such user profile!");
+  //   }
+
+  // }
 
   return {
     userRole,
@@ -104,7 +120,8 @@ export const useAccountStore = defineStore("acct", () => {
     excludeToolName,
     resetToolset,
     parseAndSetFavoriteTools,
-    userProfile,
-    fetchUserProfile
+    userStarredConstructions,
+    parseUserProfile,
+    // fetchUserProfile
   };
 });

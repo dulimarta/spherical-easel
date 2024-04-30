@@ -50,14 +50,9 @@
                   color="secondary"
                   icon="mdi-share"
                   @click="handleShareConstruction(r.publicDocId)"></v-btn>
-                <!-- show star button only for public constructs -->
+                <!-- show star button only for public constructs and not mine -->
                 <v-btn
-                  v-if="
-                    r.publicDocId &&
-                    r.author !== userEmail &&
-                    starredIDs.length > 0 &&
-                    !starredIDs.includes(r.id)
-                  "
+                v-if="firebaseUid && r.author !== userEmail && !inMyStarredList(r.publicDocId)"
                   id="_test_starConstruct"
                   class="mx-1"
                   size="x-small"
@@ -69,28 +64,28 @@
                   v-if="r.author === userEmail"
                   id="_test_deletefab"
                   class="mx-1"
-                  size="small"
-                  icon="$deleteConstruction"
+                  size="x-small"
+                  icon="mdi-trash-can"
                   color="red"
                   @click="handleDeleteConstruction(r.id)"></v-btn>
                 <v-btn
                   v-if="r.publicDocId && r.author === userEmail"
                   id="_test_deletefab"
                   class="mx-1"
-                  size="small"
+                  size="x-small"
                   icon="$privateConstruction"
                   color="red"
                   @click="handleMakePrivate(r.publicDocId)"></v-btn>
                 <!-- converted to r.id instead r.publicDocId -->
                 <!-- show unstar button only for starred construction list items-->
                 <v-btn
-                  v-if="starredIDs.includes(r.id)"
+                  v-if="inMyStarredList(r.publicDocId)"
                   id="_test_unstarfab"
                   class="mx-1"
-                  size="small"
-                  icon="$unstarConstruction"
+                  size="x-small"
+                  icon="mdi-star-off"
                   color="blue"
-                  @click="handleUpdateUnstarred(r.id)"></v-btn>
+                  @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
               </div>
             </v-overlay>
             <v-list-item-title class="text-truncate">
@@ -165,7 +160,6 @@ import { ActionMode, ConstructionScript, SphericalConstruction } from "@/types";
 import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
-import { getAuth } from "firebase/auth";
 import { computed, Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
@@ -175,6 +169,7 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import {useConstructionStore} from "@/stores/construction"
 import { useClipboard, usePermission } from "@vueuse/core";
+import { doc } from "firebase/firestore";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -184,43 +179,36 @@ const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore()
-const appAuth = getAuth();
+// const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
-const starredDocId = ref("");
+// const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
-const { constructionDocId, userProfile } = storeToRefs(acctStore);
+const { constructionDocId, userStarredConstructions, userEmail, firebaseUid } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
-const {publicConstructions} = storeToRefs(constructionStore)
 const { t } = useI18n({ useScope: "local" });
-// const { deleteConstruction } = useConstruction();
-// const { makePrivate } =  useConstruction();
-// const { starConstruction } = useConstruction();
-// const { unstarConstruction } = useConstruction();
-// const {
-//   deleteConstruction,
-//   makePrivate,
-//   starConstruction,
-//   unstarConstruction
-// } = useConstruction();
+
 const clipboardAPI = useClipboard();
 const readPermission = usePermission("clipboard-read");
 const writePermission = usePermission("clipboard-write");
 //setup for starred construction list
-const starredIDs = userProfile.value?.userStarredConstructions || [];
 let lastDocId: string | null = null;
 let deleteTimer: any;
 const DELETE_DELAY = 3000;
 
-const userEmail = computed((): string => {
-  return appAuth.currentUser?.email ?? "";
-});
+// const userEmail = computed((): string => {
+//   return appAuth.currentUser?.email ?? "";
+// });
 
 function previewOrDefault(dataUrl: string | undefined): string {
   return dataUrl ? dataUrl : "/logo.png";
 }
 
+function inMyStarredList(docId: string|undefined): boolean {
+  if (!docId) return false
+  return userStarredConstructions.value.findIndex(z => z === docId) >= 0
+}
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
 // or when the mouse moves while a new construction is being loaded
@@ -297,9 +285,8 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
 }
 
 async function doDeleteConstruction(docId: string) {
-  const uid = appAuth.currentUser?.uid;
-  if (uid) {
-    const deleted = await constructionStore.deleteConstruction(uid, docId);
+  if (firebaseUid.value) {
+    const deleted = await constructionStore.deleteConstruction(firebaseUid.value, docId);
     if (deleted)
       EventBus.fire("show-alert", {
         key: t("constructionDeleted", { docId }),
@@ -363,36 +350,36 @@ function handleShareConstruction(docId: string | undefined) {
   constructionShareDialog.value?.show();
 }
 
-//implement for unstarring construction
-async function handleUpdateStarred(docId: string | undefined): Promise<void> {
-  if (!docId) return;
-  const updated = await constructionStore.starConstruction(docId);
-  if (updated) {
-    EventBus.fire("show-alert", {
-      key: t("updateStarSuccessful"),
-      type: "success"
-    });
-  } else {
-    EventBus.fire("show-alert", {
-      key: t("updateStarFailed"),
-      type: "error"
-    });
-  }
+async function handleUpdateStarred(publicDocId: string | undefined): Promise<void> {
+  if (publicDocId)
+    await constructionStore.starConstruction(publicDocId);
+  // if (updated) {
+    // EventBus.fire("show-alert", {
+    //   key: t("updateStarSuccessful"),
+    //   type: "success"
+    // });
+  // } else {
+  //   EventBus.fire("show-alert", {
+  //     key: t("updateStarFailed"),
+  //     type: "error"
+  //   });
+  // }
 }
 
-async function handleUpdateUnstarred(docId: string): Promise<void> {
-  const updated = await constructionStore.unstarConstruction(docId);
-  if (updated) {
-    EventBus.fire("show-alert", {
-      key: t("updateStarSuccessful"),
-      type: "success"
-    });
-  } else {
-    EventBus.fire("show-alert", {
-      key: t("updateStarFailed"),
-      type: "error"
-    });
-  }
+async function handleUpdateUnstarred(docId: string | undefined): Promise<void> {
+  if (docId)
+    constructionStore.unstarConstruction(docId);
+  // if (updated) {
+  //   EventBus.fire("show-alert", {
+  //     key: t("updateStarSuccessful"),
+  //     type: "success"
+  //   });
+  // } else {
+  //   EventBus.fire("show-alert", {
+  //     key: t("updateStarFailed"),
+  //     type: "error"
+  //   });
+  // }
 }
 
 function doShareConstruction() {

@@ -8,7 +8,7 @@
               <v-col cols="auto">
                 <v-text-field
                   label="UserId/Email"
-                  v-model="userEmail"
+                  v-model="usrEmail"
                   :rules="emailRules"
                   required
                   prepend-icon="mdi-account"></v-text-field>
@@ -16,7 +16,7 @@
               <v-col cols="auto">
                 <v-text-field
                   label="Password"
-                  v-model="userPassword"
+                  v-model="usrPassword"
                   type="password"
                   :rules="passwordRules"
                   prepend-icon="mdi-lock"></v-text-field>
@@ -116,9 +116,9 @@ const appAuth = getAuth();
 const appDB = getFirestore();
 const router = useRouter();
 const acctStore = useAccountStore();
-const userEmail = ref("");
-const userPassword = ref("");
-const {userDisplayedName, userProfilePictureURL, firebaseUid } = storeToRefs(acctStore)
+const usrEmail = ref("");
+const usrPassword = ref("");
+const {userDisplayedName, userProfilePictureURL, firebaseUid, userEmail } = storeToRefs(acctStore)
 const emailRules = [
   (s: string | undefined): boolean | string => {
     if (!s) return false;
@@ -144,7 +144,8 @@ const isValidEmail = computed((): boolean => {
 });
 
 function doSignup(): void {
-  createUserWithEmailAndPassword(appAuth, userEmail.value, userPassword.value)
+  userEmail.value = usrEmail.value
+  createUserWithEmailAndPassword(appAuth, usrEmail.value, usrPassword.value)
     .then((cred: UserCredential) => {
       sendEmailVerification(cred.user);
       EventBus.fire("show-alert", {
@@ -162,27 +163,15 @@ function doSignup(): void {
     });
 }
 
-function parseUserProfile(uid: string) {
-  getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
-    if (ds?.exists()) {
-      const uProfile = ds.data() as UserProfile;
-      console.debug("User Profile Details from Firestore", uProfile);
-      const { favoriteTools, displayName, profilePictureURL } = uProfile;
-      if (userDisplayedName.value === undefined)
-        acctStore.userDisplayedName = displayName
-      if (userProfilePictureURL.value === undefined)
-        acctStore.userProfilePictureURL = profilePictureURL
-      acctStore.parseAndSetFavoriteTools(favoriteTools ?? "#")
-    }
-  });
-}
+
 
 function doSignIn(): void {
-  signInWithEmailAndPassword(appAuth, userEmail.value, userPassword.value)
+  userEmail.value = usrEmail.value
+  signInWithEmailAndPassword(appAuth, usrEmail.value, usrPassword.value)
     .then((cred: UserCredential) => {
       if (cred.user?.emailVerified) {
-        parseUserProfile(cred.user.uid);
-        firebaseUid.value = cred.user.uid
+        acctStore.parseUserProfile(cred.user.uid);
+        // firebaseUid.value = cred.user.uid
         router.replace({
           path: "/"
         });
@@ -205,7 +194,7 @@ function doSignIn(): void {
 
 function doReset(): void {
   console.debug("Sending password reset email to", userEmail.value);
-  sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
+  sendPasswordResetEmail(appAuth, usrEmail.value).then(() => {
     EventBus.fire("show-alert", {
       key: "account.passwordReset",
       keyOptions: { emailAddr: userEmail.value },
@@ -220,8 +209,9 @@ function doGoogleLogin(): void {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   signInWithPopup(appAuth, provider)
     .then((cred: UserCredential) => {
-      parseUserProfile(cred.user.uid);
-      firebaseUid.value = cred.user.uid
+      acctStore.parseUserProfile(cred.user.uid);
+      userEmail.value = cred.user.email ?? "<unknown-email"
+      // firebaseUid.value = cred.user.uid
       router.replace({
         path: "/"
       });

@@ -187,7 +187,8 @@ const {
   userDisplayedName,
   userEmail,
   constructionDocId,
-  includedTools
+  includedTools,
+  firebaseUid
 } = storeToRefs(acctStore);
 const {
   hasObjects,
@@ -325,9 +326,10 @@ onBeforeUnmount(() => {
 async function doLoginOrLogout() {
   if (appAuth.currentUser !== null) {
     await appAuth.signOut();
-    userEmail.value = undefined;
+    // userEmail.value = undefined;
     userProfilePictureURL.value = undefined;
     userDisplayedName.value = undefined;
+    firebaseUid.value = undefined
   } else {
     router.replace({ path: "/account" });
   }

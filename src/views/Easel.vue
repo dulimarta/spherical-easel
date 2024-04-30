@@ -271,12 +271,12 @@ onBeforeMount(() => {
 
 const showConstructionPreview = (s: SphericalConstruction | null) => {
   if (s !== null) {
-    console.debug(
-      "Previewing construction",
-      s.id,
-      " preview image ",
-      s.preview
-    );
+    // console.debug(
+    //   "Previewing construction",
+    //   s.id,
+    //   " preview image ",
+    //   s.preview
+    // );
     if (svgDataImage.value === "") previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
     svgDataImageAspectRatio.value = s.aspectRatio ?? 1;

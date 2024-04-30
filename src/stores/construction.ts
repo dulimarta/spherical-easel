@@ -34,19 +34,17 @@ import {
 import axios, { AxiosResponse } from "axios";
 import { Matrix4 } from "three";
 import EventBus from "@/eventHandlers/EventBus";
-// import { storeToRefs } from "pinia";
-// import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
+import { useAccountStore } from "@/stores/account";
 import { computed } from "vue";
+import { watch } from "vue";
 // import { ComputedRef } from "vue";
-// import { useAccountStore } from "@/stor  es/account";
-// import { storeToRefs } from "pinia";
-// const acctStore = useAccountStore();
 // const userEmail = computed((): string => {
 //   return appAuth.currentUser?.email ?? "";
 // });
-let appAuth: Auth
-let appStorage: FirebaseStorage
-let appDB: Firestore
+let appAuth: Auth;
+let appStorage: FirebaseStorage;
+let appDB: Firestore;
 let snapShotUnsubscribe: Unsubscribe | null = null;
 // Private constructions is set to null when no authenticated user is active
 
@@ -120,57 +118,6 @@ async function parseDocument(
   } as SphericalConstruction);
 }
 
-function parseCollection(
-  constructionCollection: CollectionReference,
-  targetArr: Array<SphericalConstruction>
-): void {
-  targetArr.splice(0);
-
-  const erroneousDocs: Array<string> = [];
-  getDocs(constructionCollection)
-    .then((qs: QuerySnapshot) => {
-      qs.forEach(async (qd: QueryDocumentSnapshot) => {
-        const remoteData = qd.data();
-        let out: SphericalConstruction | null = null;
-        // In a new format defined by Capstone group Fall 2022
-        // public constructions are simply a reference to
-        // constructions owned by a particular user
-        const constructionRef = remoteData as PublicConstructionInFirestore;
-        const ownedDocRef = doc(
-          appDB,
-          "users",
-          constructionRef.author,
-          "constructions",
-          constructionRef.constructionDocId
-        );
-        const ownedDoc = await getDoc(ownedDocRef);
-        out = await parseDocument(
-          constructionRef.constructionDocId,
-          ownedDoc.data() as ConstructionInFirestore
-        );
-        if (out.parsedScript.length > 0) targetArr.push(out);
-        else {
-          console.warn(
-            `Construction ${constructionCollection.path}.${qd.id} contains no script`
-          );
-          erroneousDocs.push(qd.id);
-        }
-      });
-    })
-    .finally(() => {
-      // Sort by creation date
-      targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
-        a.dateCreated.localeCompare(b.dateCreated)
-      );
-      if (erroneousDocs.length > 0) {
-        EventBus.fire("show-alert", {
-          key: "Missing scripts in documents: " + erroneousDocs.join(","),
-          type: "error"
-        });
-      }
-    });
-}
-
 // async function updateStarred(constructionId: string): Promise<boolean> {
 //   if (!appAuth.currentUser || !appAuth.currentUser.uid) {
 //     throw new Error("User is not authenticated or UID is missing");
@@ -223,144 +170,139 @@ function parseCollection(
 //   }
 // }
 
-// Function to star a construction
-
-// Function to unstar a construction
-
-function useConstruction() {
-  onMounted(() => {
-
-    appAuth.onAuthStateChanged((u: User | null) => {
-      // Unregister previous snapshot listener (if exists)
-      if (snapShotUnsubscribe !== null) snapShotUnsubscribe();
-      // if (u !== null) {
-      //   const privateColl = collection(appDB, "users", u.uid, "constructions");
-      //   if (privateConstructions.value === null)
-      //     privateConstructions.value = []; // Create a new empty array
-      //   snapShotUnsubscribe = onSnapshot(
-      //     privateColl,
-      //     (snapshot: QuerySnapshot) => {
-      //       snapshot.docChanges().forEach(async (chg: DocumentChange) => {
-      //         const aDoc = chg.doc.data() as ConstructionInFirestore;
-      //         switch (chg.type) {
-      //           case "added":
-      //             const sph = await parseDocument(chg.doc.id, aDoc);
-      //             privateConstructions.value?.push(sph);
-      //             break;
-      //           case "removed":
-      //             if (privateConstructions.value) {
-      //               const pos = privateConstructions.value?.findIndex(
-      //                 (c: SphericalConstruction) => c.id === chg.doc.id
-      //               );
-      //               if (pos >= 0) privateConstructions.value?.splice(pos, 1);
-      //             }
-      //             break;
-      //           case "modified":
-      //             if (privateConstructions.value) {
-      //               const pos = privateConstructions.value?.findIndex(
-      //                 (c: SphericalConstruction) => c.id === chg.doc.id
-      //               );
-      //               const sph = await parseDocument(chg.doc.id, aDoc);
-      //               if (pos >= 0)
-      //                 privateConstructions.value?.splice(pos, 1, sph);
-      //             }
-      //             break;
-      //         }
-      //       });
-      //     }
-      //   );
-      // } else {
-      //   privateConstructions.value = null;
-      // }
-    });
-    // TODO: finish public construction listener
-    /**
-    const publicSnapshot = onSnapshot(
-      publicColl,
-      (snapshot: QuerySnapshot) => {
-        snapshot.docChanges().forEach(async (chg: DocumentChange) => {
-          const aDoc = chg.doc.data() as ConstructionInFirestore;
-          switch (chg.type) {
-            case "added":
-              const sph = await parseDocument(chg.doc.id, aDoc);
-              publicConstructions.value?.push(sph);
-              break;
-            case "removed":
-              if (publicConstructions.value) {
-                const pos = publicConstructions.value?.findIndex(
-                  (c: SphericalConstruction) => c.id === aDoc.publicDocId
-                );
-                if (pos >= 0) publicConstructions.value?.splice(pos, 1);
-              }
-              break;
-            case "modified":
-              if (publicConstructions.value) {
-                const pos = publicConstructions.value?.findIndex(
-                  (c: SphericalConstruction) => c.id === chg.doc.id
-                );
-                const sph = await parseDocument(chg.doc.id, aDoc);
-                if (pos >= 0)
-                  publicConstructions.value?.splice(pos, 1, sph);
-              }
-              break;
-          }
-        });
-      }
-    );
-     */
-  });
-  // const acctStore = useAccountStore();
-  // const { constructionDocId } = storeToRefs(acctStore);
-  // const currentConstructionPreview: ComputedRef<string | null> = computed(
-  //   () => {
-  //     let pos = -1;
-  //     if (privateConstructions.value !== null) {
-  //       pos = privateConstructions.value.findIndex(
-  //         (sc: SphericalConstruction) => sc.id === constructionDocId.value
-  //       );
-  //       if (pos >= 0) {
-  //         return privateConstructions.value[pos].preview;
-  //       }
-  //     }
-  //     if (publicConstructions.value !== null) {
-  //       pos = publicConstructions.value.findIndex(
-  //         (sc: SphericalConstruction) => sc.id === constructionDocId.value
-  //       );
-  //       if (pos >= 0) {
-  //         return publicConstructions.value[pos].preview;
-  //       }
-  //     }
-  //     return null;
-  //   }
-  // );
-  return {
-    // publicConstructions,
-    // privateConstructions,
-    // starredConstructions,
-    // deleteConstruction,
-    // starConstruction,
-    // unstarConstruction,
-    // makePrivate,
-    // currentConstructionPreview,
-    isPublicConstruction
-  };
-}
-
 export const useConstructionStore = defineStore("construction", () => {
   const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
+
   const privateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   // Public constructions is never null
   const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
-const currentConstructionPreview: Ref<string|null> = ref(null)
+  const currentConstructionPreview: Ref<string | null> = ref(null);
+  const acctStore = useAccountStore();
+  const { firebaseUid, userStarredConstructions, userEmail } =
+    storeToRefs(acctStore);
+  // Use publicMap for lookup only
+  // const publicMap: Map<string,PublicConstructionInFirestore> = new Map()
+
+  watch(firebaseUid, (uid: string | undefined) => {
+    if (uid) {
+      const privateColl = collection(appDB, "users", uid, "constructions");
+      parsePrivateCollection(privateColl, privateConstructions.value);
+      // Hide my own public constructions from the public array
+      const others = publicConstructions.value.filter(
+        z => z.author !== userEmail.value
+      );
+      publicConstructions.value.splice(0);
+      publicConstructions.value.push(...others);
+    } else {
+      const myPublic = privateConstructions.value.filter(
+        z => z.author === userEmail.value
+      );
+      privateConstructions.value.splice(0);
+      publicConstructions.value.push(...myPublic);
+    }
+  });
+
+  function parsePublicCollection(
+    constructionCollection: CollectionReference,
+    targetArr: Array<SphericalConstruction>
+  ): void {
+    targetArr.splice(0);
+
+    const erroneousDocs: Array<string> = [];
+    getDocs(constructionCollection)
+      .then((qs: QuerySnapshot) => {
+        qs.forEach(async (qd: QueryDocumentSnapshot) => {
+          const remoteData = qd.data();
+          let out: SphericalConstruction | null = null;
+          // In a new format defined by Capstone group Fall 2022
+          // public constructions are simply a reference to
+          // constructions owned by a particular user
+          const constructionRef = remoteData as PublicConstructionInFirestore;
+          // publicMap.set(qd.id, constructionRef)
+          const ownedDocRef = doc(
+            appDB,
+            "users",
+            constructionRef.author,
+            "constructions",
+            constructionRef.constructionDocId
+          );
+          const ownedDoc = await getDoc(ownedDocRef);
+          out = await parseDocument(
+            constructionRef.constructionDocId,
+            ownedDoc.data() as ConstructionInFirestore
+          );
+          if (out.parsedScript.length > 0) targetArr.push(out);
+          else {
+            console.warn(
+              `Construction ${constructionCollection.path}.${qd.id} contains no script`
+            );
+            erroneousDocs.push(qd.id);
+          }
+        });
+      })
+      .finally(() => {
+        // Sort by creation date
+        targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
+          a.dateCreated.localeCompare(b.dateCreated)
+        );
+        if (erroneousDocs.length > 0) {
+          EventBus.fire("show-alert", {
+            key: "Missing scripts in documents: " + erroneousDocs.join(","),
+            type: "error"
+          });
+        }
+      });
+  }
+
+  function parsePrivateCollection(
+    constructionCollection: CollectionReference,
+    targetArr: Array<SphericalConstruction>
+  ): void {
+    targetArr.splice(0);
+
+    const erroneousDocs: Array<string> = [];
+    getDocs(constructionCollection)
+      .then((qs: QuerySnapshot) => {
+        qs.forEach(async (qd: QueryDocumentSnapshot) => {
+          const remoteData = qd.data();
+          let out: SphericalConstruction | null = null;
+          out = await parseDocument(
+            qd.id,
+            remoteData as ConstructionInFirestore
+          );
+          if (out.parsedScript.length > 0) targetArr.push(out);
+          else {
+            console.warn(
+              `Construction ${constructionCollection.path}.${qd.id} contains no script`
+            );
+            erroneousDocs.push(qd.id);
+          }
+        });
+      })
+      .finally(() => {
+        // Sort by creation date
+        targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
+          a.dateCreated.localeCompare(b.dateCreated)
+        );
+        if (erroneousDocs.length > 0) {
+          EventBus.fire("show-alert", {
+            key: "Missing scripts in documents: " + erroneousDocs.join(","),
+            type: "error"
+          });
+        }
+      });
+  }
+
   function initialize() {
     appAuth = getAuth();
     appDB = getFirestore();
     appStorage = getStorage();
 
     const publicColl = collection(appDB, "constructions");
-    parseCollection(publicColl, publicConstructions.value);
-    console.debug(`Public constructions ${publicConstructions.value.length}`)
+    parsePublicCollection(publicColl, publicConstructions.value);
+    console.debug(`Public constructions ${publicConstructions.value.length}`);
   }
+
   async function deleteConstruction(
     uid: string,
     docId: string
@@ -414,102 +356,33 @@ const currentConstructionPreview: Ref<string|null> = ref(null)
     }
   }
 
-  async function starConstruction(constructionId: string): Promise<boolean> {
-    if (!appAuth.currentUser || !appAuth.currentUser.uid) {
-      throw new Error("User is not authenticated or UID is missing");
-    }
+  // Move a public construction to the starred list
+  function starConstruction(pubConstructionId: string) {
+    const pos = publicConstructions.value.findIndex(
+      (z: SphericalConstruction) => z.publicDocId == pubConstructionId
+    );
+    if (pos >= 0) {
+      const inPublic = publicConstructions.value.splice(pos, 1);
 
-    const uid = appAuth.currentUser.uid;
-
-    try {
-      const userDocRef = doc(appDB, "users", uid); // User's document
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        let userStarredConstructions: Array<string> =
-          userData.userStarredConstructions
-            ? userData.userStarredConstructions
-            : [];
-
-        // Fetch the construction document
-        const constructionDocRef = doc(appDB, "constructions", constructionId);
-        const constructionDocSnap = await getDoc(constructionDocRef);
-
-        if (constructionDocSnap.exists()) {
-          const constructionData = constructionDocSnap.data();
-          const constructionDocId = constructionData.constructionDocId;
-
-          if (!userStarredConstructions.includes(constructionDocId)) {
-            // Add constructionDocId to the list of starred constructions
-            userStarredConstructions.push(constructionDocId);
-
-            // Update the userStarredConstructions in Firestore
-            await updateDoc(userDocRef, {
-              userStarredConstructions: userStarredConstructions
-            });
-
-            return true; // Return true for successful update
-          } else {
-            console.log("Construction is already starred.");
-            return false; // Return false if construction is already starred
-          }
-        } else {
-          console.log("Construction document does not exist.");
-          return false; // Return false if construction document does not exist
-        }
-      } else {
-        console.log("User document does not exist.");
-        return false; // Return false if user document does not exist
-      }
-    } catch (error) {
-      console.error("Error starring construction:", error);
-      return false; // Return false for any errors
+      starredConstructions.value.push(...inPublic);
+      userStarredConstructions.value.push(pubConstructionId);
     }
   }
 
-  async function unstarConstruction(
-    constructionDocId: string
-  ): Promise<boolean> {
-    if (!appAuth.currentUser || !appAuth.currentUser.uid) {
-      throw new Error("User is not authenticated or UID is missing");
+  function unstarConstruction(pubConstructionId: string) {
+    const pos = starredConstructions.value.findIndex(
+      (z: SphericalConstruction) => z.publicDocId == pubConstructionId
+    );
+    if (pos >= 0) {
+      const inStarred = starredConstructions.value.splice(pos, 1);
+
+      publicConstructions.value.push(...inStarred);
     }
-
-    const uid = appAuth.currentUser.uid;
-
-    try {
-      const userDocRef = doc(appDB, "users", uid); // User's document
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        let userStarredConstructions: Array<string> =
-          userData.userStarredConstructions
-            ? userData.userStarredConstructions
-            : [];
-
-        const index = userStarredConstructions.indexOf(constructionDocId);
-        if (index !== -1) {
-          // If construction is starred, unstar it
-          userStarredConstructions.splice(index, 1);
-
-          // Update the userStarredConstructions in Firestore
-          await updateDoc(userDocRef, {
-            userStarredConstructions: userStarredConstructions
-          });
-
-          return true; // Return true for successful update
-        } else {
-          console.log("Construction is not starred.");
-          return false; // Return false if construction is not starred
-        }
-      } else {
-        console.log("User document does not exist.");
-        return false; // Return false if user document does not exist
-      }
-    } catch (error) {
-      console.error("Error unstarring construction:", error);
-      return false; // Return false for any errors
+    const pos2 = userStarredConstructions.value.findIndex(
+      x => x === pubConstructionId
+    );
+    if (pos2 >= 0) {
+      userStarredConstructions.value.splice(pos2, 1);
     }
   }
 
