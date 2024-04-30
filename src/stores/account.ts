@@ -7,8 +7,14 @@ import {
   ToolButtonType
 } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
-import { DocumentSnapshot, doc, getDoc, getFirestore } from 'firebase/firestore';
-import { UserProfile } from '@/types';
+import {
+  DocumentSnapshot,
+  doc,
+  getDoc,
+  getFirestore
+} from "firebase/firestore";
+import { UserProfile } from "@/types";
+import { User, getAuth } from "firebase/auth";
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -23,7 +29,8 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
 // defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", () => {
-  const appDB = getFirestore()
+  const appDB = getFirestore();
+  const appAuth = getAuth();
   const loginEnabled = ref(false); // true when the secret key combination is detected
   const temporaryProfilePicture = ref("");
   const userDisplayedName: Ref<string | undefined> = ref(undefined);
@@ -34,12 +41,23 @@ export const useAccountStore = defineStore("acct", () => {
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
-  const userStarredConstructions: Ref<string[]> = ref([])
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
   // const constructionSaved = ref(false);
   // const hasUnsavedWork = computed((): boolean => false);
 
+  appAuth.onAuthStateChanged(async (u: User | null) => {
+    if (u) {
+      firebaseUid.value = u.uid;
+      loginEnabled.value = true;
+      await parseUserProfile(u.uid);
+      if (u.email && !userEmail.value) userEmail.value = u.email;
+      if (u.displayName && !userDisplayedName.value)
+        userDisplayedName.value = u.displayName;
+    } else {
+      firebaseUid.value = undefined;
+    }
+  });
   function resetToolset(includeAll = true): void {
     includedTools.value.splice(0);
     excludedTools.value.splice(0);
@@ -78,22 +96,36 @@ export const useAccountStore = defineStore("acct", () => {
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
 
-  function parseUserProfile(uid: string) {
-    firebaseUid.value = uid
-    getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
+  async function parseUserProfile(uid: string): Promise<void> {
+    firebaseUid.value = uid;
+    await getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         const uProfile = ds.data() as UserProfile;
         // console.debug("User Profile Details from Firestore", uProfile);
-        const { favoriteTools, displayName, profilePictureURL } = uProfile;
+        const { favoriteTools, displayName, profilePictureURL, role } =
+          uProfile;
         if (userDisplayedName.value === undefined)
-          userDisplayedName.value = displayName
+          userDisplayedName.value = displayName;
         if (userProfilePictureURL.value === undefined)
-          userProfilePictureURL.value = profilePictureURL
-        userStarredConstructions.value = uProfile.userStarredConstructions ?? []
-        parseAndSetFavoriteTools(favoriteTools ?? "#")
+          userProfilePictureURL.value = profilePictureURL;
+        if (role) userRole.value = role.toLowerCase();
+        parseAndSetFavoriteTools(favoriteTools ?? "#");
       }
     });
   }
+
+  async function fetchStarredConstructions(uid: string): Promise<string[]> {
+    const ds: DocumentSnapshot = await getDoc(doc(appDB, "users", uid));
+    if (ds?.exists()) {
+      const uProfile = ds.data() as UserProfile;
+      // console.debug("User Profile Details from Firestore", uProfile);
+      const { userStarredConstructions } = uProfile;
+      return userStarredConstructions ?? [];
+    } else {
+      return []
+    }
+  }
+
   // async function fetchUserProfile(uid: string) {
   //   const userDocRef = doc(appDB, 'users', uid); // Use the Firestore instance here
   //   const userDocSnap = await getDoc(userDocRef);
@@ -120,8 +152,8 @@ export const useAccountStore = defineStore("acct", () => {
     excludeToolName,
     resetToolset,
     parseAndSetFavoriteTools,
-    userStarredConstructions,
     parseUserProfile,
+    fetchStarredConstructions
     // fetchUserProfile
   };
 });

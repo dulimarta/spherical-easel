@@ -73,7 +73,7 @@
                   id="_test_deletefab"
                   class="mx-1"
                   size="x-small"
-                  icon="$privateConstruction"
+                  icon="mdi-eye-off"
                   color="red"
                   @click="handleMakePrivate(r.publicDocId)"></v-btn>
                 <!-- converted to r.id instead r.publicDocId -->
@@ -179,13 +179,14 @@ const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore()
+const {starredConstructions } = storeToRefs(constructionStore)
 // const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 // const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
-const { constructionDocId, userStarredConstructions, userEmail, firebaseUid } = storeToRefs(acctStore);
+const { constructionDocId, userEmail, firebaseUid } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -205,9 +206,10 @@ function previewOrDefault(dataUrl: string | undefined): string {
   return dataUrl ? dataUrl : "/logo.png";
 }
 
-function inMyStarredList(docId: string|undefined): boolean {
+function inMyStarredList(docId: string | undefined): boolean {
+  // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false
-  return userStarredConstructions.value.findIndex(z => z === docId) >= 0
+  return starredConstructions.value.findIndex(z => z.publicDocId === docId) >= 0
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast

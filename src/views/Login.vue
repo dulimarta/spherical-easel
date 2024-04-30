@@ -113,12 +113,11 @@ import { UserProfile } from "@/types";
 import { storeToRefs } from "pinia";
 
 const appAuth = getAuth();
-const appDB = getFirestore();
 const router = useRouter();
 const acctStore = useAccountStore();
 const usrEmail = ref("");
 const usrPassword = ref("");
-const {userDisplayedName, userProfilePictureURL, firebaseUid, userEmail } = storeToRefs(acctStore)
+const {userEmail } = storeToRefs(acctStore)
 const emailRules = [
   (s: string | undefined): boolean | string => {
     if (!s) return false;
@@ -171,7 +170,6 @@ function doSignIn(): void {
     .then((cred: UserCredential) => {
       if (cred.user?.emailVerified) {
         acctStore.parseUserProfile(cred.user.uid);
-        // firebaseUid.value = cred.user.uid
         router.replace({
           path: "/"
         });
@@ -210,8 +208,7 @@ function doGoogleLogin(): void {
   signInWithPopup(appAuth, provider)
     .then((cred: UserCredential) => {
       acctStore.parseUserProfile(cred.user.uid);
-      userEmail.value = cred.user.email ?? "<unknown-email"
-      // firebaseUid.value = cred.user.uid
+      userEmail.value = cred.user.email ?? "<unknown-email>"
       router.replace({
         path: "/"
       });

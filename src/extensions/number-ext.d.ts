@@ -12,11 +12,3 @@ interface Number {
   modTwoPi(): number; // Compute the number modulo 2*Pi
   modPi(): number; // Compute the number modulo Pi
 }
-
-interface Array<T> {
-  // Rotate n elements of an array
-  rotate(n: number): Array<T>;
-
-  // Remove the current elements
-  clear(): void;
-}

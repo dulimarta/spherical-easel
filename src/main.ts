@@ -1,5 +1,6 @@
 // <reference path="@/extensions/three-ext.d.ts" />
 // <reference path="@/extensions/number-ext.d.ts" />
+// <reference path="@/extensions/array-ext.d.ts" />
 // <reference path="@/types/two.js/index.d.ts" />
 import { createApp } from "vue";
 import App from "./App.vue";

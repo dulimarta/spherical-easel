@@ -287,33 +287,33 @@ onMounted(() => {
   // set yet
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 
-  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    if (u !== null) {
+  // authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
+    // if (u !== null) {
       // showExport.value = true;
-      acctStore.userEmail = u.email ?? t("unknownEmail");
-      acctStore.userProfilePictureURL = u.photoURL ?? undefined;
+      // acctStore.userEmail = u.email ?? t("unknownEmail");
+      // acctStore.userProfilePictureURL = u.photoURL ?? undefined;
       // uid.value = u.uid;
-      console.debug("User details", u);
-      const userDoc = doc(appDB, "users", u.uid);
-      getDoc(userDoc).then((ds: DocumentSnapshot) => {
-        if (ds.exists()) {
+      // console.debug("User details", u);
+      // const userDoc = doc(appDB, "users", u.uid);
+      // getDoc(userDoc).then((ds: DocumentSnapshot) => {
+        // if (ds.exists()) {
           // accountEnabled.value = true;
-          console.debug("User data", ds.data());
-          const { profilePictureURL, role } = ds.data() as any;
-          if (profilePictureURL && userProfilePictureURL.value === undefined) {
-            acctStore.userProfilePictureURL = profilePictureURL;
-          }
-          if (role) {
-            acctStore.userRole = role.toLowerCase();
-          }
-        }
-      });
-      acctStore.loginEnabled = true;
-    } else {
-      acctStore.userEmail = undefined;
-      acctStore.userProfilePictureURL = undefined;
-    }
-  });
+          // console.debug("User data", ds.data());
+          // const { profilePictureURL, role } = ds.data() as any;
+          // if (profilePictureURL && userProfilePictureURL.value === undefined) {
+          //   acctStore.userProfilePictureURL = profilePictureURL;
+          // }
+          // if (role) {
+          //   acctStore.userRole = role.toLowerCase();
+          // }
+        // }
+      // });
+      // acctStore.loginEnabled = true;
+    // } else {
+      // acctStore.userEmail = undefined;
+      // acctStore.userProfilePictureURL = undefined;
+    // }
+  // });
 });
 
 onBeforeUnmount(() => {
