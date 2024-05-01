@@ -209,7 +209,7 @@ export default class ApplyTransformationHandler extends Highlighter {
 
             return;
           }
-          // this point has not been transformed with this transformation, it will land in a different place, and the landing place is not currently occupied by another poing
+          // this point has not been transformed with this transformation, it will land in a different place, and the landing place is not currently occupied by another point
           const transformedPointCommandGroup = new CommandGroup();
           this.addTransformedPointCommands(
             transformedPointCommandGroup,
