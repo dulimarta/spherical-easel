@@ -283,29 +283,24 @@ export const useConstructionStore = defineStore("construction", () => {
     uid: string,
     docId: string
   ): Promise<boolean> {
-    // if (privateConstructions.value === null) return Promise.resolve(false);
-    // const pos = privateConstructions.value.findIndex(
-    //   (c: SphericalConstruction) => c.id === docId
-    // );
-    // if (pos < 0) return Promise.resolve(false);
-    // try {
-    //   const victimDetails = privateConstructions.value[pos];
-    //   // Delete script and preview if they are stored
-    //   // on the Firebase Storage
-    //   if (victimDetails.publicDocId) {
-    //     await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
-    //   }
-    //   if (victimDetails.script.startsWith("https://")) {
-    //     await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
-    //   }
-    //   if (victimDetails.preview.startsWith("https://"))
-    //     await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
-    //   await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
-    //   return Promise.resolve(true);
-    // } catch (err: any) {
-    //   return Promise.resolve(false);
-    // }
-    return Promise.resolve(false);
+    const pos = privateConstructions.value.findIndex(
+      (c: SphericalConstruction) => c.id === docId
+    );
+    if (pos < 0) return false;
+    const victimDetails = privateConstructions.value[pos];
+    // Delete script and preview if they are stored
+    // on the Firebase Storage
+    if (victimDetails.publicDocId) {
+      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+    }
+    if (victimDetails.script.startsWith("https://")) {
+      await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
+    }
+    if (victimDetails.preview.startsWith("https://"))
+      await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
+    await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
+    privateConstructions.value.splice(pos, 1)
+    return true;
   }
 
   async function makePrivate(docId: string): Promise<boolean> {
@@ -322,7 +317,7 @@ export const useConstructionStore = defineStore("construction", () => {
       const publicDocRef = doc(appDB, "constructions", publicDoc);
       await updateDoc(ownedDocRef, { publicDocId: deleteField() });
       await deleteDoc(publicDocRef);
-      privateConstructions.value[pos].publicDocId = undefined
+      privateConstructions.value[pos].publicDocId = undefined;
       return true;
     } else {
       return false;
@@ -332,12 +327,12 @@ export const useConstructionStore = defineStore("construction", () => {
   async function makePublic(docId: string): Promise<boolean> {
     const pos = privateConstructions.value.findIndex(s => s.id === docId);
     if (pos >= 0) {
-      const pubConstruction = collection(appDB, "constructions")
+      const pubConstruction = collection(appDB, "constructions");
       const publicDoc: PublicConstructionInFirestore = {
         author: firebaseUid.value!!,
         constructionDocId: docId
-      }
-      const q: DocumentReference = await addDoc(pubConstruction, publicDoc)
+      };
+      const q: DocumentReference = await addDoc(pubConstruction, publicDoc);
       const ownedDocRef = doc(
         appDB,
         "users",
@@ -346,11 +341,10 @@ export const useConstructionStore = defineStore("construction", () => {
         docId
       );
 
-      await updateDoc(ownedDocRef, { publicDocId: q.id })
-      privateConstructions.value[pos].publicDocId = q.id
-      return true
-    } else
-    return false;
+      await updateDoc(ownedDocRef, { publicDocId: q.id });
+      privateConstructions.value[pos].publicDocId = q.id;
+      return true;
+    } else return false;
   }
   async function updateStarredArrayInFirebase(
     arr: Array<string>

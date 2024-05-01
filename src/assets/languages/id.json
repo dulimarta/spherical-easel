@@ -1,11 +1,4 @@
 {
-  "account": {
-    "createError": "Pembuatan akun baru tidak berhasil: {error}",
-    "emailNotVerified": "Akun anda belum diverifikasi. Periksalah email anda",
-    "emailVerification": "Email untuk verifikasi akun telah dikirim ke {emailAddr}",
-    "loginError": "Login tidak berhasil: {error}",
-    "passwordReset": "Periksalah email and ({emailAddr}) untuk mereset password"
-  },
   "buttons": {
     "CreateAngleDisplayedName": "Sudut",
     "CreateAngleToolTipMessage": "Hitung Sudut",

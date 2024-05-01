@@ -14,7 +14,7 @@ import {
   getFirestore
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
-import { User, getAuth } from "firebase/auth";
+import { GoogleAuthProvider, User, UserCredential, createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -126,16 +126,51 @@ export const useAccountStore = defineStore("acct", () => {
     }
   }
 
-  // async function fetchUserProfile(uid: string) {
-  //   const userDocRef = doc(appDB, 'users', uid); // Use the Firestore instance here
-  //   const userDocSnap = await getDoc(userDocRef);
-  //   if (userDocSnap.exists()) {
-  //     userProfile.value = userDocSnap.data();
-  //   } else {
-  //     console.log("No such user profile!");
-  //   }
+  async function signIn(email: string, password: string): Promise<boolean | string> {
+    try {
+      const credential: UserCredential = await signInWithEmailAndPassword(appAuth, email, password)
+      if (credential.user?.emailVerified) {
+        parseUserProfile(credential.user.uid)
+        userEmail.value = email
+        return true
+      } else {
+        return false
+      }
+    } catch (error: any) {
+      return error as string
+    }
+  }
 
-  // }
+  async function signUp(email: string, password: string): Promise<boolean | string> {
+    try {
+      const credential: UserCredential = await createUserWithEmailAndPassword(appAuth, email, password)
+      sendEmailVerification(credential.user)
+      userEmail.value = email
+      return true
+    } catch (error: any) {
+      return error
+    }
+  }
+
+  async function passwordReset(email: string) {
+    await sendPasswordResetEmail(appAuth, email)
+  }
+
+  async function googleLogin(): Promise<string|null> {
+    const provider = new GoogleAuthProvider();
+    // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    try {
+      const cred = await signInWithPopup(appAuth, provider)
+      parseUserProfile(cred.user.uid)
+      userEmail.value = cred.user.email!!
+      return null
+    }
+    catch (error: any) {
+      return error
+    }
+
+  }
 
   return {
     userRole,
@@ -153,7 +188,8 @@ export const useAccountStore = defineStore("acct", () => {
     resetToolset,
     parseAndSetFavoriteTools,
     parseUserProfile,
-    fetchStarredConstructions
-    // fetchUserProfile
+    fetchStarredConstructions,
+    signIn,
+    signUp, passwordReset, googleLogin
   };
 });

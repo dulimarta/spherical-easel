@@ -217,7 +217,7 @@ import { ActionMode, ConstructionScript, SphericalConstruction } from "@/types";
 import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
-import { computed, Ref, ref } from "vue";
+import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
 import { run } from "@/commands/CommandInterpreter";
@@ -236,28 +236,22 @@ const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore();
 const { starredConstructions } = storeToRefs(constructionStore);
-// const appAuth = getAuth();
 const selectedDocId = ref("");
 const sharedDocId = ref("");
-// const starredDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
-const showPublicWarning = ref(false)
+const showPublicWarning = ref(false);
 const { constructionDocId, userEmail, firebaseUid } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
 const clipboardAPI = useClipboard();
-const readPermission = usePermission("clipboard-read");
-const writePermission = usePermission("clipboard-write");
+// const readPermission = usePermission("clipboard-read");
+// const writePermission = usePermission("clipboard-write");
 //setup for starred construction list
 let lastDocId: string | null = null;
 let actionTimer: any;
 const ACTION_DELAY = 3000;
-
-// const userEmail = computed((): string => {
-//   return appAuth.currentUser?.email ?? "";
-// });
 
 function previewOrDefault(dataUrl: string | undefined): string {
   return dataUrl ? dataUrl : "/logo.png";
@@ -273,7 +267,7 @@ function inMyStarredList(docId: string | undefined): boolean {
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
 // or when the mouse moves while a new construction is being loaded
-async function onItemHover(s: SphericalConstruction): Promise<void> {
+function onItemHover(s: SphericalConstruction): void {
   if (lastDocId === s.id) {
     console.debug(`Existing hover on ${s.id}`);
     return; // Prevent double hovers?
@@ -345,35 +339,31 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
   }
 }
 
-async function doDeleteConstruction(docId: string) {
+function handleDeleteConstruction(docId: string): void {
   if (firebaseUid.value) {
-    const deleted = await constructionStore.deleteConstruction(
-      firebaseUid.value,
-      docId
-    );
-    if (deleted)
-      EventBus.fire("show-alert", {
-        key: t("constructionDeleted", { docId }),
-        type: "success"
-      });
-    else
-      EventBus.fire("show-alert", {
-        key: t("constructionDeleteFailed", { docId }),
-        type: "error"
-      });
+    showDeleteWarning.value = true;
+    actionTimer = setTimeout(async () => {
+      const deleted = await constructionStore.deleteConstruction(
+        firebaseUid.value!!,
+        docId
+      );
+      if (deleted)
+        EventBus.fire("show-alert", {
+          key: t("constructionDeleted", { docId }),
+          type: "success"
+        });
+      else
+        EventBus.fire("show-alert", {
+          key: t("constructionDeleteFailed", { docId }),
+          type: "error"
+        });
+    }, ACTION_DELAY);
   } else {
     EventBus.fire("show-alert", {
       key: t("deleteAttemptNoUid"),
       type: "error"
     });
   }
-}
-
-function handleDeleteConstruction(docId: string): void {
-  showDeleteWarning.value = true;
-  actionTimer = setTimeout(() => {
-    doDeleteConstruction(docId);
-  }, ACTION_DELAY);
 }
 
 function handleMakePrivate(docId: string): void {
@@ -408,7 +398,6 @@ function handleMakePublic(docId: string) {
         type: "error"
       });
   }, ACTION_DELAY);
-
 }
 
 function cancelDelete() {
@@ -435,33 +424,33 @@ function handleShareConstruction(docId: string | undefined) {
 async function handleUpdateStarred(
   publicDocId: string | undefined
 ): Promise<void> {
-  if (publicDocId) await constructionStore.starConstruction(publicDocId);
-  // if (updated) {
-  // EventBus.fire("show-alert", {
-  //   key: t("updateStarSuccessful"),
-  //   type: "success"
-  // });
-  // } else {
-  //   EventBus.fire("show-alert", {
-  //     key: t("updateStarFailed"),
-  //     type: "error"
-  //   });
-  // }
+  if (publicDocId) {
+    await constructionStore.starConstruction(publicDocId);
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
 }
 
 async function handleUpdateUnstarred(docId: string | undefined): Promise<void> {
-  if (docId) constructionStore.unstarConstruction(docId);
-  // if (updated) {
-  //   EventBus.fire("show-alert", {
-  //     key: t("updateStarSuccessful"),
-  //     type: "success"
-  //   });
-  // } else {
-  //   EventBus.fire("show-alert", {
-  //     key: t("updateStarFailed"),
-  //     type: "error"
-  //   });
-  // }
+  if (docId) {
+    constructionStore.unstarConstruction(docId);
+    EventBus.fire("show-alert", {
+      key: t("updateStarSuccessful"),
+      type: "success"
+    });
+  } else {
+    EventBus.fire("show-alert", {
+      key: t("updateStarFailed"),
+      type: "error"
+    });
+  }
 }
 
 function doShareConstruction() {
@@ -528,7 +517,7 @@ function doShareConstruction() {
 </style>
 <i18n locale="en">
 {
-  "deleteWarning": "You construction {docId} is about to be deleted",
+  "deleteWarning": "Your construction {docId} is about to be deleted",
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",
   "constructionDeleted": "Construction {docId} is successfully removed",
   "constructionDeleteFailed": "Unable to delete construction {docId}",
@@ -538,8 +527,8 @@ function doShareConstruction() {
   "constructionPrivated": "Construction {docId} is now private",
   "constructionPrivateFailed": "Unable to make construction {docId} private",
   "updateStarNoUid": "Attempt to unstar a construction when owner in unknown",
-  "updateStarSuccessful": "Starlist has been updated",
-  "updateStarFailed": "Unable to update starlist",
+  "updateStarSuccessful": "Star list has been updated",
+  "updateStarFailed": "Unable to update star list",
   "constructionLoaded": "Construction {docId} is successfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
   "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",

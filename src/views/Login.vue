@@ -85,45 +85,31 @@
       </v-col>
     </v-row>
   </v-container>
+  <v-snackbar v-model="showLoginError" :color="messageType">
+    {{ loginMessage }}
+  </v-snackbar>
 </template>
 
 <script lang="ts" setup>
-// @ is an alias to /src
-import {
-  UserCredential,
-  getAuth,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  sendPasswordResetEmail,
-  GoogleAuthProvider
-} from "firebase/auth";
-import EventBus from "@/eventHandlers/EventBus";
 import { useAccountStore } from "@/stores/account";
-import { computed, ref } from "vue";
+import { computed, ref, Ref } from "vue";
 import { useRouter } from "vue-router";
-import {
-  getDoc,
-  getFirestore,
-  doc,
-  DocumentSnapshot
-} from "firebase/firestore";
-import { UserProfile } from "@/types";
-import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
-const appAuth = getAuth();
+const showLoginError = ref(false);
+const loginMessage = ref("");
+const messageType: Ref<"info" | "error" | "warning"> = ref("info");
 const router = useRouter();
 const acctStore = useAccountStore();
 const usrEmail = ref("");
 const usrPassword = ref("");
-const {userEmail } = storeToRefs(acctStore)
 const emailRules = [
-  (s: string | undefined): boolean | string => {
+  (s: string | undefined): boolean => {
     if (!s) return false;
-    /* should  be neither undefined nor null */ else if (s.indexOf("@") > 0)
-      return true;
-    else return "Missing '@'?";
+    else {
+      return s.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/) !== null;
+    }
   }
 ];
 
@@ -137,89 +123,84 @@ const passwordRules = [
 const validEntries = ref(false);
 
 const isValidEmail = computed((): boolean => {
-  return emailRules
-    .map(fn => fn(userEmail.value))
-    .every(s => typeof s === "boolean" && s);
+  const out = emailRules.map(fn => fn(usrEmail.value)).every(s => s);
+  console.debug("Email rule check", out);
+  return out;
 });
 
 function doSignup(): void {
-  userEmail.value = usrEmail.value
-  createUserWithEmailAndPassword(appAuth, usrEmail.value, usrPassword.value)
-    .then((cred: UserCredential) => {
-      sendEmailVerification(cred.user);
-      EventBus.fire("show-alert", {
-        key: "account.emailVerification",
-        keyOptions: { emailAddr: cred.user?.email },
-        type: "info"
+  acctStore.signUp(usrEmail.value, usrPassword.value).then(outcome => {
+    if (typeof outcome === "boolean") {
+      loginMessage.value = t("emailVerification", {
+        emailAddr: usrEmail.value
       });
-    })
-    .catch((error: any) => {
-      EventBus.fire("show-alert", {
-        key: "account.createError",
-        keyOptions: { error },
-        type: "error"
-      });
-    });
+      messageType.value = "info";
+    } else {
+      loginMessage.value = t("createError", { error: outcome });
+      messageType.value = "error";
+    }
+    showLoginError.value = true;
+  });
 }
 
-
-
 function doSignIn(): void {
-  userEmail.value = usrEmail.value
-  signInWithEmailAndPassword(appAuth, usrEmail.value, usrPassword.value)
-    .then((cred: UserCredential) => {
-      if (cred.user?.emailVerified) {
-        acctStore.parseUserProfile(cred.user.uid);
+  acctStore.signIn(usrEmail.value, usrPassword.value).then(success => {
+    if (typeof success == "boolean") {
+      if (success) {
         router.replace({
           path: "/"
         });
       } else {
-        EventBus.fire("show-alert", {
-          key: "account.emailNotVerified",
-          keyOptions: undefined,
-          type: "warning"
-        });
+        messageType.value = "warning";
+        loginMessage.value = t("emailNotVerified");
+        showLoginError.value = true;
       }
-    })
-    .catch((error: any) => {
-      EventBus.fire("show-alert", {
-        key: "account.loginError",
-        keyOptions: { error },
-        type: "error"
-      });
-    });
+    } else {
+      // We can't use show-alert to show error message because the message hub is not visible
+      messageType.value = "error";
+      loginMessage.value = t("loginError", { error: success });
+      showLoginError.value = true;
+    }
+  });
 }
 
 function doReset(): void {
-  console.debug("Sending password reset email to", userEmail.value);
-  sendPasswordResetEmail(appAuth, usrEmail.value).then(() => {
-    EventBus.fire("show-alert", {
-      key: "account.passwordReset",
-      keyOptions: { emailAddr: userEmail.value },
-      type: "info"
-    });
+  acctStore.passwordReset(usrEmail.value).then(() => {
+    loginMessage.value = t("passwordReset", { emailAddr: usrEmail.value });
+    messageType.value = "info";
+    showLoginError.value = true;
   });
 }
 
 function doGoogleLogin(): void {
-  const provider = new GoogleAuthProvider();
-  // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  signInWithPopup(appAuth, provider)
-    .then((cred: UserCredential) => {
-      acctStore.parseUserProfile(cred.user.uid);
-      userEmail.value = cred.user.email ?? "<unknown-email>"
+  acctStore.googleLogin().then(outcome => {
+    if (!outcome) {
       router.replace({
         path: "/"
       });
-    })
-    .catch((error: any) => {
-      console.debug("Error attempting to login with Google account", error);
-      EventBus.fire("show-alert", {
-        key: "account.loginError",
-        keyOptions: { error },
-        type: "error"
-      });
-    });
+    } else {
+      loginMessage.value = t("loginError", { error: outcome });
+      messageType.value = "error";
+      showLoginError.value = true;
+    }
+  });
 }
 </script>
+<i18n lang="json" locale="en">
+{
+  "createError": "Unable to create a new account: {error}",
+  "emailNotVerified": "Your account is not yet verified. Please check your email",
+  "emailVerification": "Verification email has been sent to {emailAddr}",
+  "loginError": "Unable to login: {error}",
+  "passwordReset": "Check your email ({emailAddr}) to reset password"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "createError": "Pembuatan akun baru tidak berhasil: {error}",
+  "emailNotVerified": "Akun anda belum diverifikasi. Periksalah email anda",
+  "emailVerification": "Email untuk verifikasi akun telah dikirim ke {emailAddr}",
+  "loginError": "Login tidak berhasil: {error}",
+  "passwordReset": "Periksalah email and ({emailAddr}) untuk mereset password"
+}
+</i18n>
