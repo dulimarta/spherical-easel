@@ -52,7 +52,7 @@
                   <template #activator="{ props }">
                     <v-btn
                       v-bind="props"
-                      v-if="r.publicDocId"
+                      v-if="r.publicDocId && allowSharing"
                       id="_test_sharefab"
                       class="mx-1"
                       size="x-small"
