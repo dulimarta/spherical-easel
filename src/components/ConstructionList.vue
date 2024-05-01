@@ -149,7 +149,7 @@
                   {{ r.dateCreated.substring(0, 10) }}
                 </div>
                 <div class="star-and-count">
-                  <span class="star filled">&#9733;</span>
+                  <v-icon size="x-small" color="orange-darken-4">mdi-star</v-icon>
                   <!-- Always filled star -->
                   {{ r.starCount }}
                 </div>

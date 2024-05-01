@@ -5,8 +5,7 @@ import {
   PublicConstructionInFirestore
 } from "@/types";
 import { defineStore } from "pinia";
-import { Auth, User, getAuth } from "firebase/auth";
-import { onMounted } from "vue";
+import { Auth, getAuth } from "firebase/auth";
 import { ref, Ref } from "vue";
 import {
   FirebaseStorage,
@@ -26,26 +25,23 @@ import {
   QueryDocumentSnapshot,
   getFirestore,
   Unsubscribe,
-  onSnapshot,
   Firestore,
   deleteDoc,
-  DocumentChange,
-  FieldValue,
   deleteField,
   addDoc,
-  DocumentReference
+  DocumentReference,
+  DocumentSnapshot,
+  increment
 } from "firebase/firestore";
 import "@/extensions/array-extensions";
 import axios, { AxiosResponse } from "axios";
 import { Matrix4, Sphere } from "three";
-import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { watch } from "vue";
-let appAuth: Auth;
+import { aP } from "vitest/dist/reporters-1evA5lom";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
-let snapShotUnsubscribe: Unsubscribe | null = null;
 
 async function parseDocument(
   id: string,
@@ -269,7 +265,6 @@ export const useConstructionStore = defineStore("construction", () => {
 
   async function initialize() {
     // This function is invoked from App.vue
-    appAuth = getAuth();
     appDB = getFirestore();
     appStorage = getStorage();
 
@@ -357,16 +352,36 @@ export const useConstructionStore = defineStore("construction", () => {
     }
   }
 
+  async function updateStarCountInFirebase(pubConstructionId: string, byValue: number) {
+    const publicDocRef = doc(appDB, "constructions", pubConstructionId)
+    const publicDS: DocumentSnapshot = await getDoc(publicDocRef)
+    if (publicDS.exists()) {
+      const publicDoc = publicDS.data() as PublicConstructionInFirestore
+      const ownedDocRef = doc(appDB, "users", publicDoc.author, "constructions", publicDoc.constructionDocId)
+      const ownedDS: DocumentSnapshot = await getDoc(ownedDocRef)
+      if (ownedDS.exists()) {
+        const ownedDoc = ownedDS.data() as SphericalConstruction
+        if (ownedDoc.starCount + byValue >= 0) { // Avoid negative count (at least during development)
+          await updateDoc(ownedDocRef, { starCount: increment(byValue) })
+        } else {
+          await updateDoc(ownedDocRef, { starCount: 0 })
+        }
+      }
+    }
+  }
+
   // Move a public construction to the starred list
   function starConstruction(pubConstructionId: string) {
     const pos = publicConstructions.value.findIndex(
       (z: SphericalConstruction) => z.publicDocId == pubConstructionId
     );
     if (pos >= 0) {
+      publicConstructions.value[pos].starCount++
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
       starredConstructionIDs.push(pubConstructionId);
       updateStarredArrayInFirebase(starredConstructionIDs);
+      updateStarCountInFirebase(pubConstructionId, +1)
     }
   }
 
@@ -375,14 +390,19 @@ export const useConstructionStore = defineStore("construction", () => {
       (z: SphericalConstruction) => z.publicDocId == pubConstructionId
     );
     if (pos >= 0) {
+      const target = starredConstructions.value[pos]
+      if (target.starCount > 0) {
+        starredConstructions.value[pos].starCount--
+      }
       const inStarred = starredConstructions.value.splice(pos, 1);
-
       publicConstructions.value.push(...inStarred);
     }
     const pos2 = starredConstructionIDs.findIndex(x => x === pubConstructionId);
     if (pos2 >= 0) {
       starredConstructionIDs.splice(pos2, 1);
+
       updateStarredArrayInFirebase(starredConstructionIDs);
+      updateStarCountInFirebase(pubConstructionId, -1)
     }
   }
 
