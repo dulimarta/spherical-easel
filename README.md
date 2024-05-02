@@ -17,7 +17,7 @@
 
 ## Setting Up for Development
 
-In the project top directory. Type `yarn install` to install external dependencies required by the project. This command must be run when you try to build the project for the first time.
+In the project top directory. Type `bun install` to install external dependencies required by the project. This command must be run when you try to build the project for the first time.
 
 ```bash
 # Install external dependencies (required for the first time)

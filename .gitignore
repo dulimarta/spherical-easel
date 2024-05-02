@@ -43,7 +43,8 @@ latex-notes/*.pdf
 latex-notes/_minted*
 
 # Generated files
-docs/.vuepress/dist
+docs/.vitepress/dist
+docs/.vitepress/cache
 
 # Cache
 .yarn/cache
