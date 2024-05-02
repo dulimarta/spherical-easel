@@ -48,13 +48,19 @@
           :style="{
             display: 'flex',
             flexDirection: 'column',
-            marginLeft: mouseOnDrawer ? '20px' : '0px',
+            marginLeft: mouseOnDrawer ? '18px' : '0px',
+            marginBottom: '8px',
             alignItems: mouseOnDrawer ? 'flex-start' : 'center'
           }">
           <template v-if="!inProductionMode">
             <!-- A rudimentary tool to clean up unused SVG/script files in Firebase Storage -->
             <router-link to="/firebase-cleanup">
-              <v-icon size="large" color="orange">mdi-cloud-circle</v-icon>
+              <v-icon id="firebase-gc" size="x-large" color="orange">
+                mdi-cloud-circle
+              </v-icon>
+              <v-tooltip
+                activator="#firebase-gc"
+                text="Firebase Cleaner"></v-tooltip>
             </router-link>
           </template>
           <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
