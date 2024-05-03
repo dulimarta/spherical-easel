@@ -28,12 +28,12 @@ This section is an outline of the steps need to add a tool that takes a collecti
 
     - Copy the form of the <span class="method">update</span> method. In particular this should start with
 
-      <<< @/src/models/SEThreePointCircleCenter.ts#updateview{1}
+      <<< @../../../src/models/SEThreePointCircleCenter.ts#updateview{1}
 
       Then it should update the existence and location of the object and should end with setting the display of the corresponding <span class="class">Nodule</span> object. (Make sure that you set the parameters to properly display the <span class="class">Nodule</span> object -- read the variables section of the object for directions.)
       The last lines should be
 
-      <<< @/src/models/SEThreePointCircleCenter.ts#endupdate
+      <<< @../../../src/models/SEThreePointCircleCenter.ts#endupdate
 
       See more in the [Move Handler](/design/#event-handlers) and [Delete Handler](/design/#delete-handler).
 
@@ -73,7 +73,7 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Creating the static (in class <span class="class">Aaa</span>) method <span class="method">updateCurrentStrokeWidthForZoom</span> and calling it from <span class="file">Easel.vue</span> file to adjust the linewidth for zoom.
     - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the static method <span class="method">Nodule.idPlottableDescriptionMap</span> of all the <span class="package">Two.js</span> using the <span class="filed">id</span>
 
-    <<< @/src/plottables/Parametric.ts#updatePlottableMap
+    <<< @../../../src/plottables/Parametric.ts#updatePlottableMap
 
 2.  Create a new <span class="class">AaaHandler</span> class (extending <span class="class">Highlighter</span>). This means
 

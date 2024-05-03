@@ -33,7 +33,7 @@ The files in this directory manage the fixed (abstract) unit sphere location inf
 
 A typical constructor for a <span class="class">SENodule</span> class is like the one for <span class="class">SECircle</span>:
 
-<<< @/src/models/SECircle.ts#circleConstructor
+<<< @../../../src/models/SECircle.ts#circleConstructor
 
 The first argument is the corresponding plottables object (which assigned to the <span class="variable">ref</span> variable) and the rest are the <span class="class">SENodule</span> objects that it depends on (which immediately register the <span class="class">SECircle</span> object being created).
 
@@ -115,7 +115,7 @@ Linking a <span class="class">Nodule</span> object and its corresponding <span c
 
 This is illustrated in this code snippet from <span class="file">PointHandler.ts</span>:
 
-<<< @/src/eventHandlers/PointHandler.ts#linkNoduleSENodule
+<<< @../../../src/eventHandlers/PointHandler.ts#linkNoduleSENodule
 
 ### Naming Convention
 
@@ -127,11 +127,11 @@ Layers are an integral part of the rendering process. The renderer (currently fr
 
 The complete list of values for enum <span class="variable">LAYER</span> each describe the layer that it numbers:
 
-<<< @/src/global-settings.ts#layers
+<<< @../../../src/global-settings.ts#layers
 
 Each enum value correspond to a <span class="class">Two.Group</span> (i.e. layer) inside the main <span class="variable">twoInstance</span> which is created in <span class="file">SphereFrame.vue</span>. Pointers to these layers are stored in the private <span class="variable">layers</span> variable in <span class="file">SphereFrame.vue</span>. In turn the <span class="variable">layers</span> variable is passed to all [Event Handlers](/design/#event-handlers) so that the objects they create can be placed in the appropriate layers. In the following code we can see that after creating the group in the <span class="variable">twoInstance</span>, the pointer is stored in the <span class="variable">layers</span> variable, and the $y$ axis is flipped on all layers except the text layers.
 
-<<< @/src/components/SphereFrame.vue#addlayers
+<<< @../../../src/components/SphereFrame.vue#addlayers
 
 ## Rendering Objects
 
@@ -145,13 +145,13 @@ render the geometric objects to the screen. This process of going from the ideal
 
 First the unit sphere information is scaled to be on the Default Sphere. The default radius of the sphere (which is the same as the black boundary circle seen in the Default Screen Plane) was arbitrarily fixed at 250 (the default radius is in pixels if the Zoom Magnification Factor is 1) as set in the <span class="file">global-settings.ts</span> file:
 
-<<< @/src/global-settings.ts#boundarycircle
+<<< @../../../src/global-settings.ts#boundarycircle
 
 To determine the location of a point on the ideal unit sphere in the Default Screen Plane, we first scale its position vector by the default radius, and then orthographically project by simply dropping the $z$ coordinate. The sign of the $z$ coordinate indicates if the point is rendered in a style that indicates that it is on the back of the sphere or the front. This process is used repeatedly to draw one-dimensional geometric objects. In general, the rendering follows this outline:
 
 1. Create a transformation matrix (<span class="class">Matrix4</span>) that maps the object of the correct size in a standard position (say centered at the North Pole) to the current view of the object on the unit ideal sphere. For example, this is how it is done for circles:
 
-<<< @/src/plottables/Circle.ts#circleDisplay
+<<< @../../../src/plottables/Circle.ts#circleDisplay
 
 2. Transform a sampling of points on the object in standard position to the current view.
 3. Using the steps above, transform the current view points to the Default Screen Plane, keeping track of if they should be rendered in a style for the front or back.
@@ -169,25 +169,25 @@ Zooming and panning are accomplished using a CSS (affine) transform applied to t
 
 In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) (triggering a resize of the plottables - outlined below) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file (see below) is eventually executed which sets the new CSS Affine Transformation -- which is alway a uniform scaling and translation and never a shear.
 
-<<< @/src/components/SphereFrame.vue#updateView{9}
+<<< @../../../src/components/SphereFrame.vue#updateView{9}
 
 When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSize()</span>. This method is called on all plottables through a chain of events that are outlined here.
 
 Whenever a new magnification factor is computed the value is written to the [Store](/design/#store) with a dispatch command like the one highlighted in this code snippet from <span class="file">PanZoomHandler.ts</span>:
 
-<<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
+<<< @../../../src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
 The <span class="string">"setZoomMagnificationFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
-<<< @/src/stores/se.ts#magnificationUpdate
+<<< @../../../src/stores/se.ts#magnificationUpdate
 
 As the constructor for <span class="file">Easel.vue</span> contains a listener for the <span class="string">"magnification-updated"</span> [EventBus](/design/#event-bus) action.
 
-<<< @/src/views/Easel.vue#magnificationUpdate
+<<< @../../../src/views/Easel.vue#magnificationUpdate
 
 this action calls
 
-<<< @/src/views/Easel.vue#resizePlottables{3,6}
+<<< @../../../src/views/Easel.vue#resizePlottables{3,6}
 
 which calls <span class="method">adjustSize()</span> on all plottable retrieved from the from the [Store](/design/#store).
 
@@ -229,7 +229,7 @@ this.selectTool = new SelectionHandler(this.layers);
 
 All handlers implement the interface <span class="interface">ToolStrategy</span>:
 
-<<< @/src/eventHandlers/ToolStrategy.ts#toolStrategy{2-7}
+<<< @../../../src/eventHandlers/ToolStrategy.ts#toolStrategy{2-7}
 
 The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit.html#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
 
@@ -259,15 +259,15 @@ Note that in the process of undoing the locations of the parent points of circle
 
 To help store the information necessary for undoing a move we use the <span class="method">update(beforeMoveState)</span> method where
 
-<<< @/src/eventHandlers/MoveHandler.ts#beforeSaveState
+<<< @../../../src/eventHandlers/MoveHandler.ts#beforeSaveState
 
 This allows us use the <span class="method">update</span> method to update the <span class="variable">stateArray</span> to record any information that is necessary to restore the state of the object being updated. For example, on <span class="class">SEPoint</span> and <span class="class">SEPointOnOneDimensional</span> we have
 
-<<< @/src/models/SEPoint.ts#saveState
+<<< @../../../src/models/SEPoint.ts#saveState
 
 This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) (but _only_ if the <span class="class">markKidsOutOfDate()</span> method is called first on the object) so the parents of an object are updated before the object itself. Thus the point parents of a one dimensional object are correctly updated before the one ddimensional object itself. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
 
-<<< @/src/eventHandlers/MoveHandler.ts#displayOnlyUpdate
+<<< @../../../src/eventHandlers/MoveHandler.ts#displayOnlyUpdate
 
 Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span> classes issue mutations
 to the store which then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments. The <span class="type">ObjectSaveState</span> type and the interfaces like <span class="interface">LineSaveState</span>, <span class="interface">SegmentSaveState</span>, <span class="interface">PointSaveState</span> in the <span class="directory">types</span> directory give an idea of the information that must be stored in order to undo a <span class="method">move</span>
@@ -278,15 +278,15 @@ We record each change in the application using a <span class="class">Command</sp
 
 The <span class="class">Command</span> class contains several static variables including
 
-<<< @/src/commands/Command.ts#commmandArrays
+<<< @../../../src/commands/Command.ts#commmandArrays
 
 The <span class="variable">commandHistory</span> array stores a stack of commands that are used to get from the initial application state to the current state of the application. The <span class="variable">redoHistory</span> stores a stack of the latest commands that have been redone. These arrays are managed by two static methods:
 
-<<< @/src/commands/Command.ts#undo
+<<< @../../../src/commands/Command.ts#undo
 
 and
 
-<<< @/src/commands/Command.ts#redo
+<<< @../../../src/commands/Command.ts#redo
 
 Each instance of the <span class="class">Command</span> class has access to the following methods:
 
@@ -306,11 +306,11 @@ All Child classes of Command must implement the following abstract methods
 
 For example, to add a point to the state of the application, the [PointHandler](/design/handlers/basic.html#point) gathers mouse input and creates the [linked <span class="class">Point</span> and <span class="class">SEPoint</span> objects](/design/#plottables-directory). Then it creates a <span class="class">AddPointCommand</span> object using the <span class="class">SEPoint</span> object in the constructor. This code snippet from <span class="file">AddPointCommand.ts</span> shows this
 
-<<< @/src/commands/AddPointCommand.ts#addPointCommand
+<<< @../../../src/commands/AddPointCommand.ts#addPointCommand
 
 The <span class="method">do()</span> and <span class="method">restoreState()</span> methods uses the <span class="string">"addPoint"</span> and <span class="string">"removePoint"</span> mutations of the application state found in the [Store](/design/#store). The <span class="string">"addPoint"</span> mutation is implemented in the [Store](/design/#store) as follows.
 
-<<< @/src/stores/se.ts#addPoint
+<<< @../../../src/stores/se.ts#addPoint
 
 This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
 
@@ -391,7 +391,7 @@ In the following snippet we have a getter function `findNearbySENodules` that ta
 By returning a function with such signature, the getter function itself requires no parameter.
 :::
 
-<<< @/src/stores/se.ts#findNearbyGetter
+<<< @../../../src/stores/se.ts#findNearbyGetter
 
 Using Pinia's `mapState` and `mapActions` guarantees type safe syntax (as well as editor auto completion) to the state variables, action, and getter functions. Examples:
 
@@ -415,7 +415,7 @@ export default class App extends Vue {
 To enforce **read-only** syntax when accessing the store state variables from Vue component we rely on the state mapping provided by `pinia`
 and combine it with readonly keyword in Typescript:
 
-<<< @/src/App.vue#activeToolName
+<<< @../../../src/App.vue#activeToolName
 
 
 In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader might have noticed that the Zoom Translation Vector is written to the [Store](/design/#store) with a <span class="method">commit(...)</span> method and the Zoom Magnification Factor is written with a <span class="method">dispatch(...)</span> method. This is because the the <span class="method">commit(...)</span> operation is a synchronous one and the <span class="method">dispatch</span> operation is an asynchronous one. The setting of the translation vector is immediately completed as a mutation of the store, but updating the magnification factor triggers an [update of all the plottable objects](/design/#zooming-and-panning) which shouldn't interrupt the programmatic control flow and can happen asynchronously.
@@ -426,19 +426,19 @@ The <span class="class">Visitor</span> class allows one class access to another 
 
 The [Rotation Handler](/design/handlers/display.html#rotation) uses the user mouse input to compute a Change In Position Rotation Matrix that maps the Unit Ideal Sphere to itself (see the illustration in the [Rendering Objects](/design/#rendering-objects) section). This fires a <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) action as shown in this snippet from <span class="file">RotateHandler.ts</span>:
 
-<<< @/src/eventHandlers/RotateHandler.ts#sphereRotate
+<<< @../../../src/eventHandlers/RotateHandler.ts#sphereRotate
 
 The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is now triggering an event in a Vue Component. This listener calls
 
-<<< @/src/components/SphereFrame.vue#handleSphereRotation
+<<< @../../../src/components/SphereFrame.vue#handleSphereRotation
 
 The <span class="string">"rotateSphere"</span> mutation of the application state is as follows
 
-<<< @/src/stores/se.ts#rotateSphere
+<<< @../../../src/stores/se.ts#rotateSphere
 
 Notice that this creates a <span class="class">RotationVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">RotationVisitor.ts</span>:
 
-<<< @/src/visitors/RotationVisitor.ts#actionOnPoint
+<<< @../../../src/visitors/RotationVisitor.ts#actionOnPoint
 
 The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been accessed in the Store along the way. Also notice how the <span class="class">RotationVisitor</span> marks the kids of each point out of date before called the <span class="method">update</span> method.
 
@@ -457,7 +457,7 @@ The user can select items to style before entering the Styling Mode (the mode wh
 
 This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store.
 
-<<< @/src/components/FrontBackStyle.vue#setStyle
+<<< @../../../src/components/style-ui/FrontBackStyle.vue#setStyle
 
 Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines the common style options (e.g.: `fillColor`, `strokeColor`, etc.) shared by all the selected objects.
 This information is stored in an array which is accessed by the
