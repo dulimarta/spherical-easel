@@ -1,39 +1,36 @@
 <template>
   <div
     id="authToolbox"
+    class="my-1"
     v-if="loginEnabled"
     :style="{
-      alignItems: props.expandedView ? 'flex-start' : 'center'
+      alignItems: 'flex-start',
+      rowGap: '8px',
     }">
     <!-- {{ userDisplayedName }} {{ userEmail }} -->
-    <template v-if="loginEnabled">
-      <v-avatar
-        size="x-small"
-        v-if="userProfilePictureURL !== undefined"
-        contain
-        max-width="48"
-        :image="userProfilePictureURL"
-        @click="doLoginOrLogout"></v-avatar>
-      <v-btn
-        v-else
-        fab
-        icon
-        size="x-small"
-        class="bg-yellow"
-        @click="doLoginOrLogout">
-        <v-icon>mdi-account</v-icon>
-      </v-btn>
-      <router-link to="/settings/" v-if="appAuth.currentUser !== null">
-        <v-icon color="white" class="mx-2">mdi-cog</v-icon>
-      </router-link>
-      <HintButton
-        v-if="appAuth.currentUser !== null"
-        :disabled="!hasObjects"
-        @click="() => saveConstructionDialog?.show()"
-        tooltip="Save construction">
-        <template #icon>mdi-content-save</template>
-      </HintButton>
-    </template>
+    <v-avatar
+      size="x-small"
+      v-if="userProfilePictureURL !== undefined"
+      contain
+      max-width="48"
+      :image="userProfilePictureURL"
+      @click="doLoginOrLogout"></v-avatar>
+    <v-btn v-else
+      icon
+      size="x-small"
+      class="bg-yellow"
+      @click="doLoginOrLogout">
+      <v-icon>mdi-account</v-icon>
+    </v-btn>
+    <router-link to="/settings/" v-if="appAuth.currentUser !== null">
+      <v-icon color="white">mdi-cog</v-icon>
+    </router-link>
+    <HintButton
+      v-if="appAuth.currentUser !== null && hasObjects"
+      @click="() => saveConstructionDialog?.show()"
+      tooltip="Save construction">
+      <template #icon>mdi-content-save</template>
+    </HintButton>
     <HintButton
       tooltip="Share saved cons"
       v-if="constructionDocId /*&& isPublicConstruction(constructionDocId)*/">
@@ -180,7 +177,7 @@ enum SecretKeyState {
 }
 const acctStore = useAccountStore();
 const seStore = useSEStore();
-const constructionStore = useConstructionStore()
+const constructionStore = useConstructionStore();
 const {
   loginEnabled,
   userProfilePictureURL,
@@ -204,7 +201,8 @@ const { t } = useI18n();
 //   isPublicConstruction,
 //   privateConstructions
 // } = useConstruction();
-const {privateConstructions, currentConstructionPreview } = storeToRefs(constructionStore)
+const { privateConstructions, currentConstructionPreview } =
+  storeToRefs(constructionStore);
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const appAuth = getAuth();
 const appDB = getFirestore();
@@ -288,31 +286,31 @@ onMounted(() => {
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
 
   // authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    // if (u !== null) {
-      // showExport.value = true;
-      // acctStore.userEmail = u.email ?? t("unknownEmail");
-      // acctStore.userProfilePictureURL = u.photoURL ?? undefined;
-      // uid.value = u.uid;
-      // console.debug("User details", u);
-      // const userDoc = doc(appDB, "users", u.uid);
-      // getDoc(userDoc).then((ds: DocumentSnapshot) => {
-        // if (ds.exists()) {
-          // accountEnabled.value = true;
-          // console.debug("User data", ds.data());
-          // const { profilePictureURL, role } = ds.data() as any;
-          // if (profilePictureURL && userProfilePictureURL.value === undefined) {
-          //   acctStore.userProfilePictureURL = profilePictureURL;
-          // }
-          // if (role) {
-          //   acctStore.userRole = role.toLowerCase();
-          // }
-        // }
-      // });
-      // acctStore.loginEnabled = true;
-    // } else {
-      // acctStore.userEmail = undefined;
-      // acctStore.userProfilePictureURL = undefined;
-    // }
+  // if (u !== null) {
+  // showExport.value = true;
+  // acctStore.userEmail = u.email ?? t("unknownEmail");
+  // acctStore.userProfilePictureURL = u.photoURL ?? undefined;
+  // uid.value = u.uid;
+  // console.debug("User details", u);
+  // const userDoc = doc(appDB, "users", u.uid);
+  // getDoc(userDoc).then((ds: DocumentSnapshot) => {
+  // if (ds.exists()) {
+  // accountEnabled.value = true;
+  // console.debug("User data", ds.data());
+  // const { profilePictureURL, role } = ds.data() as any;
+  // if (profilePictureURL && userProfilePictureURL.value === undefined) {
+  //   acctStore.userProfilePictureURL = profilePictureURL;
+  // }
+  // if (role) {
+  //   acctStore.userRole = role.toLowerCase();
+  // }
+  // }
+  // });
+  // acctStore.loginEnabled = true;
+  // } else {
+  // acctStore.userEmail = undefined;
+  // acctStore.userProfilePictureURL = undefined;
+  // }
   // });
 });
 
@@ -329,7 +327,7 @@ async function doLoginOrLogout() {
     // userEmail.value = undefined;
     userProfilePictureURL.value = undefined;
     userDisplayedName.value = undefined;
-    firebaseUid.value = undefined
+    firebaseUid.value = undefined;
   } else {
     router.replace({ path: "/account" });
   }
@@ -431,12 +429,12 @@ async function doSave(): Promise<void> {
       appDB,
       collectionPath.concat("/" + constructionDocId.value)
     );
-      // Task #1a: update the existing construction
-      getDoc(targetDoc).then((ds) => {
-        if (ds.exists()) {
-          constructionDetails.starCount = ds.data().starCount;
-        }
-      })
+    // Task #1a: update the existing construction
+    getDoc(targetDoc).then(ds => {
+      if (ds.exists()) {
+        constructionDetails.starCount = ds.data().starCount;
+      }
+    });
     saveTask = updateDoc(targetDoc, constructionDetails as any).then(
       () => targetDoc
     );

@@ -39,7 +39,6 @@ import { Matrix4, Sphere } from "three";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { watch } from "vue";
-import { aP } from "vitest/dist/reporters-1evA5lom";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
 

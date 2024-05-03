@@ -5,74 +5,85 @@
   <!-- <CurrentToolSelection/> -->
 
   <v-app>
-      <v-navigation-drawer
-        fixed
-        :expand-on-hover="expandOnHover"
-        :rail="rail"
-        :rail-width="64"
-        @mouseover="onNavigationHover"
-        @mouseleave="onNavigationHover"
-        style="background-color: #002108; color: white">
-        <v-list>
-          <v-list-item
-            prepend-avatar="@/assets/SphericalEaselLogo.gif"
-            title="Spherical Easel"></v-list-item>
-        </v-list>
-        <v-divider color="#BDF3CB"></v-divider>
+    <v-navigation-drawer
+      fixed
+      :expand-on-hover="expandOnHover"
+      :rail="rail"
+      :rail-width="64"
+      @mouseover="onNavigationHover"
+      @mouseleave="onNavigationHover"
+      style="background-color: #002108; color: white">
+      <v-list>
+        <v-list-item
+          prepend-avatar="@/assets/SphericalEaselLogo.gif"
+          title="Spherical Easel"></v-list-item>
+      </v-list>
+      <v-divider color="#BDF3CB"></v-divider>
 
-        <v-list density="compact" nav active-class="active">
-          <v-list-item
-            @click="setHover(0)"
-            prepend-icon="mdi-tools"
-            title="Tools"
-            value="tools"></v-list-item>
-          <v-list-item
-            @click="setHover(1)"
-            prepend-icon="mdi-axis"
-            title="Objects"
-            value="object"></v-list-item>
-          <v-list-item
-            @click="setHover(2)"
-            prepend-icon="mdi-diameter"
-            title="Construction"
-            value="construction"></v-list-item>
-          <v-list-item
-            @click="setHover(3)"
-            prepend-icon="mdi-earth"
-            title="Earth"
-            value="earth"></v-list-item>
-        </v-list>
+      <v-list density="compact" nav active-class="active">
+        <v-list-item
+          @click="setHover(0)"
+          prepend-icon="mdi-tools"
+          title="Tools"
+          value="tools"></v-list-item>
+        <v-list-item
+          @click="setHover(1)"
+          prepend-icon="mdi-axis"
+          title="Objects"
+          value="object"></v-list-item>
+        <v-list-item
+          @click="setHover(2)"
+          prepend-icon="mdi-diameter"
+          title="Construction"
+          value="construction"></v-list-item>
+        <v-list-item
+          @click="setHover(3)"
+          prepend-icon="mdi-earth"
+          title="Earth"
+          value="earth"></v-list-item>
+      </v-list>
 
-        <template v-slot:append>
-          <v-divider color="#BDF3CB"></v-divider>
+      <template v-slot:append>
+        <div
+          :style="{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: mouseOnDrawer ? '20px' : '0px',
+            alignItems: mouseOnDrawer ? 'flex-start' : 'center'
+          }">
+          <template v-if="!inProductionMode">
+            <!-- A rudimentary tool to clean up unused SVG/script files in Firebase Storage -->
+            <router-link to="/firebase-cleanup">
+              <v-icon size="large" color="orange">mdi-cloud-circle</v-icon>
+            </router-link>
+          </template>
           <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
-          <v-list density="compact" nav>
-            <LanguageSelector />
-          </v-list>
-        </template>
-      </v-navigation-drawer>
-      <v-navigation-drawer
-        width="320"
-        :style="{
-          backgroundColor: '#B9D9C1',
-          border: show ? '' : '0px'
-        }"
-        style="padding-left: 8px; padding-top: 8px">
-        <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
-        <ToolGroups v-if="activeItem === 0" />
-        <ObjectTree v-if="activeItem === 1" />
-        <ConstructionLoader v-if="activeItem === 2" />
-        <EarthToolVue v-if="activeItem === 3" />
-        <!-- <v-list>
+          <LanguageSelector />
+        </div>
+      </template>
+    </v-navigation-drawer>
+    <v-navigation-drawer
+      width="320"
+      :style="{
+        backgroundColor: '#B9D9C1',
+        border: show ? '' : '0px'
+      }"
+      style="padding-left: 8px; padding-top: 8px">
+      <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
+      <ToolGroups v-if="activeItem === 0" />
+      <ObjectTree v-if="activeItem === 1" />
+      <ConstructionLoader v-if="activeItem === 2" />
+      <EarthToolVue v-if="activeItem === 3" />
+      <!-- <v-list>
           <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
         </v-list> -->
-      </v-navigation-drawer>
-      <v-main :style="{ height: height + 'px' }"></v-main>
-    </v-app>
+    </v-navigation-drawer>
+    <v-main :style="{ height: height + 'px' }"></v-main>
+  </v-app>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, computed } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
@@ -108,6 +119,10 @@ const expandOnHover = ref(true);
 //   };
 // });
 // ('layers')')
+const inProductionMode = computed((): boolean => {
+  return import.meta.env.MODE === "production";
+});
+
 function setHover(newActive: number): void {
   rail.value = true;
   expandOnHover.value = false;

@@ -1,5 +1,5 @@
 <template>
-  <v-icon id="lang" class="mr-2">mdi-translate</v-icon>
+  <v-icon id="lang" class="mx-3">mdi-translate</v-icon>
   <v-menu
     activator="#lang"
     v-model="showLocalePopup"
