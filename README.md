@@ -28,34 +28,34 @@ bun install
 
 ```bash
 # Start the app on a local server
-bun run app:serve
+bun app:serve
 # Start both the app server and vitepress server
-bun run serve
+bun serve
 ```
 
-After typing `bun run app:serve`, use your browser to open `localhost:8080` (or whatever port number used by `yarn serve`).
+After typing `bun app:serve`, use your browser to open `localhost:8080` (or whatever port number indicated by `bun`).
 
 ### Optional commands
 
 ```bash
-bun run build        # to build for production
-bun run docs:build   # to build the documentation
+bun build        # to build for production
+bun docs:build   # to build the documentation
 ```
 
 ### Documentation
 
-The `docs` subdirectory is reserved for documentation files built using [VuePress](https://vuepress.vuejs.org/).
+The `docs` subdirectory is reserved for documentation files built using [VitePress](https://vitepress.dev/).
 
 To view the documentation page:
 
 ```bash
-yarn docs:serve
+bun docs:serve
 ```
 
 To build the documentation page:
 
 ```bash
-yarn docs:build    # do this AFTER `yarn build`
+yarn docs:build    # do this AFTER `bun build`
 ```
 
 After a successful document build, you will find a new directory `dist/docs`.
