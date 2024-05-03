@@ -1,8 +1,18 @@
+
+// OLD
 // const path = require("path","@vuepress/utils");
 // const { convertTypeAcquisitionFromJson } = require("typescript");
 // const projectRoot = process.cwd();
 // const alias = path.resolve(projectRoot, 'src');
+
 export default {
+
+  //The srcDir is used so that the vitepress site will be built relative to this directory
+  srcDir: './src',
+
+
+
+
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "dist/docs",
   // The following setting for "base" works on hosts which allow us to publish
