@@ -1,6 +1,6 @@
 % Based on Stereographic and cylindrical map projections
 % Author: Tomasz M. Trzeciak
-% Source: LaTeX-Community.org 
+% Source: LaTeX-Community.org
 %         <http://www.latex-community.org/viewtopic.php?f=4&t=2111>
 
 \usetikzlibrary{calc,fadings,decorations.pathreplacing,decorations}
@@ -70,7 +70,7 @@
 \def\angAz{-117} % azimuth angle
 
 %The coordinates of the rectangle zoom in the Viewport
-\def\lcoord{-0.2*\R} 
+\def\lcoord{-0.2*\R}
 \def\rcoord{0.2*\R}
 \def\bcoord{-0.6*\R}
 \def\fcoord{-0.2*\R}
@@ -95,7 +95,7 @@
 \draw (-8,0) circle (0.6*\R);
 \draw (-8,-0.7*\R) node[below] {Ideal Unit Sphere};
 
-\draw[ultra thick,->] (-6.3,0.0) -- (-2.7,0.0); 
+\draw[ultra thick,->] (-6.3,0.0) -- (-2.7,0.0);
 \draw (-4.5,0.3) node[above]{Scaling Factor};
 
 \draw (-9.5,2.5) node[above]{Change In Position Rotation};
@@ -114,7 +114,7 @@
 %Back Left corner
 \path[DefaultScreenPlane] (\lcoord,\bcoord) coordinate (BLDSP);
 \path[DefaultScreenPlane] (\centerycoord,\centerxcoord) coordinate (center);
-           
+
 \path[DefaultScreenPlane] (0.5*\centerycoord,0.5*\centerxcoord) coordinate (midVector);
 \path[DefaultScreenPlane] (0,0) coordinate (originDSP);
 
@@ -159,11 +159,11 @@
 \draw[color=red] (FRDSP) -- (FRSP);
 \draw[color=red] (FLDSP) -- (FLSP);
 \draw[color=red] (BRDSP) -- (BRSP);
-\draw[color=red](BLDSP) -- (breakPoint);
+\draw[color=red] (BLDSP) -- (breakPoint);
 \draw[->] (center) -- (origin);
 \draw[Viewport] (0.8*\R,-1.4*\R) node[above, rotate=28] {Viewport (pixels)};
 \draw[thick] (0.75*\R,2.5*\R) node[right, rotate=36 ] {Zoom Magnification Factor};
-  
+
 \end{scope}
 
 \end{tikzpicture}
@@ -213,7 +213,7 @@
 % \DrawLatitudeCircle[\R]{\angBeta}
 % \DrawLatitudeCircle[\R]{0} % equator
 
-% % shifted equator in node with nested call to tikz 
+% % shifted equator in node with nested call to tikz
 % % (I didn't know it's possible)
 % \node at (0,1.6*\R) { \tikz{\DrawLatitudeCircle[\R]{0}} };
 

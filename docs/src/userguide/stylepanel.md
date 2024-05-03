@@ -8,7 +8,7 @@ next: /tools/edit
 
 The Style Panel is found on the right-hand side of the screen. The Style Panel is hidden initially and can be made visible by clicking on the Style Settings (TODO:AddIconImage) icon in the upper right corner of the Sphere Canvas.
 
-The Style Panel allows the user to adjust the visual style and feel of objects displayed in the Sphere Canvas: stroke color and width, fill color, opacity, and labeling. The focus of the Style Panel is one or more selected object whose attributes the user would like to modify. The user can use the [Selection Tool](/tools/edit.html#selection) to select a single object or a collection of objects and then the Style Panel will will display the options for the object or objects. If a single object is in focus, then all options for that object are displayed. If multiple objects are selected then only the adjustable attributes common to all the objects are displayed. The adjustable attributes are spread over several tabs and the functionality of each is described below.
+The Style Panel allows the user to adjust the visual style and feel of objects displayed in the Sphere Canvas: stroke color and width, fill color, opacity, and labeling. The focus of the Style Panel is one or more selected object whose attributes the user would like to modify. The user can use the [Selection Tool](/tools/edit#selection) to select a single object or a collection of objects and then the Style Panel will will display the options for the object or objects. If a single object is in focus, then all options for that object are displayed. If multiple objects are selected then only the adjustable attributes common to all the objects are displayed. The adjustable attributes are spread over several tabs and the functionality of each is described below.
 
 The user can select a Transformation, Measurement, Calculation, or object by clicking on it in the Objects Tab.
 
@@ -39,24 +39,24 @@ Here are several examples:
 
 This is automatically generated when the object was created, but the user can change it. The name can contain [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX) strings and it doesn't have to be unique. These are typically short because of their use in the Definition Text displayed in the Objects Tab. Here are several automatically generated names that demonstrate the default naming conventions:
 
-- P - [Point](/tools/basic.html#point)
-- Li - [Line](/tools/basic.html#line)
-- Ls - [Line Segment](/tools/basic.html#line-segment)
-- C - [Circle](/tools/basic.html#circle)
-- E - [Ellipse](/tools/conic.html#ellipse)
-- H - [Hyperbola](/tools/conic.html#parabola)
-- Pa - [Parabola](/tools/conic.html#hyperbola)
-- Po - [Polygon](/tools/basic.html#polygon)
-- Ca - [Circular Arc](/tools/advanced.html#circular-arc)
-- Pc - [Parametric Curve](/tools/advanced.html#parametric-curve-user-defined)
-- Rp - [Reflection over a point](/tools/transformation.html#create-reflection-over-point)
-- Rl - [Reflection over a line](/tools/transformation.html#create-reflection)
-- Ro - [Rotation](/tools/transformation.html#create-measured-rotation)
-- Tr - [Translation](/tools/transformation.html#create-translation)
-- In - [Inversion](/tools/transformation.html#create-inversion)
-- Calc - [Calculation](/userguide/toolsobjectspanel.html#expression-panel)
-- Sl - [Slider](/tools/measurement.html#slider)
-- Tx - [Text](/tools/basic.html#text)
+- P - [Point](/tools/basic#point)
+- Li - [Line](/tools/basic#line)
+- Ls - [Line Segment](/tools/basic#line-segment)
+- C - [Circle](/tools/basic#circle)
+- E - [Ellipse](/tools/conic#ellipse)
+- H - [Hyperbola](/tools/conic#parabola)
+- Pa - [Parabola](/tools/conic#hyperbola)
+- Po - [Polygon](/tools/basic#polygon)
+- Ca - [Circular Arc](/tools/advanced#circular-arc)
+- Pc - [Parametric Curve](/tools/advanced#parametric-curve-user-defined)
+- Rp - [Reflection over a point](/tools/transformation#create-reflection-over-point)
+- Rl - [Reflection over a line](/tools/transformation#create-reflection)
+- Ro - [Rotation](/tools/transformation#create-measured-rotation)
+- Tr - [Translation](/tools/transformation#create-translation)
+- In - [Inversion](/tools/transformation#create-inversion)
+- Calc - [Calculation](/userguide/toolsobjectspanel#expression-panel)
+- Sl - [Slider](/tools/measurement#slider)
+- Tx - [Text](/tools/basic#text)
 - Am - Angle Marker
 
 Maximum length is ?15? characters. TODO: Update? Is a limit even needed?
@@ -79,7 +79,7 @@ This allows the user to select the attributes of how the text of the name, value
 - Front Color
 - Back Color
 
-The front color is the color used when rendering the text on the front of the sphere. The back color option is both a check box (labelled "Auto") and a color picker. If the box is unchecked the selected color is used. If the box is checked the color is automatically computed based on a contrast constant and the front color (and the color picker value is ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings). contrast = 1 => no difference between front and back
+The front color is the color used when rendering the text on the front of the sphere. The back color option is both a check box (labelled "Auto") and a color picker. If the box is unchecked the selected color is used. If the box is checked the color is automatically computed based on a contrast constant and the front color (and the color picker value is ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar#global-settings). contrast = 1 => no difference between front and back
 Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
 
 ### Label Display Options
@@ -100,11 +100,11 @@ If this box is checked the object is shown.
 
 ### Trace Options
 
-This is a check box that is unchecked by default. If this feature is activated, a temporary copy of the object is left behind as the object moves on the sphere (i.e. is moved with the [Move Tool](/tools/display.html#move)). To clear the temporary copies deactivate the Move Tool by activating another tool. This is feature only applies to points, lines, and circles.
+This is a check box that is unchecked by default. If this feature is activated, a temporary copy of the object is left behind as the object moves on the sphere (i.e. is moved with the [Move Tool](/tools/display#move)). To clear the temporary copies deactivate the Move Tool by activating another tool. This is feature only applies to points, lines, and circles.
 
 ### Fix Object
 
-Checking this box will make any free objects fixed. That is, the move tool will not be able to move the object. Checking this box for already unmovable objects will have no effect on those objects. To learn more about free objects see the details of the [Move Tool](/tools/display.html#move).
+Checking this box will make any free objects fixed. That is, the move tool will not be able to move the object. Checking this box for already unmovable objects will have no effect on those objects. To learn more about free objects see the details of the [Move Tool](/tools/display#move).
 
 ## Front Style Tab
 
@@ -121,7 +121,7 @@ Which options are displayed depends on the objects selected. For example, the Fi
 ## Back Style Tab
 
 This tab allows the user to adjust the style features of the selected object(s) that pertain to their rendering on the back of the sphere. At the top of this tab is a check box (labelled "Auto").
-If the box is unchecked the selected styles are used to render the object on the back of the sphere. If the box is checked the styles are automatically computed based on a contrast constant and the front style (and the style choices are ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings).
+If the box is unchecked the selected styles are used to render the object on the back of the sphere. If the box is checked the styles are automatically computed based on a contrast constant and the front style (and the style choices are ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar#global-settings).
 contrast = 1 => no difference between front and back
 Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
 
@@ -139,9 +139,9 @@ Which options are displayed depends on the objects selected. For example, the Fi
 
 This tab allows the user to adjust some of the style features of the selected objects based on Measurement Token. For example:
 
-- The user can write a boolean valued expression the controls if the object is shown or not (overriding the [Show Object](/userguide/stylepanel.html#show-object) check box).
+- The user can write a boolean valued expression the controls if the object is shown or not (overriding the [Show Object](/userguide/stylepanel#show-object) check box).
 - The user can write a real valued expression that controls the Red, Blue, or Green component of the color of either the fill (in the case of points) or the stroke color (in the case of one-dimensional objects).
-- For [Line Segments](/tools/basic.html#line-segment) and [Circular Arc](/tools/advanced.html#circular-arc) the extension value is set here. The user can enter a fix number or a Measurement Token to control the length of the Line Segment or Circular Arc. Details can be found in the tool descriptions.
-- For [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined) this is the tab where the parametric description $P(t)$, lower bound ($t_l$), upper bound ($t_u$), and open/closed options are entered. Details can be found in the tool description.
-- The user can edit a [Calculation](/userguide/toolsobjectspanel.html#expression-panel) in this tab.
-- The user edit a [Slider](/tools/measurement.html#slider) in this tab. The user can adjust the lower and upper bounds of the slider, the step size, and if the slider should be animated.
+- For [Line Segments](/tools/basic#line-segment) and [Circular Arc](/tools/advanced#circular-arc) the extension value is set here. The user can enter a fix number or a Measurement Token to control the length of the Line Segment or Circular Arc. Details can be found in the tool descriptions.
+- For [Parametric Curves](/tools/advanced#parametric-curve-user-defined) this is the tab where the parametric description $P(t)$, lower bound ($t_l$), upper bound ($t_u$), and open/closed options are entered. Details can be found in the tool description.
+- The user can edit a [Calculation](/userguide/toolsobjectspanel#expression-panel) in this tab.
+- The user edit a [Slider](/tools/measurement#slider) in this tab. The user can adjust the lower and upper bounds of the slider, the step size, and if the slider should be animated.

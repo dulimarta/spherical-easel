@@ -1,6 +1,6 @@
 ---
 title: Design Document
-prev: /tools/edit.md
+prev: /tools/edit
 ---
 
 # Spherical Easel Design Document
@@ -15,7 +15,7 @@ To display and organize information for a graphical object (like an ellipse) on 
 
 ## Adding a tool
 
-Here is an outline of how you can expand Spherical Easel and [add a tool](/design/addingatooloutline.md).
+Here is an outline of how you can expand Spherical Easel and [add a tool](/design/addingatooloutline).
 
 ## Models Directory
 
@@ -65,7 +65,7 @@ Every <span class="class">SENodule</span> object has the following boolean prope
 
 ## Plottables Directory
 
-Plottable classes are the front-end collection of classes that organize and display graphical representations of objects on the [ideal unit sphere](/design/#coordinates). Classes in this directory should only receive updates and information from the <span class="class">SENodule</span> classes to which they are associated. While there are over 40 <span class="class">SENodule</span> classes (one for each [geometric tool](/userguide/toolsobjectspanel.html#tools-tab)), there are only about 10 graphically rendered objects and each has its own class in the <span class="directory">plottables</span> directory. This [spreadsheet](https://docs.google.com/spreadsheets/d/1o0s0l-offb5uPaimqiIyfVzv22wsuXrKBfjXbZHzxl8/edit?usp=sharing) contains a list of the <span class="class">SENodule</span> classes and their corresponding <span class="class">Nodule</span> classes. The plottable classes are
+Plottable classes are the front-end collection of classes that organize and display graphical representations of objects on the [ideal unit sphere](/design/#coordinates). Classes in this directory should only receive updates and information from the <span class="class">SENodule</span> classes to which they are associated. While there are over 40 <span class="class">SENodule</span> classes (one for each [geometric tool](/userguide/toolsobjectspanel#tools-tab)), there are only about 10 graphically rendered objects and each has its own class in the <span class="directory">plottables</span> directory. This [spreadsheet](https://docs.google.com/spreadsheets/d/1o0s0l-offb5uPaimqiIyfVzv22wsuXrKBfjXbZHzxl8/edit?usp=sharing) contains a list of the <span class="class">SENodule</span> classes and their corresponding <span class="class">Nodule</span> classes. The plottable classes are
 
 - <span class="class">Point</span>
 - <span class="class">NonFreePoint</span>
@@ -97,12 +97,12 @@ Each of these classes extends the <span class="class">Nodule</span> class and th
   - Set up a style. That is, indicate that the object being created is temporary one or to set up the glowing style. So that when it is actually displayed the correct look and feel is displayed.
   - Change the display style. That is, allow the user to change the an aspect of the display (i.e change a color).
 
-  The <span class="class">Nodule</span> objects are used in multiple ways indicate by the <span class="variable">DisplayStyle</span> flag. This flag is an [enum](https://www.typescriptlang.org/docs/handbook/enums.html) that can have the following values:
+  The <span class="class">Nodule</span> objects are used in multiple ways indicate by the <span class="variable">DisplayStyle</span> flag. This flag is an [enum](https://www.typescriptlang.org/docs/handbook/enums) that can have the following values:
 
   - TEMPORARY - This styling used when the object is being created by a [handler](/design/#event-handlers) or has not yet been created by the user. For example, when the user mouses over an intersection point that has not yet been used in an arrangement but was automatically calculated. This style is not modifiable by the user. This method will be called only once on a <span class="class">Nodule</span> object.
   - GLOWING - This sets up the style of the glowing objects, so that when an object is set to <span class="method">glowingDisplay()</span> the glowing objects are rendered correctly. This style is not modifiable by the user. This method will be called only once on a <span class="class">Nodule</span> object.
   - DEFAULT - This sets the style of the object back to the defaults. That is, if the user has made some style changes (say a new color) to objects but changes their mind, the application uses this option to revert the objects back to the defaults that were initially used. This style is not modifiable by the user. This method will be called as many times as the user wants to reset the style on a <span class="class">Nodule</span> object.
-  - UPDATE - This sets the style of the object to the variables in object. This allows styles to be applied to an object after the user has made a change. For example, if the user selects a line color of blue in the [Style Panel](/userguide/stylepanel.html) the variable <span class="variable">strokeColorFront</span> of that particular line is set to this choice and <span class="method">stylize(UPDATE)</span> is used to apply that choice to the graphical object. This method will be called as many times as the user wants to change the style on a <span class="class">Nodule</span> object.
+  - UPDATE - This sets the style of the object to the variables in object. This allows styles to be applied to an object after the user has made a change. For example, if the user selects a line color of blue in the [Style Panel](/userguide/stylepanel) the variable <span class="variable">strokeColorFront</span> of that particular line is set to this choice and <span class="method">stylize(UPDATE)</span> is used to apply that choice to the graphical object. This method will be called as many times as the user wants to change the style on a <span class="class">Nodule</span> object.
 
 - <span class="method">setVisible(flag: boolean)</span>: This turns on or off the visibility of the <span class="class">Nodule</span> object.
 
@@ -123,7 +123,7 @@ For any variable in a plottables class the must be set before the plottable can 
 
 ## Layers
 
-Layers are an integral part of the rendering process. The renderer (currently from the <span class="package">[two.js](https://two.js.org/)</span> package) needs to draw objects in a sensible way so that all objects on the front (positive Z-coordinate) of the sphere are rendered on top of all objects on the back of the sphere (negative Z-coordinate). This leads to the <span class="variable">background</span> and <span class="variable">foreground</span> prefixes in the [enum](https://www.typescriptlang.org/docs/handbook/enums.html) variable <span class="variable">LAYER</span>. However, even objects the front of the sphere need to be rendered in the appropriate order. For example, <span class="variable">foregroundPoints</span> must be rendered on top of the <span class="variable">foreground</span> one-dimensional objects, but under the <span class="variable">foregroundText</span>. All glowing objects must be rendered under their corresponding non-glowing versions, so for every type of object to be displayed there is a second glowing version of that layer.
+Layers are an integral part of the rendering process. The renderer (currently from the <span class="package">[two.js](https://two.js.org/)</span> package) needs to draw objects in a sensible way so that all objects on the front (positive Z-coordinate) of the sphere are rendered on top of all objects on the back of the sphere (negative Z-coordinate). This leads to the <span class="variable">background</span> and <span class="variable">foreground</span> prefixes in the [enum](https://www.typescriptlang.org/docs/handbook/enums) variable <span class="variable">LAYER</span>. However, even objects the front of the sphere need to be rendered in the appropriate order. For example, <span class="variable">foregroundPoints</span> must be rendered on top of the <span class="variable">foreground</span> one-dimensional objects, but under the <span class="variable">foregroundText</span>. All glowing objects must be rendered under their corresponding non-glowing versions, so for every type of object to be displayed there is a second glowing version of that layer.
 
 The complete list of values for enum <span class="variable">LAYER</span> each describe the layer that it numbers:
 
@@ -165,7 +165,7 @@ In general the rendering process is more complex than this. For example, conside
 Zooming and panning are accomplished using a CSS (affine) transform applied to the **root** SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: In the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$ the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
 
 1. Using a track pad or mouse wheel. These trigger the <span class="method">handleMouseWheelEvent(MouseEvent)</span> method in the <span class="file">SphereFrame.vue</span> file.
-2. Using the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
+2. Using the [Zooming and Panning Tools](/tools/display#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
 
 In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) (triggering a resize of the plottables - outlined below) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file (see below) is eventually executed which sets the new CSS Affine Transformation -- which is alway a uniform scaling and translation and never a shear.
 
@@ -201,9 +201,9 @@ The geometric objects in any arrangement are associated to an abstract data stru
 - A line segment, $S_1$, from point $P_1$ to new point $P_5$ that is constrained to be on $C_2$.
 - One of the intersection points, $P_6$, of $C_1$ and $C_2$.
 
-As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is only constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display.html#move).
+As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is only constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display#move).
 
-To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display.html#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display.html#move)):
+To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display#move)):
 
 <tik-z-picture latex="directed_graph.tex"></tik-z-picture>
 
@@ -231,7 +231,7 @@ All handlers implement the interface <span class="interface">ToolStrategy</span>
 
 <<< @../../../src/eventHandlers/ToolStrategy.ts#toolStrategy{2-7}
 
-The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit.html#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
+The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
 
 Almost all handlers extend <span class="class">Highlighter</span> which itself extends <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
 
@@ -274,7 +274,7 @@ to the store which then uses [Visitors](/design/#visitor-and-event-bus-actions) 
 
 ## Commands
 
-We record each change in the application using a <span class="class">Command</span> object. This allows use to implement a [Command Design Pattern](https://en.wikipedia.org/wiki/Command_pattern). This pattern allows us to easily implement the [Undo and Redo Tool](/tools/edit.html#undo-redo) and ultimately the Load and Save features of the application. Every user action that changes the state of the application is implemented by a <span class="class">Command</span> object.
+We record each change in the application using a <span class="class">Command</span> object. This allows use to implement a [Command Design Pattern](https://en.wikipedia.org/wiki/Command_pattern). This pattern allows us to easily implement the [Undo and Redo Tool](/tools/edit#undo-redo) and ultimately the Load and Save features of the application. Every user action that changes the state of the application is implemented by a <span class="class">Command</span> object.
 
 The <span class="class">Command</span> class contains several static variables including
 
@@ -296,7 +296,7 @@ Each instance of the <span class="class">Command</span> class has access to the 
   - Forces the command instance to perform the actual action of instance command (via <span class="method">do()</span>)
 - <span class="method">push()</span>:
   - Does the same thing as <span class="method">execute()</span> except for actually preforming the command.
-  - This is used for [Zooming and Panning](/design/handlers/display.html#zoom-pan-and-standard-view) which are events that are executed directly based on immediate user input and only when undone or redone are executed by a command instance.
+  - This is used for [Zooming and Panning](/tools/display#zoom-pan-and-standard-view) which are events that are executed directly based on immediate user input and only when undone or redone are executed by a command instance.
 
 All Child classes of Command must implement the following abstract methods
 
@@ -304,7 +304,7 @@ All Child classes of Command must implement the following abstract methods
 - <span class="method">saveState()</span>: Save require information to restore the app state
 - <span class="method">do()</span>: Perform necessary action to alter the app state
 
-For example, to add a point to the state of the application, the [PointHandler](/design/handlers/basic.html#point) gathers mouse input and creates the [linked <span class="class">Point</span> and <span class="class">SEPoint</span> objects](/design/#plottables-directory). Then it creates a <span class="class">AddPointCommand</span> object using the <span class="class">SEPoint</span> object in the constructor. This code snippet from <span class="file">AddPointCommand.ts</span> shows this
+For example, to add a point to the state of the application, the [PointHandler](/tools/basic#point) gathers mouse input and creates the [linked <span class="class">Point</span> and <span class="class">SEPoint</span> objects](/design/#plottables-directory). Then it creates a <span class="class">AddPointCommand</span> object using the <span class="class">SEPoint</span> object in the constructor. This code snippet from <span class="file">AddPointCommand.ts</span> shows this
 
 <<< @../../../src/commands/AddPointCommand.ts#addPointCommand
 
@@ -314,7 +314,7 @@ The <span class="method">do()</span> and <span class="method">restoreState()</sp
 
 This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
 
-When the user performs a sequence of changes to the app, sometimes we do not want each individual change to be undone. For example, if the Mouse Wheel or [Zooming and Panning Tool](/tools/display.html#zoom-pan-and-standard-view) is used to [zoom or pan](/design/#zooming-and-panning), they may execute thirty or forty small zooms and undoing a large number of small zooms is very tedious. In this case we only push only one Command onto the stack: one that takes the starting view and transforms it to final view. In this case the entire zooming or panning operation is undone with one <span class="method">undo()</span> command. However, this is not always possible and sometimes we use a <span class="class">CommandGroup</span> object to group a sequence of <span class="class">Command</span> objects together, each of which needs to be undone separately, but can be executed as batch.
+When the user performs a sequence of changes to the app, sometimes we do not want each individual change to be undone. For example, if the Mouse Wheel or [Zooming and Panning Tool](/tools/display#zoom-pan-and-standard-view) is used to [zoom or pan](/design/#zooming-and-panning), they may execute thirty or forty small zooms and undoing a large number of small zooms is very tedious. In this case we only push only one Command onto the stack: one that takes the starting view and transforms it to final view. In this case the entire zooming or panning operation is undone with one <span class="method">undo()</span> command. However, this is not always possible and sometimes we use a <span class="class">CommandGroup</span> object to group a sequence of <span class="class">Command</span> objects together, each of which needs to be undone separately, but can be executed as batch.
 
 For example, when creating a circle the user may create a new center point, new circle point, and finally a new circle depending on both of these objects. In the <span class="file">CircleHandler.ts</span> file the <span class="method">makeCircle()</span> method starts creating a <span class="class">CommandGroup</span> object
 
@@ -422,9 +422,9 @@ In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader m
 
 ## Visitor and Event Bus Actions
 
-The <span class="class">Visitor</span> class allows one class access to another class's private variables in a controlled way. <span class="class">EventBus</span> actions allow non-Vue components to communicate with Vue components in an asynchronous way. For example, the [Rotation Tool](/tools/display.html#rotation) uses both of these classes in crucial way.
+The <span class="class">Visitor</span> class allows one class access to another class's private variables in a controlled way. <span class="class">EventBus</span> actions allow non-Vue components to communicate with Vue components in an asynchronous way. For example, the [Rotation Tool](/tools/display#rotation) uses both of these classes in crucial way.
 
-The [Rotation Handler](/design/handlers/display.html#rotation) uses the user mouse input to compute a Change In Position Rotation Matrix that maps the Unit Ideal Sphere to itself (see the illustration in the [Rendering Objects](/design/#rendering-objects) section). This fires a <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) action as shown in this snippet from <span class="file">RotateHandler.ts</span>:
+The [Rotation Handler](/tools/display#rotation) uses the user mouse input to compute a Change In Position Rotation Matrix that maps the Unit Ideal Sphere to itself (see the illustration in the [Rendering Objects](/design/#rendering-objects) section). This fires a <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) action as shown in this snippet from <span class="file">RotateHandler.ts</span>:
 
 <<< @../../../src/eventHandlers/RotateHandler.ts#sphereRotate
 
@@ -444,7 +444,7 @@ The <span class="class">RotationVisitor</span> merely updates all other <span cl
 
 ## Stylizing Objects
 
-When the user opens the [Style Panel](/userguide/stylepanel.html) a set of options (in the form of four expansion panels: Basic, Foreground, Background, and Advanced) appears on the right side of the canvas, the [Tools and Object Panel](/userguide/toolsobjectspanel.html) is minimized, the active tool is set to the <span class="tool">Selection</span> tool, and the undo and redo buttons are disabled. This is because the user should only be styling objects and not creating new ones (and each option on the style panel has an <span class="button">Undo</span> button).
+When the user opens the [Style Panel](/userguide/stylepanel) a set of options (in the form of four expansion panels: Basic, Foreground, Background, and Advanced) appears on the right side of the canvas, the [Tools and Object Panel](/userguide/toolsobjectspanel) is minimized, the active tool is set to the <span class="tool">Selection</span> tool, and the undo and redo buttons are disabled. This is because the user should only be styling objects and not creating new ones (and each option on the style panel has an <span class="button">Undo</span> button).
 
 ### Fore- and Back-ground Panels
 

@@ -49,7 +49,7 @@ Hide or show the label of selected objects.
 :::
 
 ::: tip
-If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then [Undo](edit.html#undo-and-redo) <IconBase icon-name="undo" /> you first action, change to the [Selection Tool](edit.html#selection) <IconBase icon-name="select" />, and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
+If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then [Undo](/tools/edit#undo-and-redo) <IconBase icon-name="undo" /> you first action, change to the [Selection Tool](/tools/edit#selection) <IconBase icon-name="select" />, and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
 :::
 
 ::: tool-title
@@ -64,7 +64,7 @@ Move the location of a free object.
 - Mousing over an object will highlight a free and movable object. Mouse press and dragging on that object will move the location of the object on the sphere and the location of all objects that depends on it will be updated. Mouse release will terminate the movement of that object and place it at a new location.
 - **Not** all objects are movable. Only free objects are movable. There are several kinds of free objects:
 
-  1. Points which reside in the top layer of the dependency structure of a construction. For example, points created on the sphere that are not snapped - see this [tip](/tools/basic.html#point) - to an intersection point.
+  1. Points which reside in the top layer of the dependency structure of a construction. For example, points created on the sphere that are not snapped - see this [tip](/tools/basic#point) - to an intersection point.
 
   2. Lines, line segments, circles, and ellipses which reside in second to top layer of the dependency structure. For example, suppose three points are created on the sphere and are not snapped to any object. Then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse then the ellipse is in the second layer of the dependency structure. These kinds of objects are free and therefore movable.
 
@@ -77,7 +77,7 @@ Move the location of a free object.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
 - Moving a free line or line segment rotates it about one of the defining points of the line or an endpoint of line segment. Pressing the <KeyShortcuts macOpt pcAlt /> key toggles the point that the line or line segment rotates about.
 - Moving a free line or line segment with the <KeyShortcuts macCtrl pcCtrl /> key pressed, moves both endpoints or defining points simultaneously. They both rotate about the perpendicular to the plane containing the last mouse location and the current mouse location as the user drags.
-- Polygons, non-ellipse conics, antipodal points, parametric curves, and objects created using the Construction Tools (except point on object) and Advanced Tools are not moveable. Parametric curves can be "moved" by using a Measurement Object <IconBase icon-name="measurementObject" /> or a Calculation Object <IconBase icon-name="calculationObject" /> in the parametric definition. See [Parametric Curve](advanced.html#parametric-curve) for more details
+- Polygons, non-ellipse conics, antipodal points, parametric curves, and objects created using the Construction Tools (except point on object) and Advanced Tools are not moveable. Parametric curves can be "moved" by using a Measurement Object <IconBase icon-name="measurementObject" /> or a Calculation Object <IconBase icon-name="calculationObject" /> in the parametric definition. See [Parametric Curve](/tools/advanced#parametric-curve) for more details
 - If the user clicks on an empty space in the Sphere Canvas and then drags, the sphere is rotated (i.e. all objects move, but not relative to each other).
 - If this tool is activated with objects selected, the selected objects are unselected and ignored.
 
@@ -133,7 +133,7 @@ Pan, Zoom In or Out on the current view or return to the standard view.
 - These tools are found in the lower right hand corner of the Sphere Frame.
 - Select the Zoom In <IconBase icon-name="zoomIn" /> or Zoom Out <IconBase icon-name="zoomOut" /> tool to perform the corresponding action on a mouse press and release (a mouse click) at the same location.
   - The zoom is centered on the mouse click location.
-  - TODO: [The percent zoom can be set by the user.](/userguide/titlebar.html#global-settings)
+  - TODO: [The percent zoom can be set by the user.](/userguide/titlebar#global-settings)
 - With either tool, if the user mouse presses at one location, moves the mouse, and then mouse releases, the view is panned from the mouse press to the mouse release location (and updated in between).
 - Pinching on a track pad or using a mouse wheel will zoom in or out centered at the current location of the mouse. The percent of zoom in or out is determined by the change in the mouse wheel or pinch change value.
 - The Zoom Fit <IconBase icon-name="zoomFit" /> tool restores the view to the largest possible one of the sphere given the current size of the window.

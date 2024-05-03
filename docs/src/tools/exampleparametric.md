@@ -1,6 +1,6 @@
 ---
-prev: /userguide/toolsobjectspanel.html#parametric-curve-panel
-next: /userguide/toolsobjectspanel.html#parametric-curve-panel
+prev: /userguide/toolsobjectspanel#parametric-curve-panel
+next: /userguide/toolsobjectspanel#parametric-curve-panel
 ---
 
 # Cardioids

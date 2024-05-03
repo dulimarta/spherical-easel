@@ -150,7 +150,7 @@ Attach or detach a point from an object.
 ::: tool-details
 
 - Select an existing point that is attached (ie. "on" or "glued to") a one-dimensional object and it becomes detached from that object.
-- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move)) and then a one-dimensional object and it becomes attached to that object.
+- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display#move)) and then a one-dimensional object and it becomes attached to that object.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::
 
@@ -187,7 +187,7 @@ Create a point that is constrained to be on a one- or two- dimensional object.
 - Click at a location near a one- or two-dimensional object and a point is created that is constrained to be on that object.
 - This tool should not be needed because Spherical Easel always assumes that if the user attempts to create a point _**near**_ a one- or two-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object).
 - A point is constrained to be on a one- or two-dimensional object, or "glued" to it, if you can move the point but it never leaves the object onto which it was glued.
-- You can Attach/Dettach a point from an object using the [Attach/Detach Point Tool](/tools/construction.html#attach-detach-point)
+- You can Attach/Dettach a point from an object using the [Attach/Detach Point Tool](/tools/construction#attach-detach-point)
 - When a point on object is created, a row describing some of its properties will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - When this tool is activated all previously selected objects are unselected and ignored.
 

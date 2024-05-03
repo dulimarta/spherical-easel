@@ -22,7 +22,7 @@ Select object(s) to change their visual style or to perform actions on them with
 
 - Mousing over an object will highlight the object in focus and clicking (mouse press and release at the same location) will select that object. Holding the <KeyShortcuts macShift pcShift /> key highlights and selects objects on the back of the sphere.
 - To add or subtract to your current selection, press and hold the <KeyShortcuts macOpt pcCtrl /> key when clicking. A click will add the objects to the current selection or, if the click is on an already selected object, that object will be removed from the current selection.
-- Labels are an attribute of an object, like color, and are therefore not selectable. Use the [Toggle Label Display](display.html#toggle-label-display) <IconBase icon-name="toggleLabelDisplay" /> tool to change the display of the label. To style a label, select the object it labels, open the Style Panel <IconBase icon-name="stylePanel" /> and open Label Style.
+- Labels are an attribute of an object, like color, and are therefore not selectable. Use the [Toggle Label Display](/tools/display#toggle-label-display) <IconBase icon-name="toggleLabelDisplay" /> tool to change the display of the label. To style a label, select the object it labels, open the Style Panel <IconBase icon-name="stylePanel" /> and open Label Style.
 
 - All selected objects will glow (i.e. have a highlight color displayed in the background of the object) and slowly blink.
 - To select multiple objects, mouse press and drag to create a selection rectangle. Any non-label object in or partially within that rectangle will be added to the current selection when the mouse is released. Holding the shift key <KeyShortcuts macShift pcShift /> creates the selection rectangle on the back of the sphere.
@@ -46,8 +46,8 @@ Select object(s) to change their visual style or to perform actions on them with
 
 - If you select an object or objects and then activate another tool then the action of that tool is applied to the selected object(s) so long as the selected object(s) are appropriate for the tool. For example,
   - if you select multiple objects and then activate the Delete Tool <IconBase icon-name="delete" />, all selected objects (with their labels) will be deleted.
-  - if you select two points and then activate the [Circle Tool](basic.html#circle) <IconBase icon-name="circle" />, then a circle will be created with the first selected point as the center and the second as a point on the circle determining the radius.
-  - if you select three points and a line and then activate the [Ellipse Tool](conic.html#ellipse) <IconBase icon-name="ellipse" />, then the points and lines are ignored, unselected, and no new ellipse is created because an ellipse is created from only three points.
+  - if you select two points and then activate the [Circle Tool](/tools/basic#circle) <IconBase icon-name="circle" />, then a circle will be created with the first selected point as the center and the second as a point on the circle determining the radius.
+  - if you select three points and a line and then activate the [Ellipse Tool](./conic#ellipse) <IconBase icon-name="ellipse" />, then the points and lines are ignored, unselected, and no new ellipse is created because an ellipse is created from only three points.
 
 :::
 
@@ -85,7 +85,7 @@ Undo or redo the last action.
 - These tools undo or redo the last action.
 - Undo is bound to the key stroke <KeyShortcuts macCmd macLetter="z" pcCtrl pcLetter="z"  />.
 - Redo is bound to the key stroke <KeyShortcuts macShift macCmd macLetter="z" pcCtrl pcLetter="y"  />.
-- Zooming and rotating are undoable, except in the case when rotating (including [momentum rotations](/userguide/titlebar.html#global-settings)), panning, or mouse wheel zooming. In those cases only the view before and after are recorded and the intermediate views are not.
+- Zooming and rotating are undoable, except in the case when rotating (including [momentum rotations](/userguide/titlebar#global-settings)), panning, or mouse wheel zooming. In those cases only the view before and after are recorded and the intermediate views are not.
 - If either of these tools are activated with any objects selected, the selected objects are unselected and ignored.
 
 :::
@@ -110,7 +110,7 @@ Clears the current construction on the Sphere Canvas without saving.
 :::
 
 ::: tip
-If the user wants to clear the sphere in an undoable way, activate the [Selection Tool](edit.html#selection) <IconBase icon-name="select" />, select all objects with <KeyShortcuts macCmd macLetter="a" pcCtrl pcLetter="a"  />, then activate the Delete Tool <IconBase icon-name="delete" />.
+If the user wants to clear the sphere in an undoable way, activate the [Selection Tool](./edit#selection) <IconBase icon-name="select" />, select all objects with <KeyShortcuts macCmd macLetter="a" pcCtrl pcLetter="a"  />, then activate the Delete Tool <IconBase icon-name="delete" />.
 
 :::
 

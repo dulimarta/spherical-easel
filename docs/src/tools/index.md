@@ -17,8 +17,8 @@ Through out this documentation, **mouse press** (or **mouse down**) is the actio
 
 When creating points with any tool that creates an object depending on points, Spherical Easel always assumes that if the user attempts to create
 
-- a point _**near**_ a one-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object). That is, the [Point On Object Tool](/tools/construction.html#point-on-object) was used.
-- a point _**near**_ an intersection of two one-dimensional objects, the user would like the point to be an intersection of the objects. That is, the [Intersection Tool](/tools/construction.html#intersection) was used.
+- a point _**near**_ a one-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object). That is, the [Point On Object Tool](/tools/construction#point-on-object) was used.
+- a point _**near**_ an intersection of two one-dimensional objects, the user would like the point to be an intersection of the objects. That is, the [Intersection Tool](/tools/construction#intersection) was used.
 - a point _**near**_ an existing point, the user would like to use the nearby point and not create a new one.
 
 These three features are a "snap to point" assumption that Spherical Easel always makes.
@@ -37,7 +37,7 @@ All selected objects will glow (i.e. have a highlight color displayed in the bac
 
 ::: tip Line Segments
 
-It is possible to a draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kbd>Ctrl</kbd> key (and the <kbd>Shift</kbd> key if the antipode is on the back of the sphere), the segment will be extensible through and past the antipode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
+It is possible to a draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kbd>Ctrl</kbd> key (and the <kbd>Shift</kbd> key if the antipode is on the back of the sphere), the segment will be extensible through and past the antipode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic#toggle-line-segment) to change it.
 
 :::
 
