@@ -23,7 +23,6 @@ type StyleOptionDiff = {
 };
 export function useStyleEditor(
   panel: StyleEditPanels,
-  // @Prop({ required: true }) readonly styleData!: StyleOptions | null;
   noduleFilterFunction: (n: SENodule) => boolean,
   noduleMapFunction: (n: SENodule) => Nodule,
 
@@ -58,12 +57,6 @@ export function useStyleEditor(
   */
   // dataAgreement = true;
   const propDynamicBackStyleCommonValue = ref(false);
-
-  // render(): ScopedSlotChildren {
-  //   if (this.$scopedSlots.default)
-  //   return {} as ScopedSlotChildren;
-  //   // throw new Error("Default scoped slot is undefined");
-  // }
 
   // get enableBackStyleEdit(): boolean {
   //   // Must be in Back panel
@@ -188,13 +181,6 @@ export function useStyleEditor(
     // set the color of the conflicting inputs in the style panel to normal
     EventBus.fire("style-label-conflict-color-reset", {});
   }
-
-  // watch(
-  //   () => panel,
-  //   (): void => {
-  //     console.debug("Panel changed?");
-  //   }
-  // );
 
   watch(
     () => automaticBackStyle,
@@ -426,7 +412,7 @@ export function useStyleEditor(
   });
   function onStyleOptionsChanged(z: StyleOptions): void {
     // console.log(
-    //   "onStyleOpCha in styleEditor",
+    //   "onStyleOptionsChanged in styleEditor",
     //   z
     // );
     const newOptions = { ...z };
@@ -491,7 +477,7 @@ export function useStyleEditor(
       //   delete updatePayload.backStyleContrast;
       // }
       filteredNodules.value.forEach((n: Nodule) => {
-        console.debug("Updating style of", n, "payload", updatePayload);
+        // console.debug("Updating style of", n, "payload", updatePayload);
         n.updateStyle(panel, updatePayload);
       });
     }

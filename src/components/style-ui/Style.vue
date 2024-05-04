@@ -115,7 +115,7 @@ onMounted((): void => {
   EventBus.listen("update-all-labels-showing", allLabelsShowingCheck);
   EventBus.listen("update-all-objects-showing", allObjectsShowingCheck);
   EventBus.listen("toggle-object-visibility", toggleObjectsShowing);
-  EventBus.listen("toggle-label-visibility", toggleLabelsShowing);
+  // EventBus.listen("toggle-label-visibility", toggleLabelsShowing);
 });
 
 const buttonListItems = computed((): string[] => {

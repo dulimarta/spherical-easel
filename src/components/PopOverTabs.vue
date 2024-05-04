@@ -1,16 +1,17 @@
 <template>
   <!-- Add 40-pixel offset so the menu box does not overlap the navigation drawer -->
   <v-menu
-    v-model="menu"
+  v-model="menu"
+  persistent
     location="start"
     :close-on-content-click="false"
     :offset="40">
-    <template #activator="{ props: menu }">
+    <template #activator="{ props: menuProps }">
       <v-tooltip :location="tooltipLocation">
         <template #activator="{ props: tooltip }">
-          <v-icon v-bind="mergeProps(menu, tooltip)" :icon="iconName"></v-icon>
+          <v-icon v-bind="mergeProps(menuProps, tooltip)" :icon="iconName"></v-icon>
         </template>
-        <span>{{tooltip}}</span>
+        <span>{{elementProps.tooltip}}</span>
       </v-tooltip>
     </template>
     <v-sheet class="bg-white">
@@ -34,12 +35,18 @@ import { ref, watch } from "vue";
 type Props = {
   iconName: string;
   tooltip: string;
-  tooltipLocation: 'left' | 'right' | 'top' | 'bottom'
+  tooltipLocation: 'left' | 'right' | 'top' | 'bottom',
 };
-const props = defineProps<Props>();
+const elementProps = withDefaults(defineProps<Props>(), {
+});
+const emit = defineEmits(['popUpShown','popUpHidden'])
 const LAST_TAB_MARKER = 99999;
 const currentTab = ref(0);
 const menu = ref(false);
+watch(menu, (menuOn) => {
+  if (menuOn) emit('popUpShown')
+  else emit('popUpHidden')
+})
 watch(
   () => currentTab.value,
   (tab: number) => {
