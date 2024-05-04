@@ -111,11 +111,10 @@ function toggleLabelsShowing() {
   labelsShowingFlag.value = !labelsShowingFlag.value
   const cmdGroup = new CommandGroup()
   selectedSENodules.value
-    .filter(n => n.isLabelable())
+    .filter(n => n.getLabel() !== null)
     .forEach(n => {
-
-      const lab = (n as unknown as Labelable).label!
-      cmdGroup.addCommand(new SetNoduleDisplayCommand(lab, labelsShowingFlag.value))
+      const lab = n.getLabel()
+      cmdGroup.addCommand(new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value))
     })
     cmdGroup.execute()
 }

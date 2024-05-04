@@ -22,8 +22,9 @@ export const useStylingStore = defineStore("style", () => {
 
   function toggleLabelsShowing() {
     selectedSENodules.value.forEach((n) => {
-      if (n.isLabelable()) {
-        (n as unknown as Labelable).label!.showing = true
+      const label = n.getLabel()
+      if (label) {
+        label.showing = true
       }
     })
   }

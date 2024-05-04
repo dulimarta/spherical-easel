@@ -367,7 +367,7 @@ let popupVisible = false
 
 // Include only those objects that have SELabel
 function labelFilter(n: SENodule): boolean {
-  return n.isLabelable();
+  return n.getLabel() !== null;
 }
 
 // Map each object to its plottable label
@@ -536,18 +536,18 @@ watch(
     if (!dataAgreement(/labelDynamicBackStyle/)) {
       //   dialogSequencer.showDialog(backStyleDisagreementDialog.value!);
     }
-    beforeArr.filter(n => n.isLabelable())
+    beforeArr.filter(n => n.getLabel() !== null)
       .forEach(n => {
-        const withLabel = (n as unknown as Labelable)
+        const theLabel = n.getLabel()
         const prevLabelState = labelVisibiltyState.get(n.name)
         if (typeof prevLabelState === 'undefined') {
-          labelVisibiltyState.set(n.name, withLabel.label!.showing)
+          labelVisibiltyState.set(n.name, theLabel!.showing)
         } else {
-          withLabel.label!.showing = prevLabelState
+          theLabel!.showing = prevLabelState
         }
     })
 
-    afterArr.filter(n => n.isLabelable())
+    afterArr.filter(n => n.getLabel() != null)
       .forEach(n => {
         const withLabel = n as unknown as Labelable
         const prevLabelState = labelVisibiltyState.get(n.name)
@@ -648,12 +648,12 @@ const labelVisibiltyState = new Map<string,boolean>();
 function checkLabelsVisibility() {
   popupVisible = true
   selectedSENodules.value.forEach(n => {
-    if (n.isLabelable()) {
-      const withLabel = n as unknown as Labelable;
-      const labelVisibility = withLabel.label!.showing
+    const nLabel = n.getLabel()
+    if (nLabel) {
+      const labelVisibility = nLabel.showing
       labelVisibiltyState.set(n.name, labelVisibility);
-      if (!withLabel.label!.showing) {
-        withLabel.label!.showing = true;
+      if (!nLabel.showing) {
+        nLabel.showing = true;
       }
     }
   });
@@ -662,10 +662,10 @@ function checkLabelsVisibility() {
 function resetLabelsVisibility() {
   popupVisible = false
   selectedSENodules.value.forEach(n => {
-    if (n.isLabelable()) {
-      const withLabel = n as unknown as Labelable;
+    const nLabel = n.getLabel()
+    if (nLabel) {
       if (labelVisibiltyState.has(n.name)) {
-        withLabel.label!.showing = false;
+        nLabel.showing = false;
       }
     }
   });

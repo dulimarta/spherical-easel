@@ -142,8 +142,9 @@ watch(() => selectedSENodules.value, allLabelsShowingCheck);
 function allLabelsShowingCheck(): void {
   console.log("Style All Labels: onSelectionChanged");
   allLabelsShowing.value = selectedSENodules.value.every(node => {
-    if (node.isLabelable()) {
-      return (node as unknown as Labelable).label!.showing;
+    const nLabel = node.getLabel()
+    if (nLabel) {
+      return nLabel.showing;
     } else {
       return true;
     }
@@ -240,12 +241,10 @@ function toggleLabelsShowing(source: any): void {
   }
   const toggleLabelDisplayCommandGroup = new CommandGroup();
   selectedSENodules.value.forEach(node => {
-    if (node.isLabelable()) {
+    const nLabel = node.getLabel()
+    if (nLabel) {
       toggleLabelDisplayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(
-          (node as unknown as Labelable).label!,
-          allLabelsShowing.value
-        )
+        new SetNoduleDisplayCommand(nLabel, allLabelsShowing.value)
       );
     }
   });

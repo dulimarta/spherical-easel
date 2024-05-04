@@ -15,10 +15,9 @@ export class SetNoduleExistCommand extends Command {
     this.seNodule = seNodule;
     this.existing = existing;
     this.showing = showing;
-    if (this.seNodule.isLabelable()) {
-      this.initialLabelShowingValue = (
-        this.seNodule as unknown as Labelable
-      ).label?.showing;
+    const theLabel = this.seNodule.getLabel()
+    if (theLabel) {
+      this.initialLabelShowingValue = theLabel.showing;
     }
   }
 
