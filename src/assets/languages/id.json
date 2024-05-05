@@ -282,7 +282,6 @@
     "strokeColor": "Warna garis",
     "value": "Nilai",
     "globalBackStyleContrast": "style.globalBackStyleContrast",
-    "labelStyleOptionsMultiple": "style.labelStyleOptionsMultiple",
     "dashArrayReverse": "style.dashArrayReverse",
     "dashPatternReverseArrayToolTip": "style.dashPatternReverseArrayToolTip",
     "angleMarkerOptions": "style.angleMarkerOptions",
@@ -291,10 +290,6 @@
     "angleMarkerArrowHeads": "style.angleMarkerArrowHeads",
     "toggleStyleOptionsToolTip": "style.toggleStyleOptionsToolTip",
     "labelNotVisible": "style.labelNotVisible",
-    "noFillLabelTip": "style.noFillLabelTip",
-    "noFillTip": "style.noFillTip",
-    "noFill": "style.noFill",
-    "noStroke": "style.noStroke",
     "showLabels": "style.showLabels",
     "showObjects": "style.showObjects",
     "toSelectObjects": "style.toSelectObjects"

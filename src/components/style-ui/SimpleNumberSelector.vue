@@ -4,7 +4,7 @@
       {{ title + " (" + thumbMap(sliderValue ?? 0) + ")" }}
     </span>
     <span v-if="numSelected > 1" class="text-subtitle-2" style="color: red">
-      {{ " " + $t("style.labelStyleOptionsMultiple") }}
+      {{ t("labelStyleOptionsMultiple") }}
     </span>
 
     <!-- The number selector slider -->
@@ -25,6 +25,8 @@
 
 <script setup lang="ts">
 import { ref, useAttrs, Ref, defineModel } from "vue";
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
 const sliderValue = defineModel({type: Number})
 const attrs = useAttrs();
 type ComponentProps = {
@@ -77,3 +79,8 @@ function decrementDataValue(): void {
   color: rgb(255, 82, 82);
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "labelStyleOptionsMultiple": "(multiple)"
+}
+</i18n>

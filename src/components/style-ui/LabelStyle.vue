@@ -1,7 +1,8 @@
 <template>
   <!-- For debugging -->
-  <ul></ul>
-
+  <div style="">
+    Display mode {{ styleOptions.labelDisplayMode }}
+  </div>
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
     :disabled="selectionCount < 1"
@@ -69,7 +70,7 @@
           ]"></v-text-field>
         <SimpleNumberSelector
           :numSelected="selectionCount"
-          v-model="labelTextScalePercentage"
+          v-model="styleOptions.labelTextScalePercent"
           :title="t('labelTextScale')"
           ref="labelTextScalePercent"
           :color="conflictItems.labelTextScalePercent ? 'red' : ''"
@@ -79,10 +80,10 @@
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
-        Rotation {{ labelTextRotationAmount }}
+        <!-- Rotation {{ labelTextRotationAmount }} -->
         <SimpleNumberSelector
           :numSelected="selectionCount"
-          v-model="labelTextRotationAmount"
+          v-model="styleOptions.labelTextRotation"
           ref="labelTextRotation"
           :conflict="conflictItems.labelTextRotation"
           :class="{ shake: animatedInput.labelTextRotation }"
@@ -150,10 +151,10 @@
               conflict: conflictItems.labelDisplayMode
             }
           ]"
-          :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
+          :disabled="labelDisplayModeValueFilter(styleOptions).length < 2 && false"
           ref="labelDisplayMode"
           v-bind:label="t('labelDisplayMode')"
-          :items="labelDisplayModeValueFilter(styleOptions)"
+          :items="labelDisplayModeItems"
           item-title="text"
           item-value="value"
           @change="conflictItems.labelDisplayMode = false"
@@ -357,12 +358,12 @@ const labelNotVisibleDialog: Ref<DialogAction | null> = ref(null);
 // $refs
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
-const labelTextScalePercentage = ref(
-  styleOptions.value.labelTextScalePercent ?? 100
-);
-const labelTextRotationAmount: Ref<number> = ref(
-  styleOptions.value.labelTextRotation ?? 0
-);
+// const labelTextScalePercentage = ref(
+//   styleOptions.value.labelTextScalePercent ?? 100
+// );
+// const labelTextRotationAmount: Ref<number> = ref(
+//   styleOptions.value.labelTextRotation ?? 0
+// );
 let popupVisible = false
 
 // Include only those objects that have SELabel
@@ -380,30 +381,6 @@ function labelMapper(n: SENodule): Nodule {
 // usingAutomaticBackStyle = true means the program is setting the style of the back objects
 // private usingAutomaticBackStyle = true;
 
-// shakes the input a bit if there is a conflict on that particular input
-const animatedInput: Animatable = {
-  labelDisplayText: false,
-  labelDisplayMode: false,
-  labelDisplayCaption: false,
-  labelTextFamily: false,
-  labelTextStyle: false,
-  labelTextDecoration: false,
-  labelTextScalePercent: false,
-  labelTextRotation: false
-};
-// change the background color of the input if there is a conflict on that particular input
-const conflictItems: ConflictItems = {
-  labelDisplayText: false,
-  labelDisplayMode: false,
-  labelDisplayCaption: false,
-  labelTextFamily: false,
-  labelTextStyle: false,
-  labelTextDecoration: false,
-  labelTextScalePercent: false,
-  labelTextRotation: false,
-  labelBackFillColor: false,
-  labelFrontFillColor: false
-};
 
 const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
@@ -424,96 +401,8 @@ const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
 const labelDisplayCaptionErrorMessageKey = "";
 const labelDisplayCaptionTestResults = [true, true];
+const labelVisibiltyState = new Map<string,boolean>();
 
-const labelDisplayModeItems: labelDisplayModeItem[] = [
-  {
-    text: t("labelDisplayModes.nameOnly"),
-    value: LabelDisplayMode.NameOnly,
-    optionRequiresMeasurementValueToExist: false,
-    optionRequiresCaptionToExist: false
-  },
-  {
-    text: t("labelDisplayModes.captionOnly"),
-    value: LabelDisplayMode.CaptionOnly,
-    optionRequiresMeasurementValueToExist: false,
-    optionRequiresCaptionToExist: true
-  },
-  {
-    text: t("labelDisplayModes.valueOnly"),
-    value: LabelDisplayMode.ValueOnly,
-    optionRequiresMeasurementValueToExist: true,
-    optionRequiresCaptionToExist: false
-  },
-  {
-    text: t("labelDisplayModes.nameAndCaption"),
-    value: LabelDisplayMode.NameAndCaption,
-    optionRequiresMeasurementValueToExist: false,
-    optionRequiresCaptionToExist: true
-  },
-  {
-    text: t("labelDisplayModes.nameAndValue"),
-    value: LabelDisplayMode.NameAndValue,
-    optionRequiresMeasurementValueToExist: true,
-    optionRequiresCaptionToExist: false
-  }
-];
-
-const labelTextFamilyItems = [
-  {
-    text: t("fonts.genericSanSerif"),
-    value: "sans/-serif"
-  },
-  {
-    text: t("fonts.genericSerif"),
-    value: "serif"
-  },
-  {
-    text: t("fonts.monospace"),
-    value: "monospace"
-  },
-  {
-    text: t("fonts.cursive"),
-    value: "cursive"
-  },
-  {
-    text: t("fonts.fantasy"),
-    value: "fantasy"
-  }
-];
-
-const labelTextStyleItems = [
-  {
-    text: t("textStyle.normal"),
-    value: "normal"
-  },
-  {
-    text: t("textStyle.italic"),
-    value: "italic"
-  },
-  {
-    text: t("textStyle.bold"),
-    value: "bold"
-  }
-];
-
-const labelTextDecorationItems = [
-  {
-    text: t("textDecoration.none"),
-    value: "none"
-  },
-  {
-    text: t("textDecoration.underline"),
-    value: "underline"
-  },
-  {
-    text: t("textDecoration.strikethrough"),
-    value: "strikethrough"
-  },
-  {
-    text: t("textDecoration.overline"),
-    value: "overline"
-  }
-];
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
@@ -566,18 +455,18 @@ watch(
   }
 );
 
-watch(
-  () => labelTextScalePercentage.value,
-  (textScale: number) => {
-    styleOptions.value.labelTextScalePercent = textScale;
-  }
-);
-watch(
-  () => labelTextRotationAmount.value,
-  (textRotation: number) => {
-    styleOptions.value.labelTextRotation = textRotation;
-  }
-);
+// watch(
+//   () => labelTextScalePercentage.value,
+//   (textScale: number) => {
+//     styleOptions.value.labelTextScalePercent = textScale;
+//   }
+// );
+// watch(
+//   () => labelTextRotationAmount.value,
+//   (textRotation: number) => {
+//     styleOptions.value.labelTextRotation = textRotation;
+//   }
+// );
 
 onBeforeMount((): void => {
   for (
@@ -644,7 +533,6 @@ function overrideDynamicBackStyleDisagreement() {
   // // dialogSequencer.hideDialog(backStyleDisagreementDialog.value!)
 }
 
-const labelVisibiltyState = new Map<string,boolean>();
 function checkLabelsVisibility() {
   popupVisible = true
   selectedSENodules.value.forEach(n => {
@@ -738,7 +626,7 @@ function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
   return true;
 }
 
-//This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
+// This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
 // and if the caption is empty, NameAndCaption and Caption Only are not options
 function labelDisplayModeValueFilter(
   opt: StyleOptions
@@ -825,6 +713,121 @@ function hasCaption(opt: StyleOptions | undefined): boolean {
     opt.labelDisplayMode === LabelDisplayMode.NameAndCaption
   );
 }
+
+const labelDisplayModeItems: labelDisplayModeItem[] = [
+  {
+    text: t("labelDisplayModes.nameOnly"),
+    value: LabelDisplayMode.NameOnly,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: false
+  },
+  {
+    text: t("labelDisplayModes.captionOnly"),
+    value: LabelDisplayMode.CaptionOnly,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: true
+  },
+  {
+    text: t("labelDisplayModes.valueOnly"),
+    value: LabelDisplayMode.ValueOnly,
+    optionRequiresMeasurementValueToExist: true,
+    optionRequiresCaptionToExist: false
+  },
+  {
+    text: t("labelDisplayModes.nameAndCaption"),
+    value: LabelDisplayMode.NameAndCaption,
+    optionRequiresMeasurementValueToExist: false,
+    optionRequiresCaptionToExist: true
+  },
+  {
+    text: t("labelDisplayModes.nameAndValue"),
+    value: LabelDisplayMode.NameAndValue,
+    optionRequiresMeasurementValueToExist: true,
+    optionRequiresCaptionToExist: false
+  }
+];
+
+const labelTextFamilyItems = [
+  {
+    text: t("fonts.genericSanSerif"),
+    value: "sans/-serif"
+  },
+  {
+    text: t("fonts.genericSerif"),
+    value: "serif"
+  },
+  {
+    text: t("fonts.monospace"),
+    value: "monospace"
+  },
+  {
+    text: t("fonts.cursive"),
+    value: "cursive"
+  },
+  {
+    text: t("fonts.fantasy"),
+    value: "fantasy"
+  }
+];
+
+const labelTextStyleItems = [
+  {
+    text: t("textStyle.normal"),
+    value: "normal"
+  },
+  {
+    text: t("textStyle.italic"),
+    value: "italic"
+  },
+  {
+    text: t("textStyle.bold"),
+    value: "bold"
+  }
+];
+
+const labelTextDecorationItems = [
+  {
+    text: t("textDecoration.none"),
+    value: "none"
+  },
+  {
+    text: t("textDecoration.underline"),
+    value: "underline"
+  },
+  {
+    text: t("textDecoration.strikethrough"),
+    value: "strikethrough"
+  },
+  {
+    text: t("textDecoration.overline"),
+    value: "overline"
+  }
+];
+// shakes the input a bit if there is a conflict on that particular input
+const animatedInput: Animatable = {
+  labelDisplayText: false,
+  labelDisplayMode: false,
+  labelDisplayCaption: false,
+  labelTextFamily: false,
+  labelTextStyle: false,
+  labelTextDecoration: false,
+  labelTextScalePercent: false,
+  labelTextRotation: false
+};
+// change the background color of the input if there is a conflict on that particular input
+const conflictItems: ConflictItems = {
+  labelDisplayText: false,
+  labelDisplayMode: false,
+  labelDisplayCaption: false,
+  labelTextFamily: false,
+  labelTextStyle: false,
+  labelTextDecoration: false,
+  labelTextScalePercent: false,
+  labelTextRotation: false,
+  labelBackFillColor: false,
+  labelFrontFillColor: false
+};
+
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
