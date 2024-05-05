@@ -61,7 +61,7 @@ export default class AngleHandler extends Highlighter {
    */
   private lineSelectedFirst = true;
   /**
-   * highlinghtMode indicates what objects should be highlighted in the mouse move method
+   * highlightMode indicates what objects should be highlighted in the mouse move method
    */
   private highlightMode = HighlightMode.NONE;
 
@@ -1096,7 +1096,7 @@ export default class AngleHandler extends Highlighter {
     newSEAngleMarker.update();
 
     // Set the initial label location near the vertex vector
-    // and turn off the lable of the vertex if SETTINGS.angleMarker.turnOffVertexLabelOnCreation
+    // and turn off the label of the vertex if SETTINGS.angleMarker.turnOffVertexLabelOnCreation
     this.tmpVector
       .copy(this.pointLocations[1])
       .add(
