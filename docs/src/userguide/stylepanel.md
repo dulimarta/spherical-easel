@@ -1,7 +1,6 @@
 ---
 title: Style Panel
 lang: en-US
-next: /tools/edit
 ---
 
 # Style Panel

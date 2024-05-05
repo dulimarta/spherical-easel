@@ -1,7 +1,6 @@
 ---
 title: Scripting
 lang: en-US
-next: /userguide/
 ---
 
 # Scripting Objects

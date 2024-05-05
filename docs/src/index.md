@@ -1,18 +1,19 @@
 ---
-home: true
-heroImage: /SphericalEaselLogo.png
+layout: home
+heroImage: ./SphericalEaselLogo.png
 heroText: Spherical Easel
 tagline: An interactive app for exploring spherical geometry
 actionText: "Quick Start: Explore Equilateral Triangles →"
 actionLink: /quickstart/
+sidebar: true
 features:
   - title: Construct
     details: Easily construct spherical arrangements of points, lines, circles, and conics using tangents, bisections, and more.
   - title: Measure & Calculate
     details: Numerically measure lengths, distances, angles, and areas. Create user defined calculations to explore spherical geometry conjectures.
   - title: Explore & Export
-    details: Rotate arrangements, customize the style of display, and then save, load, share, and export your creations to TikZ, SVG, and more.
-footer: David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling. License agreements [CC-BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/) | Copyright © 2002 - present
+    details: Rotate arrangements, customize the style of display, and then save, load, share, and export your creations to SVG, and more.
+footer: David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling, Vinicius Lima. License agreements [CC-BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/) | Copyright © 2002 - present
 prev: false
 next: /quickstart/construct
 lang: en-US
@@ -41,4 +42,4 @@ If you would like to help in any way or ask us a question please use our [GitHub
 
 We hope you enjoy our app! <br></br>
 
-David, Will, Hans, and Michelle
+Team Easel

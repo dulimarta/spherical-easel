@@ -8,7 +8,7 @@ prev: /userguide/
 
 Each of these tools allows the user to edit an arrangement.
 
-::: tool-title
+::: card
 
 ## Selection <IconBase notInline icon-name="select" />
 

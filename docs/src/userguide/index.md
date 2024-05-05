@@ -1,7 +1,6 @@
 ---
 title: Manual Overview
 lang: en-US
-prev: /quickstart/
 ---
 
 # User Manual Overview

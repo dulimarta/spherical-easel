@@ -85,6 +85,7 @@
     "unregistering",
     "untransform",
     "untransforming",
+    "Vinicius",
     "vuetify"
   ],
   "i18n-ally.localesPaths": ["./src/assets/languages"],

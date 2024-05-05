@@ -12,3 +12,4 @@ History
 - 2018: Dickinson added Ellipses
 - 2020: Dulimarta and Dickinson moved it to TypeScript
 - 2021: Dowling joins the team
+- 2023: Lima joins the team

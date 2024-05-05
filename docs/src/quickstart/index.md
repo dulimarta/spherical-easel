@@ -1,7 +1,6 @@
 ---
 title: Explore Equilateral Triangles
 lang: en-US
-prev: /
 ---
 
 # Explore Equilateral Triangles
