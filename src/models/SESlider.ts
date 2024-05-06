@@ -1,6 +1,7 @@
 import { SEExpression } from "./SEExpression";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 const { t } = i18n.global;
 
 const emptySet = new Set<string>();
@@ -65,6 +66,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   }
 
   shallowUpdate(): void {
+    super.shallowUpdate()
     console.error(
       `*** INCOMPLETE ${this.name} *** or no update is necessary for sliders?`
     );

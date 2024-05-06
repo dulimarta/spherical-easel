@@ -58,7 +58,6 @@ onMounted((): void => {
     // We want to override it to "text"
     axios.get(filePath, { responseType: "text" }).then(r => {
       svgSnippetRaw = r.data;
-      console.log("blah " + props.iconName + " " + svgSnippetRaw)
       doneFetching = true;
       const parts = svgSnippetRaw.split(";");
       // scale the angleMarkers fill and circular edge

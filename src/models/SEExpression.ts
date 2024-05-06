@@ -5,6 +5,7 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 
 // const emptySet = new Set<string>();
 
@@ -58,7 +59,15 @@ export abstract class SEExpression extends SENodule {
       return [this._postEarthModeValueDisplayMode, this._valueDisplayMode];
     }
   }
+  // Add a method to send the SENoduleItem vue component a message to update
+  // This is included here rather than in SELabel or Label, because some (most?)
+  // SEExpressions do not have labels, but need to be updated in object tree (i.e.
+  // the SENoduleItem in the object tree)
 
+  public shallowUpdate(): void {
+    EventBus.fire("update-label-and-showing-and-measurement-display",{})
+
+  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 

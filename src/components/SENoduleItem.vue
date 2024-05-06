@@ -189,9 +189,6 @@ const parametricTMax = ref(1);
 const parametricTStep = ref(0.01);
 const supportsClipboard = ref(false); //For copying the value of a measurement to the clipboard
 const tempVec = new Vector3();
-/**
- * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
- */
 
 onBeforeMount(() => {
   if (navigator.clipboard) {
@@ -360,11 +357,13 @@ onMounted((): void => {
     parametricTStep.value = (tMax - tMin) / 100;
     onParametricTimeChanged(tMin);
   }
-  EventBus.listen("update-label-and-showing-display", updateVisibilityKeys);
+  EventBus.listen("update-label-and-showing-and-measurement-display", updateVisibilityKeys);
 });
 
+watch(()=> props.node.noduleItemText, updateVisibilityKeys)
 // Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
+  console.log("UPDATE seNoduleItem Visibility keys")
   visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
   labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
   displayCycleValueUpdateKey.value = visibilityUpdateKey.value
@@ -372,7 +371,7 @@ function updateVisibilityKeys() {
 }
 
 onBeforeUnmount((): void => {
-  EventBus.unlisten("update-label-and-showing-display");
+  EventBus.unlisten("update-label-and-showing-and-measurement-display");
 });
 
 function glowMe(flag: boolean): void {

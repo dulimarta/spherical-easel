@@ -2,6 +2,7 @@ import { SEExpression, SENodule, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -52,6 +53,7 @@ export class SESegmentLength extends SEExpression {
     this.exists = this.seSegment.exists;
 
     if (this.exists) {
+      super.shallowUpdate()
       // When this updates send its value to the label of the segment
       if (this.seSegment.label) {
         this.seSegment.label.ref.value = [this.value];

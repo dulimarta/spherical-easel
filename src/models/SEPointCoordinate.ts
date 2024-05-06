@@ -2,6 +2,7 @@ import { SEExpression, SENodule, SEPoint } from "./internal";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -130,6 +131,7 @@ export class SEPointCoordinate extends SEExpression {
     this.exists = this.sePoint.exists;
 
     if (this.exists) {
+      super.shallowUpdate()
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
       this.invMatrix = SENodule.store.inverseTotalRotationMatrix;
       this.valueVector

@@ -13,6 +13,7 @@ import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
 import Polygon from "@/plottables/Polygon";
 import { DisplayStyle } from "@/plottables/Nodule";
+import EventBus from "@/eventHandlers/EventBus";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -405,6 +406,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
     if (this._exists) {
+      super.shallowUpdate()
       // All vertices must be far enough away from any nonadjacent edge to exist
       for (let i = 0; i < this._n; i++) {
         let nextVertex: Vector3; // the next vertex is common to segment i and i+1
