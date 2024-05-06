@@ -7,11 +7,11 @@ lang: en-US
 
 In the Tools & Objects Panel there are two tabs.
 
-## Tools Tab <icon-base notInline iconName="toolsTab"> </icon-base>
+## Tools Tab <icon-base notInLine iconName="toolsTab"> </icon-base>
 
 There are many tools and they are explained [in their own section of this document.](/tools/edit).
 
-## Objects Tab <icon-base notInline iconName="objectsTab"> </icon-base>
+## Objects Tab <icon-base notInLine iconName="objectsTab"> </icon-base>
 
 ### Expression Panel
 
@@ -103,6 +103,6 @@ Expanding each group revels a list of those objects. Each item in that list appe
 
 Create a transformation then apply it. Give example of creating one and then applying it.
 
-## Saved Constructions Tab <icon-base notInline iconName="constructionsTab"> </icon-base>
+## Saved Constructions Tab <icon-base notInLine iconName="constructionsTab"> </icon-base>
 
 A list of the publicly and privately constructions that are available to the user to open.

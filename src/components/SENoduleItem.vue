@@ -13,7 +13,8 @@
             shakeMeasurementDisplay,
             shakeTransformationDisplay
           ]">
-          <span class="text-truncate ml-1">
+          <span class="text-truncate ml-1"
+          :key="displayCycleValueUpdateKey">
             {{ node.noduleItemText }}
           </span>
         </div>
@@ -168,6 +169,8 @@ const { t } = useI18n();
 
 const visibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a closed eye and an open eye. It would only display the initial icon.
 const labelVisibilityUpdateKey = ref(1); //If we don't use this even in Vue 3, the the icons for visibility do not alternate between a label and a label with a slash. It would only display the initial icon.
+const displayCycleValueUpdateKey = ref(1); //If we don't use this even in Vue 3, the the clicking the cycle display mode icon doesn't update display type of the value (it would change in the canvas, but not in the object tree). It would only display in the initial display mode.
+
 const iconName = ref("mdi-help");
 // const rotationMatrix = new Matrix4();
 // private traceLocation = new Vector3();
@@ -359,9 +362,12 @@ onMounted((): void => {
   EventBus.listen("update-label-and-showing-display", updateVisibilityKeys);
 });
 
+// Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
   visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
   labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
+  displayCycleValueUpdateKey.value = visibilityUpdateKey.value
+
 }
 
 onBeforeUnmount((): void => {
@@ -432,7 +438,7 @@ function selectMe(): void {
 
 function toggleVisibility(): void {
   new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
-  updateVisibilityKeys();
+  updateVisibilityKeys(); // Without this, the display/label icon doesn't change between the two showing and not showing variants.
   //NP
   if (isNorthPole) {
     EventBus.fire("update-pole-switch", {
@@ -469,9 +475,7 @@ function toggleLabelDisplay(): void {
       ).execute();
     }
   }
-  updateVisibilityKeys();
-  // labelVisibilityUpdateKey.value = 1 - labelVisibilityUpdateKey.value; // Without this, the label icon doesn't change between the two showing and not showing variants.
-  // visibilityUpdateKey.value = labelVisibilityUpdateKey.value; // Without this, the display icon doesn't change between the two showing and not showing variants.
+  updateVisibilityKeys();// Without this, the display/label icon doesn't change between the two showing and not showing variants.
 }
 
 function copyToClipboard(): void {
@@ -567,8 +571,7 @@ function cycleValueDisplayMode(): void {
   // console.debug(
   //   `Cycle display mode: node ${props.node.name}, new mode: ${newValueDisplayMode}`
   // );
-  // visibilityUpdateKey.value += 1;
-  // labelVisibilityUpdateKey.value += 1;
+  updateVisibilityKeys();
 }
 
 watch(() => parametricTime.value, onParametricTimeChanged);

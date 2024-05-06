@@ -40,7 +40,7 @@ Toggle a circular arc.
 
 ::: tool-title
 
-## N-Sect Segment <icon-base notInline iconName="nSectPoint" />
+## N-Sect Segment <icon-base notInLine iconName="nSectPoint" />
 
 :::
 ::: tool-description
@@ -56,7 +56,7 @@ Create all the points that divide a line segment into N equal parts.
 
 ::: tool-title
 
-## N-Sect Angle <icon-base notInline iconName="nSectLine" />
+## N-Sect Angle <icon-base notInLine iconName="nSectLine" />
 
 :::
 ::: tool-description
@@ -73,7 +73,7 @@ Create all the lines that divide an angle into N equal angles.
 
 ::: tool-title
 
-## Three Point Circle <icon-base notInline iconName="threePointCircle" />
+## Three Point Circle <icon-base notInLine iconName="threePointCircle" />
 
 :::
 ::: tool-description

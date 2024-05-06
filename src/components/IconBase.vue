@@ -16,21 +16,21 @@
 
 <script lang="ts" setup>
 import axios from "axios";
-import { onMounted, ref, Ref, useAttrs } from "vue";
+import { onMounted, ref, Ref } from "vue";
 import SETTINGS from "../../src/global-settings";
 import { IconNames } from "@/types/index";
+import { withBase } from 'vitepress'
 
 const props = defineProps<{
   iconName: IconNames;
   iconSize?: number;
-  notInline?: boolean;
-  iconInDocs?: boolean;
+  notInLine?: boolean;
 }>();
 
 let emphasizeTypes: string[][] = [[]];
 const mdiIcon: Ref<boolean | string> = ref(false);
-let filePath = "";
-let svgFileName = "";
+let filePath: string | undefined = undefined;
+let svgFileName: string|undefined = undefined;
 
 let svgSnippetRaw = "";
 const svgSnippetAmended = ref("");
@@ -39,7 +39,7 @@ const iconSizeValue = ref(SETTINGS.icons.defaultIconSize);
 const mdiIconName = ref("");
 
 onMounted((): void => {
-  if (props.notInline === false || props.notInline === undefined) {
+  if (props.notInLine === false || props.notInLine === undefined) {
     iconSizeValue.value =
       props.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
   } else {
@@ -47,15 +47,7 @@ onMounted((): void => {
   }
   const zIcons = SETTINGS.icons as Record<string,any>
   svgFileName = zIcons[props.iconName].props.svgFileName;
-  console.log("in docs value? " + props.iconInDocs )
-  if (props.iconInDocs === false || props.iconInDocs === undefined){
-    //Means the icon is in the main app so select the appropriate file path
-    filePath = "../../icons/"+ svgFileName
-  } else {
-    //Means the icon is in docs so select the appropriate file path
-    filePath = "/icons/"+ svgFileName
-    console.log("blah in docs " + props.iconName+" " + filePath)
-  }
+  filePath = "../../icons/"+ svgFileName
 
   emphasizeTypes = zIcons[props.iconName].props.emphasizeTypes;
   mdiIcon.value = zIcons[props.iconName].props.mdiIcon;
@@ -66,7 +58,7 @@ onMounted((): void => {
     // We want to override it to "text"
     axios.get(filePath, { responseType: "text" }).then(r => {
       svgSnippetRaw = r.data;
-      console.log("blah "+props.iconName+" "+svgSnippetRaw)
+      console.log("blah " + props.iconName + " " + svgSnippetRaw)
       doneFetching = true;
       const parts = svgSnippetRaw.split(";");
       // scale the angleMarkers fill and circular edge

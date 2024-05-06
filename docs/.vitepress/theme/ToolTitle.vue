@@ -5,7 +5,7 @@ defineProps<{ title: string, iconName:string
 
 <template>
   <div class="titleClass">
-{{ title }}  <IconBase notInline :icon-name=iconName />
+{{ title }}  <IconBase notInLine :iconName=iconName />
     <slot />
   </div>
 </template>

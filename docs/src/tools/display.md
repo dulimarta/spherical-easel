@@ -9,7 +9,7 @@ Each of these tools allows a user to adjust the display of an arrangement.
 
 ::: tool-title
 
-## Hide Object <IconBase notInline icon-name="hide" />
+## Hide Object <IconBase notInLine icon-name="hide" />
 
 :::
 ::: tool-description
@@ -32,7 +32,7 @@ If the user wishes to display a label without displaying the object, the user ca
 
 ::: tool-title
 
-## Toggle Label Display <IconBase notInline icon-name="toggleLabelDisplay" />
+## Toggle Label Display <IconBase notInLine icon-name="toggleLabelDisplay" />
 
 :::
 ::: tool-description
@@ -54,7 +54,7 @@ If when clicking at a location more than one object's label becomes hidden or sh
 
 ::: tool-title
 
-## Move <IconBase notInline icon-name="move" />
+## Move <IconBase notInLine icon-name="move" />
 
 :::
 ::: tool-description
@@ -89,7 +89,7 @@ When moving a free line or line segment pressing the <KeyShortcuts macOpt pcAlt 
 
 ::: tool-title
 
-## Rotation <IconBase notInline icon-name="rotate" />
+## Rotation <IconBase notInLine icon-name="rotate" />
 
 :::
 ::: tool-description
@@ -120,7 +120,7 @@ To stop all rotation click anywhere on the Sphere Canvas.
 
 ::: tool-title
 
-## Zoom <IconBase notInline icon-name="zoomIn" />/<IconBase notInline icon-name="zoomOut" />, Pan, and Zoom Fit <IconBase notInline icon-name="zoomFit" />
+## Zoom <IconBase notInLine icon-name="zoomIn" />/<IconBase notInLine icon-name="zoomOut" />, Pan, and Zoom Fit <IconBase notInLine icon-name="zoomFit" />
 
 :::
 

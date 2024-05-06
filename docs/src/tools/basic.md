@@ -9,7 +9,7 @@ These are the basic tools for constructing arrangements.
 
 ::: tool-title
 
-## Point <IconBase notInline icon-name="point" />
+## Point <IconBase notInLine icon-name="point" />
 
 :::
 ::: tool-description
@@ -37,7 +37,7 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 
 ::: tool-title
 
-## Line <icon-base notInline iconName="line"> </icon-base>
+## Line <icon-base notInLine iconName="line"> </icon-base>
 
 :::
 ::: tool-description
@@ -54,7 +54,7 @@ Create a line.
 
 ::: tool-title
 
-## Line Segment <icon-base notInline iconName="segment"> </icon-base>
+## Line Segment <icon-base notInLine iconName="segment"> </icon-base>
 
 :::
 ::: tool-description
@@ -93,7 +93,7 @@ Toggle a line segment.
 
 ::: tool-title
 
-## Circle <icon-base notInline iconName="circle"> </icon-base>
+## Circle <icon-base notInLine iconName="circle"> </icon-base>
 
 :::
 

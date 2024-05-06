@@ -9,7 +9,7 @@ Each of the following tools measures some aspect of an arrangement or creates a 
 
 ::: tool-title
 
-## Length <icon-base notInline iconName="segmentLength"> </icon-base>
+## Length <icon-base notInLine iconName="segmentLength"> </icon-base>
 
 :::
 ::: tool-description
@@ -27,7 +27,7 @@ To adjust the number of decimal places displayed in the[Measurement Section of t
 
 ::: tool-title
 
-## Distance <icon-base notInline iconName="pointDistance"> </icon-base>
+## Distance <icon-base notInLine iconName="pointDistance"> </icon-base>
 
 :::
 ::: tool-description
@@ -41,7 +41,7 @@ Measure the distance between two points.
   :::
   ::: tool-title
 
-## Angle <icon-base notInline iconName="angle"> </icon-base>
+## Angle <icon-base notInLine iconName="angle"> </icon-base>
 
 :::
 ::: tool-description
@@ -64,7 +64,7 @@ When two lines intersect, in a neighborhood of one of the intersection points, f
 
 ::: tool-title
 
-## Coordinates <icon-base notInline iconName="coordinate"> </icon-base>
+## Coordinates <icon-base notInLine iconName="coordinate"> </icon-base>
 
 :::
 ::: tool-description
@@ -78,7 +78,7 @@ Record the $x$, $y$, or $z$ coordinates of a point as a Measurement object.
 
 ::: tool-title
 
-## Triangle <icon-base notInline iconName="measureTriangle" />
+## Triangle <icon-base notInLine iconName="measureTriangle" />
 
 :::
 ::: tool-description
@@ -97,7 +97,7 @@ Measure all aspects of a triangle.
 
 ::: tool-title
 
-## Polygon <icon-base notInline iconName="measurePolygon" />
+## Polygon <icon-base notInLine iconName="measurePolygon" />
 
 :::
 

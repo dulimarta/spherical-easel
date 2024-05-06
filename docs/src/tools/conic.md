@@ -9,7 +9,7 @@ These tools create spherical conics by selecting existing objects or creating ne
 
 ::: tool-title
 
-## Ellipse <icon-base notInline iconName="ellipse" />
+## Ellipse <icon-base notInLine iconName="ellipse" />
 
 :::
 ::: tool-description

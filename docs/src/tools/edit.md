@@ -8,7 +8,9 @@ prev: /userguide/
 
 Each of these tools allows the user to edit an arrangement.
 
-## <tool-title title="Selection" iconInDocs=true icon-name="select"/>{#selection}
+## <tool-title title="Selection" iconName="select"/>{#selection}
+
+<tool-title title="Point" iconName="point"/>
 
 ::: tool-description
 
@@ -49,7 +51,7 @@ Select object(s) to change their visual style or to perform actions on them with
 
 ::: tool-title
 
-## Delete <IconBase notInline  icon-name="delete" />
+## Delete <IconBase notInLine  icon-name="delete" />
 
 :::
 
@@ -67,7 +69,7 @@ Delete selected objects.
 
 ::: tool-title
 
-## Undo <IconBase notInline  icon-name="undo" /> and Redo <IconBase notInline icon-name="redo" />
+## Undo <IconBase notInLine  icon-name="undo" /> and Redo <IconBase notInLine icon-name="redo" />
 
 :::
 
@@ -88,7 +90,7 @@ Undo or redo the last action.
 
 ::: tool-title
 
-## Clear <IconBase notInline icon-name="clearConstruction" />
+## Clear <IconBase notInLine icon-name="clearConstruction" />
 
 :::
 

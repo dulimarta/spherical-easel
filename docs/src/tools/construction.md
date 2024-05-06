@@ -9,7 +9,7 @@ Each of the following tools constructs a geometric object by selecting existing 
 
 ::: tool-title
 
-## Midpoint <icon-base notInline iconName="midpoint"> </icon-base>
+## Midpoint <icon-base notInLine iconName="midpoint"> </icon-base>
 
 :::
 
@@ -28,7 +28,7 @@ Creates the midpoint of a line segment or the shortest length between two points
 
 ::: tool-title
 
-## Angle Bisector <icon-base notInline iconName="angleBisector"> </icon-base>
+## Angle Bisector <icon-base notInLine iconName="angleBisector"> </icon-base>
 
 :::
 
@@ -68,7 +68,7 @@ Creates the perpendicular bisector of a line segment.
 
 ::: tool-title
 
-## Antipodal Point <icon-base notInline iconName="antipodalPoint"> </icon-base>
+## Antipodal Point <icon-base notInLine iconName="antipodalPoint"> </icon-base>
 
 :::
 
@@ -84,7 +84,7 @@ Creates the antipodal point of a point.
 
 ::: tool-title
 
-## Polar <icon-base notInline iconName="polar"> </icon-base>
+## Polar <icon-base notInLine iconName="polar"> </icon-base>
 
 :::
 
@@ -103,7 +103,7 @@ Creates the poles of a line or line segment or the polar line of a point.
 
 ::: tool-title
 
-## Tangent <icon-base notInline iconName="tangent"> </icon-base>
+## Tangent <icon-base notInLine iconName="tangent"> </icon-base>
 
 :::
 
@@ -120,7 +120,7 @@ Creates the tangent lines to a one-dimensional object (excluding lines and line 
 
 ::: tool-title
 
-## Perpendicular <icon-base notInline iconName="perpendicular"> </icon-base>
+## Perpendicular <icon-base notInLine iconName="perpendicular"> </icon-base>
 
 :::
 
@@ -156,7 +156,7 @@ Attach or detach a point from an object.
 
 ::: tool-title
 
-## Intersection <icon-base notInline iconName="intersect"> </icon-base>
+## Intersection <icon-base notInLine iconName="intersect"> </icon-base>
 
 :::
 
@@ -174,7 +174,7 @@ Create the intersection point(s) between two one-dimensional objects.
 
 ::: tool-title
 
-## Point On Object <icon-base notInline iconName="pointOnObject"> </icon-base>
+## Point On Object <icon-base notInLine iconName="pointOnObject"> </icon-base>
 
 :::
 

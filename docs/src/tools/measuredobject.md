@@ -61,7 +61,7 @@ Create a line at a measured angle to a given line (or line segment) and through 
 
 ::: tool-title
 
-## Measured Circle <icon-base notInline iconName="measuredCircle"> </icon-base>
+## Measured Circle <icon-base notInLine iconName="measuredCircle"> </icon-base>
 
 :::
 ::: tool-description
