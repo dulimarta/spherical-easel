@@ -1,15 +1,15 @@
 <template>
   <div>
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ title + " (" + thumbMap(props.modelValue ?? 0) + ")" }}
+      {{ title + " (" + thumbMap(sliderValue ?? 0) + ")" }}
     </span>
     <span v-if="numSelected > 1" class="text-subtitle-2" style="color: red">
-      {{ " " + $t("style.labelStyleOptionsMultiple") }}
+      {{ t("labelStyleOptionsMultiple") }}
     </span>
 
     <!-- The number selector slider -->
     <v-slider v-bind:="attrs"
-    v-model="styleData" thumb-label show-ticks>
+    v-model="sliderValue" thumb-label show-ticks>
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -24,21 +24,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useAttrs, Ref } from "vue";
-
+import { ref, useAttrs, Ref, defineModel } from "vue";
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
+const sliderValue = defineModel({type: Number})
 const attrs = useAttrs();
 type ComponentProps = {
-  modelValue: number;
   title: string;
   thumbStringValues: Array<string>;
   numSelected: number;
   conflict: boolean;
 };
 let props = defineProps<ComponentProps>();
-const emit = defineEmits(["update:modelValue"]);
-// @PropSync("data") styleData!: number;
+// const emit = defineEmits(["update:modelValue"]);
+// @PropSync("data") modelValue!: number;
 
-const styleData: Ref<number> = ref(props.modelValue);
+// const styleData: Ref<number> = ref(props.modelValue);
 
 // function valueChanged(val: number): void {
   // this.$emit("resetColor");
@@ -61,13 +62,13 @@ function thumbMap(val: number): string {
 
 function incrementDataValue(): void {
   const step = Number(attrs?.step);
-  console.debug("Increase slider by", step);
-  styleData.value += step;
-  emit("update:modelValue", styleData.value);
+  // console.debug("Increase slider by", step);
+  sliderValue.value! += step;
+  // emit("update:modelValue", sliderValue.value);
 }
 function decrementDataValue(): void {
-  styleData.value -= Number(attrs?.step ?? 1);
-  emit("update:modelValue", styleData.value);
+  sliderValue.value! -= Number(attrs?.step ?? 1);
+  // emit("update:modelValue", sliderValue.value);
 }
 </script>
 
@@ -78,3 +79,8 @@ function decrementDataValue(): void {
   color: rgb(255, 82, 82);
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "labelStyleOptionsMultiple": "(multiple)"
+}
+</i18n>

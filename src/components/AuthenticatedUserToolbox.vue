@@ -5,27 +5,25 @@
     v-if="loginEnabled"
     :style="{
       alignItems: 'flex-start',
-      rowGap: '8px',
+      rowGap: '8px'
     }">
     <!-- {{ userDisplayedName }} {{ userEmail }} -->
-    <v-avatar
-      size="x-small"
-      v-if="userProfilePictureURL !== undefined"
-      contain
-      max-width="48"
-      :image="userProfilePictureURL"
-      @click="doLoginOrLogout"></v-avatar>
-    <v-btn v-else
-      icon
-      size="x-small"
-      class="bg-yellow"
-      @click="doLoginOrLogout">
-      <v-icon>mdi-account</v-icon>
+    <v-btn icon size="x-small" class="bg-green-lighten-1" @click="doLoginOrLogout">
+      <v-avatar
+        size="small"
+        v-if="userProfilePictureURL !== undefined"
+        contain
+        max-width="40"
+        :image="userProfilePictureURL"
+        @click="doLoginOrLogout"></v-avatar>
+
+      <v-icon size="x-large" v-else>mdi-account</v-icon>
+      <v-tooltip activator="parent" :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="appAuth.currentUser !== null">
-      <v-icon color="white">mdi-cog</v-icon>
+      <v-icon size="large" color="white">mdi-cog</v-icon>
     </router-link>
-    <HintButton
+    <HintButton color="secondary"
       v-if="appAuth.currentUser !== null && hasObjects"
       @click="() => saveConstructionDialog?.show()"
       tooltip="Save construction">

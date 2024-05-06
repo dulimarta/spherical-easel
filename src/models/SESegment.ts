@@ -681,8 +681,9 @@ export class SESegment
       Math.abs(this._arcLength - Math.PI) < SETTINGS.segment.closeEnoughToPi
     );
   }
-  public isLabelable(): boolean {
-    return true;
+
+  public getLabel(): SELabel | null {
+    return (this as Labelable).label!
   }
 
   public isMeasurable(): boolean {

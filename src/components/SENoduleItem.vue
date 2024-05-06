@@ -197,8 +197,9 @@ onBeforeMount(() => {
   if (navigator.clipboard) {
     supportsClipboard.value = true;
   }
-  if (props.node.isLabelable()) {
-    nodeName = (props.node as any).label?.ref.shortUserName ?? "";
+  const theLabel = props.node.getLabel()
+  if (theLabel) {
+    nodeName = theLabel.ref.shortUserName ?? "";
   } else {
     nodeName = props.node.name;
   }

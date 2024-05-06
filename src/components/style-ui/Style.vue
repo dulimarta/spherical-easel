@@ -115,7 +115,7 @@ onMounted((): void => {
   EventBus.listen("update-all-labels-showing", allLabelsShowingCheck);
   EventBus.listen("update-all-objects-showing", allObjectsShowingCheck);
   EventBus.listen("toggle-object-visibility", toggleObjectsShowing);
-  EventBus.listen("toggle-label-visibility", toggleLabelsShowing);
+  // EventBus.listen("toggle-label-visibility", toggleLabelsShowing);
 });
 
 const buttonListItems = computed((): string[] => {
@@ -142,8 +142,9 @@ watch(() => selectedSENodules.value, allLabelsShowingCheck);
 function allLabelsShowingCheck(): void {
   console.log("Style All Labels: onSelectionChanged");
   allLabelsShowing.value = selectedSENodules.value.every(node => {
-    if (node.isLabelable()) {
-      return (node as unknown as Labelable).label!.showing;
+    const nLabel = node.getLabel()
+    if (nLabel) {
+      return nLabel.showing;
     } else {
       return true;
     }
@@ -240,12 +241,10 @@ function toggleLabelsShowing(source: any): void {
   }
   const toggleLabelDisplayCommandGroup = new CommandGroup();
   selectedSENodules.value.forEach(node => {
-    if (node.isLabelable()) {
+    const nLabel = node.getLabel()
+    if (nLabel) {
       toggleLabelDisplayCommandGroup.addCommand(
-        new SetNoduleDisplayCommand(
-          (node as unknown as Labelable).label!,
-          allLabelsShowing.value
-        )
+        new SetNoduleDisplayCommand(nLabel, allLabelsShowing.value)
       );
     }
   });

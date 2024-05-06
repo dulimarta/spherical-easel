@@ -14,6 +14,7 @@ import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SEPoint } from "./SEPoint";
+import { SELabel } from "./internal";
 
 let NODE_COUNT = 0;
 
@@ -326,8 +327,11 @@ export abstract class SENodule implements Visitable {
     return false;
   }
   // Only returns true if this is an Labelable
-  public isLabelable(): boolean {
-    return false;
+  // public isLabelable(): boolean {
+  //   return false;
+  // }
+  public getLabel(): SELabel | null {
+    return null
   }
   // Only returns true if this is an SESegment of length pi (or very nearly pi)
   public isSegmentOfLengthPi(): boolean {

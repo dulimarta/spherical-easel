@@ -80,9 +80,11 @@ const existingChildren = computed((): SENodule[] => {
     .sort((a, b) => {
       let aLabelString = a.name;
       let bLabelString = b.name;
-      if (a.isLabelable() && b.isLabelable()) {
-        aLabelString = (a as any).label.ref.shortUserName;
-        bLabelString = (b as any).label.ref.shortUserName;
+      const aLabel = a.getLabel()
+      const bLabel = b.getLabel()
+      if (aLabel && bLabel) {
+        aLabelString = aLabel.ref.shortUserName;
+        bLabelString = bLabel.ref.shortUserName;
       }
       if (aLabelString.length < bLabelString.length) {
         return -1;

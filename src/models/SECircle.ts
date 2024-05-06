@@ -462,8 +462,9 @@ export class SECircle
     return true;
   }
 
-  public isLabelable(): boolean {
-    return true;
+  public getLabel(): SELabel | null {
+    return (this as Labelable).label!
+
   }
   public isMeasurable(): boolean {
     return true;

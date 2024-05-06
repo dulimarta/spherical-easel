@@ -384,7 +384,7 @@ export class SEParametric
       //     nextSample.index
       //   }`
       // );
-      const indexM = nextSample.index;
+      const indexM = nextSample!.index;
       const indexL = fnValues[indexM].left; // index of L
       const tLeft = fnValues[indexL].t;
       const indexR = fnValues[indexM].right; // index of R
@@ -1137,7 +1137,7 @@ export class SEParametric
     return true;
   }
 
-  public isLabelable(): boolean {
-    return true;
+  public getLabel(): SELabel | null {
+    return (this as Labelable).label!;
   }
 }

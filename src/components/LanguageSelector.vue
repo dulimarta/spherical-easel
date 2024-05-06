@@ -1,10 +1,10 @@
 <template>
-  <v-icon id="lang" class="mx-3">mdi-translate</v-icon>
+  <v-icon id="lang" class="mx-0">mdi-translate</v-icon>
   <v-menu
     activator="#lang"
     v-model="showLocalePopup"
     location="bottom"
-    offset="32"
+    offset="24"
     :close-on-content-click="false">
     <v-card>
       <v-card-title v-t="'selectLanguage'"></v-card-title>

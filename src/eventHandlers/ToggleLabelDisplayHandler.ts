@@ -42,8 +42,9 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .filter(
           // no objects whose labels are already showing
           (object: SENodule) => {
-            if (object.isLabelable()) {
-              return !(object as unknown as Labelable).label!.showing;
+            const objLabel = object.getLabel();
+            if (objLabel) {
+              return !objLabel.showing;
             } else {
               return false;
             }
@@ -51,12 +52,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
-          if (object.isLabelable()) {
+          const objLabel = object.getLabel();
+          if (objLabel) {
             labelToggleDisplayCommandGroup.addCommand(
-              new SetNoduleDisplayCommand(
-                (object as unknown as Labelable).label!,
-                true
-              )
+              new SetNoduleDisplayCommand(objLabel, true)
             );
           }
         });
@@ -83,8 +82,9 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .filter(
           // no objects whose labels are already hidden
           (object: SENodule) => {
-            if (object.isLabelable()) {
-              return (object as unknown as Labelable).label!.showing;
+            const objLabel = object.getLabel()
+            if (objLabel) {
+              return objLabel.showing;
             } else {
               return false;
             }
@@ -92,12 +92,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
-          if (object.isLabelable()) {
+          const objLabel = object.getLabel()
+          if (objLabel) {
             labelToggleDisplayCommandGroup.addCommand(
-              new SetNoduleDisplayCommand(
-                (object as unknown as Labelable).label!,
-                false
-              )
+              new SetNoduleDisplayCommand(objLabel!, false)
             );
           }
         });
@@ -217,12 +215,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
-          if (object.isLabelable()) {
+          const objLabel = object.getLabel()
+          if (objLabel) {
             labelToggleDisplayCommandGroup.addCommand(
-              new SetNoduleDisplayCommand(
-                (object as unknown as Labelable).label!,
-                !(object as unknown as Labelable).label!.showing
-              )
+              new SetNoduleDisplayCommand(objLabel, objLabel.showing)
             );
           }
         });
