@@ -885,19 +885,19 @@ export const SETTINGS = {
       }
     },
     // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
-    // and not in vuetify.ts because these must be accessible to both the src code and VuePress.
+    // and not in vuetify.ts because these must be accessible to both the src code and VitePress.
     blank: {
       props: {
         emphasizeTypes: [[]],
         mdiIcon: false,
-        filePath: "../../icons/iconBlankPaths.svg"
+        svgFileName: "iconBlankPaths.svg"
       }
     },
     point: {
       props: {
         emphasizeTypes: [["point", "front", "back"]],
         mdiIcon: false,
-        filePath: "../../icons/iconPointPaths.svg"
+        svgFileName: "iconPointPaths.svg"
       }
     },
     line: {
@@ -907,7 +907,7 @@ export const SETTINGS = {
           ["line", "front", "back"],
           ["point", "front", "back"]
         ],
-        filePath: "../../icons/iconLinePaths.svg"
+        svgFileName: "iconLinePaths.svg"
       }
     },
     segment: {
@@ -917,7 +917,7 @@ export const SETTINGS = {
           ["segment", "front", "back"],
           ["point", "front", "back"]
         ],
-        filePath: "../../icons/iconSegmentPaths.svg"
+        svgFileName: "iconSegmentPaths.svg"
       }
     },
     earthLongitude: {
@@ -934,7 +934,7 @@ export const SETTINGS = {
           ["circle", "front", "back"],
           ["point", "front", "back"]
         ],
-        filePath: "../../icons/iconCirclePaths.svg"
+        svgFileName: "iconCirclePaths.svg"
       }
     },
     earthLatitude: {
@@ -948,7 +948,7 @@ export const SETTINGS = {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front"]],
-        filePath: "../../icons/iconAntipodalPointPaths.svg"
+        svgFileName: "iconAntipodalPointPaths.svg"
       }
     },
     earthPoint: {
@@ -965,7 +965,7 @@ export const SETTINGS = {
           ["point", "front"],
           ["line", "front"]
         ],
-        filePath: "../../icons/iconPolarPaths.svg"
+        svgFileName: "iconPolarPaths.svg"
       }
     },
     perpendicular: {
@@ -975,7 +975,7 @@ export const SETTINGS = {
           ["point", "front"],
           ["line", "front", "back"]
         ],
-        filePath: "../../icons/iconPerpendicularPaths.svg"
+        svgFileName: "iconPerpendicularPaths.svg"
       }
     },
     tangent: {
@@ -985,49 +985,49 @@ export const SETTINGS = {
           ["point", "front"],
           ["line", "front", "back"]
         ],
-        filePath: "../../icons/iconTangentPaths.svg"
+        svgFileName: "iconTangentPaths.svg"
       }
     },
     intersect: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front"]],
-        filePath: "../../icons/iconIntersectPaths.svg"
+        svgFileName: "iconIntersectPaths.svg"
       }
     },
     pointOnObject: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front"]],
-        filePath: "../../icons/iconPointOnObjectPaths.svg"
+        svgFileName: "iconPointOnObjectPaths.svg"
       }
     },
     angle: {
       props: {
         emphasizeTypes: [["angleMarker", "back", "front"]],
         mdiIcon: false,
-        filePath: "../../icons/iconAnglePaths.svg"
+        svgFileName: "iconAnglePaths.svg"
       }
     },
     segmentLength: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["segment", "back", "front"]],
-        filePath: "../../icons/iconSegmentLengthPaths.svg"
+        svgFileName: "iconSegmentLengthPaths.svg"
       }
     },
     pointDistance: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front", "back"]],
-        filePath: "../../icons/iconPointDistancePaths.svg"
+        svgFileName: "iconPointDistancePaths.svg"
       }
     },
     ellipse: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front", "back"]],
-        filePath: "../../icons/iconEllipsePaths.svg"
+        svgFileName: "iconEllipsePaths.svg"
       }
     },
     parametric: {
@@ -1037,7 +1037,7 @@ export const SETTINGS = {
           ["point", "front"],
           ["parametric", "front"]
         ],
-        filePath: "../../icons/iconParametricPaths.svg"
+        svgFileName: "iconParametricPaths.svg"
       }
     },
     measureTriangle: {
@@ -1047,7 +1047,7 @@ export const SETTINGS = {
           ["point", "front"],
           ["angleMarker", "back", "front"]
         ],
-        filePath: "../../icons/iconMeasureTrianglePaths.svg"
+        svgFileName: "iconMeasureTrianglePaths.svg"
       }
     },
     measurePolygon: {
@@ -1057,7 +1057,7 @@ export const SETTINGS = {
           ["point", "front"],
           ["angleMarker", "back", "front"]
         ],
-        filePath: "../../icons/iconMeasurePolygonPaths.svg"
+        svgFileName: "iconMeasurePolygonPaths.svg"
       }
     },
     midpoint: {
@@ -1067,7 +1067,7 @@ export const SETTINGS = {
           ["segment", "front"],
           ["point", "front"]
         ],
-        filePath: "../../icons/iconMidpointPaths.svg"
+        svgFileName: "iconMidpointPaths.svg"
       }
     },
     nSectPoint: {
@@ -1077,14 +1077,14 @@ export const SETTINGS = {
           ["segment", "front"],
           ["point", "front"]
         ],
-        filePath: "../../icons/iconNSectPointPaths.svg"
+        svgFileName: "iconNSectPointPaths.svg"
       }
     },
     threePointCircle: {
       props: {
         mdiIcon: false,
         emphasizeTypes: [["point", "front"]],
-        filePath: "../../icons/iconThreePointCirclePaths.svg"
+        svgFileName: "iconThreePointCirclePaths.svg"
       }
     },
     measuredCircle: {
@@ -1101,7 +1101,7 @@ export const SETTINGS = {
           ["line", "front", "back"],
           ["angleMarker", "front"]
         ],
-        filePath: "../../icons/iconAngleBisectorPaths.svg"
+        svgFileName: "iconAngleBisectorPaths.svg"
       }
     },
     nSectLine: {
@@ -1111,7 +1111,7 @@ export const SETTINGS = {
           ["line", "front", "back"],
           ["angleMarker", "front"]
         ],
-        filePath: "../../icons/iconNSectLinePaths.svg"
+        svgFileName: "iconNSectLinePaths.svg"
       }
     },
     coordinate: {

@@ -1,5 +1,5 @@
 <template>
-  <v-icon v-if="mdiIcon" :size="iconSizeValue">{{ mdiIconName }}</v-icon>
+  <v-icon v-if="mdiIcon" :size="iconSizeValue" :class="mdiIconName" class="mdi" />
   <svg
     v-else
     xmlns="http://www.w3.org/2000/svg"
@@ -24,11 +24,13 @@ const props = defineProps<{
   iconName: IconNames;
   iconSize?: number;
   notInline?: boolean;
+  iconInDocs?: boolean;
 }>();
 
 let emphasizeTypes: string[][] = [[]];
 const mdiIcon: Ref<boolean | string> = ref(false);
 let filePath = "";
+let svgFileName = "";
 
 let svgSnippetRaw = "";
 const svgSnippetAmended = ref("");
@@ -37,27 +39,39 @@ const iconSizeValue = ref(SETTINGS.icons.defaultIconSize);
 const mdiIconName = ref("");
 
 onMounted((): void => {
-  if (props.notInline === undefined) {
+  if (props.notInline === false || props.notInline === undefined) {
     iconSizeValue.value =
       props.iconSize ?? SETTINGS.icons.defaultInlineIconSize;
   } else {
     iconSizeValue.value = props.iconSize ?? SETTINGS.icons.defaultIconSize;
   }
   const zIcons = SETTINGS.icons as Record<string,any>
-  filePath = zIcons[props.iconName].props.filePath;
+  svgFileName = zIcons[props.iconName].props.svgFileName;
+  console.log("in docs value? " + props.iconInDocs )
+  if (props.iconInDocs === false || props.iconInDocs === undefined){
+    //Means the icon is in the main app so select the appropriate file path
+    filePath = "../../icons/"+ svgFileName
+  } else {
+    //Means the icon is in docs so select the appropriate file path
+    filePath = "/icons/"+ svgFileName
+    console.log("blah in docs " + props.iconName+" " + filePath)
+  }
+
   emphasizeTypes = zIcons[props.iconName].props.emphasizeTypes;
   mdiIcon.value = zIcons[props.iconName].props.mdiIcon;
   if (typeof mdiIcon.value !== "string") {
+    //This means we are working with an SVG icon and not a mdi icon
     doneFetching = false;
     // By default, axios assumes a JSON response and the input will be parsed as JSON.
     // We want to override it to "text"
     axios.get(filePath, { responseType: "text" }).then(r => {
       svgSnippetRaw = r.data;
+      console.log("blah "+props.iconName+" "+svgSnippetRaw)
       doneFetching = true;
       const parts = svgSnippetRaw.split(";");
       // scale the angleMarkers fill and circular edge
-      // the angle markers fill object contains the center of the dialation
-      // then the d="M -75.437 -26.553... gives the center of the dialation
+      // the angle markers fill object contains the center of the dilation
+      // then the d="M -75.437 -26.553... gives the center of the dilation
       // so the new translation vector is [-75.437*(1-scale),-26.553*(1-scale)]
       // const ind = parts.findIndex(ele => {
       //   const type = getAttribute(ele, "type");
