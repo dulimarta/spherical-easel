@@ -141,7 +141,7 @@ const canvas: Ref<HTMLDivElement | null> = ref(null);
   const animateClass = ref("")
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
-  console.debug("Updating shortcut icons");
+  // console.debug("Updating shortcut icons");
   return favoriteTools.value.map(
     (corner: Array<ActionMode>): Array<ToolButtonType> =>
       corner.map((act: ActionMode): ToolButtonType => TOOL_DICTIONARY.get(act)!)
@@ -345,7 +345,7 @@ onMounted((): void => {
   // Set the canvas size to the window size
   // Make the canvas accessible to other components which need
   // to grab the SVG contents of the sphere
-  console.debug("TwoJS SVG Canvas is", canvas.value);
+  // console.debug("TwoJS SVG Canvas is", canvas.value);
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();

@@ -35,6 +35,8 @@ export interface StyleOptions {
   angleMarkerArrowHeads?: boolean;
 }
 
+export type StylePropertyValue = number | string | boolean | LabelDisplayMode | number[];
+
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.point.drawn.fillColor.front,
   pointRadiusPercent: SETTINGS.point.radiusPercent.front,

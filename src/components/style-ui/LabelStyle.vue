@@ -1,13 +1,13 @@
 <template>
   <!-- For debugging -->
   <div style="">
-    Display mode {{ styleOptions.labelDisplayMode }}
+    DC {{ selectedLabels.size }}
   </div>
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
-    :disabled="selectionCount < 1"
+    :disabled="selectedLabels.size < 1"
     icon-name="mdi-tag-edit"
-    :tooltip="selectionCount > 0 ? t('enableTooltip') : t('disableTooltip')"
+    :tooltip="selectedLabels.size > 0 ? t('enableTooltip') : t('disableTooltip')"
     tooltip-location="left"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
@@ -23,7 +23,7 @@
         <!-- Label Text Selections -->
         <v-text-field
           v-model="styleOptions.labelDisplayText"
-          :disabled="selectionCount < 1"
+          :disabled="selectedLabels.size < 1"
           :label="t('labelText')"
           :counter="maxLabelDisplayTextLength"
           ref="labelDisplayText"
@@ -33,7 +33,7 @@
           }"
           variant="outlined"
           density="compact"
-          :placeholder="placeHolderText(selectionCount, false)"
+          :placeholder="placeHolderText(selectedLabels.size, false)"
           v-bind:error-messages="
             t(labelDisplayTextErrorMessageKey, {
               max: maxLabelDisplayTextLength
@@ -46,11 +46,11 @@
 
         <v-text-field
           v-if="hasCaption(styleOptions)"
-          :disabled="selectionCount < 1"
+          :disabled="selectedLabels.size < 1"
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
           :counter="maxLabelDisplayCaptionLength"
-          :placeholder="placeHolderText(selectionCount, true)"
+          :placeholder="placeHolderText(selectedLabels.size, true)"
           ref="labelDisplayCaption"
           :class="{
             shake: animatedInput.labelDisplayCaption,
@@ -69,7 +69,7 @@
             labelDisplayCaptionTruncate(styleOptions)
           ]"></v-text-field>
         <SimpleNumberSelector
-          :numSelected="selectionCount"
+          :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextScalePercent"
           :title="t('labelTextScale')"
           ref="labelTextScalePercent"
@@ -82,7 +82,7 @@
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <!-- Rotation {{ labelTextRotationAmount }} -->
         <SimpleNumberSelector
-          :numSelected="selectionCount"
+          :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextRotation"
           ref="labelTextRotation"
           :conflict="conflictItems.labelTextRotation"
@@ -164,14 +164,14 @@
       <v-window-item class="pa-2">
         <SimpleColorSelector
           :title="t('labelFrontFillColor')"
-          :numSelected="selectionCount"
+          :numSelected="selectedLabels.size"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
           :conflict="conflictItems.labelFrontFillColor"
           v-on:resetColor="conflictItems.labelFrontFillColor = false"
           v-model="styleOptions.labelFrontFillColor"></SimpleColorSelector>
         <SimpleColorSelector
-          :numSelected="selectionCount"
+          :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"
           v-on:resetColor="conflictItems.labelBackFillColor = false"
@@ -340,14 +340,13 @@ type ConflictItems = {
 // const props = defineProps<LabelStyleProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-// const { selectionCount, styleOptions} = storeToRefs(styleStore)
+const { selectedLabels, styleOptions } = storeToRefs(styleStore)
 const { t } = useI18n();
 const {
-  selectionCount,
   dataAgreement,
   conflictingProps,
   forceDataAgreement,
-  styleOptions
+  // styleOptions
 } = useStyleEditor(StyleEditPanels.Label, labelFilter, labelMapper);
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user

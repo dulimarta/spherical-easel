@@ -194,10 +194,10 @@ export function useStyleEditor(
   watch(
     () => selectedSENodules.value,
     (newSelection: SENodule[]): void => {
-      console.debug(
-        "StyleEditor: object selection changed",
-        newSelection.length
-      );
+      // console.debug(
+      //   "StyleEditor: object selection changed",
+      //   newSelection.length
+      // );
 
       saveStyleState();
       commonStyleProperties.splice(0);
@@ -600,14 +600,14 @@ export function useStyleEditor(
       subCommandCount++;
     }
     if (oldStyleSelections.value.length > 0) {
-      console.debug(
-        "Number of previously selected object? ",
-        previousSelectedNodules.length
-      );
-      console.debug(
-        "Number of currently selected object? ",
-        filteredNodules.value.length
-      );
+      // console.debug(
+      //   "Number of previously selected object? ",
+      //   previousSelectedNodules.length
+      // );
+      // console.debug(
+      //   "Number of currently selected object? ",
+      //   filteredNodules.value.length
+      // );
       const prev = initialStyleStatesMap.value.get(panel) ?? [];
       const curr = filteredNodules.value.map((n: Nodule) =>
         n.currentStyleState(panel)

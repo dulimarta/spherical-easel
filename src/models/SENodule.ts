@@ -444,7 +444,7 @@ export abstract class SENodule implements Visitable {
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
-    console.log("SENodule::selected() arg", b);
+    // console.log("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
     if (!this._showing) return;
     this._selected = b;
