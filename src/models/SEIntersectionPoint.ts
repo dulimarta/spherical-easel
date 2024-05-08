@@ -606,11 +606,11 @@ export class SEIntersectionPoint extends SEPoint {
         this._exists = false;
       }
       // console.debug(
-      //   `Intersection Point ${this.name}, user created ${this._isUserCreated}, showing ${this._showing},exists ${this.exists}`
+      //   `Intersection Point ${this.name}, user created ${this._isUserCreated}, showing ${this.showing},exists ${this.exists}`
       // );
     }
     // Update visibility
-    if (this._exists && this._isUserCreated && this._showing) {
+    if (this._exists && this._isUserCreated && this.showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

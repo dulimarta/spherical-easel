@@ -64,17 +64,34 @@ export const useStylingStore = defineStore("style", () => {
   const { selectedSENodules } = storeToRefs(seStore);
   const selectedPlottables: Ref<Map<string, Nodule>> = ref(new Map());
   const selectedLabels: Ref<Map<string, Label>> = ref(new Map());
-  const conflictingProperties: Ref<Set<string>> = ref(new Set());
   const selectionCounter = ref(0);
-  const forceAgreement = ref(false);
-  const styleOptions = ref<ObjectStyle>({});
+
+  // When multiple objects are selected, their style properties
+  // may conflict with each other. Keep them in a set
+  const conflictingProperties: Ref<Set<string>> = ref(new Set());
+  // To detect conflict, we use the following map to record the current
+  // value of each style property
   const stylePropertyMap: Map<string, StylePropertyValue> = new Map();
+
+  // The user is required to opt in to override conflicting properties
+  const forceAgreement = ref(false);
+
+  const styleOptions = ref<ObjectStyle>({});
+
+
+  // After style editing is done, we should restore label visibility
+  // to their original state before editing
   const labelsVisibilityState: Ref<Map<string, boolean>> = ref(new Map());
 
   watch(
     // This watcher run when the user changes the object selection
     () => selectedSENodules.value,
     selectionArr => {
+
+      // First check for any objects which were deselected
+      // by comparing the selectedLabels against the current selection
+      // a label recorded in selectedLabels but no longer exists
+      // in the current selection array must have been removed
       Array.from(selectedLabels.value.keys()).forEach(s => {
         const pos = selectionArr.findIndex((n => n.name === s))
         if (pos < 0) {
@@ -88,6 +105,8 @@ export const useStylingStore = defineStore("style", () => {
           selectionCounter.value--
         }
       })
+
+      // Among the selected object, check if we have new selection
       selectionArr.forEach(n => {
         const itsPlot = n.ref;
         if (itsPlot && !(n instanceof Label)) {

@@ -60,14 +60,15 @@ export class SELabel extends SENodule implements Visitable {
    * @param parent The parent SENodule object
    */
   constructor(labelType: LabelParentTypes, parent: SENodule) {
+    SENodule.LABEL_COUNT++;
     super();
     const label = new Label(labelType);
     this.ref = label;
     this.parent = parent;
 
     (this.parent as unknown as Labelable).label = this;
-    SENodule.LABEL_COUNT++;
-    this.name = "La" + SENodule.LABEL_COUNT;
+    // SENodule.LABEL_COUNT++;
+    // this.name = "La" + SENodule.LABEL_COUNT;
 
     // set the Label shortUserName as the name of the parent object initially
     if (this.parent instanceof SEAngleMarker) {
@@ -186,7 +187,7 @@ export class SELabel extends SENodule implements Visitable {
     }
 
     // Update visibility
-    if (this._showing && this._exists) {
+    if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

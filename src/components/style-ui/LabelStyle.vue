@@ -536,17 +536,21 @@ function overrideDynamicBackStyleDisagreement() {
   // // dialogSequencer.hideDialog(backStyleDisagreementDialog.value!)
 }
 
+// TODO: this function needs more work: label names are required
 function checkLabelsVisibility() {
   popupVisible = true
 
   selectedLabels.value.forEach(n => {
-      // labelVisibiltyState.set(n.defaultName);
+    if (!labelVisibiltyState.has(n.name)) {
+      labelVisibiltyState.set(n.name, n.getVisible());
+    }
     if (!n.getVisible()) {
         n.setVisible(true)
       }
   });
-}
 
+}
+// TODO: this function needs more work
 function resetLabelsVisibility() {
   popupVisible = false
   selectedSENodules.value.forEach(n => {

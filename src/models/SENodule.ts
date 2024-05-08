@@ -86,9 +86,10 @@ export abstract class SENodule implements Visitable {
 
   /* A unique identification number and name for each node */
   public id: number;
-  public name = "";
+  public readonly name = "";
 
   constructor() {
+    this.name = ""
     this.id = NODE_COUNT++;
   }
 

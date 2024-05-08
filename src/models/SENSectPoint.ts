@@ -85,7 +85,7 @@ export class SENSectPoint extends SEPoint {
     }
 
     // Update visibility
-    if (this._showing && this._exists) {
+    if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

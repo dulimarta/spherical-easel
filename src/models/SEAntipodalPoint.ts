@@ -74,10 +74,10 @@ export class SEAntipodalPoint extends SEPoint {
     }
 
     // console.debug(
-    //   `Here point visibility antipode showing ${this._showing}, user created ${this._isUserCreated}, exists ${this._exists}`
+    //   `Here point visibility antipode showing ${this.showing}, user created ${this._isUserCreated}, exists ${this._exists}`
     // );
     // Update visibility
-    if (this._showing && this._isUserCreated && this._exists) {
+    if (this.showing && this._isUserCreated && this._exists) {
       // if (!this._pointVisibleBefore) {
       //   console.debug(`Here point visibility antipode`);
       //   // This should execute once unless the point is deleted/converted to not user created
