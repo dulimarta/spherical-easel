@@ -56,7 +56,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    const p = createNonFreePoint ? new NonFreePoint() : new Point();
+    const p = createNonFreePoint ? new NonFreePoint(this.name) : new Point(this.name);
     p.stylize(DisplayStyle.ApplyCurrentVariables);
     p.adjustSize();
     this.ref = p;

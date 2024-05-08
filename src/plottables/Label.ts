@@ -163,8 +163,8 @@ export default class Label extends Nodule {
 
   static isEarthMode = false
 
-  constructor(parentType: LabelParentTypes) {
-    super();
+  constructor(noduleName: string, parentType: LabelParentTypes) {
+    super(noduleName);
 
     this.seLabelParentType = parentType;
 

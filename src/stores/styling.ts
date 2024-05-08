@@ -120,7 +120,7 @@ export const useStylingStore = defineStore("style", () => {
           if (!selectedLabels.value.has(n.name)) {
             selectedLabels.value.set(n.name, itsLabel.ref);
             selectionCounter.value++;
-            labelsVisibilityState.value.set(n.name, itsLabel.ref.getVisible());
+            labelsVisibilityState.value.set(n.name, itsLabel.ref.showing);
           }
         }
       });

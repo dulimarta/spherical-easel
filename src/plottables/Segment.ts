@@ -99,9 +99,9 @@ export default class Segment extends Nodule {
    * Create a plottable segment from three pieces of information: startVector, normalVector, arcLength
    * NOTE: normal x start gives the direction in which the segment is drawn
    */
-  constructor() {
+  constructor(noduleName: string) {
     // Initialize the Group
-    super();
+    super(noduleName);
 
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
@@ -436,7 +436,7 @@ export default class Segment extends Nodule {
    */
   clone(): this {
     // Create a new segment and copy all this's properties into it
-    const dup = new Segment();
+    const dup = new Segment(this.name);
     //Copy name and start/end/mid/normal vectors
     dup._arcLength = this._arcLength;
     dup._startVector.copy(this._startVector);

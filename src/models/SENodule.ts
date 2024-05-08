@@ -86,7 +86,7 @@ export abstract class SENodule implements Visitable {
 
   /* A unique identification number and name for each node */
   public id: number;
-  public readonly name = "";
+  public name = "";
 
   constructor() {
     this.name = ""
@@ -424,7 +424,7 @@ export abstract class SENodule implements Visitable {
   }
 
   get showing(): boolean {
-    return this.ref?.getVisible() ?? false;
+    return this.ref?.showing ?? false;
   }
 
   set glowing(b: boolean) {

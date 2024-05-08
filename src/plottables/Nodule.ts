@@ -21,9 +21,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
   //public id = 0;
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
+  readonly name: string = '<noname-nodule>'
 
 
-  constructor() {
+  constructor(noduleName: string) {
+    this.name = noduleName
     // this.id = Nodule.NODULE_COUNT;
     // Nodule.NODULE_COUNT++;
   }
@@ -219,7 +221,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
     this._showing = b;
     this.setVisible(b)
   }
-  getVisible(): boolean {
+
+  get showing(): boolean {
     return this._showing
   }
 }

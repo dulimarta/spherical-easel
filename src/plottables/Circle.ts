@@ -147,8 +147,8 @@ export default class Circle extends Nodule {
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     // Create the array to hold the points that make up the boundary circle
     this.originalVertices = [];
@@ -810,7 +810,7 @@ export default class Circle extends Nodule {
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Circle();
+    const dup = new Circle(this.name);
     dup._centerVector.copy(this._centerVector);
     dup._circleRadius = this._circleRadius;
 

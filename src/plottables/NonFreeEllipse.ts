@@ -13,8 +13,8 @@ export default class NonFreeEllipse extends Ellipse {
    * non free ellipses are thinner by nonFreeLineScalePercent
    */
   private nonFreeEllipseScalePercent = SETTINGS.ellipse.nonFree.scalePercent;
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     this.styleOptions.set(
       StyleEditPanels.Front,

@@ -23,8 +23,8 @@ export default class NonFreePoint extends Point {
    */
   private nonFreePointScalePercent = SETTINGS.point.nonFree.scalePercent;
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
     // Now apply the new style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();

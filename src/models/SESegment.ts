@@ -90,7 +90,9 @@ export class SESegment
     createNonFreeSegment: boolean = false
   ) {
     super();
-    this.ref = createNonFreeSegment ? new NonFreeSegment() : new Segment();
+    SENodule.SEGMENT_COUNT++;
+    this.name = `Ls${SENodule.SEGMENT_COUNT}`;
+    this.ref = createNonFreeSegment ? new NonFreeSegment(this.name) : new Segment(this.name);
     this.ref._startVector.copy(segmentStartSEPoint.locationVector);
     this.ref._normalVector.copy(segmentNormalVector);
     this.ref.arcLength = segmentArcLength;
@@ -101,8 +103,6 @@ export class SESegment
     this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
 
-    SENodule.SEGMENT_COUNT++;
-    this.name = `Ls${SENodule.SEGMENT_COUNT}`;
   }
 
   customStyles(): Set<string> {

@@ -183,8 +183,8 @@ export default class Ellipse extends Nodule {
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     this._tMax = 2 * Math.PI;
     this._tMin = 0;
@@ -887,7 +887,7 @@ export default class Ellipse extends Nodule {
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Ellipse();
+    const dup = new Ellipse(this.name);
     dup._focus1Vector.copy(this._focus1Vector);
     dup._focus2Vector.copy(this._focus2Vector);
     dup._a = this._a;

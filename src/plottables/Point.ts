@@ -68,8 +68,8 @@ export default class Point extends Nodule {
     Point.pointScaleFactor *= factor;
   }
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     //Create the front/back/glowing/drawn TwoJS objects of the default size
     this.frontPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.front);

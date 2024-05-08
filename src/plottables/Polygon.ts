@@ -106,8 +106,8 @@ export default class Polygon extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(segmentList: SESegment[], segmentFlippedList: boolean[]) {
-    super();
+  constructor(noduleName: string, segmentList: SESegment[], segmentFlippedList: boolean[]) {
+    super(noduleName);
     this.seEdgeSegments.push(...segmentList);
     // this.edgeSegments.push(...segmentList.map(seg => seg.ref));
     this.segmentIsFlipped.push(...segmentFlippedList);

@@ -82,7 +82,10 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     angleMarkers: SEAngleMarker[]
   ) {
     super();
-    this.ref = new Polygon(edges, flippedBooleans);
+    SENodule.POLYGON_COUNT++;
+    this._polygonNumber = SENodule.POLYGON_COUNT;
+    this.name = `Poly-${this._polygonNumber}`
+    this.ref = new Polygon(this.name, edges, flippedBooleans);
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
@@ -98,8 +101,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
     //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
     // The M### name is defined in the SEExpression constructor
-    SENodule.POLYGON_COUNT++;
-    this._polygonNumber = SENodule.POLYGON_COUNT;
   }
 
   public customStyles(): Set<string> {

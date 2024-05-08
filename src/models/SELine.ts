@@ -66,7 +66,9 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     createNonFreeLine: boolean = false
   ) {
     super();
-    this.ref = createNonFreeLine ? new NonFreeLine() : new Line();
+    SELine.LINE_COUNT++;
+    this.name = `Li${SELine.LINE_COUNT}`;
+    this.ref = createNonFreeLine ? new NonFreeLine(this.name) : new Line(this.name);
     this.ref.normalVector = normalVector;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -75,8 +77,6 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     this._normalVector.copy(normalVector);
     this._endSEPoint = lineEndSEPoint;
 
-    SELine.LINE_COUNT++;
-    this.name = `Li${SELine.LINE_COUNT}`;
   }
 
   customStyles(): Set<string> {

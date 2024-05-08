@@ -85,8 +85,8 @@ export default class Line extends Nodule {
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
   private transformMatrix = new Matrix4();
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
@@ -305,7 +305,7 @@ export default class Line extends Nodule {
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
-    const dup = new Line();
+    const dup = new Line(this.name);
     dup._normalVector.copy(this._normalVector);
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;

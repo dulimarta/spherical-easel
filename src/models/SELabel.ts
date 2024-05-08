@@ -62,7 +62,8 @@ export class SELabel extends SENodule implements Visitable {
   constructor(labelType: LabelParentTypes, parent: SENodule) {
     SENodule.LABEL_COUNT++;
     super();
-    const label = new Label(labelType);
+    // Name of the plottable should borrow the parent name
+    const label = new Label(parent.name, labelType);
     this.ref = label;
     this.parent = parent;
 

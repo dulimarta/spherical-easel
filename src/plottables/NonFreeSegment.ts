@@ -14,8 +14,8 @@ export default class NonFreeSegment extends Segment {
    */
   private nonFreeSegmentScalePercent = SETTINGS.segment.nonFree.scalePercent;
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     this.styleOptions.set(
       StyleEditPanels.Front,

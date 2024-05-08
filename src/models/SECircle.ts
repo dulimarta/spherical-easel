@@ -81,14 +81,14 @@ export class SECircle
     super();
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
-    this.ref = createNonFreeCircle ? new NonFreeCircle() : new Circle();
+    SECircle.CIRCLE_COUNT++;
+    this.name = `C${SECircle.CIRCLE_COUNT}`;
+    this.ref = createNonFreeCircle ? new NonFreeCircle(this.name) : new Circle(this.name);
     this.ref.centerVector = centerPoint.locationVector;
     this.ref.circleRadius = this.circleRadius;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
-    SECircle.CIRCLE_COUNT++;
-    this.name = `C${SECircle.CIRCLE_COUNT}`;
   }
   // #endregion circleConstructor
 
