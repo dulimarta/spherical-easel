@@ -32,4 +32,4 @@ const seStore = useSEStore();
 Command.setGlobalStore(seStore);
 MouseHandler.setGlobalStore(seStore);
 SENodule.setGlobalStore(seStore);
-Nodule.setGlobalStore(seStore);
+// Nodule.setGlobalStore(seStore);

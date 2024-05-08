@@ -23,7 +23,7 @@
         <!-- Label Text Selections -->
         <v-text-field
           v-model="styleOptions.labelDisplayText"
-          :disabled="selectedLabels.size < 1"
+          :disabled="selectedLabels.size < 1 || styleStore.hasDisagreement('labelDisplayText')"
           :label="t('labelText')"
           :counter="maxLabelDisplayTextLength"
           ref="labelDisplayText"
@@ -34,7 +34,7 @@
           variant="outlined"
           density="compact"
           :placeholder="placeHolderText(selectedLabels.size, false)"
-          v-bind:error-messages="
+          :error-messages="
             t(labelDisplayTextErrorMessageKey, {
               max: maxLabelDisplayTextLength
             })
@@ -42,7 +42,8 @@
           :rules="[
             labelDisplayTextCheck,
             labelDisplayTextTruncate(styleOptions)
-          ]"></v-text-field>
+          ]">
+          </v-text-field>
 
         <v-text-field
           v-if="hasCaption(styleOptions)"
@@ -340,7 +341,7 @@ type ConflictItems = {
 // const props = defineProps<LabelStyleProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedLabels, styleOptions } = storeToRefs(styleStore)
+const { selectedLabels, styleOptions, forceAgreement } = storeToRefs(styleStore)
 const { t } = useI18n();
 const {
   dataAgreement,
@@ -373,6 +374,9 @@ function labelFilter(n: SENodule): boolean {
 // Map each object to its plottable label
 function labelMapper(n: SENodule): Nodule {
   return (n as unknown as Labelable).label!.ref!;
+}
+function disagreeOn(prop: string): boolean {
+  return styleStore.hasDisagreement(prop)
 }
 
 // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
@@ -534,15 +538,12 @@ function overrideDynamicBackStyleDisagreement() {
 
 function checkLabelsVisibility() {
   popupVisible = true
-  selectedSENodules.value.forEach(n => {
-    const nLabel = n.getLabel()
-    if (nLabel) {
-      const labelVisibility = nLabel.showing
-      labelVisibiltyState.set(n.name, labelVisibility);
-      if (!nLabel.showing) {
-        nLabel.showing = true;
+
+  selectedLabels.value.forEach(n => {
+      // labelVisibiltyState.set(n.defaultName);
+    if (!n.getVisible()) {
+        n.setVisible(true)
       }
-    }
   });
 }
 
@@ -899,6 +900,7 @@ const conflictItems: ConflictItems = {
   },
   "labelFrontFillColor": "Label Front Fill Color",
   "labelNotVisible": "Labels Not Visible",
+  "labelText": "Label Text",
   "labelStyle": "Label Style",
   "enableTooltip": "Label Style",
   "disableTooltip": "Label Style is disabled: no object selected",

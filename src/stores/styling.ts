@@ -10,7 +10,7 @@ import {
 import Nodule from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 
-type ObjectStyle = { [_: string]: StylePropertyValue }
+type ObjectStyle = { [_: string]: StylePropertyValue };
 
 function isPropEqual(
   a: StylePropertyValue | undefined,
@@ -18,13 +18,47 @@ function isPropEqual(
 ): boolean {
   if (typeof a !== typeof b) return false;
   if (typeof a === "undefined") return true;
-  if (typeof a === 'boolean') return a === b;
+  if (typeof a === "boolean") return a === b;
   if (typeof a === "number" && typeof b === "number")
     return Math.abs(a - b) < 1e-5;
   if (typeof b === "string") return a === b;
-  console.debug(`isProp does not yet handle`, typeof a)
+  console.debug(`isProp does not yet handle`, typeof a);
   return false;
 }
+
+function checkInsertOrDelete(
+  prev: string[],
+  curr: string[]
+): [Set<string>, Set<string>] {
+  const added = new Set<string>();
+  const removed = new Set<string>();
+  prev.sort((a, b) => a.localeCompare(b));
+  curr.sort((a, b) => a.localeCompare(b));
+  let p = 0,
+    c = 0;
+  while (p < prev.length && c < curr.length) {
+    if (prev[p] == curr[c]) {
+      p++;
+      c++;
+    } else if (curr[c] < prev[p]) {
+      added.add(curr[c]);
+      c++;
+    } else {
+      removed.add(prev[p]);
+      p++;
+    }
+  }
+  while (p < prev.length) {
+    removed.add(prev[p]);
+    p++;
+  }
+  while (c < curr.length) {
+    added.add(curr[c]);
+    c++;
+  }
+  return [added, removed];
+}
+
 export const useStylingStore = defineStore("style", () => {
   const seStore = useSEStore();
   const { selectedSENodules } = storeToRefs(seStore);
@@ -32,16 +66,28 @@ export const useStylingStore = defineStore("style", () => {
   const selectedLabels: Ref<Map<string, Label>> = ref(new Map());
   const conflictingProperties: Ref<Set<string>> = ref(new Set());
   const selectionCounter = ref(0);
+  const forceAgreement = ref(false);
   const styleOptions = ref<ObjectStyle>({});
   const stylePropertyMap: Map<string, StylePropertyValue> = new Map();
+  const labelsVisibilityState: Ref<Map<string, boolean>> = ref(new Map());
 
   watch(
     // This watcher run when the user changes the object selection
     () => selectedSENodules.value,
     selectionArr => {
-      selectionCounter.value = 0;
-      selectedLabels.value.clear();
-      selectedPlottables.value.clear();
+      Array.from(selectedLabels.value.keys()).forEach(s => {
+        const pos = selectionArr.findIndex((n => n.name === s))
+        if (pos < 0) {
+          // object was deselected, restore its visibility
+          // and remove it from the selected set
+          const label = selectedLabels.value.get(s)!
+          const prevVisibility = labelsVisibilityState.value.get(s)
+          label.showing = prevVisibility!
+          // label.updateDisplay()
+          selectedLabels.value.delete(s)
+          selectionCounter.value--
+        }
+      })
       selectionArr.forEach(n => {
         const itsPlot = n.ref;
         if (itsPlot && !(n instanceof Label)) {
@@ -52,8 +98,11 @@ export const useStylingStore = defineStore("style", () => {
         const itsLabel = n.getLabel();
         if (itsLabel) {
           // console.debug(`${n.name} label`, itsLabel.ref)
-          selectedLabels.value.set(n.name, itsLabel.ref);
-          selectionCounter.value++;
+          if (!selectedLabels.value.has(n.name)) {
+            selectedLabels.value.set(n.name, itsLabel.ref);
+            selectionCounter.value++;
+            labelsVisibilityState.value.set(n.name, itsLabel.ref.getVisible());
+          }
         }
       });
 
@@ -88,7 +137,7 @@ export const useStylingStore = defineStore("style", () => {
     () => styleOptions.value,
     (opt: StyleOptions) => {
       const newOptions: ObjectStyle = { ...opt };
-      let updatedOptions: ObjectStyle = {}
+      let updatedOptions: ObjectStyle = {};
       let propChanged = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = newOptions[key];
@@ -97,16 +146,17 @@ export const useStylingStore = defineStore("style", () => {
           console.debug(
             `Property ${key} changes from ${oldValue} to ${newValue}`
           );
-          updatedOptions[key] = newValue
-          propChanged = true
+          updatedOptions[key] = newValue;
+          propChanged = true;
         }
       });
       if (propChanged) {
-        selectedLabels.value.forEach((label) => {
-          label.updateStyle(StyleEditPanels.Label, updatedOptions)
-        })
+        selectedLabels.value.forEach(label => {
+          label.updateStyle(StyleEditPanels.Label, updatedOptions);
+        });
       }
-    }, {
+    },
+    {
       deep: true,
       immediate: true
     }
@@ -120,11 +170,17 @@ export const useStylingStore = defineStore("style", () => {
     });
   }
 
+  function hasDisagreement(prop: string) {
+    return conflictingProperties.value.has(prop) && !forceAgreement.value;
+  }
   return {
     toggleLabelsShowing,
     selectionCounter,
     selectedLabels,
-    styleOptions
+    styleOptions,
+    conflictingProperties,
+    forceAgreement,
+    hasDisagreement
     // allLabelsShowing, selectionCount,styleOptions: activeStyleOptions
   };
 });

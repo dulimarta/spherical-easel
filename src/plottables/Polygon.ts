@@ -54,11 +54,6 @@ export default class Polygon extends Nodule {
   private interiorDirectionMultipliers: number[] = [];
 
   /**
-   * Vuex global state
-   */
-  // protected store = AppStore; //
-
-  /**
    * The area of the polygon. This must be updated before the updateDisplay can be called
    */
   private _area = 0;

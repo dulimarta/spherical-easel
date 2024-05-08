@@ -13,7 +13,7 @@
     "
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
-      {{ t("showDrawer") }}
+      {{ selectionCounter > 0 ? t("showDrawer") : t("showDrawerDisabled") }}
     </v-tooltip>
     <v-icon>mdi-palette</v-icon>
   </v-btn>
@@ -24,7 +24,6 @@
       <!-- <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle> -->
 
       <div id="visibility-control" v-if="selectedSENodules.length > 0">
-
         <span @click="toggleLabelsShowing">
           <v-icon color="black">mdi-tag</v-icon>
           <v-icon v-if="labelsShowingFlag">mdi-eye-off</v-icon>
@@ -44,6 +43,7 @@
 <i18n lang="json" locale="en">
 {
   "showDrawer": "Show Style Drawer",
+  "showDrawerDisabled": "Style Draver (disable: no object selected)",
   "label": "Label",
   "object": "Object"
 }
@@ -101,21 +101,25 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { Labelable } from "@/types";
 const minified = ref(true);
 const { t } = useI18n();
-const seStore = useSEStore()
+const seStore = useSEStore();
+const styleStore = useStylingStore();
 // const styleStore = useStylingStore()
-const { selectedSENodules} = storeToRefs(seStore)
+const { selectedSENodules } = storeToRefs(seStore);
+const { selectionCounter } = storeToRefs(styleStore);
 // const { allLabelsShowing, selectionCount } = storeToRefs(styleStore)
-const labelsShowingFlag = ref(false)
+const labelsShowingFlag = ref(false);
 
 function toggleLabelsShowing() {
-  labelsShowingFlag.value = !labelsShowingFlag.value
-  const cmdGroup = new CommandGroup()
+  labelsShowingFlag.value = !labelsShowingFlag.value;
+  const cmdGroup = new CommandGroup();
   selectedSENodules.value
     .filter(n => n.getLabel() !== null)
     .forEach(n => {
-      const lab = n.getLabel()
-      cmdGroup.addCommand(new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value))
-    })
-    cmdGroup.execute()
+      const lab = n.getLabel();
+      cmdGroup.addCommand(
+        new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value)
+      );
+    });
+  cmdGroup.execute();
 }
 </script>

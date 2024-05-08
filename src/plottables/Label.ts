@@ -161,6 +161,8 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
+  static isEarthMode = false
+
   constructor(parentType: LabelParentTypes) {
     super();
 
@@ -520,7 +522,7 @@ export default class Label extends Nodule {
         // Compute the numerical part of the label (if any) and add it to the end of label
         if (this.value.length > 0) {
           if (this.seLabelParentType === "point") {
-            if (!Nodule.store.isEarthMode) {
+            if (!Label.isEarthMode) {
               //For coordinates of a point
               labelText =
                 "(" +

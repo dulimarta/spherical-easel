@@ -99,10 +99,7 @@ export abstract class SENodule implements Visitable {
         descendants of the object don't exist. */
   protected _exists = true;
 
-  /* If the object is not visible then showing = true (The user can hide objects)*/
-  protected _showing = true;
-
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
+    /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -418,21 +415,22 @@ export abstract class SENodule implements Visitable {
 
   set showing(b: boolean) {
     // Set the showing variable
-    this._showing = b;
-
-    // Set the display for the corresponding plottable object
-    this.ref?.setVisible(b);
+    if (this.ref) {
+      this.ref.showing = b; // internally this invokes setVisible()
+      // Set the display for the corresponding plottable object
+      // this.ref?.setVisible(b);
+    }
   }
 
   get showing(): boolean {
-    return this._showing;
+    return this.ref?.getVisible() ?? false;
   }
 
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
     //console.log("SENodule set glow of ", this.name, " to ", b);
     //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
-    if (/*this._selected || */ !this._showing) return;
+    if (/*this._selected || */ !this.showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref?.glowingDisplay();
@@ -446,7 +444,7 @@ export abstract class SENodule implements Visitable {
   set selected(b: boolean) {
     // console.log("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
-    if (!this._showing) return;
+    if (!this.showing) return;
     this._selected = b;
     if (b) {
       // Set the display for the corresponding plottable object
