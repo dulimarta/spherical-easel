@@ -1,12 +1,9 @@
 <template>
-  <PopOverTabs
-    :icon-name="
-      editModeIsBack ? 'mdi-arrange-send-backward' : 'mdi-arrange-bring-forward'
-    "
-    :tooltip="tooltipText"
-    tooltip-location="left">
+  <div>Sel-Objs {{ selectedPlottables.size }}</div>
+  <!-- {{ styleOptions }} -->
+  <PopOverTabs :show-popup="false" :disabled="selectedPlottables.size === 0">
     <template #tabs>
-      <v-tab><v-icon>mdi-format-color-fill</v-icon></v-tab>
+      <v-tab><v-icon>mdi-palette</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
       <v-tab><v-icon>mdi-angle-acute</v-icon></v-tab>
     </template>
@@ -56,26 +53,26 @@
           </v-slider>
         </div>
         <SimpleColorSelector
-          :numSelected="selectionCount"
+          :numSelected="selectedPlottables.size"
           :title="t('strokeColor')"
-          v-if="hasStyle(/strokeColor/) || true"
+          v-if="hasStyle('strokeColor')"
           :conflict="conflictItems.strokeColor"
           v-on:resetColor="conflictItems.strokeColor = false"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
         <SimpleColorSelector
           :title="t('fillColor')"
-          :numSelected="selectionCount"
+          :numSelected="selectedPlottables.size"
           :conflict="conflictItems.fillColor"
           v-on:resetColor="conflictItems.fillColor = false"
-          v-if="hasStyle(/fillColor/) || true"
+          v-if="hasStyle('fillColor')"
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
       </v-window-item>
       <v-window-item class="pa-2">
         <SimpleNumberSelector
-          v-if="hasStyle(/strokeWidthPercent/) || true"
-          :numSelected="selectionCount"
+          v-if="hasStyle('strokeWidthPercent')"
+          :numSelected="selectedPlottables.size"
           :conflict="conflictItems.strokeWidthPercent"
           v-model="strokeWidthPercentage"
           :title="t('strokeWidthPercent')"
@@ -86,7 +83,8 @@
           :step="20"
           :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
         <SimpleNumberSelector
-          :numSelected="selectionCount"
+          v-if="hasStyle('pointRadiusPercent')"
+          :numSelected="selectedPlottables.size"
           v-model="pointRadiusPercentage"
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
           :conflict="conflictItems.pointRadiusPercent"
@@ -109,7 +107,7 @@
           {{ activeDashPattern(styleOptions) }}
         </span>
         <!-- The dash property slider -->
-        <v-range-slider
+        <!--v-range-slider
           v-model="styleOptions.dashArray"
           :key="dashArrayKey"
           min="0"
@@ -142,7 +140,7 @@
               mdi-plus
             </v-icon>
           </template>
-        </v-range-slider>
+        </!--v-range-slider-->
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
         <v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
@@ -174,28 +172,27 @@
         </v-tooltip>
         <v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
-            <span v-on="props">
-              <v-checkbox
-                v-model="styleOptions.reverseDashArray"
-                :key="activeReverseDashPatternKey"
-                :disabled="emptyDashPattern"
-                :color="conflictItems.reverseDashArray ? `red` : ''"
-                @click="
-                  toggleDashPatternReverse(styleOptions);
-                  conflictItems.reverseDashArray = false;
-                "
-                hide-details
-                density="compact">
-                <template v-slot:label>
-                  <span
-                    :style="{
-                      color: conflictItems.reverseDashArray ? 'red' : ``
-                    }">
-                    {{ t("dashArrayReverse") }}
-                  </span>
-                </template>
-              </v-checkbox>
-            </span>
+            <v-checkbox
+              v-bind="props"
+              v-model="styleOptions.reverseDashArray"
+              :key="activeReverseDashPatternKey"
+              :disabled="emptyDashPattern"
+              :color="conflictItems.reverseDashArray ? `red` : ''"
+              @click="
+                toggleDashPatternReverse(styleOptions);
+                conflictItems.reverseDashArray = false;
+              "
+              hide-details
+              density="compact">
+              <template v-slot:label>
+                <span
+                  :style="{
+                    color: conflictItems.reverseDashArray ? 'red' : ``
+                  }">
+                  {{ t("dashArrayReverse") }}
+                </span>
+              </template>
+            </v-checkbox>
           </template>
           {{ $t("dashPatternReverseArrayToolTip") }}
         </v-tooltip>
@@ -207,7 +204,7 @@
       </span-->
 
         <SimpleNumberSelector
-          :numSelected="selectionCount"
+          :numSelected="selectedPlottables.size"
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
           :conflict="conflictItems.angleMarkerRadiusPercent"
           v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
@@ -296,6 +293,7 @@ import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useStyleEditor } from "@/composables/StyleEditor";
+import { useStylingStore } from "@/stores/styling";
 import { onBeforeMount } from "vue";
 import PopOverTabs from "../PopOverTabs.vue";
 
@@ -317,15 +315,15 @@ type ComponentProps = {
 const { attrs } = useAttrs();
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
-
+const styleStore = useStylingStore();
+const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
+const { hasStyle } = styleStore;
 const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
   storeToRefs(seStore);
 const {
-  styleOptions,
   dataAgreement,
   forceDataAgreement,
-  selectionCount,
-  hasStyle,
+  // hasStyle,
   conflictingProps,
   angleMarkersSelected,
   oneDimensionSelected
@@ -446,7 +444,13 @@ let alreadySet = false;
 //private reverseDashArray = true;
 
 const tooltipText = computed(() =>
-  editModeIsBack.value ? t("backgroundStyle") : t("foregroundStyle")
+  editModeIsBack.value
+    ? selectedPlottables.value.size > 0
+      ? t("backgroundStyle")
+      : t("backgroundStyleDisabled")
+    : selectedPlottables.value.size > 0
+    ? t("foregroundStyle")
+    : t("foregroundStyleDisabled")
 );
 
 function setMax(angleMarker: boolean): number {
@@ -789,6 +793,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
   "backgroundStyle": "Background Style",
+  "backgroundStyleDisabled": "Background Style (disabled: no object selected)",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "dashArrayReverse": "Switch Dash and Gap",
@@ -797,6 +802,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
   "fillColor": "Fill Color",
   "foregroundStyle": "Foreground Style",
+  "foregroundStyleDisabled": "Foreground Style (disabled: no object selected)",
   "globalBackStyleContrast": "Global Back Style Contrast",
   "labelStyleOptionsMultiple": "(Multiple)",
   "pointRadiusPercent": "Point Radius (%)",

@@ -458,7 +458,7 @@ export function useStyleEditor(
     });
 
     /* If multiple objects are selected do not update the label text */
-    if (filteredNodules.value.length > 1) delete updatePayload.labelDisplayText;
+    // if (filteredNodules.value.length > 1) delete updatePayload.labelDisplayText;
 
     // if (this.panel == StyleEditPanels.Back) {
     //   // if (!this.automaticBackStyle)

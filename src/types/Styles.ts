@@ -18,6 +18,13 @@ export interface StyleOptions {
   reverseDashArray?: boolean;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
+  angleMarkerRadiusPercent?: number;
+  angleMarkerTickMark?: boolean;
+  angleMarkerDoubleArc?: boolean;
+  angleMarkerArrowHeads?: boolean;
+}
+
+export type LabelStyleProperty = {
   labelTextStyle?: string;
   labelTextFamily?: string;
   labelTextDecoration?: string;
@@ -29,12 +36,8 @@ export interface StyleOptions {
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   labelDynamicBackStyle?: boolean;
-  angleMarkerRadiusPercent?: number;
-  angleMarkerTickMark?: boolean;
-  angleMarkerDoubleArc?: boolean;
-  angleMarkerArrowHeads?: boolean;
-}
 
+}
 export type StylePropertyValue = number | string | boolean | LabelDisplayMode | number[];
 
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
@@ -215,7 +218,7 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };
 
-export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
+export const DEFAULT_LABEL_TEXT_STYLE: Partial<LabelStyleProperty> = {
   labelDisplayMode: LabelDisplayMode.NameOnly,
   labelDisplayText: "",
   labelDisplayCaption: "",

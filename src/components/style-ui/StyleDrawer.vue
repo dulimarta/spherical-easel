@@ -19,16 +19,49 @@
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
-      <LabelStyle></LabelStyle>
-      <!-- <FrontBackStyle :panel="StyleEditPanels.Front"></FrontBackStyle> -->
-      <!-- <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle> -->
+      <v-item-group
+        v-model="styleSelection"
+        :style="{
+          display: 'flex',
+          flexDirection: 'column'
+        }">
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip
+            activator="#lab-icon"
+            v-if="styleSelection === undefined"
+            :text="labelTooltip"></v-tooltip>
+          <v-icon id="lab-icon" @click="toggle">mdi-label</v-icon>
+
+          <LabelStyle
+            :show-popup="isSelected!"
+            v-model="styleSelection"></LabelStyle>
+        </v-item>
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip
+            activator="#front-icon"
+            v-if="styleSelection === undefined"
+            :text="frontTooltip"></v-tooltip>
+          <v-icon id="front-icon" @click="toggle">mdi-arrange-bring-forward</v-icon>
+          <!-- <FrontBackStyle @click="toggle" :panel="StyleEditPanels.Front"></FrontBackStyle> -->
+        </v-item>
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip
+            activator="#back-icon"
+            v-if="styleSelection === undefined"
+            :text="backTooltip"></v-tooltip>
+          <v-icon id="back-icon" @click="toggle">
+            mdi-arrange-send-backward
+          </v-icon>
+          <!-- <FrontBackStyle @click="toggle" :panel="StyleEditPanels.Back"></FrontBackStyle> -->
+        </v-item>
+      </v-item-group>
 
       <div id="visibility-control" v-if="selectedSENodules.length > 0">
-        <span @click="toggleLabelsShowing">
+        <!--span @click="toggleLabelsShowing">
           <v-icon color="black">mdi-tag</v-icon>
           <v-icon v-if="labelsShowingFlag">mdi-eye-off</v-icon>
           <v-icon v-else>mdi-eye</v-icon>
-        </span>
+        </!--span-->
         <span>
           <v-icon>mdi-file-tree</v-icon>
           <v-icon color="black">mdi-eye</v-icon>
@@ -45,7 +78,11 @@
   "showDrawer": "Show Style Drawer",
   "showDrawerDisabled": "Style Draver (disable: no object selected)",
   "label": "Label",
-  "object": "Object"
+  "object": "Object",
+  "LabelTooltip": "Label Style",
+  "backgroundTooltip": "Background Style",
+  "foregroundTooltip": "Foreground Style",
+  "disabledTooltip": "(disabled: no object selected)"
 }
 </i18n>
 <i18n lang="json" locale="id">
@@ -88,7 +125,7 @@
 }
 </style>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { StyleEditPanels } from "@/types/Styles";
 import { useI18n } from "vue-i18n";
 import LabelStyle from "./LabelStyle.vue";
@@ -108,6 +145,29 @@ const { selectedSENodules } = storeToRefs(seStore);
 const { selectionCounter } = storeToRefs(styleStore);
 // const { allLabelsShowing, selectionCount } = storeToRefs(styleStore)
 const labelsShowingFlag = ref(false);
+const styleSelection = ref<number|undefined>(undefined);
+
+const labelTooltip = computed((): string => {
+  let text = t("LabelTooltip");
+  if (selectionCounter.value <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+const backTooltip = computed((): string => {
+  let text = t("backgroundTooltip");
+  if (selectionCounter.value <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+const frontTooltip = computed((): string => {
+  let text = t("foregroundTooltip");
+  if (selectionCounter.value <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
 
 function toggleLabelsShowing() {
   labelsShowingFlag.value = !labelsShowingFlag.value;
