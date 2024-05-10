@@ -22,12 +22,7 @@
           <v-icon @click="menu = false">mdi-chevron-double-right</v-icon>
         </v-tab>
       </v-tabs>
-      <v-window v-model="currentTab">
-        <template #additional>
-          <slot name="additional">
-            <ConflictResolution/>
-          </slot>
-        </template>
+      <v-window v-model="currentTab" class="pa-1">
         <slot name="pages"></slot>
       </v-window>
       <slot></slot>
@@ -37,7 +32,7 @@
 <script lang="ts" setup>
 import { mergeProps } from "vue";
 import { ref, watch } from "vue";
-import ConflictResolution from "./style-ui/ConflictResolution.vue";
+import DisagreementOverride from "./DisagreementOverride.vue";
 type Props = {
   showPopup: boolean,
   // iconName: string;

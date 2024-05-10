@@ -1,9 +1,9 @@
 <template>
   <div
     id="conflict-props"
-    v-if="conflictingProperties.size > 0"
+    v-if="localDisagreement.length > 0"
     class="text-caption font-italic">
-    <span>Conflicting properties: {{ z }}</span>
+    <span>Disagreeing properties: {{ formattedDisagreement }}</span>
     <v-switch
       style="align-self: flex-end"
       v-model="forceAgreement"
@@ -28,15 +28,27 @@ import { useStylingStore } from "@/stores/styling";
 import { storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+type ComponentProps = {
+  styleProperties: Array<string>;
+};
 const styleStore = useStylingStore();
-const { conflictingProperties, forceAgreement } = storeToRefs(styleStore);
+const args = defineProps<ComponentProps>();
+const { conflictingProperties: allDisagreement, forceAgreement } =
+  storeToRefs(styleStore);
 const { t } = useI18n();
 // const applyToAll = ref(forceAgreement.value;
-const z = computed(() =>
-  Array.from(conflictingProperties.value.values())
-    .map(s => t(s))
-    .join(",")
-);
+const localDisagreement = computed(() => {
+  if (!allDisagreement.value) return [];
+  return Array.from(allDisagreement.value.values())
+    .filter(s => {
+      const someProp = args.styleProperties.some(p => s === p);
+      return someProp;
+    })
+    .map(s => {
+      return t(s);
+    });
+});
+const formattedDisagreement = computed(() => localDisagreement.value.join(","));
 </script>
 <i18n lang="json" locale="en">
 {

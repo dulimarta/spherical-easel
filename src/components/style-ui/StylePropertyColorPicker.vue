@@ -12,26 +12,23 @@
         {{ " " + t("labelStyleOptionsMultiple") }}
       </span>
     </span>
-    <v-tooltip location="bottom">
-      <template v-slot:activator="{ props }">
-        <span v-bind="props">
-          <v-checkbox
-            v-model="noColorData"
-            :label="noDataUILabel"
-            color="indigo darken-3"
-            hide-details
-            density="compact"
-            @click="toggleNoColor"></v-checkbox>
-        </span>
-      </template>
+    <v-checkbox
+      id="check-btn"
+      :disabled="numSelected == 0 || (conflict && numSelected > 1)"
+      v-model="noColorData"
+      :label="noDataUILabel"
+      color="indigo darken-3"
+      hide-details
+      density="compact"
+      @click="toggleNoColor"></v-checkbox>
+    <v-tooltip location="bottom" activator="#check-btn">
       {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
     </v-tooltip>
   </div>
   <div class="flex-row">
     <!-- The color picker -->
-    <v-color-picker
+    <v-color-picker :disabled="true"
       border
-      :disabled="noColorData"
       hide-sliders
       hide-canvas
       :show-swatches="!noColorData"
@@ -42,7 +39,8 @@
       mode="hexa"
       id="colorPicker"
       @update:model-value="colorChanged"></v-color-picker>
-    <HintButton style="align-self: flex-start;"
+    <HintButton
+      style="align-self: flex-start"
       type="colorInput"
       @click="toggleColorInputs"
       :disabled="noColorData"

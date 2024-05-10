@@ -13,7 +13,7 @@
     "
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
-      {{ selectionCounter > 0 ? t("showDrawer") : t("showDrawerDisabled") }}
+      {{t("showDrawer")}}
     </v-tooltip>
     <v-icon>mdi-palette</v-icon>
   </v-btn>
@@ -25,7 +25,7 @@
           display: 'flex',
           flexDirection: 'column'
         }">
-        <v-item v-slot="{ isSelected, toggle }">
+        <v-item v-slot="{ isSelected, toggle }" :disabled="selectionCounter === 0">
           <v-tooltip
             activator="#lab-icon"
             v-if="styleSelection === undefined"
@@ -56,42 +56,24 @@
         </v-item>
       </v-item-group>
 
-      <div id="visibility-control" v-if="selectedSENodules.length > 0">
-        <!--span @click="toggleLabelsShowing">
+      <!--div id="visibility-control" v-if="selectedSENodules.length > 0">
+        <span @click="toggleLabelsShowing">
           <v-icon color="black">mdi-tag</v-icon>
           <v-icon v-if="labelsShowingFlag">mdi-eye-off</v-icon>
           <v-icon v-else>mdi-eye</v-icon>
-        </!--span-->
+        </span>
         <span>
           <v-icon>mdi-file-tree</v-icon>
           <v-icon color="black">mdi-eye</v-icon>
         </span>
-      </div>
+      </div-->
       <v-btn icon size="x-small" @click="minified = !minified">
         <v-icon>mdi-chevron-double-right</v-icon>
       </v-btn>
     </div>
   </transition>
 </template>
-<i18n lang="json" locale="en">
-{
-  "showDrawer": "Show Style Drawer",
-  "showDrawerDisabled": "Style Draver (disable: no object selected)",
-  "label": "Label",
-  "object": "Object",
-  "LabelTooltip": "Label Style",
-  "backgroundTooltip": "Background Style",
-  "foregroundTooltip": "Foreground Style",
-  "disabledTooltip": "(disabled: no object selected)"
-}
-</i18n>
-<i18n lang="json" locale="id">
-{
-  "showDrawer": "Buka Panel Gaya Tampilan",
-  "label": "Label",
-  "object": "Objek"
-}
-</i18n>
+
 <style scoped>
 .vertical-nav-drawer {
   background-color: white;
@@ -183,3 +165,22 @@ function toggleLabelsShowing() {
   cmdGroup.execute();
 }
 </script>
+<i18n lang="json" locale="en">
+  {
+    "showDrawer": "Show Style Drawer",
+    "showDrawerDisabled": "Style Draver (disable: no object selected)",
+    "label": "Label",
+    "object": "Object",
+    "LabelTooltip": "Label Style",
+    "backgroundTooltip": "Background Style",
+    "foregroundTooltip": "Foreground Style",
+    "disabledTooltip": "(disabled: no object selected)"
+  }
+  </i18n>
+  <i18n lang="json" locale="id">
+  {
+    "showDrawer": "Buka Panel Gaya Tampilan",
+    "label": "Label",
+    "object": "Objek"
+  }
+  </i18n>

@@ -287,8 +287,8 @@ import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "@/components/style-ui/SimpleNumberSelector.vue";
-import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
+import SimpleNumberSelector from "@/components/style-ui/StylePropertySlider.vue";
+import SimpleColorSelector from "@/components/style-ui/StylePropertyColorPicker.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
@@ -792,8 +792,6 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "angleMarkerDoubleArc": "Double Arc",
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
-  "backgroundStyle": "Background Style",
-  "backgroundStyleDisabled": "Background Style (disabled: no object selected)",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "dashArrayReverse": "Switch Dash and Gap",
@@ -801,8 +799,6 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
   "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
   "fillColor": "Fill Color",
-  "foregroundStyle": "Foreground Style",
-  "foregroundStyleDisabled": "Foreground Style (disabled: no object selected)",
   "globalBackStyleContrast": "Global Back Style Contrast",
   "labelStyleOptionsMultiple": "(Multiple)",
   "pointRadiusPercent": "Point Radius (%)",

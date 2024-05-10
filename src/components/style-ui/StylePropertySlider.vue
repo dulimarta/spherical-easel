@@ -8,7 +8,7 @@
     </span>
 
     <!-- The number selector slider -->
-    <v-slider v-bind:="attrs"
+    <v-slider v-bind:="attrs" :disabled="numSelected == 0 || conflict && numSelected > 1"
     v-model="sliderValue" thumb-label show-ticks>
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>

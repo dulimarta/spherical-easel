@@ -30,11 +30,10 @@
           v-model="styleOptions.labelDisplayText"
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelDisplayText')
+            hasDisagreement('labelDisplayText')
           "
           :label="t('labelText')"
           :counter="maxLabelDisplayTextLength"
-          ref="labelDisplayText"
           :class="{
             shake: animatedInput.labelDisplayText,
             conflict: conflictItems.labelDisplayText
@@ -55,7 +54,7 @@
           v-if="hasCaption(styleOptions) || true"
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelDisplayCaption')
+            hasDisagreement('labelDisplayCaption')
           "
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
@@ -78,32 +77,22 @@
             labelDisplayCaptionCheck,
             labelDisplayCaptionTruncate(styleOptions)
           ]"></v-text-field>
-        <SimpleNumberSelector
-          :disabled="
-            selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelTextScalePercent')
-          "
+        <PropertySlider
           :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextScalePercent"
           :title="t('labelTextScale')"
-          ref="labelTextScalePercent"
           :color="conflictItems.labelTextScalePercent ? 'red' : ''"
-          :conflict="conflictItems.labelTextScalePercent"
+          :conflict="hasDisagreement('labelTextScalePercent')"
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <!-- Rotation {{ labelTextRotationAmount }} -->
-        <SimpleNumberSelector
-          :disabled="
-            selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelTextRotation')
-          "
+        <PropertySlider
           :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextRotation"
-          ref="labelTextRotation"
-          :conflict="conflictItems.labelTextRotation"
+          :conflict="hasDisagreement('labelTextRotation')"
           :class="{ shake: animatedInput.labelTextRotation }"
           :title="t('labelTextRotation')"
           :color="conflictItems.labelTextRotation ? 'red' : ''"
@@ -113,14 +102,15 @@
           :step="0.39269875"
           :thumb-string-values="
             textRotationSelectorThumbStrings
-          "></SimpleNumberSelector>
+          "></PropertySlider>
+          <DisagreementOverride :style-properties="['labelDisplayText', 'labelDisplayCaption', 'labelTextScalePercent', 'labelTextRotation']"/>
       </v-window-item>
       <v-window-item>
         <!-- Label Text Family Selections -->
         <v-select
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelTextFamily')
+            hasDisagreement('labelTextFamily')
           "
           v-model.lazy="styleOptions.labelTextFamily"
           v-bind:label="t('labelTextFamily')"
@@ -138,7 +128,7 @@
         <v-select
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelTextStyle')
+            hasDisagreement('labelTextStyle')
           "
           v-model.lazy="styleOptions.labelTextStyle"
           v-bind:label="t('labelTextStyle')"
@@ -156,7 +146,7 @@
         <v-select
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelTextDecoration')
+            hasDisagreement('labelTextDecoration')
           "
           v-model.lazy="styleOptions.labelTextDecoration"
           v-bind:label="t('labelTextDecoration')"
@@ -175,7 +165,7 @@
         <v-select
           :disabled="
             selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelDisplayMode')
+            hasDisagreement('labelDisplayMode')
           "
           v-model.lazy="styleOptions.labelDisplayMode"
           :class="[
@@ -193,32 +183,28 @@
           @change="conflictItems.labelDisplayMode = false"
           variant="outlined"
           density="compact"></v-select>
+          <DisagreementOverride :style-properties="['labelDisplayMode', 'labelTextDecoration', 'labelTextFamily', 'labelTextStyle']"/>
+
       </v-window-item>
       <v-window-item>
-        <SimpleColorSelector
-          :disabled="
-            selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelFrontFillColor')
-          "
+        <PropertyColorPicker
           :title="t('labelFrontFillColor')"
           :numSelected="selectedLabels.size"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
           :conflict="conflictItems.labelFrontFillColor"
           v-on:resetColor="conflictItems.labelFrontFillColor = false"
-          v-model="styleOptions.labelFrontFillColor"></SimpleColorSelector>
-        <SimpleColorSelector
-          :disabled="
-            selectedLabels.size < 1 ||
-            styleStore.hasDisagreement('labelBackFillColor')
-          "
+          v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
+        <PropertyColorPicker
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"
           v-on:resetColor="conflictItems.labelBackFillColor = false"
           ref="labelBackFillColor"
           style-name="labelBackFillColor"
-          v-model="styleOptions.labelBackFillColor"></SimpleColorSelector>
+          v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
+          <DisagreementOverride :style-properties="['labelFrontFillColor', 'labelBackFillColor']"/>
+
       </v-window-item>
     </template>
   </PopOverTabs>
@@ -268,14 +254,15 @@ import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "@/components/style-ui/SimpleNumberSelector.vue";
-import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
+import PropertySlider from "./StylePropertySlider.vue";
+import PropertyColorPicker from "./StylePropertyColorPicker.vue";
+import DisagreementOverride from "./DisagreementOverride.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 const attrs = useAttrs();
-import PopOverTabs from "../PopOverTabs.vue";
+import PopOverTabs from "./PopOverTabs.vue";
 import { useAttrs } from "vue";
 import { useStylingStore } from "@/stores/styling";
 type labelDisplayModeItem = {
@@ -320,6 +307,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, forceAgreement } =
   storeToRefs(styleStore);
+  const {hasDisagreement } = styleStore
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
