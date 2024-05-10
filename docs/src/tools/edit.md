@@ -10,7 +10,6 @@ Each of these tools allows the user to edit an arrangement.
 
 ## <tool-title title="Selection" iconName="select"/>{#selection}
 
-<tool-title title="Point" iconName="point"/>
 
 ::: tool-description
 

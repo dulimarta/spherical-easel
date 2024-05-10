@@ -12,7 +12,7 @@ defineProps<{ title: string, iconName:string
 
 <style scoped>
 .titleClass {
-  color: #dcc110
+  color: #000000
 }
 /* div :deep([class*='language-']:before) {
   content: var(--toolTitle);

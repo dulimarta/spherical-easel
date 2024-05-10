@@ -3,6 +3,7 @@ title: Design Document
 prev: /tools/edit
 ---
 
+
 # Spherical Easel Design Document
 
 ## Overview
@@ -141,7 +142,7 @@ As one of the main goals of this project was to draw simple, clean, and labeled 
 As explained above, the classes in the [Models Directory](/design/#models-directory) store information about geometric objects on the ideal unit sphere and the classes in the [Plottables Directory](/design/#plottables-directory) are responsible for methods to
 render the geometric objects to the screen. This process of going from the ideal unit sphere to the screen is handled in stages. The following diagrams helps to organize this process.
 
-<tik-z-picture latex="coordinates.tex"></tik-z-picture>
+![Coordinates](./coordinates.png)
 
 First the unit sphere information is scaled to be on the Default Sphere. The default radius of the sphere (which is the same as the black boundary circle seen in the Default Screen Plane) was arbitrarily fixed at 250 (the default radius is in pixels if the Zoom Magnification Factor is 1) as set in the <span class="file">global-settings.ts</span> file:
 
@@ -205,7 +206,7 @@ As the location of first four points created are not constrained by any other ge
 
 To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display#move)):
 
-<tik-z-picture latex="directed_graph.tex"></tik-z-picture>
+![DAG](./directed_graph.png)
 
 The DAG associated to any geometric arrangement is used to determine which objects need to be refreshed when other objects change their location. For example, if point $P_1$ is moved, then only those objects that depend on $P_1$ (i.e. all descendents $C_1$, $P_6$, and $S_1$) need to be refreshed.
 
@@ -442,7 +443,7 @@ Notice that this creates a <span class="class">RotationVisitor</span> based on t
 
 The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been accessed in the Store along the way. Also notice how the <span class="class">RotationVisitor</span> marks the kids of each point out of date before called the <span class="method">update</span> method.
 
-## Stylizing Objects
+## Stylizing Objects (OLD!)
 
 When the user opens the [Style Panel](/userguide/stylepanel) a set of options (in the form of four expansion panels: Basic, Foreground, Background, and Advanced) appears on the right side of the canvas, the [Tools and Object Panel](/userguide/toolsobjectspanel) is minimized, the active tool is set to the <span class="tool">Selection</span> tool, and the undo and redo buttons are disabled. This is because the user should only be styling objects and not creating new ones (and each option on the style panel has an <span class="button">Undo</span> button).
 
@@ -457,7 +458,7 @@ The user can select items to style before entering the Styling Mode (the mode wh
 
 This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store.
 
-<<< @../../../src/components/style-ui/FrontBackStyle.vue#setStyle
+
 
 Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines the common style options (e.g.: `fillColor`, `strokeColor`, etc.) shared by all the selected objects.
 This information is stored in an array which is accessed by the
@@ -500,7 +501,3 @@ found in the <span class="class">Nodule</span> class. The idea is that if <span 
 ## Languages
 
 Spherical Easel uses the [Vue I18n internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue). If you are interested in helping translate this program into another language, please (TODO: add a link)
-
-```
-
-```

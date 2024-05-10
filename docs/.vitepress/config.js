@@ -194,31 +194,7 @@ export default {
 
 // }
 
-  //Specify the output directory for vuepress build. If a relative link is specified, it will be resolved based on process.cwd().
-  // dest: "dist/docs",
-  // The following setting for "base" works on hosts which allow us to publish
-  // on root directory (like Vercel, Netlify).
-  // On hosts which require project name (like GitHub or GitLab) set the "base" to the link
-  // below the root.
-  //base: "/docs/", // For deployment on Netlify
-  // base: "/sphericalgeometryvue/docs/", // For deployment on GitLab
-  // To use the http://tikzjax.com/ these must be included in the header.
-  // head: [
-  //   [
-  //     "link",
-  //     {
-  //       rel: "stylesheet",
-  //       type: "text/css",
-  //       href: "https://tikzjax.com/v1/fonts.css"
-  //     }
-  //   ],
-    // Notice that this JS file and two others are in the /public directory.
-    // ef253ef29e2f057334f77ead7f06ed8f22607d38.wasm and 7620f557a41f2bf40820e76ba1fd4d89a484859d.gz
-    // The link below couldn't be the link to the file at http://tikzjax.com/ because of a
-    // CORS (cross origin request sharing) issue, so we moved this file and the two it
-    // references to the local directory.
-  //   ["script", { src: "/tikzjax.js" }]
-  // ],
+
 
   // This section is needed so that the plugin containers work (i.e. the :::tool-text etc in the markdown)
   // markdown: {
@@ -298,20 +274,7 @@ export default {
     // ::: script
     // :::
     //
-    // in a markdown-it file to get the <script> tag and TikZ drawing into the markdown.
-    // Be sure to refresh/reload the page twice!
-    // [
-    //   "vuepress-plugin-container",
-    //   {
-    //     type: "script",
-    //     before: info => `<script type="text/tikz">
-    //   \\begin{tikzpicture}
-    //     \\draw (0,0) circle (1in);
-    //   \\end{tikzpicture}`,
-    //     after: "</script>",
-    //     defaulttext: ""
-    //   }
-    // ],
+
     // [
     //  '@vuepress/register-components',
     //   {

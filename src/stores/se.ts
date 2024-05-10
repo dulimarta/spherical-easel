@@ -546,6 +546,7 @@ export const useSEStore = defineStore({
       // this.previousZoomMagnificationFactor = ;
       this.zoomMagnificationFactor = mag;
     },
+     //#endregion magnificationUpdate
     setZoomTranslation(vec: number[]): void {
       for (let i = 0; i < 2; i++) {
         this.zoomTranslation[i] = vec[i];

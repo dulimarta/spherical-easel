@@ -91,6 +91,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.shallowUpdate();
 
     // These are free points and are have no parents so we store additional information
+    //#region saveState
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
         console.log(
@@ -107,7 +108,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
         locationVector: location
       });
     }
-
+    //#endregion saveState
     this.updateKids(objectState, orderedSENoduleList);
   }
 

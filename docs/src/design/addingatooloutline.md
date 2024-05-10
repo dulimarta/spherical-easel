@@ -8,7 +8,7 @@ There are two different types of tools in Sphere Easel: those that create new ge
 
 ## Adding a Control Tool
 
-This section is an outline of the steps need to add a tool that takes a collection of objects (geometric and measurement) and produces the parameters to locate and size a non-custom existing <span class="class">Nodule</span> object (i.e. <span class="class">Point</span>,<span class="class">Segment</span>,<span class="class">Line</span>, <span class="class">Circle</span>, <span class="class">Ellipse</span>) based on the selected collection of objects. This will involve creating a new <span class="class">SENodule</span> object and a new eventHandler to construct the <span class="class">SENodule</span> object and associated it to an exist <span class="class">Nodule</span> object. In all cases attempt to follow the naming conventions outlined by the other variables and files.
+This section is an outline of the steps need to add a tool that takes a collection of objects (geometric and measurement) and produces the parameters to locate and size a non-custom existing <span class="class">Nodule</span> object (i.e. <span class="class">Point</span>, <span class="class">Segment</span>, <span class="class">Line</span>, <span class="class">Circle</span>, <span class="class">Ellipse</span>) based on the selected collection of objects. This will involve creating a new <span class="class">SENodule</span> object and a new eventHandler to construct the <span class="class">SENodule</span> object and associated it to an exist <span class="class">Nodule</span> object. In all cases attempt to follow the naming conventions outlined by the other variables and files.
 
 1.  Create a new entry in the <span class="variable">toolGroups</span> found in the <span class="file">toolGroups.ts</span> file. You may have to create a new tool group or simply add your new entry in an existing tool group's children. Decide on
 
@@ -26,11 +26,15 @@ This section is an outline of the steps need to add a tool that takes a collecti
 
 3.  Write a new <span class="class">SENodule</span> file by extend an an existing one, if possible. These files always start with the letters SE. See the [Models Directory](/design/#models-directory).
 
-    - Copy the form of the <span class="method">update</span> method. In particular this should start with
+    - Copy the form of the <span class="method">update</span>  and <span class="method">shallowUpdate</span> methods. For example in the <span class="class">SEThreePointCircle</span> these start with
 
       <<< @../../../src/models/SEThreePointCircleCenter.ts#updateview{1}
 
-      Then it should update the existence and location of the object and should end with setting the display of the corresponding <span class="class">Nodule</span> object. (Make sure that you set the parameters to properly display the <span class="class">Nodule</span> object -- read the variables section of the object for directions.)
+      and
+
+        <<< @../../../src/models/SEThreePointCircleCenter.ts#shallowupdateview{1}
+
+      then it should update the existence and location of the object and should end with setting the display of the corresponding <span class="class">Nodule</span> object. (Make sure that you set the parameters to properly display the <span class="class">Nodule</span> object -- read the variables section of the object for directions.)
       The last lines should be
 
       <<< @../../../src/models/SEThreePointCircleCenter.ts#endupdate
