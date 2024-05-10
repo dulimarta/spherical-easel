@@ -1,7 +1,8 @@
 <template>
-  <div>Sel-Objs {{ selectedPlottables.size }}</div>
   <!-- {{ styleOptions }} -->
-  <PopOverTabs :show-popup="false" :disabled="selectedPlottables.size === 0">
+  <PopOverTabs
+    :show-popup="showPopup"
+    :disabled="selectedPlottables.size === 0">
     <template #tabs>
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
@@ -33,7 +34,7 @@
             :max="1"
             :disabled="
               !styleOptions.dynamicBackStyle &&
-              !dataAgreement(/dynamicBackStyle/)
+              hasDisagreement('dynamicBackStyle')
             "
             @change="setBackStyleContrast"
             density="compact">
@@ -56,14 +57,14 @@
           :numSelected="selectedPlottables.size"
           :title="t('strokeColor')"
           v-if="hasStyle('strokeColor')"
-          :conflict="conflictItems.strokeColor"
+          :conflict="hasDisagreement('strokeColor')"
           v-on:resetColor="conflictItems.strokeColor = false"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
         <SimpleColorSelector
           :title="t('fillColor')"
           :numSelected="selectedPlottables.size"
-          :conflict="conflictItems.fillColor"
+          :conflict="hasDisagreement('fillColor')"
           v-on:resetColor="conflictItems.fillColor = false"
           v-if="hasStyle('fillColor')"
           style-name="fillColor"
@@ -73,8 +74,8 @@
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
-          :conflict="conflictItems.strokeWidthPercent"
-          v-model="strokeWidthPercentage"
+          :conflict="hasDisagreement('strokeWidthPercent')"
+          v-model="styleOptions.strokeWidthPercent"
           :title="t('strokeWidthPercent')"
           :min="minStrokeWidthPercent"
           :max="maxStrokeWidthPercent"
@@ -85,9 +86,9 @@
         <SimpleNumberSelector
           v-if="hasStyle('pointRadiusPercent')"
           :numSelected="selectedPlottables.size"
-          v-model="pointRadiusPercentage"
+          v-model="styleOptions.pointRadiusPercent"
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
-          :conflict="conflictItems.pointRadiusPercent"
+          :conflict="hasDisagreement('pointRadiusPercent')"
           v-on:resetColor="conflictItems.pointRadiusPercent = false"
           :title="t('pointRadiusPercent')"
           :min="minPointRadiusPercent"
@@ -96,29 +97,29 @@
           :thumb-string-values="
             pointRadiusSelectorThumbStrings
           "></SimpleNumberSelector>
-        <span class="text-subtitle-2">{{ t("dashPattern") }}</span>
-        <span
+        <!--span class="text-subtitle-2">{{ t("dashPattern") }}</!--span-->
+        <!--span
           v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
           style="color: red">
           {{ " " + $t("labelStyleOptionsMultiple") }}
-        </span>
-        <span v-show="!emptyDashPattern">
+        </span-->
+        <span v-show="!emptyDashPattern || true">
           {{ activeDashPattern(styleOptions) }}
         </span>
         <!-- The dash property slider -->
-        <!--v-range-slider
-          v-model="styleOptions.dashArray"
-          :key="dashArrayKey"
+        <v-range-slider
+          v-model="dashArray"
+          strict
           min="0"
-          :step="setStep(hasStyle(/angleMarker/))"
-          :disabled="emptyDashPattern"
-          :max="setMax(hasStyle(/angleMarker/))"
+          :step="setStep(hasStyle('angleMarker'))"
+          :disabled="emptyDashPattern && false"
+          :max="setMax(hasStyle('angleMarker'))"
           :color="conflictItems.dashArray ? 'red' : ''"
           @change="
             updateLocalGapDashVariables(
               styleOptions,
-              styleOptions?.dashArray ?? []
+              /*styleOptions?.dashArray ??*/ []
             );
             conflictItems.dashArray = false;
           "
@@ -126,7 +127,7 @@
           <template v-slot:prepend>
             <v-icon
               @click="
-                decrementDashPattern(styleOptions, hasStyle(/angleMarker/))
+                decrementDashPattern(styleOptions, hasStyle('angleMarker'))
               ">
               mdi-minus
             </v-icon>
@@ -135,14 +136,14 @@
           <template v-slot:append>
             <v-icon
               @click="
-                incrementDashPattern(styleOptions, hasStyle(/angleMarker/))
+                incrementDashPattern(styleOptions, hasStyle('angleMarker'))
               ">
               mdi-plus
             </v-icon>
           </template>
-        </!--v-range-slider-->
+        </v-range-slider>
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
-        <v-tooltip location="bottom" max-width="400px">
+        <!--v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
             <span v-on="props">
               <v-checkbox
@@ -169,8 +170,8 @@
             </span>
           </template>
           {{ $t("dashPatternCheckBoxToolTip") }}
-        </v-tooltip>
-        <v-tooltip location="bottom" max-width="400px">
+        </!--v-tooltip-->
+        <!--v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
             <v-checkbox
               v-bind="props"
@@ -195,7 +196,7 @@
             </v-checkbox>
           </template>
           {{ $t("dashPatternReverseArrayToolTip") }}
-        </v-tooltip>
+        </!--v-tooltip-->
       </v-window-item>
       <v-window-item class="pa-2">
         <!-- Angle Marker Decoration Selector -->
@@ -206,7 +207,7 @@
         <SimpleNumberSelector
           :numSelected="selectedPlottables.size"
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
-          :conflict="conflictItems.angleMarkerRadiusPercent"
+          :conflict="hasDisagreement('angleMarkerRadiusPercent')"
           v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
           v-model="angleMarkerRadiusPercentage"
           :title="t('angleMarkerRadiusPercent')"
@@ -281,7 +282,7 @@
   <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
 </template>
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, useAttrs } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
@@ -292,10 +293,10 @@ import SimpleColorSelector from "@/components/style-ui/StylePropertyColorPicker.
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { useStyleEditor } from "@/composables/StyleEditor";
 import { useStylingStore } from "@/stores/styling";
 import { onBeforeMount } from "vue";
-import PopOverTabs from "../PopOverTabs.vue";
+import PopOverTabs from "./PopOverTabs.vue";
+import { watch } from "vue";
 
 type ConflictItems = {
   angleMarkerRadiusPercent: boolean;
@@ -310,6 +311,7 @@ type ConflictItems = {
   reverseDashArray: boolean;
 };
 type ComponentProps = {
+  showPopup: boolean;
   panel: StyleEditPanels;
 };
 const { attrs } = useAttrs();
@@ -317,25 +319,35 @@ const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
-const { hasStyle } = styleStore;
+const { hasStyle, hasDisagreement } = styleStore;
 const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
   storeToRefs(seStore);
-const {
-  dataAgreement,
-  forceDataAgreement,
-  // hasStyle,
-  conflictingProps,
-  angleMarkersSelected,
-  oneDimensionSelected
-} = useStyleEditor(props.panel, objectFilter, objectMapper);
 const { t } = useI18n({ useScope: "local" });
 const strokeWidthPercentage = ref(styleOptions.value.strokeWidthPercent ?? 100);
 const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100);
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
+const dashArray: Ref<number[]> = ref(
+  styleOptions.value.dashArray
+    ? (styleOptions.value.dashArray as number[])
+    : [1, 5]
+);
 
-// @Watch("selectedSENodules")
+const emptyDashPattern = computed(() => {
+  if (!styleOptions.value.dashArray) return true;
+  const dArr = styleOptions.value.dashArray as number[];
+  return dArr.length == 0;
+});
+
+watch(
+  () => dashArray.value,
+  dArr => {
+    styleOptions.value.dashArray = dArr;
+  },
+  { deep: true }
+);
+
 function resetAllItemsFromConflict(): void {
   // console.log("here reset input colors");
   const key = Object.keys(conflictItems);
@@ -439,7 +451,6 @@ let oldGapLength = 0;
 /** dashLength= sliderArray[0] */
 let dashLength = 0;
 let oldDashLength = 0;
-const emptyDashPattern = ref(true);
 let alreadySet = false;
 //private reverseDashArray = true;
 
@@ -565,7 +576,7 @@ onMounted((): void => {
     "update-empty-dash-array",
     (load: { emptyDashArray: boolean }): void => {
       console.log("set empty dash pattern");
-      emptyDashPattern.value = load.emptyDashArray;
+      // emptyDashPattern.value = load.emptyDashArray;
     }
   );
 });
@@ -608,11 +619,6 @@ function activeDashPattern(opt: StyleOptions): string {
     // Set the value of empty Dash array if not already set (only run on initialize and reset)
     if (!alreadySet) {
       alreadySet = true;
-      if (opt.dashArray[0] === 0 && opt.dashArray[1] === 0) {
-        emptyDashPattern.value = true;
-      } else {
-        emptyDashPattern.value = false;
-      }
       oldDashLength = opt.dashArray[0];
       dashLength = opt.dashArray[0];
 
@@ -621,13 +627,16 @@ function activeDashPattern(opt: StyleOptions): string {
 
       // reverseDashArray = opt.reverseDashArray;
     }
-    const string1 = `(Dash:${opt.dashArray[1].toFixed(
-      1
-    )}/Gap:${opt.dashArray[0].toFixed(1)})`;
-    const string2 = `(Dash:${opt.dashArray[0].toFixed(
-      1
-    )}/Gap:${opt.dashArray[1].toFixed(1)})`;
-    return opt.reverseDashArray ? string1 : string2;
+
+    let dStr, gStr: string;
+    if (opt.reverseDashArray ?? false) {
+      dStr = "Dash:" + opt.dashArray[1].toFixed(0);
+      gStr = "Gap:" + opt.dashArray[0].toFixed(0);
+    } else {
+      dStr = "Dash:" + opt.dashArray[0].toFixed(0);
+      gStr = "Gap:" + opt.dashArray[1].toFixed(0);
+    }
+    return `${gStr}/${dStr}`;
   } else return "";
 }
 

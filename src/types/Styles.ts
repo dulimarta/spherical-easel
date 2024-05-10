@@ -14,7 +14,7 @@ export interface StyleOptions {
   strokeWidthPercent?: number;
   strokeColor?: string; // TODO : replace the type to "Two.Color"
   fillColor?: string;
-  dashArray?: number[];
+  dashArray?: Array<number>;
   reverseDashArray?: boolean;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
@@ -38,7 +38,7 @@ export type LabelStyleProperty = {
   labelDynamicBackStyle?: boolean;
 
 }
-export type StylePropertyValue = number | string | boolean | LabelDisplayMode | number[];
+export type StylePropertyValue = number | string | boolean | LabelDisplayMode | Array<number>;
 
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.point.drawn.fillColor.front,

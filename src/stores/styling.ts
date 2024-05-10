@@ -221,6 +221,7 @@ export const useStylingStore = defineStore("style", () => {
       immediate: true
     }
   );
+
   function toggleLabelsShowing() {
     selectedSENodules.value.forEach(n => {
       const label = n.getLabel();

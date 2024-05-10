@@ -2,20 +2,22 @@
   <v-btn
     id="style-icon"
     icon
-    size="small"
     v-if="minified"
-    style="
-      position: fixed;
-      right: 0;
-      border-radius: 8px;
-      background-color: #002108;
-      color: white;
-    "
+    :style="{
+      position: 'fixed',
+      right: '4px',
+      borderRadius: '8px',
+      backgroundColor: '#002108',
+      color: 'white'
+    }"
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
       {{t("showDrawer")}}
     </v-tooltip>
-    <v-icon>mdi-palette</v-icon>
+    <v-badge v-if="selectedPlottables.size > 0" floating color="green" :content="selectedPlottables.size" >
+      <v-icon>mdi-palette</v-icon>
+    </v-badge>
+    <v-icon v-else>mdi-palette</v-icon>
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
@@ -25,12 +27,15 @@
           display: 'flex',
           flexDirection: 'column'
         }">
-        <v-item v-slot="{ isSelected, toggle }" :disabled="selectionCounter === 0">
+        <v-item v-slot="{ isSelected, toggle }" >
           <v-tooltip
             activator="#lab-icon"
             v-if="styleSelection === undefined"
             :text="labelTooltip"></v-tooltip>
-          <v-icon id="lab-icon" @click="toggle">mdi-label</v-icon>
+            <v-badge v-if="selectedLabels.size > 0"  :content="selectedLabels.size" color="secondary">
+              <v-icon id="lab-icon" @click="toggle" :disabled="selectedLabels.size === 0">mdi-label</v-icon>
+            </v-badge>
+          <v-icon v-else id="lab-icon" @click="toggle" :disabled="selectedLabels.size === 0">mdi-label</v-icon>
 
           <LabelStyle
             :show-popup="isSelected!"
@@ -41,18 +46,24 @@
             activator="#front-icon"
             v-if="styleSelection === undefined"
             :text="frontTooltip"></v-tooltip>
-          <v-icon id="front-icon" @click="toggle">mdi-arrange-bring-forward</v-icon>
-          <!-- <FrontBackStyle @click="toggle" :panel="StyleEditPanels.Front"></FrontBackStyle> -->
+            <v-badge v-if="selectedPlottables.size > 0"  :content="selectedPlottables.size" color="secondary">
+              <v-icon id="lab-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-bring-forward</v-icon>
+            </v-badge>
+          <v-icon v-else id="front-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-bring-forward</v-icon>
+          <FrontBackStyle :show-popup="isSelected!" :panel="StyleEditPanels.Front"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip
             activator="#back-icon"
             v-if="styleSelection === undefined"
             :text="backTooltip"></v-tooltip>
-          <v-icon id="back-icon" @click="toggle">
+            <v-badge v-if="selectedPlottables.size > 0"  :content="selectedPlottables.size" color="secondary">
+              <v-icon id="lab-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-send-backward</v-icon>
+            </v-badge>
+          <v-icon v-else id="back-icon" @click="toggle" :disabled="selectedPlottables.size === 0">
             mdi-arrange-send-backward
           </v-icon>
-          <!-- <FrontBackStyle @click="toggle" :panel="StyleEditPanels.Back"></FrontBackStyle> -->
+          <FrontBackStyle :show-popup="isSelected!" :panel="StyleEditPanels.Back"></FrontBackStyle>
         </v-item>
       </v-item-group>
 
@@ -124,7 +135,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 // const styleStore = useStylingStore()
 const { selectedSENodules } = storeToRefs(seStore);
-const { selectionCounter } = storeToRefs(styleStore);
+const { selectionCounter, selectedPlottables, selectedLabels } = storeToRefs(styleStore);
 // const { allLabelsShowing, selectionCount } = storeToRefs(styleStore)
 const labelsShowingFlag = ref(false);
 const styleSelection = ref<number|undefined>(undefined);

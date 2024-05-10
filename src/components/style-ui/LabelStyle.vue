@@ -1,6 +1,5 @@
 <template>
   <!-- For debugging -->
-  <!-- <div>Sel-Labels {{ selectedLabels.size }}</div> -->
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <!--v-sheet :style="{
     // top: '100px',
