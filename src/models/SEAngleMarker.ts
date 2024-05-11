@@ -1343,8 +1343,6 @@ export class SEAngleMarker
     return tmpVector.normalize().cross(perp);
   }
 
-  // Override the isLabelable method in SEExpression
-
   public getLabel(): SELabel | null {
     return (this as Labelable).label!
   }

@@ -12,9 +12,13 @@
     }"
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
-      {{t("showDrawer")}}
+      {{ t("showDrawer") }}
     </v-tooltip>
-    <v-badge v-if="selectedPlottables.size > 0" floating color="green" :content="selectedPlottables.size" >
+    <v-badge
+      v-if="selectedPlottables.size > 0"
+      floating
+      color="green"
+      :content="selectedPlottables.size">
       <v-icon>mdi-palette</v-icon>
     </v-badge>
     <v-icon v-else>mdi-palette</v-icon>
@@ -25,45 +29,58 @@
         v-model="styleSelection"
         :style="{
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          rowGap: '8px'
         }">
-        <v-item v-slot="{ isSelected, toggle }" >
-          <v-tooltip
-            activator="#lab-icon"
-            v-if="styleSelection === undefined"
-            :text="labelTooltip"></v-tooltip>
-            <v-badge v-if="selectedLabels.size > 0"  :content="selectedLabels.size" color="secondary">
-              <v-icon id="lab-icon" @click="toggle" :disabled="selectedLabels.size === 0">mdi-label</v-icon>
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip activator="#lab-icon" :text="labelTooltip"></v-tooltip>
+          <div id="lab-icon">
+            <!-- the div is required for tooltip to work -->
+            <v-badge
+              v-if="selectedLabels.size > 0"
+              :content="selectedLabels.size"
+              color="secondary">
+              <v-icon @click="toggle">mdi-label</v-icon>
             </v-badge>
-          <v-icon v-else id="lab-icon" @click="toggle" :disabled="selectedLabels.size === 0">mdi-label</v-icon>
-
+            <v-icon v-else>mdi-label</v-icon>
+          </div>
           <LabelStyle
             :show-popup="isSelected!"
             v-model="styleSelection"></LabelStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
-          <v-tooltip
-            activator="#front-icon"
-            v-if="styleSelection === undefined"
-            :text="frontTooltip"></v-tooltip>
-            <v-badge v-if="selectedPlottables.size > 0"  :content="selectedPlottables.size" color="secondary">
-              <v-icon id="lab-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-bring-forward</v-icon>
+          <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
+          <div id="front-icon">
+            <v-badge
+              v-if="selectedPlottables.size > 0"
+              :content="selectedPlottables.size"
+              color="secondary">
+              <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
+                mdi-arrange-bring-forward
+              </v-icon>
             </v-badge>
-          <v-icon v-else id="front-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-bring-forward</v-icon>
-          <FrontBackStyle :show-popup="isSelected!" :panel="StyleEditPanels.Front"></FrontBackStyle>
+            <v-icon v-else>mdi-arrange-bring-forward</v-icon>
+          </div>
+          <FrontBackStyle
+            :show-popup="isSelected!"
+            :panel="StyleEditPanels.Front"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
-          <v-tooltip
-            activator="#back-icon"
-            v-if="styleSelection === undefined"
-            :text="backTooltip"></v-tooltip>
-            <v-badge v-if="selectedPlottables.size > 0"  :content="selectedPlottables.size" color="secondary">
-              <v-icon id="lab-icon" @click="toggle" :disabled="selectedPlottables.size === 0">mdi-arrange-send-backward</v-icon>
+          <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
+          <div id="back-icon">
+            <v-badge
+              v-if="selectedPlottables.size > 0"
+              :content="selectedPlottables.size"
+              color="secondary">
+              <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
+                mdi-arrange-send-backward
+              </v-icon>
             </v-badge>
-          <v-icon v-else id="back-icon" @click="toggle" :disabled="selectedPlottables.size === 0">
-            mdi-arrange-send-backward
-          </v-icon>
-          <FrontBackStyle :show-popup="isSelected!" :panel="StyleEditPanels.Back"></FrontBackStyle>
+            <v-icon v-else>mdi-arrange-send-backward</v-icon>
+          </div>
+          <FrontBackStyle
+            :show-popup="isSelected!"
+            :panel="StyleEditPanels.Back"></FrontBackStyle>
         </v-item>
       </v-item-group>
 
@@ -128,70 +145,77 @@ import { storeToRefs } from "pinia";
 import { useStylingStore } from "@/stores/styling";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { Labelable } from "@/types";
+import { watch } from "vue";
 const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-// const styleStore = useStylingStore()
 const { selectedSENodules } = storeToRefs(seStore);
-const { selectionCounter, selectedPlottables, selectedLabels } = storeToRefs(styleStore);
-// const { allLabelsShowing, selectionCount } = storeToRefs(styleStore)
-const labelsShowingFlag = ref(false);
-const styleSelection = ref<number|undefined>(undefined);
+const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
+const styleSelection = ref<number | undefined>(undefined);
+
+watch(() => selectedSENodules.value, (arr) => {
+  if (arr.length == 0) {
+    // close the popup panel when no objects are selected
+    styleSelection.value = undefined
+  }
+}, { deep: true, immediate: true })
 
 const labelTooltip = computed((): string => {
   let text = t("LabelTooltip");
-  if (selectionCounter.value <= 0) {
-    text += " " + t("disabledTooltip");
-  }
-  return text;
-});
-const backTooltip = computed((): string => {
-  let text = t("backgroundTooltip");
-  if (selectionCounter.value <= 0) {
-    text += " " + t("disabledTooltip");
-  }
-  return text;
-});
-const frontTooltip = computed((): string => {
-  let text = t("foregroundTooltip");
-  if (selectionCounter.value <= 0) {
+  if (selectedLabels.value.size <= 0) {
     text += " " + t("disabledTooltip");
   }
   return text;
 });
 
-function toggleLabelsShowing() {
-  labelsShowingFlag.value = !labelsShowingFlag.value;
-  const cmdGroup = new CommandGroup();
-  selectedSENodules.value
-    .filter(n => n.getLabel() !== null)
-    .forEach(n => {
-      const lab = n.getLabel();
-      cmdGroup.addCommand(
-        new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value)
-      );
-    });
-  cmdGroup.execute();
-}
+const backTooltip = computed((): string => {
+  let text = t("backgroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+
+const frontTooltip = computed((): string => {
+  let text = t("foregroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+
+
+// function toggleLabelsShowing() {
+//   labelsShowingFlag.value = !labelsShowingFlag.value;
+//   const cmdGroup = new CommandGroup();
+//   selectedSENodules.value
+//     .filter(n => n.getLabel() !== null)
+//     .forEach(n => {
+//       const lab = n.getLabel();
+//       cmdGroup.addCommand(
+//         new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value)
+//       );
+//     });
+//   cmdGroup.execute();
+// }
 </script>
 <i18n lang="json" locale="en">
-  {
-    "showDrawer": "Show Style Drawer",
-    "showDrawerDisabled": "Style Draver (disable: no object selected)",
-    "label": "Label",
-    "object": "Object",
-    "LabelTooltip": "Label Style",
-    "backgroundTooltip": "Background Style",
-    "foregroundTooltip": "Foreground Style",
-    "disabledTooltip": "(disabled: no object selected)"
-  }
-  </i18n>
-  <i18n lang="json" locale="id">
-  {
-    "showDrawer": "Buka Panel Gaya Tampilan",
-    "label": "Label",
-    "object": "Objek"
-  }
-  </i18n>
+{
+  "showDrawer": "Show Style Drawer",
+  "showDrawerDisabled": "Style Draver (disable: no object selected)",
+  "label": "Label",
+  "object": "Object",
+  "LabelTooltip": "Label Style",
+  "backgroundTooltip": "Background Style",
+  "foregroundTooltip": "Foreground Style",
+  "disabledTooltip": "(disabled: no object selected)"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "showDrawer": "Buka Panel Gaya Tampilan",
+  "label": "Label",
+  "object": "Objek"
+}
+</i18n>

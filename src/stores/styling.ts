@@ -1,7 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSEStore } from "./se";
 import { computed, ref, watch, Ref } from "vue";
-import { Labelable } from "@/types";
 import {
   StyleEditPanels,
   StyleOptions,
@@ -10,7 +9,7 @@ import {
 import Nodule from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 
-type ObjectStyle = { [_: string]: StylePropertyValue };
+// type ObjectStyle = { [_: string]: StylePropertyValue };
 
 function isArrayEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false
@@ -74,7 +73,6 @@ export const useStylingStore = defineStore("style", () => {
   const { selectedSENodules } = storeToRefs(seStore);
   const selectedPlottables: Ref<Map<string, Nodule>> = ref(new Map());
   const selectedLabels: Ref<Map<string, Label>> = ref(new Map());
-  const selectionCounter = ref(0);
 
   // When multiple objects are selected, their style properties
   // may conflict with each other. Keep them in a set
@@ -86,7 +84,7 @@ export const useStylingStore = defineStore("style", () => {
   // The user is required to opt in to override conflicting properties
   const forceAgreement = ref(false);
 
-  const styleOptions = ref<ObjectStyle>({});
+  const styleOptions = ref<StyleOptions>({});
   // const plottableStyleOptions = ref<ObjectStyle>({})
 
   // After style editing is done, we should restore label visibility
@@ -112,7 +110,6 @@ export const useStylingStore = defineStore("style", () => {
           label.showing = prevVisibility!;
           // label.updateDisplay()
           selectedLabels.value.delete(labelName);
-          selectionCounter.value--;
         }
       });
 
@@ -123,7 +120,6 @@ export const useStylingStore = defineStore("style", () => {
           const prevVisibility = plottableShowingState.get(plotName);
           plot.showing = prevVisibility!;
           selectedPlottables.value.delete(plotName);
-          selectionCounter.value--;
         }
       });
 
@@ -133,7 +129,6 @@ export const useStylingStore = defineStore("style", () => {
         if (itsPlot && !(n instanceof Label)) {
           // console.debug(`${n.name} plottable`, itsPlot)
           selectedPlottables.value.set(n.name, itsPlot);
-          selectionCounter.value++;
           plottableShowingState.set(n.name, itsPlot.showing);
         }
         const itsLabel = n.getLabel();
@@ -141,7 +136,6 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(n.name)) {
             selectedLabels.value.set(n.name, itsLabel.ref);
-            selectionCounter.value++;
             labelShowingState.set(n.name, itsLabel.ref.showing);
           }
         }
@@ -165,7 +159,7 @@ export const useStylingStore = defineStore("style", () => {
             const thisPropValue = (props as any)[p];
             if (typeof recordedPropValue === "undefined") {
               stylePropertyMap.set(p, thisPropValue);
-              styleOptions.value[p] = thisPropValue;
+              (styleOptions.value as any)[p] = thisPropValue;
             } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
               conflictingProperties.value.add(p);
             }
@@ -179,7 +173,7 @@ export const useStylingStore = defineStore("style", () => {
           const thisPropValue = (props as any)[prop];
           if (typeof recordedPropValue === "undefined") {
             stylePropertyMap.set(prop, thisPropValue);
-            styleOptions.value[prop] = thisPropValue;
+            (styleOptions.value as any)[prop] = thisPropValue;
           } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
             conflictingProperties.value.add(prop);
           }
@@ -193,17 +187,18 @@ export const useStylingStore = defineStore("style", () => {
   watch(
     () => styleOptions.value,
     (opt: StyleOptions) => {
-      const newOptions: ObjectStyle = { ...opt };
-      let updatedOptions: ObjectStyle = {};
+      const newOptions: StyleOptions = { ...opt };
+      let updatedOptions: StyleOptions = {};
       let propChanged = false;
       stylePropertyMap.forEach((val, key) => {
-        const newValue = newOptions[key];
+        const newValue = (newOptions as any)[key];
         const oldValue = stylePropertyMap.get(key);
         if (!isPropEqual(oldValue, newValue)) {
-          console.debug(
-            `Property ${key} changes from ${oldValue} to ${newValue}`
-          );
-          updatedOptions[key] = newValue;
+          // console.debug(
+          //   `Property ${key} changes from ${oldValue} to ${newValue}`
+          // );
+          (updatedOptions as any)[key] = newValue;
+          stylePropertyMap.set(key, newValue)
           propChanged = true;
         }
       });
@@ -243,15 +238,13 @@ export const useStylingStore = defineStore("style", () => {
 
   return {
     toggleLabelsShowing,
-    selectionCounter,
     selectedLabels,
     selectedPlottables,
     styleOptions,
-    // plottableStyleOptions,
     conflictingProperties,
     forceAgreement,
     hasDisagreement,
     hasStyle
-    // allLabelsShowing, selectionCount,styleOptions: activeStyleOptions
+    // allLabelsShowing,styleOptions: activeStyleOptions
   };
 });

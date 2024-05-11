@@ -316,18 +316,12 @@ export abstract class SENodule implements Visitable {
   public isNonFreeLine(): boolean {
     return false;
   }
-  // Only returns true if this is an SELabel
-  public isLabel(): boolean {
-    return false;
-  }
-  // Only returns true if this is an SEOneDimensional
+
+  // // Only returns true if this is an SEOneDimensional
   public isOneDimensional(): boolean {
     return false;
   }
-  // Only returns true if this is an Labelable
-  // public isLabelable(): boolean {
-  //   return false;
-  // }
+
   public getLabel(): SELabel | null {
     return null
   }
@@ -344,7 +338,6 @@ export abstract class SENodule implements Visitable {
     if (
       this.isFreePoint() ||
       this.isPointOnOneDimensional() ||
-      this.isLabel() ||
       this.isSegmentOfLengthPi() ||
       this.isLineWithAntipodalPoints()
     )

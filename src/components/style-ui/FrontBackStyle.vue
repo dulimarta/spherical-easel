@@ -104,85 +104,71 @@
           style="color: red">
           {{ " " + $t("labelStyleOptionsMultiple") }}
         </span-->
-        <span v-show="!emptyDashPattern || true">
-          {{ activeDashPattern(styleOptions) }}
-        </span>
+        <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
+        <div class="d-flex justify-space-between align-start">
+          <v-tooltip
+            location="bottom"
+            max-width="400px"
+            activator="#dash-switch"
+            :text="t('dashPatternCheckBoxToolTip')" />
+          <v-switch
+            v-bind="props"
+            id="dash-switch"
+            v-if="hasStyle('dashArray')"
+            v-model="useDashPattern"
+            density="compact"
+            :color="hasDisagreement('dashArray') ? 'red' : ''">
+            <template v-slot:label>
+              <span
+                :style="{
+                  color: hasDisagreement('dashArray') ? 'red' : ``
+                }">
+                {{ t("dashPattern") }}
+              </span>
+            </template>
+          </v-switch>
+
+          <!-- extra top margin is required to lineup the text baseline-->
+          <span v-show="!emptyDashPattern && useDashPattern" class="mt-2">
+            {{ activeDashPattern(styleOptions) }}
+          </span>
+        </div>
+        DA {{ dashArray }} Rev {{ reverseDashArray }}
         <!-- The dash property slider -->
         <v-range-slider
+          v-if="hasStyle('dashArray') && useDashPattern"
           v-model="dashArray"
-          strict
           min="0"
+          strict
           :step="setStep(hasStyle('angleMarker'))"
-          :disabled="emptyDashPattern && false"
+          :disabled="emptyDashPattern"
           :max="setMax(hasStyle('angleMarker'))"
           :color="conflictItems.dashArray ? 'red' : ''"
-          @change="
-            updateLocalGapDashVariables(
-              styleOptions,
-              /*styleOptions?.dashArray ??*/ []
-            );
-            conflictItems.dashArray = false;
-          "
           density="compact">
-          <template v-slot:prepend>
+          <!--template v-slot:prepend>
             <v-icon
               @click="
                 decrementDashPattern(styleOptions, hasStyle('angleMarker'))
               ">
               mdi-minus
             </v-icon>
-          </template>
+          </!--template>
 
-          <template v-slot:append>
+          <template-- v-slot:append>
             <v-icon
               @click="
                 incrementDashPattern(styleOptions, hasStyle('angleMarker'))
               ">
               mdi-plus
             </v-icon>
-          </template>
+          </template-->
         </v-range-slider>
-        <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
-        <!--v-tooltip location="bottom" max-width="400px">
-          <template v-slot:activator="{ props }">
-            <span v-on="props">
-              <v-checkbox
-                v-model="emptyDashPattern"
-                :key="activeDashPatternKey"
-                :false-value="true"
-                :true-value="false"
-                :color="conflictItems.dashArray ? 'red' : ''"
-                @click="
-                  toggleDashPatternSliderAvailbility(styleOptions);
-                  conflictItems.dashArray = false;
-                "
-                hide-details
-                density="compact">
-                <template v-slot:label>
-                  <span
-                    :style="{
-                      color: conflictItems.dashArray ? 'red' : ``
-                    }">
-                    {{ t("dashPattern") }}
-                  </span>
-                </template>
-              </v-checkbox>
-            </span>
-          </template>
-          {{ $t("dashPatternCheckBoxToolTip") }}
-        </!--v-tooltip-->
-        <!--v-tooltip location="bottom" max-width="400px">
+        <v-tooltip location="bottom" max-width="400px">
           <template v-slot:activator="{ props }">
             <v-checkbox
               v-bind="props"
-              v-model="styleOptions.reverseDashArray"
-              :key="activeReverseDashPatternKey"
-              :disabled="emptyDashPattern"
+              v-model="reverseDashArray"
               :color="conflictItems.reverseDashArray ? `red` : ''"
-              @click="
-                toggleDashPatternReverse(styleOptions);
-                conflictItems.reverseDashArray = false;
-              "
               hide-details
               density="compact">
               <template v-slot:label>
@@ -196,7 +182,7 @@
             </v-checkbox>
           </template>
           {{ $t("dashPatternReverseArrayToolTip") }}
-        </!--v-tooltip-->
+        </v-tooltip>
       </v-window-item>
       <v-window-item class="pa-2">
         <!-- Angle Marker Decoration Selector -->
@@ -283,7 +269,6 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
-import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
@@ -323,29 +308,41 @@ const { hasStyle, hasDisagreement } = styleStore;
 const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
   storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
-const strokeWidthPercentage = ref(styleOptions.value.strokeWidthPercent ?? 100);
-const pointRadiusPercentage = ref(styleOptions.value.pointRadiusPercent ?? 100);
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
 const dashArray: Ref<number[]> = ref(
   styleOptions.value.dashArray
-    ? (styleOptions.value.dashArray as number[])
-    : [1, 5]
+    ? styleOptions.value.dashArray.slice(0)
+    : [1, 5] /* be sure to use slice() to create a copy */
 );
-
+const useDashPattern = ref(true);
+const reverseDashArray = ref<boolean>(
+  styleOptions.value.reverseDashArray ?? false
+);
 const emptyDashPattern = computed(() => {
   if (!styleOptions.value.dashArray) return true;
-  const dArr = styleOptions.value.dashArray as number[];
+  const dArr = styleOptions.value.dashArray;
   return dArr.length == 0;
 });
 
 watch(
   () => dashArray.value,
   dArr => {
-    styleOptions.value.dashArray = dArr;
+    // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
+    if (typeof styleOptions.value.dashArray === "undefined")
+      styleOptions.value.dashArray = [0, 0];
+    styleOptions.value.dashArray = [dArr[1], dArr[0]];
   },
-  { deep: true }
+  { deep: true, immediate: true }
+);
+
+watch(
+  () => reverseDashArray.value,
+  flip => {
+    styleOptions.value.reverseDashArray = flip;
+  },
+  { immediate: true }
 );
 
 function resetAllItemsFromConflict(): void {
@@ -403,17 +400,6 @@ let conflictItems: ConflictItems = {
   reverseDashArray: false
 };
 
-/* Include only those objects that have a plottable */
-function objectFilter(n: SENodule): boolean {
-  return n.ref !== undefined;
-}
-
-/* Map the object to its plottable */
-function objectMapper(n: SENodule): Nodule {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return n.ref!;
-}
-
 /**
  * There are many style options. In the case that there
  * are more than one object selected, the XXXAgreement boolean indicates if the XXX property is *initially* the
@@ -428,7 +414,6 @@ const strokeWidthScaleSelectorThumbStrings: Array<string> = [];
 
 //Many of the label style will not be commonly modified so create a button/variable for
 // the user to click to show more of the Label Styling options
-const showMoreLabelStyles = ref(false);
 
 const maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
 const minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
@@ -443,8 +428,6 @@ const angleMarkerRadiusSelectorThumbStrings: Array<string> = [];
 //Dash pattern Options
 const dashArrayKey = ref(0);
 const dashPanelKey = ref(0);
-const activeDashPatternKey = 0;
-const activeReverseDashPatternKey = 0;
 /** gapLength = sliderArray[1] */
 let gapLength = 0;
 let oldGapLength = 0;
@@ -609,7 +592,7 @@ function toggleAllObjectsVisibility(): void {
 }
 
 function activeDashPattern(opt: StyleOptions): string {
-  if (opt.dashArray) {
+  if (dashArray.value) {
     // console.log(
     //   "dash array in active dash pattern",
     //   opt.dashArray[0], //dash length
@@ -617,26 +600,29 @@ function activeDashPattern(opt: StyleOptions): string {
     //   opt.reverseDashArray
     // );
     // Set the value of empty Dash array if not already set (only run on initialize and reset)
-    if (!alreadySet) {
-      alreadySet = true;
-      oldDashLength = opt.dashArray[0];
-      dashLength = opt.dashArray[0];
+    // if (!alreadySet) {
+    //   alreadySet = true;
+    //   oldDashLength = opt.dashArray[0];
+    //   dashLength = opt.dashArray[0];
 
-      oldGapLength = opt.dashArray[1];
-      gapLength = opt.dashArray[1];
+    //   oldGapLength = opt.dashArray[1];
+    //   gapLength = opt.dashArray[1];
 
-      // reverseDashArray = opt.reverseDashArray;
-    }
+    //   // reverseDashArray = opt.reverseDashArray;
+    // }
 
     let dStr, gStr: string;
-    if (opt.reverseDashArray ?? false) {
-      dStr = "Dash:" + opt.dashArray[1].toFixed(0);
-      gStr = "Gap:" + opt.dashArray[0].toFixed(0);
+    // If not flipped: [gap, dash]
+    // If flipped [dash,gap]
+    if (reverseDashArray.value) {
+      dStr = "Dashx:" + dashArray.value[0].toFixed(0);
+      gStr = "Gapx:" + dashArray.value[1].toFixed(0);
+      return `${dStr}/${gStr}`;
     } else {
-      dStr = "Dash:" + opt.dashArray[0].toFixed(0);
-      gStr = "Gap:" + opt.dashArray[1].toFixed(0);
+      dStr = "Dashy:" + dashArray.value[1].toFixed(0);
+      gStr = "Gapy:" + dashArray.value[0].toFixed(0);
+      return `${gStr}/${dStr}`;
     }
-    return `${gStr}/${dStr}`;
   } else return "";
 }
 

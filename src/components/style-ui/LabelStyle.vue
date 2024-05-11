@@ -1,25 +1,15 @@
 <template>
   <!-- For debugging -->
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-  <!--v-sheet :style="{
-    // top: '100px',
-    right: '72px'
-  // right: '-400px'
-  }"
-  min-width="400px"
-    v-if="showPopup"
-    location="end"
-  position="fixed"
-    elevation="5">
-    Hi Hans
-  </!--v-sheet-->
   <PopOverTabs
     :show-popup="showPopup!"
     :disabled="selectedLabels.size < 1"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
     <template #tabs>
-      <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
+      <v-tab>
+        <v-icon>mdi-pencil</v-icon>
+      </v-tab>
       <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
     </template>
@@ -28,8 +18,7 @@
         <v-text-field
           v-model="styleOptions.labelDisplayText"
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelDisplayText')
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayText')
           "
           :label="t('labelText')"
           :counter="maxLabelDisplayTextLength"
@@ -52,8 +41,7 @@
         <v-text-field
           v-if="hasCaption(styleOptions) || true"
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelDisplayCaption')
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption')
           "
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
@@ -102,14 +90,19 @@
           :thumb-string-values="
             textRotationSelectorThumbStrings
           "></PropertySlider>
-          <DisagreementOverride :style-properties="['labelDisplayText', 'labelDisplayCaption', 'labelTextScalePercent', 'labelTextRotation']"/>
+        <DisagreementOverride
+          :style-properties="[
+            'labelDisplayText',
+            'labelDisplayCaption',
+            'labelTextScalePercent',
+            'labelTextRotation'
+          ]" />
       </v-window-item>
       <v-window-item>
         <!-- Label Text Family Selections -->
         <v-select
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelTextFamily')
+            selectedLabels.size < 1 || hasDisagreement('labelTextFamily')
           "
           v-model.lazy="styleOptions.labelTextFamily"
           v-bind:label="t('labelTextFamily')"
@@ -126,8 +119,7 @@
           density="compact"></v-select>
         <v-select
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelTextStyle')
+            selectedLabels.size < 1 || hasDisagreement('labelTextStyle')
           "
           v-model.lazy="styleOptions.labelTextStyle"
           v-bind:label="t('labelTextStyle')"
@@ -144,8 +136,7 @@
           density="compact"></v-select>
         <v-select
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelTextDecoration')
+            selectedLabels.size < 1 || hasDisagreement('labelTextDecoration')
           "
           v-model.lazy="styleOptions.labelTextDecoration"
           v-bind:label="t('labelTextDecoration')"
@@ -163,8 +154,7 @@
         <!-- Label Display Mode Selections -->
         <v-select
           :disabled="
-            selectedLabels.size < 1 ||
-            hasDisagreement('labelDisplayMode')
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayMode')
           "
           v-model.lazy="styleOptions.labelDisplayMode"
           :class="[
@@ -182,8 +172,13 @@
           @change="conflictItems.labelDisplayMode = false"
           variant="outlined"
           density="compact"></v-select>
-          <DisagreementOverride :style-properties="['labelDisplayMode', 'labelTextDecoration', 'labelTextFamily', 'labelTextStyle']"/>
-
+        <DisagreementOverride
+          :style-properties="[
+            'labelDisplayMode',
+            'labelTextDecoration',
+            'labelTextFamily',
+            'labelTextStyle'
+          ]" />
       </v-window-item>
       <v-window-item>
         <PropertyColorPicker
@@ -202,8 +197,8 @@
           ref="labelBackFillColor"
           style-name="labelBackFillColor"
           v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
-          <DisagreementOverride :style-properties="['labelFrontFillColor', 'labelBackFillColor']"/>
-
+        <DisagreementOverride
+          :style-properties="['labelFrontFillColor', 'labelBackFillColor']" />
       </v-window-item>
     </template>
   </PopOverTabs>
@@ -306,7 +301,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, forceAgreement } =
   storeToRefs(styleStore);
-  const {hasDisagreement } = styleStore
+const { hasDisagreement } = styleStore;
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
@@ -433,6 +428,16 @@ onMounted((): void => {
     }
   );
 });
+
+function countEnabledProperties(propList: Array<string>) {
+  let count = 0;
+  // console.debug("Style options", styleOptions)
+  propList.forEach(propName => {
+    console.debug(`Is ${propName} present?`);
+    if (styleOptions.value[propName]) count++;
+  });
+  return count;
+}
 
 function resetAndRestoreConflictItems(): void {
   // resetAllItemsFromConflict();

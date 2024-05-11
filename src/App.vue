@@ -110,9 +110,6 @@ const logoutDialog: Ref<DialogAction | null> = ref(null);
 const whoami = ref("");
 const uid = ref("");
 
-/* User account feature is initialy disabled. To unlock this feature
-     The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-
 onBeforeMount((): void => {
   acctStore.resetToolset();
 });
