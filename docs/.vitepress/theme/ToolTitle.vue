@@ -6,7 +6,7 @@ defineProps<{ title: string, iconName:string
 <template>
   <div class="titleClass">
 {{ title }}  <IconBase notInLine :iconName=iconName />
-    <slot />
+    <slot/>
   </div>
 </template>
 

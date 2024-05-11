@@ -8,14 +8,11 @@ prev: /userguide/
 
 Each of these tools allows the user to edit an arrangement.
 
-## <tool-title title="Selection" iconName="select"/>{#selection}
-
-
-::: tool-description
-
+## <ToolTitle title="Selection" iconName="select"/>
 Select object(s) to change their visual style or to perform actions on them with other tools.
 
-::: tool-details Selecting Objects:
+
+::: info Selecting Objects:
 
 - Mousing over an object will highlight the object in focus and clicking (mouse press and release at the same location) will select that object. Holding the <KeyShortcuts macShift pcShift /> key highlights and selects objects on the back of the sphere.
 - To add or subtract to your current selection, press and hold the <KeyShortcuts macOpt pcCtrl /> key when clicking. A click will add the objects to the current selection or, if the click is on an already selected object, that object will be removed from the current selection.
@@ -25,7 +22,8 @@ Select object(s) to change their visual style or to perform actions on them with
 - To select multiple objects, mouse press and drag to create a selection rectangle. Any non-label object in or partially within that rectangle will be added to the current selection when the mouse is released. Holding the shift key <KeyShortcuts macShift pcShift /> creates the selection rectangle on the back of the sphere.
 - To clear your selection, mouse press and release without moving at a location with no objects nearby.
 - To single out one object when multiple objects are nearby, mouse over (with _no_ mouse press or release) that location (where there are at least two objects nearby) and press and hold a number key <kbd>1-9</kbd>. Depending on the key, a single object will be highlighted at that number depth. To add this object to the selected list, mouse press and release without moving.
-- To select all visible points, move the mouse into the Sphere Canvas and press the <kbd>p</kbd> key. All visible points should be highlighted. To move them into the current selection, mouse press and release _without_ moving the mouse on the Sphere Canvas. Similarly to select all visible ...
+- To select all visible points, move the mouse into the Sphere Canvas and press the <kbd>p</kbd> key. All visible points should be highlighted. To move them into the current selection, mouse press and release _without_ moving the mouse on the Sphere Canvas. Similarly to select all visible
+  - points use the <kbd>p</kbd> key
   - circles use the <kbd>c</kbd> key
   - lines use the <kbd>l</kbd> key
   - segments use the <kbd>s</kbd> key
@@ -45,8 +43,9 @@ Select object(s) to change their visual style or to perform actions on them with
   - if you select multiple objects and then activate the Delete Tool <IconBase icon-name="delete" />, all selected objects (with their labels) will be deleted.
   - if you select two points and then activate the [Circle Tool](/tools/basic#circle) <IconBase icon-name="circle" />, then a circle will be created with the first selected point as the center and the second as a point on the circle determining the radius.
   - if you select three points and a line and then activate the [Ellipse Tool](./conic#ellipse) <IconBase icon-name="ellipse" />, then the points and lines are ignored, unselected, and no new ellipse is created because an ellipse is created from only three points.
-
 :::
+<ToolTitle/> {#selection}
+
 
 ::: tool-title
 
