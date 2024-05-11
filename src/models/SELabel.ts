@@ -60,7 +60,6 @@ export class SELabel extends SENodule implements Visitable {
    * @param parent The parent SENodule object
    */
   constructor(labelType: LabelParentTypes, parent: SENodule) {
-    SENodule.LABEL_COUNT++;
     super();
     // Name of the plottable should borrow the parent name
     const label = new Label(parent.name, labelType);
@@ -68,8 +67,8 @@ export class SELabel extends SENodule implements Visitable {
     this.parent = parent;
 
     (this.parent as unknown as Labelable).label = this;
-    // SENodule.LABEL_COUNT++;
-    // this.name = "La" + SENodule.LABEL_COUNT;
+    SENodule.LABEL_COUNT++;
+    this.name = "La" + SENodule.LABEL_COUNT;
 
     // set the Label shortUserName as the name of the parent object initially
     if (this.parent instanceof SEAngleMarker) {
@@ -301,9 +300,5 @@ export class SELabel extends SENodule implements Visitable {
         zoomTranslation[1] < // minus sign because text layers are not y flipped
         boundingBox.bottom - canvasHeight / 2
     );
-  }
-
-  public isLabel(): boolean {
-    return true;
   }
 }
