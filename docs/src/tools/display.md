@@ -7,16 +7,11 @@ lang: en-US
 
 Each of these tools allows a user to adjust the display of an arrangement.
 
-::: tool-title
-
-## Hide Object <IconBase notInLine icon-name="hide" />
-
-:::
-::: tool-description
+## <ToolTitle title="Hide Objects" iconName="hide" />  {#hide}
 
 Hide selected objects.
 
-::: tool-details
+::: info Hiding objects:
 
 - Mousing over an object will highlight the object in focus and clicking will hide that object.
 - When an object is hidden its label is also hidden.
@@ -24,42 +19,31 @@ Hide selected objects.
 - While using this tool, if the user would like to show _all_ hidden objects, press the <kbd>S</kbd> (Capital S) key and all hidden objects will be shown.
 - If this tool is activated with any objects selected, the selected objects are hidden automatically.
 
-:::
-
 ::: tip
 If the user wishes to display a label without displaying the object, the user can open the Objects Tab <IconBase icon-name="objectsTab" />, navigate to and expand the appropriate object type, and then, in the row of the object, use the display label toggle button <IconBase icon-name="showNodeLabel" /> or <IconBase icon-name="hideNodeLabel" /> to show or hide the label.
 :::
 
-::: tool-title
+## <ToolTitle title="Toggle Label Display" iconName="toggleLabelDisplay" />  {#toggle}
 
-## Toggle Label Display <IconBase notInLine icon-name="toggleLabelDisplay" />
-
-:::
-::: tool-description
 
 Hide or show the label of selected objects.
 
-::: tool-details
+::: info Hiding/Showing Label:
 
 - Mousing over an object will highlight the object in focus and clicking will toggle the visibility of that object's label. If the object in focus is a label and the user clicks it, that label is hidden.
 - To show all visible objects' labels, use the press the <KeyShortcuts macLetter="s" pcLetter="s" />.
 - To hide all visible objects' labels, use the press the <KeyShortcuts macLetter="h" pcLetter="h" />.
 - If this tool is activated with any object(s) selected, the display of the selected objects' labels are toggled automatically.
 
-:::
-
 ::: tip
 If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then [Undo](/tools/edit#undo-and-redo) <IconBase icon-name="undo" /> you first action, change to the [Selection Tool](/tools/edit#selection) <IconBase icon-name="select" />, and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
 :::
 
-::: tool-title
+## <ToolTitle title="Move" iconName="move" />  {#move}
 
-## Move <IconBase notInLine icon-name="move" />
-
-:::
-::: tool-description
 Move the location of a free object.
-::: tool-details
+
+::: info Moving:
 
 - Mousing over an object will highlight a free and movable object. Mouse press and dragging on that object will move the location of the object on the sphere and the location of all objects that depends on it will be updated. Mouse release will terminate the movement of that object and place it at a new location.
 - **Not** all objects are movable. Only free objects are movable. There are several kinds of free objects:
@@ -81,20 +65,15 @@ Move the location of a free object.
 - If the user clicks on an empty space in the Sphere Canvas and then drags, the sphere is rotated (i.e. all objects move, but not relative to each other).
 - If this tool is activated with objects selected, the selected objects are unselected and ignored.
 
-:::
-
 ::: tip
 When moving a free line or line segment pressing the <KeyShortcuts macOpt pcAlt /> key toggles the point that the line or line segment rotates about. To move both endpoints of a line segment (or both points defining a line), press the <KeyShortcuts macCtrl pcCtrl /> key when dragging the line segment (or line).
 :::
 
-::: tool-title
+## <ToolTitle title="Rotation" iconName="rotate" />  {#rotate}
 
-## Rotation <IconBase notInLine icon-name="rotate" />
-
-:::
-::: tool-description
 Rotate the sphere.
-::: tool-details
+
+::: info Rotating:
 
 - There are three rotation modes:
   - _Free rotation:_ Mouse press at an empty location and dragging will change the current view of the sphere by rotation. The mouse press location is moved to the current location of the mouse while dragging. The mouse release location sets the final view of the sphere (unless the [Momentum](/userguide/#top-region-title-bar) feature is activated )
@@ -104,13 +83,9 @@ Rotate the sphere.
 - If the user has Momentum enabled, but while dragging the sphere, pauses the mouse movement for a period of time (about 0.25 seconds) before mouse releasing, the momentum feature will not be activated.
 - If this tool is activated with a single point or line segment or line selected, then the object rotation mode will used.
 
-:::
-
 ::: tip
 
 If the momentum mode is enabled and the user doesn't want the current arrangement to rotate after a mouse release, pausing with the mouse pressed for a period of time before mouse releasing will temporarily disable the momentum feature.
-
-:::
 
 ::: tip
 
@@ -118,17 +93,11 @@ To stop all rotation click anywhere on the Sphere Canvas.
 
 :::
 
-::: tool-title
-
-## Zoom <IconBase notInLine icon-name="zoomIn" />/<IconBase notInLine icon-name="zoomOut" />, Pan, and Zoom Fit <IconBase notInLine icon-name="zoomFit" />
-
-:::
-
-::: tool-description
+## <ToolTitle title="Zoom In/Pan" iconName="zoomIn" titleTwo="Zoom Out/Pan" iconNameTwo="zoomOut" titleThree=", and Zoom Fit" iconNameThree="zoomFit" />  {#zoom}
 
 Pan, Zoom In or Out on the current view or return to the standard view.
 
-::: tool-details
+::: info Zooming, Panning, and Fitting:
 
 - These tools are found in the lower right hand corner of the Sphere Frame.
 - Select the Zoom In <IconBase icon-name="zoomIn" /> or Zoom Out <IconBase icon-name="zoomOut" /> tool to perform the corresponding action on a mouse press and release (a mouse click) at the same location.

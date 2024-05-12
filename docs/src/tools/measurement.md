@@ -7,14 +7,11 @@ lang: en-US
 
 Each of the following tools measures some aspect of an arrangement or creates a measurement object.
 
-::: tool-title
+## <ToolTitle title="Length" iconName="segmentLength" />  {#length}
 
-## Length <icon-base notInLine iconName="segmentLength"> </icon-base>
-
-:::
-::: tool-description
 Measure the length of a line segment.
-::: tool-details
+
+::: info Measuring Line Segment Length:
 
 - Select a line segment to measure its length.
 - The measured length can be larger than $\pi$, but is always less than $2\pi$.
@@ -25,28 +22,23 @@ Measure the length of a line segment.
 To adjust the number of decimal places displayed in the[Measurement Section of the Objects List](/userguide/toolsobjectspanel#objects-list), open the Global Settings in the [Title Bar](/userguide/#top-region-title-bar)
 :::
 
-::: tool-title
+## <ToolTitle title="Distance" iconName="pointDistance" />  {#distance}
 
-## Distance <icon-base notInLine iconName="pointDistance"> </icon-base>
-
-:::
-::: tool-description
 Measure the distance between two points.
-::: tool-details
+
+::: info Measuring distance:
 
 - Select two points to measure the distance between them.
 - The measured distance can never be larger than $\pi$.
 - When a distance measurement is created, a row describing some of its properties (including its value and Measurement Token) will appear in the [Measurement Section of the Objects List](/userguide/toolsobjectspanel#objects-list).
 - If this tool is activated with points selected, the above action is performed automatically.
-  :::
-  ::: tool-title
-
-## Angle <icon-base notInLine iconName="angle"> </icon-base>
-
 :::
-::: tool-description
+
+## <ToolTitle title="Angle" iconName="angle" />  {#angle}
+
 Measure the angle created by two lines, two line segments with a common endpoint, or three points.
-::: tool-details
+
+::: info Measuring Angles:
 
 - There are four different ways to select or create an angle to measure:
   - If a pair of lines, line segments with a common endpoint, or a line and a line segment with one endpoint on the line is selected, then which angle is measured depends on the order in which the lines or line segments were selected and the right-hand rule. If you place your right hand at the intersection points of the lines on the front of the sphere (or the common endpoint of the line segments or the endpoint of the line segment on the line) with your thumb pointing away from the center of the sphere and your fingers in the direction of the first selected line or line segment then as you curl your fingers toward the second selected line or line segment, the region swept out is the angle that is measured.
@@ -62,28 +54,22 @@ When two lines intersect, in a neighborhood of one of the intersection points, f
 
 :::
 
-::: tool-title
+## <ToolTitle title="Coordinates" iconName="coordinate" />  {#coordinates}
 
-## Coordinates <icon-base notInLine iconName="coordinate"> </icon-base>
-
-:::
-::: tool-description
 Record the $x$, $y$, or $z$ coordinates of a point as a Measurement object.
-::: tool-details
+
+::: info Recording the coordinates of a point:
 
 - Select (or create) a point to measure the distance between them.
 - For each coordinate a measurement is created and a row for each describing some of its properties (including its value and Measurement Token) will appear in the [Measurement Section of the Objects List](/userguide/toolsobjectspanel#objects-list).
 - If this tool is activated with a point selected, the above action is performed automatically.
   :::
 
-::: tool-title
+## <ToolTitle title="Triangle" iconName="measureTriangle" />  {#triangle}
 
-## Triangle <icon-base notInLine iconName="measureTriangle" />
-
-:::
-::: tool-description
 Measure all aspects of a triangle.
-::: tool-details
+
+::: info Measuring a triangle:
 
 - Select a non-crossing cycle of three line segments to create and measure a triangle. A cycle of line segments is a ordered list of line segments $[s_1,s_2,s_3]$, where for all indices, the ending point of segment $s_i$ is the starting point of segment $s_{i+1}$ and the indices are counted modulo 3. A cycle is non-crossing if each end point of a segment in the cycle belongs to exactly two line segments in the cycle and any two line segments in the cycle intersect either in one point that is an endpoint of both segments or not at all.
 - When a triangle is measured, angle markers appear at the vertices of the triangle, and all line segments in the triangle are measured (unless they were already measured). The order in which the cycle of line segments are created matters. The angles that are measured are determined in the same way that they are for the [Angle Tool](/tools/measurement#angle) -- using the right-hand rule and their order.
@@ -95,15 +81,11 @@ Measure all aspects of a triangle.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Polygon" iconName="measurePolygon" />  {#polygon}
 
-## Polygon <icon-base notInLine iconName="measurePolygon" />
-
-:::
-
-::: tool-description
 Measure all aspects of a polygon
-::: tool-details
+
+::: info Measuring a polygon:
 
 - Select a non crossing cycle of line segments to create and measure a polygon. A cycle of line segments is a ordered list of line segments $[s_1,s_2,s_3, \ldots, s_n]$ ($n\geq 3$), where for all indices, the ending point of segment $s_i$ is the starting point of segment $s_{i+1}$ and the indices are counted modulo $n$. A cycle is non-crossing if each end point of a segment in the cycle belongs to exactly two line segments in the cycle and any two line segments in the cycle intersect either in one point that is an endpoint of both segments or not at all.
 - When a polygon is measured, angle markers appear at the vertices of the polygon. The order in which the cycle of line segments are created matters. The angles that are measured are determined in the same way that they are for the [Angle Tool](/tools/measurement#angle) -- using the right-hand rule and their order.

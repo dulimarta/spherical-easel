@@ -7,14 +7,11 @@ lang: en-US
 
 Each of these tools is used to create a transformation from the sphere to itself or to apply such a transformation to objects on the sphere.
 
-::: tool-title
+## <ToolTitle title="Create Reflection Over Point" iconName="pointReflection" />  {#pointReflection}
 
-## Create Reflection Over Point
-
-:::
-::: tool-description
 Create a reflection over a point.
-::: tool-details
+
+::: info Creating a point reflection:
 
 - Select (or create) a point over which to reflect.
 - The user can apply the reflection over a point to objects using the [Apply Transformation Tool](/tools/transformation#apply-transformation).
@@ -23,32 +20,25 @@ Create a reflection over a point.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Create Reflection" iconName="reflection" />  {#reflection}
 
-## Create Reflection
-
-:::
-
-::: tool-description
 Create a reflection over a line or line segment.
-::: tool-details
+
+::: info Create line reflection:
 
 - Select a line (or line segment) to reflect over.
 - If a line segment is selected, the reflection is over the line containing the line segment.
 - The user can apply the reflection to objects using the [Apply Transformation Tool](/tools/transformation#apply-transformation).
 - When a reflection is created, a row describing some of its properties will appear in the Transformation Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - If this tool is activated with a line or line segment selected, the above action is performed automatically.
-  :::
-
-::: tool-title
-
-## Create (Measured) Rotation
 
 :::
 
-::: tool-description
-Create a rotation about a point.
-::: tool-details
+## <ToolTitle title="Create Measured Rotation" iconName="rotation" />  {#measureRotation}
+
+Create a rotation about a point by a measured quantity.
+
+::: info Creating a measured rotation:
 
 - Select (or create) a point around which to rotate and select a measurement from the [Measurement Section of the Objects List](/userguide/toolsobjectspanel#objects-list) to determine the angle of rotation.
 - Positive measurement values are counterclockwise rotations and negative are clockwise (when seen from outside of the sphere).
@@ -57,14 +47,11 @@ Create a rotation about a point.
 - When this tool is activated all previously selected objects are unselected and ignored.
   :::
 
-::: tool-title
+## <ToolTitle title="Create Translation" iconName="translation" />  {#translation}
 
-## Create Translation
-
-:::
-::: tool-description
 Create a translation along a line segment.
-::: tool-details
+
+::: Create translation:
 
 - Select a line segment to translate along.
 - A translation along a line segment is the same as rotating around a pole of the line segment by an angle equal to the [length](/tools/measurement#length) of the line segment.
@@ -74,14 +61,11 @@ Create a translation along a line segment.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Create Inversion" iconName="inversion" />  {#inversion}
 
-## Create Inversion
-
-:::
-::: tool-description
 Create a inversion over a circle.
-::: tool-details
+
+::: info Creating an inversion:
 
 - Select a circle over which to invert.
 - See [page 138](https://books.google.com/books?id=BSU4AAAAMAAJ&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=snippet&q=spherical%20inversions&f=false) of "A Treatise on Spherical Trigonometry: With Applications to Spherical Geometry and Numerous Examples", Volume 1
@@ -92,14 +76,11 @@ Create a inversion over a circle.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Apply Transformation" iconName="applyTransformation" />  {#transformation}
 
-## Apply Transformation
-
-:::
-::: tool-description
 Apply a previously created transformation to objects
-::: tool-details
+
+::: info Apply a transformation:
 
 - Select a transformation from the Transformation Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base> to determine which transformation to apply. After this all mouse release events will transform a selected object according to the transformation selected.
 - Notice that after you have selected a transformation to apply a snackbar message across the bottom of the screen indicates which transformation you are applying.

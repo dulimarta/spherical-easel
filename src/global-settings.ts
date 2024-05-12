@@ -889,7 +889,7 @@ export const SETTINGS = {
     blank: {
       props: {
         emphasizeTypes: [[]],
-        mdiIcon: false,
+        mdiIcon: "mdi-progress-question",
         svgFileName: "iconBlankPaths.svg"
       }
     },

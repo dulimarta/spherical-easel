@@ -7,21 +7,16 @@ lang: en-US
 
 These are the basic tools for constructing arrangements.
 
-::: tool-title
+## <ToolTitle title="Point" iconName="point" />  {#point}
 
-## Point <IconBase notInLine icon-name="point" />
-
-:::
-::: tool-description
 Create a point.
-::: tool-details
+
+::: info Creating a point:
 
 - Mouse press at a location to create a point.
 - When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base> <IconBase  icon-name="objectsTab" />.
 - Creating a point in a [Polygon](/tools/measurement#polygon) <IconBase  icon-name="measurePolygon" /> or [Triangle](/tools/measurement#triangle) <IconBase  icon-name="measureTriangle" /> ,means that the point is constrained to be inside the polygon or triangle.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
-
-:::
 
 ::: tip Snap To Point
 
@@ -35,15 +30,11 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 
 :::
 
-::: tool-title
+## <ToolTitle title="Line" iconName="line" />  {#line}
 
-## Line <icon-base notInLine iconName="line"> </icon-base>
-
-:::
-::: tool-description
 Create a line.
 
-::: tool-details
+::: info Creating a line:
 
 - Mouse press to declare one point on the line (this might create a new free point or one that snaps to an existing point, object or intersection),
 - Mouse release to declare a second point on the line (this might create a new free point or one that snaps to an existing point, object or intersection).
@@ -52,15 +43,11 @@ Create a line.
 - If this tool is activated with two points selected a line is automatically created and, in the case that the points are antipodal, a normal vector equal to the north pole of the displayed sphere.
   :::
 
-::: tool-title
+## <ToolTitle title="Line Segment" iconName="segment" />  {#segment}
 
-## Line Segment <icon-base notInLine iconName="segment"> </icon-base>
-
-:::
-::: tool-description
 Create a line segment.
 
-::: tool-details
+::: info Creating a line segment:
 
 - Mouse press to declare a start point on the line segment (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare an endpoint of the line segment (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags) determine a unique line segment.
@@ -74,32 +61,24 @@ It is possible to draw a line segment of length longer than $\pi$. If the user c
 
 :::
 
-::: tool-title
 
-## Toggle Line Segment
-
-:::
-
-::: tool-description
+## <ToolTitle title="Toggle Line Segment" iconName="blank" />  {#toggle}
 
 Toggle a line segment.
 
-::: tool-details
+::: details Future
 
 - Mouse releasing on a line segment, toggles the line segment between having [length](/tools/measurement#length) less than or equal to $\pi$ to greater than or equal to $\pi$.
 - If this tool is activated with a line segment selected the above action is performed automatically.
 
 :::
 
-::: tool-title
 
-## Circle <icon-base notInLine iconName="circle"> </icon-base>
+## <ToolTitle title="Circle" iconName="circle" />  {#circle}
 
-:::
-
-::: tool-description
 Create a circle.
-::: tool-details
+
+::: info Creating a circle:
 
 - Mouse press to declare the center point of the circle (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a point on the circle (this might be new free point or one that snaps to an existing point, object or intersection).
 - When a circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
@@ -108,16 +87,11 @@ Create a circle.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Text" iconName="blank" />  {#text}
 
-## Text
+Create text objects.
 
-:::
-::: tool-description
-
-Create text.
-
-::: tool-details
+::: details Future:
 
 - Mouse release at a location to mark the location (inside or outside of the boundary circle) to place text. A popup asks for the actual text.
 - Text can include Measurement Token (which will be replaced with actual value when rendered) and [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX).
@@ -125,4 +99,5 @@ Create text.
 - Text objects can be moved with the [Move Tool](/tools/display#move)/
 - When a text object is created, a row describing some of its properties will appear in the Text Section of the [Objects Tab](/userguide/#objects-tab) <icon-base  iconName="objectsTab"> </icon-base>.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
+
   :::

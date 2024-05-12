@@ -1,14 +1,14 @@
 ---
 title: Edit Tools
 lang: en-US
-prev: /userguide/
+prev: Userguide
 ---
 
 # Edit Tools
 
 Each of these tools allows the user to edit an arrangement.
 
-## <ToolTitle title="Selection" iconName="select"/>
+## <ToolTitle title="Selection" iconName="select"/> {#selection}
 Select object(s) to change their visual style or to perform actions on them with other tools.
 
 
@@ -44,20 +44,12 @@ Select object(s) to change their visual style or to perform actions on them with
   - if you select two points and then activate the [Circle Tool](/tools/basic#circle) <IconBase icon-name="circle" />, then a circle will be created with the first selected point as the center and the second as a point on the circle determining the radius.
   - if you select three points and a line and then activate the [Ellipse Tool](./conic#ellipse) <IconBase icon-name="ellipse" />, then the points and lines are ignored, unselected, and no new ellipse is created because an ellipse is created from only three points.
 :::
-<ToolTitle/> {#selection}
 
-
-::: tool-title
-
-## Delete <IconBase notInLine  icon-name="delete" />
-
-:::
-
-::: tool-description
+## <ToolTitle title="Delete" iconName="delete"/> {#delete}
 
 Delete selected objects.
 
-::: tool-details
+::: info Deleting Objects:
 
 - Clicking at a location when an object is highlighted deletes that object and all the objects that depend on that object, including its label.
 - You cannot delete labels. If you use the Delete Tool on a label, the label is merely hidden.
@@ -65,17 +57,12 @@ Delete selected objects.
 
 :::
 
-::: tool-title
+## <ToolTitle title="Undo" iconName="undo" titleTwo="Redo" iconNameTwo="redo"/>  {#undo}
 
-## Undo <IconBase notInLine  icon-name="undo" /> and Redo <IconBase notInLine icon-name="redo" />
-
-:::
-
-::: tool-description
 
 Undo or redo the last action.
 
-::: tool-details
+::: info Undoing/Redoing:
 
 - These tools are always found in the upper left hand corner of the Sphere Canvas.
 - These tools undo or redo the last action.
@@ -86,41 +73,29 @@ Undo or redo the last action.
 
 :::
 
-::: tool-title
-
-## Clear <IconBase notInLine icon-name="clearConstruction" />
-
-:::
-
-::: tool-description
+## <ToolTitle title="Clear" iconName="clearConstruction" />  {#clear}
 
 Clears the current construction on the Sphere Canvas without saving.
 
-::: tool-details
+::: info Clearing All Elements:
 
 - This tools is found in the upper right hand corner of the Sphere Canvas.
 - This tool clears the Sphere Canvas without saving the current construction.
 - Clicking this button resets the Sphere Canvas so that the user can start a new construction.
 - This action is not undoable.
 
-:::
-
 ::: tip
 If the user wants to clear the sphere in an undoable way, activate the [Selection Tool](./edit#selection) <IconBase icon-name="select" />, select all objects with <KeyShortcuts macCmd macLetter="a" pcCtrl pcLetter="a"  />, then activate the Delete Tool <IconBase icon-name="delete" />.
 
 :::
 
-::: tool-title
 
-## Copy Visual Style
+## <ToolTitle title="Copy Visual Style" iconName="blank" />  {#copy}
 
-:::
-
-::: tool-description
 
 Copy the style attributes of a template object to other objects.
 
-::: tool-details
+::: details Future:
 
 - TODO: Not yet implemented.
 - The first object selected becomes the template.

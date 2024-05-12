@@ -28,18 +28,15 @@ export default defineConfig({
       template: {
         transformAssetUrls,
         compilerOptions: {
+          isCustomElement: (tag) => {
+            return tag.startsWith('V')
+          },
           compatConfig: {
             MODE: 3
-          }
+          },
         }
       }
     }),
-    // Components({
-    //   resolvers: [VuetifyResolver()]
-    // })
-    // i18n({
-    //   path: resolve(__dirname, "./src")
-    // }),
     vuetify({
       autoImport: true,
       styles: {

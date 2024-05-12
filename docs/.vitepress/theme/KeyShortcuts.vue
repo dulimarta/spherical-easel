@@ -18,10 +18,10 @@ const displayString = ref("");
 
 onMounted((): void => {
   if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
-    console.log("macShift", props.macShift);
-    console.log("macCmd", props.macCmd);
-    console.log("macOpt", props.macOpt);
-    console.log("macLetter", props.macLetter);
+    // console.log("macShift", props.macShift);
+    // console.log("macCmd", props.macCmd);
+    // console.log("macOpt", props.macOpt);
+    // console.log("macLetter", props.macLetter);
     macOperatingSystem.value = true;
     if (props.macShift) {
       displayString.value +=
