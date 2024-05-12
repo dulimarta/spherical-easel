@@ -23,22 +23,22 @@
       <v-list density="compact" nav active-class="active">
         <v-list-item
           @click="setHover(0)"
-          prepend-icon="mdi-tools"
+          prepend-icon=$toolsTab
           title="Tools"
           value="tools"></v-list-item>
         <v-list-item
           @click="setHover(1)"
-          prepend-icon="mdi-axis"
+          prepend-icon=$objectsTab
           title="Objects"
           value="object"></v-list-item>
         <v-list-item
           @click="setHover(2)"
-          prepend-icon="mdi-diameter"
+          prepend-icon=$constructionsTab
           title="Construction"
           value="construction"></v-list-item>
         <v-list-item
           @click="setHover(3)"
-          prepend-icon="mdi-earth"
+          prepend-icon=$earthTab
           title="Earth"
           value="earth"></v-list-item>
       </v-list>

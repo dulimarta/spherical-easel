@@ -1212,6 +1212,13 @@ export const SETTINGS = {
         filePath: ""
       }
     },
+    earthTab: {
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-earth",
+        filePath: ""
+      }
+    },
     calculationObject: {
       props: {
         emphasizeTypes: [[]] as string[][],
@@ -1233,7 +1240,7 @@ export const SETTINGS = {
         filePath: ""
       }
     },
-    stylePanel: {
+    styleDrawer: {
       props: {
         emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",

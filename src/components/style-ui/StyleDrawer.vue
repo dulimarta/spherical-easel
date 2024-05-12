@@ -15,7 +15,7 @@
     <v-tooltip activator="parent" location="bottom">
       {{ t("showDrawer") }}
     </v-tooltip>
-    <v-icon>mdi-palette</v-icon>
+    <v-icon>$styleDrawer</v-icon>
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">

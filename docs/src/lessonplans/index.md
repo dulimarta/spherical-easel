@@ -1,8 +1,6 @@
 ---
 title: Lesson Plans
 lang: en-US
-next: /quickstart/
-prev: /
 ---
 
 # Introduction

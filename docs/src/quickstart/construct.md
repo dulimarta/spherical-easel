@@ -5,46 +5,49 @@ lang: en-US
 
 # Construct An Equilateral Triangle
 
-## 1. Display the Tools Tab
+## 1. Activate the Tools Mode
 
-On the left hand side of the Spherical Easel application window (or the bottom if mobile) there is a Tools, Objects & Saved Constructions Panel. This panel contains three tabs at the top: a Tools tab (TOOD:AddIconImage) that displays the available tool buttons and an Object tab (TOOD:AddIconImage icon) that displays a list of the plotted objects, measurements, and calculations. Make sure that the Tools tab is active and you can see collection of tools each of which is represented with labeled button in the Objects & Tools Panel.
+On the left hand side of the Spherical Easel application window there are two vertical panels. The left most darker one is for changing between modes.  There are four modes:
 
-TODO: add image (with labels) showing the Objects & Tools Panel with the Tools tab displayed and the Sphere Canvas
+- Tools <IconBase icon-name="toolsTab" />: A list of categories of tools should be display including "Edit", "Display", etc. The current active tool and its icon is displayed at the very top of inner panel.
+- Objects <IconBase icon-name="objectsTab" />: At the top of inner panel are three options "Expression", "Parametric Curves", and "Slider". Expression will be used in [step #12](/quickstart/measure#12-use-the-calculation-tool).
+- Constructions <IconBase icon-name="constructionsTab" /> This will display a list of your (owned) constructions, a list of starred constructions <IconBase icon-name="starConstruction" />, and a list of public constructions. When you have the correct permissions you can save your constructions.
+- Earth <IconBase icon-name="earthTab" /> This displays options related to earth mode and latitude and longitude.
 
-::: tip
-The Objects & Tools Panel may be minimized. It you don't see it, click and release anywhere in the region on the left (or bottom on mobile) or on the right arrow icon (TODO:AddIconImage) to maximize it. When maximized you can control the size of it by mousing over its right (top) border and when you see the mouse icon change to (TODO:AddIconImage), click and drag the border.
-:::
+The default is the Tools mode.  Make sure that the Tools mode is active and you can see collection of tool groups.
 
-## 2. Use the Segment Tool
+TODO: add image (with labels) showing this and Sphere Canvas
 
-Activate the Segment Tool by clicking on the Segment Tool button (TOOD:AddIconImage) in the Objects & Tools Panel and then, on the sphere outlined with a black boundary circle displayed in the center Sphere Canvas Panel, click (mouse press), drag, and mouse release to create a line segment.
+## 2. Use the Line Segment Tool
+
+Activate the Line Segment Tool by clicking on the "Basic Tools" group and then on the "Create Line Segment" <IconBase icon-name="segment" /> button. Then, on the sphere outlined with a black boundary circle displayed in the center Sphere Canvas Panel, click (mouse press), drag, and mouse release to create a line segment.
 
 TODO: add image showing this intermediate step
 
 ::: tip
-If you don't like the results you can click the Undo button (TOOD:AddIconImage icon) in the upper left of the Sphere Canvas Panel or you can activate the Delete Tool (TODO:AddIconImage) and delete objects and try again.
+If you don't like the results you can click the Undo <IconBase icon-name="undo" /> button lower part of the Sphere Canvas Panel or you can activate the Delete Tool <IconBase icon-name="delete" /> in the "Edit Tools" group and delete objects and try again.
 :::
 
 ## 3. Use the Circle Tool
 
-Activate the Circle Tool (TOOD:AddIconImage) and then click (mouse press) on one endpoint of the line segment, and then drag and mouse release on the other endpoint of the line segment. You should have constructed a line segment from the center of a circle to a point on the boundary of that circle.
+Activate the Circle Tool by clicking the "Create Circle" <IconBase icon-name="circle" /> button in the "Basic Tools" group. Next click (only mouse press) on one endpoint of the line segment, and then drag and mouse release on the other endpoint of the line segment. You should have constructed a line segment from the center of a circle to a point on the boundary of that circle.
 
 TODO: add image showing this intermediate step
 
-::: tool-details Construction Check: Are you constructing or merely plotting an arrangement?
+::: details Construction Check: Are you constructing or merely plotting an arrangement?
 
-You should check your construction by activating the Move Tool (TOOD:AddIconImage) and using the mouse to move various elements of your construction. For example, if you mouse press and drag on the center point of the circle, **both** the circle and the line segment should update and the center of the circle should remain the one endpoint of the line segment. Similarly, if you move the other endpoint of the line segment, **both** the circles and the line segment should update and that endpoint should remain on the circle. If your construction doesn't behave this way you are merely plotting and you should use the Undo button or select the New menu option on the (TODO:update) blah menu to try again. Always try to click close to the endpoints of the line segment to make sure that the endpoints of the line segment and the point on the circle are the same. Spherical Easel always assumes that if you attempt to create a point near an existing point, you would like to use the nearby point and not create a new one.
+You should check your construction by activating the Move Tool <IconBase icon-name="move" />  in the "Display Tools" group and using the mouse to move various elements of your construction. For example, if you mouse press and drag on the center point of the circle, **both** the circle and the line segment should update and the center of the circle should remain the one endpoint of the line segment. Similarly, if you move the other endpoint of the line segment, **both** the circles and the line segment should update and that endpoint should remain on the circle. If your construction doesn't behave this way you are merely plotting and you should use the Undo <IconBase icon-name="undo" /> button. Always try to click close to the endpoints of the line segment to make sure that the endpoints of the line segment and the point on the circle are the same. Spherical Easel always assumes that if you attempt to create a point near an existing point, you would like to use the nearby point and not create a new one.
 :::
 
 ## 4. Use the Circle Tool Again
 
-If necessary, activate the Circle Tool and create a circle with center at the _other_ endpoint of the line segment and release at the center of the first circle so that you have two circles with common radius of the line segment and centers at each endpoint of the line segment.
+If necessary, activate the Circle Tool <IconBase icon-name="circle" />  again and create a circle with center at the _other_ endpoint of the line segment and release at the center of the first circle so that you have two circles with common radius of the line segment and centers at each endpoint of the line segment.
 
 TODO: add image showing this intermediate step
 
-## 5. Use the Segment Tool Again
+## 5. Use the Line Segment Tool Again
 
-By mouse pressing _near_ the location of one of the intersection points of the two circles and then dragging and releasing at the the center of one of the circles create a line segment from an intersection of the circles to one end point of the line segment. Repeat this to create a line segment from the same intersection point to the other endpoint of the line segment.
+Again activate the Line Segment tool ("Create Line Segment" <IconBase icon-name="segment" /> in "Basic Tools" group). Then by mouse pressing _near_ the location of one of the intersection points of the two circles and then dragging and releasing at the the center of one of the circles create a line segment from an intersection of the circles to one end point of the line segment. Repeat this to create a line segment from the same intersection point to the other endpoint of the line segment.
 
 TODO: Add image showing this intermediate step
 
@@ -56,8 +59,14 @@ Spherical Easel always assumes that if the user attempts to create a point _**ne
 
 TODO: Add image showing this intermediate step
 
-Activate the Hide Tool (TODO:AddIconImage) and mouse release on each of the circles (but not on either point that defines a circle) to hide them. Now activate the Move Tool (TOOD:AddIconImage) and click and drag either endpoint of the original line segment around. You should notice that the triangle remains equilateral. Notice you won't be able to move the third vertex of the triangle independently, because that one is defined by the two circles and can't be moved directly even if the circles are not hidden.
+Activate the Hide Tool <IconBase icon-name="hide" /> in the "Display Tools" group. Then click and mouse release on each of the circles (but not on either point that defines a circle) to hide them. Now activate the Move Tool <IconBase icon-name="move" /> and click and drag either endpoint of the original line segment around. You should notice that the triangle remains equilateral. Can you explain why it is equilateral? _Note_: You won't be able to move the third vertex of the triangle independently, because that one is defined by the two circles and can't be moved directly even if the circles are not hidden.
 
 ::: tip
-In the middle of dragging press and _hold_ the <kbd>Shift</kbd> key and notice that the selected point moves to the back of the sphere. This is generally how you can move objects on the back of the sphere or select objects on the back of the sphere.
+In the middle of dragging press and _hold_ the <KeyShortcuts macShift pcShift  /> key and notice that the selected point moves to the back of the sphere. Holding the <KeyShortcuts macShift pcShift  /> key direct all mouse actions to the back of the sphere.
+:::
+
+::: details **Congratulations!** You have constructed an equilateral triangle!
+
+Now discover a flaw in Euclid: Make the triangle as big as possible. Does the triangle always exist? Do two circles that share a common line segment radius always intersect? No! Contrast this with Euclidean geometry.
+
 :::

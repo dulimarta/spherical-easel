@@ -1,11 +1,19 @@
 ---
 layout: home
-heroImage: ./SphericalEaselLogo.png
-heroText: Spherical Easel
-tagline: An interactive app for exploring spherical geometry
-actionText: "Quick Start: Explore Equilateral Triangles →"
-actionLink: /quickstart/
-sidebar: true
+
+hero:
+  name: Spherical Easel
+  text: An interactive app for exploring spherical geometry
+  image:
+    src: /SphericalEaselLogo2.gif
+    alt: Spherical Easel
+  actions:
+    - theme: brand
+      text: Quick start - Explore Equilateral Triangles →
+      link:  /quickstart/
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/dulimarta/spherical-easel
 features:
   - title: Construct
     details: Easily construct spherical arrangements of points, lines, circles, and conics using tangents, bisections, and more.
@@ -30,11 +38,11 @@ Spherical Easel is written in Typescript. This application is open source and us
 You can help by....
 
 - Helping to translate this program into another language.
-- Consulting on how to make this program more accessible to people with low vision.
-- Reporting a bug.
-- Requesting an enhancement or feature.
+- Consulting on how to make this program more accessible. In particular to those using a screen reader or other assistive technology.
+- [Reporting a bug.](https://github.com/dulimarta/spherical-easel/issues/new)
+- [Requesting an enhancement or feature.](https://github.com/dulimarta/spherical-easel/issues/new)
 - Adding a lesson plan to our [repository](/lessonplans/) to help students learn about spherical geometry.
-- Updating these help pages with correction, rewrites or more description. (Most pages in this documentation have a link at the bottom to allow you to suggest a edit to a particular page.)
+- Updating these help pages with correction, rewrites or more description using the links at the bottom of each page.
   <br></br>
 
 If you would like to help in any way or ask us a question please use our [GitHub repository](https://github.com/dulimarta/spherical-easel/issues/new) for reporting an issue and let us know how you would like to help.

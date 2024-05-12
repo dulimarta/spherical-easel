@@ -1,6 +1,6 @@
 export default {
   lang: "en-US",
-  text: "Spherical Easel",
+  title: "Spherical Easel",
   description:
         "Explore Spherical Geometry: A user guide and design guide for Spherical Easel",
 
@@ -17,7 +17,7 @@ export default {
       pattern: 'https://github.com/dulimarta/spherical-easel/tree/main/docs/:link'
     },
     i18nRouting: true,
-    logo: "/SphericalEaselLogo.png",
+    logo: "/SphericalEaselLogo.gif",
     nav: [
       {
       text: "Navigation",
@@ -148,7 +148,7 @@ export default {
     },
     plugins: [
       [
-        "@maginapp/vitepress-plugin-katex",
+        "@maginapp/vitepress-plugin-katex", //enable LaTeX on the pages
         {
           delimiters: "dollars"
         }

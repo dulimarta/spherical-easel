@@ -32,14 +32,21 @@ onMounted((): void => {
         displayString.value += " + ";
       }
       displayString.value +=
-        '<kbd>Cmd(<span <span style="font-size:18pt; vertical-align: middle;display: inline-block;  position: relative;  width: 0.537em;  height: 0.5em;"> <span style="position: absolute;  left: -0.059em;  top: -0.3em;" >&#8984;</span></span>)</kbd>';
+        '<kbd>Command(<span <span style="font-size:18pt; vertical-align: middle;display: inline-block;  position: relative;  width: 0.537em;  height: 0.5em;"> <span style="position: absolute;  left: -0.059em;  top: -0.3em;" >&#8984;</span></span>)</kbd>';
     }
     if (props.macOpt) {
       if (displayString.value !== "") {
         displayString.value += " + ";
       }
       displayString.value +=
-        '<kbd>Opt(<span <span style="font-size:20pt; vertical-align: inherit;display: inline-block;  position: relative;  width: 0.537em;  height: 0.5em;"> <span style="position: absolute;  left: -0.059em;  top: -0.2em;" >&#8997;</span></span>)</kbd>';
+        '<kbd>Option(<span <span style="font-size:20pt; vertical-align: inherit;display: inline-block;  position: relative;  width: 0.537em;  height: 0.5em;"> <span style="position: absolute;  left: -0.059em;  top: -0.2em;" >&#8997;</span></span>)</kbd>';
+    }
+    if (props.macCtrl) {
+      if (displayString.value !== "") {
+        displayString.value += " + ";
+      }
+      displayString.value +=
+        '<kbd>Control(<span <span style="font-size:18pt; vertical-align: middle;display: inline-block;  position: relative;  width: 0.537em;  height: 0.5em;"> <span style="position: absolute;  left: -0.059em;  top: -0.3em;" >&#8984;</span></span>)</kbd>';
     }
     if (props.macLetter) {
       if (displayString.value !== "") {

@@ -51,7 +51,7 @@
     </div>
     <div v-else class="mini-icons">
       <div class="mini-icons">
-        <v-icon>$stylePanel</v-icon>
+        <v-icon>$styleDrawer</v-icon>
       </div>
     </div>
   </transition>
