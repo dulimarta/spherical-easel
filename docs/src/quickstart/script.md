@@ -3,7 +3,7 @@ title: Scripting
 lang: en-US
 ---
 
-# Scripting Objects
+# FUTURE PLAN: Scripting Objects
 
 ## 13. Focus the Style Panel
 

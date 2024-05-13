@@ -16,6 +16,9 @@ export default {
     editLink: { //Display a link to edit the page on github
       pattern: 'https://github.com/dulimarta/spherical-easel/tree/main/docs/:link'
     },
+    search: {
+      provider: 'local'
+    },
     i18nRouting: true,
     logo: "/SphericalEaselLogo.gif",
     nav: [
@@ -40,6 +43,11 @@ export default {
         ]
       }
     ],
+
+    footer: {
+      message: "License agreements <a href='https://creativecommons.org/licenses/by-nc-sa/4.0/'target='_blank''> CC-BY-NC-SA </a>",
+      copyright: 'Copyright © 2002-present David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling, Vinicius Lima'
+    },
 
     //Settings for the sidebar, this is done in groups so that
     // quick start, user guide, and design documents each have their own sidebar

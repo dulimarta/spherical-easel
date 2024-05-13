@@ -1240,6 +1240,41 @@ export const SETTINGS = {
         filePath: ""
       }
     },
+    labelPopOverTab:{
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-tag-edit",
+        filePath: ""
+      }
+    },
+    labelTextEditTab:{
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-pencil",
+        filePath: ""
+      }
+    },
+    labelTextFamilyTab:{
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-format-text",
+        filePath: ""
+      }
+    },
+    labelColorFamilyTab:{
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-palette",
+        filePath: ""
+      }
+    },
+    closePanelRight: {
+      props: {
+        emphasizeTypes: [[]] as string[][],
+        mdiIcon: "mdi-chevron-double-right",
+        filePath: ""
+      }
+    },
     styleDrawer: {
       props: {
         emphasizeTypes: [[]] as string[][],

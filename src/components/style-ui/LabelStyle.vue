@@ -6,16 +6,16 @@
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
     :disabled="selectionCount < 1"
-    icon-name="mdi-tag-edit"
+    icon-name="$labelPopOverTab"
     :tooltip="selectionCount > 0 ? t('enableTooltip') : t('disableTooltip')"
     tooltip-location="left"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
     <!-- Labels visible? {{ allLabelsShowing }} -->
     <template #tabs>
-      <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
-      <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
-      <v-tab><v-icon>mdi-palette</v-icon></v-tab>
+      <v-tab><v-icon>$labelTextEditTab</v-icon></v-tab>
+      <v-tab><v-icon>$labelTextFamilyTab</v-icon></v-tab>
+      <v-tab><v-icon>$labelColorFamilyTab</v-icon></v-tab>
     </template>
     <template #pages>
       <!-- Label Text Options -->

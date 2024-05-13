@@ -17,11 +17,13 @@ Activate the Select Tool <IconBase icon-name="select" /> in the "Edit Tool" grou
 - Clicking and release on each of the three vertices of the triangle, while holding down the <KeyShortcuts macOpt pcAlt /> key or
 - Pushing the <KeyShortcuts macLetter="p" pcLetter="p" /> (after which the points should be highlighted) and then clicking anywhere in the sphere Canvas **WITHOUT** moving the mouse.
 
-Next select the Style Drawer <IconBase icon-name="styledDrawer" /> on the right side of the screen. A collection of icons should
+Next select the Style Drawer <IconBase icon-name="styleDrawer" /> on the right side of the screen. A collection of icons should appear:
+- <IconBase icon-name="labelTextEditTab" /> Text Editor: For adjusting the size and rotation angle of the selected labels.
+- <IconBase icon-name="labelTextFamilyTab" /> Text Family Editor: Changes the decorations and font family of the label.
+- <IconBase icon-name="labelColorFamilyTab" /> Text Fill Editor: Change the fill color for the label on the front and the back.
+- <IconBase icon-name="closePanelRight" />: To close the Style Drawer.
 
-
-
-By either right clicking on any vertex of the triangle and selecting settings from the menu, or by activating the Objects tab (TODO:AddIconImagine) and clicking on the three vertical dots at the end of the row containing the information about any one of the points or by clicking the Settings Icon (TODO:AddIconImage) in the upper right corner of the Sphere Canvas, activate the Style Panel. The Style Panel should appear on the right side of the application window and contain several tabs. Each of the tabs allows you to adjust certain features of the selected object, in this case the point that is the focus (the one you selected). Notice that their are options for adjusting the front and back styles either automatically using the global contrast variable or manually. See if you can change the label of one of the points to $A$ and display it.
+Use the current multi-selected points to enlarge the points of the triangle. Next try to hide all but one of the labels and change the name (i.e. label text) in the remaining visible label to $A$.
 
 TODO: add image showing this intermediate step
 
@@ -31,10 +33,6 @@ FUTURE PLAN: You can use [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX) to type
 
 ## 9. Adjust the Style and Labels: Line Segments
 
-To change the object that the Style Panel is focused on, merely leave the Style Panel open and click on the object either in the Sphere Canvas or on the corresponding row in the Objects tab. See if you can change the style of the line segments to red and thickened and then label the line segment across from point $A$ as $a$.
+Activate the Select Tool <IconBase icon-name="select" /> in the "Edit Tool" group and select the side of the triangle opposite $A$. Open the style drawer and make the label of this side visible and make the name $a$. See if you can change the style of the all line segments to red and thickened.
 
 TODO:Include a image of the results of this.
-
-::: tip
-To close the Style Panel, click the (TODO:AddIconImage) icon in the upper right hand corner.
-:::

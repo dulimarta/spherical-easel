@@ -2,6 +2,7 @@
 title: Contact
 lang: en-US
 next: /quickstart/
+sidebar: false
 ---
 
 David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling, Vinicius Lima. License agreements CC-BY-NC-SA(https://creativecommons.org/licenses/by-nc-sa/4.0/) | Copyright © 2002 - present

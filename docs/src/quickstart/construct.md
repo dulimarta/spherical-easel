@@ -10,7 +10,7 @@ lang: en-US
 On the left hand side of the Spherical Easel application window there are two vertical panels. The left most darker one is for changing between modes.  There are four modes:
 
 - Tools <IconBase icon-name="toolsTab" />: A list of categories of tools should be display including "Edit", "Display", etc. The current active tool and its icon is displayed at the very top of inner panel.
-- Objects <IconBase icon-name="objectsTab" />: At the top of inner panel are three options "Expression", "Parametric Curves", and "Slider". Expression will be used in [step #12](/quickstart/measure#12-use-the-calculation-tool).
+- Objects <IconBase icon-name="objectsTab" />: At the top of inner panel are three panels: "Expression", "Parametric Curves", and "Slider". Expression will be used in [step #12](/quickstart/measure#12-use-the-calculation-tool). As you construct items in the Sphere Canvas, a list of each item type will appear in this panel. Opening each type list, gives access to each element in your construction.
 - Constructions <IconBase icon-name="constructionsTab" /> This will display a list of your (owned) constructions, a list of starred constructions <IconBase icon-name="starConstruction" />, and a list of public constructions. When you have the correct permissions you can save your constructions.
 - Earth <IconBase icon-name="earthTab" /> This displays options related to earth mode and latitude and longitude.
 

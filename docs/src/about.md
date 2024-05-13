@@ -2,6 +2,7 @@
 title: About
 lang: en-US
 prev: /
+sidebar: false
 ---
 
 This is an about page.

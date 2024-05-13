@@ -19,7 +19,7 @@
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
         <v-tab :value="LAST_TAB_MARKER">
-          <v-icon @click="menu = false">mdi-chevron-double-right</v-icon>
+          <v-icon @click="menu = false">$closePanelRight</v-icon>
         </v-tab>
       </v-tabs>
       <v-window v-model="currentTab">
