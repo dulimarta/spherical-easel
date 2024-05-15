@@ -37,8 +37,7 @@
       :swatches="colorSwatches"
       v-model="internalColor"
       mode="hexa"
-      id="colorPicker"
-      @update:model-value="colorChanged"></v-color-picker>
+      id="colorPicker"></v-color-picker>
     <HintButton
       style="align-self: flex-start"
       type="colorInput"
@@ -76,9 +75,10 @@ type ComponentProps = {
   numSelected: number;
 };
 const props = defineProps<ComponentProps>();
-const emit = defineEmits(["resetColor", "update:modelValue"]);
+// const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
-let internalColor = defineModel({ type: String });
+let pickedColor = defineModel({ type: String });
+const internalColor = ref(Color(pickedColor.value).hexa())
 
 const noColorData = ref(false); // no data means noFill or noStroke
 let preNoColor: string = NO_HSLA_DATA;
@@ -92,26 +92,18 @@ const isOnLabelPanel = ref(false);
 const showColorInputs = ref(false);
 
 const colorSwatches = ref(SETTINGS.style.swatches);
-let noDataStr = "";
 const noDataUILabel = ref(t("noFill"));
 
+watch(() => internalColor.value, newColor => {
+  pickedColor.value = Color(newColor).hexa()
+})
+
 function toggleNoColor(ev: PointerEvent): void {
-  console.log("What is toggle flag?", noColorData.value);
-  // emit("update:modelValue", noColorData.value ? "none" : Color(internalColor).hsl())
+  const hslValue = Color(internalColor.value).hexa()
+  pickedColor.value = !noColorData.value ? "none" : hslValue
   // emit("resetColor");
 }
-function colorChanged(arg: string) {
-  let newColor = Color(arg).hsl().string();
-  const toks = newColor.split(",");
-  // Note: the Color function does not product the alpha value
-  // we have to insert the alpha value manually
-  if (toks.length == 3) {
-    // only three tokens, missing the alpha value
-    newColor = newColor.replace(/\)$/, ", 1.0)").replace(/^hsl/, "hsla");
-  }
-  console.log("Color changed to", arg, newColor);
-  emit("update:modelValue", newColor);
-}
+
 // Vue component life cycle hook
 onMounted((): void => {
   // console.log("mounting!", hslaColor);
@@ -124,7 +116,6 @@ onMounted((): void => {
   const propName = props.styleName.replace("Color", "");
   const firstLetter = props.styleName.charAt(0);
   const inTitleCase = firstLetter.toUpperCase() + propName.substring(1);
-  noDataStr = `no${inTitleCase}`;
   var re = /fill/gi;
   noDataUILabel.value =
     props.styleName.search(re) === -1 ? t("noStroke") : t("noFill"); // the noStroke/noFill option
@@ -152,13 +143,6 @@ function toggleColorInputs(): void {
   //   showColorInputs = false;
   // }
 }
-
-// watch(
-//   () => props.modelValue,
-//   (hsla: string | undefined) => {
-//     // internalColor.value = Color(hsla).hexa()
-//   }
-// );
 
 watch(
   () => noColorData.value,

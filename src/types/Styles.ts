@@ -22,9 +22,9 @@ export interface StyleOptions {
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
   angleMarkerArrowHeads?: boolean;
-}
+// }
 
-export type LabelStyleProperty = {
+// export type LabelStyleProperty = {
   labelTextStyle?: string;
   labelTextFamily?: string;
   labelTextDecoration?: string;
@@ -218,7 +218,7 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };
 
-export const DEFAULT_LABEL_TEXT_STYLE: Partial<LabelStyleProperty> = {
+export const DEFAULT_LABEL_TEXT_STYLE: StyleOptions = {
   labelDisplayMode: LabelDisplayMode.NameOnly,
   labelDisplayText: "",
   labelDisplayCaption: "",

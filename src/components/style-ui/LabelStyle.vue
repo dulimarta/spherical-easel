@@ -39,7 +39,7 @@
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
         <v-text-field
-          v-if="hasCaption(styleOptions) || true"
+          v-if="hasCaption(styleOptions)"
           :disabled="
             selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption')
           "
@@ -166,10 +166,9 @@
           ]"
           ref="labelDisplayMode"
           v-bind:label="t('labelDisplayMode')"
-          :items="labelDisplayModeItems"
+          :items="filteredLabelDisplayModeItems"
           item-title="text"
           item-value="value"
-          @change="conflictItems.labelDisplayMode = false"
           variant="outlined"
           density="compact"></v-select>
         <DisagreementOverride
@@ -187,13 +186,11 @@
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
           :conflict="conflictItems.labelFrontFillColor"
-          v-on:resetColor="conflictItems.labelFrontFillColor = false"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
         <PropertyColorPicker
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"
-          v-on:resetColor="conflictItems.labelBackFillColor = false"
           ref="labelBackFillColor"
           style-name="labelBackFillColor"
           v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
@@ -243,11 +240,11 @@ import {
   Ref
 } from "vue";
 import { SENodule } from "@/models/SENodule";
-import { LabelStyleProperty, StyleOptions } from "@/types/Styles";
+import { StyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
+// import EventBus from "@/eventHandlers/EventBus";
 import PropertySlider from "./StylePropertySlider.vue";
 import PropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";
@@ -259,7 +256,7 @@ const attrs = useAttrs();
 import PopOverTabs from "./PopOverTabs.vue";
 import { useAttrs } from "vue";
 import { useStylingStore } from "@/stores/styling";
-type labelDisplayModeItem = {
+type LabelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
   optionRequiresMeasurementValueToExist: boolean;
@@ -345,6 +342,7 @@ const labelVisibiltyState = new Map<string, boolean>();
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
+const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
 
 watch(
   () => selectedSENodules.value,
@@ -378,6 +376,20 @@ watch(
   }
 );
 
+watch(
+  () => styleOptions.value,
+  opt => {
+    /* When caption text is not null, exclude display option with "Value" in it? */
+    if (opt.labelDisplayCaption) {
+      filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
+        z => !z.optionRequiresMeasurementValueToExist
+      );
+    } else {
+      filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
+    }
+  },
+  { deep: true }
+);
 // watch(
 //   () => labelTextScalePercentage.value,
 //   (textScale: number) => {
@@ -410,34 +422,35 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  EventBus.listen(
-    "style-label-conflict-color-reset",
-    resetAndRestoreConflictItems
-  );
-  EventBus.listen(
-    "style-update-conflicting-props",
-    (names: { propNames: string[] }): void => {
-      // this.conflictingPropNames.forEach(name =>
-      //   console.log("old prop", name)
-      // );
-      conflictingPropNames.splice(0);
-      names.propNames.forEach(name => conflictingPropNames.push(name));
-      // this.conflictingPropNames.forEach(name =>
-      //   console.log("new prop", name)
-      // );
-    }
-  );
+  filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
+  // EventBus.listen(
+  //   "style-label-conflict-color-reset",
+  //   resetAndRestoreConflictItems
+  // );
+  // EventBus.listen(
+  //   "style-update-conflicting-props",
+  //   (names: { propNames: string[] }): void => {
+  //     // this.conflictingPropNames.forEach(name =>
+  //     //   console.log("old prop", name)
+  //     // );
+  //     conflictingPropNames.splice(0);
+  //     names.propNames.forEach(name => conflictingPropNames.push(name));
+  //     // this.conflictingPropNames.forEach(name =>
+  //     //   console.log("new prop", name)
+  //     // );
+  //   }
+  // );
 });
 
-function countEnabledProperties(propList: Array<string>) {
-  let count = 0;
-  // console.debug("Style options", styleOptions)
-  propList.forEach(propName => {
-    console.debug(`Is ${propName} present?`);
-    if (styleOptions.value[propName]) count++;
-  });
-  return count;
-}
+// function countEnabledProperties(propList: Array<string>) {
+//   let count = 0;
+//   // console.debug("Style options", styleOptions)
+//   propList.forEach(propName => {
+//     console.debug(`Is ${propName} present?`);
+//     if ((styleOptions.value as any)[propName]) count++;
+//   });
+//   return count;
+// }
 
 function resetAndRestoreConflictItems(): void {
   // resetAllItemsFromConflict();
@@ -445,8 +458,8 @@ function resetAndRestoreConflictItems(): void {
 }
 
 onBeforeUnmount((): void => {
-  EventBus.unlisten("style-label-conflict-color-reset");
-  EventBus.unlisten("style-update-conflicting-props");
+  // EventBus.unlisten("style-label-conflict-color-reset");
+  // EventBus.unlisten("style-update-conflicting-props");
 });
 
 function overrideDynamicBackStyleDisagreement() {}
@@ -489,7 +502,7 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
   return true;
 }
 
-function labelDisplayTextTruncate(opt: LabelStyleProperty): boolean {
+function labelDisplayTextTruncate(opt: StyleOptions): boolean {
   if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
     if (
       opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
@@ -516,7 +529,7 @@ function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
   }
   return true;
 }
-function labelDisplayCaptionTruncate(opt: LabelStyleProperty): boolean {
+function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
   if (opt.labelDisplayCaption !== undefined) {
     if (
       opt.labelDisplayCaption.length >
@@ -584,7 +597,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
     // }, 1000);
   });
 }
-function hasCaption(opt: LabelStyleProperty | undefined): boolean {
+function hasCaption(opt: StyleOptions | undefined): boolean {
   if (!opt) return false;
   return (
     opt.labelDisplayMode === LabelDisplayMode.CaptionOnly ||
@@ -592,7 +605,7 @@ function hasCaption(opt: LabelStyleProperty | undefined): boolean {
   );
 }
 
-const labelDisplayModeItems: labelDisplayModeItem[] = [
+const labelDisplayModeItems: LabelDisplayModeItem[] = [
   {
     text: t("labelDisplayModes.nameOnly"),
     value: LabelDisplayMode.NameOnly,

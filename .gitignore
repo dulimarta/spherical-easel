@@ -49,3 +49,5 @@ docs/.vitepress/cache
 # Cache
 .yarn/cache
 /yarn.lock
+
+easel-original
