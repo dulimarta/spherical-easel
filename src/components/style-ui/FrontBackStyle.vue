@@ -2,14 +2,16 @@
   <!-- {{ styleOptions }} -->
   <PopOverTabs
     :show-popup="showPopup"
+    :name="editModeIsBack ? 'BG' : 'FG'"
     :disabled="selectedPlottables.size === 0">
     <template #tabs>
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
-      <v-tab><v-icon>mdi-angle-acute</v-icon></v-tab>
+      <v-tab v-if="hasStyle(/angle/)"><v-icon>mdi-angle-acute</v-icon></v-tab>
     </template>
     <template #pages>
       <v-window-item class="pa-2">
+        <!-- FIRST TAB-->
         <div v-if="editModeIsBack">
           <!-- Enable the Dynamic Back Style Overlay -->
           <!-- Global contrast slider -->
@@ -58,19 +60,18 @@
           :title="t('strokeColor')"
           v-if="hasStyle('strokeColor')"
           :conflict="hasDisagreement('strokeColor')"
-          v-on:resetColor="conflictItems.strokeColor = false"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
         <SimpleColorSelector
           :title="t('fillColor')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('fillColor')"
-          v-on:resetColor="conflictItems.fillColor = false"
           v-if="hasStyle('fillColor')"
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
       </v-window-item>
       <v-window-item class="pa-2">
+        <!-- SECOND TAB-->
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
@@ -80,7 +81,6 @@
           :min="minStrokeWidthPercent"
           :max="maxStrokeWidthPercent"
           :color="conflictItems.strokeWidthPercent ? 'red' : ''"
-          v-on:resetColor="conflictItems.strokeWidthPercent = false"
           :step="20"
           :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
         <SimpleNumberSelector
@@ -89,7 +89,6 @@
           v-model="styleOptions.pointRadiusPercent"
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
           :conflict="hasDisagreement('pointRadiusPercent')"
-          v-on:resetColor="conflictItems.pointRadiusPercent = false"
           :title="t('pointRadiusPercent')"
           :min="minPointRadiusPercent"
           :max="maxPointRadiusPercent"
@@ -97,55 +96,72 @@
           :thumb-string-values="
             pointRadiusSelectorThumbStrings
           "></SimpleNumberSelector>
-        <!--span class="text-subtitle-2">{{ t("dashPattern") }}</!--span-->
-        <!--span
-          v-if="selectedSENodules.length > 1"
-          class="text-subtitle-2"
-          style="color: red">
-          {{ " " + $t("labelStyleOptionsMultiple") }}
-        </span-->
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
-        <div class="d-flex justify-space-between align-start">
-          <v-tooltip
-            location="bottom"
-            max-width="400px"
-            activator="#dash-switch"
-            :text="t('dashPatternCheckBoxToolTip')" />
-          <v-switch
-            v-bind="props"
-            id="dash-switch"
-            v-if="hasStyle('dashArray')"
-            v-model="useDashPattern"
-            density="compact"
-            :color="hasDisagreement('dashArray') ? 'red' : ''">
-            <template v-slot:label>
-              <span
-                :style="{
-                  color: hasDisagreement('dashArray') ? 'red' : ``
-                }">
-                {{ t("dashPattern") }}
-              </span>
+        <div
+          v-if="hasStyle('dashArray')"
+          :style="{ display: 'flex', flexDirection: 'column' }">
+          <div :style="{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center', justifyContent: 'space-between'
+            }">
+            <v-tooltip
+              location="bottom"
+              max-width="400px"
+              activator="#use-dash"
+              :text="t('dashPatternCheckBoxToolTip')" />
+            <v-switch class="mr-4"
+              id="use-dash"
+              v-model="useDashPattern"
+              density="compact"
+              :color="hasDisagreement('dashArray') ? 'red' : ''">
+              <template v-slot:label>
+                <span
+                  :style="{
+                    color: hasDisagreement('dashArray') ? 'red' : ``
+                  }">
+                  {{ t("dashPattern") }}
+                </span>
+              </template>
+            </v-switch>
+            <v-tooltip
+              location="bottom"
+              max-width="400px"
+              activator="#swap-dash"
+              :text="t('dashPatternReverseArrayToolTip')" />
+            <v-switch
+              v-if="useDashPattern"
+              v-model="reverseDashArray"
+              :color="conflictItems.reverseDashArray ? `red` : 'secondary'"
+              density="compact">
+              <template v-slot:label>
+                <span
+                  :style="{
+                    color: conflictItems.reverseDashArray ? 'red' : ``
+                  }">
+                  {{ t("dashArrayReverse") }}
+                </span>
+              </template>
+            </v-switch>
+          </div>
+          <!-- The dash property slider -->
+          <v-range-slider
+            v-if="useDashPattern"
+            v-model="dashArray"
+            min="0"
+            strict
+            :step="setStep(hasStyle('angleMarker'))"
+            :disabled="emptyDashPattern"
+            :max="setMax(hasStyle('angleMarker'))"
+            :color="conflictItems.dashArray ? 'red' : ''"
+            density="compact">
+            <template #prepend>
+              {{ reverseDashArray ? "Dash" : "Gap"}} {{ dashArray[0] }}
             </template>
-          </v-switch>
-
-          <!-- extra top margin is required to lineup the text baseline-->
-          <span v-show="!emptyDashPattern && useDashPattern" class="mt-2">
-            {{ activeDashPattern(styleOptions) }}
-          </span>
-        </div>
-        DA {{ dashArray }} Rev {{ reverseDashArray }}
-        <!-- The dash property slider -->
-        <v-range-slider
-          v-if="hasStyle('dashArray') && useDashPattern"
-          v-model="dashArray"
-          min="0"
-          strict
-          :step="setStep(hasStyle('angleMarker'))"
-          :disabled="emptyDashPattern"
-          :max="setMax(hasStyle('angleMarker'))"
-          :color="conflictItems.dashArray ? 'red' : ''"
-          density="compact">
-          <!--template v-slot:prepend>
+            <template #append>
+              {{ reverseDashArray ? "Gap" : "Dash"}} {{ dashArray[1] }}
+            </template>
+            <!--template v-slot:prepend>
             <v-icon
               @click="
                 decrementDashPattern(styleOptions, hasStyle('angleMarker'))
@@ -162,29 +178,11 @@
               mdi-plus
             </v-icon>
           </template-->
-        </v-range-slider>
-        <v-tooltip location="bottom" max-width="400px">
-          <template v-slot:activator="{ props }">
-            <v-checkbox
-              v-bind="props"
-              v-model="reverseDashArray"
-              :color="conflictItems.reverseDashArray ? `red` : ''"
-              hide-details
-              density="compact">
-              <template v-slot:label>
-                <span
-                  :style="{
-                    color: conflictItems.reverseDashArray ? 'red' : ``
-                  }">
-                  {{ t("dashArrayReverse") }}
-                </span>
-              </template>
-            </v-checkbox>
-          </template>
-          {{ $t("dashPatternReverseArrayToolTip") }}
-        </v-tooltip>
+          </v-range-slider>
+        </div>
       </v-window-item>
-      <v-window-item class="pa-2">
+      <v-window-item class="pa-2" v-if="hasStyle(/angle/)">
+        <!-- THIRD TAB-->
         <!-- Angle Marker Decoration Selector -->
         <!--span class="text-subtitle-2">
         {{ $t(`style.angleMarkerOptions`) }}
@@ -615,12 +613,12 @@ function activeDashPattern(opt: StyleOptions): string {
     // If not flipped: [gap, dash]
     // If flipped [dash,gap]
     if (reverseDashArray.value) {
-      dStr = "Dashx:" + dashArray.value[0].toFixed(0);
-      gStr = "Gapx:" + dashArray.value[1].toFixed(0);
+      dStr = "Dash:" + dashArray.value[0].toFixed(0);
+      gStr = "Gap:" + dashArray.value[1].toFixed(0);
       return `${dStr}/${gStr}`;
     } else {
-      dStr = "Dashy:" + dashArray.value[1].toFixed(0);
-      gStr = "Gapy:" + dashArray.value[0].toFixed(0);
+      dStr = "Dash:" + dashArray.value[1].toFixed(0);
+      gStr = "Gap:" + dashArray.value[0].toFixed(0);
       return `${gStr}/${dStr}`;
     }
   } else return "";
@@ -789,8 +787,8 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "angleMarkerTickMark": "Tick Mark",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
-  "dashArrayReverse": "Switch Dash and Gap",
-  "dashPattern": "Dash Pattern",
+  "dashArrayReverse": "Swap Dash/Gap",
+  "dashPattern": "Use dash pattern",
   "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
   "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
   "fillColor": "Fill Color",

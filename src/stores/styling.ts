@@ -229,11 +229,13 @@ export const useStylingStore = defineStore("style", () => {
   function hasDisagreement(prop: string) {
     return conflictingProperties.value.has(prop) && !forceAgreement.value;
   }
-  function hasStyle(prop: string): boolean {
-    return Array.from(stylePropertyMap.keys()).some(x => {
-      // console.debug(`Has style ${prop} <=> ${x}?`);
-      return x === prop;
-    });
+  function hasStyle(prop: string | RegExp): boolean {
+    if (typeof prop === "string") {
+      return Array.from(stylePropertyMap.keys()).some(x => {
+        // console.debug(`Has style ${prop} <=> ${x}?`);
+        return x === prop;
+      });
+    } else return Array.from(stylePropertyMap.keys()).some(x => x.match(prop))
   }
 
   return {

@@ -18,7 +18,9 @@
       <v-tabs v-model="currentTab">
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
+        <v-spacer/>
         <v-tab :value="LAST_TAB_MARKER">
+          {{ name }}
           <v-icon @click="menu = false">mdi-chevron-double-right</v-icon>
         </v-tab>
       </v-tabs>
@@ -35,11 +37,14 @@ import { ref, watch } from "vue";
 import DisagreementOverride from "./DisagreementOverride.vue";
 type Props = {
   showPopup: boolean,
+  name?: string,
   // iconName: string;
   // tooltip: string;
   // tooltipLocation: 'left' | 'right' | 'top' | 'bottom',
 };
-const elementProps = defineProps<Props>();
+const elementProps = withDefaults(defineProps<Props>(), {
+  name: ""
+});
 const emit = defineEmits(['popUpShown','popUpHidden'])
 const LAST_TAB_MARKER = 99999;
 const currentTab = ref(0);

@@ -30,7 +30,7 @@
         :style="{
           display: 'flex',
           flexDirection: 'column',
-          rowGap: '8px'
+          rowGap: '24px'
         }">
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#lab-icon" :text="labelTooltip"></v-tooltip>

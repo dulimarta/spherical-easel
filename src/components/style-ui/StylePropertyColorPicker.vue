@@ -12,15 +12,15 @@
         {{ " " + t("labelStyleOptionsMultiple") }}
       </span>
     </span>
-    <v-checkbox
+    <v-switch
       id="check-btn"
       :disabled="numSelected == 0 || (conflict && numSelected > 1)"
       v-model="noColorData"
       :label="noDataUILabel"
-      color="indigo darken-3"
+      color="secondary"
       hide-details
       density="compact"
-      @click="toggleNoColor"></v-checkbox>
+      @click="toggleNoColor"></v-switch>
     <v-tooltip location="bottom" activator="#check-btn">
       {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
     </v-tooltip>

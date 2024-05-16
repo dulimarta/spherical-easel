@@ -187,7 +187,12 @@
           style-name="labelFrontFillColor"
           :conflict="conflictItems.labelFrontFillColor"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
+        <v-switch
+          color="secondary"
+          v-model="styleOptions.labelDynamicBackStyle"
+          label="Label Automatic Back Style"></v-switch>
         <PropertyColorPicker
+          v-if="!styleOptions.labelDynamicBackStyle"
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"

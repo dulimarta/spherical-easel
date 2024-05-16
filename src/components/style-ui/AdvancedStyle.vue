@@ -6,6 +6,9 @@ import Vue from "vue";
 import { SENodule } from "@/models/SENodule";
 import { mapState } from "pinia";
 import { useSEStore } from "@/stores/se";
+import { useStylingStore } from "@/stores/styling";
+const styleStore = useStylingStore()
+const {hasStyle} = styleStore
 export default class AdvancedStyle extends Vue {
   // You are not allow to style labels directly so remove them from the selection and warn the user
   readonly selectedSENodules!: SENodule[];
@@ -17,16 +20,16 @@ export default class AdvancedStyle extends Vue {
     // this.commonProperties = new Set();
   }
 
-  hasStyles(prop: RegExp): boolean {
-    return this.commonStyleProperties.some((x: string) => x.match(prop));
-  }
+  // hasStyles(prop: RegExp): boolean {
+  //   return this.commonStyleProperties.some((x: string) => x.match(prop));
+  // }
 
   get hasColor(): boolean {
-    return this.hasStyles(/Color/);
+    return hasStyle(/Color/);
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(/strokeWidthPercent/);
+    return hasStyle(/strokeWidthPercent/);
   }
 
   // @Watch("selectedSENodules")

@@ -105,7 +105,6 @@
                   v-for="(msg, index) in filteredMessages"
                   :key="`${msg.key}-${index}`"
                   density="compact"
-                  closable
                   :icon="iconType(msg)"
                   :type="alertType(msg)"
                   :text="pretty(msg)"
