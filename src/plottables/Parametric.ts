@@ -118,7 +118,7 @@ export default class Parametric extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   // private inverseTotalRotationMatrix: Matrix4;
-  constructor(noduleName: string, tMin = 0, tMax = 1, closed = false) {
+  constructor(noduleName: string = "None", tMin = 0, tMax = 1, closed = false) {
     super(noduleName);
     this.tMin = tMin;
     this.tMax = tMax;

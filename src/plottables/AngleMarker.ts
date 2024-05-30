@@ -246,7 +246,7 @@ export default class AngleMarker extends Nodule {
   private tmpNormal = new Vector3();
 
   constructor() {
-    super();
+    super("None");
 
     // Circular Part Initialize
     // Create the initial front and back vertices (glowing/not doubleArc/not start/tail)

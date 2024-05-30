@@ -14,7 +14,7 @@ export default class NonFreeCircle extends Circle {
    */
   private nonFreeCircleScalePercent = SETTINGS.circle.nonFree.scalePercent;
 
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     super(noduleName);
 
     // Apply the new style and size

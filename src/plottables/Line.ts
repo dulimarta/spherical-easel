@@ -85,7 +85,7 @@ export default class Line extends Nodule {
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
   private transformMatrix = new Matrix4();
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     super(noduleName);
 
     const radius = SETTINGS.boundaryCircle.radius;

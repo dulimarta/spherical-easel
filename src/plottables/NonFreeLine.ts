@@ -14,7 +14,7 @@ export default class NonFreeLine extends Line {
    */
   private nonFreeLineScalePercent = SETTINGS.line.nonFree.scalePercent;
 
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     super(noduleName);
 
     // Apply the new style and size

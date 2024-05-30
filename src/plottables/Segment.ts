@@ -99,7 +99,7 @@ export default class Segment extends Nodule {
    * Create a plottable segment from three pieces of information: startVector, normalVector, arcLength
    * NOTE: normal x start gives the direction in which the segment is drawn
    */
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     // Initialize the Group
     super(noduleName);
 

@@ -183,7 +183,7 @@ export default class Ellipse extends Nodule {
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     super(noduleName);
 
     this._tMax = 2 * Math.PI;

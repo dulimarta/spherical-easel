@@ -68,7 +68,7 @@ export default class Point extends Nodule {
     Point.pointScaleFactor *= factor;
   }
 
-  constructor(noduleName: string) {
+  constructor(noduleName: string = "None") {
     super(noduleName);
 
     //Create the front/back/glowing/drawn TwoJS objects of the default size
