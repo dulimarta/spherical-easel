@@ -15,6 +15,7 @@
     </template-->
     <v-sheet class="bg-white" v-if="showPopup && menu" position="fixed" elevation="4"
     :style="{right: '80px'}">
+
       <v-tabs v-model="currentTab">
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
@@ -24,10 +25,11 @@
           <v-icon @click="menu = false">mdi-chevron-double-right</v-icon>
         </v-tab>
       </v-tabs>
+      <slot name="top"></slot>
       <v-window v-model="currentTab" class="pa-1">
         <slot name="pages"></slot>
       </v-window>
-      <slot></slot>
+      <slot name="bottom"></slot>
     </v-sheet>
   <!--/--v-menu-->
 </template>

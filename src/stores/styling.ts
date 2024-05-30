@@ -6,7 +6,7 @@ import {
   StyleOptions,
   StylePropertyValue
 } from "@/types/Styles";
-import Nodule from "@/plottables/Nodule";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 
 // type ObjectStyle = { [_: string]: StylePropertyValue };
@@ -238,6 +238,47 @@ export const useStylingStore = defineStore("style", () => {
     } else return Array.from(stylePropertyMap.keys()).some(x => x.match(prop))
   }
 
+  // function changeStyle({
+  //   selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
+  //   panel,
+  //   payload
+  // }: {
+  //   selected: Nodule[];
+  //   panel: StyleEditPanels;
+  //   payload: StyleOptions;
+  // }): void {
+  //   // Important: object destructuring below seems to solve the issue
+  //   // of merging undefined properties in updateStyle()
+  //   const opt: StyleOptions = { ...payload };
+  //   // if (
+  //   //   payload.backStyleContrast &&
+  //   //   payload.backStyleContrast != Nodule.getBackStyleContrast()
+  //   // ) {
+  //   //   // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
+  //   //   Nodule.setBackStyleContrast(payload.backStyleContrast);
+  //   //   console.debug("Changing Global backstyle contrast");
+  //   //   this.this.seNodules.forEach((n: SENodule) => {
+  //   //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+  //   //   });
+  //   // }
+  //   selected.forEach((n: Nodule) => {
+  //     // console.log("node", n, opt);
+  //     n.updateStyle(panel, opt);
+  //   });
+  // }
+  function changeBackContrast(newContrast: number): void {
+    Nodule.setBackStyleContrast(newContrast);
+    // update all objects display
+    selectedPlottables.value.forEach((p) => {
+      p.stylize(DisplayStyle.ApplyCurrentVariables)
+    })
+    // this.seNodules.forEach(seNodule => {
+    //   // update the style of the objects
+    //   // console.log("name", seNodule.name);
+    //   seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    // });
+  }
+
   return {
     toggleLabelsShowing,
     selectedLabels,
@@ -246,7 +287,9 @@ export const useStylingStore = defineStore("style", () => {
     conflictingProperties,
     forceAgreement,
     hasDisagreement,
-    hasStyle
+    hasStyle,
+    changeBackContrast,
+    // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };
 });

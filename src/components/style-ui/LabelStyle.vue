@@ -245,7 +245,7 @@ import {
   Ref
 } from "vue";
 import { SENodule } from "@/models/SENodule";
-import { StyleOptions } from "@/types/Styles";
+import { LabelStyleOptions, StyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
@@ -383,7 +383,7 @@ watch(
 
 watch(
   () => styleOptions.value,
-  opt => {
+  (opt:LabelStyleOptions) => {
     /* When caption text is not null, exclude display option with "Value" in it? */
     if (opt.labelDisplayCaption) {
       filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
@@ -507,7 +507,7 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
   return true;
 }
 
-function labelDisplayTextTruncate(opt: StyleOptions): boolean {
+function labelDisplayTextTruncate(opt: LabelStyleOptions): boolean {
   if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
     if (
       opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
@@ -534,7 +534,7 @@ function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
   }
   return true;
 }
-function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
+function labelDisplayCaptionTruncate(opt: LabelStyleOptions): boolean {
   if (opt.labelDisplayCaption !== undefined) {
     if (
       opt.labelDisplayCaption.length >
@@ -602,7 +602,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
     // }, 1000);
   });
 }
-function hasCaption(opt: StyleOptions | undefined): boolean {
+function hasCaption(opt: LabelStyleOptions | undefined): boolean {
   if (!opt) return false;
   return (
     opt.labelDisplayMode === LabelDisplayMode.CaptionOnly ||

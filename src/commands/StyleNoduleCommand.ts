@@ -38,13 +38,8 @@ export class StyleNoduleCommand extends Command {
       //   "with payload old",
       //   this.pastStyles[i]
       // );
-      Command.store.changeStyle({
-        selected: [this.nodules[i]],
-        panel: this.panel,
-        payload: {
-          ...this.currentStyles[i]
-        }
-      });
+
+      this.nodules[i].updateStyle(this.panel, this.currentStyles[i]);
 
       // console.debug("new", this.currentStyles[i]);
     }
@@ -62,13 +57,7 @@ export class StyleNoduleCommand extends Command {
       //   "with payload",
       //   this.pastStyles[i]
       // );
-      Command.store.changeStyle({
-        selected: [this.nodules[i]],
-        panel: this.panel,
-        payload: {
-          ...this.pastStyles[i]
-        }
-      });
+      this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
     }
   }
 

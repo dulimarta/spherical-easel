@@ -9,8 +9,9 @@ export enum StyleEditPanels {
   Advanced
 }
 
-export interface StyleOptions {
-  // panel?: StyleEditPanels; // TODO: delete the panel field
+
+export type StyleOptions = ShapeStyleOptions & LabelStyleOptions
+export type ShapeStyleOptions = {
   strokeWidthPercent?: number;
   strokeColor?: string; // TODO : replace the type to "Two.Color"
   fillColor?: string;
@@ -22,9 +23,9 @@ export interface StyleOptions {
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
   angleMarkerArrowHeads?: boolean;
-// }
+}
 
-// export type LabelStyleProperty = {
+export type LabelStyleOptions = {
   labelTextStyle?: string;
   labelTextFamily?: string;
   labelTextDecoration?: string;
@@ -36,8 +37,8 @@ export interface StyleOptions {
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   labelDynamicBackStyle?: boolean;
-
 }
+
 export type StylePropertyValue = number | string | boolean | LabelDisplayMode | Array<number>;
 
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {

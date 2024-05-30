@@ -9,15 +9,14 @@
       <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
       <v-tab v-if="hasStyle(/angle/)"><v-icon>mdi-angle-acute</v-icon></v-tab>
     </template>
-    <template #pages>
-      <v-window-item class="pa-2">
-        <!-- FIRST TAB-->
-        <div v-if="editModeIsBack">
+    <template #top>
+      <div v-if="editModeIsBack" class="px-2">
+          <v-switch v-model="automaticBackStyle" :label="t('autoBackStyle')"></v-switch>
           <!-- Enable the Dynamic Back Style Overlay -->
           <!-- Global contrast slider -->
           <v-tooltip location="bottom" max-width="400px">
             <template v-slot:activator="{ props }">
-              <p v-bind="props">
+              <p v-bind="props" v-if="!automaticBackStyle">
                 <span class="text-subtitle-2" style="color: red">
                   {{ t("globalBackStyleContrast") + " " }}
                 </span>
@@ -29,7 +28,7 @@
             </template>
             <span>{{ t("backStyleContrastToolTip") }}</span>
           </v-tooltip>
-          <v-slider
+          <v-slider v-if="!automaticBackStyle"
             v-model="backStyleContrast"
             :min="0"
             :step="0.1"
@@ -38,7 +37,6 @@
               !styleOptions.dynamicBackStyle &&
               hasDisagreement('dynamicBackStyle')
             "
-            @change="setBackStyleContrast"
             density="compact">
             <template v-slot:prepend>
               <!-- <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon> -->
@@ -55,6 +53,10 @@
             </template>
           </v-slider>
         </div>
+    </template>
+    <template #pages>
+      <v-window-item class="pa-2" v-if="!automaticBackStyle">
+        <!-- FIRST TAB-->
         <SimpleColorSelector
           :numSelected="selectedPlottables.size"
           :title="t('strokeColor')"
@@ -70,7 +72,7 @@
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
       </v-window-item>
-      <v-window-item class="pa-2">
+      <v-window-item class="pa-2"  v-if="!automaticBackStyle">
         <!-- SECOND TAB-->
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
@@ -268,7 +270,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import Nodule from "@/plottables/Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels, ShapeStyleOptions } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/style-ui/StylePropertySlider.vue";
@@ -309,6 +311,10 @@ const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
+  // automaticBackState is controlled by user
+  // automaticBackStyle : FALSE means she wants to customize back style
+  // automaticBackStyle : TRUE means the program will customize back style
+const automaticBackStyle = ref(false)
 const dashArray: Ref<number[]> = ref(
   styleOptions.value.dashArray
     ? styleOptions.value.dashArray.slice(0)
@@ -464,7 +470,7 @@ function setStep(angleMarker: boolean): number {
 // *not* using the contrast (i.e. not using the dynamic back styling)
 // usingAutomaticBackStyle = true means the program is setting the style of the back objects
 // private usingAutomaticBackStyle = true;
-function toggleUsingAutomaticBackStyle(opt: StyleOptions): void {
+function toggleUsingAutomaticBackStyle(opt: ShapeStyleOptions): void {
   // console.log(opt);
   if (opt.dynamicBackStyle !== undefined) {
     // console.log(
@@ -498,9 +504,8 @@ const backStyleContrastSelectorThumbStrings = [
   "90%",
   "Same"
 ];
-function setBackStyleContrast(): void {
-  seStore.changeBackContrast(backStyleContrast.value);
-}
+
+watch(() => backStyleContrast.value, (contrast) => {styleStore.changeBackContrast(contrast)})
 
 const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
@@ -625,7 +630,7 @@ function activeDashPattern(opt: StyleOptions): string {
 }
 
 // Every change in the  dash pattern slider is recorded in opt.dashArray *and* in the local dashLength, dashGap
-function updateLocalGapDashVariables(opt: StyleOptions, num: number[]): void {
+function updateLocalGapDashVariables(opt: ShapeStyleOptions, num: number[]): void {
   // sliderDashArray.splice(0);
   // console.log("num array", num[0], num[1]);
   if (opt.dashArray) {
@@ -639,7 +644,7 @@ function updateLocalGapDashVariables(opt: StyleOptions, num: number[]): void {
     // console.log("current dash/gap", dashLength, gapLength);
   }
 }
-function toggleDashPatternReverse(opt: StyleOptions): void {
+function toggleDashPatternReverse(opt: ShapeStyleOptions): void {
   // if (opt.reverseDashArray) {
   //   reverseDashArray = opt.reverseDashArray;
   // }
@@ -657,7 +662,7 @@ function updateInputGroup(inputSelector: string): void {
   });
 }
 
-function toggleDashPatternSliderAvailbility(opt: StyleOptions): void {
+function toggleDashPatternSliderAvailbility(opt: ShapeStyleOptions): void {
   // emptyDashPattern = !emptyDashPattern; //NO NEED FOR THIS BEBCAUSE THE CHECK BOX HAS ALREADY TOGGLED IT!
   if (!emptyDashPattern && opt.dashArray) {
     // console.log(
@@ -687,7 +692,7 @@ function toggleDashPatternSliderAvailbility(opt: StyleOptions): void {
   });
 }
 
-function incrementDashPattern(opt: StyleOptions, angleMarker: boolean): void {
+function incrementDashPattern(opt:ShapeStyleOptions, angleMarker: boolean): void {
   // increases the length of the dash and the gap by a step
   /** gapLength = sliderArray[0] */
   /** dashLength= sliderArray[1] - sliderArray[0] */
@@ -726,7 +731,7 @@ function incrementDashPattern(opt: StyleOptions, angleMarker: boolean): void {
   }
 }
 
-function decrementDashPattern(opt: StyleOptions, angleMarker: boolean): void {
+function decrementDashPattern(opt: ShapeStyleOptions, angleMarker: boolean): void {
   // decreases the length of the dash and the gap by a step
   /** gapLength = sliderArray[0] */
   /** dashLength= sliderArray[1] - sliderArray[0] */
@@ -785,6 +790,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "angleMarkerDoubleArc": "Double Arc",
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
+  "autoBackStyle": "Automatic Back Style",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "dashArrayReverse": "Swap Dash/Gap",
@@ -799,4 +805,3 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "strokeWidthPercent": "Stroke Width (%)"
 }
 </i18n>
-@/composables/StyleEditor
