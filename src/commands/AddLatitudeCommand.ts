@@ -3,7 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SELatitude } from "@/models/SELatitude";
 
 export class AddLatitudeCommand extends Command {
@@ -45,13 +45,13 @@ export class AddLatitudeCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLatitude.ref.currentStyleState(StyleEditPanels.Front)
+            this.seLatitude.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLatitude.ref.currentStyleState(StyleEditPanels.Back)
+            this.seLatitude.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -59,7 +59,7 @@ export class AddLatitudeCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -88,14 +88,14 @@ export class AddLatitudeCommand extends Command {
       // console.debug(`Point front style string ${pointFrontStyleString}`);
       if (pointFrontStyleString !== undefined) {
         seLatitude.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       }
       // console.debug(`Point back style string ${pointBackStyleString}`);
       if (pointBackStyleString !== undefined) {
         seLatitude.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
       }
@@ -109,7 +109,7 @@ export class AddLatitudeCommand extends Command {
       // console.debug(`Point label style string ${labelStyleString}`);
       if (labelStyleString !== undefined) {
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }

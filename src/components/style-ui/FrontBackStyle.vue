@@ -282,7 +282,7 @@ import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import Nodule from "@/plottables/Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   ShapeStyleOptions
 } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
@@ -311,7 +311,7 @@ type ConflictItems = {
 };
 type ComponentProps = {
   showPopup: boolean;
-  panel: StyleEditPanels;
+  panel: StyleCategory;
 };
 const { attrs } = useAttrs();
 const props = defineProps<ComponentProps>();
@@ -557,7 +557,7 @@ onMounted((): void => {
   // EventBus.listen("set-active-style-panel", setActivePanel);
 
   // Enable use automatic back styling only when we are mounted as a BackStyle
-  // usingAutomaticBackStyle = props.panel === StyleEditPanels.Back;
+  // usingAutomaticBackStyle = props.panel === StyleCategory.Back;
 
   // setAnglemarker();
   EventBus.listen(
@@ -598,11 +598,11 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("update-empty-dash-array");
 });
 const editModeIsBack = computed((): boolean => {
-  return props.panel === StyleEditPanels.Back;
+  return props.panel === StyleCategory.Back;
 });
 
 const editModeIsFront = computed((): boolean => {
-  return props.panel === StyleEditPanels.Front;
+  return props.panel === StyleCategory.Front;
 });
 
 const allObjectsShowing = computed((): boolean => {

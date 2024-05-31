@@ -66,7 +66,7 @@
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
-            :panel="StyleEditPanels.Front"></FrontBackStyle>
+            :panel="StyleCategory.Front"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
@@ -83,7 +83,7 @@
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
-            :panel="StyleEditPanels.Back"></FrontBackStyle>
+            :panel="StyleCategory.Back"></FrontBackStyle>
         </v-item>
       </v-item-group>
 
@@ -139,7 +139,7 @@
 </style>
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { useI18n } from "vue-i18n";
 import LabelStyle from "./LabelStyle.vue";
 import FrontBackStyle from "./FrontBackStyle.vue";
@@ -199,13 +199,13 @@ watch(
     else {
       switch (selectedTab) {
         case 0:
-          styleStore.selectActiveGroup(StyleEditPanels.Label);
+          styleStore.selectActiveGroup(StyleCategory.Label);
           break;
         case 1:
-          styleStore.selectActiveGroup(StyleEditPanels.Front);
+          styleStore.selectActiveGroup(StyleCategory.Front);
           break;
         case 2:
-          styleStore.selectActiveGroup(StyleEditPanels.Back);
+          styleStore.selectActiveGroup(StyleCategory.Back);
       }
     }
   }

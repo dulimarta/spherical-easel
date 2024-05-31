@@ -288,7 +288,7 @@ type ConflictItems = {
 };
 type LabelStyleProps = {
   showPopup: boolean;
-  // panel: StyleEditPanels;
+  // panel: StyleCategory;
   // activePanel: number;
   // noduleFilterFunction: () => void,
 };

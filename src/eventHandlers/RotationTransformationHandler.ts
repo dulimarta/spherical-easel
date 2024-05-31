@@ -6,7 +6,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SEMeasurable, SEOneOrTwoDimensional } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -488,7 +488,7 @@ export default class RotationTransformationHandler extends Highlighter {
           rotationCommandGroup.addCommand(
             new StyleNoduleCommand(
               [this.measurementSEParent.label.ref],
-              StyleEditPanels.Label,
+              StyleCategory.Label,
               [
                 {
                   labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo

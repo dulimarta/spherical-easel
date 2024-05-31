@@ -7,7 +7,7 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddAngleMarkerCommand extends Command {
   /**
@@ -91,13 +91,13 @@ export class AddAngleMarkerCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seAngleMarker.ref.currentStyleState(StyleEditPanels.Front)
+            this.seAngleMarker.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seAngleMarker.ref.currentStyleState(StyleEditPanels.Back)
+            this.seAngleMarker.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -105,7 +105,7 @@ export class AddAngleMarkerCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -170,13 +170,13 @@ export class AddAngleMarkerCommand extends Command {
       const angleMarkerFrontStyleString = propMap.get("objectFrontStyle");
       if (angleMarkerFrontStyleString !== undefined)
         seAngleMarker.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(angleMarkerFrontStyleString)
         );
       const angleMarkerBackStyleString = propMap.get("objectBackStyle");
       if (angleMarkerBackStyleString !== undefined)
         seAngleMarker.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(angleMarkerBackStyleString)
         );
 
@@ -188,7 +188,7 @@ export class AddAngleMarkerCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       // Must be done after the SELabel is created and linked

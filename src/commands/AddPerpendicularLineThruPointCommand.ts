@@ -5,7 +5,7 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -60,7 +60,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.sePerpendicularLineThruPoint.ref.currentStyleState(
-              StyleEditPanels.Front
+              StyleCategory.Front
             )
           )
         ),
@@ -68,7 +68,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.sePerpendicularLineThruPoint.ref.currentStyleState(
-              StyleEditPanels.Back
+              StyleCategory.Back
             )
           )
         ),
@@ -77,7 +77,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -156,14 +156,14 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         propMap.get("objectFrontStyle");
       if (perpendicularThruPointLineFrontStyleString !== undefined)
         perpendicularLineThruPointLine.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(perpendicularThruPointLineFrontStyleString)
         );
       const perpendicularThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (perpendicularThruPointLineBackStyleString !== undefined)
         perpendicularLineThruPointLine.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(perpendicularThruPointLineBackStyleString)
         );
 
@@ -176,7 +176,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

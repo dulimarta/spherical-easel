@@ -12,7 +12,7 @@ import {
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 // import { Group } from "two.js/src/group";
@@ -110,10 +110,10 @@ export default class PointCoordinateHandler extends Highlighter {
         coordinatizeCommandGroup.addCommand(
           new StyleNoduleCommand(
             [this.targetPoint.label.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
-                // panel: StyleEditPanels.Front,
+                // panel: StyleCategory.Front,
                 // labelVisibility: true,
                 labelDisplayMode:
                   SETTINGS.point.readingCoordinatesChangesLabelModeTo
@@ -121,7 +121,7 @@ export default class PointCoordinateHandler extends Highlighter {
             ],
             [
               {
-                // panel: StyleEditPanels.Front,
+                // panel: StyleCategory.Front,
                 // labelVisibility: this.targetPoint.label!.showing,
                 labelDisplayMode: this.targetPoint.label.ref.labelDisplayMode
               }

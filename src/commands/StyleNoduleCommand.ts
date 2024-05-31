@@ -1,16 +1,16 @@
 import { Command } from "./Command";
 import Nodule from "@/plottables/Nodule";
-import { StyleOptions, StyleEditPanels } from "../types/Styles";
+import { StyleOptions, StyleCategory } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
   private nodules: Nodule[] = [];
-  private panel: StyleEditPanels;
+  private panel: StyleCategory;
   private currentStyles: StyleOptions[] = [];
   private pastStyles: StyleOptions[] = [];
 
   constructor(
     nodules: Nodule[],
-    panel: StyleEditPanels,
+    panel: StyleCategory,
     currentStyles: StyleOptions[],
     pastStyles: StyleOptions[]
   ) {

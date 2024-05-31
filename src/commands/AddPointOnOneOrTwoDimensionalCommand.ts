@@ -5,7 +5,7 @@ import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
@@ -84,7 +84,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.sePointOnOneOrTwoDimensional.ref.currentStyleState(
-              StyleEditPanels.Front
+              StyleCategory.Front
             )
           )
         ),
@@ -92,7 +92,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.sePointOnOneOrTwoDimensional.ref.currentStyleState(
-              StyleEditPanels.Back
+              StyleCategory.Back
             )
           )
         ),
@@ -101,7 +101,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -147,14 +147,14 @@ export class AddPointOnOneDimensionalCommand extends Command {
         propMap.get("objectFrontStyle");
       if (pointOnOneOrTwoDimensionalFrontStyleString !== undefined)
         sePointOnOneOrTwoDimensional.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointOnOneOrTwoDimensionalFrontStyleString)
         );
       const pointOnOneOrTwoDimensionalBackStyleString =
         propMap.get("objectBackStyle");
       if (pointOnOneOrTwoDimensionalBackStyleString !== undefined)
         sePointOnOneOrTwoDimensional.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointOnOneOrTwoDimensionalBackStyleString)
         );
 
@@ -167,7 +167,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

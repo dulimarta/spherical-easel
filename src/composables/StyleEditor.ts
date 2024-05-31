@@ -1,6 +1,6 @@
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
@@ -22,7 +22,7 @@ type StyleOptionDiff = {
   newValue: string | number | Array<number> | undefined;
 };
 export function useStyleEditor(
-  panel: StyleEditPanels,
+  panel: StyleCategory,
   noduleFilterFunction: (n: SENodule) => boolean,
   noduleMapFunction: (n: SENodule) => Nodule,
 
@@ -60,7 +60,7 @@ export function useStyleEditor(
 
   // get enableBackStyleEdit(): boolean {
   //   // Must be in Back panel
-  //   if (this.panel !== StyleEditPanels.Back) {
+  //   if (this.panel !== StyleCategory.Back) {
   //     console.debug(
   //       "Enable Back Style Edit? No, becasue the user is NOT editing Back panel"
   //     );
@@ -110,7 +110,7 @@ export function useStyleEditor(
   onMounted((): void => {
     // console.debug(
     //   "From StyleEditor::mounted. Panel is",
-    //   StyleEditPanels[this.panel]
+    //   StyleCategory[this.panel]
     // );
     EventBus.listen("style-data-clear", undo);
     EventBus.listen("style-data-to-default", restoreDefault);
@@ -140,7 +140,7 @@ export function useStyleEditor(
       });
     }
   }
-  function undo(ev: { selector: string; panel: StyleEditPanels }): void {
+  function undo(ev: { selector: string; panel: StyleCategory }): void {
     const styleData = initialStyleStatesMap.value.get(panel);
     if (styleData) {
       const listOfProps = ev.selector.split(",");
@@ -148,7 +148,7 @@ export function useStyleEditor(
         // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
         listOfProps.push("labelDynamicBackStyle");
       }
-      if (ev.panel !== undefined && ev.panel === StyleEditPanels.Back) {
+      if (ev.panel !== undefined && ev.panel === StyleCategory.Back) {
         // if the user restores the something from the back panel also restore the automaticBackStyling
         listOfProps.push("dynamicBackStyle");
       }
@@ -160,7 +160,7 @@ export function useStyleEditor(
   }
   function restoreDefault(ev: {
     selector: string;
-    panel: StyleEditPanels;
+    panel: StyleCategory;
   }): void {
     // console.log("ev selector", ev.selector);
     const styleData = defaultStyleStatesMap.value.get(panel);
@@ -170,7 +170,7 @@ export function useStyleEditor(
         // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
         listOfProps.push("labelDynamicBackStyle");
       }
-      if (ev.panel === StyleEditPanels.Back) {
+      if (ev.panel === StyleCategory.Back) {
         // if the user restores the something from the back panel also restore the automaticBackStyling
         listOfProps.push("dynamicBackStyle");
       }
@@ -185,7 +185,7 @@ export function useStyleEditor(
   watch(
     () => automaticBackStyle,
     (newVal: boolean): void => {
-      if (panel === StyleEditPanels.Back) {
+      if (panel === StyleCategory.Back) {
         propDynamicBackStyleCommonValue.value = newVal;
       }
     }
@@ -460,7 +460,7 @@ export function useStyleEditor(
     /* If multiple objects are selected do not update the label text */
     // if (filteredNodules.value.length > 1) delete updatePayload.labelDisplayText;
 
-    // if (this.panel == StyleEditPanels.Back) {
+    // if (this.panel == StyleCategory.Back) {
     //   // if (!this.automaticBackStyle)
     //   //   updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
     //   console.debug(
@@ -508,7 +508,7 @@ export function useStyleEditor(
     EventBus.fire("style-update-conflicting-props", {
       propNames: newConflictProps
     });
-    if (panel === StyleEditPanels.Back)
+    if (panel === StyleCategory.Back)
       propDynamicBackStyleCommonValue.value = true;
   }
 

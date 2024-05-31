@@ -4,7 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 export class AddAntipodalPointCommand extends Command {
@@ -59,13 +59,13 @@ export class AddAntipodalPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seAntipodalPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seAntipodalPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seAntipodalPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seAntipodalPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -73,7 +73,7 @@ export class AddAntipodalPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -110,13 +110,13 @@ export class AddAntipodalPointCommand extends Command {
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
         sePoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
         sePoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -128,7 +128,7 @@ export class AddAntipodalPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

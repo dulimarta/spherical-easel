@@ -5,7 +5,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_ANGLE_MARKER_FRONT_STYLE,
   DEFAULT_ANGLE_MARKER_BACK_STYLE
 } from "@/types/Styles";
@@ -620,11 +620,11 @@ export default class AngleMarker extends Nodule {
     this.backFill2.visible = true;
 
     this.styleOptions.set(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
       DEFAULT_ANGLE_MARKER_FRONT_STYLE
     );
     this.styleOptions.set(
-      StyleEditPanels.Back,
+      StyleCategory.Back,
       DEFAULT_ANGLE_MARKER_BACK_STYLE
     );
   }
@@ -752,7 +752,7 @@ export default class AngleMarker extends Nodule {
     //   Math.tan(AngleMarker.currentAngleMarkerArrowHeadLength + miterLength),
     //   Math.sin(this._angleMarkerRadius)
     // );
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
     let angularLengthOfMarkerDraw: number;
     if (
       angularLengthOfMarker > 2 * rearDeltaAngle &&
@@ -2252,7 +2252,7 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathTail.visible = true;
     this.glowingFrontStraightStart.visible = true;
     this.glowingFrontStraightEnd.visible = true;
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
     if (
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
@@ -2294,9 +2294,9 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = true;
     this.glowingBackStraightEnd.visible = true;
 
-    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleCategory.Back);
     // Double arc display on the back side is the same as the display on the front.
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
     if (
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
@@ -2343,7 +2343,7 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathTail.visible = false;
     this.glowingFrontStraightStart.visible = false;
     this.glowingFrontStraightEnd.visible = false;
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
     if (
       frontStyle?.angleMarkerDoubleArc &&
       frontStyle.angleMarkerDoubleArc === true
@@ -2384,9 +2384,9 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    //const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    //const backStyle = this.styleOptions.get(StyleCategory.Back);
     // Double arc display on the back side is the same as the display on the front.
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
     if (
       frontStyle?.angleMarkerDoubleArc &&
@@ -3073,7 +3073,7 @@ export default class AngleMarker extends Nodule {
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+  updateStyle(mode: StyleCategory, options: StyleOptions): void {
     // console.debug("Update style of Angle Marker using", options);
     super.updateStyle(mode, options);
     this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
@@ -3081,11 +3081,11 @@ export default class AngleMarker extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_ANGLE_MARKER_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.angleMarker.dynamicBackStyle) {
           return {
             ...DEFAULT_ANGLE_MARKER_BACK_STYLE,
@@ -3107,8 +3107,8 @@ export default class AngleMarker extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontCirclePathStart.linewidth =
@@ -3486,7 +3486,7 @@ export default class AngleMarker extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
@@ -3564,7 +3564,7 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathDoubleArcTail.dashes.push(0);
         }
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
             Nodule.hslaIsNoFillOrNoStroke(

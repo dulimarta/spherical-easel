@@ -6,7 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddPolygonCommand extends Command {
   /**
@@ -80,13 +80,13 @@ export class AddPolygonCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePolygon.ref.currentStyleState(StyleEditPanels.Front)
+            this.sePolygon.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePolygon.ref.currentStyleState(StyleEditPanels.Back)
+            this.sePolygon.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -94,7 +94,7 @@ export class AddPolygonCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -186,13 +186,13 @@ export class AddPolygonCommand extends Command {
       const polygonFrontStyleString = propMap.get("objectFrontStyle");
       if (polygonFrontStyleString !== undefined)
         sePolygon.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(polygonFrontStyleString)
         );
       const polygonBackStyleString = propMap.get("objectBackStyle");
       if (polygonBackStyleString !== undefined)
         sePolygon.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(polygonBackStyleString)
         );
 
@@ -205,7 +205,7 @@ export class AddPolygonCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       // Must be done after the SELabel is created and linked

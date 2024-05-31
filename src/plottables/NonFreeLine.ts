@@ -2,7 +2,7 @@ import SETTINGS from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_NONFREE_LINE_FRONT_STYLE,
   DEFAULT_NONFREE_LINE_BACK_STYLE
 } from "@/types/Styles";
@@ -21,11 +21,11 @@ export default class NonFreeLine extends Line {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
     this.styleOptions.set(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
       DEFAULT_NONFREE_LINE_FRONT_STYLE
     );
     this.styleOptions.set(
-      StyleEditPanels.Back,
+      StyleCategory.Back,
       DEFAULT_NONFREE_LINE_BACK_STYLE
     );
   }
@@ -33,12 +33,12 @@ export default class NonFreeLine extends Line {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_NONFREE_LINE_FRONT_STYLE;
 
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.line.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_LINE_BACK_STYLE,
@@ -60,8 +60,8 @@ export default class NonFreeLine extends Line {
    */
   adjustSize(): void {
     //console.debug("Non free line");
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =

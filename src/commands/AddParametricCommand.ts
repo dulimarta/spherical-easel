@@ -10,7 +10,7 @@ import {
   MinMaxNumber,
   SavedNames
 } from "@/types";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddParametricCommand extends Command {
   private seParametric: SEParametric;
@@ -61,13 +61,13 @@ export class AddParametricCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref?.currentStyleState(StyleEditPanels.Front)
+            this.seParametric.ref?.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seParametric.ref?.currentStyleState(StyleEditPanels.Back)
+            this.seParametric.ref?.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -75,7 +75,7 @@ export class AddParametricCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -222,13 +222,13 @@ export class AddParametricCommand extends Command {
       // const parametricFrontStyleString = propMap.get("objectFrontStyle");
       // if (parametricFrontStyleString !== undefined)
       //   parametric.updateStyle(
-      //     StyleEditPanels.Front,
+      //     StyleCategory.Front,
       //     JSON.parse(parametricFrontStyleString)
       //   );
       // const parametricBackStyleString = propMap.get("objectBackStyle");
       // if (parametricBackStyleString !== undefined)
       //   parametric.updateStyle(
-      //     StyleEditPanels.Back,
+      //     StyleCategory.Back,
       //     JSON.parse(parametricBackStyleString)
       //   );
 
@@ -241,7 +241,7 @@ export class AddParametricCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

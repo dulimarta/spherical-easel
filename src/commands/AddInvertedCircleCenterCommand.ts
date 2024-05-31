@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
@@ -87,7 +87,7 @@ export class AddInvertedCircleCenterCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.invertedSECircleCenter.ref.currentStyleState(
-              StyleEditPanels.Front
+              StyleCategory.Front
             )
           )
         ),
@@ -95,7 +95,7 @@ export class AddInvertedCircleCenterCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.invertedSECircleCenter.ref.currentStyleState(
-              StyleEditPanels.Back
+              StyleCategory.Back
             )
           )
         ),
@@ -106,7 +106,7 @@ export class AddInvertedCircleCenterCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.invertedSECircleCenterLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -150,13 +150,13 @@ export class AddInvertedCircleCenterCommand extends Command {
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
         inversionSECircleCenterPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
         inversionSECircleCenterPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -172,7 +172,7 @@ export class AddInvertedCircleCenterCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         inversionSECircleCenterLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

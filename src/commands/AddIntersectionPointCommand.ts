@@ -4,7 +4,7 @@ import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
   private principleParent1: SEOneDimensional;
@@ -75,14 +75,14 @@ export class AddIntersectionPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.seIntersectionPoint.ref.currentStyleState(
-              StyleEditPanels.Front
+              StyleCategory.Front
             )
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seIntersectionPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seIntersectionPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -90,7 +90,7 @@ export class AddIntersectionPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -181,13 +181,13 @@ export class AddIntersectionPointCommand extends Command {
       const intersectionPointFrontStyleString = propMap.get("objectFrontStyle");
       if (intersectionPointFrontStyleString !== undefined)
         seIntersectionPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(intersectionPointFrontStyleString)
         );
       const intersectionPointBackStyleString = propMap.get("objectBackStyle");
       if (intersectionPointBackStyleString !== undefined)
         seIntersectionPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(intersectionPointBackStyleString)
         );
 
@@ -201,7 +201,7 @@ export class AddIntersectionPointCommand extends Command {
 
       if (labelStyleString !== undefined) {
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }

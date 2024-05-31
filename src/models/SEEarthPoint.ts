@@ -1,6 +1,6 @@
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 export class SEEarthPoint extends SEPoint {
   private _longitude: number; // DEGREES
   private _latitude: number; // DEGREES
@@ -12,7 +12,7 @@ export class SEEarthPoint extends SEPoint {
     this._longitude = longitudeDegrees;
     this._latitude = latitudeDegrees;
     // style the earth point
-    this.ref.updateStyle(StyleEditPanels.Front, {
+    this.ref.updateStyle(StyleCategory.Front, {
       fillColor: "hsla(200, 80%, 50%, 1)",
       strokeColor: "hsla(0, 0%, 0%, 1)"
     })

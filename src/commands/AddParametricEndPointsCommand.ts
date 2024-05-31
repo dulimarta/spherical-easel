@@ -7,7 +7,7 @@ import { Vector3 } from "three";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddParametricEndPointsCommand extends Command {
   private seStartEndPoint: SEParametricEndPoint;
@@ -179,13 +179,13 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartEndPointFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seStartEndPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seStartEndPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "parametricEndPointseStartEndPointBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seStartEndPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seStartEndPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
 
@@ -199,13 +199,13 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndEndPointFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seEndEndPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seEndEndPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "parametricEndPointseEndEndPointBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seEndEndPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seEndEndPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
 
@@ -219,13 +219,13 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTracePointFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTracePoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seTracePoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "parametricEndPointseTracePointBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTracePoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seTracePoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
 
@@ -239,7 +239,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseStartLabelLabelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seStartLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seStartLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
 
@@ -253,7 +253,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseEndLabelLabelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seEndLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seEndLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
 
@@ -267,7 +267,7 @@ export class AddParametricEndPointsCommand extends Command {
       "parametricEndPointseTraceLabelLabelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTraceLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seTraceLabel.ref.currentStyleState(StyleCategory.Label)
           )
         )
     ].join("&");
@@ -305,7 +305,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointFrontStyleString !== undefined)
         seStartEndPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       let pointBackStyleString = propMap.get(
@@ -313,7 +313,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointBackStyleString !== undefined)
         seStartEndPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -329,7 +329,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (labelStyleString !== undefined) {
         seStartEndPointLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }
@@ -380,7 +380,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointFrontStyleString !== undefined)
         seEndEndPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       pointBackStyleString = propMap.get(
@@ -388,7 +388,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointBackStyleString !== undefined)
         seEndEndPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -402,7 +402,7 @@ export class AddParametricEndPointsCommand extends Command {
       labelStyleString = propMap.get("parametricEndPointseEndLabelLabelStyle");
       if (labelStyleString !== undefined) {
         seEndEndPointLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }
@@ -450,7 +450,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointFrontStyleString !== undefined)
         seTracePoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       pointBackStyleString = propMap.get(
@@ -458,7 +458,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (pointBackStyleString !== undefined)
         seTracePoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -474,7 +474,7 @@ export class AddParametricEndPointsCommand extends Command {
       );
       if (labelStyleString !== undefined) {
         seTracePointLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }

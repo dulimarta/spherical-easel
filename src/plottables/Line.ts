@@ -3,7 +3,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
@@ -153,8 +153,8 @@ export default class Line extends Nodule {
       this.points.push(new Vector3(px, py, 0));
     }
 
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LINE_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LINE_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_LINE_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_LINE_BACK_STYLE);
   }
 
   frontGlowingDisplay(): void {
@@ -343,11 +343,11 @@ export default class Line extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_LINE_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.line.dynamicBackStyle)
           return {
             ...DEFAULT_LINE_BACK_STYLE,
@@ -365,8 +365,8 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =
@@ -457,7 +457,7 @@ export default class Line extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // Front
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontHalf.noStroke();
@@ -483,7 +483,7 @@ export default class Line extends Nodule {
         }
 
         // Back
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (

@@ -10,7 +10,7 @@ import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SEPoint } from "./SEPoint";
@@ -123,7 +123,7 @@ export abstract class SENodule implements Visitable {
   public abstract shallowUpdate(): void;
 
   public updatePlottableStyle(
-    updateMode: StyleEditPanels,
+    updateMode: StyleCategory,
     styleData: StyleOptions
   ): void {
     // TODO: Why do we have to pass the Label, Front, and Back here?

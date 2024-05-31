@@ -7,7 +7,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
@@ -104,7 +104,7 @@ export default class SegmentLengthHandler extends Highlighter {
         segmentCommandGroup.addCommand(
           new StyleNoduleCommand(
             [targetSegment.label.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
                 labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo

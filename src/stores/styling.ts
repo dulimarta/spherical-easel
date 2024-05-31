@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useSEStore } from "./se";
 import { computed, ref, watch, Ref } from "vue";
 import {
-  StyleEditPanels,
+  StyleCategory,
   StyleOptions,
   StylePropertyValue
 } from "@/types/Styles";
@@ -94,7 +94,7 @@ export const useStylingStore = defineStore("style", () => {
   let preUpdateStyleOptions: StyleOptions = {}; //
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
-  let activeStyleGroup: StyleEditPanels | null = null;
+  let activeStyleGroup: StyleCategory | null = null;
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
@@ -156,7 +156,7 @@ export const useStylingStore = defineStore("style", () => {
       // plottableStyleOptions.value = {}
       stylePropertyMap.clear();
       selectedLabels.value.forEach(x => {
-        const props = x.currentStyleState(StyleEditPanels.Label);
+        const props = x.currentStyleState(StyleCategory.Label);
         Object.getOwnPropertyNames(props)
           .filter((p: string) => {
             // remove property names which may have been inserted by Vue/browser
@@ -176,7 +176,7 @@ export const useStylingStore = defineStore("style", () => {
       });
 
       selectedPlottables.value.forEach(plot => {
-        const props = plot.currentStyleState(StyleEditPanels.Front);
+        const props = plot.currentStyleState(StyleCategory.Front);
         Object.getOwnPropertyNames(props).forEach(prop => {
           const recordedPropValue = stylePropertyMap.get(prop);
           const thisPropValue = (props as any)[prop];
@@ -215,10 +215,10 @@ export const useStylingStore = defineStore("style", () => {
       });
       if (propChanged) {
         selectedLabels.value.forEach(label => {
-          label.updateStyle(StyleEditPanels.Label, postUpdateStyleOptions);
+          label.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
         });
         selectedPlottables.value.forEach(plot => {
-          plot.updateStyle(StyleEditPanels.Front, postUpdateStyleOptions);
+          plot.updateStyle(StyleCategory.Front, postUpdateStyleOptions);
           // any property which may depends on Zoom factor, must also be updated
           // by calling adjustSize()
           plot.adjustSize();
@@ -231,7 +231,7 @@ export const useStylingStore = defineStore("style", () => {
     }
   );
 
-  function selectActiveGroup(g: StyleEditPanels) {
+  function selectActiveGroup(g: StyleCategory) {
     activeStyleGroup = g;
   }
   function deselectActiveGroup() {
@@ -277,8 +277,8 @@ export const useStylingStore = defineStore("style", () => {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (
-      (activeStyleGroup === StyleEditPanels.Front ||
-        activeStyleGroup === StyleEditPanels.Back) &&
+      (activeStyleGroup === StyleCategory.Front ||
+        activeStyleGroup === StyleCategory.Back) &&
       backStyleContrastCopy !== Nodule.getBackStyleContrast()
     ) {
       const contrastCommand = new ChangeBackStyleContrastCommand(
@@ -292,7 +292,7 @@ export const useStylingStore = defineStore("style", () => {
 
     if (postUpdateKeys.length > 0 && activeStyleGroup !== null) {
       const updateTargets =
-        activeStyleGroup === StyleEditPanels.Label
+        activeStyleGroup === StyleCategory.Label
           ? selectedLabels.value.values()
           : selectedPlottables.value.values();
       const styleCommand = new StyleNoduleCommand(

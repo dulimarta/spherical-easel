@@ -21,7 +21,7 @@ import {
   plottableType,
   SEIntersectionReturnType,
 } from "@/types";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
   intersectCircleWithEllipse,
@@ -62,7 +62,7 @@ type PiniaAppState = {
   canvasHeight: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   inverseTotalRotationMatrix: Matrix4;
-  styleSavedFromPanel: StyleEditPanels;
+  styleSavedFromPanel: StyleCategory;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
   seSegmentIds: Array<number>;
@@ -99,8 +99,8 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 // const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
-const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
-const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
+const initialStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
+const defaultStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
 
 function removeElements(
   removeItems: Array<ActionMode>,
@@ -411,7 +411,7 @@ export const useSEStore = defineStore({
     sePolygonIds: [],
     seTransformationIds: [],
     oldSelectedSENoduleIDs: [],
-    styleSavedFromPanel: StyleEditPanels.Label,
+    styleSavedFromPanel: StyleCategory.Label,
     selectedSENoduleIds: [],
     disabledTools: [],
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -1018,7 +1018,7 @@ export const useSEStore = defineStore({
       });
     },
     // recordStyleState(data: {
-    //   panel: StyleEditPanels;
+    //   panel: StyleCategory;
     //   selected: Array<Nodule>;
     // }): void {
     //   console.debug("About to record style", data.selected.length, "objects");
@@ -1027,7 +1027,7 @@ export const useSEStore = defineStore({
     //   );
     //   console.debug(
     //     "SEStore recording style of selected objects in",
-    //     StyleEditPanels[data.panel],
+    //     StyleCategory[data.panel],
     //     "with",
     //     current
     //   );
@@ -1276,9 +1276,9 @@ export const useSEStore = defineStore({
       state.selectedSENoduleIds.map(id => oldSelectedSENodules.get(id)!),
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     layers: (): Two.Group[] => layers,
-    initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
+    initialStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
       initialStyleStatesMap,
-    defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
+    defaultStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
       defaultStyleStatesMap,
     hasObjects(state): boolean {
       return (

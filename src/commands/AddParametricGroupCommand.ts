@@ -9,7 +9,7 @@ import { SEParametricGroup } from "@/models/SEParametricGroup";
 //   MinMaxNumber,
 //   SavedNames
 // } from "@/types";
-// import { StyleEditPanels } from "@/types/Styles";
+// import { StyleCategory } from "@/types/Styles";
 // import { CommandGroup } from "./CommandGroup";
 
 export class AddParametricGroupCommand extends Command {

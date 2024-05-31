@@ -3,7 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
@@ -76,13 +76,13 @@ export class AddTransformedPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.transformedSEPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.transformedSEPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.transformedSEPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.transformedSEPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -92,7 +92,7 @@ export class AddTransformedPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.transformedSEPointLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -137,13 +137,13 @@ export class AddTransformedPointCommand extends Command {
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
         transformedSEPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get("objectBackStyle");
       if (pointBackStyleString !== undefined)
         transformedSEPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -156,7 +156,7 @@ export class AddTransformedPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         transformedSEPointLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

@@ -2,7 +2,7 @@ import { SETTINGS } from "@/global-settings";
 // We move the declaration of LabelDisplayMode from this file
 // to @/types/index.ts to solve the circular dependency issue
 import { LabelDisplayMode } from "@/types";
-export enum StyleEditPanels {
+export enum StyleCategory {
   Label,
   Front,
   Back,

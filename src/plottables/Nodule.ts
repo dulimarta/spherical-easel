@@ -1,7 +1,7 @@
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { StyleOptions, StyleCategory } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
@@ -45,7 +45,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     plottableProperties
   >();
 
-  protected styleOptions: Map<StyleEditPanels, StyleOptions> = new Map();
+  protected styleOptions: Map<StyleCategory, StyleOptions> = new Map();
   /**
    * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
    * when resetting/loading.
@@ -75,7 +75,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract setSelectedColoring(flag: boolean): void;
 
   /** Get the default style state of the Nodule */
-  abstract defaultStyleState(mode: StyleEditPanels): StyleOptions;
+  abstract defaultStyleState(mode: StyleCategory): StyleOptions;
 
   /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;
@@ -191,7 +191,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
 
   /** Get the current style state of the Nodule */
-  currentStyleState(mode: StyleEditPanels): StyleOptions {
+  currentStyleState(mode: StyleCategory): StyleOptions {
     return this.styleOptions.get(mode) ?? {};
   }
   /**
@@ -199,7 +199,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+  updateStyle(mode: StyleCategory, options: StyleOptions): void {
     // console.debug("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
     // console.log(

@@ -1,7 +1,7 @@
 import { SENodule } from "./SENodule";
 import { SEPoint, SECircle } from "./internal";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import i18n from "@/i18n";
 import { geoLocationToUnitSphere } from "@/composables/earth";
 
@@ -68,7 +68,7 @@ export class SELatitude extends SECircle {
     this._latitude = latitude;
     //turn off the fill of the ref circle
     this.ref.updateStyle(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
        {
         strokeColor: "hsla(0, 0%, 0%, 1)",
         fillColor: "hsla(0, 0%, 0%, 0)"

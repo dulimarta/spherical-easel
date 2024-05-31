@@ -5,7 +5,7 @@ import SETTINGS from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_NONFREEPOINT_FRONT_STYLE,
   DEFAULT_NONFREEPOINT_BACK_STYLE
 } from "@/types/Styles";
@@ -29,11 +29,11 @@ export default class NonFreePoint extends Point {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
     this.styleOptions.set(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
       DEFAULT_NONFREEPOINT_FRONT_STYLE
     );
     this.styleOptions.set(
-      StyleEditPanels.Back,
+      StyleCategory.Back,
       DEFAULT_NONFREEPOINT_BACK_STYLE
     );
   }
@@ -41,11 +41,11 @@ export default class NonFreePoint extends Point {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_NONFREEPOINT_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.point.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREEPOINT_BACK_STYLE,
@@ -69,8 +69,8 @@ export default class NonFreePoint extends Point {
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const radiusPercentFront = frontStyle?.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
     this.frontPoint.scale =

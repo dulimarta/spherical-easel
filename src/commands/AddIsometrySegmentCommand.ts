@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
@@ -59,13 +59,13 @@ export class AddIsometrySegmentCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySESegment.ref.currentStyleState(StyleEditPanels.Front)
+            this.isometrySESegment.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySESegment.ref.currentStyleState(StyleEditPanels.Back)
+            this.isometrySESegment.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -74,7 +74,7 @@ export class AddIsometrySegmentCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.isometrySESegmentLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -143,13 +143,13 @@ export class AddIsometrySegmentCommand extends Command {
       const segmentFrontStyleString = propMap.get("objectFrontStyle");
       if (segmentFrontStyleString !== undefined)
         isometrySESegment.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(segmentFrontStyleString)
         );
       const segmentBackStyleString = propMap.get("objectBackStyle");
       if (segmentBackStyleString !== undefined)
         isometrySESegment.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(segmentBackStyleString)
         );
 
@@ -162,7 +162,7 @@ export class AddIsometrySegmentCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         isometrySESegmentLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

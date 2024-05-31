@@ -4,7 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
@@ -59,13 +59,13 @@ export class AddMeasuredCircleCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seCircle.ref.currentStyleState(StyleEditPanels.Front)
+            this.seCircle.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seCircle.ref.currentStyleState(StyleEditPanels.Back)
+            this.seCircle.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -73,7 +73,7 @@ export class AddMeasuredCircleCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -146,13 +146,13 @@ export class AddMeasuredCircleCommand extends Command {
       const circleFrontStyleString = propMap.get("objectFrontStyle");
       if (circleFrontStyleString !== undefined)
         seCircle.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(circleFrontStyleString)
         );
       const circleBackStyleString = propMap.get("objectBackStyle");
       if (circleBackStyleString !== undefined)
         seCircle.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(circleBackStyleString)
         );
 
@@ -165,7 +165,7 @@ export class AddMeasuredCircleCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 
