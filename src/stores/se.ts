@@ -1017,27 +1017,27 @@ export const useSEStore = defineStore({
         oldSelectedSENodules.set(seNodule.id, seNodule);
       });
     },
-    recordStyleState(data: {
-      panel: StyleEditPanels;
-      selected: Array<Nodule>;
-    }): void {
-      console.debug("About to record style", data.selected.length, "objects");
-      const current = data.selected.map((n: Nodule) =>
-        n.currentStyleState(data.panel)
-      );
-      console.debug(
-        "SEStore recording style of selected objects in",
-        StyleEditPanels[data.panel],
-        "with",
-        current
-      );
-      initialStyleStatesMap.set(data.panel, current);
-      defaultStyleStatesMap.set(
-        data.panel,
-        data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
-      );
-      // this.initialBackStyleContrast = data.backContrast;
-    },
+    // recordStyleState(data: {
+    //   panel: StyleEditPanels;
+    //   selected: Array<Nodule>;
+    // }): void {
+    //   console.debug("About to record style", data.selected.length, "objects");
+    //   const current = data.selected.map((n: Nodule) =>
+    //     n.currentStyleState(data.panel)
+    //   );
+    //   console.debug(
+    //     "SEStore recording style of selected objects in",
+    //     StyleEditPanels[data.panel],
+    //     "with",
+    //     current
+    //   );
+    //   initialStyleStatesMap.set(data.panel, current);
+    //   defaultStyleStatesMap.set(
+    //     data.panel,
+    //     data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
+    //   );
+    //   // this.initialBackStyleContrast = data.backContrast;
+    // },
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
       seNodules.forEach(p => {

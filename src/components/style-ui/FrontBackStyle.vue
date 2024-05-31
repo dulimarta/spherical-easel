@@ -11,24 +11,29 @@
     </template>
     <template #top>
       <div v-if="editModeIsBack" class="px-2">
-          <v-switch v-model="automaticBackStyle" :label="t('autoBackStyle')"></v-switch>
-          <!-- Enable the Dynamic Back Style Overlay -->
+        <!-- Enable the Dynamic Back Style Overlay -->
+        <v-switch
+          v-model="automaticBackStyle"
+          color="secondary"
+          :label="t('autoBackStyle')"></v-switch>
+        <template v-if="automaticBackStyle">
           <!-- Global contrast slider -->
-          <v-tooltip location="bottom" max-width="400px">
-            <template v-slot:activator="{ props }">
-              <p v-bind="props" v-if="!automaticBackStyle">
-                <span class="text-subtitle-2" style="color: red">
-                  {{ t("globalBackStyleContrast") + " " }}
-                </span>
-                <span class="text-subtitle-2">
-                  {{ t("backStyleContrast") }}
-                  {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
-                </span>
-              </p>
-            </template>
+          <v-tooltip
+            location="bottom"
+            max-width="400px"
+            activator="#global-contrast"
+            text="Here we go!">
             <span>{{ t("backStyleContrastToolTip") }}</span>
           </v-tooltip>
-          <v-slider v-if="!automaticBackStyle"
+          <p id="global-contrast">
+            <span class="text-subtitle-2" style="color: red">
+              {{ t("globalBackStyleContrast") + " " }}
+            </span>
+            <span class="text-subtitle-2">
+              {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
+            </span>
+          </p>
+          <v-slider
             v-model="backStyleContrast"
             :min="0"
             :step="0.1"
@@ -52,7 +57,8 @@
               <!-- <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon> -->
             </template>
           </v-slider>
-        </div>
+        </template>
+      </div>
     </template>
     <template #pages>
       <v-window-item class="pa-2" v-if="!automaticBackStyle">
@@ -72,8 +78,9 @@
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
       </v-window-item>
-      <v-window-item class="pa-2"  v-if="!automaticBackStyle">
+      <v-window-item class="pa-2" v-if="!automaticBackStyle">
         <!-- SECOND TAB-->
+        {{ styleOptions.strokeWidthPercent }}
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
@@ -102,17 +109,20 @@
         <div
           v-if="hasStyle('dashArray')"
           :style="{ display: 'flex', flexDirection: 'column' }">
-          <div :style="{
+          <div
+            :style="{
               display: 'flex',
               flexDirection: 'row',
-              alignItems: 'center', justifyContent: 'space-between'
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }">
             <v-tooltip
               location="bottom"
               max-width="400px"
               activator="#use-dash"
               :text="t('dashPatternCheckBoxToolTip')" />
-            <v-switch class="mr-4"
+            <v-switch
+              class="mr-4"
               id="use-dash"
               v-model="useDashPattern"
               density="compact"
@@ -158,10 +168,10 @@
             :color="conflictItems.dashArray ? 'red' : ''"
             density="compact">
             <template #prepend>
-              {{ reverseDashArray ? "Dash" : "Gap"}} {{ dashArray[0] }}
+              {{ reverseDashArray ? "Dash" : "Gap" }} {{ dashArray[0] }}
             </template>
             <template #append>
-              {{ reverseDashArray ? "Gap" : "Dash"}} {{ dashArray[1] }}
+              {{ reverseDashArray ? "Gap" : "Dash" }} {{ dashArray[1] }}
             </template>
             <!--template v-slot:prepend>
             <v-icon
@@ -270,7 +280,11 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import Nodule from "@/plottables/Nodule";
-import { StyleOptions, StyleEditPanels, ShapeStyleOptions } from "@/types/Styles";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  ShapeStyleOptions
+} from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/style-ui/StylePropertySlider.vue";
@@ -311,10 +325,10 @@ const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
-  // automaticBackState is controlled by user
-  // automaticBackStyle : FALSE means she wants to customize back style
-  // automaticBackStyle : TRUE means the program will customize back style
-const automaticBackStyle = ref(false)
+// automaticBackState is controlled by user
+// automaticBackStyle : FALSE means she wants to customize back style
+// automaticBackStyle : TRUE means the program will customize back style
+const automaticBackStyle = ref(false);
 const dashArray: Ref<number[]> = ref(
   styleOptions.value.dashArray
     ? styleOptions.value.dashArray.slice(0)
@@ -505,7 +519,12 @@ const backStyleContrastSelectorThumbStrings = [
   "Same"
 ];
 
-watch(() => backStyleContrast.value, (contrast) => {styleStore.changeBackContrast(contrast)})
+watch(
+  () => backStyleContrast.value,
+  contrast => {
+    styleStore.changeBackContrast(contrast);
+  }
+);
 
 const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
@@ -630,7 +649,10 @@ function activeDashPattern(opt: StyleOptions): string {
 }
 
 // Every change in the  dash pattern slider is recorded in opt.dashArray *and* in the local dashLength, dashGap
-function updateLocalGapDashVariables(opt: ShapeStyleOptions, num: number[]): void {
+function updateLocalGapDashVariables(
+  opt: ShapeStyleOptions,
+  num: number[]
+): void {
   // sliderDashArray.splice(0);
   // console.log("num array", num[0], num[1]);
   if (opt.dashArray) {
@@ -692,7 +714,10 @@ function toggleDashPatternSliderAvailbility(opt: ShapeStyleOptions): void {
   });
 }
 
-function incrementDashPattern(opt:ShapeStyleOptions, angleMarker: boolean): void {
+function incrementDashPattern(
+  opt: ShapeStyleOptions,
+  angleMarker: boolean
+): void {
   // increases the length of the dash and the gap by a step
   /** gapLength = sliderArray[0] */
   /** dashLength= sliderArray[1] - sliderArray[0] */
@@ -731,7 +756,10 @@ function incrementDashPattern(opt:ShapeStyleOptions, angleMarker: boolean): void
   }
 }
 
-function decrementDashPattern(opt: ShapeStyleOptions, angleMarker: boolean): void {
+function decrementDashPattern(
+  opt: ShapeStyleOptions,
+  angleMarker: boolean
+): void {
   // decreases the length of the dash and the gap by a step
   /** gapLength = sliderArray[0] */
   /** dashLength= sliderArray[1] - sliderArray[0] */
@@ -800,8 +828,8 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "fillColor": "Fill Color",
   "globalBackStyleContrast": "Global Back Style Contrast",
   "labelStyleOptionsMultiple": "(Multiple)",
-  "pointRadiusPercent": "Point Radius (%)",
+  "pointRadiusPercent": "Point Radius",
   "strokeColor": "Stroke Color",
-  "strokeWidthPercent": "Stroke Width (%)"
+  "strokeWidthPercent": "Stroke Width"
 }
 </i18n>

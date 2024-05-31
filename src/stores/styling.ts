@@ -8,15 +8,19 @@ import {
 } from "@/types/Styles";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { Command } from "@/commands/Command";
 
 // type ObjectStyle = { [_: string]: StylePropertyValue };
 
 function isArrayEqual(a: Array<any>, b: Array<any>) {
-  if (a.length !== b.length) return false
+  if (a.length !== b.length) return false;
   for (let k = 0; k < a.length; k++) {
-    if (a[k] !== b[k]) return false
+    if (a[k] !== b[k]) return false;
   }
-  return true
+  return true;
 }
 function isPropEqual(
   a: StylePropertyValue | undefined,
@@ -29,7 +33,7 @@ function isPropEqual(
     return Math.abs(a - b) < 1e-5;
   if (typeof b === "string") return a === b;
   if (Array.isArray(a) && Array.isArray(b)) {
-    return isArrayEqual(a,b)
+    return isArrayEqual(a, b);
   }
   console.debug(`isProp does not yet handle`, typeof a);
   return false;
@@ -84,8 +88,13 @@ export const useStylingStore = defineStore("style", () => {
   // The user is required to opt in to override conflicting properties
   const forceAgreement = ref(false);
 
+  /** styleOptions is a copy visible to Vue components */
   const styleOptions = ref<StyleOptions>({});
-  // const plottableStyleOptions = ref<ObjectStyle>({})
+  // The following two vars keep track of before and after style updates
+  let preUpdateStyleOptions: StyleOptions = {}; //
+  let postUpdateStyleOptions: StyleOptions = {};
+  let backStyleContrastCopy: number = NaN;
+  let activeStyleGroup: StyleEditPanels | null = null;
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
@@ -179,6 +188,8 @@ export const useStylingStore = defineStore("style", () => {
           }
         });
       });
+      preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
+      backStyleContrastCopy = Nodule.getBackStyleContrast();
       console.debug("Compiled props", stylePropertyMap);
     },
     { deep: true }
@@ -188,7 +199,7 @@ export const useStylingStore = defineStore("style", () => {
     () => styleOptions.value,
     (opt: StyleOptions) => {
       const newOptions: StyleOptions = { ...opt };
-      let updatedOptions: StyleOptions = {};
+      postUpdateStyleOptions = {};
       let propChanged = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = (newOptions as any)[key];
@@ -197,17 +208,20 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(
           //   `Property ${key} changes from ${oldValue} to ${newValue}`
           // );
-          (updatedOptions as any)[key] = newValue;
-          stylePropertyMap.set(key, newValue)
+          (postUpdateStyleOptions as any)[key] = newValue;
+          stylePropertyMap.set(key, newValue);
           propChanged = true;
         }
       });
       if (propChanged) {
         selectedLabels.value.forEach(label => {
-          label.updateStyle(StyleEditPanels.Label, updatedOptions);
+          label.updateStyle(StyleEditPanels.Label, postUpdateStyleOptions);
         });
         selectedPlottables.value.forEach(plot => {
-          plot.updateStyle(StyleEditPanels.Front, updatedOptions);
+          plot.updateStyle(StyleEditPanels.Front, postUpdateStyleOptions);
+          // any property which may depends on Zoom factor, must also be updated
+          // by calling adjustSize()
+          plot.adjustSize();
         });
       }
     },
@@ -216,6 +230,13 @@ export const useStylingStore = defineStore("style", () => {
       immediate: true
     }
   );
+
+  function selectActiveGroup(g: StyleEditPanels) {
+    activeStyleGroup = g;
+  }
+  function deselectActiveGroup() {
+    activeStyleGroup = null;
+  }
 
   function toggleLabelsShowing() {
     selectedSENodules.value.forEach(n => {
@@ -229,54 +250,61 @@ export const useStylingStore = defineStore("style", () => {
   function hasDisagreement(prop: string) {
     return conflictingProperties.value.has(prop) && !forceAgreement.value;
   }
+
   function hasStyle(prop: string | RegExp): boolean {
     if (typeof prop === "string") {
       return Array.from(stylePropertyMap.keys()).some(x => {
         // console.debug(`Has style ${prop} <=> ${x}?`);
         return x === prop;
       });
-    } else return Array.from(stylePropertyMap.keys()).some(x => x.match(prop))
+    } else return Array.from(stylePropertyMap.keys()).some(x => x.match(prop));
   }
 
-  // function changeStyle({
-  //   selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
-  //   panel,
-  //   payload
-  // }: {
-  //   selected: Nodule[];
-  //   panel: StyleEditPanels;
-  //   payload: StyleOptions;
-  // }): void {
-  //   // Important: object destructuring below seems to solve the issue
-  //   // of merging undefined properties in updateStyle()
-  //   const opt: StyleOptions = { ...payload };
-  //   // if (
-  //   //   payload.backStyleContrast &&
-  //   //   payload.backStyleContrast != Nodule.getBackStyleContrast()
-  //   // ) {
-  //   //   // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
-  //   //   Nodule.setBackStyleContrast(payload.backStyleContrast);
-  //   //   console.debug("Changing Global backstyle contrast");
-  //   //   this.this.seNodules.forEach((n: SENodule) => {
-  //   //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-  //   //   });
-  //   // }
-  //   selected.forEach((n: Nodule) => {
-  //     // console.log("node", n, opt);
-  //     n.updateStyle(panel, opt);
-  //   });
-  // }
   function changeBackContrast(newContrast: number): void {
     Nodule.setBackStyleContrast(newContrast);
     // update all objects display
-    selectedPlottables.value.forEach((p) => {
-      p.stylize(DisplayStyle.ApplyCurrentVariables)
-    })
+    selectedPlottables.value.forEach(p => {
+      p.stylize(DisplayStyle.ApplyCurrentVariables);
+    });
     // this.seNodules.forEach(seNodule => {
     //   // update the style of the objects
     //   // console.log("name", seNodule.name);
     //   seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     // });
+  }
+
+  function persistUpdatedStyleOptions() {
+    const cmdGroup = new CommandGroup();
+    let subCommandCount = 0;
+    if (
+      (activeStyleGroup === StyleEditPanels.Front ||
+        activeStyleGroup === StyleEditPanels.Back) &&
+      backStyleContrastCopy !== Nodule.getBackStyleContrast()
+    ) {
+      const contrastCommand = new ChangeBackStyleContrastCommand(
+        Nodule.getBackStyleContrast(),
+        backStyleContrastCopy
+      );
+      cmdGroup.addCommand(contrastCommand);
+      subCommandCount++;
+    }
+    const postUpdateKeys = Object.keys(postUpdateStyleOptions);
+
+    if (postUpdateKeys.length > 0 && activeStyleGroup !== null) {
+      const updateTargets =
+        activeStyleGroup === StyleEditPanels.Label
+          ? selectedLabels.value.values()
+          : selectedPlottables.value.values();
+      const styleCommand = new StyleNoduleCommand(
+        Array.from(updateTargets),
+        activeStyleGroup,
+        [postUpdateStyleOptions],
+        [preUpdateStyleOptions]
+      );
+      cmdGroup.addCommand(styleCommand);
+      subCommandCount++;
+    }
+    if (subCommandCount > 0) cmdGroup.push();
   }
 
   return {
@@ -289,6 +317,9 @@ export const useStylingStore = defineStore("style", () => {
     hasDisagreement,
     hasStyle,
     changeBackContrast,
+    selectActiveGroup,
+    deselectActiveGroup,
+    persistUpdatedStyleOptions
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };

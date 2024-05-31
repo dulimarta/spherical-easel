@@ -114,7 +114,7 @@ export function useStyleEditor(
     // );
     EventBus.listen("style-data-clear", undo);
     EventBus.listen("style-data-to-default", restoreDefault);
-    EventBus.listen("save-style-state", saveStyleState);
+    // EventBus.listen("save-style-state", saveStyleState);
   });
   onBeforeUnmount((): void => {
     EventBus.unlisten("style-data-clear");
@@ -199,7 +199,7 @@ export function useStyleEditor(
       //   newSelection.length
       // );
 
-      saveStyleState();
+      // saveStyleState();
       commonStyleProperties.splice(0);
       // this.dataAgreement = true;
       if (newSelection.length === 0) {
@@ -226,10 +226,10 @@ export function useStyleEditor(
       //   "styleOptionsOfSelected",
       //   styleOptionsOfSelected[0]
       // );
-      seStore.recordStyleState({
-        panel: panel,
-        selected: filteredNodules.value
-      });
+      // seStore.recordStyleState({
+      //   panel: panel,
+      //   selected: filteredNodules.value
+      // });
 
       // Use the style of the first selected object as the initial value
       activeStyleOptions.value = { ...styleOptionsOfSelected[0] };
@@ -581,59 +581,6 @@ export function useStyleEditor(
     return compare;
   }
 
-  function saveStyleState(): void {
-    const cmdGroup = new CommandGroup();
-    let subCommandCount = 0;
-    if (previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
-      console.log(
-        previousBackstyleContrast,
-        "ISSUED COMMAND: The back style constant changed to ",
-        Nodule.getBackStyleContrast()
-      );
-      const constrastCommand = new ChangeBackStyleContrastCommand(
-        Nodule.getBackStyleContrast(),
-        previousBackstyleContrast
-      );
-      // update the previous value
-      previousBackstyleContrast = Nodule.getBackStyleContrast();
-      cmdGroup.addCommand(constrastCommand);
-      subCommandCount++;
-    }
-    if (oldStyleSelections.value.length > 0) {
-      // console.debug(
-      //   "Number of previously selected object? ",
-      //   previousSelectedNodules.length
-      // );
-      // console.debug(
-      //   "Number of currently selected object? ",
-      //   filteredNodules.value.length
-      // );
-      const prev = initialStyleStatesMap.value.get(panel) ?? [];
-      const curr = filteredNodules.value.map((n: Nodule) =>
-        n.currentStyleState(panel)
-      );
-      if (!areEquivalentStyles(prev, curr)) {
-        console.debug("ISSUE StyleNoduleCommand");
-        console.debug("Previous style", prev);
-        console.debug("Next style", curr);
-        const styleCommand = new StyleNoduleCommand(
-          filteredNodules.value,
-          panel,
-          curr,
-          prev
-        );
-        cmdGroup.addCommand(styleCommand);
-        subCommandCount++;
-      } else {
-        console.debug("Everything stayed unchanged");
-      }
-      seStore.setOldSelection([]);
-    }
-    // else {
-    //   // console.debug("No dirty selection");
-    // }
-    if (subCommandCount > 0) cmdGroup.push();
-  }
   const selectionCount = computed(() => filteredNodules.value.length);
 
   return {

@@ -46,7 +46,10 @@
           </div>
           <LabelStyle
             :show-popup="isSelected!"
-            v-model="styleSelection"></LabelStyle>
+            v-model="styleSelection"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></LabelStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
@@ -154,12 +157,16 @@ const { selectedSENodules } = storeToRefs(seStore);
 const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
 
-watch(() => selectedSENodules.value, (arr) => {
-  if (arr.length == 0) {
-    // close the popup panel when no objects are selected
-    styleSelection.value = undefined
-  }
-}, { deep: true, immediate: true })
+watch(
+  () => selectedSENodules.value,
+  arr => {
+    if (arr.length == 0) {
+      // close the popup panel when no objects are selected
+      styleSelection.value = undefined;
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 const labelTooltip = computed((): string => {
   let text = t("LabelTooltip");
@@ -185,20 +192,31 @@ const frontTooltip = computed((): string => {
   return text;
 });
 
+watch(
+  () => styleSelection.value,
+  (selectedTab: number | undefined) => {
+    if (typeof selectedTab !== "number") styleStore.deselectActiveGroup();
+    else {
+      switch (selectedTab) {
+        case 0:
+          styleStore.selectActiveGroup(StyleEditPanels.Label);
+          break;
+        case 1:
+          styleStore.selectActiveGroup(StyleEditPanels.Front);
+          break;
+        case 2:
+          styleStore.selectActiveGroup(StyleEditPanels.Back);
+      }
+    }
+  }
+);
+function applyStyleChanges() {
+  styleStore.persistUpdatedStyleOptions()
+}
 
-// function toggleLabelsShowing() {
-//   labelsShowingFlag.value = !labelsShowingFlag.value;
-//   const cmdGroup = new CommandGroup();
-//   selectedSENodules.value
-//     .filter(n => n.getLabel() !== null)
-//     .forEach(n => {
-//       const lab = n.getLabel();
-//       cmdGroup.addCommand(
-//         new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value)
-//       );
-//     });
-//   cmdGroup.execute();
-// }
+function undoStyleChanges() {}
+
+function restoreDefaultStyles() {}
 </script>
 <i18n lang="json" locale="en">
 {

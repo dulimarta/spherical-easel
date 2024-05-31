@@ -22,13 +22,14 @@
         <v-spacer/>
         <v-tab :value="LAST_TAB_MARKER">
           {{ name }}
-          <v-icon @click="menu = false">mdi-chevron-double-right</v-icon>
+          <v-icon @click="hideMe">mdi-chevron-double-right</v-icon>
         </v-tab>
       </v-tabs>
       <slot name="top"></slot>
       <v-window v-model="currentTab" class="pa-1">
         <slot name="pages"></slot>
       </v-window>
+      <v-divider thickness="3"/>
       <slot name="bottom"></slot>
     </v-sheet>
   <!--/--v-menu-->
@@ -36,13 +37,9 @@
 <script lang="ts" setup>
 import { mergeProps } from "vue";
 import { ref, watch } from "vue";
-import DisagreementOverride from "./DisagreementOverride.vue";
 type Props = {
   showPopup: boolean,
   name?: string,
-  // iconName: string;
-  // tooltip: string;
-  // tooltipLocation: 'left' | 'right' | 'top' | 'bottom',
 };
 const elementProps = withDefaults(defineProps<Props>(), {
   name: ""
@@ -60,4 +57,7 @@ watch(() => menu.value, (m) => {
   if (!m) emit('popUpHidden')
 })
 
+function hideMe() {
+  menu.value = false
+}
 </script>

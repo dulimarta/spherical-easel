@@ -39,9 +39,8 @@
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
         <v-text-field
-          v-if="hasCaption(styleOptions)"
           :disabled="
-            selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption')
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption') || !hasCaption(styleOptions)
           "
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
@@ -203,20 +202,23 @@
           :style-properties="['labelFrontFillColor', 'labelBackFillColor']" />
       </v-window-item>
     </template>
+    <template #bottom>
+      <div
+        class="ma-1"
+        :style="{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          gap: '8px'
+        }">
+        <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
+        <v-tooltip activator="#default-btn" :text="t('defaultStyles')"></v-tooltip>
+        <v-btn id="restore-btn" @click="emits('undo-styles')" icon="mdi-undo" size="small"></v-btn>
+        <v-btn id="default-btn" @click="emits('apply-default-styles')" icon="mdi-backup-restore" size="small"></v-btn>
+      </div>
+    </template>
   </PopOverTabs>
 
-  <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-  <!--
-
-          <OverlayWithFixButton-- v-if="styleOptions.labelDynamicBackStyle"
-            z-index="10"
-            i18n-title-line="style.dynamicBackStyleHeader"
-            i18n-button-label="style.disableDynamicBackStyle"
-            i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-            @click="styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
-          </OverlayWithFixButton-->
-
-  <!-- Show more or less styling options -->
   <!--Dialog
     ref="backStyleDisagreementDialog"
     :title="t('backStyleDisagreement')"
@@ -225,14 +227,7 @@
     :yes-action="overrideDynamicBackStyleDisagreement">
     {{ t("message.multipleObjectDifferingStyles") }}
   </!--Dialog-->
-  <!--OverlayWithFixButton
-            v-if="!dataAgreement(/labelDynamicBackStyle/)"
-            z-index="100"
-            i18n-title-line="style.backStyleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.backStyleDifferentValuesToolTip"
-            @click="forceDataAgreement([`labelDynamicBackStyle`]); styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
-          </!--OverlayWithFixButton-->
+
 </template>
 <script setup lang="ts">
 import {
@@ -297,6 +292,11 @@ type LabelStyleProps = {
   // activePanel: number;
   // noduleFilterFunction: () => void,
 };
+const emits = defineEmits([
+  'apply-styles',
+  'undo-styles',
+  'apply-default-styles'
+])
 const props = defineProps<LabelStyleProps>();
 let groupSelection = defineModel<number>({});
 const seStore = useSEStore();
@@ -383,7 +383,7 @@ watch(
 
 watch(
   () => styleOptions.value,
-  (opt:LabelStyleOptions) => {
+  (opt: LabelStyleOptions) => {
     /* When caption text is not null, exclude display option with "Value" in it? */
     if (opt.labelDisplayCaption) {
       filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
@@ -490,6 +490,7 @@ function resetLabelsVisibility() {
     const visibility = labelVisibiltyState.get(n.name);
     if (typeof visibility === "boolean") n.showing = visibility;
   });
+  emits('apply-styles')
 }
 
 // These methods are linked to the Style Data fade-in-card
@@ -610,6 +611,9 @@ function hasCaption(opt: LabelStyleOptions | undefined): boolean {
   );
 }
 
+function applyStyles() {
+  // props.showPopup = false
+}
 const labelDisplayModeItems: LabelDisplayModeItem[] = [
   {
     text: t("labelDisplayModes.nameOnly"),
@@ -819,7 +823,9 @@ const conflictItems: ConflictItems = {
     "bold": "Bold",
     "italic": "Italic",
     "normal": "Normal"
-  }
+  },
+  "defaultStyles": "Restore Default Styles",
+  "undoStyles": "Undo Style Changes"
 }
 </i18n>
 <i18n lang="json" locale="id">
@@ -871,6 +877,9 @@ const conflictItems: ConflictItems = {
     "bold": "Bold",
     "italic": "Italic",
     "normal": "Normal"
-  }
+  },
+  "defaultStyles": "Kembali ke Gaya Awal",
+  "undoStyles": "Batalkan Ubahan Gaya"
+
 }
 </i18n>
