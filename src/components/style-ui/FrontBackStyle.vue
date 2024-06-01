@@ -130,7 +130,7 @@
               id="use-dash"
               v-model="useDashPattern"
               density="compact"
-              :color="hasDisagreement('dashArray') ? 'red' : ''">
+              :color="hasDisagreement('dashArray') ? 'red' : 'secondary'">
               <template v-slot:label>
                 <span
                   :style="{
@@ -207,7 +207,7 @@
           "></SimpleNumberSelector>
         <v-switch
           v-model="styleOptions.angleMarkerTickMark"
-          :color="conflictItems.angleMarkerTickMark ? 'red' : ''"
+          :color="conflictItems.angleMarkerTickMark ? 'red' : 'secondary'"
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'
@@ -225,7 +225,7 @@
         </v-switch>
         <v-switch
           v-model="styleOptions.angleMarkerDoubleArc"
-          :color="conflictItems.angleMarkerDoubleArc ? 'red' : ''"
+          :color="conflictItems.angleMarkerDoubleArc ? 'red' : 'secondary'"
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'
@@ -244,7 +244,7 @@
 
         <v-switch
           v-model="styleOptions.angleMarkerArrowHeads"
-          :color="conflictItems.angleMarkerArrowHeads ? 'red' : ''"
+          :color="conflictItems.angleMarkerArrowHeads ? 'red' : 'secondary'"
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'
@@ -263,7 +263,7 @@
         <DisagreementOverride
           :style-properties="[
             'angleMarkerRadiusPercent',
-            'angleMarkerTickMark'
+            'angleMarkerTickMark',
             'angleMarkerDoubleArc',
             'angleMarkerArrowHeads'
           ]"></DisagreementOverride>
