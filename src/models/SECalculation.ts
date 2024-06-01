@@ -3,6 +3,7 @@ import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 const { t } = i18n.global;
 
 const emptySet = new Set<string>();
@@ -134,6 +135,7 @@ export class SECalculation extends SEExpression {
     this.exists = this._calculationParents.every(parent => parent.exists);
     if (this.exists) {
       this.recalculate();
+      super.shallowUpdate()
     }
   }
 

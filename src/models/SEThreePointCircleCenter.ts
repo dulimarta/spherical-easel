@@ -65,11 +65,11 @@ export class SEThreePointCircleCenter extends SEPoint {
   get seParentPoint3(): SEPoint {
     return this._sePointParent3;
   }
-
+    //#region shallowupdateview
   public shallowUpdate(): void {
     // The parent points must exist
     this._exists =
-      // #endregion updateview
+      //#endregion shallowupdateview
       this._sePointParent1.exists &&
       this._sePointParent2.exists &&
       this._sePointParent2.exists;
@@ -177,7 +177,7 @@ export class SEThreePointCircleCenter extends SEPoint {
     }
   }
 
-  // #region updateview
+    //#region updateview
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -187,7 +187,9 @@ export class SEThreePointCircleCenter extends SEPoint {
 
     this.setOutOfDate(false);
     this.shallowUpdate();
+    //#endregion updateview
 
+    // #region endupdate
     // The center of the three point circles is completely determined by their point parents and an update on the parents
     // will cause this center to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {

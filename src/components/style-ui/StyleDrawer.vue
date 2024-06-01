@@ -105,7 +105,7 @@
         </span>
       </div-->
       <v-btn icon size="x-small" @click="minified = !minified">
-        <v-icon>mdi-chevron-double-right</v-icon>
+        <v-icon>$closePanelRight</v-icon>
       </v-btn>
     </div>
   </transition>

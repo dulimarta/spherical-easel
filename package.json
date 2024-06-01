@@ -68,6 +68,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-vue": "^9.17.0",
     "firebase-mock": "^2.3.2",
+    "markdown-it-mathjax3": "^4.3.2",
     "markdown-it-vuepress-code-snippet-enhanced": "^1.0.1",
     "sass": "~1.63.6",
     "typescript": "4.7",

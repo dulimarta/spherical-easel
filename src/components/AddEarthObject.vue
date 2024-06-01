@@ -679,7 +679,7 @@ function displayPole(pole: Poles) {
     }
   }
   displayCommandGroup.execute();
-  EventBus.fire("update-label-and-showing-display", {}); //NP
+  EventBus.fire("update-label-and-showing-and-measurement-display", {}); //NP
 }
 function displayEquator(): void {
   let displayCommandGroup = new CommandGroup();
@@ -708,7 +708,7 @@ function displayEquator(): void {
   displayCommandGroup.execute();
   //turn off the display of all newly created but not user created points
   store.unglowAllSENodules();
-  EventBus.fire("update-label-and-showing-display", {}); //NP
+  EventBus.fire("update-label-and-showing-and-measurement-display", {}); //NP
 }
 function displayPrimeMeridian(): void {
   let displayCommandGroup = new CommandGroup();
@@ -740,7 +740,7 @@ function displayPrimeMeridian(): void {
   displayCommandGroup.execute();
   //turn off the display of all newly created but not user created points
   store.unglowAllSENodules();
-  EventBus.fire("update-label-and-showing-display", {}); //NP
+  EventBus.fire("update-label-and-showing-and-measurement-display", {}); //NP
 }
 //Return the command to add the north pole to the object tree so that it can be grouped with the other hide/show commands.
 function setSEPoleVariable(pole: Poles): undefined | CommandGroup {

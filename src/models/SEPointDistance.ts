@@ -3,6 +3,7 @@ import { SEExpression, SEPoint } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 // import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
+import EventBus from "@/eventHandlers/EventBus";
 const { t } = i18n.global;
 const emptySet = new Set<string>();
 
@@ -45,6 +46,9 @@ export class SEPointDistance extends SEExpression {
   }
   public shallowUpdate(): void {
     this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
+    if (this.exists) {
+      super.shallowUpdate()
+    }
   }
   public update(
     objectState?: Map<number, ObjectState>,

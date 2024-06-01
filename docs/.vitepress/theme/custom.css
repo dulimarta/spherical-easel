@@ -1,0 +1,122 @@
+:root {
+  .class {
+    background-color: transparent;
+    font-weight: normal;
+    color: #a549f5;
+  }
+  .tool-description {
+    margin:  1rem 0;
+    padding: .1rem 1.5rem;
+    border-radius: 0.4rem;
+    background-color: #f0f4f8;
+    color: #000000;
+  }
+
+  .tool-description-title{
+    font-weight: bold;
+  }
+
+  .tool-details {
+      color: #000000;
+      text-align: left;
+    }
+
+  .tool-details-title {
+      font-weight: bold;
+      color: #000000;
+    }
+  /* Handler CSS Choices */
+  .handler-description {
+      margin: 1rem 0;
+      padding: .1rem 1.5rem;
+      border-radius: 0.4rem;
+      background-color: #f2efff;
+      color: #000000;
+    }
+  .handler-description-title {
+      font-weight: bold;
+    }
+  .handler-details {
+      color: #000000;
+      text-align: left;
+    }
+  .handler-details-title {
+      font-weight: bold;
+      color: #000000;
+    }
+  /* Style choices for the vuepress documentation code importing */
+  .interface {
+      background-color: transparent;
+      font-weight: normal;
+      color: #f08d49;
+    }
+  .method {
+      background-color: transparent;
+      font-weight: normal;
+      color: #f09d49;
+    }
+  .class {
+      background-color: transparent;
+      font-weight: normal;
+      color: #a549f5;
+    }
+  .variable {
+      background-color: transparent;
+      font-weight: normal;
+      color: #0089ff;
+    }
+  .directory {
+      background-color: transparent;
+      font-weight: normal;
+      color: #00907a;
+    }
+  .component {
+      background-color: transparent;
+      font-weight: normal;
+      color: #c93116;
+    }
+  .package {
+      background-color: transparent;
+      font-weight: normal;
+      color: #c3fcf2;
+    }
+  .file {
+      background-color: transparent;
+      font-weight: normal;
+      color: #4bb178;
+    }
+
+  .string {
+    background-color: transparent;
+    font-weight: normal;
+    color: #300089;
+  }
+  .command{
+    background-color: transparent;
+    font-weight: normal;
+    color: #ab0000;
+    /*color #7ec699*/
+  }
+  .file{
+    background-color: transparent;
+    font-weight: normal;
+    color: #ab0000;
+  }
+
+
+  /*This is a custom block that VuePress created, I'm just overriding some features*/
+  .custom-block
+  &.tool-title {
+    color: #3eaf7c;
+    text-align: left
+  }
+
+  /* Indent the unordered list by 40 px*/
+  ul {
+    padding-left: 40px;
+  }
+  /* Indent the ordered list by 40 px */
+  ol {
+    padding-left: 40px;
+  }
+}

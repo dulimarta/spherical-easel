@@ -411,6 +411,7 @@ export class SEAngleMarker
         this._firstSEParent instanceof SEPoint &&
         this._thirdSEParent instanceof SEPoint
       ) {
+        this._exists = this._exists && this._thirdSEParent.exists;
         // This uses a method in the AngleMarker plottable object (setAngleMarkerFromThreeVectors) because this is the only case in which a
         // temporary angleMarker is displayed.  This method is used both here and in the AngleHandler.
         // This avoids having duplicate code. setAngleMarkerFromThreeVectors is in AngleMarker instead of SEAngleMarker because
@@ -906,6 +907,7 @@ export class SEAngleMarker
 
     // When this updates send its value to the label of the angleMarker
     if (this.label && this._exists) {
+      super.shallowUpdate()
       this.label.ref.value = [this.value];
     }
 
