@@ -25,7 +25,8 @@
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
-      <v-item-group
+      Sel={{ styleSelection }}
+      <v-item-group mandatory
         v-model="styleSelection"
         :style="{
           display: 'flex',
@@ -39,7 +40,7 @@
             <v-badge
               v-if="selectedLabels.size > 0"
               :content="selectedLabels.size"
-              color="secondary">
+              :color="isSelected ? 'primary' : 'secondary'">
               <v-icon @click="toggle">mdi-label</v-icon>
             </v-badge>
             <v-icon v-else>mdi-label</v-icon>
@@ -47,7 +48,6 @@
           <LabelStyle
             :show-popup="isSelected!"
             v-model="styleSelection"
-            @apply-styles="applyStyleChanges"
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"></LabelStyle>
         </v-item>
@@ -57,7 +57,7 @@
             <v-badge
               v-if="selectedPlottables.size > 0"
               :content="selectedPlottables.size"
-              color="secondary">
+              :color="isSelected ? 'primary' : 'secondary'">
               <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
                 mdi-arrange-bring-forward
               </v-icon>
@@ -67,7 +67,6 @@
           <FrontBackStyle
             :show-popup="isSelected!"
             :panel="StyleCategory.Front"
-            @apply-styles="applyStyleChanges"
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
@@ -77,7 +76,7 @@
             <v-badge
               v-if="selectedPlottables.size > 0"
               :content="selectedPlottables.size"
-              color="secondary">
+              :color="isSelected ? 'primary' : 'secondary'">
               <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
                 mdi-arrange-send-backward
               </v-icon>
@@ -87,7 +86,6 @@
           <FrontBackStyle
             :show-popup="isSelected!"
             :panel="StyleCategory.Back"
-            @apply-styles="applyStyleChanges"
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
@@ -167,7 +165,7 @@ const styleSelection = ref<number | undefined>(undefined);
 watch(
   () => selectedSENodules.value,
   arr => {
-    if (arr.length == 0) {
+    if (arr.length === 0) {
       // close the popup panel when no objects are selected
       styleSelection.value = undefined;
     }
@@ -201,8 +199,11 @@ const frontTooltip = computed((): string => {
 
 watch(
   () => styleSelection.value,
-  (selectedTab: number | undefined) => {
-    if (typeof selectedTab !== "number") styleStore.deselectActiveGroup();
+  (selectedTab: number | undefined, prevTab: number|undefined) => {
+    if (typeof prevTab === 'number' && selectedTab === undefined) {
+      styleStore.deselectActiveGroup();
+      console.debug("Style panel disappearing")
+    }
     else {
       switch (selectedTab) {
         case 0:
@@ -217,12 +218,9 @@ watch(
     }
   }
 );
-function applyStyleChanges() {
-  styleStore.persistUpdatedStyleOptions();
-}
 
 function undoStyleChanges() {
-  Command.undo();
+  styleStore.restoreInitialStyles()
 }
 
 function restoreDefaultStyles() {

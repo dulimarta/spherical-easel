@@ -85,6 +85,10 @@ export const useStylingStore = defineStore("style", () => {
   // value of each style property
   const stylePropertyMap: Map<string, StylePropertyValue> = new Map();
 
+  // Maps for recording the styles at the beginning of object selection
+  const initialStyleMap: Map<string, StyleOptions> = new Map();
+  const defaultStyleMap: Map<string, StyleOptions> = new Map();
+
   // The user is required to opt in to override conflicting properties
   const forceAgreement = ref(false);
 
@@ -118,8 +122,9 @@ export const useStylingStore = defineStore("style", () => {
           // and remove it from the selected set
           const prevVisibility = labelShowingState.get(labelName);
           label.showing = prevVisibility!;
-          // label.updateDisplay()
           selectedLabels.value.delete(labelName);
+          initialStyleMap.delete("label:" + labelName);
+          defaultStyleMap.delete("label:" + labelName);
         }
       });
 
@@ -130,6 +135,10 @@ export const useStylingStore = defineStore("style", () => {
           const prevVisibility = plottableShowingState.get(plotName);
           plot.showing = prevVisibility!;
           selectedPlottables.value.delete(plotName);
+          initialStyleMap.delete(StyleCategory.Front + ":" + plotName);
+          initialStyleMap.delete(StyleCategory.Back + ":" + plotName);
+          defaultStyleMap.delete(StyleCategory.Front + ":" + plotName);
+          defaultStyleMap.delete(StyleCategory.Back + ":" + plotName);
         }
       });
 
@@ -140,6 +149,25 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(`${n.name} plottable`, itsPlot)
           selectedPlottables.value.set(n.name, itsPlot);
           plottableShowingState.set(n.name, itsPlot.showing);
+
+          // Remember the initial and default styles of the selected object
+          // These maps are used by the  restoreTo() function below
+          initialStyleMap.set(
+            StyleCategory.Front + ":" + n.name,
+            itsPlot.currentStyleState(StyleCategory.Front)
+          );
+          initialStyleMap.set(
+            StyleCategory.Back + ":" + n.name,
+            itsPlot.currentStyleState(StyleCategory.Back)
+          );
+          defaultStyleMap.set(
+            StyleCategory.Front + ":" + n.name,
+            itsPlot.defaultStyleState(StyleCategory.Front)
+          );
+          defaultStyleMap.set(
+            StyleCategory.Back + ":" + n.name,
+            itsPlot.defaultStyleState(StyleCategory.Back)
+          );
         }
         const itsLabel = n.getLabel();
         if (itsLabel) {
@@ -147,49 +175,23 @@ export const useStylingStore = defineStore("style", () => {
           if (!selectedLabels.value.has(n.name)) {
             selectedLabels.value.set(n.name, itsLabel.ref);
             labelShowingState.set(n.name, itsLabel.ref.showing);
+            // Remember the initial and default styles of the selected object
+            // These maps are used by the  restoreTo() function below
+            initialStyleMap.set(
+              "label:" + n.name,
+              itsLabel.ref.currentStyleState(StyleCategory.Label)
+            );
+            defaultStyleMap.set(
+              "label:" + n.name,
+              itsLabel.ref.defaultStyleState(StyleCategory.Label)
+            );
           }
         }
       });
 
-      // Check for possible conflict among label properties
-      conflictingProperties.value.clear();
-      styleOptions.value = {};
-      // plottableStyleOptions.value = {}
-      stylePropertyMap.clear();
-      selectedLabels.value.forEach(x => {
-        const props = x.currentStyleState(StyleCategory.Label);
-        Object.getOwnPropertyNames(props)
-          .filter((p: string) => {
-            // remove property names which may have been inserted by Vue/browser
-            // console.debug("Label property", p);
-            return !p.startsWith("__");
-          })
-          .forEach(p => {
-            const recordedPropValue = stylePropertyMap.get(p);
-            const thisPropValue = (props as any)[p];
-            if (typeof recordedPropValue === "undefined") {
-              stylePropertyMap.set(p, thisPropValue);
-              (styleOptions.value as any)[p] = thisPropValue;
-            } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
-              conflictingProperties.value.add(p);
-            }
-          });
-      });
+      console.debug("Initial style map size = ", initialStyleMap.size);
+      console.debug("Default style map size = ", defaultStyleMap.size);
 
-      selectedPlottables.value.forEach(plot => {
-        const props = plot.currentStyleState(StyleCategory.Front);
-        Object.getOwnPropertyNames(props).forEach(prop => {
-          const recordedPropValue = stylePropertyMap.get(prop);
-          const thisPropValue = (props as any)[prop];
-          if (typeof recordedPropValue === "undefined") {
-            stylePropertyMap.set(prop, thisPropValue);
-            (styleOptions.value as any)[prop] = thisPropValue;
-          } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
-            conflictingProperties.value.add(prop);
-          }
-        });
-      });
-      preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
       backStyleContrastCopy = Nodule.getBackStyleContrast();
       console.debug("Compiled props", stylePropertyMap);
     },
@@ -219,7 +221,7 @@ export const useStylingStore = defineStore("style", () => {
           label.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
         });
         selectedPlottables.value.forEach(plot => {
-          plot.updateStyle(StyleCategory.Front, postUpdateStyleOptions);
+          plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
           // any property which may depends on Zoom factor, must also be updated
           // by calling adjustSize()
           plot.adjustSize();
@@ -232,10 +234,51 @@ export const useStylingStore = defineStore("style", () => {
     }
   );
 
-  function selectActiveGroup(g: StyleCategory) {
-    activeStyleGroup = g;
+  function selectActiveGroup(category: StyleCategory) {
+    activeStyleGroup = category;
+    if (category === undefined) return;
+    // Check for possible conflict among label properties
+    conflictingProperties.value.clear();
+    styleOptions.value = {};
+    // plottableStyleOptions.value = {}
+    stylePropertyMap.clear();
+    selectedLabels.value.forEach(x => {
+      const props = x.currentStyleState(StyleCategory.Label);
+      Object.getOwnPropertyNames(props)
+        .filter((p: string) => {
+          // remove property names which may have been inserted by Vue/browser
+          // console.debug("Label property", p);
+          return !p.startsWith("__");
+        })
+        .forEach(p => {
+          const recordedPropValue = stylePropertyMap.get(p);
+          const thisPropValue = (props as any)[p];
+          if (typeof recordedPropValue === "undefined") {
+            stylePropertyMap.set(p, thisPropValue);
+            (styleOptions.value as any)[p] = thisPropValue;
+          } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
+            conflictingProperties.value.add(p);
+          }
+        });
+    });
+
+    selectedPlottables.value.forEach(plot => {
+      const props = plot.currentStyleState(category);
+      Object.getOwnPropertyNames(props).forEach(prop => {
+        const recordedPropValue = stylePropertyMap.get(prop);
+        const thisPropValue = (props as any)[prop];
+        if (typeof recordedPropValue === "undefined") {
+          stylePropertyMap.set(prop, thisPropValue);
+          (styleOptions.value as any)[prop] = thisPropValue;
+        } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
+          conflictingProperties.value.add(prop);
+        }
+      });
+    });
+    preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
   }
   function deselectActiveGroup() {
+    persistUpdatedStyleOptions();
     activeStyleGroup = null;
   }
 
@@ -312,47 +355,49 @@ export const useStylingStore = defineStore("style", () => {
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
     }
-    if (subCommandCount > 0) cmdGroup.push();
+    if (subCommandCount > 0) {
+      cmdGroup.push();
+      console.info("Style changes persisted as a command");
+    } else {
+      console.info("No Style changes to persist");
+    }
+  }
+
+  function restoreTo(styleMap: Map<string, StyleOptions>) {
+    styleMap.forEach((style: StyleOptions, name: string) => {
+      if (name.startsWith("label:")) {
+        const labelName = name.substring(6);
+        const theLabel = selectedLabels.value.get(labelName);
+        if (theLabel) {
+          theLabel.updateStyle(StyleCategory.Label, style);
+        }
+      } else if (name.startsWith(StyleCategory.Front + ":")) {
+        const plotName = name.substring(2);
+        const thePlot = selectedPlottables.value.get(plotName);
+        if (thePlot) {
+          thePlot.updateStyle(StyleCategory.Front, style);
+          thePlot.adjustSize();
+        }
+      } else if (name.startsWith(StyleCategory.Back + ":")) {
+        const plotName = name.substring(2);
+        const thePlot = selectedPlottables.value.get(plotName);
+        if (thePlot) {
+          thePlot.updateStyle(StyleCategory.Back, style);
+          thePlot.adjustSize();
+        }
+      }
+    });
+    styleIndividuallyAltered = false;
   }
 
   function restoreDefaultStyles() {
-    if (activeStyleGroup === null) return;
-    if (activeStyleGroup === StyleCategory.Label) {
-      const labArray = Array.from(selectedLabels.value.values());
-      const currentStyleOpts = labArray.map(lab =>
-        lab.currentStyleState(activeStyleGroup!!)
-      );
-      const defaultStyleOpts = labArray.map(lab =>
-        lab.defaultStyleState(activeStyleGroup!!)
-      );
-      new StyleNoduleCommand(
-        labArray,
-        activeStyleGroup!!,
-        defaultStyleOpts,
-        currentStyleOpts
-      ).execute();
-    } else if (
-      activeStyleGroup === StyleCategory.Front ||
-      activeStyleGroup === StyleCategory.Back
-    ) {
-      const plotArray = Array.from(selectedPlottables.value.values());
-      const currentStyleOpts = plotArray.map(plot =>
-        plot.currentStyleState(activeStyleGroup!!)
-      );
-      const defaultStyleOpts = plotArray.map(plot =>
-        plot.defaultStyleState(activeStyleGroup!!)
-      );
-      new StyleNoduleCommand(
-        plotArray,
-        activeStyleGroup!!,
-        defaultStyleOpts,
-        currentStyleOpts
-      ).execute();
-    }
-
-    // When restored to default, the styles are NOT individually altered
-    styleIndividuallyAltered = false;
+    restoreTo(defaultStyleMap);
   }
+
+  function restoreInitialStyles() {
+    restoreTo(initialStyleMap);
+  }
+
   return {
     toggleLabelsShowing,
     selectedLabels,
@@ -366,7 +411,8 @@ export const useStylingStore = defineStore("style", () => {
     selectActiveGroup,
     deselectActiveGroup,
     persistUpdatedStyleOptions,
-    restoreDefaultStyles
+    restoreDefaultStyles,
+    restoreInitialStyles
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };

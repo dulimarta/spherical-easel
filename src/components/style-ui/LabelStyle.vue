@@ -198,7 +198,7 @@
           style-name="labelBackFillColor"
           v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
         <DisagreementOverride
-          :style-properties="['labelFrontFillColor', 'labelBackFillColor']" />
+          :style-properties="['labelFrontFillColor', 'labelBackFillColor', 'labelDynamicBackStyle']" />
       </v-window-item>
     </template>
     <template #bottom>
@@ -292,7 +292,7 @@ type LabelStyleProps = {
   // noduleFilterFunction: () => void,
 };
 const emits = defineEmits([
-  'apply-styles',
+  // 'apply-styles',
   'undo-styles',
   'apply-default-styles'
 ])
@@ -467,7 +467,7 @@ function resetLabelsVisibility() {
     const visibility = labelVisibiltyState.get(n.name);
     if (typeof visibility === "boolean") n.showing = visibility;
   });
-  emits('apply-styles')
+  // emits('apply-styles')
 }
 
 // These methods are linked to the Style Data fade-in-card

@@ -13,10 +13,10 @@
       <div v-if="editModeIsBack" class="px-2">
         <!-- Enable the Dynamic Back Style Overlay -->
         <v-switch
-          v-model="automaticBackStyle"
+          v-model="styleOptions.dynamicBackStyle"
           color="secondary"
           :label="t('autoBackStyle')"></v-switch>
-        <template v-if="automaticBackStyle">
+        <template v-if="styleOptions.dynamicBackStyle">
           <!-- Global contrast slider -->
           <v-tooltip
             location="bottom"
@@ -61,7 +61,7 @@
       </div>
     </template>
     <template #pages>
-      <v-window-item class="pa-2" v-if="!automaticBackStyle">
+      <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
         <!-- FIRST TAB-->
         <SimpleColorSelector
           :numSelected="selectedPlottables.size"
@@ -83,7 +83,7 @@
             'fillColor'
           ]"></DisagreementOverride>
       </v-window-item>
-      <v-window-item class="pa-2" v-if="!automaticBackStyle">
+      <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
         <!-- SECOND TAB-->
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
@@ -337,7 +337,7 @@ type ComponentProps = {
 };
 const { attrs } = useAttrs();
 const emits = defineEmits([
-  "apply-styles",
+  // "apply-styles",
   "undo-styles",
   "apply-default-styles"
 ]);
@@ -356,7 +356,7 @@ const angleMarkerRadiusPercentage = ref(
 // automaticBackState is controlled by user
 // automaticBackStyle : FALSE means she wants to customize back style
 // automaticBackStyle : TRUE means the program will customize back style
-const automaticBackStyle = ref(false);
+// const automaticBackStyle = ref(true);
 const dashArray: Ref<number[]> = ref(
   styleOptions.value.dashArray
     ? styleOptions.value.dashArray.slice(0)

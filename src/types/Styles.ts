@@ -44,16 +44,14 @@ export type StylePropertyValue = number | string | boolean | LabelDisplayMode | 
 export const DEFAULT_POINT_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.point.drawn.fillColor.front,
   pointRadiusPercent: SETTINGS.point.radiusPercent.front,
-  strokeColor: SETTINGS.point.drawn.strokeColor.front,
-  strokeWidthPercent: SETTINGS.point.drawn.pointStrokeWidth.front,
+  strokeColor: SETTINGS.point.drawn.strokeColor.front
 };
 
 export const DEFAULT_POINT_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.point.dynamicBackStyle,
   fillColor: SETTINGS.point.drawn.fillColor.back,
   pointRadiusPercent: SETTINGS.point.radiusPercent.back,
-  strokeColor: SETTINGS.point.drawn.strokeColor.back,
-  strokeWidthPercent: SETTINGS.point.drawn.pointStrokeWidth.back,
+  strokeColor: SETTINGS.point.drawn.strokeColor.back
 };
 
 export const DEFAULT_NONFREEPOINT_FRONT_STYLE: ShapeStyleOptions = {
