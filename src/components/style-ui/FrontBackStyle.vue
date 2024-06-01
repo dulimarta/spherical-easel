@@ -205,7 +205,7 @@
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
           :conflict="hasDisagreement('angleMarkerRadiusPercent')"
           v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
-          v-model="angleMarkerRadiusPercentage"
+          v-model="styleOptions.angleMarkerRadiusPercent"
           :title="t('angleMarkerRadiusPercent')"
           :min="minAngleMarkerRadiusPercent"
           :max="maxAngleMarkerRadiusPercent"
@@ -270,6 +270,22 @@
         </v-switch>
       </v-window-item>
     </template>
+    <template #bottom>
+      <div
+        class="ma-1"
+        :style="{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          gap: '8px'
+        }">
+        <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
+        <v-tooltip activator="#default-btn" :text="t('defaultStyles')"></v-tooltip>
+        <v-btn id="restore-btn" @click="emits('undo-styles')" icon="mdi-undo" size="small"></v-btn>
+        <v-btn id="default-btn" @click="emits('apply-default-styles')" icon="mdi-backup-restore" size="small"></v-btn>
+      </div>
+    </template>
+
   </PopOverTabs>
   <!--ul>
           <li>Conclict list: {{conflictingProps}}</li>
@@ -314,6 +330,12 @@ type ComponentProps = {
   panel: StyleCategory;
 };
 const { attrs } = useAttrs();
+const emits = defineEmits([
+  'apply-styles',
+  'undo-styles',
+  'apply-default-styles'
+])
+
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
@@ -370,40 +392,7 @@ function resetAllItemsFromConflict(): void {
     (conflictItems as any)[prop] = false;
   });
 }
-// @Watch("selectedSENodules")
-// dashArrayUIUpdate(): void {
-//   // update the emptyDashPattern boolean
 
-//   console.log("hert", emptyDashPattern);
-//   // hasStyle(/dashArray/);
-//   // if (
-//   //   styleOptions.dashArray[0] === 0 &&
-//   //   styleOptions.dashArray[1] === 0
-//   // ) {
-//   //   emptyDashPattern = true;
-//   // } else {
-//   //   emptyDashPattern = false;
-//   // }
-//   //Force an update of UI slider.
-//   const temp = emptyDashPattern;
-//   emptyDashPattern = !emptyDashPattern;
-//   dashArrayKey += 1;
-//   dashPanelKey += 1;
-//   activeDashPatternKey += 1;
-//   activeReverseDashPatternKey += 1;
-//   // update the panel
-//   EventBus.fire("update-input-group-with-selector", {
-//     inputSelector: "dashArray"
-//   });
-//   emptyDashPattern = temp;
-// }
-// @Watch("selectedSENodules")
-// setAnglemarker(): void {
-//   console.log("set ang mark");
-//   isAngleMarker = selectedSENodules.every(
-//     seNodule => seNodule instanceof SEAngleMarker
-//   );
-// }
 // change the background color of the input if there is a conflict on that particular input
 let conflictItems: ConflictItems = {
   angleMarkerRadiusPercent: false,
@@ -455,15 +444,15 @@ let oldDashLength = 0;
 let alreadySet = false;
 //private reverseDashArray = true;
 
-const tooltipText = computed(() =>
-  editModeIsBack.value
-    ? selectedPlottables.value.size > 0
-      ? t("backgroundStyle")
-      : t("backgroundStyleDisabled")
-    : selectedPlottables.value.size > 0
-    ? t("foregroundStyle")
-    : t("foregroundStyleDisabled")
-);
+// const tooltipText = computed(() =>
+//   editModeIsBack.value
+//     ? selectedPlottables.value.size > 0
+//       ? t("backgroundStyle")
+//       : t("backgroundStyleDisabled")
+//     : selectedPlottables.value.size > 0
+//     ? t("foregroundStyle")
+//     : t("foregroundStyleDisabled")
+// );
 
 function setMax(angleMarker: boolean): number {
   if (angleMarker) {
@@ -484,23 +473,23 @@ function setStep(angleMarker: boolean): number {
 // *not* using the contrast (i.e. not using the dynamic back styling)
 // usingAutomaticBackStyle = true means the program is setting the style of the back objects
 // private usingAutomaticBackStyle = true;
-function toggleUsingAutomaticBackStyle(opt: ShapeStyleOptions): void {
-  // console.log(opt);
-  if (opt.dynamicBackStyle !== undefined) {
-    // console.log(
-    //   "dynamic style before",
-    //   opt.dynamicBackStyle
-    //   // usingAutomaticBackStyle
-    // );
-    opt.dynamicBackStyle = !opt.dynamicBackStyle;
-    // usingAutomaticBackStyle = !usingAutomaticBackStyle;
-    // console.log(
-    //   "dynamic style after",
-    //   opt.dynamicBackStyle
-    //   // usingAutomaticBackStyle
-    // );
-  }
-}
+// function toggleUsingAutomaticBackStyle(opt: ShapeStyleOptions): void {
+//   // console.log(opt);
+//   if (opt.dynamicBackStyle !== undefined) {
+//     // console.log(
+//     //   "dynamic style before",
+//     //   opt.dynamicBackStyle
+//     //   // usingAutomaticBackStyle
+//     // );
+//     opt.dynamicBackStyle = !opt.dynamicBackStyle;
+//     // usingAutomaticBackStyle = !usingAutomaticBackStyle;
+//     // console.log(
+//     //   "dynamic style after",
+//     //   opt.dynamicBackStyle
+//     //   // usingAutomaticBackStyle
+//     // );
+//   }
+// }
 
 // dbAgreement and udbCommonValue are computed by the program
 // useDB is set by user
@@ -550,133 +539,98 @@ onBeforeMount((): void => {
     angleMarkerRadiusSelectorThumbStrings.push(s.toFixed(0) + "%");
 });
 
-/** mounted() is part of VueJS lifecycle hooks */
-onMounted((): void => {
-  // Pass any selected objects when FrontBackStyle Panel is mounted to the onSelection change
-  //  Mount a save listener
-  // EventBus.listen("set-active-style-panel", setActivePanel);
+// /** mounted() is part of VueJS lifecycle hooks */
+// onMounted((): void => {
+//   // Pass any selected objects when FrontBackStyle Panel is mounted to the onSelection change
+//   //  Mount a save listener
+//   // EventBus.listen("set-active-style-panel", setActivePanel);
 
-  // Enable use automatic back styling only when we are mounted as a BackStyle
-  // usingAutomaticBackStyle = props.panel === StyleCategory.Back;
+//   // Enable use automatic back styling only when we are mounted as a BackStyle
+//   // usingAutomaticBackStyle = props.panel === StyleCategory.Back;
 
-  // setAnglemarker();
-  EventBus.listen(
-    "style-label-conflict-color-reset",
-    resetAndRestoreConflictColors
-  );
-  EventBus.listen(
-    "style-update-conflicting-props",
-    (names: { propNames: string[] }): void => {
-      // conflictingPropNames.forEach(name =>
-      //   console.log("old prop", name)
-      // );
-      conflictingPropNames.splice(0);
-      names.propNames.forEach(name => conflictingPropNames.push(name));
-      // conflictingPropNames.forEach(name =>
-      //   console.log("new prop", name)
-      // );
-    }
-  );
-  EventBus.listen(
-    "update-empty-dash-array",
-    (load: { emptyDashArray: boolean }): void => {
-      console.log("set empty dash pattern");
-      // emptyDashPattern.value = load.emptyDashArray;
-    }
-  );
-});
+//   // setAnglemarker();
+// });
 
-function resetAndRestoreConflictColors(): void {
-  alreadySet = false;
-  resetAllItemsFromConflict();
-  distinguishConflictingItems(conflictingPropNames);
-}
-
-onBeforeUnmount((): void => {
-  EventBus.unlisten("style-label-conflict-color-reset");
-  EventBus.unlisten("style-update-conflicting-props");
-  EventBus.unlisten("update-empty-dash-array");
-});
 const editModeIsBack = computed((): boolean => {
   return props.panel === StyleCategory.Back;
 });
 
-const editModeIsFront = computed((): boolean => {
-  return props.panel === StyleCategory.Front;
-});
+// const editModeIsFront = computed((): boolean => {
+//   return props.panel === StyleCategory.Front;
+// });
 
-const allObjectsShowing = computed((): boolean => {
-  return selectedSENodules.value.every(node => node.showing);
-});
+// const allObjectsShowing = computed((): boolean => {
+//   return selectedSENodules.value.every(node => node.showing);
+// });
 
-function toggleAllObjectsVisibility(): void {
-  EventBus.fire("toggle-object-visibility", { fromPanel: true });
-}
+// function toggleAllObjectsVisibility(): void {
+//   EventBus.fire("toggle-object-visibility", { fromPanel: true });
+// }
 
-function activeDashPattern(opt: StyleOptions): string {
-  if (dashArray.value) {
-    // console.log(
-    //   "dash array in active dash pattern",
-    //   opt.dashArray[0], //dash length
-    //   opt.dashArray[1], // gap length
-    //   opt.reverseDashArray
-    // );
-    // Set the value of empty Dash array if not already set (only run on initialize and reset)
-    // if (!alreadySet) {
-    //   alreadySet = true;
-    //   oldDashLength = opt.dashArray[0];
-    //   dashLength = opt.dashArray[0];
+// function activeDashPattern(opt: StyleOptions): string {
+//   if (dashArray.value) {
+//     // console.log(
+//     //   "dash array in active dash pattern",
+//     //   opt.dashArray[0], //dash length
+//     //   opt.dashArray[1], // gap length
+//     //   opt.reverseDashArray
+//     // );
+//     // Set the value of empty Dash array if not already set (only run on initialize and reset)
+//     // if (!alreadySet) {
+//     //   alreadySet = true;
+//     //   oldDashLength = opt.dashArray[0];
+//     //   dashLength = opt.dashArray[0];
 
-    //   oldGapLength = opt.dashArray[1];
-    //   gapLength = opt.dashArray[1];
+//     //   oldGapLength = opt.dashArray[1];
+//     //   gapLength = opt.dashArray[1];
 
-    //   // reverseDashArray = opt.reverseDashArray;
-    // }
+//     //   // reverseDashArray = opt.reverseDashArray;
+//     // }
 
-    let dStr, gStr: string;
-    // If not flipped: [gap, dash]
-    // If flipped [dash,gap]
-    if (reverseDashArray.value) {
-      dStr = "Dash:" + dashArray.value[0].toFixed(0);
-      gStr = "Gap:" + dashArray.value[1].toFixed(0);
-      return `${dStr}/${gStr}`;
-    } else {
-      dStr = "Dash:" + dashArray.value[1].toFixed(0);
-      gStr = "Gap:" + dashArray.value[0].toFixed(0);
-      return `${gStr}/${dStr}`;
-    }
-  } else return "";
-}
+//     let dStr, gStr: string;
+//     // If not flipped: [gap, dash]
+//     // If flipped [dash,gap]
+//     if (reverseDashArray.value) {
+//       dStr = "Dash:" + dashArray.value[0].toFixed(0);
+//       gStr = "Gap:" + dashArray.value[1].toFixed(0);
+//       return `${dStr}/${gStr}`;
+//     } else {
+//       dStr = "Dash:" + dashArray.value[1].toFixed(0);
+//       gStr = "Gap:" + dashArray.value[0].toFixed(0);
+//       return `${gStr}/${dStr}`;
+//     }
+//   } else return "";
+// }
 
 // Every change in the  dash pattern slider is recorded in opt.dashArray *and* in the local dashLength, dashGap
-function updateLocalGapDashVariables(
-  opt: ShapeStyleOptions,
-  num: number[]
-): void {
-  // sliderDashArray.splice(0);
-  // console.log("num array", num[0], num[1]);
-  if (opt.dashArray) {
-    //store the gap/dash in the old gap/dash lengths
-    oldDashLength = dashLength;
-    dashLength = opt.dashArray[0];
+// function updateLocalGapDashVariables(
+//   opt: ShapeStyleOptions,
+//   num: number[]
+// ): void {
+//   // sliderDashArray.splice(0);
+//   // console.log("num array", num[0], num[1]);
+//   if (opt.dashArray) {
+//     //store the gap/dash in the old gap/dash lengths
+//     oldDashLength = dashLength;
+//     dashLength = opt.dashArray[0];
 
-    oldGapLength = gapLength;
-    gapLength = opt.dashArray[1];
-    // console.log("old dash/gap", oldDashLength, oldGapLength);
-    // console.log("current dash/gap", dashLength, gapLength);
-  }
-}
-function toggleDashPatternReverse(opt: ShapeStyleOptions): void {
-  // if (opt.reverseDashArray) {
-  //   reverseDashArray = opt.reverseDashArray;
-  // }
-  opt.dashArray?.splice(0);
-  opt.dashArray?.push(dashLength, gapLength); // trigger an update by updateing the dashArray with its current values
-  // update the panel
-  EventBus.fire("update-input-group-with-selector", {
-    inputSelector: "dashArray"
-  });
-}
+//     oldGapLength = gapLength;
+//     gapLength = opt.dashArray[1];
+//     // console.log("old dash/gap", oldDashLength, oldGapLength);
+//     // console.log("current dash/gap", dashLength, gapLength);
+//   }
+// }
+// function toggleDashPatternReverse(opt: ShapeStyleOptions): void {
+//   // if (opt.reverseDashArray) {
+//   //   reverseDashArray = opt.reverseDashArray;
+//   // }
+//   opt.dashArray?.splice(0);
+//   opt.dashArray?.push(dashLength, gapLength); // trigger an update by updateing the dashArray with its current values
+//   // update the panel
+//   EventBus.fire("update-input-group-with-selector", {
+//     inputSelector: "dashArray"
+//   });
+// }
 
 function updateInputGroup(inputSelector: string): void {
   EventBus.fire("update-input-group-with-selector", {
@@ -684,117 +638,117 @@ function updateInputGroup(inputSelector: string): void {
   });
 }
 
-function toggleDashPatternSliderAvailbility(opt: ShapeStyleOptions): void {
-  // emptyDashPattern = !emptyDashPattern; //NO NEED FOR THIS BEBCAUSE THE CHECK BOX HAS ALREADY TOGGLED IT!
-  if (!emptyDashPattern && opt.dashArray) {
-    // console.log(
-    //   "old gap/dash in toogle",
-    //   oldGapLength,
-    //   oldDashLength
-    // );
-    gapLength = oldGapLength;
-    dashLength = oldDashLength;
-    opt.dashArray?.splice(0);
-    opt.dashArray?.push(oldDashLength, oldGapLength); // trigger an update
-  } else if (opt.dashArray) {
-    //update the old gap/dash lengths
-    oldGapLength = gapLength;
-    oldDashLength = dashLength;
-    // console.log("set the dash array to [0,0]");
-    // set the dashArray to the no dash pattern array of [0,0]
-    opt.dashArray?.splice(0);
-    opt.dashArray?.push(0, 0);
-  }
-  // Force an update of UI slider.
-  dashArrayKey.value += 1;
-  dashPanelKey.value += 1;
-  // update the panel
-  EventBus.fire("update-input-group-with-selector", {
-    inputSelector: "dashArray"
-  });
-}
+// function toggleDashPatternSliderAvailbility(opt: ShapeStyleOptions): void {
+//   // emptyDashPattern = !emptyDashPattern; //NO NEED FOR THIS BEBCAUSE THE CHECK BOX HAS ALREADY TOGGLED IT!
+//   if (!emptyDashPattern && opt.dashArray) {
+//     // console.log(
+//     //   "old gap/dash in toogle",
+//     //   oldGapLength,
+//     //   oldDashLength
+//     // );
+//     gapLength = oldGapLength;
+//     dashLength = oldDashLength;
+//     opt.dashArray?.splice(0);
+//     opt.dashArray?.push(oldDashLength, oldGapLength); // trigger an update
+//   } else if (opt.dashArray) {
+//     //update the old gap/dash lengths
+//     oldGapLength = gapLength;
+//     oldDashLength = dashLength;
+//     // console.log("set the dash array to [0,0]");
+//     // set the dashArray to the no dash pattern array of [0,0]
+//     opt.dashArray?.splice(0);
+//     opt.dashArray?.push(0, 0);
+//   }
+//   // Force an update of UI slider.
+//   dashArrayKey.value += 1;
+//   dashPanelKey.value += 1;
+//   // update the panel
+//   EventBus.fire("update-input-group-with-selector", {
+//     inputSelector: "dashArray"
+//   });
+// }
 
-function incrementDashPattern(
-  opt: ShapeStyleOptions,
-  angleMarker: boolean
-): void {
-  // increases the length of the dash and the gap by a step
-  /** gapLength = sliderArray[0] */
-  /** dashLength= sliderArray[1] - sliderArray[0] */
-  const step = angleMarker
-    ? SETTINGS.angleMarker.sliderStepSize
-    : SETTINGS.style.sliderStepSize;
-  const max = angleMarker
-    ? SETTINGS.angleMarker.maxGapLengthOrDashLength
-    : SETTINGS.style.maxGapLengthOrDashLength;
+// function incrementDashPattern(
+//   opt: ShapeStyleOptions,
+//   angleMarker: boolean
+// ): void {
+//   // increases the length of the dash and the gap by a step
+//   /** gapLength = sliderArray[0] */
+//   /** dashLength= sliderArray[1] - sliderArray[0] */
+//   const step = angleMarker
+//     ? SETTINGS.angleMarker.sliderStepSize
+//     : SETTINGS.style.sliderStepSize;
+//   const max = angleMarker
+//     ? SETTINGS.angleMarker.maxGapLengthOrDashLength
+//     : SETTINGS.style.maxGapLengthOrDashLength;
 
-  if (gapLength + step <= max && dashLength + step <= max) {
-    //sliderDashArray[1] + 2 * step <= max) {
-    // Vue.set(
-    //   sliderDashArray,
-    //   sliderDashArray[0] + step,
-    //   sliderDashArray[1] + 2 * step
-    // );
+//   if (gapLength + step <= max && dashLength + step <= max) {
+//     //sliderDashArray[1] + 2 * step <= max) {
+//     // Vue.set(
+//     //   sliderDashArray,
+//     //   sliderDashArray[0] + step,
+//     //   sliderDashArray[1] + 2 * step
+//     // );
 
-    // const val1 = sliderDashArray[0] + step;
-    // const val2 = sliderDashArray[1] + 2 * step;
-    // sliderDashArray.splice(0);
-    // sliderDashArray.push(val1, val2);
-    oldGapLength = gapLength;
-    oldDashLength = dashLength;
-    gapLength += step;
-    dashLength += step;
-    if (opt.dashArray) {
-      // console.debug(
-      //   "Updating styleoption dash array + step",
-      //   gapLength,
-      //   gapLength + dashLength
-      // );
-      opt.dashArray?.splice(0);
-      opt.dashArray?.push(dashLength, gapLength); // trigger the update
-    }
-  }
-}
+//     // const val1 = sliderDashArray[0] + step;
+//     // const val2 = sliderDashArray[1] + 2 * step;
+//     // sliderDashArray.splice(0);
+//     // sliderDashArray.push(val1, val2);
+//     oldGapLength = gapLength;
+//     oldDashLength = dashLength;
+//     gapLength += step;
+//     dashLength += step;
+//     if (opt.dashArray) {
+//       // console.debug(
+//       //   "Updating styleoption dash array + step",
+//       //   gapLength,
+//       //   gapLength + dashLength
+//       // );
+//       opt.dashArray?.splice(0);
+//       opt.dashArray?.push(dashLength, gapLength); // trigger the update
+//     }
+//   }
+// }
 
-function decrementDashPattern(
-  opt: ShapeStyleOptions,
-  angleMarker: boolean
-): void {
-  // decreases the length of the dash and the gap by a step
-  /** gapLength = sliderArray[0] */
-  /** dashLength= sliderArray[1] - sliderArray[0] */
-  const step = angleMarker
-    ? SETTINGS.angleMarker.sliderStepSize
-    : SETTINGS.style.sliderStepSize;
-  const min = 0;
+// function decrementDashPattern(
+//   opt: ShapeStyleOptions,
+//   angleMarker: boolean
+// ): void {
+//   // decreases the length of the dash and the gap by a step
+//   /** gapLength = sliderArray[0] */
+//   /** dashLength= sliderArray[1] - sliderArray[0] */
+//   const step = angleMarker
+//     ? SETTINGS.angleMarker.sliderStepSize
+//     : SETTINGS.style.sliderStepSize;
+//   const min = 0;
 
-  if (gapLength - step >= min && dashLength - step >= min) {
-    // Vue.set(
-    //   sliderDashArray,
-    //   sliderDashArray[0] - 2 * step,
-    //   sliderDashArray[1] - step
-    // );
-    oldGapLength = gapLength;
-    oldDashLength = dashLength;
-    gapLength -= step;
-    dashLength -= step;
-    if (opt.dashArray) {
-      // console.debug(
-      //   "Updating styleoption dash array - step",
-      //   gapLength,
-      //   gapLength + dashLength
-      // );
-      opt.dashArray?.splice(0);
-      opt.dashArray?.push(dashLength, gapLength); // trigger the update
-    }
-  }
-}
+//   if (gapLength - step >= min && dashLength - step >= min) {
+//     // Vue.set(
+//     //   sliderDashArray,
+//     //   sliderDashArray[0] - 2 * step,
+//     //   sliderDashArray[1] - step
+//     // );
+//     oldGapLength = gapLength;
+//     oldDashLength = dashLength;
+//     gapLength -= step;
+//     dashLength -= step;
+//     if (opt.dashArray) {
+//       // console.debug(
+//       //   "Updating styleoption dash array - step",
+//       //   gapLength,
+//       //   gapLength + dashLength
+//       // );
+//       opt.dashArray?.splice(0);
+//       opt.dashArray?.push(dashLength, gapLength); // trigger the update
+//     }
+//   }
+// }
 
-function distinguishConflictingItems(conflictingProps: string[]): void {
-  conflictingProps.forEach(conflictPropName => {
-    (conflictItems as any)[conflictPropName] = true;
-  });
-}
+// function distinguishConflictingItems(conflictingProps: string[]): void {
+//   conflictingProps.forEach(conflictPropName => {
+//     (conflictItems as any)[conflictPropName] = true;
+//   });
+// }
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
@@ -830,6 +784,9 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
   "labelStyleOptionsMultiple": "(Multiple)",
   "pointRadiusPercent": "Point Radius",
   "strokeColor": "Stroke Color",
-  "strokeWidthPercent": "Stroke Width"
+  "strokeWidthPercent": "Stroke Width",
+  "defaultStyles": "Restore Default Styles",
+  "undoStyles": "Undo Style Changes"
+
 }
 </i18n>

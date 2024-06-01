@@ -428,23 +428,6 @@ onBeforeMount((): void => {
 
 onMounted((): void => {
   filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
-  // EventBus.listen(
-  //   "style-label-conflict-color-reset",
-  //   resetAndRestoreConflictItems
-  // );
-  // EventBus.listen(
-  //   "style-update-conflicting-props",
-  //   (names: { propNames: string[] }): void => {
-  //     // this.conflictingPropNames.forEach(name =>
-  //     //   console.log("old prop", name)
-  //     // );
-  //     conflictingPropNames.splice(0);
-  //     names.propNames.forEach(name => conflictingPropNames.push(name));
-  //     // this.conflictingPropNames.forEach(name =>
-  //     //   console.log("new prop", name)
-  //     // );
-  //   }
-  // );
 });
 
 // function countEnabledProperties(propList: Array<string>) {
@@ -461,11 +444,6 @@ function resetAndRestoreConflictItems(): void {
   // resetAllItemsFromConflict();
   distinguishConflictingItems(conflictingPropNames);
 }
-
-onBeforeUnmount((): void => {
-  // EventBus.unlisten("style-label-conflict-color-reset");
-  // EventBus.unlisten("style-update-conflicting-props");
-});
 
 function overrideDynamicBackStyleDisagreement() {}
 

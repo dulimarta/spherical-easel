@@ -2,7 +2,6 @@ import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { StyleCategory, StyleOptions } from "@/types/Styles";
 import EventBus from "@/eventHandlers/EventBus";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
@@ -10,11 +9,9 @@ import { SECircle } from "@/models/SECircle";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { onBeforeUnmount, onMounted, computed, ref, Ref, watch } from "vue";
+import { computed, ref, Ref, watch } from "vue";
 
 type StyleOptionDiff = {
   prop: string;
@@ -36,8 +33,8 @@ export function useStyleEditor(
   const {
     selectedSENodules,
     oldStyleSelections,
-    initialStyleStatesMap,
-    defaultStyleStatesMap
+    // initialStyleStatesMap,
+    // defaultStyleStatesMap
   } = storeToRefs(seStore);
 
   const commonStyleProperties: Array<string> = [];
@@ -58,29 +55,6 @@ export function useStyleEditor(
   // dataAgreement = true;
   const propDynamicBackStyleCommonValue = ref(false);
 
-  // get enableBackStyleEdit(): boolean {
-  //   // Must be in Back panel
-  //   if (this.panel !== StyleCategory.Back) {
-  //     console.debug(
-  //       "Enable Back Style Edit? No, becasue the user is NOT editing Back panel"
-  //     );
-  //     return false;
-  //   }
-  //   // The user wants automatic back styling
-  //   // [The user does NOT want manual back styling/does NOT want to edit]
-  //   if (this.automaticBackStyle === false) {
-  //     console.debug(
-  //       "Enable Back Style Edit? Yes, becasue the user does not want automatic back style"
-  //     );
-  //     return true;
-  //   }
-  //   console.debug(
-  //     "Enable Back Style Edit? It depend on dynamicBackStyleCommonValue: ",
-  //     !this.propDynamicBackStyleCommonValue
-  //   );
-  //   // We got here when the user requested manual editing of back style
-  //   return !this.propDynamicBackStyleCommonValue;
-  // }
   const anAngleMarkerIsSelected = computed((): boolean => {
     return (
       selectedSENodules.value.filter(seNod => seNod instanceof SEAngleMarker)
@@ -105,81 +79,6 @@ export function useStyleEditor(
 
   function dataAgreement(prop: RegExp): boolean {
     return !conflictingPropNames.value.some((x: string) => x.match(prop));
-  }
-
-  onMounted((): void => {
-    // console.debug(
-    //   "From StyleEditor::mounted. Panel is",
-    //   StyleCategory[this.panel]
-    // );
-    EventBus.listen("style-data-clear", undo);
-    EventBus.listen("style-data-to-default", restoreDefault);
-    // EventBus.listen("save-style-state", saveStyleState);
-  });
-  onBeforeUnmount((): void => {
-    EventBus.unlisten("style-data-clear");
-    EventBus.unlisten("style-data-to-default");
-  });
-
-  function restoreTo(propNames: string[], styleData: StyleOptions[]): void {
-    console.debug("Style data to apply", styleData);
-    filteredNodules.value.forEach((n: Nodule, k: number) => {
-      const updatePayload: StyleOptions = {};
-      propNames.forEach((p: string) => {
-        // if (p === "dashArray") {
-        //   console.log("restore dash array to ", (styleData[k] as any)[p]);
-        // }
-        (updatePayload as any)[p] = (styleData[k] as any)[p];
-      });
-      // console.debug("Updating style of", n, "using", updatePayload);
-      n.updateStyle(panel, updatePayload);
-    });
-    if (styleData.length > 0) {
-      propNames.forEach((p: string) => {
-        (activeStyleOptions as any)[p] = (styleData[0] as any)[p];
-      });
-    }
-  }
-  function undo(ev: { selector: string; panel: StyleCategory }): void {
-    const styleData = initialStyleStatesMap.value.get(panel);
-    if (styleData) {
-      const listOfProps = ev.selector.split(",");
-      if (ev.selector === "labelBackFillColor") {
-        // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
-        listOfProps.push("labelDynamicBackStyle");
-      }
-      if (ev.panel !== undefined && ev.panel === StyleCategory.Back) {
-        // if the user restores the something from the back panel also restore the automaticBackStyling
-        listOfProps.push("dynamicBackStyle");
-      }
-      restoreTo(listOfProps, styleData);
-    }
-
-    // set the color of the conflicting inputs in the style panel to normal
-    EventBus.fire("style-label-conflict-color-reset", {});
-  }
-  function restoreDefault(ev: {
-    selector: string;
-    panel: StyleCategory;
-  }): void {
-    // console.log("ev selector", ev.selector);
-    const styleData = defaultStyleStatesMap.value.get(panel);
-    if (styleData) {
-      const listOfProps = ev.selector.split(",");
-      if (listOfProps.some(prop => prop === "labelBackFillColor")) {
-        // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
-        listOfProps.push("labelDynamicBackStyle");
-      }
-      if (ev.panel === StyleCategory.Back) {
-        // if the user restores the something from the back panel also restore the automaticBackStyling
-        listOfProps.push("dynamicBackStyle");
-      }
-
-      restoreTo(listOfProps, styleData);
-    }
-
-    // set the color of the conflicting inputs in the style panel to normal
-    EventBus.fire("style-label-conflict-color-reset", {});
   }
 
   watch(
@@ -317,9 +216,6 @@ export function useStyleEditor(
         //update the conflicting properties
         const newConflictProps: string[] = [];
         conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-        EventBus.fire("style-update-conflicting-props", {
-          propNames: newConflictProps
-        });
         // this.dataAgreement = false;
       } else {
         // If we reach this point we have EXACTLY ONE object selected
@@ -334,9 +230,6 @@ export function useStyleEditor(
         //update the conflicting properties
         const newConflictProps: string[] = [];
         conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-        EventBus.fire("style-update-conflicting-props", {
-          propNames: newConflictProps
-        });
       }
 
       previousBackstyleContrast = Nodule.getBackStyleContrast();
@@ -355,7 +248,7 @@ export function useStyleEditor(
           } else {
             value = false;
           }
-          EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
+          // EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
         }
       }
     },
@@ -505,81 +398,81 @@ export function useStyleEditor(
     const newConflictProps: string[] = [];
     conflictingPropNames.value.forEach(name => newConflictProps.push(name));
     // console.log("num props sent", newConflictProps.length);
-    EventBus.fire("style-update-conflicting-props", {
-      propNames: newConflictProps
-    });
+    // EventBus.fire("style-update-conflicting-props", {
+    //   propNames: newConflictProps
+    // });
     if (panel === StyleCategory.Back)
       propDynamicBackStyleCommonValue.value = true;
   }
 
-  function compute_diff(
-    opt1: StyleOptions | undefined,
-    opt2: StyleOptions | undefined
-  ): Array<StyleOptionDiff> {
-    if (!opt1 && !opt2) return [];
-    const diffOut: Array<StyleOptionDiff> = [];
-    if (!opt1) {
-      for (const p in opt2) {
-        diffOut.push({
-          prop: p,
-          oldValue: undefined,
-          newValue: (opt2 as any)[p]
-        });
-      }
-      return diffOut;
-    }
-    if (!opt2) {
-      for (const p in opt1) {
-        diffOut.push({
-          prop: p,
-          oldValue: (opt2 as any)[p],
-          newValue: undefined
-        });
-      }
-      return diffOut;
-    }
-    const nameArr: Array<string> = [
-      ...Object.getOwnPropertyNames(opt1),
-      ...Object.getOwnPropertyNames(opt2)
-    ].filter((s: string) => !s.startsWith("__"));
+  // function compute_diff(
+  //   opt1: StyleOptions | undefined,
+  //   opt2: StyleOptions | undefined
+  // ): Array<StyleOptionDiff> {
+  //   if (!opt1 && !opt2) return [];
+  //   const diffOut: Array<StyleOptionDiff> = [];
+  //   if (!opt1) {
+  //     for (const p in opt2) {
+  //       diffOut.push({
+  //         prop: p,
+  //         oldValue: undefined,
+  //         newValue: (opt2 as any)[p]
+  //       });
+  //     }
+  //     return diffOut;
+  //   }
+  //   if (!opt2) {
+  //     for (const p in opt1) {
+  //       diffOut.push({
+  //         prop: p,
+  //         oldValue: (opt2 as any)[p],
+  //         newValue: undefined
+  //       });
+  //     }
+  //     return diffOut;
+  //   }
+  //   const nameArr: Array<string> = [
+  //     ...Object.getOwnPropertyNames(opt1),
+  //     ...Object.getOwnPropertyNames(opt2)
+  //   ].filter((s: string) => !s.startsWith("__"));
 
-    const allPropNames = new Set(nameArr);
+  //   const allPropNames = new Set(nameArr);
 
-    // Verify equivalence of all the style properties
-    [...allPropNames].forEach((p: string) => {
-      const aVal = (opt1 as any)[p];
-      const bVal = (opt2 as any)[p];
-      if (Array.isArray(aVal) && Array.isArray(bVal)) {
-        if (!dashArrayCompare(aVal, bVal)) {
-          diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
-        }
-      } else if (p.search(/Color/) > -1) {
-        // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
-        if (!hslaCompare(bVal, aVal)) {
-          diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
-        }
-      } else if (aVal != bVal)
-        diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
-    });
-    return diffOut;
-  }
+  //   // Verify equivalence of all the style properties
+  //   [...allPropNames].forEach((p: string) => {
+  //     const aVal = (opt1 as any)[p];
+  //     const bVal = (opt2 as any)[p];
+  //     if (Array.isArray(aVal) && Array.isArray(bVal)) {
+  //       if (!dashArrayCompare(aVal, bVal)) {
+  //         diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+  //       }
+  //     } else if (p.search(/Color/) > -1) {
+  //       // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+  //       if (!hslaCompare(bVal, aVal)) {
+  //         diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+  //       }
+  //     } else if (aVal != bVal)
+  //       diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+  //   });
+  //   return diffOut;
+  // }
 
-  function areEquivalentStyles(
-    styleStates1: StyleOptions[],
-    styleStates2: StyleOptions[]
-  ): boolean {
-    if (styleStates1.length !== styleStates2.length) {
-      return false;
-    }
+  // function areEquivalentStyles(
+  //   styleStates1: StyleOptions[],
+  //   styleStates2: StyleOptions[]
+  // ): boolean {
+  //   if (styleStates1.length !== styleStates2.length) {
+  //     return false;
+  //   }
 
-    // The outer every runs on the two input arguments
-    const compare = styleStates1.every(
-      (a: StyleOptions, i: number) =>
-        compute_diff(a, styleStates2[i]).length === 0
-    );
-    // console.debug("areEquivalentStyles?", compare);
-    return compare;
-  }
+  //   // The outer every runs on the two input arguments
+  //   const compare = styleStates1.every(
+  //     (a: StyleOptions, i: number) =>
+  //       compute_diff(a, styleStates2[i]).length === 0
+  //   );
+  //   // console.debug("areEquivalentStyles?", compare);
+  //   return compare;
+  // }
 
   const selectionCount = computed(() => filteredNodules.value.length);
 

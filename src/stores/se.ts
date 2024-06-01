@@ -99,8 +99,8 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 // const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
-const initialStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
-const defaultStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
+// const initialStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
+// const defaultStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
 
 function removeElements(
   removeItems: Array<ActionMode>,
@@ -1276,10 +1276,10 @@ export const useSEStore = defineStore({
       state.selectedSENoduleIds.map(id => oldSelectedSENodules.get(id)!),
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     layers: (): Two.Group[] => layers,
-    initialStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
-      initialStyleStatesMap,
-    defaultStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
-      defaultStyleStatesMap,
+    // initialStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
+    //   initialStyleStatesMap,
+    // defaultStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
+    //   defaultStyleStatesMap,
     hasObjects(state): boolean {
       return (
         state.sePointIds.length > 0 ||

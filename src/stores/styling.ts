@@ -95,6 +95,7 @@ export const useStylingStore = defineStore("style", () => {
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
   let activeStyleGroup: StyleCategory | null = null;
+  let styleIndividuallyAltered = false;
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
@@ -200,7 +201,7 @@ export const useStylingStore = defineStore("style", () => {
     (opt: StyleOptions) => {
       const newOptions: StyleOptions = { ...opt };
       postUpdateStyleOptions = {};
-      let propChanged = false;
+      styleIndividuallyAltered = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = (newOptions as any)[key];
         const oldValue = stylePropertyMap.get(key);
@@ -210,10 +211,10 @@ export const useStylingStore = defineStore("style", () => {
           // );
           (postUpdateStyleOptions as any)[key] = newValue;
           stylePropertyMap.set(key, newValue);
-          propChanged = true;
+          styleIndividuallyAltered = true;
         }
       });
-      if (propChanged) {
+      if (styleIndividuallyAltered) {
         selectedLabels.value.forEach(label => {
           label.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
         });
@@ -290,16 +291,23 @@ export const useStylingStore = defineStore("style", () => {
     }
     const postUpdateKeys = Object.keys(postUpdateStyleOptions);
 
-    if (postUpdateKeys.length > 0 && activeStyleGroup !== null) {
-      const updateTargets =
+    if (
+      postUpdateKeys.length > 0 &&
+      activeStyleGroup !== null &&
+      styleIndividuallyAltered // include this flag, to prevent an extra save after restore do default
+    ) {
+      const updateTargets = Array.from(
         activeStyleGroup === StyleCategory.Label
           ? selectedLabels.value.values()
-          : selectedPlottables.value.values();
+          : selectedPlottables.value.values()
+      );
       const styleCommand = new StyleNoduleCommand(
-        Array.from(updateTargets),
+        updateTargets,
         activeStyleGroup,
-        [postUpdateStyleOptions],
-        [preUpdateStyleOptions]
+        // The StyleOptions array must have the same number of
+        // items as the updateTargets!!!
+        new Array(updateTargets.length).fill(postUpdateStyleOptions),
+        new Array(updateTargets.length).fill(preUpdateStyleOptions)
       );
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
@@ -307,6 +315,44 @@ export const useStylingStore = defineStore("style", () => {
     if (subCommandCount > 0) cmdGroup.push();
   }
 
+  function restoreDefaultStyles() {
+    if (activeStyleGroup === null) return;
+    if (activeStyleGroup === StyleCategory.Label) {
+      const labArray = Array.from(selectedLabels.value.values());
+      const currentStyleOpts = labArray.map(lab =>
+        lab.currentStyleState(activeStyleGroup!!)
+      );
+      const defaultStyleOpts = labArray.map(lab =>
+        lab.defaultStyleState(activeStyleGroup!!)
+      );
+      new StyleNoduleCommand(
+        labArray,
+        activeStyleGroup!!,
+        defaultStyleOpts,
+        currentStyleOpts
+      ).execute();
+    } else if (
+      activeStyleGroup === StyleCategory.Front ||
+      activeStyleGroup === StyleCategory.Back
+    ) {
+      const plotArray = Array.from(selectedPlottables.value.values());
+      const currentStyleOpts = plotArray.map(plot =>
+        plot.currentStyleState(activeStyleGroup!!)
+      );
+      const defaultStyleOpts = plotArray.map(plot =>
+        plot.defaultStyleState(activeStyleGroup!!)
+      );
+      new StyleNoduleCommand(
+        plotArray,
+        activeStyleGroup!!,
+        defaultStyleOpts,
+        currentStyleOpts
+      ).execute();
+    }
+
+    // When restored to default, the styles are NOT individually altered
+    styleIndividuallyAltered = false;
+  }
   return {
     toggleLabelsShowing,
     selectedLabels,
@@ -319,7 +365,8 @@ export const useStylingStore = defineStore("style", () => {
     changeBackContrast,
     selectActiveGroup,
     deselectActiveGroup,
-    persistUpdatedStyleOptions
+    persistUpdatedStyleOptions,
+    restoreDefaultStyles
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };

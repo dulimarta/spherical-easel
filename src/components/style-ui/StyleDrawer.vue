@@ -66,7 +66,10 @@
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
-            :panel="StyleCategory.Front"></FrontBackStyle>
+            :panel="StyleCategory.Front"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
@@ -83,7 +86,10 @@
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
-            :panel="StyleCategory.Back"></FrontBackStyle>
+            :panel="StyleCategory.Back"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
       </v-item-group>
 
@@ -149,6 +155,7 @@ import { useStylingStore } from "@/stores/styling";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { watch } from "vue";
+import { Command } from "@/commands/Command";
 const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
@@ -211,12 +218,16 @@ watch(
   }
 );
 function applyStyleChanges() {
-  styleStore.persistUpdatedStyleOptions()
+  styleStore.persistUpdatedStyleOptions();
 }
 
-function undoStyleChanges() {}
+function undoStyleChanges() {
+  Command.undo();
+}
 
-function restoreDefaultStyles() {}
+function restoreDefaultStyles() {
+  styleStore.restoreDefaultStyles();
+}
 </script>
 <i18n lang="json" locale="en">
 {
