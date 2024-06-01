@@ -130,7 +130,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import Highlighter from "@/eventHandlers/Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
@@ -500,7 +500,7 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
           // set the label display mode
           new StyleNoduleCommand(
             [pt.label.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
                 labelDisplayMode: LabelDisplayMode.CaptionOnly
@@ -518,7 +518,7 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
           // set the label display mode
           new StyleNoduleCommand(
             [pt.label.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
                 labelDisplayMode: LabelDisplayMode.CaptionOnly

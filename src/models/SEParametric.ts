@@ -183,7 +183,7 @@ export class SEParametric
     this._c1DiscontinuityParameterValues.push(
       ...c1DiscontinuityParameterValues
     );
-    this.ref = new Parametric(tNumbers.min, tNumbers.max, isClosed);
+    this.ref = new Parametric(this.name, tNumbers.min, tNumbers.max, isClosed);
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();

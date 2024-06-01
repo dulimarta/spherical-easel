@@ -4,7 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import { SENodule } from "@/models/SENodule";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 
 export class AddSegmentCommand extends Command {
@@ -56,13 +56,13 @@ export class AddSegmentCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seSegment.ref.currentStyleState(StyleEditPanels.Front)
+            this.seSegment.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seSegment.ref.currentStyleState(StyleEditPanels.Back)
+            this.seSegment.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -70,7 +70,7 @@ export class AddSegmentCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -126,13 +126,13 @@ export class AddSegmentCommand extends Command {
       const segmentFrontStyleString = propMap.get("objectFrontStyle");
       if (segmentFrontStyleString !== undefined)
         seSegment.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(segmentFrontStyleString)
         );
       const segmentBackStyleString = propMap.get("objectBackStyle");
       if (segmentBackStyleString !== undefined)
         seSegment.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(segmentBackStyleString)
         );
 
@@ -145,7 +145,7 @@ export class AddSegmentCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

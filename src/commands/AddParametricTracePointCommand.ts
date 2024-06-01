@@ -6,7 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddParametricTracePointCommand extends Command {
   private seTracePoint: SEParametricTracePoint;
@@ -93,13 +93,13 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTracePointFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTracePoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seTracePoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "parametricEndPointseTracePointBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTracePoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seTracePoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
 
@@ -113,7 +113,7 @@ export class AddParametricTracePointCommand extends Command {
       "parametricEndPointseTraceLabelLabelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seTraceLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seTraceLabel.ref.currentStyleState(StyleCategory.Label)
           )
         )
     ].join("&");
@@ -147,7 +147,7 @@ export class AddParametricTracePointCommand extends Command {
       );
       if (pointFrontStyleString !== undefined)
         seTracePoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(pointFrontStyleString)
         );
       const pointBackStyleString = propMap.get(
@@ -155,7 +155,7 @@ export class AddParametricTracePointCommand extends Command {
       );
       if (pointBackStyleString !== undefined)
         seTracePoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(pointBackStyleString)
         );
 
@@ -171,7 +171,7 @@ export class AddParametricTracePointCommand extends Command {
       );
       if (labelStyleString !== undefined) {
         seTracePointLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
       }

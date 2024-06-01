@@ -5,7 +5,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
@@ -118,18 +118,18 @@ export default class Parametric extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
   // private inverseTotalRotationMatrix: Matrix4;
-  constructor(tMin = 0, tMax = 1, closed = false) {
-    super();
+  constructor(noduleName: string = "None", tMin = 0, tMax = 1, closed = false) {
+    super(noduleName);
     this.tMin = tMin;
     this.tMax = tMax;
 
     this._closed = closed;
 
     this.styleOptions.set(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
     // this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
     console.debug(
       "Parametric constructor",
@@ -613,11 +613,11 @@ export default class Parametric extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_PARAMETRIC_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.parametric.dynamicBackStyle)
           return {
             ...DEFAULT_PARAMETRIC_BACK_STYLE,
@@ -639,9 +639,9 @@ export default class Parametric extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   public adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontParts.forEach(
       part =>
@@ -756,7 +756,7 @@ export default class Parametric extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
         const strokeColorFront = frontStyle?.strokeColor ?? "black";
 
         if (Nodule.hslaIsNoFillOrNoStroke(strokeColorFront)) {
@@ -784,7 +784,7 @@ export default class Parametric extends Nodule {
           this.frontParts.forEach(part => part.dashes.push(0));
         }
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         const strokeColorBack = backStyle?.strokeColor ?? "black";
         if (backStyle?.dynamicBackStyle) {
           if (

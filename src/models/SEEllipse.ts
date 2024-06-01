@@ -96,7 +96,9 @@ export class SEEllipse
     this._focus1SEPoint = focus1Point;
     this._focus2SEPoint = focus2Point;
     this._ellipseSEPoint = ellipsePoint;
-    this.ref = createNonFree ? new NonFreeEllipse() : new Ellipse();
+    SEEllipse.ELLIPSE_COUNT++;
+    this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
+    this.ref = createNonFree ? new NonFreeEllipse(this.name) : new Ellipse(this.name);
     this.ref.focus1Vector.copy(focus1Point.locationVector);
     this.ref.focus2Vector.copy(focus2Point.locationVector);
     this.ref.updateDisplay();
@@ -122,8 +124,6 @@ export class SEEllipse
     this.ref.b = this._b;
     this.ref.updateDisplay();
 
-    SEEllipse.ELLIPSE_COUNT++;
-    this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
   }
 
   customStyles(): Set<string> {

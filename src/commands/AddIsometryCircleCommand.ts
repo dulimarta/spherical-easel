@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SECircle } from "@/models/SECircle";
@@ -58,13 +58,13 @@ export class AddIsometryCircleCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySECircle.ref.currentStyleState(StyleEditPanels.Front)
+            this.isometrySECircle.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySECircle.ref.currentStyleState(StyleEditPanels.Back)
+            this.isometrySECircle.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -73,7 +73,7 @@ export class AddIsometryCircleCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.isometrySECircleLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -136,13 +136,13 @@ export class AddIsometryCircleCommand extends Command {
       const CircleFrontStyleString = propMap.get("objectFrontStyle");
       if (CircleFrontStyleString !== undefined)
         isometrySECircle.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(CircleFrontStyleString)
         );
       const CircleBackStyleString = propMap.get("objectBackStyle");
       if (CircleBackStyleString !== undefined)
         isometrySECircle.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(CircleBackStyleString)
         );
 
@@ -155,7 +155,7 @@ export class AddIsometryCircleCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         isometrySECircleLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

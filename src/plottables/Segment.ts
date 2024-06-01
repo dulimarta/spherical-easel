@@ -4,7 +4,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_SEGMENT_FRONT_STYLE,
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
@@ -99,9 +99,9 @@ export default class Segment extends Nodule {
    * Create a plottable segment from three pieces of information: startVector, normalVector, arcLength
    * NOTE: normal x start gives the direction in which the segment is drawn
    */
-  constructor() {
+  constructor(noduleName: string = "None") {
     // Initialize the Group
-    super();
+    super(noduleName);
 
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
@@ -176,8 +176,8 @@ export default class Segment extends Nodule {
     this._backExtra.visible = true;
     this.glowingBackExtra.visible = false;
 
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_SEGMENT_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_SEGMENT_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_SEGMENT_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_SEGMENT_BACK_STYLE);
   }
 
   frontGlowingDisplay(): void {
@@ -436,7 +436,7 @@ export default class Segment extends Nodule {
    */
   clone(): this {
     // Create a new segment and copy all this's properties into it
-    const dup = new Segment();
+    const dup = new Segment(this.name);
     //Copy name and start/end/mid/normal vectors
     dup._arcLength = this._arcLength;
     dup._startVector.copy(this._startVector);
@@ -523,14 +523,14 @@ export default class Segment extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_SEGMENT_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         return DEFAULT_SEGMENT_BACK_STYLE;
       default:
-      case StyleEditPanels.Label: {
+      case StyleCategory.Label: {
         return {};
       }
     }
@@ -539,8 +539,8 @@ export default class Segment extends Nodule {
    * Sets the variables for stroke width glowing/not front/back/extra
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this._frontPart.linewidth =
@@ -673,7 +673,7 @@ export default class Segment extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT PART
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
@@ -725,7 +725,7 @@ export default class Segment extends Nodule {
         }
 
         // BACK PART
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         // no fillColor
 
         if (backStyle?.dynamicBackStyle) {

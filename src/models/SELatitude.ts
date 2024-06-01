@@ -1,15 +1,9 @@
 import { SENodule } from "./SENodule";
 import { SEPoint, SECircle } from "./internal";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import i18n from "@/i18n";
 import { geoLocationToUnitSphere } from "@/composables/earth";
-// import { useSEStore } from "@/stores/se";
-// import { storeToRefs } from "pinia";
-
-// const store = useSEStore();
-// const { inverseTotalRotationMatrix } = storeToRefs(store);
-//const { geoLocationToUnitSphere } = useEarthCoordinate();
 
 export class SELatitude extends SECircle {
   private _latitude = 0;
@@ -73,14 +67,13 @@ export class SELatitude extends SECircle {
     super(SENodule.unregisteredSEPointNorthPole, circleSEPoint, true);
     this._latitude = latitude;
     //turn off the fill of the ref circle
-    SENodule.store.changeStyle({
-      selected: [this.ref],
-      panel: StyleEditPanels.Front,
-      payload: {
+    this.ref.updateStyle(
+      StyleCategory.Front,
+       {
         strokeColor: "hsla(0, 0%, 0%, 1)",
         fillColor: "hsla(0, 0%, 0%, 0)"
       }
-    });
+    );
   }
 
   get latitude(): number {

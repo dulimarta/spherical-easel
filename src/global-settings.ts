@@ -1,5 +1,5 @@
 import { ValueDisplayMode, LabelDisplayMode } from "./types";
-
+import colors from 'vuetify/util/colors'
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
@@ -23,21 +23,34 @@ export const SETTINGS = {
     /* The possible colors to choose from*/
     swatches: [
       [
+        /* first column is xxx-darken-4 */
+        colors.grey.darken4,
+        colors.indigo.darken4,
+        colors.blue.darken4,
+        colors.green.darken4,
+        colors.yellow.darken4,
+        colors.orange.darken4,
+        colors.red.darken4,
+        colors.pink.darken4,
+        colors.purple.darken4,
+        colors.deepPurple.darken4
+      ],
+      [
         //darkest
         "#000000",
-        "#283593",
-        "#1565C0",
-        "#388E3C",
-        "#F9A825",
-        "#EF6C00",
-        "#C62828",
-        "#AD1457",
-        "#6A1B9A",
-        "#4527A0"
+        colors.indigo.darken2,
+        "#1565C0", // blue-800
+        "#388E3C", // green-800
+        "#F9A825", // yellow-800
+        "#EF6C00", // orange-800
+        "#C62828", // red-800
+        "#AD1457", // pink-800
+        "#6A1B9A", // purple-800
+        "#4527A0" // deep-purple-800
       ],
       [
         "#616161",
-        "#3949AB",
+        colors.indigo.base,
         "#1E88E5",
         "#66BB6A",
         "#FDD835",
@@ -49,7 +62,7 @@ export const SETTINGS = {
       ],
       [
         "#BDBDBD",
-        "#7986CB",
+        colors.indigo.lighten2,
         "#64B5F6",
         "#A5D6A7",
         "#FFF176",
@@ -62,7 +75,7 @@ export const SETTINGS = {
       [
         //lightest
         "#FFFFFF",
-        "#C5CAE9",
+        colors.indigo.lighten4,
         "#BBDEFB",
         "#E8F5E9",
         "#FFF9C4",
@@ -265,7 +278,7 @@ export const SETTINGS = {
         back: 2
       }, // The thickness of the segment when drawn,
       dashArray: {
-        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
         front: [0, 0], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
@@ -331,7 +344,7 @@ export const SETTINGS = {
         back: 2
       },
       dashArray: {
-        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
+        reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
         front: [0, 0], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
@@ -1254,14 +1267,16 @@ export const SETTINGS = {
         filePath: ""
       }
     },
-    starConstruction: { //new starconstruction button
+    starConstruction: {
+      //new starconstruction button
       props: {
         emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-star-outline",
         filePath: ""
       }
     },
-    privateConstruction: { //new starconstruction button
+    privateConstruction: {
+      //new starconstruction button
       props: {
         emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",

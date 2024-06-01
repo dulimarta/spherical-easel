@@ -8,7 +8,7 @@
     </span>
 
     <!-- The number selector slider -->
-    <v-slider v-bind:="attrs"
+    <v-slider v-bind:="attrs" :disabled="numSelected == 0 || conflict && numSelected > 1"
     v-model="sliderValue" thumb-label show-ticks>
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
@@ -36,15 +36,7 @@ type ComponentProps = {
   conflict: boolean;
 };
 let props = defineProps<ComponentProps>();
-// const emit = defineEmits(["update:modelValue"]);
-// @PropSync("data") modelValue!: number;
 
-// const styleData: Ref<number> = ref(props.modelValue);
-
-// function valueChanged(val: number): void {
-  // this.$emit("resetColor");
-  // emit("update:modelValue", val);
-// }
 //converts the value of the slider to the text message displayed in the thumb marker
 function thumbMap(val: number): string {
   if (
@@ -64,11 +56,9 @@ function incrementDataValue(): void {
   const step = Number(attrs?.step);
   // console.debug("Increase slider by", step);
   sliderValue.value! += step;
-  // emit("update:modelValue", sliderValue.value);
 }
 function decrementDataValue(): void {
   sliderValue.value! -= Number(attrs?.step ?? 1);
-  // emit("update:modelValue", sliderValue.value);
 }
 </script>
 

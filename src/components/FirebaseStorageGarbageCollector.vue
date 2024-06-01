@@ -5,6 +5,7 @@
       <v-icon v-if="!item.used" @click="deleteFromStorage(item.path, 'construction-svg', svgFiles)">
         mdi-delete
       </v-icon>
+      <span v-else>N/A</span>
     </template>
   </v-data-table>
   <h2>Script Files</h2>
@@ -13,6 +14,7 @@
       <v-icon v-if="!item.used" @click="deleteFromStorage(item.path, 'scripts', scriptFiles)">
         mdi-delete
       </v-icon>
+      <span v-else>N/A</span>
     </template>
   </v-data-table>
   <!-- <v-data-table :items="constructionDetails" /> -->

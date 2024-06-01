@@ -1,4 +1,4 @@
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 
 export interface Stylable {
   /**
@@ -14,5 +14,5 @@ export interface Stylable {
   // backNormalDisplay(): void;
   normalDisplay(): void;
 
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void;
+  updateStyle(mode: StyleCategory, options: StyleOptions): void;
 }

@@ -6,7 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddNSectPointCommand extends Command {
   private seNSectPoint: SENSectPoint;
@@ -77,13 +77,13 @@ export class AddNSectPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seNSectPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.seNSectPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seNSectPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.seNSectPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -91,7 +91,7 @@ export class AddNSectPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -143,13 +143,13 @@ export class AddNSectPointCommand extends Command {
       const nSectPointFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectPointFrontStyleString !== undefined)
         seNSectPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(nSectPointFrontStyleString)
         );
       const nSectPointBackStyleString = propMap.get("objectBackStyle");
       if (nSectPointBackStyleString !== undefined)
         seNSectPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(nSectPointBackStyleString)
         );
 
@@ -162,7 +162,7 @@ export class AddNSectPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

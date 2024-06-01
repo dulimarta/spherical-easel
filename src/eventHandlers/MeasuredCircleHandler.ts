@@ -27,7 +27,7 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
@@ -579,7 +579,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           circleCommandGroup.addCommand(
             new StyleNoduleCommand(
               [this.measurementSEParent.label.ref],
-              StyleEditPanels.Label,
+              StyleCategory.Label,
               [
                 {
                   labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo

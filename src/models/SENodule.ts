@@ -10,7 +10,7 @@ import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SEPoint } from "./SEPoint";
@@ -89,6 +89,7 @@ export abstract class SENodule implements Visitable {
   public name = "";
 
   constructor() {
+    this.name = ""
     this.id = NODE_COUNT++;
   }
 
@@ -99,10 +100,7 @@ export abstract class SENodule implements Visitable {
         descendants of the object don't exist. */
   protected _exists = true;
 
-  /* If the object is not visible then showing = true (The user can hide objects)*/
-  protected _showing = true;
-
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
+    /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -125,7 +123,7 @@ export abstract class SENodule implements Visitable {
   public abstract shallowUpdate(): void;
 
   public updatePlottableStyle(
-    updateMode: StyleEditPanels,
+    updateMode: StyleCategory,
     styleData: StyleOptions
   ): void {
     // TODO: Why do we have to pass the Label, Front, and Back here?
@@ -318,18 +316,12 @@ export abstract class SENodule implements Visitable {
   public isNonFreeLine(): boolean {
     return false;
   }
-  // Only returns true if this is an SELabel
-  public isLabel(): boolean {
-    return false;
-  }
-  // Only returns true if this is an SEOneDimensional
+
+  // // Only returns true if this is an SEOneDimensional
   public isOneDimensional(): boolean {
     return false;
   }
-  // Only returns true if this is an Labelable
-  // public isLabelable(): boolean {
-  //   return false;
-  // }
+
   public getLabel(): SELabel | null {
     return null
   }
@@ -346,7 +338,6 @@ export abstract class SENodule implements Visitable {
     if (
       this.isFreePoint() ||
       this.isPointOnOneDimensional() ||
-      this.isLabel() ||
       this.isSegmentOfLengthPi() ||
       this.isLineWithAntipodalPoints()
     )
@@ -418,21 +409,22 @@ export abstract class SENodule implements Visitable {
 
   set showing(b: boolean) {
     // Set the showing variable
-    this._showing = b;
-
-    // Set the display for the corresponding plottable object
-    this.ref?.setVisible(b);
+    if (this.ref) {
+      this.ref.showing = b; // internally this invokes setVisible()
+      // Set the display for the corresponding plottable object
+      // this.ref?.setVisible(b);
+    }
   }
 
   get showing(): boolean {
-    return this._showing;
+    return this.ref?.showing ?? false;
   }
 
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
     //console.log("SENodule set glow of ", this.name, " to ", b);
     //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
-    if (/*this._selected || */ !this._showing) return;
+    if (/*this._selected || */ !this.showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref?.glowingDisplay();
@@ -444,9 +436,9 @@ export abstract class SENodule implements Visitable {
   /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
    *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
-    console.log("SENodule::selected() arg", b);
+    // console.log("SENodule::selected() arg", b);
     // selecting has no effect on hidden objects
-    if (!this._showing) return;
+    if (!this.showing) return;
     this._selected = b;
     if (b) {
       // Set the display for the corresponding plottable object

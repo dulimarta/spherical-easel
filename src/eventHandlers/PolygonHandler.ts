@@ -16,7 +16,7 @@ import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCom
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PolygonHandler extends Highlighter {
@@ -380,7 +380,7 @@ export default class PolygonHandler extends Highlighter {
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
             [newSELabel.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
                 labelDisplayMode: SETTINGS.polygon.measuringChangesLabelModeTo
@@ -904,17 +904,17 @@ export default class PolygonHandler extends Highlighter {
         polygonCommandGroup.addCommand(
           new StyleNoduleCommand(
             [seg.label.ref],
-            StyleEditPanels.Label,
+            StyleCategory.Label,
             [
               {
-                // panel: StyleEditPanels.Front,
+                // panel: StyleCategory.Front,
                 // labelVisibility: true,
                 labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
               }
             ],
             [
               {
-                // panel: StyleEditPanels.Front,
+                // panel: StyleCategory.Front,
                 // labelVisibility: seg.label!.showing,
                 labelDisplayMode: seg.label.ref.labelDisplayMode
               }

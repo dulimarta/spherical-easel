@@ -5,7 +5,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_POLYGON_FRONT_STYLE,
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
@@ -52,11 +52,6 @@ export default class Polygon extends Nodule {
    * for all i
    */
   private interiorDirectionMultipliers: number[] = [];
-
-  /**
-   * Vuex global state
-   */
-  // protected store = AppStore; //
 
   /**
    * The area of the polygon. This must be updated before the updateDisplay can be called
@@ -111,8 +106,8 @@ export default class Polygon extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(segmentList: SESegment[], segmentFlippedList: boolean[]) {
-    super();
+  constructor(noduleName: string, segmentList: SESegment[], segmentFlippedList: boolean[]) {
+    super(noduleName);
     this.seEdgeSegments.push(...segmentList);
     // this.edgeSegments.push(...segmentList.map(seg => seg.ref));
     this.segmentIsFlipped.push(...segmentFlippedList);
@@ -179,8 +174,8 @@ export default class Polygon extends Nodule {
     this.backGradientColor.color = SETTINGS.polygon.dynamicBackStyle
       ? Nodule.contrastFillColor(SETTINGS.polygon.drawn.fillColor.front)
       : SETTINGS.polygon.drawn.fillColor.back;
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_POLYGON_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_POLYGON_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_POLYGON_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_POLYGON_BACK_STYLE);
   }
 
   /**
@@ -986,11 +981,11 @@ export default class Polygon extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_POLYGON_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.parametric.dynamicBackStyle)
           return {
             ...DEFAULT_POLYGON_BACK_STYLE,
@@ -1028,7 +1023,7 @@ export default class Polygon extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
@@ -1040,7 +1035,7 @@ export default class Polygon extends Nodule {
         }
 
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
             Nodule.hslaIsNoFillOrNoStroke(

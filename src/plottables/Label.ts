@@ -4,7 +4,7 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_LABEL_TEXT_STYLE
 } from "@/types/Styles";
 import { LabelDisplayMode, LabelParentTypes } from "@/types";
@@ -161,8 +161,10 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
-  constructor(parentType: LabelParentTypes) {
-    super();
+  static isEarthMode = false
+
+  constructor(noduleName: string, parentType: LabelParentTypes) {
+    super(noduleName);
 
     this.seLabelParentType = parentType;
 
@@ -189,9 +191,9 @@ export default class Label extends Nodule {
     this.glowingBackText.linewidth = SETTINGS.label.glowingStrokeWidth.back;
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
 
-    this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
-    // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
-    // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Label, DEFAULT_LABEL_TEXT_STYLE);
+    // this.styleOptions.set(StyleCategory.Front, DEFAULT_LABEL_FRONT_STYLE);
+    // this.styleOptions.set(StyleCategory.Back, DEFAULT_LABEL_BACK_STYLE);
   }
 
   set valueDisplayMode(vdm: ValueDisplayMode) {
@@ -209,7 +211,7 @@ export default class Label extends Nodule {
   set shortUserName(name: string) {
     this._shortUserName = name;
     // const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
-    this.updateStyle(StyleEditPanels.Label, {
+    this.updateStyle(StyleCategory.Label, {
       labelDisplayText: name
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -222,13 +224,13 @@ export default class Label extends Nodule {
    * Return and set the caption associated with this object
    */
   get caption(): string {
-    // const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    // const labelStyle = this.styleOptions.get(StyleCategory.Label);
     // return labelStyle?.labelDisplayCaption ?? "No Label";
     return this._caption;
   }
   set caption(cap: string) {
     this._caption = cap;
-    this.updateStyle(StyleEditPanels.Label, {
+    this.updateStyle(StyleCategory.Label, {
       labelDisplayCaption: cap
     });
   }
@@ -266,7 +268,7 @@ export default class Label extends Nodule {
    * Set the initial label display mode and update the display
    */
   set initialLabelDisplayMode(mode: LabelDisplayMode) {
-    this.updateStyle(StyleEditPanels.Label, {
+    this.updateStyle(StyleCategory.Label, {
       labelDisplayMode: mode
     });
     // this.textLabelMode = mode;
@@ -274,7 +276,7 @@ export default class Label extends Nodule {
     // console.log("Label initialLabelDisplayMode", mode);
   }
   get labelDisplayMode(): LabelDisplayMode {
-    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    const labelStyle = this.styleOptions.get(StyleCategory.Label);
     return labelStyle?.labelDisplayMode ?? LabelDisplayMode.NameOnly;
   }
   /**  Return the a rectangle in pixel space of the text*/
@@ -395,7 +397,7 @@ export default class Label extends Nodule {
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+  updateStyle(mode: StyleCategory, options: StyleOptions): void {
     super.updateStyle(mode, options);
 
     if (options.labelDisplayText) {
@@ -430,8 +432,8 @@ export default class Label extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
-    if (panel === StyleEditPanels.Label) {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
+    if (panel === StyleCategory.Label) {
       let labelDisplayMode = LabelDisplayMode.NameOnly;
 
       switch (this.seLabelParentType) {
@@ -485,7 +487,7 @@ export default class Label extends Nodule {
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
-    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    const labelStyle = this.styleOptions.get(StyleCategory.Label);
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
     this.frontText.scale = (Label.textScaleFactor * textScalePercent) / 100;
     this.backText.scale = (Label.textScaleFactor * textScalePercent) / 100;
@@ -514,13 +516,13 @@ export default class Label extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
-        const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+        const labelStyle = this.styleOptions.get(StyleCategory.Label);
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
         if (this.value.length > 0) {
           if (this.seLabelParentType === "point") {
-            if (!Nodule.store.isEarthMode) {
+            if (!Label.isEarthMode) {
               //For coordinates of a point
               labelText =
                 "(" +
@@ -675,7 +677,7 @@ export default class Label extends Nodule {
         this.glowingBackText.rotation = labelStyle?.labelTextRotation ?? 0;
 
         // FRONT
-        // const frontStyle = this.styleOptions.get(StyleEditPanels.Front)
+        // const frontStyle = this.styleOptions.get(StyleCategory.Front)
         const frontFillColor =
           labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
         const backFillColor =

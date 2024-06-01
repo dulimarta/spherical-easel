@@ -15,6 +15,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SELabel } from "@/models/internal";
 // import { Group } from "two.js/src/group";
 // import { Vector } from "two.js/src/vector";
 const MESHSIZE = 10;
@@ -173,7 +174,7 @@ export default class SelectionHandler extends Highlighter {
       if (keyEvent.code === "KeyA" && !keyEvent.shiftKey && keyEvent.metaKey) {
         SelectionHandler.store.seNodules
           .map(n => n as SENodule)
-          .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
+          .filter((n: SENodule) => n.showing && !(n instanceof SELabel)) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
@@ -185,7 +186,7 @@ export default class SelectionHandler extends Highlighter {
       if (keyEvent.code === "KeyA" && keyEvent.ctrlKey) {
         SelectionHandler.store.seNodules
           .map(n => n as SENodule)
-          .filter((n: SENodule) => n.showing && !n.isLabel()) //no hidden objects allowed //no labels allowed
+          .filter((n: SENodule) => n.showing && !(n instanceof SELabel)) //no hidden objects allowed //no labels allowed
           .forEach((n: SENodule) => {
             this.keyPressSelection.push(n);
             if (n.ref) n.ref.glowingDisplay();
@@ -360,7 +361,7 @@ export default class SelectionHandler extends Highlighter {
       //     if (
       //       (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
       //       (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-      //       p.isLabel() // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
+      //       p instance of SELabel // You are not allow to select labels, labels are attributes of an object, so like color they are not selectable.
       //     ) {
       //       return false;
       //     } else {
@@ -405,7 +406,7 @@ export default class SelectionHandler extends Highlighter {
         //   if (
         //     (p instanceof SEAntipodalPoint && !p.isUserCreated) ||
         //     (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-        //     p.isLabel() // no labels can be selected
+        //     p instanceof SELabel // no labels can be selected
         //   ) {
         //     return false;
         //   } else {
@@ -470,7 +471,7 @@ export default class SelectionHandler extends Highlighter {
             );
             const hitSENodules = SelectionHandler.store
               .findNearbySENodules(sphereVec, this.currentScreenVector)
-              .filter((n: SENodule) => !n.isLabel()) // remove all labels from the selection
+              .filter((n: SENodule) => !(n instanceof SELabel)) // remove all labels from the selection
               .filter((n: SENodule) => {
                 if (
                   n instanceof SEIntersectionPoint ||
@@ -616,7 +617,7 @@ export default class SelectionHandler extends Highlighter {
           // find all the nearby objects
           nearBySENodules = SelectionHandler.store
             .findNearbySENodules(sphereVector, screenVector)
-            .filter((n: SENodule) => !n.isLabel()) // remove any labels
+            .filter((n: SENodule) => !(n instanceof SELabel)) // remove any labels
             .filter((n: SENodule) => {
               if (
                 n instanceof SEIntersectionPoint ||

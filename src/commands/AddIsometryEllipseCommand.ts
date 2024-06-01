@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -58,13 +58,13 @@ export class AddIsometryEllipseCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySEEllipse.ref.currentStyleState(StyleEditPanels.Front)
+            this.isometrySEEllipse.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySEEllipse.ref.currentStyleState(StyleEditPanels.Back)
+            this.isometrySEEllipse.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -73,7 +73,7 @@ export class AddIsometryEllipseCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.isometrySEEllipseLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -144,13 +144,13 @@ export class AddIsometryEllipseCommand extends Command {
       const EllipseFrontStyleString = propMap.get("objectFrontStyle");
       if (EllipseFrontStyleString !== undefined)
         isometrySEEllipse.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(EllipseFrontStyleString)
         );
       const EllipseBackStyleString = propMap.get("objectBackStyle");
       if (EllipseBackStyleString !== undefined)
         isometrySEEllipse.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(EllipseBackStyleString)
         );
 
@@ -163,7 +163,7 @@ export class AddIsometryEllipseCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         isometrySEEllipseLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

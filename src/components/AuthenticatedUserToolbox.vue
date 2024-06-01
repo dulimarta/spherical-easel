@@ -219,6 +219,8 @@ type ComponentProps = {
   expandedView: boolean;
 };
 const props = defineProps<ComponentProps>();
+/* User account feature is initially disabled. To unlock this feature
+     The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
 onKeyDown(
   true, // true: accept all keys
   (event: KeyboardEvent) => {

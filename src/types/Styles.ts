@@ -2,22 +2,30 @@ import { SETTINGS } from "@/global-settings";
 // We move the declaration of LabelDisplayMode from this file
 // to @/types/index.ts to solve the circular dependency issue
 import { LabelDisplayMode } from "@/types";
-export enum StyleEditPanels {
+export enum StyleCategory {
   Label,
   Front,
   Back,
   Advanced
 }
 
-export interface StyleOptions {
-  // panel?: StyleEditPanels; // TODO: delete the panel field
+
+export type StyleOptions = ShapeStyleOptions & LabelStyleOptions
+export type ShapeStyleOptions = {
   strokeWidthPercent?: number;
   strokeColor?: string; // TODO : replace the type to "Two.Color"
   fillColor?: string;
-  dashArray?: number[];
+  dashArray?: Array<number>;
   reverseDashArray?: boolean;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
+  angleMarkerRadiusPercent?: number;
+  angleMarkerTickMark?: boolean;
+  angleMarkerDoubleArc?: boolean;
+  angleMarkerArrowHeads?: boolean;
+}
+
+export type LabelStyleOptions = {
   labelTextStyle?: string;
   labelTextFamily?: string;
   labelTextDecoration?: string;
@@ -29,60 +37,64 @@ export interface StyleOptions {
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   labelDynamicBackStyle?: boolean;
-  angleMarkerRadiusPercent?: number;
-  angleMarkerTickMark?: boolean;
-  angleMarkerDoubleArc?: boolean;
-  angleMarkerArrowHeads?: boolean;
 }
 
-export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
+export type StylePropertyValue = number | string | boolean | LabelDisplayMode | Array<number>;
+
+export const DEFAULT_POINT_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.point.drawn.fillColor.front,
   pointRadiusPercent: SETTINGS.point.radiusPercent.front,
-  strokeColor: SETTINGS.point.drawn.strokeColor.front
+  strokeColor: SETTINGS.point.drawn.strokeColor.front,
+  strokeWidthPercent: SETTINGS.point.drawn.pointStrokeWidth.front,
 };
 
-export const DEFAULT_POINT_BACK_STYLE: StyleOptions = {
+export const DEFAULT_POINT_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.point.dynamicBackStyle,
   fillColor: SETTINGS.point.drawn.fillColor.back,
   pointRadiusPercent: SETTINGS.point.radiusPercent.back,
-  strokeColor: SETTINGS.point.drawn.strokeColor.back
+  strokeColor: SETTINGS.point.drawn.strokeColor.back,
+  strokeWidthPercent: SETTINGS.point.drawn.pointStrokeWidth.back,
 };
 
-export const DEFAULT_NONFREEPOINT_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_NONFREEPOINT_FRONT_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_POINT_FRONT_STYLE,
   fillColor: SETTINGS.point.nonFree.fillColor.front,
   strokeColor: SETTINGS.point.nonFree.strokeColor.front,
   pointRadiusPercent: SETTINGS.point.nonFree.scalePercent
 };
 
-export const DEFAULT_NONFREEPOINT_BACK_STYLE: StyleOptions = {
+export const DEFAULT_NONFREEPOINT_BACK_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_POINT_BACK_STYLE,
   fillColor: SETTINGS.point.nonFree.fillColor.back,
   strokeColor: SETTINGS.point.nonFree.strokeColor.back,
   pointRadiusPercent: SETTINGS.point.nonFree.scalePercent,
   dynamicBackStyle: SETTINGS.point.dynamicBackStyle
 };
 
-export const DEFAULT_LINE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_LINE_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.line.drawn.strokeColor.front,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.line.drawn.dashArray.front,
   reverseDashArray: SETTINGS.line.drawn.dashArray.reverse.front
 };
 
-export const DEFAULT_LINE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_LINE_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.line.dynamicBackStyle,
   strokeColor: SETTINGS.line.drawn.strokeColor.back,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.line.drawn.dashArray.back,
   reverseDashArray: SETTINGS.line.drawn.dashArray.reverse.back
 };
-export const DEFAULT_NONFREE_LINE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_LINE_FRONT_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_LINE_FRONT_STYLE,
   strokeColor: SETTINGS.line.nonFree.strokeColor.front,
   dashArray: SETTINGS.line.nonFree.dashArray.front,
   reverseDashArray: SETTINGS.line.nonFree.dashArray.reverse.front,
   strokeWidthPercent: SETTINGS.line.nonFree.scalePercent
 };
 
-export const DEFAULT_NONFREE_LINE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_LINE_BACK_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_LINE_BACK_STYLE,
   strokeColor: SETTINGS.line.nonFree.strokeColor.back,
   strokeWidthPercent: SETTINGS.line.nonFree.scalePercent,
   dashArray: SETTINGS.line.nonFree.dashArray.back,
@@ -90,14 +102,14 @@ export const DEFAULT_NONFREE_LINE_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.line.dynamicBackStyle
 };
 
-export const DEFAULT_SEGMENT_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_SEGMENT_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.segment.drawn.strokeColor.front,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.segment.drawn.dashArray.front,
   reverseDashArray: SETTINGS.segment.drawn.dashArray.reverse.front
 };
 
-export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
+export const DEFAULT_SEGMENT_BACK_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.segment.drawn.strokeColor.back,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.segment.drawn.dashArray.back,
@@ -105,14 +117,16 @@ export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
 };
 
-export const DEFAULT_NONFREE_SEGMENT_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_SEGMENT_FRONT_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_SEGMENT_FRONT_STYLE,
   strokeColor: SETTINGS.segment.nonFree.strokeColor.front,
   dashArray: SETTINGS.segment.nonFree.dashArray.front,
   reverseDashArray: SETTINGS.segment.nonFree.dashArray.reverse.front,
   strokeWidthPercent: SETTINGS.segment.nonFree.scalePercent
 };
 
-export const DEFAULT_NONFREE_SEGMENT_BACK_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_SEGMENT_BACK_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_SEGMENT_BACK_STYLE,
   strokeColor: SETTINGS.segment.nonFree.strokeColor.back,
   strokeWidthPercent: SETTINGS.segment.nonFree.scalePercent,
   dashArray: SETTINGS.segment.nonFree.dashArray.back,
@@ -120,7 +134,7 @@ export const DEFAULT_NONFREE_SEGMENT_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
 };
 
-export const DEFAULT_CIRCLE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_CIRCLE_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.circle.drawn.fillColor.front,
   strokeColor: SETTINGS.circle.drawn.strokeColor.front,
   strokeWidthPercent: 100,
@@ -128,7 +142,7 @@ export const DEFAULT_CIRCLE_FRONT_STYLE: StyleOptions = {
   reverseDashArray: SETTINGS.circle.drawn.dashArray.reverse.front
 };
 
-export const DEFAULT_CIRCLE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_CIRCLE_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.circle.dynamicBackStyle,
   fillColor: SETTINGS.circle.drawn.fillColor.back,
   strokeColor: SETTINGS.circle.drawn.strokeColor.back,
@@ -136,7 +150,8 @@ export const DEFAULT_CIRCLE_BACK_STYLE: StyleOptions = {
   dashArray: SETTINGS.circle.drawn.dashArray.back,
   reverseDashArray: SETTINGS.circle.drawn.dashArray.reverse.back
 };
-export const DEFAULT_NONFREE_CIRCLE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_CIRCLE_FRONT_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_CIRCLE_FRONT_STYLE,
   strokeColor: SETTINGS.circle.nonFree.strokeColor.front,
   fillColor: SETTINGS.circle.nonFree.fillColor.front,
   dashArray: SETTINGS.circle.nonFree.dashArray.front,
@@ -144,7 +159,8 @@ export const DEFAULT_NONFREE_CIRCLE_FRONT_STYLE: StyleOptions = {
   strokeWidthPercent: SETTINGS.circle.nonFree.scalePercent
 };
 
-export const DEFAULT_NONFREE_CIRCLE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_CIRCLE_BACK_STYLE: ShapeStyleOptions = {
+  ...DEFAULT_CIRCLE_BACK_STYLE,
   strokeColor: SETTINGS.circle.nonFree.strokeColor.back,
   fillColor: SETTINGS.circle.nonFree.fillColor.back,
   strokeWidthPercent: SETTINGS.circle.nonFree.scalePercent,
@@ -152,14 +168,14 @@ export const DEFAULT_NONFREE_CIRCLE_BACK_STYLE: StyleOptions = {
   reverseDashArray: SETTINGS.circle.nonFree.dashArray.reverse.back,
   dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
 };
-export const DEFAULT_ELLIPSE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_ELLIPSE_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.ellipse.drawn.fillColor.front,
   strokeColor: SETTINGS.ellipse.drawn.strokeColor.front,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.ellipse.drawn.dashArray.front,
   reverseDashArray: SETTINGS.ellipse.drawn.dashArray.reverse.front
 };
-export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_ELLIPSE_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle,
   fillColor: SETTINGS.ellipse.drawn.fillColor.back,
   strokeColor: SETTINGS.ellipse.drawn.strokeColor.back,
@@ -167,7 +183,7 @@ export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
   dashArray: SETTINGS.ellipse.drawn.dashArray.back,
   reverseDashArray: SETTINGS.ellipse.drawn.dashArray.reverse.back
 };
-export const DEFAULT_NONFREE_ELLIPSE_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_ELLIPSE_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.ellipse.nonFree.strokeColor.front,
   fillColor: SETTINGS.ellipse.nonFree.fillColor.front,
   dashArray: SETTINGS.ellipse.nonFree.dashArray.front,
@@ -175,7 +191,7 @@ export const DEFAULT_NONFREE_ELLIPSE_FRONT_STYLE: StyleOptions = {
   strokeWidthPercent: SETTINGS.ellipse.nonFree.scalePercent
 };
 
-export const DEFAULT_NONFREE_ELLIPSE_BACK_STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_ELLIPSE_BACK_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.ellipse.nonFree.strokeColor.back,
   fillColor: SETTINGS.ellipse.nonFree.fillColor.back,
   strokeWidthPercent: SETTINGS.ellipse.nonFree.scalePercent,
@@ -183,15 +199,15 @@ export const DEFAULT_NONFREE_ELLIPSE_BACK_STYLE: StyleOptions = {
   reverseDashArray: SETTINGS.ellipse.nonFree.dashArray.reverse.back,
   dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle
 };
-export const DEFAULT_POLYGON_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_POLYGON_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.polygon.drawn.fillColor.front
 };
-export const DEFAULT_POLYGON_BACK_STYLE: StyleOptions = {
+export const DEFAULT_POLYGON_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.polygon.dynamicBackStyle,
   fillColor: SETTINGS.polygon.drawn.fillColor.back
 };
 
-export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
   strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,
   strokeWidthPercent: 100,
@@ -203,7 +219,7 @@ export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: StyleOptions = {
   angleMarkerRadiusPercent: 100
 };
 
-export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
+export const DEFAULT_ANGLE_MARKER_BACK_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.angleMarker.drawn.fillColor.back,
   strokeColor: SETTINGS.angleMarker.drawn.strokeColor.back,
   strokeWidthPercent: 100,
@@ -213,7 +229,7 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };
 
-export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
+export const DEFAULT_LABEL_TEXT_STYLE: LabelStyleOptions = {
   labelDisplayMode: LabelDisplayMode.NameOnly,
   labelDisplayText: "",
   labelDisplayCaption: "",
@@ -227,14 +243,14 @@ export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
   labelDynamicBackStyle: SETTINGS.label.dynamicBackStyle
 };
 
-export const DEFAULT_PARAMETRIC_FRONT_STYLE: StyleOptions = {
+export const DEFAULT_PARAMETRIC_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.parametric.drawn.dashArray.front,
   reverseDashArray: SETTINGS.parametric.drawn.dashArray.reverse.front
 };
 
-export const DEFAULT_PARAMETRIC_BACK_STYLE: StyleOptions = {
+export const DEFAULT_PARAMETRIC_BACK_STYLE: ShapeStyleOptions = {
   dynamicBackStyle: SETTINGS.parametric.dynamicBackStyle,
   strokeColor: SETTINGS.parametric.drawn.strokeColor.back,
   strokeWidthPercent: 100,

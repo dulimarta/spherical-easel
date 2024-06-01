@@ -7,7 +7,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddNSectLineCommand extends Command {
   private seNSectLine: SENSectLine;
@@ -60,13 +60,13 @@ export class AddNSectLineCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seNSectLine.ref.currentStyleState(StyleEditPanels.Front)
+            this.seNSectLine.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seNSectLine.ref.currentStyleState(StyleEditPanels.Back)
+            this.seNSectLine.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -74,7 +74,7 @@ export class AddNSectLineCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -149,13 +149,13 @@ export class AddNSectLineCommand extends Command {
       const nSectLineFrontStyleString = propMap.get("objectFrontStyle");
       if (nSectLineFrontStyleString !== undefined)
         seNSectLine.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(nSectLineFrontStyleString)
         );
       const nSectLineBackStyleString = propMap.get("objectBackStyle");
       if (nSectLineBackStyleString !== undefined)
         seNSectLine.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(nSectLineBackStyleString)
         );
 
@@ -168,7 +168,7 @@ export class AddNSectLineCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

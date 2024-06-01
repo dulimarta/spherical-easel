@@ -1,12 +1,10 @@
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { StyleOptions, StyleCategory } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
-import { SEStoreType } from "@/stores/se";
-//import { Group } from "two.js/src/group";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
@@ -20,17 +18,18 @@ const tmpVector = new Vector3();
  */
 export default abstract class Nodule implements Stylable, Resizeable {
   //public static NODULE_COUNT = 0;
-  static store: SEStoreType;
   //public id = 0;
+  /* If the object is not visible then showing = true (The user can hide objects)*/
+  protected _showing = true;
+  readonly name: string = '<noname-nodule>'
 
-  constructor() {
+
+  constructor(noduleName: string) {
+    this.name = noduleName
     // this.id = Nodule.NODULE_COUNT;
     // Nodule.NODULE_COUNT++;
   }
 
-  static setGlobalStore(store: SEStoreType): void {
-    Nodule.store = store;
-  }
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */
@@ -46,7 +45,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     plottableProperties
   >();
 
-  protected styleOptions: Map<StyleEditPanels, StyleOptions> = new Map();
+  protected styleOptions: Map<StyleCategory, StyleOptions> = new Map();
   /**
    * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
    * when resetting/loading.
@@ -76,7 +75,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract setSelectedColoring(flag: boolean): void;
 
   /** Get the default style state of the Nodule */
-  abstract defaultStyleState(mode: StyleEditPanels): StyleOptions;
+  abstract defaultStyleState(mode: StyleCategory): StyleOptions;
 
   /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;
@@ -192,7 +191,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
 
   /** Get the current style state of the Nodule */
-  currentStyleState(mode: StyleEditPanels): StyleOptions {
+  currentStyleState(mode: StyleCategory): StyleOptions {
     return this.styleOptions.get(mode) ?? {};
   }
   /**
@@ -200,7 +199,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+  updateStyle(mode: StyleCategory, options: StyleOptions): void {
     // console.debug("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
     // console.log(
@@ -216,5 +215,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
+  }
+
+  set showing(b: boolean) {
+    this._showing = b;
+    this.setVisible(b)
+  }
+
+  get showing(): boolean {
+    return this._showing
   }
 }

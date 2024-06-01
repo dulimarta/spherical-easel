@@ -7,7 +7,7 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddPolarPointCommand extends Command {
   private sePolarPoint: SEPolarPoint;
@@ -81,13 +81,13 @@ export class AddPolarPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePolarPoint.ref.currentStyleState(StyleEditPanels.Front)
+            this.sePolarPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.sePolarPoint.ref.currentStyleState(StyleEditPanels.Back)
+            this.sePolarPoint.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -95,7 +95,7 @@ export class AddPolarPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -143,13 +143,13 @@ export class AddPolarPointCommand extends Command {
       const polarPointFrontStyleString = propMap.get("objectFrontStyle");
       if (polarPointFrontStyleString !== undefined)
         sePolarPoint.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(polarPointFrontStyleString)
         );
       const polarPointBackStyleString = propMap.get("objectBackStyle");
       if (polarPointBackStyleString !== undefined)
         sePolarPoint.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(polarPointBackStyleString)
         );
 
@@ -162,7 +162,7 @@ export class AddPolarPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

@@ -4,7 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 
 export class AddEllipseCommand extends Command {
@@ -61,13 +61,13 @@ export class AddEllipseCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seEllipse.ref.currentStyleState(StyleEditPanels.Front)
+            this.seEllipse.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seEllipse.ref.currentStyleState(StyleEditPanels.Back)
+            this.seEllipse.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -75,7 +75,7 @@ export class AddEllipseCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -125,13 +125,13 @@ export class AddEllipseCommand extends Command {
       const ellipseFrontStyleString = propMap.get("objectFrontStyle");
       if (ellipseFrontStyleString !== undefined)
         seEllipse.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(ellipseFrontStyleString)
         );
       const ellipseBackStyleString = propMap.get("objectBackStyle");
       if (ellipseBackStyleString !== undefined)
         seEllipse.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(ellipseBackStyleString)
         );
 
@@ -144,7 +144,7 @@ export class AddEllipseCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

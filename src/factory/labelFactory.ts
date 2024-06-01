@@ -1,7 +1,7 @@
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { LabelParentTypes, SavedNames } from "@/types";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { Vector3 } from "three";
 
 export function createLabel(
@@ -19,6 +19,6 @@ export function createLabel(
   // }
   seLabel.locationVector.copy(seLabelLocation);
   if (styles)
-    seLabel.updatePlottableStyle(StyleEditPanels.Label, styles);
+    seLabel.updatePlottableStyle(StyleCategory.Label, styles);
   return seLabel;
 }

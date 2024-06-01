@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SELine } from "@/models/SELine";
@@ -58,13 +58,13 @@ export class AddIsometryLineCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySELine.ref.currentStyleState(StyleEditPanels.Front)
+            this.isometrySELine.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySELine.ref.currentStyleState(StyleEditPanels.Back)
+            this.isometrySELine.ref.currentStyleState(StyleCategory.Back)
           )
         ),
       // All labels have these attributes
@@ -73,7 +73,7 @@ export class AddIsometryLineCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.isometrySELineLabel.ref.currentStyleState(
-              StyleEditPanels.Label
+              StyleCategory.Label
             )
           )
         ),
@@ -136,13 +136,13 @@ export class AddIsometryLineCommand extends Command {
       const LineFrontStyleString = propMap.get("objectFrontStyle");
       if (LineFrontStyleString !== undefined)
         isometrySELine.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(LineFrontStyleString)
         );
       const LineBackStyleString = propMap.get("objectBackStyle");
       if (LineBackStyleString !== undefined)
         isometrySELine.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(LineBackStyleString)
         );
 
@@ -155,7 +155,7 @@ export class AddIsometryLineCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         isometrySELineLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

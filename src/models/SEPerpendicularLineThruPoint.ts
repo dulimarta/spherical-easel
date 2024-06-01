@@ -111,7 +111,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     }
 
     // Update visibility
-    if (this._exists && this._showing) {
+    if (this._exists && this.showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

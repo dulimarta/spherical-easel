@@ -12,26 +12,23 @@
         {{ " " + t("labelStyleOptionsMultiple") }}
       </span>
     </span>
-    <v-tooltip location="bottom">
-      <template v-slot:activator="{ props }">
-        <span v-bind="props">
-          <v-checkbox
-            v-model="noColorData"
-            :label="noDataUILabel"
-            color="indigo darken-3"
-            hide-details
-            density="compact"
-            @click="toggleNoColor"></v-checkbox>
-        </span>
-      </template>
+    <v-switch
+      id="check-btn"
+      :disabled="numSelected == 0 || (conflict && numSelected > 1)"
+      v-model="noColorData"
+      :label="noDataUILabel"
+      color="secondary"
+      hide-details
+      density="compact"
+      @click="toggleNoColor"></v-switch>
+    <v-tooltip location="bottom" activator="#check-btn">
       {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
     </v-tooltip>
   </div>
   <div class="flex-row">
     <!-- The color picker -->
-    <v-color-picker
+    <v-color-picker :disabled="true"
       border
-      :disabled="noColorData"
       hide-sliders
       hide-canvas
       :show-swatches="!noColorData"
@@ -40,9 +37,9 @@
       :swatches="colorSwatches"
       v-model="internalColor"
       mode="hexa"
-      id="colorPicker"
-      @update:model-value="colorChanged"></v-color-picker>
-    <HintButton style="align-self: flex-start;"
+      id="colorPicker"></v-color-picker>
+    <HintButton
+      style="align-self: flex-start"
       type="colorInput"
       @click="toggleColorInputs"
       :disabled="noColorData"
@@ -78,9 +75,9 @@ type ComponentProps = {
   numSelected: number;
 };
 const props = defineProps<ComponentProps>();
-const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
-let internalColor = defineModel({ type: String });
+let pickedColor = defineModel({ type: String });
+const internalColor = ref(Color(pickedColor.value).hexa())
 
 const noColorData = ref(false); // no data means noFill or noStroke
 let preNoColor: string = NO_HSLA_DATA;
@@ -94,26 +91,17 @@ const isOnLabelPanel = ref(false);
 const showColorInputs = ref(false);
 
 const colorSwatches = ref(SETTINGS.style.swatches);
-let noDataStr = "";
 const noDataUILabel = ref(t("noFill"));
 
+watch(() => internalColor.value, newColor => {
+  pickedColor.value = Color(newColor).hexa()
+})
+
 function toggleNoColor(ev: PointerEvent): void {
-  console.log("What is toggle flag?", noColorData.value);
-  // emit("update:modelValue", noColorData.value ? "none" : Color(internalColor).hsl())
-  // emit("resetColor");
+  const hslValue = Color(internalColor.value).hexa()
+  pickedColor.value = !noColorData.value ? "none" : hslValue
 }
-function colorChanged(arg: string) {
-  let newColor = Color(arg).hsl().string();
-  const toks = newColor.split(",");
-  // Note: the Color function does not product the alpha value
-  // we have to insert the alpha value manually
-  if (toks.length == 3) {
-    // only three tokens, missing the alpha value
-    newColor = newColor.replace(/\)$/, ", 1.0)").replace(/^hsl/, "hsla");
-  }
-  console.log("Color changed to", arg, newColor);
-  emit("update:modelValue", newColor);
-}
+
 // Vue component life cycle hook
 onMounted((): void => {
   // console.log("mounting!", hslaColor);
@@ -126,7 +114,6 @@ onMounted((): void => {
   const propName = props.styleName.replace("Color", "");
   const firstLetter = props.styleName.charAt(0);
   const inTitleCase = firstLetter.toUpperCase() + propName.substring(1);
-  noDataStr = `no${inTitleCase}`;
   var re = /fill/gi;
   noDataUILabel.value =
     props.styleName.search(re) === -1 ? t("noStroke") : t("noFill"); // the noStroke/noFill option
@@ -135,18 +122,6 @@ onMounted((): void => {
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
-// onBeforeUpdate((): void => {
-//   console.log("before update Simple color selector", internalColor.value);
-// const col = internalColor.value.hsla;
-// console.debug("Color changed to", col);
-// const hue = col.h.toFixed(0);
-// const sat = (col.s * 100).toFixed(0) + "%";
-// const lum = (col.l * 100).toFixed(0) + "%";
-// const alpha = col.a.toFixed(3);
-// console.debug("update:modelValue", `hsla(${hue},${sat},${lum},${alpha})`);
-// emit("update:modelValue", `hsla(${hue},${sat},${lum},${alpha})`);
-// });
-
 function toggleColorInputs(): void {
   // if (!noData) {
   showColorInputs.value = !showColorInputs.value;
@@ -154,13 +129,6 @@ function toggleColorInputs(): void {
   //   showColorInputs = false;
   // }
 }
-
-// watch(
-//   () => props.modelValue,
-//   (hsla: string | undefined) => {
-//     // internalColor.value = Color(hsla).hexa()
-//   }
-// );
 
 watch(
   () => noColorData.value,

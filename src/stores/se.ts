@@ -21,7 +21,7 @@ import {
   plottableType,
   SEIntersectionReturnType,
 } from "@/types";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { StyleCategory, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
   intersectCircleWithEllipse,
@@ -62,7 +62,7 @@ type PiniaAppState = {
   canvasHeight: number;
   // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   inverseTotalRotationMatrix: Matrix4;
-  styleSavedFromPanel: StyleEditPanels;
+  styleSavedFromPanel: StyleCategory;
   sePointIds: Array<number>;
   seLineIds: Array<number>;
   seSegmentIds: Array<number>;
@@ -99,8 +99,8 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 // const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
-const initialStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
-const defaultStyleStatesMap = new Map<StyleEditPanels, StyleOptions[]>();
+// const initialStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
+// const defaultStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
 
 function removeElements(
   removeItems: Array<ActionMode>,
@@ -411,7 +411,7 @@ export const useSEStore = defineStore({
     sePolygonIds: [],
     seTransformationIds: [],
     oldSelectedSENoduleIDs: [],
-    styleSavedFromPanel: StyleEditPanels.Label,
+    styleSavedFromPanel: StyleCategory.Label,
     selectedSENoduleIds: [],
     disabledTools: [],
     inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -935,43 +935,7 @@ export const useSEStore = defineStore({
     clearUnsavedFlag(): void {
       this.hasUnsavedNodules = false;
     },
-    changeStyle({
-      selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
-      panel,
-      payload
-    }: {
-      selected: Nodule[];
-      panel: StyleEditPanels;
-      payload: StyleOptions;
-    }): void {
-      // Important: object destructuring below seems to solve the issue
-      // of merging undefined properties in updateStyle()
-      const opt: StyleOptions = { ...payload };
-      // if (
-      //   payload.backStyleContrast &&
-      //   payload.backStyleContrast != Nodule.getBackStyleContrast()
-      // ) {
-      //   // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
-      //   Nodule.setBackStyleContrast(payload.backStyleContrast);
-      //   console.debug("Changing Global backstyle contrast");
-      //   this.this.seNodules.forEach((n: SENodule) => {
-      //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      //   });
-      // }
-      selected.forEach((n: Nodule) => {
-        // console.log("node", n, opt);
-        n.updateStyle(panel, opt);
-      });
-    },
-    changeBackContrast(newContrast: number): void {
-      Nodule.setBackStyleContrast(newContrast);
-      // update all objects display
-      this.seNodules.forEach(seNodule => {
-        // update the style of the objects
-        // console.log("name", seNodule.name);
-        seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      });
-    },
+
     changeSegmentNormalVectorArcLength(change: {
       segmentId: number;
       normal: Vector3;
@@ -1053,27 +1017,27 @@ export const useSEStore = defineStore({
         oldSelectedSENodules.set(seNodule.id, seNodule);
       });
     },
-    recordStyleState(data: {
-      panel: StyleEditPanels;
-      selected: Array<Nodule>;
-    }): void {
-      console.debug("About to record style", data.selected.length, "objects");
-      const current = data.selected.map((n: Nodule) =>
-        n.currentStyleState(data.panel)
-      );
-      console.debug(
-        "SEStore recording style of selected objects in",
-        StyleEditPanels[data.panel],
-        "with",
-        current
-      );
-      initialStyleStatesMap.set(data.panel, current);
-      defaultStyleStatesMap.set(
-        data.panel,
-        data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
-      );
-      // this.initialBackStyleContrast = data.backContrast;
-    },
+    // recordStyleState(data: {
+    //   panel: StyleCategory;
+    //   selected: Array<Nodule>;
+    // }): void {
+    //   console.debug("About to record style", data.selected.length, "objects");
+    //   const current = data.selected.map((n: Nodule) =>
+    //     n.currentStyleState(data.panel)
+    //   );
+    //   console.debug(
+    //     "SEStore recording style of selected objects in",
+    //     StyleCategory[data.panel],
+    //     "with",
+    //     current
+    //   );
+    //   initialStyleStatesMap.set(data.panel, current);
+    //   defaultStyleStatesMap.set(
+    //     data.panel,
+    //     data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
+    //   );
+    //   // this.initialBackStyleContrast = data.backContrast;
+    // },
     // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
     unglowAllSENodules(): void {
       seNodules.forEach(p => {
@@ -1312,10 +1276,10 @@ export const useSEStore = defineStore({
       state.selectedSENoduleIds.map(id => oldSelectedSENodules.get(id)!),
     temporaryNodules: (): Array<Nodule> => temporaryNodules,
     layers: (): Two.Group[] => layers,
-    initialStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
-      initialStyleStatesMap,
-    defaultStyleStatesMap: (): Map<StyleEditPanels, StyleOptions[]> =>
-      defaultStyleStatesMap,
+    // initialStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
+    //   initialStyleStatesMap,
+    // defaultStyleStatesMap: (): Map<StyleCategory, StyleOptions[]> =>
+    //   defaultStyleStatesMap,
     hasObjects(state): boolean {
       return (
         state.sePointIds.length > 0 ||

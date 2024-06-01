@@ -1,40 +1,35 @@
 <template>
   <!-- For debugging -->
-  <div style="">
-    Display mode {{ styleOptions.labelDisplayMode }}
-  </div>
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
-    :disabled="selectionCount < 1"
-    icon-name="mdi-tag-edit"
-    :tooltip="selectionCount > 0 ? t('enableTooltip') : t('disableTooltip')"
-    tooltip-location="left"
+    :show-popup="showPopup!"
+    :disabled="selectedLabels.size < 1"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
-    <!-- Labels visible? {{ allLabelsShowing }} -->
     <template #tabs>
-      <v-tab><v-icon>mdi-pencil</v-icon></v-tab>
+      <v-tab>
+        <v-icon>mdi-pencil</v-icon>
+      </v-tab>
       <v-tab><v-icon>mdi-format-text</v-icon></v-tab>
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
     </template>
     <template #pages>
-      <!-- Label Text Options -->
-      <v-window-item class="pa-2">
-        <!-- Label Text Selections -->
+      <v-window-item>
         <v-text-field
           v-model="styleOptions.labelDisplayText"
-          :disabled="selectionCount < 1"
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayText')
+          "
           :label="t('labelText')"
           :counter="maxLabelDisplayTextLength"
-          ref="labelDisplayText"
           :class="{
             shake: animatedInput.labelDisplayText,
             conflict: conflictItems.labelDisplayText
           }"
           variant="outlined"
           density="compact"
-          :placeholder="placeHolderText(selectionCount, false)"
-          v-bind:error-messages="
+          :placeholder="placeHolderText(selectedLabels.size, false)"
+          :error-messages="
             t(labelDisplayTextErrorMessageKey, {
               max: maxLabelDisplayTextLength
             })
@@ -43,14 +38,14 @@
             labelDisplayTextCheck,
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
-
         <v-text-field
-          v-if="hasCaption(styleOptions)"
-          :disabled="selectionCount < 1"
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption') || !hasCaption(styleOptions)
+          "
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
           :counter="maxLabelDisplayCaptionLength"
-          :placeholder="placeHolderText(selectionCount, true)"
+          :placeholder="placeHolderText(selectedLabels.size, true)"
           ref="labelDisplayCaption"
           :class="{
             shake: animatedInput.labelDisplayCaption,
@@ -68,38 +63,45 @@
             labelDisplayCaptionCheck,
             labelDisplayCaptionTruncate(styleOptions)
           ]"></v-text-field>
-        <SimpleNumberSelector
-          :numSelected="selectionCount"
+        <PropertySlider
+          :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextScalePercent"
           :title="t('labelTextScale')"
-          ref="labelTextScalePercent"
           :color="conflictItems.labelTextScalePercent ? 'red' : ''"
-          :conflict="conflictItems.labelTextScalePercent"
+          :conflict="hasDisagreement('labelTextScalePercent')"
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <!-- Rotation {{ labelTextRotationAmount }} -->
-        <SimpleNumberSelector
-          :numSelected="selectionCount"
+        <PropertySlider
+          :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextRotation"
-          ref="labelTextRotation"
-          :conflict="conflictItems.labelTextRotation"
+          :conflict="hasDisagreement('labelTextRotation')"
           :class="{ shake: animatedInput.labelTextRotation }"
           :title="t('labelTextRotation')"
           :color="conflictItems.labelTextRotation ? 'red' : ''"
-          v-on:resetColor="conflictItems.labelTextRotation = false"
           :min="-3.14159"
           :max="3.14159"
           :step="0.39269875"
           :thumb-string-values="
             textRotationSelectorThumbStrings
-          "></SimpleNumberSelector>
+          "></PropertySlider>
+        <DisagreementOverride
+          :style-properties="[
+            'labelDisplayText',
+            'labelDisplayCaption',
+            'labelTextScalePercent',
+            'labelTextRotation'
+          ]" />
       </v-window-item>
-      <v-window-item class="pa-2">
+      <v-window-item>
         <!-- Label Text Family Selections -->
         <v-select
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelTextFamily')
+          "
           v-model.lazy="styleOptions.labelTextFamily"
           v-bind:label="t('labelTextFamily')"
           :items="labelTextFamilyItems"
@@ -114,6 +116,9 @@
           variant="outlined"
           density="compact"></v-select>
         <v-select
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelTextStyle')
+          "
           v-model.lazy="styleOptions.labelTextStyle"
           v-bind:label="t('labelTextStyle')"
           :items="labelTextStyleItems"
@@ -128,6 +133,9 @@
           variant="outlined"
           density="compact"></v-select>
         <v-select
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelTextDecoration')
+          "
           v-model.lazy="styleOptions.labelTextDecoration"
           v-bind:label="t('labelTextDecoration')"
           :items="labelTextDecorationItems"
@@ -143,6 +151,9 @@
           density="compact"></v-select>
         <!-- Label Display Mode Selections -->
         <v-select
+          :disabled="
+            selectedLabels.size < 1 || hasDisagreement('labelDisplayMode')
+          "
           v-model.lazy="styleOptions.labelDisplayMode"
           :class="[
             'pa-0',
@@ -151,126 +162,71 @@
               conflict: conflictItems.labelDisplayMode
             }
           ]"
-          :disabled="labelDisplayModeValueFilter(styleOptions).length < 2 && false"
           ref="labelDisplayMode"
           v-bind:label="t('labelDisplayMode')"
-          :items="labelDisplayModeItems"
+          :items="filteredLabelDisplayModeItems"
           item-title="text"
           item-value="value"
-          @change="conflictItems.labelDisplayMode = false"
           variant="outlined"
           density="compact"></v-select>
+        <DisagreementOverride
+          :style-properties="[
+            'labelDisplayMode',
+            'labelTextDecoration',
+            'labelTextFamily',
+            'labelTextStyle'
+          ]" />
       </v-window-item>
-      <v-window-item class="pa-2">
-        <SimpleColorSelector
+      <v-window-item>
+        <PropertyColorPicker
           :title="t('labelFrontFillColor')"
-          :numSelected="selectionCount"
+          :numSelected="selectedLabels.size"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
           :conflict="conflictItems.labelFrontFillColor"
-          v-on:resetColor="conflictItems.labelFrontFillColor = false"
-          v-model="styleOptions.labelFrontFillColor"></SimpleColorSelector>
-        <SimpleColorSelector
-          :numSelected="selectionCount"
+          v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
+        <v-switch
+          color="secondary"
+          v-model="styleOptions.labelDynamicBackStyle"
+          label="Label Automatic Back Style"></v-switch>
+        <PropertyColorPicker
+          v-if="!styleOptions.labelDynamicBackStyle"
+          :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="conflictItems.labelBackFillColor"
-          v-on:resetColor="conflictItems.labelBackFillColor = false"
           ref="labelBackFillColor"
           style-name="labelBackFillColor"
-          v-model="styleOptions.labelBackFillColor"></SimpleColorSelector>
+          v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
+        <DisagreementOverride
+          :style-properties="['labelFrontFillColor', 'labelBackFillColor']" />
       </v-window-item>
+    </template>
+    <template #bottom>
+      <div
+        class="ma-1"
+        :style="{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          gap: '8px'
+        }">
+        <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
+        <v-tooltip activator="#default-btn" :text="t('defaultStyles')"></v-tooltip>
+        <v-btn id="restore-btn" @click="emits('undo-styles')" icon="mdi-undo" size="small"></v-btn>
+        <v-btn id="default-btn" @click="emits('apply-default-styles')" icon="mdi-backup-restore" size="small"></v-btn>
+      </div>
     </template>
   </PopOverTabs>
 
-  <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-  <!--OverlayWithFixButton
-            v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
-            z-index="1"
-            i18n-title-line="style.styleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="distinguishConflictingItems(conflictingProps);
-            forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
-          </!--OverlayWithFixButton-->
-  <!--OverlayWithFixButton
-            v-if="!dataAgreement(/labelTextScalePercent|labelTextRotation/)"
-            z-index="1"
-            i18n-title-line="style.styleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="distinguishConflictingItems(conflictingProps);
-            forceDataAgreement([`labelTextScalePercent`,`labelTextRotation`])">
-          </OverlayWithFixButton-->
-  <!--OverlayWithFixButton
-            v-if="!dataAgreement(/labelFrontFillColor/)"
-            z-index="1"
-            i18n-title-line="style.styleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="distinguishConflictingItems(conflictingProps);
-            forceDataAgreement([`labelFrontFillColor`])">
-          </OverlayWithFixButton-->
-  <!--
-
-          <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
-            z-index="10"
-            i18n-title-line="style.dynamicBackStyleHeader"
-            i18n-button-label="style.disableDynamicBackStyle"
-            i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-            @click="styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
-          </OverlayWithFixButton>
-
-          <OverlayWithFixButton v-if="!dataAgreement(/labelBackFillColor/)"
-            z-index="1"
-            i18n-title-line="style.styleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="distinguishConflictingItems(conflictingProps);
-            forceDataAgreement([`labelBackFillColor`])">
-          </OverlayWithFixButton-->
-
-  <!-- Show more or less styling options -->
-  <!--v-tooltip
-    location="bottom"
-    max-width="400px"
-    class="pa-0 pm-0">
-    <template v-slot:activator="{ props }">
-      <v-btn
-        v-bind="props"
-        class="text-subtitle-2"
-        text
-        variant="plain"
-        ripple
-        size="x-small">
-        <v-icon v-if="false">mdi-chevron-up</v-icon>
-        <v-icon v-else>mdi-chevron-down</v-icon>
-      </v-btn>
-    </template>
-  </v-tooltip-->
-  <Dialog
+  <!--Dialog
     ref="backStyleDisagreementDialog"
     :title="t('backStyleDisagreement')"
     width="50%"
     :yes-text="t('enableCommonStyle')"
     :yes-action="overrideDynamicBackStyleDisagreement">
     {{ t("message.multipleObjectDifferingStyles") }}
-  </Dialog>
-  <!--OverlayWithFixButton
-            v-if="!dataAgreement(/labelDynamicBackStyle/)"
-            z-index="100"
-            i18n-title-line="style.backStyleDisagreement"
-            i18n-button-label="style.enableCommonStyle"
-            i18n-button-tool-tip="style.backStyleDifferentValuesToolTip"
-            @click="forceDataAgreement([`labelDynamicBackStyle`]); styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
-          </!--OverlayWithFixButton-->
-  <Dialog
-    ref="labelNotVisibleDialog"
-    width="50%"
-    :title="t('labelNotVisible')"
-    :yes-text="t('makeLabelsVisible')"
-    :yes-action="toggleAllLabelsVisibility">
-    {{ t("clickToMakeLabelsVisible") }}
-  </Dialog>
+  </!--Dialog-->
+
 </template>
 <script setup lang="ts">
 import {
@@ -283,26 +239,23 @@ import {
   Ref
 } from "vue";
 import { SENodule } from "@/models/SENodule";
-import Nodule from "@/plottables/Nodule";
-import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { LabelStyleOptions, StyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "@/components/style-ui/SimpleNumberSelector.vue";
-import SimpleColorSelector from "@/components/style-ui/SimpleColorSelector.vue";
+// import EventBus from "@/eventHandlers/EventBus";
+import PropertySlider from "./StylePropertySlider.vue";
+import PropertyColorPicker from "./StylePropertyColorPicker.vue";
+import DisagreementOverride from "./DisagreementOverride.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
-import Label from "@/plottables/Label";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { useStyleEditor } from "@/composables/StyleEditor";
-import { useDialogSequencer } from "@/composables/DialogSequencer";
 const attrs = useAttrs();
-import PopOverTabs from "../PopOverTabs.vue";
+import PopOverTabs from "./PopOverTabs.vue";
 import { useAttrs } from "vue";
 import { useStylingStore } from "@/stores/styling";
-type labelDisplayModeItem = {
+type LabelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
   optionRequiresMeasurementValueToExist: boolean;
@@ -332,30 +285,29 @@ type ConflictItems = {
   labelBackFillColor: boolean;
   labelFrontFillColor: boolean;
 };
-// type LabelStyleProps = {
-// panel: StyleEditPanels;
-// activePanel: number;
-// noduleFilterFunction: () => void,
-// };
-// const props = defineProps<LabelStyleProps>();
+type LabelStyleProps = {
+  showPopup: boolean;
+  // panel: StyleCategory;
+  // activePanel: number;
+  // noduleFilterFunction: () => void,
+};
+const emits = defineEmits([
+  'apply-styles',
+  'undo-styles',
+  'apply-default-styles'
+])
+const props = defineProps<LabelStyleProps>();
+let groupSelection = defineModel<number>({});
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-// const { selectionCount, styleOptions} = storeToRefs(styleStore)
+const { selectedLabels, styleOptions, forceAgreement } =
+  storeToRefs(styleStore);
+const { hasDisagreement } = styleStore;
 const { t } = useI18n();
-const {
-  selectionCount,
-  dataAgreement,
-  conflictingProps,
-  forceDataAgreement,
-  styleOptions
-} = useStyleEditor(StyleEditPanels.Label, labelFilter, labelMapper);
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
 const { selectedSENodules } = storeToRefs(seStore);
-const dialogSequencer = useDialogSequencer();
 const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
-const labelNotVisibleDialog: Ref<DialogAction | null> = ref(null);
-// $refs
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
 // const labelTextScalePercentage = ref(
@@ -364,23 +316,12 @@ const labelDisplayCaption = ref(null);
 // const labelTextRotationAmount: Ref<number> = ref(
 //   styleOptions.value.labelTextRotation ?? 0
 // );
-let popupVisible = false
-
-// Include only those objects that have SELabel
-function labelFilter(n: SENodule): boolean {
-  return n.getLabel() !== null;
-}
-
-// Map each object to its plottable label
-function labelMapper(n: SENodule): Nodule {
-  return (n as unknown as Labelable).label!.ref!;
-}
+let popupVisible = false;
 
 // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
 // *not* using the contrast (i.e. not using the dynamic back styling)
 // usingAutomaticBackStyle = true means the program is setting the style of the back objects
 // private usingAutomaticBackStyle = true;
-
 
 const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
@@ -401,60 +342,58 @@ const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
 const labelDisplayCaptionErrorMessageKey = "";
 const labelDisplayCaptionTestResults = [true, true];
-const labelVisibiltyState = new Map<string,boolean>();
-
+const labelVisibiltyState = new Map<string, boolean>();
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
-
-watch(() => selectedSENodules.value, resetAllItemsFromConflict);
-function resetAllItemsFromConflict(): void {
-  // console.log("here");
-  const key = Object.keys(conflictItems);
-  key.forEach(prop => {
-    (conflictItems as any)[prop] = false;
-  });
-}
+const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
 
 watch(
   () => selectedSENodules.value,
   (afterArr: SENodule[], beforeArr: SENodule[]) => {
-    if (popupVisible === false) return
-    const test1 = dataAgreement(/labelDynamicBackStyle/);
-    // console.info("Watching", arr.length, test1, allLabelsShowing.value);
-    if (!dataAgreement(/labelDynamicBackStyle/)) {
-      //   dialogSequencer.showDialog(backStyleDisagreementDialog.value!);
-    }
-    beforeArr.filter(n => n.getLabel() !== null)
+    if (popupVisible === false) return;
+    beforeArr
+      .filter(n => n.getLabel() !== null)
       .forEach(n => {
-        const theLabel = n.getLabel()
-        const prevLabelState = labelVisibiltyState.get(n.name)
-        if (typeof prevLabelState === 'undefined') {
-          labelVisibiltyState.set(n.name, theLabel!.showing)
+        const theLabel = n.getLabel();
+        const prevLabelState = labelVisibiltyState.get(n.name);
+        if (typeof prevLabelState === "undefined") {
+          labelVisibiltyState.set(n.name, theLabel!.showing);
         } else {
-          theLabel!.showing = prevLabelState
+          theLabel!.showing = prevLabelState;
         }
-    })
+      });
 
-    afterArr.filter(n => n.getLabel() != null)
+    afterArr
+      .filter(n => n.getLabel() != null)
       .forEach(n => {
-        const withLabel = n as unknown as Labelable
-        const prevLabelState = labelVisibiltyState.get(n.name)
-        if (typeof prevLabelState === 'undefined') {
-          labelVisibiltyState.set(n.name, withLabel.label!.showing)
+        const withLabel = n as unknown as Labelable;
+        const prevLabelState = labelVisibiltyState.get(n.name);
+        if (typeof prevLabelState === "undefined") {
+          labelVisibiltyState.set(n.name, withLabel.label!.showing);
         }
-        withLabel.label!.showing = true
-      })
-    // if (!allLabelsShowing.value) {
-    //   dialogSequencer.showDialog(labelNotVisibleDialog.value!);
-    // toggleAllLabelsVisibility()
-    // }
+        withLabel.label!.showing = true;
+      });
   },
   {
     deep: true
   }
 );
 
+watch(
+  () => styleOptions.value,
+  (opt: LabelStyleOptions) => {
+    /* When caption text is not null, exclude display option with "Value" in it? */
+    if (opt.labelDisplayCaption) {
+      filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
+        z => !z.optionRequiresMeasurementValueToExist
+      );
+    } else {
+      filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
+    }
+  },
+  { deep: true }
+);
 // watch(
 //   () => labelTextScalePercentage.value,
 //   (textScale: number) => {
@@ -487,81 +426,48 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  EventBus.listen(
-    "style-label-conflict-color-reset",
-    resetAndRestoreConflictItems
-  );
-  EventBus.listen(
-    "style-update-conflicting-props",
-    (names: { propNames: string[] }): void => {
-      // this.conflictingPropNames.forEach(name =>
-      //   console.log("old prop", name)
-      // );
-      conflictingPropNames.splice(0);
-      names.propNames.forEach(name => conflictingPropNames.push(name));
-      // this.conflictingPropNames.forEach(name =>
-      //   console.log("new prop", name)
-      // );
-    }
-  );
+  filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
 });
 
+// function countEnabledProperties(propList: Array<string>) {
+//   let count = 0;
+//   // console.debug("Style options", styleOptions)
+//   propList.forEach(propName => {
+//     console.debug(`Is ${propName} present?`);
+//     if ((styleOptions.value as any)[propName]) count++;
+//   });
+//   return count;
+// }
+
 function resetAndRestoreConflictItems(): void {
-  resetAllItemsFromConflict();
+  // resetAllItemsFromConflict();
   distinguishConflictingItems(conflictingPropNames);
 }
 
-onBeforeUnmount((): void => {
-  EventBus.unlisten("style-label-conflict-color-reset");
-  EventBus.unlisten("style-update-conflicting-props");
-});
+function overrideDynamicBackStyleDisagreement() {}
 
-// const allLabelsShowing = computed((): boolean => {
-//   return selectedSENodules.value.every(node => {
-//     if (node.isLabelable()) {
-//       return (node as unknown as Labelable).label!.showing;
-//     } else {
-//       return true;
-//     }
-//   });
-// });
-
-function overrideDynamicBackStyleDisagreement() {
-  // forceDataAgreement([`labelDynamicBackStyle`]);
-  // styleOptions.value.labelDynamicBackStyle =
-  //   !styleOptions.value.labelDynamicBackStyle;
-  // // dialogSequencer.hideDialog(backStyleDisagreementDialog.value!)
-}
-
+// TODO: this function needs more work: label names are required
 function checkLabelsVisibility() {
-  popupVisible = true
-  selectedSENodules.value.forEach(n => {
-    const nLabel = n.getLabel()
-    if (nLabel) {
-      const labelVisibility = nLabel.showing
-      labelVisibiltyState.set(n.name, labelVisibility);
-      if (!nLabel.showing) {
-        nLabel.showing = true;
-      }
-    }
-  });
-}
+  popupVisible = true;
 
-function resetLabelsVisibility() {
-  popupVisible = false
-  selectedSENodules.value.forEach(n => {
-    const nLabel = n.getLabel()
-    if (nLabel) {
-      if (labelVisibiltyState.has(n.name)) {
-        nLabel.showing = false;
-      }
+  selectedLabels.value.forEach(n => {
+    if (!labelVisibiltyState.has(n.name)) {
+      labelVisibiltyState.set(n.name, n.showing);
+    }
+    if (!n.showing) {
+      n.showing = true;
     }
   });
 }
-function toggleAllLabelsVisibility(): void {
-  // EventBus.fire("toggle-label-visibility", { fromPanel: true });
-  // dialogSequencer.hideDialog(labelNotVisibleDialog.value!)
-  styleStore.toggleLabelsShowing();
+// TODO: this function needs more work
+function resetLabelsVisibility() {
+  popupVisible = false;
+  groupSelection.value = undefined;
+  selectedLabels.value.forEach(n => {
+    const visibility = labelVisibiltyState.get(n.name);
+    if (typeof visibility === "boolean") n.showing = visibility;
+  });
+  emits('apply-styles')
 }
 
 // These methods are linked to the Style Data fade-in-card
@@ -579,7 +485,7 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
   return true;
 }
 
-function labelDisplayTextTruncate(opt: StyleOptions): boolean {
+function labelDisplayTextTruncate(opt: LabelStyleOptions): boolean {
   if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
     if (
       opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
@@ -606,7 +512,7 @@ function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
   }
   return true;
 }
-function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
+function labelDisplayCaptionTruncate(opt: LabelStyleOptions): boolean {
   if (opt.labelDisplayCaption !== undefined) {
     if (
       opt.labelDisplayCaption.length >
@@ -624,38 +530,6 @@ function labelDisplayCaptionTruncate(opt: StyleOptions): boolean {
     // }
   }
   return true;
-}
-
-// This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
-// and if the caption is empty, NameAndCaption and Caption Only are not options
-function labelDisplayModeValueFilter(
-  opt: StyleOptions
-  // items: labelDisplayModeItem[]
-): labelDisplayModeItem[] {
-  const returnItems: labelDisplayModeItem[] = [];
-  const allLabels = selectedSENodules.value
-    .filter(labelFilter)
-    .map(labelMapper)
-    .map((n: Nodule) => n as Label);
-  if (allLabels.every((lab: Label) => lab.value.length !== 0)) {
-    // value is present in all labels so pass long all options in labelDisplayModeItems
-    returnItems.push(...labelDisplayModeItems);
-  } else {
-    // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
-    returnItems.push(
-      ...labelDisplayModeItems.filter(
-        item => !item.optionRequiresMeasurementValueToExist
-      )
-    );
-  }
-
-  if (opt.labelDisplayCaption && opt.labelDisplayCaption.length > 0) {
-    // caption is present in all labels
-    return returnItems;
-  } else {
-    // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
-    return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
-  }
 }
 
 function placeHolderText(numSelected: number, caption: boolean): string {
@@ -706,7 +580,7 @@ function distinguishConflictingItems(conflictingProps: string[]): void {
     // }, 1000);
   });
 }
-function hasCaption(opt: StyleOptions | undefined): boolean {
+function hasCaption(opt: LabelStyleOptions | undefined): boolean {
   if (!opt) return false;
   return (
     opt.labelDisplayMode === LabelDisplayMode.CaptionOnly ||
@@ -714,7 +588,10 @@ function hasCaption(opt: StyleOptions | undefined): boolean {
   );
 }
 
-const labelDisplayModeItems: labelDisplayModeItem[] = [
+function applyStyles() {
+  // props.showPopup = false
+}
+const labelDisplayModeItems: LabelDisplayModeItem[] = [
   {
     text: t("labelDisplayModes.nameOnly"),
     value: LabelDisplayMode.NameOnly,
@@ -827,7 +704,6 @@ const conflictItems: ConflictItems = {
   labelBackFillColor: false,
   labelFrontFillColor: false
 };
-
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
@@ -900,9 +776,8 @@ const conflictItems: ConflictItems = {
   },
   "labelFrontFillColor": "Label Front Fill Color",
   "labelNotVisible": "Labels Not Visible",
+  "labelText": "Label Text",
   "labelStyle": "Label Style",
-  "enableTooltip": "Label Style",
-  "disableTooltip": "Label Style is disabled: no object selected",
   "labelTextDecoration": "Label Text Decoration",
   "labelTextFamily": "Label Text Family",
   "labelTextRotation": "Label Rotation ()",
@@ -925,7 +800,9 @@ const conflictItems: ConflictItems = {
     "bold": "Bold",
     "italic": "Italic",
     "normal": "Normal"
-  }
+  },
+  "defaultStyles": "Restore Default Styles",
+  "undoStyles": "Undo Style Changes"
 }
 </i18n>
 <i18n lang="json" locale="id">
@@ -977,6 +854,9 @@ const conflictItems: ConflictItems = {
     "bold": "Bold",
     "italic": "Italic",
     "normal": "Normal"
-  }
+  },
+  "defaultStyles": "Kembali ke Gaya Awal",
+  "undoStyles": "Batalkan Ubahan Gaya"
+
 }
 </i18n>

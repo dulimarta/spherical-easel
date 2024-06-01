@@ -5,7 +5,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_ELLIPSE_FRONT_STYLE,
   DEFAULT_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
@@ -183,8 +183,8 @@ export default class Ellipse extends Nodule {
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor() {
-    super();
+  constructor(noduleName: string = "None") {
+    super(noduleName);
 
     this._tMax = 2 * Math.PI;
     this._tMin = 0;
@@ -308,8 +308,8 @@ export default class Ellipse extends Nodule {
     this.backGradientColor.color = SETTINGS.ellipse.dynamicBackStyle
       ? Nodule.contrastFillColor(SETTINGS.ellipse.drawn.fillColor.front)
       : SETTINGS.ellipse.drawn.fillColor.back;
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_ELLIPSE_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_ELLIPSE_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_ELLIPSE_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_ELLIPSE_BACK_STYLE);
   }
   /**
    * Reorient the ellipse in standard position on the unit sphere in 3D to the target ellipse (the one being drawn)
@@ -887,7 +887,7 @@ export default class Ellipse extends Nodule {
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Ellipse();
+    const dup = new Ellipse(this.name);
     dup._focus1Vector.copy(this._focus1Vector);
     dup._focus2Vector.copy(this._focus2Vector);
     dup._a = this._a;
@@ -995,11 +995,11 @@ export default class Ellipse extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_ELLIPSE_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.ellipse.dynamicBackStyle)
           return {
             ...DEFAULT_ELLIPSE_BACK_STYLE,
@@ -1022,8 +1022,8 @@ export default class Ellipse extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontPart.linewidth =
@@ -1127,7 +1127,7 @@ export default class Ellipse extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
@@ -1161,7 +1161,7 @@ export default class Ellipse extends Nodule {
           this.frontPart.dashes.push(0);
         }
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
             Nodule.hslaIsNoFillOrNoStroke(

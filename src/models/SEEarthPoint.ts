@@ -1,7 +1,6 @@
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
-import { SENodule } from "./internal";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 export class SEEarthPoint extends SEPoint {
   private _longitude: number; // DEGREES
   private _latitude: number; // DEGREES
@@ -13,14 +12,10 @@ export class SEEarthPoint extends SEPoint {
     this._longitude = longitudeDegrees;
     this._latitude = latitudeDegrees;
     // style the earth point
-    SENodule.store.changeStyle({
-      selected: [this.ref],
-      panel: StyleEditPanels.Front,
-      payload: {
-        fillColor: "hsla(200, 80%, 50%, 1)",
-        strokeColor: "hsla(0, 0%, 0%, 1)"
-      }
-    });
+    this.ref.updateStyle(StyleCategory.Front, {
+      fillColor: "hsla(200, 80%, 50%, 1)",
+      strokeColor: "hsla(0, 0%, 0%, 1)"
+    })
   }
   get longitude(): number {
     return this._longitude;

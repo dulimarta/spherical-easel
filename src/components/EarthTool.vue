@@ -84,6 +84,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import { SEAngleMarker } from "@/models/internal";
 import { SetEarthModeCommand } from "@/commands/SetEarthModeCommand";
+import Label from "@/plottables/Label";
 
 const seStore = useSEStore();
 const { isEarthMode, seNodules } = storeToRefs(seStore);
@@ -124,6 +125,7 @@ watch([() => firstPoint.value, () => secondPoint.value], () => {
 watch(
   () => isEarthMode.value,
   (earthModeActive: boolean) => {
+    Label.isEarthMode = earthModeActive
     // localIsEarthMode.value = !localIsEarthMode.value;
     let setNoduleDisplayCommandGroup = new CommandGroup();
     setNoduleDisplayCommandGroup.addCommand(

@@ -61,7 +61,8 @@ export class SELabel extends SENodule implements Visitable {
    */
   constructor(labelType: LabelParentTypes, parent: SENodule) {
     super();
-    const label = new Label(labelType);
+    // Name of the plottable should borrow the parent name
+    const label = new Label(parent.name, labelType);
     this.ref = label;
     this.parent = parent;
 
@@ -186,7 +187,7 @@ export class SELabel extends SENodule implements Visitable {
     }
 
     // Update visibility
-    if (this._showing && this._exists) {
+    if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
@@ -299,9 +300,5 @@ export class SELabel extends SENodule implements Visitable {
         zoomTranslation[1] < // minus sign because text layers are not y flipped
         boundingBox.bottom - canvasHeight / 2
     );
-  }
-
-  public isLabel(): boolean {
-    return true;
   }
 }

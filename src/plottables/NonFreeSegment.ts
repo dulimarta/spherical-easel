@@ -2,7 +2,7 @@ import SETTINGS from "@/global-settings";
 import Nodule from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_NONFREE_SEGMENT_FRONT_STYLE,
   DEFAULT_NONFREE_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
@@ -14,15 +14,15 @@ export default class NonFreeSegment extends Segment {
    */
   private nonFreeSegmentScalePercent = SETTINGS.segment.nonFree.scalePercent;
 
-  constructor() {
-    super();
+  constructor(noduleName: string) {
+    super(noduleName);
 
     this.styleOptions.set(
-      StyleEditPanels.Front,
+      StyleCategory.Front,
       DEFAULT_NONFREE_SEGMENT_FRONT_STYLE
     );
     this.styleOptions.set(
-      StyleEditPanels.Back,
+      StyleCategory.Back,
       DEFAULT_NONFREE_SEGMENT_BACK_STYLE
     );
   }
@@ -30,11 +30,11 @@ export default class NonFreeSegment extends Segment {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_NONFREE_SEGMENT_FRONT_STYLE;
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.segment.dynamicBackStyle)
           return {
             ...DEFAULT_NONFREE_SEGMENT_BACK_STYLE,
@@ -48,7 +48,7 @@ export default class NonFreeSegment extends Segment {
         else return DEFAULT_NONFREE_SEGMENT_BACK_STYLE;
 
       default:
-      case StyleEditPanels.Label: {
+      case StyleCategory.Label: {
         return {};
       }
     }
@@ -57,8 +57,8 @@ export default class NonFreeSegment extends Segment {
    * Sets the variables for stroke width glowing/not front/back/extra
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontPart.linewidth =

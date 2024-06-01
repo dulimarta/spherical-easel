@@ -5,7 +5,7 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_POINT_FRONT_STYLE,
   DEFAULT_POINT_BACK_STYLE
 } from "@/types/Styles";
@@ -68,8 +68,8 @@ export default class Point extends Nodule {
     Point.pointScaleFactor *= factor;
   }
 
-  constructor() {
-    super();
+  constructor(noduleName: string = "None") {
+    super(noduleName);
 
     //Create the front/back/glowing/drawn TwoJS objects of the default size
     this.frontPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.front);
@@ -121,8 +121,8 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.front;
     this.glowingBackPoint.linewidth =
       SETTINGS.point.drawn.pointStrokeWidth.back;
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_POINT_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_POINT_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_POINT_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_POINT_BACK_STYLE);
   }
 
   /**
@@ -147,8 +147,8 @@ export default class Point extends Nodule {
    * The percent that the default radius point is scaled relative to the current magnification factor
    */
   get pointRadiusPercent(): number {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     if (!frontStyle) return 100;
     const radiusPercentFront = frontStyle.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
@@ -255,12 +255,12 @@ export default class Point extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_POINT_FRONT_STYLE;
 
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.point.dynamicBackStyle)
           return {
             ...DEFAULT_POINT_BACK_STYLE,
@@ -284,8 +284,8 @@ export default class Point extends Nodule {
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const radiusPercentFront = frontStyle?.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
 
@@ -353,7 +353,7 @@ export default class Point extends Nodule {
         // console.log("NONtemp front id ", this.frontPoint.id);
         // Use the current variables to directly modify the js objects.
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
+        const frontStyle = this.styleOptions.get(StyleCategory.Front)!;
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
@@ -372,7 +372,7 @@ export default class Point extends Nodule {
         // pointRadiusPercent applied by adjustSize();
 
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back)!;
+        const backStyle = this.styleOptions.get(StyleCategory.Back)!;
         if (backStyle.dynamicBackStyle) {
           if (
             Nodule.hslaIsNoFillOrNoStroke(

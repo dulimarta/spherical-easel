@@ -5,7 +5,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
-  StyleEditPanels,
+  StyleCategory,
   DEFAULT_CIRCLE_FRONT_STYLE,
   DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
@@ -147,8 +147,8 @@ export default class Circle extends Nodule {
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor() {
-    super();
+  constructor(noduleName: string = "None") {
+    super(noduleName);
 
     // Create the array to hold the points that make up the boundary circle
     this.originalVertices = [];
@@ -265,8 +265,8 @@ export default class Circle extends Nodule {
     this.backGradientColor.color = SETTINGS.circle.dynamicBackStyle
       ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
       : SETTINGS.circle.drawn.fillColor.back;
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_CIRCLE_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_CIRCLE_BACK_STYLE);
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_CIRCLE_FRONT_STYLE);
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_CIRCLE_BACK_STYLE);
   }
   /**
    * Reorient the unit circle in 3D and then project the points to 2D
@@ -810,7 +810,7 @@ export default class Circle extends Nodule {
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Circle();
+    const dup = new Circle(this.name);
     dup._centerVector.copy(this._centerVector);
     dup._circleRadius = this._circleRadius;
 
@@ -913,12 +913,12 @@ export default class Circle extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+  defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front:
+      case StyleCategory.Front:
         return DEFAULT_CIRCLE_FRONT_STYLE;
 
-      case StyleEditPanels.Back:
+      case StyleCategory.Back:
         if (SETTINGS.circle.dynamicBackStyle) {
           return {
             ...DEFAULT_CIRCLE_BACK_STYLE,
@@ -940,8 +940,8 @@ export default class Circle extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
-    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontPart.linewidth =
@@ -1044,7 +1044,7 @@ export default class Circle extends Nodule {
         // Use the current variables to directly modify the js objects.
 
         // FRONT
-        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const frontStyle = this.styleOptions.get(StyleCategory.Front);
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
@@ -1070,7 +1070,7 @@ export default class Circle extends Nodule {
           this.frontPart.dashes.push(0);
         }
         // BACK
-        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
             Nodule.hslaIsNoFillOrNoStroke(

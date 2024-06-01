@@ -5,7 +5,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -58,7 +58,7 @@ export class AddTangentLineThruPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.seTangentLineThruPoint.ref.currentStyleState(
-              StyleEditPanels.Front
+              StyleCategory.Front
             )
           )
         ),
@@ -66,7 +66,7 @@ export class AddTangentLineThruPointCommand extends Command {
         Command.symbolToASCIIDec(
           JSON.stringify(
             this.seTangentLineThruPoint.ref.currentStyleState(
-              StyleEditPanels.Back
+              StyleCategory.Back
             )
           )
         ),
@@ -75,7 +75,7 @@ export class AddTangentLineThruPointCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
@@ -153,14 +153,14 @@ export class AddTangentLineThruPointCommand extends Command {
         propMap.get("objectFrontStyle");
       if (tangentThruPointLineFrontStyleString !== undefined)
         tangentLineThruPointLine.updatePlottableStyle(
-          StyleEditPanels.Front,
+          StyleCategory.Front,
           JSON.parse(tangentThruPointLineFrontStyleString)
         );
       const tangentThruPointLineBackStyleString =
         propMap.get("objectBackStyle");
       if (tangentThruPointLineBackStyleString !== undefined)
         tangentLineThruPointLine.updatePlottableStyle(
-          StyleEditPanels.Back,
+          StyleCategory.Back,
           JSON.parse(tangentThruPointLineBackStyleString)
         );
 
@@ -173,7 +173,7 @@ export class AddTangentLineThruPointCommand extends Command {
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(
-          StyleEditPanels.Label,
+          StyleCategory.Label,
           JSON.parse(labelStyleString)
         );
 

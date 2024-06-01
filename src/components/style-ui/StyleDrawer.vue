@@ -2,29 +2,98 @@
   <v-btn
     id="style-icon"
     icon
-    size="small"
     v-if="minified"
-    style="
-      position: fixed;
-      right: 0;
-      border-radius: 8px;
-      background-color: #002108;
-      color: white;
-    "
+    :style="{
+      position: 'fixed',
+      right: '4px',
+      borderRadius: '8px',
+      backgroundColor: '#002108',
+      color: 'white'
+    }"
     @click="minified = !minified">
     <v-tooltip activator="parent" location="bottom">
       {{ t("showDrawer") }}
     </v-tooltip>
-    <v-icon>mdi-palette</v-icon>
+    <v-badge
+      v-if="selectedPlottables.size > 0"
+      floating
+      color="green"
+      :content="selectedPlottables.size">
+      <v-icon>mdi-palette</v-icon>
+    </v-badge>
+    <v-icon v-else>mdi-palette</v-icon>
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
-      <LabelStyle></LabelStyle>
-      <!-- <FrontBackStyle :panel="StyleEditPanels.Front"></FrontBackStyle> -->
-      <!-- <FrontBackStyle :panel="StyleEditPanels.Back"></FrontBackStyle> -->
+      <v-item-group
+        v-model="styleSelection"
+        :style="{
+          display: 'flex',
+          flexDirection: 'column',
+          rowGap: '24px'
+        }">
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip activator="#lab-icon" :text="labelTooltip"></v-tooltip>
+          <div id="lab-icon">
+            <!-- the div is required for tooltip to work -->
+            <v-badge
+              v-if="selectedLabels.size > 0"
+              :content="selectedLabels.size"
+              color="secondary">
+              <v-icon @click="toggle">mdi-label</v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-label</v-icon>
+          </div>
+          <LabelStyle
+            :show-popup="isSelected!"
+            v-model="styleSelection"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></LabelStyle>
+        </v-item>
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
+          <div id="front-icon">
+            <v-badge
+              v-if="selectedPlottables.size > 0"
+              :content="selectedPlottables.size"
+              color="secondary">
+              <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
+                mdi-arrange-bring-forward
+              </v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-arrange-bring-forward</v-icon>
+          </div>
+          <FrontBackStyle
+            :show-popup="isSelected!"
+            :panel="StyleCategory.Front"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
+        </v-item>
+        <v-item v-slot="{ isSelected, toggle }">
+          <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
+          <div id="back-icon">
+            <v-badge
+              v-if="selectedPlottables.size > 0"
+              :content="selectedPlottables.size"
+              color="secondary">
+              <v-icon @click="toggle" :disabled="selectedPlottables.size === 0">
+                mdi-arrange-send-backward
+              </v-icon>
+            </v-badge>
+            <v-icon v-else>mdi-arrange-send-backward</v-icon>
+          </div>
+          <FrontBackStyle
+            :show-popup="isSelected!"
+            :panel="StyleCategory.Back"
+            @apply-styles="applyStyleChanges"
+            @undo-styles="undoStyleChanges"
+            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
+        </v-item>
+      </v-item-group>
 
-      <div id="visibility-control" v-if="selectedSENodules.length > 0">
-
+      <!--div id="visibility-control" v-if="selectedSENodules.length > 0">
         <span @click="toggleLabelsShowing">
           <v-icon color="black">mdi-tag</v-icon>
           <v-icon v-if="labelsShowingFlag">mdi-eye-off</v-icon>
@@ -34,27 +103,14 @@
           <v-icon>mdi-file-tree</v-icon>
           <v-icon color="black">mdi-eye</v-icon>
         </span>
-      </div>
+      </div-->
       <v-btn icon size="x-small" @click="minified = !minified">
         <v-icon>mdi-chevron-double-right</v-icon>
       </v-btn>
     </div>
   </transition>
 </template>
-<i18n lang="json" locale="en">
-{
-  "showDrawer": "Show Style Drawer",
-  "label": "Label",
-  "object": "Object"
-}
-</i18n>
-<i18n lang="json" locale="id">
-{
-  "showDrawer": "Buka Panel Gaya Tampilan",
-  "label": "Label",
-  "object": "Objek"
-}
-</i18n>
+
 <style scoped>
 .vertical-nav-drawer {
   background-color: white;
@@ -88,8 +144,8 @@
 }
 </style>
 <script setup lang="ts">
-import { ref } from "vue";
-import { StyleEditPanels } from "@/types/Styles";
+import { ref, computed } from "vue";
+import { StyleCategory } from "@/types/Styles";
 import { useI18n } from "vue-i18n";
 import LabelStyle from "./LabelStyle.vue";
 import FrontBackStyle from "./FrontBackStyle.vue";
@@ -98,24 +154,97 @@ import { storeToRefs } from "pinia";
 import { useStylingStore } from "@/stores/styling";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { Labelable } from "@/types";
+import { watch } from "vue";
+import { Command } from "@/commands/Command";
 const minified = ref(true);
 const { t } = useI18n();
-const seStore = useSEStore()
-// const styleStore = useStylingStore()
-const { selectedSENodules} = storeToRefs(seStore)
-// const { allLabelsShowing, selectionCount } = storeToRefs(styleStore)
-const labelsShowingFlag = ref(false)
+const seStore = useSEStore();
+const styleStore = useStylingStore();
+const { selectedSENodules } = storeToRefs(seStore);
+const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
+const styleSelection = ref<number | undefined>(undefined);
 
-function toggleLabelsShowing() {
-  labelsShowingFlag.value = !labelsShowingFlag.value
-  const cmdGroup = new CommandGroup()
-  selectedSENodules.value
-    .filter(n => n.getLabel() !== null)
-    .forEach(n => {
-      const lab = n.getLabel()
-      cmdGroup.addCommand(new SetNoduleDisplayCommand(lab!, labelsShowingFlag.value))
-    })
-    cmdGroup.execute()
+watch(
+  () => selectedSENodules.value,
+  arr => {
+    if (arr.length == 0) {
+      // close the popup panel when no objects are selected
+      styleSelection.value = undefined;
+    }
+  },
+  { deep: true, immediate: true }
+);
+
+const labelTooltip = computed((): string => {
+  let text = t("LabelTooltip");
+  if (selectedLabels.value.size <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+
+const backTooltip = computed((): string => {
+  let text = t("backgroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+
+const frontTooltip = computed((): string => {
+  let text = t("foregroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
+  }
+  return text;
+});
+
+watch(
+  () => styleSelection.value,
+  (selectedTab: number | undefined) => {
+    if (typeof selectedTab !== "number") styleStore.deselectActiveGroup();
+    else {
+      switch (selectedTab) {
+        case 0:
+          styleStore.selectActiveGroup(StyleCategory.Label);
+          break;
+        case 1:
+          styleStore.selectActiveGroup(StyleCategory.Front);
+          break;
+        case 2:
+          styleStore.selectActiveGroup(StyleCategory.Back);
+      }
+    }
+  }
+);
+function applyStyleChanges() {
+  styleStore.persistUpdatedStyleOptions();
+}
+
+function undoStyleChanges() {
+  Command.undo();
+}
+
+function restoreDefaultStyles() {
+  styleStore.restoreDefaultStyles();
 }
 </script>
+<i18n lang="json" locale="en">
+{
+  "showDrawer": "Show Style Drawer",
+  "showDrawerDisabled": "Style Draver (disable: no object selected)",
+  "label": "Label",
+  "object": "Object",
+  "LabelTooltip": "Label Style",
+  "backgroundTooltip": "Background Style",
+  "foregroundTooltip": "Foreground Style",
+  "disabledTooltip": "(disabled: no object selected)"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "showDrawer": "Buka Panel Gaya Tampilan",
+  "label": "Label",
+  "object": "Objek"
+}
+</i18n>

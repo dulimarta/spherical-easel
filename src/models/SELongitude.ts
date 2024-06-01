@@ -1,15 +1,9 @@
 import { SENodule } from "./SENodule";
 import { SEPoint, SESegment } from "./internal";
 import { Matrix4, Vector3 } from "three";
-import { StyleEditPanels } from "@/types/Styles";
+import { StyleCategory } from "@/types/Styles";
 import i18n from "@/i18n";
 import { geoLocationToUnitSphere } from "@/composables/earth";
-// import { useSEStore } from "@/stores/se";
-// import { storeToRefs } from "pinia";
-
-// const store = useSEStore();
-// const { inverseTotalRotationMatrix } = storeToRefs(store);
-// const { geoLocationToUnitSphere } = useEarthCoordinate();
 const tempVec = new Vector3();
 
 export class SELongitude extends SESegment {
@@ -124,14 +118,12 @@ export class SELongitude extends SESegment {
     );
     this._longitude = longitudeDegree;
     //turn off the fill of the ref circle
-    SENodule.store.changeStyle({
-      selected: [this.ref],
-      panel: StyleEditPanels.Front,
-      payload: {
+    this.ref.updateStyle(StyleCategory.Front,
+       {
         strokeColor: "hsla(0, 0%, 0%, 1)",
         fillColor: "hsla(0, 0%, 0%, 0)"
       }
-    });
+    )
     this.update();
   }
 

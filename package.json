@@ -62,7 +62,6 @@
     "@typescript-eslint/parser": "^6.1.0",
     "@vue/eslint-config-typescript": "^11.0.3",
     "@vue/test-utils": "~2.4.4",
-    "@vuepress/plugin-back-to-top": "^1.9.9",
     "canvas": "^2.11.2",
     "eslint": "~8.8",
     "eslint-config-prettier": "^8.8.0",
