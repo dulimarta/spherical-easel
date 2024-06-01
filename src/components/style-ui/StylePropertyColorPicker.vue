@@ -75,7 +75,6 @@ type ComponentProps = {
   numSelected: number;
 };
 const props = defineProps<ComponentProps>();
-// const emit = defineEmits(["resetColor", "update:modelValue"]);
 // Internal representation is an object with multiple color representations
 let pickedColor = defineModel({ type: String });
 const internalColor = ref(Color(pickedColor.value).hexa())
@@ -101,7 +100,6 @@ watch(() => internalColor.value, newColor => {
 function toggleNoColor(ev: PointerEvent): void {
   const hslValue = Color(internalColor.value).hexa()
   pickedColor.value = !noColorData.value ? "none" : hslValue
-  // emit("resetColor");
 }
 
 // Vue component life cycle hook
@@ -123,18 +121,6 @@ onMounted((): void => {
   var re2 = /label/gi;
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
-
-// onBeforeUpdate((): void => {
-//   console.log("before update Simple color selector", internalColor.value);
-// const col = internalColor.value.hsla;
-// console.debug("Color changed to", col);
-// const hue = col.h.toFixed(0);
-// const sat = (col.s * 100).toFixed(0) + "%";
-// const lum = (col.l * 100).toFixed(0) + "%";
-// const alpha = col.a.toFixed(3);
-// console.debug("update:modelValue", `hsla(${hue},${sat},${lum},${alpha})`);
-// emit("update:modelValue", `hsla(${hue},${sat},${lum},${alpha})`);
-// });
 
 function toggleColorInputs(): void {
   // if (!noData) {

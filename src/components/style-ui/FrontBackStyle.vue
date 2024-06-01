@@ -77,10 +77,14 @@
           v-if="hasStyle('fillColor')"
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
+        <DisagreementOverride
+          :style-properties="[
+            'strokeColor',
+            'fillColor'
+          ]"></DisagreementOverride>
       </v-window-item>
       <v-window-item class="pa-2" v-if="!automaticBackStyle">
         <!-- SECOND TAB-->
-        {{ styleOptions.strokeWidthPercent }}
         <SimpleNumberSelector
           v-if="hasStyle('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
@@ -173,25 +177,14 @@
             <template #append>
               {{ reverseDashArray ? "Gap" : "Dash" }} {{ dashArray[1] }}
             </template>
-            <!--template v-slot:prepend>
-            <v-icon
-              @click="
-                decrementDashPattern(styleOptions, hasStyle('angleMarker'))
-              ">
-              mdi-minus
-            </v-icon>
-          </!--template>
-
-          <template-- v-slot:append>
-            <v-icon
-              @click="
-                incrementDashPattern(styleOptions, hasStyle('angleMarker'))
-              ">
-              mdi-plus
-            </v-icon>
-          </template-->
           </v-range-slider>
         </div>
+        <DisagreementOverride
+          :style-properties="[
+            'strokeWidthPercent',
+            'pointRadiusPercent',
+            'dashArray'
+          ]"></DisagreementOverride>
       </v-window-item>
       <v-window-item class="pa-2" v-if="hasStyle(/angle/)">
         <!-- THIRD TAB-->
@@ -204,7 +197,6 @@
           :numSelected="selectedPlottables.size"
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
           :conflict="hasDisagreement('angleMarkerRadiusPercent')"
-          v-on:resetColor="conflictItems.angleMarkerRadiusPercent = false"
           v-model="styleOptions.angleMarkerRadiusPercent"
           :title="t('angleMarkerRadiusPercent')"
           :min="minAngleMarkerRadiusPercent"
@@ -268,6 +260,13 @@
             </span>
           </template>
         </v-switch>
+        <DisagreementOverride
+          :style-properties="[
+            'angleMarkerRadiusPercent',
+            'angleMarkerTickMark'
+            'angleMarkerDoubleArc',
+            'angleMarkerArrowHeads'
+          ]"></DisagreementOverride>
       </v-window-item>
     </template>
     <template #bottom>
@@ -280,12 +279,21 @@
           gap: '8px'
         }">
         <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
-        <v-tooltip activator="#default-btn" :text="t('defaultStyles')"></v-tooltip>
-        <v-btn id="restore-btn" @click="emits('undo-styles')" icon="mdi-undo" size="small"></v-btn>
-        <v-btn id="default-btn" @click="emits('apply-default-styles')" icon="mdi-backup-restore" size="small"></v-btn>
+        <v-tooltip
+          activator="#default-btn"
+          :text="t('defaultStyles')"></v-tooltip>
+        <v-btn
+          id="restore-btn"
+          @click="emits('undo-styles')"
+          icon="mdi-undo"
+          size="small"></v-btn>
+        <v-btn
+          id="default-btn"
+          @click="emits('apply-default-styles')"
+          icon="mdi-backup-restore"
+          size="small"></v-btn>
       </div>
     </template>
-
   </PopOverTabs>
   <!--ul>
           <li>Conclict list: {{conflictingProps}}</li>
@@ -296,15 +304,13 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import Nodule from "@/plottables/Nodule";
-import {
-  StyleOptions,
-  StyleCategory,
-  ShapeStyleOptions
-} from "@/types/Styles";
+import { StyleOptions, StyleCategory, ShapeStyleOptions } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "@/components/style-ui/StylePropertySlider.vue";
-import SimpleColorSelector from "@/components/style-ui/StylePropertyColorPicker.vue";
+import SimpleNumberSelector from "./StylePropertySlider.vue";
+import SimpleColorSelector from "./StylePropertyColorPicker.vue";
+import DisagreementOverride from "./DisagreementOverride.vue";
+
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
@@ -331,10 +337,10 @@ type ComponentProps = {
 };
 const { attrs } = useAttrs();
 const emits = defineEmits([
-  'apply-styles',
-  'undo-styles',
-  'apply-default-styles'
-])
+  "apply-styles",
+  "undo-styles",
+  "apply-default-styles"
+]);
 
 const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
@@ -787,6 +793,5 @@ function updateInputGroup(inputSelector: string): void {
   "strokeWidthPercent": "Stroke Width",
   "defaultStyles": "Restore Default Styles",
   "undoStyles": "Undo Style Changes"
-
 }
 </i18n>

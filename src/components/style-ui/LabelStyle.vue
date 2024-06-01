@@ -82,7 +82,6 @@
           :class="{ shake: animatedInput.labelTextRotation }"
           :title="t('labelTextRotation')"
           :color="conflictItems.labelTextRotation ? 'red' : ''"
-          v-on:resetColor="conflictItems.labelTextRotation = false"
           :min="-3.14159"
           :max="3.14159"
           :step="0.39269875"
