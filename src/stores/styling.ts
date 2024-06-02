@@ -74,7 +74,7 @@ function isPropEqual(
 
 export const useStylingStore = defineStore("style", () => {
   const seStore = useSEStore();
-  const { selectedSENodules } = storeToRefs(seStore);
+  const { selectedSENodules, seNodules } = storeToRefs(seStore);
   const selectedPlottables: Ref<Map<string, Nodule>> = ref(new Map());
   const selectedLabels: Ref<Map<string, Label>> = ref(new Map());
 
@@ -307,14 +307,9 @@ export const useStylingStore = defineStore("style", () => {
   function changeBackContrast(newContrast: number): void {
     Nodule.setBackStyleContrast(newContrast);
     // update all objects display
-    selectedPlottables.value.forEach(p => {
-      p.stylize(DisplayStyle.ApplyCurrentVariables);
+    seNodules.value.forEach(n => {
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
-    // this.seNodules.forEach(seNodule => {
-    //   // update the style of the objects
-    //   // console.log("name", seNodule.name);
-    //   seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-    // });
   }
 
   function persistUpdatedStyleOptions() {

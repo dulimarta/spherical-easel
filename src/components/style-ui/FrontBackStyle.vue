@@ -16,48 +16,6 @@
           v-model="styleOptions.dynamicBackStyle"
           color="secondary"
           :label="t('autoBackStyle')"></v-switch>
-        <template v-if="styleOptions.dynamicBackStyle">
-          <!-- Global contrast slider -->
-          <v-tooltip
-            location="bottom"
-            max-width="400px"
-            activator="#global-contrast"
-            text="Here we go!">
-            <span>{{ t("backStyleContrastToolTip") }}</span>
-          </v-tooltip>
-          <p id="global-contrast">
-            <span class="text-subtitle-2" style="color: red">
-              {{ t("globalBackStyleContrast") + " " }}
-            </span>
-            <span class="text-subtitle-2">
-              {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
-            </span>
-          </p>
-          <v-slider
-            v-model="backStyleContrast"
-            :min="0"
-            :step="0.1"
-            :max="1"
-            :disabled="
-              !styleOptions.dynamicBackStyle &&
-              hasDisagreement('dynamicBackStyle')
-            "
-            density="compact">
-            <template v-slot:prepend>
-              <!-- <v-icon @click="backStyleContrast -= 0.1">mdi-minus</v-icon> -->
-            </template>
-            <template v-slot:thumb-label="...a">
-              {{
-                backStyleContrastSelectorThumbStrings[
-                  Math.floor((a as any).modelValue * 10)
-                ]
-              }}
-            </template>
-            <template v-slot:append>
-              <!-- <v-icon @click="backStyleContrast += 0.1">mdi-plus</v-icon> -->
-            </template>
-          </v-slider>
-        </template>
       </div>
     </template>
     <template #pages>
@@ -304,7 +262,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
 import Nodule from "@/plottables/Nodule";
-import { StyleOptions, StyleCategory, ShapeStyleOptions } from "@/types/Styles";
+import { StyleCategory, ShapeStyleOptions } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "./StylePropertySlider.vue";
@@ -337,7 +295,6 @@ type ComponentProps = {
 };
 const { attrs } = useAttrs();
 const emits = defineEmits([
-  // "apply-styles",
   "undo-styles",
   "apply-default-styles"
 ]);
@@ -356,7 +313,6 @@ const angleMarkerRadiusPercentage = ref(
 // automaticBackState is controlled by user
 // automaticBackStyle : FALSE means she wants to customize back style
 // automaticBackStyle : TRUE means the program will customize back style
-// const automaticBackStyle = ref(true);
 const dashArray: Ref<number[]> = ref(
   styleOptions.value.dashArray
     ? styleOptions.value.dashArray.slice(0)
@@ -499,29 +455,6 @@ function setStep(angleMarker: boolean): number {
 
 // dbAgreement and udbCommonValue are computed by the program
 // useDB is set by user
-const backStyleContrast = ref(Nodule.getBackStyleContrast());
-const backStyleContrastSelectorThumbStrings = [
-  "Min",
-  "10%",
-  "20%",
-  "30%",
-  "40%",
-  "50%",
-  "60%",
-  "70%",
-  "80%",
-  "90%",
-  "Same"
-];
-
-watch(
-  () => backStyleContrast.value,
-  contrast => {
-    styleStore.changeBackContrast(contrast);
-  }
-);
-
-const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
 onBeforeMount((): void => {
   for (
@@ -544,18 +477,6 @@ onBeforeMount((): void => {
   )
     angleMarkerRadiusSelectorThumbStrings.push(s.toFixed(0) + "%");
 });
-
-// /** mounted() is part of VueJS lifecycle hooks */
-// onMounted((): void => {
-//   // Pass any selected objects when FrontBackStyle Panel is mounted to the onSelection change
-//   //  Mount a save listener
-//   // EventBus.listen("set-active-style-panel", setActivePanel);
-
-//   // Enable use automatic back styling only when we are mounted as a BackStyle
-//   // usingAutomaticBackStyle = props.panel === StyleCategory.Back;
-
-//   // setAnglemarker();
-// });
 
 const editModeIsBack = computed((): boolean => {
   return props.panel === StyleCategory.Back;
@@ -779,14 +700,11 @@ function updateInputGroup(inputSelector: string): void {
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
   "autoBackStyle": "Automatic Back Style",
-  "backStyleContrast": "Back Style Contrast",
-  "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "dashArrayReverse": "Swap Dash/Gap",
   "dashPattern": "Use dash pattern",
   "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",
   "dashPatternReverseArrayToolTip": "Switch the dash and gap lengths so that the gap length can be less than the dash length",
   "fillColor": "Fill Color",
-  "globalBackStyleContrast": "Global Back Style Contrast",
   "labelStyleOptionsMultiple": "(Multiple)",
   "pointRadiusPercent": "Point Radius",
   "strokeColor": "Stroke Color",

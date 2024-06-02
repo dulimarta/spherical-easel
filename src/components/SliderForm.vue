@@ -42,7 +42,6 @@
       <v-btn
         id="_test_add_slider"
         color="primary"
-        text
         :disabled="!isValid"
         @click="addSlider"
         >{{ $t("objectTree.create") }}</v-btn

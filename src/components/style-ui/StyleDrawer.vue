@@ -25,8 +25,7 @@
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
-      Sel={{ styleSelection }}
-      <v-item-group mandatory
+      <v-item-group
         v-model="styleSelection"
         :style="{
           display: 'flex',
@@ -89,38 +88,66 @@
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
-      </v-item-group>
+        <v-item v-slot="{isSelected, toggle}">
+          <v-tooltip activator="#back-contrast" text="Global Back Style Contrast"></v-tooltip>
 
-      <!--div id="visibility-control" v-if="selectedSENodules.length > 0">
-        <span @click="toggleLabelsShowing">
-          <v-icon color="black">mdi-tag</v-icon>
-          <v-icon v-if="labelsShowingFlag">mdi-eye-off</v-icon>
-          <v-icon v-else>mdi-eye</v-icon>
-        </span>
-        <span>
-          <v-icon>mdi-file-tree</v-icon>
-          <v-icon color="black">mdi-eye</v-icon>
-        </span>
-      </div-->
-      <v-btn icon size="x-small" @click="minified = !minified">
+          <v-icon id="back-contrast" @click="toggle" :disabled="!hasObjects">mdi-contrast-box</v-icon>
+          <v-sheet v-if="isSelected" position="fixed" class="pa-3" elevation="4" rounded :style="{
+            right: '80px'
+          }">
+          <!-- Global contrast slider -->
+          <v-tooltip
+            location="bottom"
+            max-width="400px"
+            activator="#global-contrast"
+            >
+            <span>{{ t("backStyleContrastToolTip") }}</span>
+          </v-tooltip>
+          <p id="global-contrast">
+            <span class="text-subtitle-2" style="color: red">
+              {{ t("globalBackStyleContrast") + " " }}
+            </span>
+            <span class="text-subtitle-2">
+              {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
+            </span>
+          </p>
+          <v-slider
+            v-model="backStyleContrast"
+            :min="0"
+            :step="0.1"
+            :max="1"
+            density="compact">
+            <template v-slot:thumb-label="{modelValue}">
+              {{
+                backStyleContrastSelectorThumbStrings[
+                  Math.floor(modelValue * 10)
+                ]
+              }}
+            </template>
+          </v-slider>
+
+          </v-sheet>
+        </v-item>
+      </v-item-group>
+      <v-btn icon size="x-small" @click="minified = !minified" class="my-2">
         <v-icon>$closePanelRight</v-icon>
       </v-btn>
+
     </div>
   </transition>
 </template>
 
 <style scoped>
 .vertical-nav-drawer {
-  background-color: white;
   border: solid 1px grey 0.5;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   border-radius: 0.5em;
-  height: 60vh;
+  height: 50vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   align-items: center;
+  justify-content: space-evenly;
 }
 
 #visibility-control {
@@ -154,13 +181,30 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { watch } from "vue";
 import { Command } from "@/commands/Command";
+import Nodule from "@/plottables/Nodule";
 const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedSENodules } = storeToRefs(seStore);
-const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
+const { selectedSENodules, hasObjects } = storeToRefs(seStore);
+const { selectedPlottables, selectedLabels, styleOptions } = storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
+const { hasStyle, hasDisagreement } = styleStore;
+
+  const backStyleContrast = ref(Nodule.getBackStyleContrast());
+const backStyleContrastSelectorThumbStrings = [
+  "Min",
+  "10%",
+  "20%",
+  "30%",
+  "40%",
+  "50%",
+  "60%",
+  "70%",
+  "80%",
+  "90%",
+  "Same"
+];
 
 watch(
   () => selectedSENodules.value,
@@ -172,6 +216,15 @@ watch(
   },
   { deep: true, immediate: true }
 );
+
+watch(
+  () => backStyleContrast.value,
+  contrast => {
+    console.debug("Updating back contrast to", contrast)
+    styleStore.changeBackContrast(contrast);
+  }
+);
+
 
 const labelTooltip = computed((): string => {
   let text = t("LabelTooltip");
@@ -199,12 +252,11 @@ const frontTooltip = computed((): string => {
 
 watch(
   () => styleSelection.value,
-  (selectedTab: number | undefined, prevTab: number|undefined) => {
-    if (typeof prevTab === 'number' && selectedTab === undefined) {
+  (selectedTab: number | undefined, prevTab: number | undefined) => {
+    if (typeof prevTab === "number" && selectedTab === undefined) {
       styleStore.deselectActiveGroup();
-      console.debug("Style panel disappearing")
-    }
-    else {
+      console.debug("Style panel disappearing");
+    } else {
       switch (selectedTab) {
         case 0:
           styleStore.selectActiveGroup(StyleCategory.Label);
@@ -220,7 +272,7 @@ watch(
 );
 
 function undoStyleChanges() {
-  styleStore.restoreInitialStyles()
+  styleStore.restoreInitialStyles();
 }
 
 function restoreDefaultStyles() {
@@ -236,7 +288,10 @@ function restoreDefaultStyles() {
   "LabelTooltip": "Label Style",
   "backgroundTooltip": "Background Style",
   "foregroundTooltip": "Foreground Style",
-  "disabledTooltip": "(disabled: no object selected)"
+  "disabledTooltip": "(disabled: no object selected)",
+  "backStyleContrast": "Back Style Contrast",
+  "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
+  "globalBackStyleContrast": "Global Back Style Contrast"
 }
 </i18n>
 <i18n lang="json" locale="id">
