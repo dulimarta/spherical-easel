@@ -103,8 +103,8 @@ export const useStylingStore = defineStore("style", () => {
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
-  const labelShowingState: Map<string, boolean> = new Map();
-  const plottableShowingState: Map<string, boolean> = new Map();
+  // const labelShowingState: Map<string, boolean> = new Map();
+  const editedLabels: Ref<Set<string>> = ref(new Set())
 
   watch(
     // This watcher run when the user changes the object selection
@@ -118,10 +118,6 @@ export const useStylingStore = defineStore("style", () => {
         const pos = selectionArr.findIndex(n => n.name === labelName);
         const label = selectedLabels.value.get(labelName);
         if (pos < 0 && label) {
-          // object was deselected, restore its visibility
-          // and remove it from the selected set
-          const prevVisibility = labelShowingState.get(labelName);
-          label.showing = prevVisibility!;
           selectedLabels.value.delete(labelName);
           initialStyleMap.delete("label:" + labelName);
           defaultStyleMap.delete("label:" + labelName);
@@ -132,8 +128,6 @@ export const useStylingStore = defineStore("style", () => {
         const pos = selectionArr.findIndex(n => n.name === plotName);
         const plot = selectedPlottables.value.get(plotName);
         if (pos < 0 && plot) {
-          const prevVisibility = plottableShowingState.get(plotName);
-          plot.showing = prevVisibility!;
           selectedPlottables.value.delete(plotName);
           initialStyleMap.delete(StyleCategory.Front + ":" + plotName);
           initialStyleMap.delete(StyleCategory.Back + ":" + plotName);
@@ -148,7 +142,6 @@ export const useStylingStore = defineStore("style", () => {
         if (itsPlot && !(n instanceof Label)) {
           // console.debug(`${n.name} plottable`, itsPlot)
           selectedPlottables.value.set(n.name, itsPlot);
-          plottableShowingState.set(n.name, itsPlot.showing);
 
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below
@@ -174,7 +167,6 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(n.name)) {
             selectedLabels.value.set(n.name, itsLabel.ref);
-            labelShowingState.set(n.name, itsLabel.ref.showing);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below
             initialStyleMap.set(
@@ -189,6 +181,7 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
 
+      editedLabels.value.clear()
       console.debug("Initial style map size = ", initialStyleMap.size);
       console.debug("Default style map size = ", defaultStyleMap.size);
 
@@ -219,6 +212,8 @@ export const useStylingStore = defineStore("style", () => {
       if (styleIndividuallyAltered) {
         selectedLabels.value.forEach(label => {
           label.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
+          // When a label is modified, add it to the set
+          editedLabels.value.add(label.name)
         });
         selectedPlottables.value.forEach(plot => {
           plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
@@ -407,7 +402,8 @@ export const useStylingStore = defineStore("style", () => {
     deselectActiveGroup,
     persistUpdatedStyleOptions,
     restoreDefaultStyles,
-    restoreInitialStyles
+    restoreInitialStyles,
+    editedLabels
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };

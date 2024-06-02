@@ -303,7 +303,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, forceAgreement } =
   storeToRefs(styleStore);
-const { hasDisagreement } = styleStore;
+const { hasDisagreement, editedLabels } = styleStore;
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
@@ -465,8 +465,10 @@ function resetLabelsVisibility() {
   popupVisible = false;
   groupSelection.value = undefined;
   selectedLabels.value.forEach(n => {
-    const visibility = labelVisibiltyState.get(n.name);
-    if (typeof visibility === "boolean") n.showing = visibility;
+    if (!editedLabels.has(n.name)) {
+      const visibility = labelVisibiltyState.get(n.name);
+      if (typeof visibility === "boolean") n.showing = visibility;
+    }
   });
   // emits('apply-styles')
 }

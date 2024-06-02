@@ -15,14 +15,14 @@
     </template-->
     <v-sheet class="bg-white" v-if="showPopup && menu" position="fixed" elevation="4"
     :style="{right: '80px'}">
-
+TAB={{ currentTab }}
       <v-tabs v-model="currentTab">
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
         <v-spacer/>
         <v-tab :value="LAST_TAB_MARKER">
           {{ name }}
-          <v-icon @click="hideMe">mdi-chevron-double-right</v-icon>
+          <v-icon>mdi-chevron-double-right</v-icon>
         </v-tab>
       </v-tabs>
       <slot name="top"></slot>
@@ -53,11 +53,10 @@ watch(() => elementProps.showPopup, (show) => {
   if (show) emit('popUpShown')
   else emit('popUpHidden')
 })
-watch(() => menu.value, (m) => {
-  if (!m) emit('popUpHidden')
+watch(() => currentTab.value, tab => {
+  if (tab === LAST_TAB_MARKER) {
+    menu.value = false
+    emit('popUpHidden')
+  }
 })
-
-function hideMe() {
-  menu.value = false
-}
 </script>

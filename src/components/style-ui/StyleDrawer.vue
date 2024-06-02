@@ -92,14 +92,12 @@
           <v-tooltip
             activator=".back-contrast"
             text="Global Back Style Contrast"></v-tooltip>
-<v-badge  v-if="hasObjects" :content="seNodules.length">
-          <v-icon class="back-contrast" @click="toggle">
-            mdi-contrast-box
-          </v-icon>
-        </v-badge>
-          <v-icon v-else class="back-contrast">
-            mdi-contrast-box
-          </v-icon>
+          <v-badge v-if="hasObjects" :content="seNodules.length">
+            <v-icon class="back-contrast" @click="toggle">
+              mdi-contrast-box
+            </v-icon>
+          </v-badge>
+          <v-icon v-else class="back-contrast">mdi-contrast-box</v-icon>
           <v-sheet
             v-if="isSelected"
             position="fixed"
@@ -141,9 +139,14 @@
           </v-sheet>
         </v-item>
       </v-item-group>
-      <template v-if="hasObjects" >
-        <v-tooltip activator="#show-labels" text="Show Labels"></v-tooltip>
-        <v-icon id="show-labels" class="pt-5">mdi-tag-multiple</v-icon>
+      <template v-if="selectedLabels.size > 0">
+        <v-tooltip activator=".show-labels" text="Show/Hide Labels"></v-tooltip>
+        <v-badge :content="selectedLabels.size">
+          <v-icon class="show-labels" @click="toggleLabelVisibility"
+          :icon="hasVisibleLabels ? 'mdi-label-off-outline' : 'mdi-label'">
+
+          </v-icon>
+        </v-badge>
       </template>
       <v-btn icon size="x-small" @click="minified = !minified" class="my-2">
         <v-icon>$closePanelRight</v-icon>
@@ -202,7 +205,7 @@ const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedSENodules, hasObjects, seNodules } = storeToRefs(seStore);
-const { selectedPlottables, selectedLabels, styleOptions } =
+const { selectedPlottables, selectedLabels, styleOptions, editedLabels } =
   storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
 const { hasStyle, hasDisagreement } = styleStore;
@@ -222,6 +225,8 @@ const backStyleContrastSelectorThumbStrings = [
   "Same"
 ];
 
+const hasVisibleLabels = ref(false);
+
 watch(
   () => selectedSENodules.value,
   arr => {
@@ -238,6 +243,25 @@ watch(
   contrast => {
     console.debug("Updating back contrast to", contrast);
     styleStore.changeBackContrast(contrast);
+  }
+);
+watch(
+  () => selectedLabels.value,
+  labels => {
+    hasVisibleLabels.value = false;
+    labels.forEach((lab, _name) => {
+      if (lab.showing) {
+        hasVisibleLabels.value = true;
+      }
+    });
+  },
+  { deep: true }
+);
+
+watch(
+  () => editedLabels.value,
+  editSet => {
+    hasVisibleLabels.value = editSet.size > 0;
   }
 );
 
@@ -270,7 +294,6 @@ watch(
   (selectedTab: number | undefined, prevTab: number | undefined) => {
     if (typeof prevTab === "number" && selectedTab === undefined) {
       styleStore.deselectActiveGroup();
-      console.debug("Style panel disappearing");
     } else {
       switch (selectedTab) {
         case 0:
@@ -281,6 +304,10 @@ watch(
           break;
         case 2:
           styleStore.selectActiveGroup(StyleCategory.Back);
+          break;
+        default:
+          // TODO: should we deselect or do nothing?
+          styleStore.deselectActiveGroup();
       }
     }
   }
@@ -292,6 +319,13 @@ function undoStyleChanges() {
 
 function restoreDefaultStyles() {
   styleStore.restoreDefaultStyles();
+}
+
+function toggleLabelVisibility() {
+  hasVisibleLabels.value = !hasVisibleLabels.value
+  selectedLabels.value.forEach(lab => {
+    lab.showing = hasVisibleLabels.value
+  })
 }
 </script>
 <i18n lang="json" locale="en">
