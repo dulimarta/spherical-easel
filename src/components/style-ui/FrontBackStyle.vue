@@ -2,7 +2,7 @@
   <!-- {{ styleOptions }} -->
   <PopOverTabs
     :show-popup="showPopup"
-    :name="editModeIsBack ? 'BG' : 'FG'"
+    :name="editModeIsBack ? 'Back' : 'Front'"
     :disabled="selectedPlottables.size === 0">
     <template #tabs>
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
@@ -671,11 +671,6 @@ function updateInputGroup(inputSelector: string): void {
 //   }
 // }
 
-// function distinguishConflictingItems(conflictingProps: string[]): void {
-//   conflictingProps.forEach(conflictPropName => {
-//     (conflictItems as any)[conflictPropName] = true;
-//   });
-// }
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";

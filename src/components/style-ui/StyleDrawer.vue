@@ -88,51 +88,66 @@
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
         </v-item>
-        <v-item v-slot="{isSelected, toggle}">
-          <v-tooltip activator="#back-contrast" text="Global Back Style Contrast"></v-tooltip>
-
-          <v-icon id="back-contrast" @click="toggle" :disabled="!hasObjects">mdi-contrast-box</v-icon>
-          <v-sheet v-if="isSelected" position="fixed" class="pa-3" elevation="4" rounded :style="{
-            right: '80px'
-          }">
-          <!-- Global contrast slider -->
+        <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip
-            location="bottom"
-            max-width="400px"
-            activator="#global-contrast"
-            >
-            <span>{{ t("backStyleContrastToolTip") }}</span>
-          </v-tooltip>
-          <p id="global-contrast">
-            <span class="text-subtitle-2" style="color: red">
-              {{ t("globalBackStyleContrast") + " " }}
-            </span>
-            <span class="text-subtitle-2">
-              {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
-            </span>
-          </p>
-          <v-slider
-            v-model="backStyleContrast"
-            :min="0"
-            :step="0.1"
-            :max="1"
-            density="compact">
-            <template v-slot:thumb-label="{modelValue}">
-              {{
-                backStyleContrastSelectorThumbStrings[
-                  Math.floor(modelValue * 10)
-                ]
-              }}
-            </template>
-          </v-slider>
-
+            activator=".back-contrast"
+            text="Global Back Style Contrast"></v-tooltip>
+<v-badge  v-if="hasObjects" :content="seNodules.length">
+          <v-icon class="back-contrast" @click="toggle">
+            mdi-contrast-box
+          </v-icon>
+        </v-badge>
+          <v-icon v-else class="back-contrast">
+            mdi-contrast-box
+          </v-icon>
+          <v-sheet
+            v-if="isSelected"
+            position="fixed"
+            class="pa-3"
+            elevation="4"
+            rounded
+            :style="{
+              right: '80px'
+            }">
+            <!-- Global contrast slider -->
+            <v-tooltip
+              location="bottom"
+              max-width="400px"
+              activator="#global-contrast">
+              <span>{{ t("backStyleContrastToolTip") }}</span>
+            </v-tooltip>
+            <p id="global-contrast">
+              <span class="text-subtitle-2" style="color: red">
+                {{ t("globalBackStyleContrast") + " " }}
+              </span>
+              <span class="text-subtitle-2">
+                {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
+              </span>
+            </p>
+            <v-slider
+              v-model="backStyleContrast"
+              :min="0"
+              :step="0.1"
+              :max="1"
+              density="compact">
+              <template v-slot:thumb-label="{ modelValue }">
+                {{
+                  backStyleContrastSelectorThumbStrings[
+                    Math.floor(modelValue * 10)
+                  ]
+                }}
+              </template>
+            </v-slider>
           </v-sheet>
         </v-item>
       </v-item-group>
+      <template v-if="hasObjects" >
+        <v-tooltip activator="#show-labels" text="Show Labels"></v-tooltip>
+        <v-icon id="show-labels" class="pt-5">mdi-tag-multiple</v-icon>
+      </template>
       <v-btn icon size="x-small" @click="minified = !minified" class="my-2">
         <v-icon>$closePanelRight</v-icon>
       </v-btn>
-
     </div>
   </transition>
 </template>
@@ -186,12 +201,13 @@ const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedSENodules, hasObjects } = storeToRefs(seStore);
-const { selectedPlottables, selectedLabels, styleOptions } = storeToRefs(styleStore);
+const { selectedSENodules, hasObjects, seNodules } = storeToRefs(seStore);
+const { selectedPlottables, selectedLabels, styleOptions } =
+  storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
 const { hasStyle, hasDisagreement } = styleStore;
 
-  const backStyleContrast = ref(Nodule.getBackStyleContrast());
+const backStyleContrast = ref(Nodule.getBackStyleContrast());
 const backStyleContrastSelectorThumbStrings = [
   "Min",
   "10%",
@@ -220,11 +236,10 @@ watch(
 watch(
   () => backStyleContrast.value,
   contrast => {
-    console.debug("Updating back contrast to", contrast)
+    console.debug("Updating back contrast to", contrast);
     styleStore.changeBackContrast(contrast);
   }
 );
-
 
 const labelTooltip = computed((): string => {
   let text = t("LabelTooltip");

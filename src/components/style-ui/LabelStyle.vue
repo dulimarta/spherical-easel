@@ -3,6 +3,7 @@
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
     :show-popup="showPopup!"
+    name="Label"
     :disabled="selectedLabels.size < 1"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
