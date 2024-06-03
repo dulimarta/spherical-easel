@@ -19,7 +19,7 @@
         :key="grp.group"
         elevation="4"
         :style="{
-          marginBottom: '8px'
+          marginBottom: '4px'
         }">
         <template #title>
           <span class="text-subtitle-1 font-weight-bold">
