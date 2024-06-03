@@ -142,10 +142,12 @@
       <template v-if="selectedLabels.size > 0">
         <v-tooltip activator=".show-labels" text="Show/Hide Labels"></v-tooltip>
         <v-badge :content="selectedLabels.size">
-          <v-icon class="show-labels" @click="toggleLabelVisibility"
-          :icon="hasVisibleLabels ? 'mdi-label-off-outline' : 'mdi-label'">
-
-          </v-icon>
+          <v-icon
+            class="show-labels"
+            @click="toggleLabelVisibility"
+            :icon="
+              hasVisibleLabels ? 'mdi-label-off-outline' : 'mdi-label'
+            "></v-icon>
         </v-badge>
       </template>
       <v-btn icon size="x-small" @click="minified = !minified" class="my-2">
@@ -231,7 +233,6 @@ watch(
   () => selectedSENodules.value,
   arr => {
     if (arr.length === 0) {
-      // close the popup panel when no objects are selected
       styleSelection.value = undefined;
     }
   },
@@ -245,10 +246,13 @@ watch(
     styleStore.changeBackContrast(contrast);
   }
 );
+
 watch(
   () => selectedLabels.value,
   labels => {
     hasVisibleLabels.value = false;
+    // Update te hasVisibleLabels to true if at least
+    // one of the selected labels is visible
     labels.forEach((lab, _name) => {
       if (lab.showing) {
         hasVisibleLabels.value = true;
@@ -261,7 +265,43 @@ watch(
 watch(
   () => editedLabels.value,
   editSet => {
+    // When the edited label set is NOT empty,
+    // those modified labels will stay visible
+    // Reflect this fact in our internal flag
     hasVisibleLabels.value = editSet.size > 0;
+  }
+);
+
+watch(
+  () => styleSelection.value,
+  (selectedTab: number | undefined, prevTab: number | undefined) => {
+    if (typeof prevTab === "number" && selectedTab === undefined) {
+      styleStore.deselectActiveGroup();
+    } else {
+      switch (selectedTab) {
+        case 0:
+          styleStore.selectActiveGroup(StyleCategory.Label);
+          break;
+        case 1:
+          styleStore.selectActiveGroup(StyleCategory.Front);
+          break;
+        case 2:
+          styleStore.selectActiveGroup(StyleCategory.Back);
+          break;
+        default:
+          // TODO: should we deselect or do nothing?
+          styleStore.deselectActiveGroup();
+      }
+    }
+  }
+);
+
+watch(
+  () => minified.value,
+  isDrawerMinified => {
+    // When the style drawer is expanded, automatically switch
+    // to the selection tool
+    if (!isDrawerMinified) seStore.setActionMode("select");
   }
 );
 
@@ -289,30 +329,6 @@ const frontTooltip = computed((): string => {
   return text;
 });
 
-watch(
-  () => styleSelection.value,
-  (selectedTab: number | undefined, prevTab: number | undefined) => {
-    if (typeof prevTab === "number" && selectedTab === undefined) {
-      styleStore.deselectActiveGroup();
-    } else {
-      switch (selectedTab) {
-        case 0:
-          styleStore.selectActiveGroup(StyleCategory.Label);
-          break;
-        case 1:
-          styleStore.selectActiveGroup(StyleCategory.Front);
-          break;
-        case 2:
-          styleStore.selectActiveGroup(StyleCategory.Back);
-          break;
-        default:
-          // TODO: should we deselect or do nothing?
-          styleStore.deselectActiveGroup();
-      }
-    }
-  }
-);
-
 function undoStyleChanges() {
   styleStore.restoreInitialStyles();
 }
@@ -322,10 +338,10 @@ function restoreDefaultStyles() {
 }
 
 function toggleLabelVisibility() {
-  hasVisibleLabels.value = !hasVisibleLabels.value
+  hasVisibleLabels.value = !hasVisibleLabels.value;
   selectedLabels.value.forEach(lab => {
-    lab.showing = hasVisibleLabels.value
-  })
+    lab.showing = hasVisibleLabels.value;
+  });
 }
 </script>
 <i18n lang="json" locale="en">

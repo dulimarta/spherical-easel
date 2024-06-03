@@ -99,8 +99,6 @@ const tmpMatrix = new Matrix4();
 const tmpVector = new Vector3();
 // const tmpVector1 = new Vector3();
 const temporaryNodules: Array<Nodule> = [];
-// const initialStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
-// const defaultStyleStatesMap = new Map<StyleCategory, StyleOptions[]>();
 
 function removeElements(
   removeItems: Array<ActionMode>,
