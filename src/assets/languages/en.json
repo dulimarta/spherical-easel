@@ -12,18 +12,6 @@
     "SphericalEaselMainTitle": "Spherical Easel",
     "ToolsTabToolTip": "Tools"
   },
-  "toolGroups": {
-    "EditTools": "Edit Tools",
-    "DisplayTools": "Display Tools",
-    "BasicTools": "Basic Tools",
-    "ConicTools": "Conic Tools",
-    "ConstructionTools": "Construction Tools",
-    "AdvancedTools": "Advanced Tools",
-    "TransformationTools": "Transformational Tools",
-    "MeasurementTools": "Measurement Tools",
-    "MeasuredObjectTools": "Measured Objects Tools",
-    "DeveloperOnlyTools": "Developer Only Tools"
-  },
   "buttons": {
     "CurrentTool": "Current Tool",
     "NoToolSelected": "No Tool Selected",

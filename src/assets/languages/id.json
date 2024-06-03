@@ -294,20 +294,7 @@
     "showObjects": "style.showObjects",
     "toSelectObjects": "style.toSelectObjects"
   },
-  "toolGroups": {
-    "AdvancedTools": "Perangkat Tambahan",
-    "BasicTools": "Perangkat Dasar",
-    "ConstructionTools": "Perangkat Konstruksi",
-    "DisplayTools": "Perangkat Tampilan",
-    "EditTools": "Suntingan",
-    "KeyShortCut": "Tombol",
-    "MeasurementTools": "",
-    "TransformationalTools": "Transformasi",
-    "ConicTools": "toolGroups.ConicTools",
-    "TransformationTools": "toolGroups.TransformationTools",
-    "MeasuredObjectTools": "toolGroups.MeasuredObjectTools",
-    "DeveloperOnlyTools": "toolGroups.DeveloperOnlyTools"
-  },
+
   "key": "key",
   "constructions": {
     "confirmLogout": "Logout?",

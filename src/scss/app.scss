@@ -1,5 +1,7 @@
 @forward "vuetify/settings" with (
-    $expansion-panel-text-padding: 0,
+    $expansion-panel-active-margin: 4px,
+    // $expansion-panel-border-color: #4d00dd,
     $expansion-panel-title-padding: 0px 8px,
-    $expansion-panel-background-color: #D9F2DF
+    $expansion-panel-background-color: #D9F2DF,
+    $expansion-panel-text-padding: 4px
 );

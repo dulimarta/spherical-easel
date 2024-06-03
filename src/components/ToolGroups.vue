@@ -9,64 +9,63 @@
     <v-icon v-if="inEditMode">mdi-check</v-icon>
     <v-icon v-else>mdi-pencil</v-icon>
   </v-btn>
-  <CurrentToolSelection/>
+  <CurrentToolSelection />
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
-    <v-expansion-panels style="gap:10px;padding-right: 8px;">
-    <!-- <div v-for="(g, gpos) in buttonGroup" :key="gpos"> -->
-          <v-expansion-panels v-for="(g,gpos) in buttonGroup" :key="gpos" >
-            <v-expansion-panel  style="border-radius: 8px;">
-            <div v-if="g.children.length>0">
-            </div>
-            <v-expansion-panel-title>
-              <h3 class="body-1 font-weight-bold button-group-heading">
-                {{ $t(`toolGroups.${g.group}`) }}
-              </h3>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <div class="button-group">
-          <!-- To remove boolean properties in Vue3, we have to use null or undefined -->
-          <template v-for="btn in g.children" :key="btn.action">
+    <v-expansion-panels class="pr-2" v-model="expandedPanel">
+      <v-expansion-panel
+        v-for="grp in buttonGroup"
+        :key="grp.group"
+        elevation="4"
+        :style="{
+          marginBottom: '8px'
+        }">
+        <template #title>
+          <span class="text-subtitle-1 font-weight-bold">
+            {{ t(grp.group) }}
+          </span>
+        </template>
+        <template #text>
+          <div class="button-group">
             <v-item
               v-slot="{ isSelected, toggle }"
+              v-for="btn in grp.children"
               :value="btn.action">
               <ToolButton
-                @click="toggle"
                 :button="btn"
                 :selected="isSelected!"
-                :included="toolIncluded(btn.action)"
-                :editing="inEditMode" />
+                @click="toggle"
+                :editing="inEditMode"
+                :included="toolIncluded(btn.action)" />
             </v-item>
-          </template>
-        </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+          </div>
+        </template>
+      </v-expansion-panel>
+      <v-expansion-panel
+        v-if="developerButtonList.length > 0 && !inProductionMode">
+        <template #title>
+          <span class="text-subtitle-1 font-weight-bold">
+            {{ t("DeveloperOnlyTools") }}
+          </span>
+        </template>
+        <template #text>
+          <div class="button-group">
+            <v-item
+              v-slot="{ isSelected, toggle }"
+              v-for="btn in developerButtonList"
+              :value="btn.action">
+              <ToolButton
+                :button="btn"
+                :selected="isSelected!"
+                @click="toggle"
+                :editing="inEditMode"
+                :included="true" />
+            </v-item>
+          </div>
+        </template>
+      </v-expansion-panel>
     </v-expansion-panels>
-    <v-expansion-panels id="DeveloperToolGroup"
-      v-show="developerButtonList.length > 0 && !inProductionMode">
-      <v-expansion-panel style="border-radius: 8px;">
-        <v-expansion-panel-title>
-          <h3 class="body-1 font-weight-bold">
-            {{ $t("toolGroups.DeveloperOnlyTools") }}
-          </h3>
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
-        <v-item v-slot="{ isSelected, toggle }">
-        <ToolButton
-          @click="toggle"
-          v-for="(button, pos) in developerButtonList"
-          :key="pos"
-          :button="button"
-          :editing="inEditMode"
-          :selected="isSelected!"
-          :included="true"
-        />
-        </v-item>
-        </v-expansion-panel-text>
-        </v-expansion-panel>
-    </v-expansion-panels>
-  </v-expansion-panels>
   </v-item-group>
 </template>
 
@@ -82,7 +81,8 @@ import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
-
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
@@ -90,6 +90,7 @@ const { expressions, seTransformations, actionMode } = storeToRefs(seStore);
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
+const expandedPanel: Ref<number | undefined> = ref(undefined);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
 const currentToolset: Array<ActionMode> = [];
 const selectedTool: Ref<ActionMode | null> = ref("rotate");
@@ -110,11 +111,19 @@ onBeforeMount((): void => {
   currentToolset.push(...includedTools.value);
 });
 
-watch(() => actionMode.value, (act) => {
-  if (selectedTool.value !== act)
-    selectedTool.value = act
-  doTransformationEffect()
-})
+watch(
+  () => actionMode.value,
+  act => {
+    if (selectedTool.value !== act) selectedTool.value = act;
+    const activeGroup = toolGroups.findIndex(group => {
+      return group.children.some((ch: ToolButtonType) => ch.action === act);
+    });
+    if (activeGroup !== expandedPanel.value) {
+      expandedPanel.value = activeGroup;
+    }
+    doTransformationEffect();
+  }
+);
 
 function doTransformationEffect(): void {
   switch (actionMode.value) {
@@ -179,10 +188,7 @@ function toolSelectionChanged() {
   if (!inEditMode.value) {
     const whichButton = buttonGroup.value
       .flatMap((group: ToolButtonGroup) => group.children)
-      .find(
-        (toolBtn: ToolButtonType) =>
-          toolBtn.action == selectedTool.value
-      );
+      .find((toolBtn: ToolButtonType) => toolBtn.action == selectedTool.value);
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
       // seStore.setButton(whichButton);
@@ -197,11 +203,8 @@ function toolSelectionChanged() {
     else acctStore.includeToolName(toolCheck);
   }
   // Remember the last selection
-  if (selectedTool.value)
-    lastSelectedTool = selectedTool.value
+  if (selectedTool.value) lastSelectedTool = selectedTool.value;
 }
-
-
 
 /* This returns true only if there is at least one tool that needs to be displayed in the group. */
 // nonEmptyGroup(groupName: string): boolean {
@@ -245,7 +248,7 @@ const developerButtonList: ToolButtonType[] = [
     action: "iconFactory",
     displayedName: "buttons.CreateIconDisplayedName",
     toolTipMessage: "buttons.CreateIconToolTipMessage",
-    toolUseMessage: "buttons.CreateIconToolUseMessage",
+    toolUseMessage: "buttons.CreateIconToolUseMessage"
   }
 ];
 </script>
@@ -259,5 +262,34 @@ const developerButtonList: ToolButtonType[] = [
 .button-group-heading {
   margin-top: 0.5em;
 }
-
 </style>
+<i18n lang="json" locale="en">
+{
+  "EditTools": "Edit Tools",
+  "DisplayTools": "Display Tools",
+  "BasicTools": "Basic Tools",
+  "ConicTools": "Conic Tools",
+  "ConstructionTools": "Construction Tools",
+  "AdvancedTools": "Advanced Tools",
+  "TransformationTools": "Transformational Tools",
+  "MeasurementTools": "Measurement Tools",
+  "MeasuredObjectTools": "Measured Objects Tools",
+  "DeveloperOnlyTools": "Developer Only Tools"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "AdvancedTools": "Perangkat Tambahan",
+  "BasicTools": "Perangkat Dasar",
+  "ConstructionTools": "Perangkat Konstruksi",
+  "DisplayTools": "Perangkat Tampilan",
+  "EditTools": "Suntingan",
+  "KeyShortCut": "Tombol",
+  "MeasurementTools": "",
+  "TransformationalTools": "Transformasi",
+  "ConicTools": "toolGroups.ConicTools",
+  "TransformationTools": "toolGroups.TransformationTools",
+  "MeasuredObjectTools": "toolGroups.MeasuredObjectTools",
+  "DeveloperOnlyTools": "toolGroups.DeveloperOnlyTools"
+}
+</i18n>
