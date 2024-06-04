@@ -304,8 +304,8 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
 const { hasStyle, hasDisagreement } = styleStore;
-const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
-  storeToRefs(seStore);
+// const { selectedSENodules, oldStyleSelections, styleSavedFromPanel } =
+//   storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100

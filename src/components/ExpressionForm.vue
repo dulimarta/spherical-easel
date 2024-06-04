@@ -54,7 +54,6 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-// import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
@@ -64,7 +63,7 @@ import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 
 const seStore = useSEStore();
-const { expressions } = storeToRefs(seStore);
+const { seExpressions } = storeToRefs(seStore);
 
 let parser = new ExpressionParser();
 
@@ -95,7 +94,7 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      expressions.value.forEach((m: SEExpression) => {
+      seExpressions.value.forEach((m) => {
         const measurementName = m.name;
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);
@@ -133,7 +132,7 @@ function addExpression(): void {
   calc.update();
   reset();
   varMap.clear();
-  expressions.value.forEach((m: SEExpression) => {
+  seExpressions.value.forEach((m) => {
     const measurementName = m.name;
     // console.debug("Measurement", m, measurementName);
     varMap.set(measurementName, m.value);

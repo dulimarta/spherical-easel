@@ -123,7 +123,7 @@ interface ParametricDataType {
 }
 
 const seStore = useSEStore();
-const { expressions, seParametrics } = storeToRefs(seStore);
+const { seExpressions, seParametrics } = storeToRefs(seStore);
 /**
  * These are string expressions that once set define the Parametric curve
  */
@@ -530,7 +530,7 @@ function addParametricCurve(): void {
   }
 
   // set up the map for the parser to evaluate the expressions
-  expressions.value.forEach((m: SEExpression) => {
+  seExpressions.value.forEach((m) => {
     const measurementName = m.name;
     varMap.set(measurementName, m.value);
   });
@@ -614,16 +614,16 @@ function addParametricCurve(): void {
   for (k in coordinateExpressions) {
     const exp = coordinateExpressions[k];
     for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-      const pos = expressions.value.findIndex(z =>
+      const pos = seExpressions.value.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = calculationParents.findIndex(
-          parent => parent.name === expressions.value[pos].name
+          parent => parent.name === seExpressions.value[pos].name
         );
         if (pos2 < 0) {
-          calculationParents.push(expressions.value[pos]);
+          calculationParents.push(seExpressions.value[pos] as any);
         }
       }
     }
@@ -634,16 +634,16 @@ function addParametricCurve(): void {
     const exp = tExpressions[l];
     // Match all measurement variables Mxxx
     for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-      const pos = expressions.value.findIndex(z =>
+      const pos = seExpressions.value.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = calculationParents.findIndex(
-          parent => parent.name === expressions.value[pos].name
+          parent => parent.name === seExpressions.value[pos].name
         );
         if (pos2 < 0) {
-          calculationParents.push(expressions.value[pos]);
+          calculationParents.push(seExpressions.value[pos] as any);
         }
       }
     }

@@ -32,7 +32,7 @@ export function useStyleEditor(
   const seStore = useSEStore();
   const {
     selectedSENodules,
-    oldStyleSelections,
+    // oldStyleSelections,
     // initialStyleStatesMap,
     // defaultStyleStatesMap
   } = storeToRefs(seStore);
@@ -90,170 +90,170 @@ export function useStyleEditor(
     }
   );
 
-  watch(
-    () => selectedSENodules.value,
-    (newSelection: SENodule[]): void => {
-      // console.debug(
-      //   "StyleEditor: object selection changed",
-      //   newSelection.length
-      // );
+  // watch(
+  //   () => selectedSENodules.value,
+  //   (newSelection): void => {
+  //     // console.debug(
+  //     //   "StyleEditor: object selection changed",
+  //     //   newSelection.length
+  //     // );
 
-      // saveStyleState();
-      commonStyleProperties.splice(0);
-      // this.dataAgreement = true;
-      if (newSelection.length === 0) {
-        return;
-      }
-      activeStyleOptions.value = {};
+  //     // saveStyleState();
+  //     commonStyleProperties.splice(0);
+  //     // this.dataAgreement = true;
+  //     if (newSelection.length === 0) {
+  //       return;
+  //     }
+  //     activeStyleOptions.value = {};
 
-      // console.debug("***********************");
-      seStore.setSelectedSENodules(newSelection.filter(noduleFilterFunction));
-      filteredNodules.value.splice(0);
-      filteredNodules.value.push(
-        ...selectedSENodules.value.map(noduleMapFunction)
-      );
-      // console.debug("Selected SENodules", this.selectedSENodules);
-      // console.debug("Selected plottables", this.selectedNodules);
-      seStore.setOldSelection(selectedSENodules.value);
+  //     // console.debug("***********************");
+  //     seStore.setSelectedSENodules(newSelection.filter(noduleFilterFunction));
+  //     filteredNodules.value.splice(0);
+  //     filteredNodules.value.push(
+  //       ...selectedSENodules.value.map(noduleMapFunction)
+  //     );
+  //     // console.debug("Selected SENodules", this.selectedSENodules);
+  //     // console.debug("Selected plottables", this.selectedNodules);
+  //     seStore.setOldSelection(selectedSENodules.value);
 
-      // Save current state so we can reset to this state if needed to
-      const styleOptionsOfSelected = filteredNodules.value.map((n: Nodule) => {
-        // console.debug("current style state", n.currentStyleState(this.panel));
-        return n.currentStyleState(panel);
-      });
-      // console.log(
-      //   "styleOptionsOfSelected",
-      //   styleOptionsOfSelected[0]
-      // );
-      // seStore.recordStyleState({
-      //   panel: panel,
-      //   selected: filteredNodules.value
-      // });
+  //     // Save current state so we can reset to this state if needed to
+  //     const styleOptionsOfSelected = filteredNodules.value.map((n: Nodule) => {
+  //       // console.debug("current style state", n.currentStyleState(this.panel));
+  //       return n.currentStyleState(panel);
+  //     });
+  //     // console.log(
+  //     //   "styleOptionsOfSelected",
+  //     //   styleOptionsOfSelected[0]
+  //     // );
+  //     // seStore.recordStyleState({
+  //     //   panel: panel,
+  //     //   selected: filteredNodules.value
+  //     // });
 
-      // Use the style of the first selected object as the initial value
-      activeStyleOptions.value = { ...styleOptionsOfSelected[0] };
-      // console.log(
-      //   "active style options",
-      //   this.activeStyleOptions
-      // );
-      // Use flatmap (1-to-many mapping) to compile all the styling properties
-      // of all the selected objects
-      const unionOfAllProps = styleOptionsOfSelected.flatMap(
-        (opt: StyleOptions) =>
-          Object.getOwnPropertyNames(opt).filter(
-            (s: string) => !s.startsWith("__")
-          )
-      );
+  //     // Use the style of the first selected object as the initial value
+  //     activeStyleOptions.value = { ...styleOptionsOfSelected[0] };
+  //     // console.log(
+  //     //   "active style options",
+  //     //   this.activeStyleOptions
+  //     // );
+  //     // Use flatmap (1-to-many mapping) to compile all the styling properties
+  //     // of all the selected objects
+  //     const unionOfAllProps = styleOptionsOfSelected.flatMap(
+  //       (opt: StyleOptions) =>
+  //         Object.getOwnPropertyNames(opt).filter(
+  //           (s: string) => !s.startsWith("__")
+  //         )
+  //     );
 
-      const unDuplicatedUnionOfAllProps = new Set(unionOfAllProps); // Convert to set to remove duplicates
-      // console.log("undup", unDuplicatedUnionOfAllProps);
+  //     const unDuplicatedUnionOfAllProps = new Set(unionOfAllProps); // Convert to set to remove duplicates
+  //     // console.log("undup", unDuplicatedUnionOfAllProps);
 
-      const listOfAllProps = styleOptionsOfSelected.map((opt: StyleOptions) =>
-        Object.getOwnPropertyNames(opt).filter(
-          (s: string) => !s.startsWith("__")
-        )
-      );
-      // console.log("list of common props", listOfAllProps);
+  //     const listOfAllProps = styleOptionsOfSelected.map((opt: StyleOptions) =>
+  //       Object.getOwnPropertyNames(opt).filter(
+  //         (s: string) => !s.startsWith("__")
+  //       )
+  //     );
+  //     // console.log("list of common props", listOfAllProps);
 
-      unDuplicatedUnionOfAllProps.forEach(prop => {
-        // make sure that prop is on every list of properties, if so it is a common prop (i.e. in the intersection)
-        if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
-          commonStyleProperties.push(prop);
-        }
-      });
+  //     unDuplicatedUnionOfAllProps.forEach(prop => {
+  //       // make sure that prop is on every list of properties, if so it is a common prop (i.e. in the intersection)
+  //       if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
+  //         commonStyleProperties.push(prop);
+  //       }
+  //     });
 
-      // console.log("common props", this.commonStyleProperties);
+  //     // console.log("common props", this.commonStyleProperties);
 
-      // Use destructuring (...) to convert back from set to array
-      //this.commonStyleProperties.push(...uniqueProps);
+  //     // Use destructuring (...) to convert back from set to array
+  //     //this.commonStyleProperties.push(...uniqueProps);
 
-      if (filteredNodules.value.length > 1) {
-        propDynamicBackStyleCommonValue.value = false;
-        // When multiple plottables are selected, check for possible conflict
-        conflictingPropNames.value = commonStyleProperties.filter(
-          (propName: string) => {
-            // Confirm that the values of common style property are the same accross
-            // all selected plottables
-            const refStyleOption =
-              filteredNodules.value[0].currentStyleState(panel);
-            const refValue = (refStyleOption as any)[propName];
-            if (propName === "dynamicBackStyle")
-              propDynamicBackStyleCommonValue.value = refValue;
-            else if (propName === "dashArray") {
-              // Replace missing values in dash array with zeroes
-              if (Array.isArray(refValue) && refValue.length === 0)
-                refValue.push(0, 0);
-            }
+  //     if (filteredNodules.value.length > 1) {
+  //       propDynamicBackStyleCommonValue.value = false;
+  //       // When multiple plottables are selected, check for possible conflict
+  //       conflictingPropNames.value = commonStyleProperties.filter(
+  //         (propName: string) => {
+  //           // Confirm that the values of common style property are the same accross
+  //           // all selected plottables
+  //           const refStyleOption =
+  //             filteredNodules.value[0].currentStyleState(panel);
+  //           const refValue = (refStyleOption as any)[propName];
+  //           if (propName === "dynamicBackStyle")
+  //             propDynamicBackStyleCommonValue.value = refValue;
+  //           else if (propName === "dashArray") {
+  //             // Replace missing values in dash array with zeroes
+  //             if (Array.isArray(refValue) && refValue.length === 0)
+  //               refValue.push(0, 0);
+  //           }
 
-            // Style data is in agreement if all the selected object shared
-            // the same value for all the common style properties
-            const agreement = filteredNodules.value.every((obj: Nodule) => {
-              const thisStyleOption = obj.currentStyleState(panel);
-              const thisValue = (thisStyleOption as any)[propName];
-              // console.log("prop & name", propName, propName.search(/Color/), obj);
-              // console.log("ref value", refValue);
-              // console.log("this value", thisValue);
+  //           // Style data is in agreement if all the selected object shared
+  //           // the same value for all the common style properties
+  //           const agreement = filteredNodules.value.every((obj: Nodule) => {
+  //             const thisStyleOption = obj.currentStyleState(panel);
+  //             const thisValue = (thisStyleOption as any)[propName];
+  //             // console.log("prop & name", propName, propName.search(/Color/), obj);
+  //             // console.log("ref value", refValue);
+  //             // console.log("this value", thisValue);
 
-              if (Array.isArray(thisValue) || Array.isArray(refValue)) {
-                if (thisValue.length === 0) {
-                  thisValue.push(0, 0);
-                }
-                return dashArrayCompare(thisValue, refValue);
-              } else if (propName.search(/Color/) > -1) {
-                // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
-                return hslaCompare(thisValue, refValue);
-              } else return thisValue === refValue;
-            });
-            // If values do not agree, include its property name into the conflict array
-            return !agreement;
-          }
-        );
-        if (conflictingPropNames.value.length > 0) {
-          conflictingPropNames.value.forEach(prop => {
-            console.error("Disagreement in property value", prop);
-          });
-        }
-        //update the conflicting properties
-        const newConflictProps: string[] = [];
-        conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-        // this.dataAgreement = false;
-      } else {
-        // If we reach this point we have EXACTLY ONE object selected
-        conflictingPropNames.value.splice(0);
-        const opt = filteredNodules.value[0].currentStyleState(panel);
-        if (opt.dashArray && opt.dashArray.length === 0)
-          opt.dashArray.push(0, 0);
-        propDynamicBackStyleCommonValue.value =
-          (opt as any)["dynamicBackStyle"] ?? false;
-        console.debug("Only one object is selected");
+  //             if (Array.isArray(thisValue) || Array.isArray(refValue)) {
+  //               if (thisValue.length === 0) {
+  //                 thisValue.push(0, 0);
+  //               }
+  //               return dashArrayCompare(thisValue, refValue);
+  //             } else if (propName.search(/Color/) > -1) {
+  //               // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+  //               return hslaCompare(thisValue, refValue);
+  //             } else return thisValue === refValue;
+  //           });
+  //           // If values do not agree, include its property name into the conflict array
+  //           return !agreement;
+  //         }
+  //       );
+  //       if (conflictingPropNames.value.length > 0) {
+  //         conflictingPropNames.value.forEach(prop => {
+  //           console.error("Disagreement in property value", prop);
+  //         });
+  //       }
+  //       //update the conflicting properties
+  //       const newConflictProps: string[] = [];
+  //       conflictingPropNames.value.forEach(name => newConflictProps.push(name));
+  //       // this.dataAgreement = false;
+  //     } else {
+  //       // If we reach this point we have EXACTLY ONE object selected
+  //       conflictingPropNames.value.splice(0);
+  //       const opt = filteredNodules.value[0].currentStyleState(panel);
+  //       if (opt.dashArray && opt.dashArray.length === 0)
+  //         opt.dashArray.push(0, 0);
+  //       propDynamicBackStyleCommonValue.value =
+  //         (opt as any)["dynamicBackStyle"] ?? false;
+  //       console.debug("Only one object is selected");
 
-        //update the conflicting properties
-        const newConflictProps: string[] = [];
-        conflictingPropNames.value.forEach(name => newConflictProps.push(name));
-      }
+  //       //update the conflicting properties
+  //       const newConflictProps: string[] = [];
+  //       conflictingPropNames.value.forEach(name => newConflictProps.push(name));
+  //     }
 
-      previousBackstyleContrast = Nodule.getBackStyleContrast();
-      // console.log("record previous contrast", this.previousBackstyleContrast);
-      previousSelectedNodules.splice(0);
-      previousSelectedNodules.push(...filteredNodules.value);
+  //     previousBackstyleContrast = Nodule.getBackStyleContrast();
+  //     // console.log("record previous contrast", this.previousBackstyleContrast);
+  //     previousSelectedNodules.splice(0);
+  //     previousSelectedNodules.push(...filteredNodules.value);
 
-      if (hasStyle(/dashArray/)) {
-        let value: boolean;
-        if (activeStyleOptions.value.dashArray) {
-          if (
-            activeStyleOptions.value.dashArray[0] === 0 &&
-            activeStyleOptions.value.dashArray[1] === 0
-          ) {
-            value = true;
-          } else {
-            value = false;
-          }
-          // EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
-        }
-      }
-    },
-    { immediate: true }
-  );
+  //     if (hasStyle(/dashArray/)) {
+  //       let value: boolean;
+  //       if (activeStyleOptions.value.dashArray) {
+  //         if (
+  //           activeStyleOptions.value.dashArray[0] === 0 &&
+  //           activeStyleOptions.value.dashArray[1] === 0
+  //         ) {
+  //           value = true;
+  //         } else {
+  //           value = false;
+  //         }
+  //         // EventBus.fire("update-empty-dash-array", { emptyDashArray: value });
+  //       }
+  //     }
+  //   },
+  //   { immediate: true }
+  // );
 
   /**
    * In the following function: undefined, [], [0,0] are equivalent

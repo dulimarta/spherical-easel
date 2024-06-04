@@ -46,7 +46,7 @@ interface TestTValueType {
 }
 
 const seStore = useSEStore();
-const { expressions } = storeToRefs(seStore);
+const { seExpressions } = storeToRefs(seStore);
 const props = defineProps<{
   i18nToolTip: string;
   i18nKey: string;
@@ -94,7 +94,7 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      expressions.value.forEach((m: SEExpression) => {
+      seExpressions.value.forEach((m) => {
         const measurementName = m.name;
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);

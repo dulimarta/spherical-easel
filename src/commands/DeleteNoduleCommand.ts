@@ -37,7 +37,7 @@ export class DeleteNoduleCommand extends Command {
     //
     //This command is always called when there are no children of the
     for (let i = 0; i < this.parentIds.length; i++) {
-      const nodule = Command.store.getSENoduleById(this.parentIds[i]);
+      const nodule = Command.store.findSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.unregisterChild(this.seNodule);
       } else {
@@ -78,7 +78,7 @@ export class DeleteNoduleCommand extends Command {
         }
       } else if (
         this.seNodule instanceof SEPointCoordinate &&
-        Command.store.expressions
+        Command.store.seExpressions
           .filter(exp => exp instanceof SEPointCoordinate)
           .every(
             exp =>
@@ -126,7 +126,7 @@ export class DeleteNoduleCommand extends Command {
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = this.parentIds.length - 1; i > -1; i--) {
-      const nodule = Command.store.getSENoduleById(this.parentIds[i]);
+      const nodule = Command.store.findSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.registerChild(this.seNodule);
       } else {

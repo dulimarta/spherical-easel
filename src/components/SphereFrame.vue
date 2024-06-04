@@ -462,7 +462,7 @@ function updateView() {
   //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
   //   .scale(mag, -mag); // (translate & scale) is important
   //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
-  seLabels.value.forEach((l: SELabel) => {
+  seLabels.value.forEach((l) => {
     l.update();
   });
 }

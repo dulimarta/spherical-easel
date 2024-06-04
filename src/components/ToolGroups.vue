@@ -86,7 +86,7 @@ const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
-const { expressions, seTransformations, actionMode } = storeToRefs(seStore);
+const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
@@ -128,7 +128,7 @@ watch(
 function doTransformationEffect(): void {
   switch (actionMode.value) {
     case "measuredCircle":
-      if (expressions.value.length > 0) {
+      if (seExpressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -140,7 +140,7 @@ function doTransformationEffect(): void {
       }
       break;
     case "translation":
-      if (expressions.value.length > 0) {
+      if (seExpressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -153,7 +153,7 @@ function doTransformationEffect(): void {
       break;
 
     case "rotation":
-      if (expressions.value.length > 0) {
+      if (seExpressions.value.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});

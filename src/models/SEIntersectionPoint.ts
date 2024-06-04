@@ -99,7 +99,7 @@ export class SEIntersectionPoint extends SEPoint {
       this._antipodalPointId = -1;
       this._isAntipodeMode = false;
     } else {
-      const antipode = SENodule.store.getSENoduleById(seIntersectionPointID);
+      const antipode = SENodule.store.findSENoduleById(seIntersectionPointID);
       if (
         antipode instanceof SEIntersectionPoint &&
         !antipode._isAntipodeMode
@@ -556,7 +556,7 @@ export class SEIntersectionPoint extends SEPoint {
 
   public shallowUpdate(): void {
     if (this._isAntipodeMode) {
-      const antipode = SENodule.store.getSENoduleById(this._antipodalPointId);
+      const antipode = SENodule.store.findSENoduleById(this._antipodalPointId);
       if (antipode instanceof SEPoint) {
         antipode.shallowUpdate(); // this won't create a circular reference because for a pair of antipodal intersection points only one can be in antipode mode
         this._exists = antipode.exists;

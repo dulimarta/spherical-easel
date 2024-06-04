@@ -140,9 +140,9 @@ const {
   sePoints,
   seCircles,
   seSegments,
-  createAllIntersectionsWithSegment,
-  createAllIntersectionsWithCircle
 } = storeToRefs(store);
+const {  createAllIntersectionsWithSegment,
+  createAllIntersectionsWithCircle} = store
 const { t } = useI18n();
 const { geoLocationToUnitSphere } = useEarthCoordinate();
 const tempVec = new Vector3();
@@ -484,61 +484,64 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
   // Standard/initial position:
   //     The plus y axis is our north pole, so the x axis points at the viewer and the
   //     positive z axis is to the left
-  return sePoints.value.find(pt => {
-    tempVec.copy(pt.locationVector);
-    // transform the pt back to standard position
-    tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
-    console.log("point y value ", tempVec.y);
-    if (
-      Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
-    ) {
-      console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
-      if (pt.label) {
-        if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
-          pt.label.ref.caption = t("northPole");
-          northPoleLabelSetOnce = true;
-          // set the label display mode
-          new StyleNoduleCommand(
-            [pt.label.ref],
-            StyleCategory.Label,
-            [
-              {
-                labelDisplayMode: LabelDisplayMode.CaptionOnly
-              }
-            ],
-            [
-              {
-                labelDisplayMode: pt.label.ref.labelDisplayMode
-              }
-            ]
-          ).execute();
-        } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
-          pt.label.ref.caption = t("southPole");
-          southPoleLabelSetOnce = true;
-          // set the label display mode
-          new StyleNoduleCommand(
-            [pt.label.ref],
-            StyleCategory.Label,
-            [
-              {
-                labelDisplayMode: LabelDisplayMode.CaptionOnly
-              }
-            ],
-            [
-              {
-                labelDisplayMode: pt.label.ref.labelDisplayMode
-              }
-            ]
-          ).execute();
-        }
-      }
-      pt.update();
-      return true;
-    } else {
-      return false;
-    }
-  });
+
+  // const z = sePoints.value.find((pt:SEPoint) => {
+    // tempVec.copy(pt.locationVector);
+    // // transform the pt back to standard position
+    // tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
+    // console.log("point y value ", tempVec.y);
+    // if (
+    //   Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
+    // ) {
+      // console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
+      // if (pt.label) {
+      //   if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
+      //     pt.label.ref.caption = t("northPole");
+      //     northPoleLabelSetOnce = true;
+      //     // set the label display mode
+      //     new StyleNoduleCommand(
+      //       [pt.getLabel()!.ref],
+      //       StyleCategory.Label,
+      //       [
+      //         {
+      //           labelDisplayMode: LabelDisplayMode.CaptionOnly
+      //         }
+      //       ],
+      //       [
+      //         {
+      //           labelDisplayMode: pt.label.ref.labelDisplayMode
+      //         }
+      //       ]
+      //     ).execute();
+      //   } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
+      //     pt.label.ref.caption = t("southPole");
+      //     southPoleLabelSetOnce = true;
+      //     // set the label display mode
+      //     new StyleNoduleCommand(
+      //       [pt.getLabel()!.ref],
+      //       StyleCategory.Label,
+      //       [
+      //         {
+      //           labelDisplayMode: LabelDisplayMode.CaptionOnly
+      //         }
+      //       ],
+      //       [
+      //         {
+      //           labelDisplayMode: pt.label.ref.labelDisplayMode
+      //         }
+      //       ]
+      //     ).execute();
+      //   }
+      // }
+  //     pt.update();
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // });
+  return undefined
 }
+
 function findLatitudeInObjectTree(lat: number): SELatitude | undefined {
   const seLatitudes = seCircles.value
     .filter(circle => circle instanceof SELatitude)
@@ -855,7 +858,7 @@ function getSegmentIntersectionsCommands(
 ): CommandGroup {
   const segmentGroup = new CommandGroup();
   createAllIntersectionsWithSegment
-    .value(newSESegment, []) // empty array of new points created
+    (newSESegment, []) // empty array of new points created
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
         segmentGroup.addCommand(
@@ -899,7 +902,7 @@ function getSegmentIntersectionsCommands(
 function getCircleIntersectionsCommands(newSECircle: SELatitude): CommandGroup {
   const circleGroup = new CommandGroup();
   createAllIntersectionsWithCircle
-    .value(newSECircle, []) // empty array of new points created
+    (newSECircle, []) // empty array of new points created
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
         circleGroup.addCommand(

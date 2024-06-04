@@ -42,7 +42,7 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
-const { expressions } = storeToRefs(seStore);
+const { seExpressions } = storeToRefs(seStore);
 const {t} = useI18n()
 
 const props = defineProps<{
@@ -90,7 +90,7 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      expressions.value.forEach((m: SEExpression) => {
+      seExpressions.value.forEach((m) => {
         const measurementName = m.name;
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);

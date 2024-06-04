@@ -64,7 +64,7 @@
           ">
           <SENoduleList
             i18LabelKey="objects.points"
-            :children="sePoints"></SENoduleList>
+            :children="sePoints as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -74,7 +74,7 @@
           v-show="seLines.length > 0">
           <SENoduleList
             i18LabelKey="objects.lines"
-            :children="seLines"></SENoduleList>
+            :children="seLines as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -84,7 +84,7 @@
           v-show="seSegments.length > 0">
           <SENoduleList
             i18LabelKey="objects.segments"
-            :children="seSegments"></SENoduleList>
+            :children="seSegments as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -94,7 +94,7 @@
           v-show="seCircles.length > 0">
           <SENoduleList
             i18LabelKey="objects.circles"
-            :children="seCircles"></SENoduleList>
+            :children="seCircles as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -104,7 +104,7 @@
           v-show="seEllipses.length > 0">
           <SENoduleList
             i18LabelKey="objects.ellipses"
-            :children="seEllipses"></SENoduleList>
+            :children="seEllipses as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -114,7 +114,7 @@
           v-show="seParametrics.length > 0">
           <SENoduleList
             i18LabelKey="objects.parametrics"
-            :children="seParametrics"></SENoduleList>
+            :children="seParametrics as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -124,7 +124,7 @@
           v-show="seTransformations.length > 0">
           <SENoduleList
             i18LabelKey="objects.transformations"
-            :children="seTransformations"></SENoduleList>
+            :children="seTransformations as any"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -134,7 +134,7 @@
           v-show="showExpressionSheet">
           <SENoduleList
             i18LabelKey="objects.measurements"
-            :children="expressions"></SENoduleList>
+            :children="expressions as any"></SENoduleList>
         </v-sheet>
         <!--v-sheet rounded
           color="accent"
@@ -174,7 +174,7 @@ const {
   seEllipses,
   seParametrics,
   seNodules,
-  expressions,
+  seExpressions: expressions,
   actionMode,
   seTransformations
 } = storeToRefs(seStore);

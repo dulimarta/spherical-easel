@@ -1,3 +1,4 @@
+import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
 
 export class ChangeBackStyleContrastCommand extends Command {
@@ -12,7 +13,7 @@ export class ChangeBackStyleContrastCommand extends Command {
   }
 
   do(): void {
-    // Nodule.setBackStyleContrast(this.currentBackStyleContrast);
+    Nodule.setBackStyleContrast(this.currentBackStyleContrast);
     // Command.store.changeBackContrast(this.currentBackStyleContrast);
   }
 
@@ -21,7 +22,7 @@ export class ChangeBackStyleContrastCommand extends Command {
   }
 
   restoreState(): void {
-    // Nodule.setBackStyleContrast(this.pastBackStyleContrast);
+    Nodule.setBackStyleContrast(this.pastBackStyleContrast);
     // Command.store.changeBackContrast(this.pastBackStyleContrast);
   }
 

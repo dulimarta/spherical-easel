@@ -447,11 +447,11 @@ function resizePlottables(e: { factor: number }): void {
   Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
   // Apply the new size in each nodule in the store
-  seNodules.value.forEach((p: SENodule) => {
+  seNodules.value.forEach((p) => {
     p.ref?.adjustSize();
   });
   // The temporary plottables need to be resized too
-  temporaryNodules.value.forEach((p: Nodule) => {
+  temporaryNodules.value.forEach((p) => {
     p.adjustSize();
   });
 }
