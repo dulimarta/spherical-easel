@@ -945,7 +945,7 @@ export default class AngleHandler extends Highlighter {
     if (this.targetPoints.every(entry => entry !== null)) {
       let measurementName = "";
       if (
-        AngleHandler.store.expressions.some(exp => {
+        AngleHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SEAngleMarker &&
             exp.parents[0].name === this.targetPoints[0]?.name && // order matters in angles angle 0 1 2 is different than 2 1 0
@@ -1139,7 +1139,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
-      AngleHandler.store.expressions.some(exp => {
+      AngleHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetLines[0]?.name && // order matters in angles angle from L1 to L2 is different than from L2 to L1
@@ -1257,7 +1257,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this pair of segments has not been measured already
     let measurementName = "";
     if (
-      AngleHandler.store.expressions.some(exp => {
+      AngleHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.parents[0].name === this.targetSegments[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
@@ -1366,7 +1366,7 @@ export default class AngleHandler extends Highlighter {
     // make sure that this segment and line has not been measured already
     let measurementName = "";
     if (this.lineSelectedFirst) {
-      AngleHandler.store.expressions.some(exp => {
+      AngleHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.firstSEParent.name === this.targetLines[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
@@ -1379,7 +1379,7 @@ export default class AngleHandler extends Highlighter {
         }
       });
     } else {
-      AngleHandler.store.expressions.some(exp => {
+      AngleHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SEAngleMarker &&
           exp.firstSEParent.name === this.targetSegments[0]?.name &&

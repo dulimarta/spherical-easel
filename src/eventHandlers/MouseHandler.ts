@@ -28,7 +28,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    * This is canvas is the midGround layer in the twoInstance (the main Two object).
    * Used to determine the Default Screen Coordinates of the mouse event
    */
-  protected readonly canvas: Two.Group;
+  // protected readonly canvas: Two.Group;
   /**
    * Pinia Global Store
    */
@@ -83,7 +83,7 @@ export default abstract class MouseHandler implements ToolStrategy {
    */
   constructor(layers: Two.Group[]) {
     this.layers = layers;
-    this.canvas = layers[LAYER.midground];
+    // this.canvas = layers[LAYER.midground];
     this.currentSphereVector = new Vector3();
     this.currentScreenVector = new Two.Vector(0, 0);
     this.previousSphereVector = new Vector3();

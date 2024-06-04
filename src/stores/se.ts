@@ -49,38 +49,6 @@ import { defineStore  } from "pinia";
 import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
 import { computed } from "vue";
-import { set } from "@vueuse/core";
-
-type PiniaAppState = {
-  // isEarthMode: boolean;
-  // actionMode: ActionMode;
-  // previousActionMode: ActionMode;
-  // buttonSelection: any;
-  // previousActiveToolName: string;
-  // zoomMagnificationFactor: number;
-  // zoomTranslation: number[];
-  // hasUnsavedNodules: boolean;
-  // svgCanvas: HTMLDivElement | null;
-  // canvasWidth: number;
-  // canvasHeight: number;
-  // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
-  // inverseTotalRotationMatrix: Matrix4;
-  // styleSavedFromPanel: StyleCategory;
-  // sePointIds: Array<number>;
-  // seLineIds: Array<number>;
-  // seSegmentIds: Array<number>;
-  // seCircleIds: Array<number>;
-  // seEllipseIds: Array<number>;
-  // seLabelIds: Array<number>;
-  // seExpressionIds: Array<number>;
-  // seAngleMarkerIds: Array<number>;
-  // seParametricIds: Array<number>;
-  // sePolygonIds: Array<number>;
-  // seTransformationIds: Array<number>;
-  // selectedSENoduleIds: Array<number>;
-  // oldSelectedSENoduleIDs: Array<number>;
-  // disabledTools: Array<ActionMode>;
-};
 
 // const sePoints: Map<number, SEPoint> = new Map();
 // const seLines: Map<number, SELine> = new Map();
@@ -91,10 +59,9 @@ type PiniaAppState = {
 // const seAngleMarkers: Map<number, SEAngleMarker> = new Map();
 // const seEllipses: Map<number, SEEllipse> = new Map();
 // const seParametrics: Map<number, SEParametric> = new Map();
-const sePolygons: Map<number, SEPolygon> = new Map();
+// const sePolygons: Map<number, SEPolygon> = new Map();
 // const seTransformations: Map<number, SETransformation> = new Map();
 const sePencils: Array<SEPencil> = [];
-const layers: Array<Two.Group> = [];
 // const selectedSENodules: Map<number, SENodule> = new Map();
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const tmpMatrix = new Matrix4();
@@ -383,9 +350,13 @@ function findClosedSegmentChainLength(segmentArr: Array<SESegment>): number[] {
   return maxChainLengths;
 }
 
+// WARNING: Making layers a reactive variable caused runtime error in SphereFrame.vue
+const layers: Array<Two.Group> = [];
+
 export const useSEStore = defineStore(
   "se", () => {
-  // state: (): PiniaAppState => ({
+    // state: (): PiniaAppState => ({
+
     const isEarthMode = ref(false)
     const actionMode: Ref<ActionMode> = ref("rotate")
     const previousActionMode: Ref<ActionMode> = ref("rotate")
@@ -410,7 +381,7 @@ export const useSEStore = defineStore(
     const seExpressions: Ref<Array<SEExpression>> = ref([])
     const seAngleMarkers: Ref<Array<SEAngleMarker>> = ref([])
     const seParametrics: Ref<Array<SEParametric>> = ref([])
-    const sePolygonIds: Ref<Array<number>> = ref([])
+    const sePolygons: Ref<Array<SEPolygon>> = ref([])
     const seTransformations: Ref<Array<SETransformation>> = ref([])
     const selectedSENodules:Ref<Array<SENodule>> = ref([])
     const oldSelectedSENoduleIds:Ref<Array<number>> = ref([])
@@ -430,8 +401,7 @@ export const useSEStore = defineStore(
       seSegments.value.splice(0);
       seCircles.value.splice(0);
       seAngleMarkers.value.splice(0);
-      sePolygonIds.value.splice(0);
-      sePolygons.clear();
+      sePolygons.value.splice(0);
       seEllipses.value.splice(0);
       seParametrics.value.splice(0);
       seTransformations.value.splice(0);
@@ -502,7 +472,7 @@ export const useSEStore = defineStore(
         pt.ref.removeFromLayers();
       });
       seSegments.value.forEach((x: SESegment) => x.ref.removeFromLayers());
-      sePolygons.forEach((x: SEPolygon) => x.ref.removeFromLayers());
+      sePolygons.value.forEach((x: SEPolygon) => x.ref.removeFromLayers());
       seParametrics.value.forEach((x: SEParametric) => {
         x.ref?.removeFromLayers();
         // let ptr: Parametric | null = x.ref;
@@ -765,8 +735,7 @@ export const useSEStore = defineStore(
     function addPolygonAndExpression(polygon: SEPolygon): void {
       // console.debug(`add polygon with id ${polygon.id}`);
       seExpressions.value.push(polygon);
-      sePolygonIds.value.push(polygon.id);
-      sePolygons.set(polygon.id, polygon);
+      sePolygons.value.push(polygon);
       seNodules.value.push(polygon);
       polygon.ref.addToLayers(layers);
       hasUnsavedNodules.value = true;
@@ -774,12 +743,12 @@ export const useSEStore = defineStore(
     }
     function removePolygonAndExpression(polygonId: number): void {
       // console.debug(`Remove polygon with id ${polygonId}`);
-      const victimPolygon = sePolygons.get(polygonId);
-      if (victimPolygon) {
+      const polygonPos = sePolygons.value.findIndex(
+        (z) => z.id === polygonId
+      );
+      if (polygonPos >= 0) {
+        const victimPolygon = sePolygons.value[polygonPos];
         // console.debug(`Polygon found`);
-        const polygonPos = sePolygonIds.value.findIndex(
-          (id: number) => id === polygonId
-        );
         const pos2 = seNodules.value.findIndex(x => x.id === polygonId);
         const pos3 = seExpressions.value.findIndex(
           (exp) => exp.id === polygonId
@@ -790,8 +759,7 @@ export const useSEStore = defineStore(
           victimPolygon.label.ref.value = [];
         }
         victimPolygon.ref.removeFromLayers();
-        sePolygonIds.value.splice(polygonPos, 1); // Remove the polygon from the list
-        sePolygons.delete(polygonId);
+        sePolygons.value.splice(polygonPos, 1); // Remove the polygon from the list
         seNodules.value.splice(pos2, 1);
         seExpressions.value.splice(pos3, 1);
         hasUnsavedNodules.value = true;
@@ -3934,6 +3902,7 @@ export const useSEStore = defineStore(
       seNodules,
       seParametrics,
       sePoints,
+      sePolygons,
       seSegments,
       seTransformations,
       svgCanvas,

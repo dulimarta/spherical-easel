@@ -134,7 +134,7 @@
           v-show="showExpressionSheet">
           <SENoduleList
             i18LabelKey="objects.measurements"
-            :children="expressions as any"></SENoduleList>
+            :children="seExpressions as any"></SENoduleList>
         </v-sheet>
         <!--v-sheet rounded
           color="accent"
@@ -174,7 +174,7 @@ const {
   seEllipses,
   seParametrics,
   seNodules,
-  seExpressions: expressions,
+  seExpressions,
   actionMode,
   seTransformations
 } = storeToRefs(seStore);
@@ -216,7 +216,7 @@ const zeroObjects = computed((): boolean => {
   // );
   return (
     seNodules.value.filter(n => n.exists).length === 0 &&
-    expressions.value.length === 0
+    seExpressions.value.length === 0
   );
 });
 onBeforeMount((): void => {
@@ -244,7 +244,7 @@ const showExpressionSheet = computed((): boolean => {
     (actionMode.value === "measuredCircle" ||
       actionMode.value === "translation" ||
       actionMode.value === "rotation") &&
-    expressions.value.length === 0 &&
+    seExpressions.value.length === 0 &&
     displayExpressionSheetAgain
   ) {
     displayExpressionSheetAgain = false;
@@ -274,11 +274,11 @@ const showExpressionSheet = computed((): boolean => {
     (actionMode.value === "measuredCircle" ||
       actionMode.value === "translation" ||
       actionMode.value === "rotation") &&
-    expressions.value.length > 0
+    seExpressions.value.length > 0
   ) {
     displayExpressionSheetAgain = true;
   }
-  return expressions.value.length > 0;
+  return seExpressions.value.length > 0;
 });
 </script>
 

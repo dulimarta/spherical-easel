@@ -33,7 +33,7 @@ export default class SegmentLengthHandler extends Highlighter {
 
     const segmentList = this.hitSESegments.filter(seg => {
       if (
-        SegmentLengthHandler.store.expressions.some(
+        SegmentLengthHandler.store.seExpressions.some(
           exp =>
             exp instanceof SESegmentLength && exp.seSegment.name === seg.name
         )
@@ -63,7 +63,7 @@ export default class SegmentLengthHandler extends Highlighter {
   addSegmentLengthMeasure(targetSegment: SESegment): void {
     let measurementName = "";
     if (
-      SegmentLengthHandler.store.expressions.some(exp => {
+      SegmentLengthHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SESegmentLength &&
           exp.seSegment.name === targetSegment.name

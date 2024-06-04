@@ -84,7 +84,7 @@ export default class RotationTransformationHandler extends Highlighter {
       if (
         RotationTransformationHandler.store.seCircles.length === 0 &&
         RotationTransformationHandler.store.seSegments.length === 0 &&
-        RotationTransformationHandler.store.expressions.length === 0
+        RotationTransformationHandler.store.seExpressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -454,7 +454,7 @@ export default class RotationTransformationHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !RotationTransformationHandler.store.expressions.some(exp => {
+        !RotationTransformationHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -510,7 +510,7 @@ export default class RotationTransformationHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !RotationTransformationHandler.store.expressions.some(exp => {
+        !RotationTransformationHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&

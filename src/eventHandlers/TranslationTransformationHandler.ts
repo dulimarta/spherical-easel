@@ -49,7 +49,7 @@ export default class TranslationTransformationHandler extends Highlighter {
       if (
         TranslationTransformationHandler.store.seCircles.length === 0 &&
         TranslationTransformationHandler.store.seSegments.length === 0 &&
-        TranslationTransformationHandler.store.expressions.length === 0
+        TranslationTransformationHandler.store.seExpressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -207,7 +207,7 @@ export default class TranslationTransformationHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !TranslationTransformationHandler.store.expressions.some(exp => {
+        !TranslationTransformationHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -263,7 +263,7 @@ export default class TranslationTransformationHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !TranslationTransformationHandler.store.expressions.some(exp => {
+        !TranslationTransformationHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&

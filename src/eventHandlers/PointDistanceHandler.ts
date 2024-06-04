@@ -97,7 +97,7 @@ export default class PointDistanceHandler extends Highlighter {
     // make sure that this pair of points has not been measured already
     let measurementName = "";
     if (
-      PointDistanceHandler.store.expressions.some(exp => {
+      PointDistanceHandler.store.seExpressions.some(exp => {
         if (
           exp instanceof SEPointDistance &&
           ((exp.parents[0].name === sePoint1.name &&

@@ -45,7 +45,7 @@ export default class PointCoordinateHandler extends Highlighter {
       }
 
       if (
-        PointCoordinateHandler.store.expressions.some(exp => {
+        PointCoordinateHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SEPointCoordinate &&
             exp.parents[0].name === this.targetPoint?.name

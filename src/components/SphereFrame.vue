@@ -123,10 +123,9 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
-  layers,
-  // buttonSelection,
   isEarthMode
 } = storeToRefs(seStore);
+const {layers} = seStore
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
@@ -269,7 +268,7 @@ onBeforeMount((): void => {
   // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
 
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-  boundaryCircle.addTo(layers.value[Number(LAYER.midground)]);
+  // boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
   //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
   Nodule.idPlottableDescriptionMap.set(String(boundaryCircle.id), {
@@ -294,7 +293,7 @@ onBeforeMount((): void => {
   //visitor = new RotationVisitor();
 
   // Create the tools/handlers
-  rotateTool = new RotateHandler(layers.value);
+  rotateTool = new RotateHandler(layers);
   currentTool = rotateTool;
   // Postpone the instantiation of the remaining tools to on-demand
   // to avoid runtime error when the tools depend of Pinia initialization
@@ -742,7 +741,7 @@ function setTransformationForTool(e: {
     // console.debug(`The current action mode ${actionMode}`);
     // currentTool?.deactivate();
     if (!applyTransformationTool) {
-      applyTransformationTool = new ApplyTransformationHandler(layers.value);
+      applyTransformationTool = new ApplyTransformationHandler(layers);
     }
     applyTransformationTool.setTransformation(e.transformation);
   }
@@ -754,7 +753,7 @@ function deleteNode(e: {
   victimType: string;
 }): void {
   if (!deleteTool) {
-    deleteTool = new DeleteHandler(layers.value);
+    deleteTool = new DeleteHandler(layers);
   }
   const deletedNodeIds = deleteTool.delete(e.victim);
   //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
@@ -820,13 +819,13 @@ watch(
     switch (mode) {
       case "select":
         if (!selectTool) {
-          selectTool = new SelectionHandler(layers.value);
+          selectTool = new SelectionHandler(layers);
         }
         currentTool = selectTool;
         break;
       case "delete":
         if (!deleteTool) {
-          deleteTool = new DeleteHandler(layers.value);
+          deleteTool = new DeleteHandler(layers);
         }
         currentTool = deleteTool;
         break;
@@ -869,75 +868,75 @@ watch(
 
       case "hide":
         if (!hideTool) {
-          hideTool = new HideObjectHandler(layers.value);
+          hideTool = new HideObjectHandler(layers);
         }
         currentTool = hideTool;
         break;
       case "move":
         if (!moveTool) {
-          moveTool = new MoveHandler(layers.value);
+          moveTool = new MoveHandler(layers);
         }
         currentTool = moveTool;
         break;
       case "rotate":
         if (!rotateTool) {
-          rotateTool = new RotateHandler(layers.value);
+          rotateTool = new RotateHandler(layers);
         }
         currentTool = rotateTool;
         break;
 
       case "point":
         if (!pointTool) {
-          pointTool = new PointHandler(layers.value);
+          pointTool = new PointHandler(layers);
         }
         currentTool = pointTool;
         break;
       case "line":
         if (!lineTool) {
-          lineTool = new LineHandler(layers.value);
+          lineTool = new LineHandler(layers);
         }
         currentTool = lineTool;
         break;
       case "segment":
         if (!segmentTool) {
-          segmentTool = new SegmentHandler(layers.value);
+          segmentTool = new SegmentHandler(layers);
         }
         currentTool = segmentTool;
         break;
       case "circle":
         if (!circleTool) {
-          circleTool = new CircleHandler(layers.value);
+          circleTool = new CircleHandler(layers);
         }
         currentTool = circleTool;
         break;
       case "ellipse":
         if (!ellipseTool) {
-          ellipseTool = new EllipseHandler(layers.value);
+          ellipseTool = new EllipseHandler(layers);
         }
         currentTool = ellipseTool;
         break;
       case "antipodalPoint":
         if (!antipodalPointTool) {
-          antipodalPointTool = new AntipodalPointHandler(layers.value);
+          antipodalPointTool = new AntipodalPointHandler(layers);
         }
         currentTool = antipodalPointTool;
         break;
       case "polar":
         if (!polarObjectTool) {
-          polarObjectTool = new PolarObjectHandler(layers.value);
+          polarObjectTool = new PolarObjectHandler(layers);
         }
         currentTool = polarObjectTool;
         break;
       case "intersect":
         if (!intersectTool) {
-          intersectTool = new IntersectionPointHandler(layers.value);
+          intersectTool = new IntersectionPointHandler(layers);
         }
         currentTool = intersectTool;
         break;
       case "pointOnObject":
         if (!pointOnOneDimensionalTool) {
           pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
-            layers.value
+            layers
           );
         }
         currentTool = pointOnOneDimensionalTool;
@@ -945,38 +944,38 @@ watch(
 
       case "segmentLength":
         if (!segmentLengthTool) {
-          segmentLengthTool = new SegmentLengthHandler(layers.value);
+          segmentLengthTool = new SegmentLengthHandler(layers);
         }
         currentTool = segmentLengthTool;
         break;
       case "pointDistance":
         if (!pointDistanceTool) {
-          pointDistanceTool = new PointDistanceHandler(layers.value);
+          pointDistanceTool = new PointDistanceHandler(layers);
         }
         currentTool = pointDistanceTool;
         break;
       case "angle":
         if (!angleTool) {
-          angleTool = new AngleHandler(layers.value);
+          angleTool = new AngleHandler(layers);
         }
         currentTool = angleTool;
         break;
       case "coordinate":
         if (!coordinateTool) {
-          coordinateTool = new CoordinateHandler(layers.value);
+          coordinateTool = new CoordinateHandler(layers);
         }
         currentTool = coordinateTool;
         break;
       case "toggleLabelDisplay":
         if (!toggleLabelDisplayTool) {
-          toggleLabelDisplayTool = new ToggleLabelDisplayHandler(layers.value);
+          toggleLabelDisplayTool = new ToggleLabelDisplayHandler(layers);
         }
         currentTool = toggleLabelDisplayTool;
         break;
       case "perpendicular":
         if (!perpendicularLineThruPointTool) {
           perpendicularLineThruPointTool =
-            new PerpendicularLineThruPointHandler(layers.value);
+            new PerpendicularLineThruPointHandler(layers);
         }
 
         currentTool = perpendicularLineThruPointTool;
@@ -984,95 +983,95 @@ watch(
       case "tangent":
         if (!tangentLineThruPointTool) {
           tangentLineThruPointTool = new TangentLineThruPointHandler(
-            layers.value
+            layers
           );
         }
         currentTool = tangentLineThruPointTool;
         break;
       case "measureTriangle":
         if (!measureTriangleTool) {
-          measureTriangleTool = new PolygonHandler(layers.value, true);
+          measureTriangleTool = new PolygonHandler(layers, true);
         }
         currentTool = measureTriangleTool;
         break;
       case "measurePolygon":
         if (!measurePolygonTool) {
-          measurePolygonTool = new PolygonHandler(layers.value, false);
+          measurePolygonTool = new PolygonHandler(layers, false);
         }
         currentTool = measurePolygonTool;
         break;
       case "midpoint":
         if (!midpointTool) {
-          midpointTool = new NSectSegmentHandler(layers.value, true);
+          midpointTool = new NSectSegmentHandler(layers, true);
         }
         currentTool = midpointTool;
         break;
       case "nSectPoint":
         if (!nSectSegmentTool) {
-          nSectSegmentTool = new NSectSegmentHandler(layers.value, false);
+          nSectSegmentTool = new NSectSegmentHandler(layers, false);
         }
         currentTool = nSectSegmentTool;
         break;
       case "angleBisector":
         if (!angleBisectorTool) {
-          angleBisectorTool = new NSectAngleHandler(layers.value, true);
+          angleBisectorTool = new NSectAngleHandler(layers, true);
         }
         currentTool = angleBisectorTool;
         break;
       case "nSectLine":
         if (!nSectAngleTool) {
-          nSectAngleTool = new NSectAngleHandler(layers.value, false);
+          nSectAngleTool = new NSectAngleHandler(layers, false);
         }
         currentTool = nSectAngleTool;
         break;
       case "threePointCircle":
         if (!threePointCircleTool) {
-          threePointCircleTool = new ThreePointCircleHandler(layers.value);
+          threePointCircleTool = new ThreePointCircleHandler(layers);
         }
         currentTool = threePointCircleTool;
         break;
       case "measuredCircle":
         if (!measuredCircleTool) {
-          measuredCircleTool = new MeasuredCircleHandler(layers.value);
+          measuredCircleTool = new MeasuredCircleHandler(layers);
         }
         currentTool = measuredCircleTool;
         break;
       case "translation":
         if (!translationTool) {
-          translationTool = new TranslationTransformationHandler(layers.value);
+          translationTool = new TranslationTransformationHandler(layers);
         }
         currentTool = translationTool;
         break;
       case "rotation":
         if (!rotationTool) {
-          rotationTool = new RotationTransformationHandler(layers.value);
+          rotationTool = new RotationTransformationHandler(layers);
         }
         currentTool = rotationTool;
         break;
       case "reflection":
         if (!reflectionTool) {
-          reflectionTool = new ReflectionTransformationHandler(layers.value);
+          reflectionTool = new ReflectionTransformationHandler(layers);
         }
         currentTool = reflectionTool;
         break;
       case "pointReflection":
         if (!pointReflectionTool) {
           pointReflectionTool = new PointReflectionTransformationHandler(
-            layers.value
+            layers
           );
         }
         currentTool = pointReflectionTool;
         break;
       case "inversion":
         if (!inversionTool) {
-          inversionTool = new InversionTransformationHandler(layers.value);
+          inversionTool = new InversionTransformationHandler(layers);
         }
         currentTool = inversionTool;
         break;
       case "applyTransformation":
         if (!applyTransformationTool) {
           applyTransformationTool = new ApplyTransformationHandler(
-            layers.value
+            layers
           );
         }
         currentTool = applyTransformationTool;

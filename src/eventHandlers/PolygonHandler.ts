@@ -736,7 +736,7 @@ export default class PolygonHandler extends Highlighter {
       const seg0 = this.seEdgeSegments[(((index - 1) % n) + n) % n];
 
       // make sure that this pair of segments has not been measured already
-      const oldAngleMarker = PolygonHandler.store.expressions.find(exp => {
+      const oldAngleMarker = PolygonHandler.store.seExpressions.find(exp => {
         if (exp instanceof SEAngleMarker) {
           if (exp.angleMode === AngleMode.SEGMENTS) {
             if (
@@ -873,7 +873,7 @@ export default class PolygonHandler extends Highlighter {
   addMeasuredSegments(polygonCommandGroup: CommandGroup): void {
     this.seEdgeSegments.forEach(seg => {
       // make sure that this pair of segments has not been measured already
-      const oldSegmentLength = PolygonHandler.store.expressions.find(exp => {
+      const oldSegmentLength = PolygonHandler.store.seExpressions.find(exp => {
         if (exp instanceof SESegmentLength && exp.seSegment.name === seg.name) {
           return true;
         } else {

@@ -31,7 +31,7 @@
             <v-overlay
               :key="`${r.id}-overlay`"
               contained
-              v-model="isHovering"
+              :model-value="isHovering!"
               class="_test_constructionOverlay align-center justify-center"
               scrim="#00007F">
               <!-- the class "constructionItem" is used for testing. Do not remove it -->

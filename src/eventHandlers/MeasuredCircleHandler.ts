@@ -98,7 +98,7 @@ export default class MeasuredCircleHandler extends Highlighter {
       if (
         MeasuredCircleHandler.store.seCircles.length === 0 &&
         MeasuredCircleHandler.store.seSegments.length === 0 &&
-        MeasuredCircleHandler.store.expressions.length === 0
+        MeasuredCircleHandler.store.seExpressions.length === 0
       ) {
         // warn the user
         EventBus.fire("show-alert", {
@@ -216,7 +216,7 @@ export default class MeasuredCircleHandler extends Highlighter {
         this.centerSEPoint = null;
       }
 
-      if (MeasuredCircleHandler.store.expressions.length > 0) {
+      if (MeasuredCircleHandler.store.seExpressions.length > 0) {
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});
@@ -545,7 +545,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     if (this.measurementSEParent instanceof SESegment) {
       // determine if this SESegment has already been measured
       if (
-        !MeasuredCircleHandler.store.expressions.some(exp => {
+        !MeasuredCircleHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SESegmentLength &&
             this.measurementSEParent !== null &&
@@ -601,7 +601,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     } else if (this.measurementSEParent instanceof SECircle) {
       // make sure that this pair (center point to circle point) has not been measured already
       if (
-        !MeasuredCircleHandler.store.expressions.some(exp => {
+        !MeasuredCircleHandler.store.seExpressions.some(exp => {
           if (
             exp instanceof SEPointDistance &&
             this.measurementSEParent instanceof SECircle &&
