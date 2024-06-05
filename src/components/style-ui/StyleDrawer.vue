@@ -96,7 +96,8 @@
           <v-tooltip
             activator=".back-contrast"
             text="Global Back Style Contrast"></v-tooltip>
-          <v-badge v-if="hasObjects" :content="seNodules.length">
+            <!-- Count only visible objects -->
+          <v-badge v-if="hasObjects" :content="visibleNodulesCount">
             <v-icon class="back-contrast" @click="toggle">
               mdi-contrast-box
             </v-icon>
@@ -333,6 +334,10 @@ const frontTooltip = computed((): string => {
   }
   return text;
 });
+
+const visibleNodulesCount = computed(() =>
+  seNodules.value.filter(n => n.showing).length
+)
 
 function undoStyleChanges() {
   styleStore.restoreInitialStyles();

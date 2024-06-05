@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSEStore } from "./se";
-import { computed, ref, watch, Ref } from "vue";
+import { ref, watch, Ref } from "vue";
 import {
   StyleCategory,
   StyleOptions,
@@ -169,9 +169,11 @@ export const useStylingStore = defineStore("style", () => {
       // Among the selected object, check if we have new selection
       selectionArr.forEach((n) => {
         const itsPlot = n.ref;
-        if (itsPlot && !(n instanceof Label)) {
+        if (itsPlot) {
           // console.debug(`${n.name} plottable`, itsPlot)
-          selectedPlottables.value.set(n.name, itsPlot as any);
+          if (itsPlot instanceof Nodule) {
+            selectedPlottables.value.set(n.name, itsPlot);
+          }
 
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below

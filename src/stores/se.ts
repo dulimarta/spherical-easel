@@ -845,6 +845,12 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = false;
   }
 
+  function changeBackContrast(newContrast: number) {
+    Nodule.setBackStyleContrast(newContrast)
+    seNodules.value.forEach(n => {
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
+    })
+  }
   function changeSegmentNormalVectorArcLength(change: {
     segmentId: number;
     normal: Vector3;
@@ -3849,6 +3855,7 @@ export const useSEStore = defineStore("se", () => {
     addSegment,
     addTemporaryNodule,
     addTransformation,
+    changeBackContrast,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
     clearUnsavedFlag,

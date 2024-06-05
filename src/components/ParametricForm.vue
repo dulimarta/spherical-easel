@@ -623,7 +623,7 @@ function addParametricCurve(): void {
           parent => parent.name === seExpressions.value[pos].name
         );
         if (pos2 < 0) {
-          calculationParents.push(seExpressions.value[pos] as any);
+          calculationParents.push(seExpressions.value[pos]);
         }
       }
     }

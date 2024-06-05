@@ -164,6 +164,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SENodule } from "@/models/SENodule";
 
 const seStore = useSEStore();
 const {

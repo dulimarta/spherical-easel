@@ -6,6 +6,7 @@ import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import {useI18n} from "vue-i18n";
 
 // const emptySet = new Set<string>();
 
@@ -77,6 +78,7 @@ export abstract class SEExpression extends SENodule {
   }
 
   prettyValue(fullPrecision = false): string {
+    const {t} = useI18n()
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
         return String(
@@ -103,14 +105,14 @@ export abstract class SEExpression extends SENodule {
               SETTINGS.earthMode.radiusMiles *
               SETTINGS.earthMode.radiusMiles
             ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
-            i18n.global.t(`units.mi`) +
+            t(`units.mi`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
               fullPrecision ? 20 : SETTINGS.decimalPrecision
-            ) + i18n.global.t(`units.mi`)
+            ) + t(`units.mi`)
           );
         }
       case ValueDisplayMode.EarthModeKilos:
@@ -121,14 +123,14 @@ export abstract class SEExpression extends SENodule {
               SETTINGS.earthMode.radiusKilometers *
               SETTINGS.earthMode.radiusKilometers
             ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
-            i18n.global.t(`units.km`) +
+            t(`units.km`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
               fullPrecision ? 20 : SETTINGS.decimalPrecision
-            ) + i18n.global.t(`units.km`)
+            ) + t(`units.km`)
           );
         }
     }

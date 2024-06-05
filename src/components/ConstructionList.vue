@@ -213,7 +213,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ActionMode, ConstructionScript, SphericalConstruction } from "@/types";
+import { type ActionMode, type ConstructionScript, SphericalConstruction } from "@/types";
 import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";

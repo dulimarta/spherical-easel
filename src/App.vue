@@ -139,7 +139,7 @@ async function doLogout(): Promise<void> {
   font-size: 15px;
 }
 .footer-color {
-  color: "accent";
+  //color: accent;
 }
 
 #profilePic {
