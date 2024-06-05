@@ -123,9 +123,10 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
+  // groups,
   isEarthMode
 } = storeToRefs(seStore);
-const {layers} = seStore
+// const {groups} = seStore
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
@@ -148,8 +149,8 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
 });
 
 /**
- * The main (the only one) TwoJS object that contains the layers (each a Group) making up the screen graph
- * First layers  (Groups) are added to the twoInstance (index by the enum LAYER from
+ * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
+ * First groups  (Groups) are added to the twoInstance (index by the enum LAYER from
  * global-settings.ts), then TwoJs objects (Path, Ellipse, etc..) are added to the
  * appropriate layer. This object is refreshed at 60 fps (in constructor -- autostart: true).
  */
@@ -204,11 +205,7 @@ let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
 
-/**
- * The layers for displaying the various objects in the right way. So a point in the
- * background is not displayed over a line in the foreground
- */
-// readonly layers!: Two.Group[];
+let layers: Array<Two.Group> = [];
 
 onBeforeMount((): void => {
   twoInstance = new Two({
@@ -220,7 +217,7 @@ onBeforeMount((): void => {
   });
   // twoInstance.scene.matrix.manual = true;
   // Clear layer array
-  // layers.splice(0);
+  // groups.splice(0);
 
   //#region addlayers
   // Record the text layer number so that the y axis is not flipped for them
@@ -234,7 +231,6 @@ onBeforeMount((): void => {
   // Create a detached group to prevent duplicate group ID
   // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
   const dummy_group = new Two.Group();
-  let groups: Array<Two.Group> = [];
   for (const layer in LAYER) {
     const layerIdx = Number(layer);
     if (!isNaN(layerIdx)) {
@@ -249,17 +245,15 @@ onBeforeMount((): void => {
       }
 
       newLayer.addTo(twoInstance.scene);
-      groups.push(newLayer);
+      layers.push(newLayer);
     }
   }
   //#endregion addlayers
 
   // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
-  //sphereCanvas = layers[LAYER.midground];
-  // console.info("Sphere canvas ID", sphereCanvas.id);
-  // Add the layers to the store
+  // Add the groups to the store
   seStore.init();
-  seStore.setLayers(groups);
+  seStore.setLayers(layers);
 
   // Draw the boundary circle in the default radius
   // and scale it later to fit the canvas
@@ -268,7 +262,7 @@ onBeforeMount((): void => {
   // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
 
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-  // boundaryCircle.addTo(layers[Number(LAYER.midground)]);
+  boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
   //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
   Nodule.idPlottableDescriptionMap.set(String(boundaryCircle.id), {
@@ -357,11 +351,10 @@ watch(
       layer => typeof layer !== "number"
     )) {
       if ((layer as string).includes("background")) {
-        (seStore.layers[i] as any).visible = !earthMode;
+        (layers[i] as any).visible = !earthMode;
       }
       i++;
     }
-    // seStore.layers[Number(LAYER.midground)].visible = false;
   }
 );
 
@@ -415,7 +408,7 @@ watch(
   ([width, height]): void => {
     twoInstance.width = width;
     twoInstance.height = height;
-    // layers.forEach(z => {
+    // groups.forEach(z => {
     //   z.translation.set(size / 2, size / 2);
     // });
 
@@ -461,7 +454,7 @@ function updateView() {
   //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
   //   .scale(mag, -mag); // (translate & scale) is important
   //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
-  seLabels.value.forEach((l) => {
+  seLabels.value.forEach(l => {
     l.update();
   });
 }
@@ -662,7 +655,7 @@ function getCurrentSVGForIcon(): void {
     }
   }
 
-  // remove all SVG groups with no children (they are are result of empty layers)
+  // remove all SVG groups with no children (they are are result of empty groups)
   const groups = svgElement.querySelectorAll("g");
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];

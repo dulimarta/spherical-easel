@@ -107,7 +107,7 @@ export function useStyleEditor(
   //     activeStyleOptions.value = {};
 
   //     // console.debug("***********************");
-  //     seStore.setSelectedSENodules(newSelection.filter(noduleFilterFunction));
+  //     seStore.updateSelectedSENodules(newSelection.filter(noduleFilterFunction));
   //     filteredNodules.value.splice(0);
   //     filteredNodules.value.push(
   //       ...selectedSENodules.value.map(noduleMapFunction)

@@ -169,7 +169,7 @@ export default class DeleteHandler extends Highlighter {
       DeleteHandler.store.selectedSENodules
         //.map(x => x as SENodule)
         .filter(
-          (object: SENodule) =>
+          (object) =>
             (!(object instanceof SEIntersectionPoint) ||
               object.isUserCreated) &&
             (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
@@ -177,7 +177,7 @@ export default class DeleteHandler extends Highlighter {
         .forEach(object => {
           //if object has already been deleted don't do anything
           if (deletedObjectIDs.findIndex(id => id === object.id) !== -1) return;
-          deletedObjectIDs.push(...this.delete(object));
+          deletedObjectIDs.push(...this.delete(object as any));
         });
       // deletedNumberNodes: "Successfully deleted {number} {objects}.",
       EventBus.fire("show-alert", {

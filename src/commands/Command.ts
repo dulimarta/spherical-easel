@@ -42,7 +42,7 @@ export abstract class Command {
     Command.store?.updateDisplay();
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
-    this.store.setSelectedSENodules([]);
+    this.store.updateSelectedSENodules([]);
   }
   //#endregion undo
 

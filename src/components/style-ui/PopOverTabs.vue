@@ -15,7 +15,6 @@
     </template-->
     <v-sheet class="bg-white" v-if="showPopup && menu" position="fixed" elevation="4"
     :style="{right: '80px'}">
-TAB={{ currentTab }}
       <v-tabs v-model="currentTab">
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->

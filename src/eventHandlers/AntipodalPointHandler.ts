@@ -100,9 +100,9 @@ export default class AntipodalPointHandler extends Highlighter {
           );
         } else {
           possibleAntipode =
-            AntipodalPointHandler.store.sePoints[antipodeIndex];
+            AntipodalPointHandler.store.sePoints[antipodeIndex] as any;
         }
-        this.revealAntipode(possibleAntipode, this.parentPoint);
+        this.revealAntipode(possibleAntipode as any, this.parentPoint);
       } else if (this.hitSESegments.length > 0) {
         // The user selected a segment and we will create a point on it
         this.oneDimensionalContainingParentPoint = this.hitSESegments[0];
@@ -484,7 +484,7 @@ export default class AntipodalPointHandler extends Highlighter {
         if (antipodeIndex > -1) {
           const possibleAntipode =
             AntipodalPointHandler.store.sePoints[antipodeIndex];
-          this.revealAntipode(possibleAntipode, object);
+          this.revealAntipode(possibleAntipode as any, object);
         } else {
           console.warn(
             `Antipode Point Handler: Antipode of selected point ${object.name} doesn't exist!!!!!`

@@ -225,7 +225,7 @@ export default class SelectionHandler extends Highlighter {
     if (!this.isOnSphere) return;
 
     if (SelectionHandler.store.actionMode === "select") {
-      SelectionHandler.store.setSelectedSENodules(this.currentSelection);
+      SelectionHandler.store.updateSelectedSENodules(this.currentSelection);
 
       if (SelectionHandler.store.selectedSENodules.length === 0) {
         EventBus.fire("show-alert", {
@@ -499,7 +499,7 @@ export default class SelectionHandler extends Highlighter {
       }
     }
 
-    SelectionHandler.store.setSelectedSENodules(this.currentSelection);
+    SelectionHandler.store.updateSelectedSENodules(this.currentSelection);
 
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer
@@ -558,7 +558,7 @@ export default class SelectionHandler extends Highlighter {
     //  For example, if a point is selected with the selection tool, then when the antipode tool is
     //  activated, it automatically creates the antipode of the selected point. The last thing each
     //  tool does in its activate method is clear the selected array in the store.
-    //this.store.commit.setSelectedSENodules([]);
+    //this.store.commit.updateSelectedSENodules([]);
     //this.currentSelection.clear();
 
     // Remove the listener

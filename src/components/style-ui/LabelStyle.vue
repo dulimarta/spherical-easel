@@ -351,7 +351,7 @@ const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
 
 watch(
   () => selectedSENodules.value,
-  (afterArr: SENodule[], beforeArr: SENodule[]) => {
+  (afterArr, beforeArr) => {
     if (popupVisible === false) return;
     beforeArr
       .filter(n => n.getLabel() !== null)

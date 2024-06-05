@@ -11,7 +11,7 @@ const styleStore = useStylingStore()
 const {hasStyle} = styleStore
 export default class AdvancedStyle extends Vue {
   // You are not allow to style labels directly so remove them from the selection and warn the user
-  readonly selectedSENodules!: SENodule[];
+  // readonly selectedSENodules!: SENodule[];
 
   commonStyleProperties: string[] = [];
 

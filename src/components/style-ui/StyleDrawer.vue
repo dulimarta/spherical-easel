@@ -42,7 +42,7 @@
               :color="isSelected ? 'primary' : 'secondary'">
               <v-icon @click="toggle">mdi-label</v-icon>
             </v-badge>
-            <v-icon v-else>mdi-label</v-icon>
+            <v-icon v-else @click="activateSelectionTool">mdi-label</v-icon>
           </div>
           <LabelStyle
             :show-popup="isSelected!"
@@ -61,7 +61,9 @@
                 mdi-arrange-bring-forward
               </v-icon>
             </v-badge>
-            <v-icon v-else>mdi-arrange-bring-forward</v-icon>
+            <v-icon v-else @click="activateSelectionTool">
+              mdi-arrange-bring-forward
+            </v-icon>
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
@@ -80,7 +82,9 @@
                 mdi-arrange-send-backward
               </v-icon>
             </v-badge>
-            <v-icon v-else>mdi-arrange-send-backward</v-icon>
+            <v-icon v-else @click="activateSelectionTool">
+              mdi-arrange-send-backward
+            </v-icon>
           </div>
           <FrontBackStyle
             :show-popup="isSelected!"
@@ -202,6 +206,7 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { watch } from "vue";
 import { Command } from "@/commands/Command";
 import Nodule from "@/plottables/Nodule";
+import { SELabel } from "@/models/internal";
 const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
@@ -342,6 +347,10 @@ function toggleLabelVisibility() {
   selectedLabels.value.forEach(lab => {
     lab.showing = hasVisibleLabels.value;
   });
+}
+
+function activateSelectionTool() {
+  seStore.setActionMode("select")
 }
 </script>
 <i18n lang="json" locale="en">

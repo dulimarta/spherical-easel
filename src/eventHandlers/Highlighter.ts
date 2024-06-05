@@ -149,7 +149,7 @@ export default abstract class Highlighter extends MouseHandler {
         obj.selected = false;
       });
     // Clear the selected objects array
-    Highlighter.store.setSelectedSENodules([]);
+    Highlighter.store.updateSelectedSENodules([]);
 
     // call an unglow all command
     Highlighter.store.unglowAllSENodules();

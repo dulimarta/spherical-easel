@@ -280,7 +280,7 @@ export default class PanZoomHandler implements ToolStrategy {
         obj.selected = false;
       });
     // Clear the selected objects array
-    MouseHandler.store.setSelectedSENodules([]);
+    MouseHandler.store.updateSelectedSENodules([]);
 
     // call an unglow all command
     MouseHandler.store.unglowAllSENodules();

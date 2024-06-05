@@ -12,6 +12,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { Command } from "@/commands/Command";
+import { SENodule } from "@/models/SENodule";
 
 // type ObjectStyle = { [_: string]: StylePropertyValue };
 
@@ -106,16 +107,45 @@ export const useStylingStore = defineStore("style", () => {
   // const labelShowingState: Map<string, boolean> = new Map();
   const editedLabels: Ref<Set<string>> = ref(new Set())
 
+  const selectedSet: Set<string> = new Set()
+  function isSameAsPreviousSet(arr: SENodule[]): boolean {
+    let inserted = false
+
+    arr.forEach(n => {
+      if (!selectedSet.has(n.name)) {
+        selectedSet.add(n.name)
+        inserted = true
+      }
+    })
+    const toRemove: Array<string> = []
+    selectedSet.forEach(x => {
+      if (arr.every(n => n.name !== x)) {
+        toRemove.push(x)
+      }
+    })
+    toRemove.forEach(x => {
+      selectedSet.delete(x)
+    })
+
+    console.debug(`Inserted ${inserted}, removed ${toRemove.length}`)
+    return !inserted && toRemove.length === 0
+  }
+
   watch(
     // This watcher run when the user changes the object selection
     () => selectedSENodules.value,
-    selectionArr => {
+    (selectionArr) => {
+      // With deep watching enabled, visual blinking of the selected objects
+      // by the SelectionHandler will trigger a watch update. To ignore
+      // this visual changes, compare the current selection with a recorded set
+      if (isSameAsPreviousSet(selectionArr as any)) return
+
       // First check for any objects which were deselected
       // by comparing the selectedLabels/plottables map against the current
       // selection. An object recorded in the map but no longer exists
       // in the current selection array must have been deselected
       Array.from(selectedLabels.value.keys()).forEach(labelName => {
-        const pos = selectionArr.findIndex(n => n.name === labelName);
+        const pos = selectionArr.findIndex((n) => n.name === labelName);
         const label = selectedLabels.value.get(labelName);
         if (pos < 0 && label) {
           selectedLabels.value.delete(labelName);
@@ -137,11 +167,11 @@ export const useStylingStore = defineStore("style", () => {
       });
 
       // Among the selected object, check if we have new selection
-      selectionArr.forEach(n => {
+      selectionArr.forEach((n) => {
         const itsPlot = n.ref;
         if (itsPlot && !(n instanceof Label)) {
           // console.debug(`${n.name} plottable`, itsPlot)
-          selectedPlottables.value.set(n.name, itsPlot);
+          selectedPlottables.value.set(n.name, itsPlot as any);
 
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below
@@ -278,7 +308,7 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function toggleLabelsShowing() {
-    selectedSENodules.value.forEach(n => {
+    selectedSENodules.value.forEach((n) => {
       const label = n.getLabel();
       if (label) {
         label.showing = true;
