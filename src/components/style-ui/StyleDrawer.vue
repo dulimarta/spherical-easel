@@ -48,7 +48,9 @@
             :show-popup="isSelected!"
             v-model="styleSelection"
             @undo-styles="undoStyleChanges"
-            @apply-default-styles="restoreDefaultStyles"></LabelStyle>
+            @apply-default-styles="restoreDefaultStyles"
+            @pop-up-hidden="styleSelection = undefined"
+            ></LabelStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
@@ -69,7 +71,8 @@
             :show-popup="isSelected!"
             :panel="StyleCategory.Front"
             @undo-styles="undoStyleChanges"
-            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
+            @apply-default-styles="restoreDefaultStyles"
+            @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
@@ -90,13 +93,14 @@
             :show-popup="isSelected!"
             :panel="StyleCategory.Back"
             @undo-styles="undoStyleChanges"
-            @apply-default-styles="restoreDefaultStyles"></FrontBackStyle>
+            @apply-default-styles="restoreDefaultStyles"
+            @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip
             activator=".back-contrast"
             text="Global Back Style Contrast"></v-tooltip>
-            <!-- Count only visible objects -->
+          <!-- Count only visible objects -->
           <v-badge v-if="hasObjects" :content="visibleNodulesCount">
             <v-icon class="back-contrast" @click="toggle">
               mdi-contrast-box
@@ -212,7 +216,8 @@ const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedSENodules, hasObjects, seNodules } = storeToRefs(seStore);
+const { selectedSENodules, hasObjects, seNodules, seLabels } =
+  storeToRefs(seStore);
 const { selectedPlottables, selectedLabels, styleOptions, editedLabels } =
   storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
@@ -236,16 +241,6 @@ const backStyleContrastSelectorThumbStrings = [
 const hasVisibleLabels = ref(false);
 
 watch(
-  () => selectedSENodules.value,
-  arr => {
-    if (arr.length === 0) {
-      styleSelection.value = undefined;
-    }
-  },
-  { deep: true, immediate: true }
-);
-
-watch(
   () => backStyleContrast.value,
   contrast => {
     console.debug("Updating back contrast to", contrast);
@@ -257,10 +252,14 @@ watch(
   () => selectedLabels.value,
   labels => {
     hasVisibleLabels.value = false;
+    if (labels.size === 0) {
+      styleSelection.value = undefined
+    }
     // Update te hasVisibleLabels to true if at least
     // one of the selected labels is visible
-    labels.forEach((lab, _name) => {
-      if (lab.showing) {
+    labels.forEach((labname) => {
+      const lab = seLabels.value.find(z => z.name === labname)
+      if (lab && lab.ref.showing) {
         hasVisibleLabels.value = true;
       }
     });
@@ -286,13 +285,13 @@ watch(
     } else {
       switch (selectedTab) {
         case 0:
-          styleStore.selectActiveGroup(StyleCategory.Label);
+          styleStore.recordCurrentStyleProperties(StyleCategory.Label);
           break;
         case 1:
-          styleStore.selectActiveGroup(StyleCategory.Front);
+          styleStore.recordCurrentStyleProperties(StyleCategory.Front);
           break;
         case 2:
-          styleStore.selectActiveGroup(StyleCategory.Back);
+          styleStore.recordCurrentStyleProperties(StyleCategory.Back);
           break;
         default:
           // TODO: should we deselect or do nothing?
@@ -335,9 +334,9 @@ const frontTooltip = computed((): string => {
   return text;
 });
 
-const visibleNodulesCount = computed(() =>
-  seNodules.value.filter(n => n.showing).length
-)
+const visibleNodulesCount = computed(
+  () => seNodules.value.filter(n => n.showing).length
+);
 
 function undoStyleChanges() {
   styleStore.restoreInitialStyles();
@@ -349,13 +348,18 @@ function restoreDefaultStyles() {
 
 function toggleLabelVisibility() {
   hasVisibleLabels.value = !hasVisibleLabels.value;
-  selectedLabels.value.forEach(lab => {
-    lab.showing = hasVisibleLabels.value;
+  selectedLabels.value.forEach(labName => {
+    const lab = seLabels.value.find(z => z.name === labName);
+    if (lab) lab.ref.showing = hasVisibleLabels.value;
   });
 }
 
 function activateSelectionTool() {
-  seStore.setActionMode("select")
+  seStore.setActionMode("select");
+}
+
+function what() {
+  console.debug("I'm here")
 }
 </script>
 <i18n lang="json" locale="en">

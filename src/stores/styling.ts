@@ -75,9 +75,12 @@ function isPropEqual(
 
 export const useStylingStore = defineStore("style", () => {
   const seStore = useSEStore();
-  const { selectedSENodules, seNodules } = storeToRefs(seStore);
+  const { selectedSENodules, seNodules, seLabels } = storeToRefs(seStore);
   const selectedPlottables: Ref<Map<string, Nodule>> = ref(new Map());
-  const selectedLabels: Ref<Map<string, Label>> = ref(new Map());
+  // Apparently, we can't use a Map for recording the selected labels
+  // Otherwise the selectedSENodules watcher will get trapped in an
+  // infinite update loop
+  const selectedLabels: Ref<Set<string>> = ref(new Set());
 
   // When multiple objects are selected, their style properties
   // may conflict with each other. Keep them in a set
@@ -145,9 +148,8 @@ export const useStylingStore = defineStore("style", () => {
       // selection. An object recorded in the map but no longer exists
       // in the current selection array must have been deselected
       Array.from(selectedLabels.value.keys()).forEach(labelName => {
-        const pos = selectionArr.findIndex((n) => n.name === labelName);
-        const label = selectedLabels.value.get(labelName);
-        if (pos < 0 && label) {
+        const pos = selectionArr.findIndex((n) => n.ref?.name === labelName);
+        if (pos < 0 && selectedLabels.value.has(labelName)) {
           selectedLabels.value.delete(labelName);
           initialStyleMap.delete("label:" + labelName);
           defaultStyleMap.delete("label:" + labelName);
@@ -197,8 +199,8 @@ export const useStylingStore = defineStore("style", () => {
         const itsLabel = n.getLabel();
         if (itsLabel) {
           // console.debug(`${n.name} label`, itsLabel.ref)
-          if (!selectedLabels.value.has(n.name)) {
-            selectedLabels.value.set(n.name, itsLabel.ref);
+          if (!selectedLabels.value.has(itsLabel.ref.name)) {
+            selectedLabels.value.add(itsLabel.ref.name);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below
             initialStyleMap.set(
@@ -218,7 +220,6 @@ export const useStylingStore = defineStore("style", () => {
       console.debug("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
-      console.debug("Compiled props", stylePropertyMap);
     },
     { deep: true }
   );
@@ -241,11 +242,16 @@ export const useStylingStore = defineStore("style", () => {
           styleIndividuallyAltered = true;
         }
       });
+      console.debug("Compiled props", stylePropertyMap);
+
       if (styleIndividuallyAltered) {
-        selectedLabels.value.forEach(label => {
-          label.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
-          // When a label is modified, add it to the set
-          editedLabels.value.add(label.name)
+        selectedLabels.value.forEach(labelName => {
+          const label = seLabels.value.find(lab => lab.ref.name === labelName)
+          if (label) {
+            label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
+            // When a label is modified, add it to the set
+            editedLabels.value.add(label.name)
+          }
         });
         selectedPlottables.value.forEach(plot => {
           plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
@@ -261,16 +267,20 @@ export const useStylingStore = defineStore("style", () => {
     }
   );
 
-  function selectActiveGroup(category: StyleCategory) {
+  function recordCurrentStyleProperties(category: StyleCategory) {
     activeStyleGroup = category;
     if (category === undefined) return;
+    // This function is called when one of the item groups
+    // in the StyleDrawer.vue is selected
     // Check for possible conflict among label properties
     conflictingProperties.value.clear();
     styleOptions.value = {};
     // plottableStyleOptions.value = {}
     stylePropertyMap.clear();
-    selectedLabels.value.forEach(x => {
-      const props = x.currentStyleState(StyleCategory.Label);
+    selectedLabels.value.forEach(labelName => {
+      // We are searching for the plottable (hence the seLab.ref.name)
+      const label = seLabels.value.find(seLab => seLab.ref.name === labelName)
+      const props = label?.ref.currentStyleState(StyleCategory.Label);
       Object.getOwnPropertyNames(props)
         .filter((p: string) => {
           // remove property names which may have been inserted by Vue/browser
@@ -342,6 +352,8 @@ export const useStylingStore = defineStore("style", () => {
   function persistUpdatedStyleOptions() {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
+
+    // Check if back style contrast was modified
     if (
       (activeStyleGroup === StyleCategory.Front ||
         activeStyleGroup === StyleCategory.Back) &&
@@ -354,18 +366,22 @@ export const useStylingStore = defineStore("style", () => {
       cmdGroup.addCommand(contrastCommand);
       subCommandCount++;
     }
-    const postUpdateKeys = Object.keys(postUpdateStyleOptions);
 
+    // Check if any other properties were modified
+    const postUpdateKeys = Object.keys(postUpdateStyleOptions);
     if (
       postUpdateKeys.length > 0 &&
       activeStyleGroup !== null &&
       styleIndividuallyAltered // include this flag, to prevent an extra save after restore do default
     ) {
-      const updateTargets = Array.from(
-        activeStyleGroup === StyleCategory.Label
-          ? selectedLabels.value.values()
-          : selectedPlottables.value.values()
-      );
+      let updateTargets: Nodule[]
+      if (activeStyleGroup === StyleCategory.Label)
+        updateTargets = Array.from(selectedLabels.value).map(labName =>
+        // The target is the plottable, therefore we have to compare seLab.ref.name
+        seLabels.value.find(seLab => seLab.ref.name === labName)!.ref as unknown as Nodule)
+      else
+      updateTargets = []
+
       const styleCommand = new StyleNoduleCommand(
         updateTargets,
         activeStyleGroup,
@@ -387,11 +403,20 @@ export const useStylingStore = defineStore("style", () => {
 
   function restoreTo(styleMap: Map<string, StyleOptions>) {
     styleMap.forEach((style: StyleOptions, name: string) => {
+      // Do not use a simple assignment, so the initial/default styles are intact
+      // styleOptions.value = style /* This WON'T work
+      // Must use the following unpack syntax to create a different object
+      // So the initial & default maps do not become aliases to the current
+      // style option
+      styleOptions.value = { ...style }
       if (name.startsWith("label:")) {
         const labelName = name.substring(6);
-        const theLabel = selectedLabels.value.get(labelName);
+        const theLabel = seLabels.value.find(n => {
+          console.debug("Searching for matching label", n.name, n.ref.name)
+          return n.ref.name === labelName
+        });
         if (theLabel) {
-          theLabel.updateStyle(StyleCategory.Label, style);
+          theLabel.ref?.updateStyle(StyleCategory.Label, style);
         }
       } else if (name.startsWith(StyleCategory.Front + ":")) {
         const plotName = name.substring(2);
@@ -430,7 +455,7 @@ export const useStylingStore = defineStore("style", () => {
     hasDisagreement,
     hasStyle,
     changeBackContrast,
-    selectActiveGroup,
+    recordCurrentStyleProperties,
     deselectActiveGroup,
     persistUpdatedStyleOptions,
     restoreDefaultStyles,

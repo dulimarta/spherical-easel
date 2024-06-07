@@ -904,16 +904,16 @@ export const useSEStore = defineStore("se", () => {
     if (diffArray(selectedSENodules.value, payload)) {
       // // console.debug("Selected nodules differ");
       // //reset previous selection glowing color to usual
-      selectedSENodules.value.forEach(n => {
-        n.ref?.setSelectedColoring(false);
-      });
+      // selectedSENodules.value.forEach(n => {
+      //   n.ref?.setSelectedColoring(false);
+      // });
       // // clear the selectedSENodules map and id array
       selectedSENodules.value.splice(0);
       selectedSENodules.value.push(...payload);
       // //set the glowing color to selected
-      selectedSENodules.value.forEach(n => {
-        n.ref?.setSelectedColoring(true);
-      });
+      // selectedSENodules.value.forEach(n => {
+      //   n.ref?.setSelectedColoring(true);
+      // });
     }
   }
   // function setOldSelection(payload: SENodule[]): void {
@@ -1182,6 +1182,7 @@ export const useSEStore = defineStore("se", () => {
     return seNodules.value.filter((obj: SENodule) => {
       return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value);
     });
+    // return []
   }
 
   //#endregion findNearbyGetter

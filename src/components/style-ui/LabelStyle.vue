@@ -75,7 +75,6 @@
           :max="maxLabelTextScalePercent"
           :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
-        <!-- Rotation {{ labelTextRotationAmount }} -->
         <PropertySlider
           :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextRotation"
@@ -252,7 +251,7 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-const attrs = useAttrs();
+// const attrs = useAttrs();
 import PopOverTabs from "./PopOverTabs.vue";
 import { useAttrs } from "vue";
 import { useStylingStore } from "@/stores/styling";
@@ -307,8 +306,8 @@ const { hasDisagreement, editedLabels } = styleStore;
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
-const { selectedSENodules } = storeToRefs(seStore);
-const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
+const { seLabels } = storeToRefs(seStore);
+// const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
 // const labelTextScalePercentage = ref(
@@ -350,31 +349,32 @@ const textRotationSelectorThumbStrings: Array<string> = [];
 const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
 
 watch(
-  () => selectedSENodules.value,
+  () => selectedLabels.value,
   (afterArr, beforeArr) => {
     if (popupVisible === false) return;
-    beforeArr
-      .filter(n => n.getLabel() !== null)
-      .forEach(n => {
-        const theLabel = n.getLabel();
-        const prevLabelState = labelVisibiltyState.get(n.name);
-        if (typeof prevLabelState === "undefined") {
-          labelVisibiltyState.set(n.name, theLabel!.showing);
-        } else {
-          theLabel!.showing = prevLabelState;
-        }
-      });
+    console.debug(`Before ${beforeArr.size}, After ${afterArr.size}`)
+//     beforeArr
+//       .filter(n => n.getLabel() !== null)
+//       .forEach(n => {
+//         const theLabel = n.getLabel();
+//         const prevLabelState = labelVisibiltyState.get(n.name);
+//         if (typeof prevLabelState === "undefined") {
+//           labelVisibiltyState.set(n.name, theLabel!.showing);
+//         } else {
+//           theLabel!.showing = prevLabelState;
+//         }
+//       });
 
-    afterArr
-      .filter(n => n.getLabel() != null)
-      .forEach(n => {
-        const withLabel = n as unknown as Labelable;
-        const prevLabelState = labelVisibiltyState.get(n.name);
-        if (typeof prevLabelState === "undefined") {
-          labelVisibiltyState.set(n.name, withLabel.label!.showing);
-        }
-        withLabel.label!.showing = true;
-      });
+//     afterArr
+//       .filter(n => n.getLabel() != null)
+//       .forEach(n => {
+//         const withLabel = n as unknown as Labelable;
+//         const prevLabelState = labelVisibiltyState.get(n.name);
+//         if (typeof prevLabelState === "undefined") {
+//           labelVisibiltyState.set(n.name, withLabel.label!.showing);
+//         }
+//         withLabel.label!.showing = true;
+//       });
   },
   {
     deep: true
@@ -451,25 +451,31 @@ function overrideDynamicBackStyleDisagreement() {}
 function checkLabelsVisibility() {
   popupVisible = true;
 
-  selectedLabels.value.forEach(n => {
-    if (!labelVisibiltyState.has(n.name)) {
-      labelVisibiltyState.set(n.name, n.showing);
+  selectedLabels.value.forEach(labName => {
+    const lab = seLabels.value.find(z => {
+      return z.ref.name === labName
+    })?.ref
+    if (lab) {
+
+    if (!labelVisibiltyState.has(labName)) {
+      labelVisibiltyState.set(labName, lab.showing);
     }
-    if (!n.showing) {
-      n.showing = true;
+    if (!lab.showing) {
+      lab.showing = true;
     }
+}
   });
 }
 // TODO: this function needs more work
 function resetLabelsVisibility() {
-  popupVisible = false;
-  groupSelection.value = undefined;
-  selectedLabels.value.forEach(n => {
-    if (!editedLabels.has(n.name)) {
-      const visibility = labelVisibiltyState.get(n.name);
-      if (typeof visibility === "boolean") n.showing = visibility;
-    }
-  });
+  // popupVisible = false;
+  // groupSelection.value = undefined;
+  // selectedLabels.value.forEach(n => {
+  //   if (!editedLabels.has(n.name)) {
+  //     const visibility = labelVisibiltyState.get(n.name);
+  //     if (typeof visibility === "boolean") n.showing = visibility;
+  //   }
+  // });
   // emits('apply-styles')
 }
 

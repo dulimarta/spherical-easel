@@ -77,9 +77,9 @@ type ComponentProps = {
 const props = defineProps<ComponentProps>();
 // Internal representation is an object with multiple color representations
 let pickedColor = defineModel({ type: String });
-const internalColor = ref(Color(pickedColor.value).hexa())
+const internalColor = pickedColor.value !== "none" ? ref(Color(pickedColor.value).hexa()) : ref(undefined)
 
-const noColorData = ref(false); // no data means noFill or noStroke
+const noColorData: Ref<boolean> = ref(pickedColor.value === "none"); // no data means noFill or noStroke
 let preNoColor: string = NO_HSLA_DATA;
 
 const isOnLabelPanel = ref(false);
@@ -99,7 +99,7 @@ watch(() => internalColor.value, newColor => {
 
 function toggleNoColor(ev: PointerEvent): void {
   const hslValue = Color(internalColor.value).hexa()
-  pickedColor.value = !noColorData.value ? "none" : hslValue
+  pickedColor.value = !noColorData.value ? 'none' : hslValue
 }
 
 // Vue component life cycle hook

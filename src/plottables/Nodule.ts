@@ -164,9 +164,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
   }
   static hslaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
+    if (colorStringOld?.startsWith('#')) return false
+    if (colorStringOld === 'none') return true
     if (colorStringOld) {
-      const hsla = Nodule.convertStringToHSLAObject(colorStringOld);
-      return Math.max(hsla.h, hsla.s, hsla.l, hsla.a) < SETTINGS.tolerance;
+      const { h, s, l, a } = Nodule.convertStringToHSLAObject(colorStringOld);
+      return Number.isNaN(h) || Number.isNaN(s) || Number.isNaN(l) || Number.isNaN(a)
     } else {
       throw new Error(`Color string is undefined`);
     }

@@ -21,18 +21,19 @@
     <template #pages>
       <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
         <!-- FIRST TAB-->
-        <SimpleColorSelector
+
+        <StylePropertyColorPicker
           :numSelected="selectedPlottables.size"
           :title="t('strokeColor')"
-          v-if="hasStyle('strokeColor')"
+          v-if="hasStyle('strokeColor') && !hasDisagreement('strokeColor')"
           :conflict="hasDisagreement('strokeColor')"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
-        <SimpleColorSelector
+        <StylePropertyColorPicker
           :title="t('fillColor')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('fillColor')"
-          v-if="hasStyle('fillColor')"
+          v-if="hasStyle('fillColor') && !hasDisagreement('fillColor')"
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
         <DisagreementOverride
@@ -43,7 +44,7 @@
       </v-window-item>
       <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
         <!-- SECOND TAB-->
-        <SimpleNumberSelector
+        <StylePropertySlider
           v-if="hasStyle('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('strokeWidthPercent')"
@@ -54,7 +55,7 @@
           :color="conflictItems.strokeWidthPercent ? 'red' : ''"
           :step="20"
           :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
-        <SimpleNumberSelector
+        <StylePropertySlider
           v-if="hasStyle('pointRadiusPercent')"
           :numSelected="selectedPlottables.size"
           v-model="styleOptions.pointRadiusPercent"
@@ -66,7 +67,7 @@
           :step="20"
           :thumb-string-values="
             pointRadiusSelectorThumbStrings
-          "></SimpleNumberSelector>
+          "></StylePropertySlider>
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
         <div
           v-if="hasStyle('dashArray')"
@@ -105,7 +106,7 @@
               :text="t('dashPatternReverseArrayToolTip')" />
             <v-switch
               v-if="useDashPattern"
-              v-model="reverseDashArray"
+              v-model="styleOptions.reverseDashArray"
               :color="conflictItems.reverseDashArray ? `red` : 'secondary'"
               density="compact">
               <template v-slot:label>
@@ -130,10 +131,10 @@
             :color="conflictItems.dashArray ? 'red' : ''"
             density="compact">
             <template #prepend>
-              {{ reverseDashArray ? "Dash" : "Gap" }} {{ dashArray[0] }}
+              {{ styleOptions.reverseDashArray ? "Dash" : "Gap" }} {{ dashArray[0] }}
             </template>
             <template #append>
-              {{ reverseDashArray ? "Gap" : "Dash" }} {{ dashArray[1] }}
+              {{ styleOptions.reverseDashArray ? "Gap" : "Dash" }} {{ dashArray[1] }}
             </template>
           </v-range-slider>
         </div>
@@ -151,7 +152,7 @@
         {{ $t(`style.angleMarkerOptions`) }}
       </span-->
 
-        <SimpleNumberSelector
+        <StylePropertySlider
           :numSelected="selectedPlottables.size"
           :color="conflictItems.angleMarkerRadiusPercent ? 'red' : ''"
           :conflict="hasDisagreement('angleMarkerRadiusPercent')"
@@ -162,7 +163,7 @@
           :step="20"
           :thumb-string-values="
             angleMarkerRadiusSelectorThumbStrings
-          "></SimpleNumberSelector>
+          "></StylePropertySlider>
         <v-switch
           v-model="styleOptions.angleMarkerTickMark"
           :color="conflictItems.angleMarkerTickMark ? 'red' : 'secondary'"
@@ -260,13 +261,13 @@
   <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
 </template>
 <script setup lang="ts">
-import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, useAttrs, Ref, watch } from "vue";
 import Nodule from "@/plottables/Nodule";
 import { StyleCategory, ShapeStyleOptions } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
-import SimpleNumberSelector from "./StylePropertySlider.vue";
-import SimpleColorSelector from "./StylePropertyColorPicker.vue";
+import StylePropertySlider from "./StylePropertySlider.vue";
+import StylePropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";
 
 import { useI18n } from "vue-i18n";
@@ -275,7 +276,6 @@ import { useSEStore } from "@/stores/se";
 import { useStylingStore } from "@/stores/styling";
 import { onBeforeMount } from "vue";
 import PopOverTabs from "./PopOverTabs.vue";
-import { watch } from "vue";
 
 type ConflictItems = {
   angleMarkerRadiusPercent: boolean;
@@ -317,33 +317,33 @@ const dashArray: Ref<number[]> = ref(
     : [1, 5] /* be sure to use slice() to create a copy */
 );
 const useDashPattern = ref(true);
-const reverseDashArray = ref<boolean>(
-  styleOptions.value.reverseDashArray ?? false
-);
+// const reverseDashArray = ref<boolean>(
+//   styleOptions.value.reverseDashArray ?? false
+// );
 const emptyDashPattern = computed(() => {
   if (!styleOptions.value.dashArray) return true;
   const dArr = styleOptions.value.dashArray;
   return dArr.length == 0;
 });
 
-watch(
-  () => dashArray.value,
-  dArr => {
-    // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
-    if (typeof styleOptions.value.dashArray === "undefined")
-      styleOptions.value.dashArray = [0, 0];
-    styleOptions.value.dashArray = [dArr[1], dArr[0]];
-  },
-  { deep: true, immediate: true }
-);
+// watch(
+//   () => dashArray.value,
+//   dArr => {
+//     // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
+//     if (typeof styleOptions.value.dashArray === "undefined")
+//       styleOptions.value.dashArray = [0, 0];
+//     styleOptions.value.dashArray = [dArr[1], dArr[0]];
+//   },
+//   { deep: true, immediate: true }
+// );
 
-watch(
-  () => reverseDashArray.value,
-  flip => {
-    styleOptions.value.reverseDashArray = flip;
-  },
-  { immediate: true }
-);
+// watch(
+//   () => reverseDashArray.value,
+//   flip => {
+//     styleOptions.value.reverseDashArray = flip;
+//   },
+//   { immediate: true }
+// );
 
 function resetAllItemsFromConflict(): void {
   // console.log("here reset input colors");
