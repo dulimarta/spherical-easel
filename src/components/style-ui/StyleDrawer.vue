@@ -25,6 +25,7 @@
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
+      SE={{ styleSelection }}
       <v-item-group
         v-model="styleSelection"
         :style="{

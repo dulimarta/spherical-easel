@@ -4,9 +4,9 @@
     :show-popup="showPopup"
     :name="editModeIsBack ? 'Back' : 'Front'"
     :disabled="selectedPlottables.size === 0">
-    <template #tabs>
+    <template #tabs v-if="!styleOptions.dynamicBackStyle">
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
-      <v-tab><v-icon>mdi-format-line-style</v-icon></v-tab>
+      <v-tab v-if="hasSomeProperties(['strokeWidthPercent', 'pointRadiusPercent', 'dashArray'])"><v-icon>mdi-format-line-style</v-icon></v-tab>
       <v-tab v-if="hasStyle(/angle/)"><v-icon>mdi-angle-acute</v-icon></v-tab>
     </template>
     <template #top>
@@ -18,14 +18,14 @@
           :label="t('autoBackStyle')"></v-switch>
       </div>
     </template>
-    <template #pages>
-      <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
+    <template #pages v-if="!styleOptions.dynamicBackStyle">
+      <v-window-item class="pa-2" v-if="hasSomeProperties(['strokeColor', 'fillColor'])">
         <!-- FIRST TAB-->
 
         <StylePropertyColorPicker
           :numSelected="selectedPlottables.size"
           :title="t('strokeColor')"
-          v-if="hasStyle('strokeColor') && !hasDisagreement('strokeColor')"
+          v-if="isCommonProperty('strokeColor') && !hasDisagreement('strokeColor')"
           :conflict="hasDisagreement('strokeColor')"
           style-name="strokeColor"
           v-model="styleOptions.strokeColor" />
@@ -33,7 +33,7 @@
           :title="t('fillColor')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('fillColor')"
-          v-if="hasStyle('fillColor') && !hasDisagreement('fillColor')"
+          v-if="isCommonProperty('fillColor') && !hasDisagreement('fillColor')"
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
         <DisagreementOverride
@@ -42,10 +42,10 @@
             'fillColor'
           ]"></DisagreementOverride>
       </v-window-item>
-      <v-window-item class="pa-2" v-if="!styleOptions.dynamicBackStyle">
+      <v-window-item class="pa-2" v-if="hasSomeProperties(['strokeWidthPercent', 'pointRadiusPercent', 'dashArray'])">
         <!-- SECOND TAB-->
         <StylePropertySlider
-          v-if="hasStyle('strokeWidthPercent')"
+          v-if="isCommonProperty('strokeWidthPercent')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('strokeWidthPercent')"
           v-model="styleOptions.strokeWidthPercent"
@@ -56,7 +56,7 @@
           :step="20"
           :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
         <StylePropertySlider
-          v-if="hasStyle('pointRadiusPercent')"
+          v-if="isCommonProperty('pointRadiusPercent')"
           :numSelected="selectedPlottables.size"
           v-model="styleOptions.pointRadiusPercent"
           :color="conflictItems.pointRadiusPercent ? 'red' : ''"
@@ -70,7 +70,7 @@
           "></StylePropertySlider>
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
         <div
-          v-if="hasStyle('dashArray')"
+          v-if="isCommonProperty('dashArray')"
           :style="{ display: 'flex', flexDirection: 'column' }">
           <div
             :style="{
@@ -228,7 +228,7 @@
           ]"></DisagreementOverride>
       </v-window-item>
     </template>
-    <template #bottom>
+    <template #bottom v-if="!styleOptions.dynamicBackStyle">
       <div
         class="ma-1"
         :style="{
@@ -255,7 +255,7 @@
     </template>
   </PopOverTabs>
   <!--ul>
-          <li>Conclict list: {{conflictingProps}}</li>
+          <li>Conflict list: {{conflictingProps}}</li>
           <li>Style Opt: {{styleOptions}}</li>
         </ul-->
   <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
@@ -303,7 +303,7 @@ const props = defineProps<ComponentProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
-const { hasStyle, hasDisagreement } = styleStore;
+const { hasStyle, hasDisagreement, isCommonProperty, hasSomeProperties } = styleStore;
 const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
@@ -692,7 +692,7 @@ function updateInputGroup(inputSelector: string): void {
   "angleMarkerDoubleArc": "Double Arc",
   "angleMarkerRadiusPercent": "Angle Marker Radius",
   "angleMarkerTickMark": "Tick Mark",
-  "autoBackStyle": "Automatic Back Style",
+  "autoBackStyle": "Infer Back Styles from Front Styles",
   "dashArrayReverse": "Swap Dash/Gap",
   "dashPattern": "Use dash pattern",
   "dashPatternCheckBoxToolTip": "Enable or Disable a dash pattern for the selected objects.",

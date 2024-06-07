@@ -85,6 +85,7 @@ export const useStylingStore = defineStore("style", () => {
   // When multiple objects are selected, their style properties
   // may conflict with each other. Keep them in a set
   const conflictingProperties: Ref<Set<string>> = ref(new Set());
+  const commonProperties: Set<string>  = new Set()
   // To detect conflict, we use the following map to record the current
   // value of each style property
   const stylePropertyMap: Map<string, StylePropertyValue> = new Map();
@@ -274,6 +275,11 @@ export const useStylingStore = defineStore("style", () => {
     // in the StyleDrawer.vue is selected
     // Check for possible conflict among label properties
     conflictingProperties.value.clear();
+
+    // Use counting trick to identity properties common to
+    // all selected plottable
+    const propertyOccurrenceCount: Map<string, number> = new Map()
+
     styleOptions.value = {};
     // plottableStyleOptions.value = {}
     stylePropertyMap.clear();
@@ -282,38 +288,53 @@ export const useStylingStore = defineStore("style", () => {
       const label = seLabels.value.find(seLab => seLab.ref.name === labelName)
       const props = label?.ref.currentStyleState(StyleCategory.Label);
       Object.getOwnPropertyNames(props)
-        .filter((p: string) => {
+        .filter((propName: string) => {
           // remove property names which may have been inserted by Vue/browser
           // console.debug("Label property", p);
-          return !p.startsWith("__");
+          return !propName.startsWith("__");
         })
-        .forEach(p => {
-          const recordedPropValue = stylePropertyMap.get(p);
-          const thisPropValue = (props as any)[p];
+        .forEach(propName => {
+          const recordedPropValue = stylePropertyMap.get(propName);
+          const thisPropValue = (props as any)[propName];
           if (typeof recordedPropValue === "undefined") {
-            stylePropertyMap.set(p, thisPropValue);
-            (styleOptions.value as any)[p] = thisPropValue;
+            stylePropertyMap.set(propName, thisPropValue);
+            (styleOptions.value as any)[propName] = thisPropValue;
           } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
-            conflictingProperties.value.add(p);
+            conflictingProperties.value.add(propName);
           }
         });
     });
 
     selectedPlottables.value.forEach(plot => {
       const props = plot.currentStyleState(category);
-      Object.getOwnPropertyNames(props).forEach(prop => {
-        const recordedPropValue = stylePropertyMap.get(prop);
-        const thisPropValue = (props as any)[prop];
+      Object.getOwnPropertyNames(props).forEach(propName => {
+        const recordedPropValue = stylePropertyMap.get(propName);
+        const thisPropValue = (props as any)[propName];
         if (typeof recordedPropValue === "undefined") {
-          stylePropertyMap.set(prop, thisPropValue);
-          (styleOptions.value as any)[prop] = thisPropValue;
+          stylePropertyMap.set(propName, thisPropValue);
+          (styleOptions.value as any)[propName] = thisPropValue;
         } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
-          conflictingProperties.value.add(prop);
+          conflictingProperties.value.add(propName);
         }
+        const count = propertyOccurrenceCount.get(propName)
+        if (typeof count == 'number')
+          propertyOccurrenceCount.set(propName, count + 1)
+        else
+          propertyOccurrenceCount.set(propName, 1)
       });
     });
+    commonProperties.clear()
+
+    // The the number of occurrence matches the number of selected object
+    // then the property name is common to all these objects
+    propertyOccurrenceCount.forEach((count, propName) => {
+      if (count === selectedPlottables.value.size)
+        commonProperties.add(propName)
+    })
+    console.debug("Common properties", commonProperties)
     preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
   }
+
   function deselectActiveGroup() {
     persistUpdatedStyleOptions();
     activeStyleGroup = null;
@@ -445,6 +466,16 @@ export const useStylingStore = defineStore("style", () => {
     restoreTo(initialStyleMap);
   }
 
+  function isCommonProperty(s: string) {
+    return commonProperties.has(s)
+  }
+
+  function hasSomeProperties(arr: Array<string>) {
+    return arr.some(p =>
+      commonProperties.has(p)
+    )
+  }
+
   return {
     toggleLabelsShowing,
     selectedLabels,
@@ -460,7 +491,9 @@ export const useStylingStore = defineStore("style", () => {
     persistUpdatedStyleOptions,
     restoreDefaultStyles,
     restoreInitialStyles,
-    editedLabels
+    editedLabels,
+    isCommonProperty,
+    hasSomeProperties
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };
