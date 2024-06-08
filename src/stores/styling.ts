@@ -85,7 +85,7 @@ export const useStylingStore = defineStore("style", () => {
   // When multiple objects are selected, their style properties
   // may conflict with each other. Keep them in a set
   const conflictingProperties: Ref<Set<string>> = ref(new Set());
-  const commonProperties: Set<string>  = new Set()
+  const commonProperties: Set<string> = new Set();
   // To detect conflict, we use the following map to record the current
   // value of each style property
   const stylePropertyMap: Map<string, StylePropertyValue> = new Map();
@@ -109,47 +109,47 @@ export const useStylingStore = defineStore("style", () => {
   // After style editing is done, we should restore label visibility
   // to their original state before editing
   // const labelShowingState: Map<string, boolean> = new Map();
-  const editedLabels: Ref<Set<string>> = ref(new Set())
+  const editedLabels: Ref<Set<string>> = ref(new Set());
 
-  const selectedSet: Set<string> = new Set()
+  const selectedSet: Set<string> = new Set();
   function isSameAsPreviousSet(arr: SENodule[]): boolean {
-    let inserted = false
+    let inserted = false;
 
     arr.forEach(n => {
       if (!selectedSet.has(n.name)) {
-        selectedSet.add(n.name)
-        inserted = true
+        selectedSet.add(n.name);
+        inserted = true;
       }
-    })
-    const toRemove: Array<string> = []
+    });
+    const toRemove: Array<string> = [];
     selectedSet.forEach(x => {
       if (arr.every(n => n.name !== x)) {
-        toRemove.push(x)
+        toRemove.push(x);
       }
-    })
+    });
     toRemove.forEach(x => {
-      selectedSet.delete(x)
-    })
+      selectedSet.delete(x);
+    });
 
-    console.debug(`Inserted ${inserted}, removed ${toRemove.length}`)
-    return !inserted && toRemove.length === 0
+    console.debug(`Inserted ${inserted}, removed ${toRemove.length}`);
+    return !inserted && toRemove.length === 0;
   }
 
   watch(
     // This watcher run when the user changes the object selection
     () => selectedSENodules.value,
-    (selectionArr) => {
+    selectionArr => {
       // With deep watching enabled, visual blinking of the selected objects
       // by the SelectionHandler will trigger a watch update. To ignore
       // this visual changes, compare the current selection with a recorded set
-      if (isSameAsPreviousSet(selectionArr as any)) return
+      if (isSameAsPreviousSet(selectionArr as any)) return;
 
       // First check for any objects which were deselected
       // by comparing the selectedLabels/plottables map against the current
       // selection. An object recorded in the map but no longer exists
       // in the current selection array must have been deselected
       Array.from(selectedLabels.value.keys()).forEach(labelName => {
-        const pos = selectionArr.findIndex((n) => n.ref?.name === labelName);
+        const pos = selectionArr.findIndex(n => n.ref?.name === labelName);
         if (pos < 0 && selectedLabels.value.has(labelName)) {
           selectedLabels.value.delete(labelName);
           initialStyleMap.delete("label:" + labelName);
@@ -170,7 +170,7 @@ export const useStylingStore = defineStore("style", () => {
       });
 
       // Among the selected object, check if we have new selection
-      selectionArr.forEach((n) => {
+      selectionArr.forEach(n => {
         const itsPlot = n.ref;
         if (itsPlot) {
           // console.debug(`${n.name} plottable`, itsPlot)
@@ -216,7 +216,7 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
 
-      editedLabels.value.clear()
+      editedLabels.value.clear();
       console.debug("Initial style map size = ", initialStyleMap.size);
       console.debug("Default style map size = ", defaultStyleMap.size);
 
@@ -247,11 +247,11 @@ export const useStylingStore = defineStore("style", () => {
 
       if (styleIndividuallyAltered) {
         selectedLabels.value.forEach(labelName => {
-          const label = seLabels.value.find(lab => lab.ref.name === labelName)
+          const label = seLabels.value.find(lab => lab.ref.name === labelName);
           if (label) {
             label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
             // When a label is modified, add it to the set
-            editedLabels.value.add(label.name)
+            editedLabels.value.add(label.name);
           }
         });
         selectedPlottables.value.forEach(plot => {
@@ -268,9 +268,12 @@ export const useStylingStore = defineStore("style", () => {
     }
   );
 
+  function recordGlobalContrast() {
+    backStyleContrastCopy = Nodule.getBackStyleContrast()
+  }
+
   function recordCurrentStyleProperties(category: StyleCategory) {
     activeStyleGroup = category;
-    if (category === undefined) return;
     // This function is called when one of the item groups
     // in the StyleDrawer.vue is selected
     // Check for possible conflict among label properties
@@ -278,14 +281,14 @@ export const useStylingStore = defineStore("style", () => {
 
     // Use counting trick to identity properties common to
     // all selected plottable
-    const propertyOccurrenceCount: Map<string, number> = new Map()
+    const propertyOccurrenceCount: Map<string, number> = new Map();
 
     styleOptions.value = {};
     // plottableStyleOptions.value = {}
     stylePropertyMap.clear();
     selectedLabels.value.forEach(labelName => {
       // We are searching for the plottable (hence the seLab.ref.name)
-      const label = seLabels.value.find(seLab => seLab.ref.name === labelName)
+      const label = seLabels.value.find(seLab => seLab.ref.name === labelName);
       const props = label?.ref.currentStyleState(StyleCategory.Label);
       Object.getOwnPropertyNames(props)
         .filter((propName: string) => {
@@ -316,22 +319,21 @@ export const useStylingStore = defineStore("style", () => {
         } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
           conflictingProperties.value.add(propName);
         }
-        const count = propertyOccurrenceCount.get(propName)
-        if (typeof count == 'number')
-          propertyOccurrenceCount.set(propName, count + 1)
-        else
-          propertyOccurrenceCount.set(propName, 1)
+        const count = propertyOccurrenceCount.get(propName);
+        if (typeof count == "number")
+          propertyOccurrenceCount.set(propName, count + 1);
+        else propertyOccurrenceCount.set(propName, 1);
       });
     });
-    commonProperties.clear()
+    commonProperties.clear();
 
     // The the number of occurrence matches the number of selected object
     // then the property name is common to all these objects
     propertyOccurrenceCount.forEach((count, propName) => {
       if (count === selectedPlottables.value.size)
-        commonProperties.add(propName)
-    })
-    console.debug("Common properties", commonProperties)
+        commonProperties.add(propName);
+    });
+    console.debug("Common properties", commonProperties);
     preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
   }
 
@@ -341,7 +343,7 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function toggleLabelsShowing() {
-    selectedSENodules.value.forEach((n) => {
+    selectedSENodules.value.forEach(n => {
       const label = n.getLabel();
       if (label) {
         label.showing = true;
@@ -375,11 +377,7 @@ export const useStylingStore = defineStore("style", () => {
     let subCommandCount = 0;
 
     // Check if back style contrast was modified
-    if (
-      (activeStyleGroup === StyleCategory.Front ||
-        activeStyleGroup === StyleCategory.Back) &&
-      backStyleContrastCopy !== Nodule.getBackStyleContrast()
-    ) {
+    if (backStyleContrastCopy !== Nodule.getBackStyleContrast()) {
       const contrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         backStyleContrastCopy
@@ -395,13 +393,15 @@ export const useStylingStore = defineStore("style", () => {
       activeStyleGroup !== null &&
       styleIndividuallyAltered // include this flag, to prevent an extra save after restore do default
     ) {
-      let updateTargets: Nodule[]
+      let updateTargets: Nodule[];
       if (activeStyleGroup === StyleCategory.Label)
-        updateTargets = Array.from(selectedLabels.value).map(labName =>
-        // The target is the plottable, therefore we have to compare seLab.ref.name
-        seLabels.value.find(seLab => seLab.ref.name === labName)!.ref as unknown as Nodule)
-      else
-      updateTargets = []
+        updateTargets = Array.from(selectedLabels.value).map(
+          labName =>
+            // The target is the plottable, therefore we have to compare seLab.ref.name
+            seLabels.value.find(seLab => seLab.ref.name === labName)!
+              .ref as unknown as Nodule
+        );
+      else updateTargets = [];
 
       const styleCommand = new StyleNoduleCommand(
         updateTargets,
@@ -429,12 +429,12 @@ export const useStylingStore = defineStore("style", () => {
       // Must use the following unpack syntax to create a different object
       // So the initial & default maps do not become aliases to the current
       // style option
-      styleOptions.value = { ...style }
+      styleOptions.value = { ...style };
       if (name.startsWith("label:")) {
         const labelName = name.substring(6);
         const theLabel = seLabels.value.find(n => {
-          console.debug("Searching for matching label", n.name, n.ref.name)
-          return n.ref.name === labelName
+          console.debug("Searching for matching label", n.name, n.ref.name);
+          return n.ref.name === labelName;
         });
         if (theLabel) {
           theLabel.ref?.updateStyle(StyleCategory.Label, style);
@@ -467,13 +467,11 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function isCommonProperty(s: string) {
-    return commonProperties.has(s)
+    return commonProperties.has(s);
   }
 
   function hasSomeProperties(arr: Array<string>) {
-    return arr.some(p =>
-      commonProperties.has(p)
-    )
+    return arr.some(p => commonProperties.has(p));
   }
 
   return {
@@ -487,6 +485,7 @@ export const useStylingStore = defineStore("style", () => {
     hasStyle,
     changeBackContrast,
     recordCurrentStyleProperties,
+    recordGlobalContrast,
     deselectActiveGroup,
     persistUpdatedStyleOptions,
     restoreDefaultStyles,

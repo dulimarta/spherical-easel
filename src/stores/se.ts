@@ -3824,7 +3824,7 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules,
     inverseTotalRotationMatrix,
     isEarthMode,
-    layers,
+    // layers,
     seAngleMarkers,
     seCircles,
     seEllipses,

@@ -50,8 +50,7 @@
             v-model="styleSelection"
             @undo-styles="undoStyleChanges"
             @apply-default-styles="restoreDefaultStyles"
-            @pop-up-hidden="styleSelection = undefined"
-            ></LabelStyle>
+            @pop-up-hidden="styleSelection = undefined"></LabelStyle>
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
@@ -115,7 +114,9 @@
             elevation="4"
             rounded
             :style="{
-              right: '80px'
+              right: '80px',
+              display: 'flex',
+              flexDirection: 'column'
             }">
             <!-- Global contrast slider -->
             <v-tooltip
@@ -146,6 +147,9 @@
                 }}
               </template>
             </v-slider>
+            <v-btn :style="{
+              alignSelf: 'flex-end'
+            }" icon="mdi-check" size="small" @click="toggle"></v-btn>
           </v-sheet>
         </v-item>
       </v-item-group>
@@ -254,12 +258,12 @@ watch(
   labels => {
     hasVisibleLabels.value = false;
     if (labels.size === 0) {
-      styleSelection.value = undefined
+      styleSelection.value = undefined;
     }
     // Update te hasVisibleLabels to true if at least
     // one of the selected labels is visible
-    labels.forEach((labname) => {
-      const lab = seLabels.value.find(z => z.name === labname)
+    labels.forEach(labname => {
+      const lab = seLabels.value.find(z => z.name === labname);
       if (lab && lab.ref.showing) {
         hasVisibleLabels.value = true;
       }
@@ -282,6 +286,7 @@ watch(
   () => styleSelection.value,
   (selectedTab: number | undefined, prevTab: number | undefined) => {
     if (typeof prevTab === "number" && selectedTab === undefined) {
+      console.debug("Deselect.....");
       styleStore.deselectActiveGroup();
     } else {
       switch (selectedTab) {
@@ -293,6 +298,9 @@ watch(
           break;
         case 2:
           styleStore.recordCurrentStyleProperties(StyleCategory.Back);
+          break;
+        case 3:
+          styleStore.recordGlobalContrast();
           break;
         default:
           // TODO: should we deselect or do nothing?
@@ -350,7 +358,8 @@ function restoreDefaultStyles() {
 function toggleLabelVisibility() {
   hasVisibleLabels.value = !hasVisibleLabels.value;
   selectedLabels.value.forEach(labName => {
-    const lab = seLabels.value.find(z => z.name === labName);
+    // Searching for the plottable; must use 'z.ref.name' (and not z.name)
+    const lab = seLabels.value.find(z => z.ref.name === labName);
     if (lab) lab.ref.showing = hasVisibleLabels.value;
   });
 }
@@ -360,7 +369,7 @@ function activateSelectionTool() {
 }
 
 function what() {
-  console.debug("I'm here")
+  console.debug("I'm here");
 }
 </script>
 <i18n lang="json" locale="en">
