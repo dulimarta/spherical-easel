@@ -1,15 +1,14 @@
 <template>
   <div class="flex-row">
     <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ title + " " }}
+      {{ title }}
       <v-icon
         :color="conflict ? '' : internalColor"
-        size="small"
-        v-show="noColorData === false">
+        size="small">
         mdi-circle
       </v-icon>
-      <span v-if="numSelected > 1" class="text-subtitle-2" style="color: red">
-        {{ " " + t("labelStyleOptionsMultiple") }}
+      <span v-if="numSelected > 1" class="text-subtitle-2 ml-2" style="color: red">
+        {{ t("labelStyleOptionsMultiple") }}
       </span>
     </span>
     <v-switch
@@ -19,19 +18,17 @@
       :label="noDataUILabel"
       color="secondary"
       hide-details
-      density="compact"
-      @click="toggleNoColor"></v-switch>
+      density="compact"></v-switch>
     <v-tooltip location="bottom" activator="#check-btn">
       {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
     </v-tooltip>
   </div>
   <div class="flex-row">
     <!-- The color picker -->
-    <v-color-picker :disabled="true"
-      border
-      hide-sliders
-      hide-canvas
-      :show-swatches="!noColorData"
+    <v-color-picker :disabled="noColorData"
+    hide-sliders
+    hide-canvas
+      show-swatches
       :hide-inputs="!showColorInputs"
       :swatches-max-height="96"
       :swatches="colorSwatches"
@@ -62,12 +59,10 @@
 import { ref, watch, onMounted, onBeforeUpdate, Ref } from "vue";
 
 import SETTINGS from "@/global-settings";
-// import Nodule from "@/plottables/Nodule";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 type ComponentProps = {
   title: string;
   conflict: boolean;
@@ -77,43 +72,24 @@ type ComponentProps = {
 const props = defineProps<ComponentProps>();
 // Internal representation is an object with multiple color representations
 let pickedColor = defineModel({ type: String });
-const internalColor = pickedColor.value !== "none" ? ref(Color(pickedColor.value).hexa()) : ref(undefined)
+const internalColor = ref(pickedColor.value !== "none" ? Color(pickedColor.value).hexa() : undefined)
+
+// The v-color-picker swatch can't be disabled. When "No Fill" is enabled, clicking
+// on the color swatch will update the internal color.
+let savedInternalColor = internalColor.value
 
 const noColorData: Ref<boolean> = ref(pickedColor.value === "none"); // no data means noFill or noStroke
-let preNoColor: string = NO_HSLA_DATA;
 
 const isOnLabelPanel = ref(false);
-
-// private boxSampleColor: string = "";
 
 // For TwoJS
 // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
 const showColorInputs = ref(false);
-
 const colorSwatches = ref(SETTINGS.style.swatches);
 const noDataUILabel = ref(t("noFill"));
 
-watch(() => internalColor.value, newColor => {
-  pickedColor.value = Color(newColor).hexa()
-})
-
-function toggleNoColor(ev: PointerEvent): void {
-  const hslValue = Color(internalColor.value).hexa()
-  pickedColor.value = !noColorData.value ? 'none' : hslValue
-}
-
 // Vue component life cycle hook
 onMounted((): void => {
-  // console.log("mounting!", hslaColor);
-  // if (props.modelValue !== undefined && props.modelValue !== null) {
-  //   internalColor.value = Color(props.modelValue).hexa();
-  // }
-  // boxSampleColor = internalColor.hexa;
-  // If these commands are in the beforeUpdate() method they are executed over and over but
-  // they only need to be executed once.
-  const propName = props.styleName.replace("Color", "");
-  const firstLetter = props.styleName.charAt(0);
-  const inTitleCase = firstLetter.toUpperCase() + propName.substring(1);
   var re = /fill/gi;
   noDataUILabel.value =
     props.styleName.search(re) === -1 ? t("noStroke") : t("noFill"); // the noStroke/noFill option
@@ -122,45 +98,34 @@ onMounted((): void => {
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
-function toggleColorInputs(): void {
-  // if (!noData) {
-  showColorInputs.value = !showColorInputs.value;
-  // } else {
-  //   showColorInputs = false;
-  // }
-}
+
+watch(() => internalColor.value, (newColor, oldColor) => {
+  if (noColorData.value === false) {
+    pickedColor.value = Color(newColor).hexa()
+  }
+})
 
 watch(
   () => noColorData.value,
   (noColor): void => {
-    // console.debug(
-    //   "Saved HSLA",
-    //   preNoColor,
-    //   "current HSLA",
-    //   hslaColor
-    // );
     if (noColor) {
-      // if (
-      //   internalColor.value.hsla.h !== 0 ||
-      //   internalColor.value.hsla.s !== 0 ||
-      //   internalColor.value.hsla.l !== 0 ||
-      //   internalColor.value.hsla.a !== 0
-      // ) {
-      //   preNoColor = props.hslaColor;
-      // }
-      //preNoColor = hslaColor;
-      // emit('update:modelValue', NO_HSLA_DATA);
-      showColorInputs.value = false;
+      // Keep a copy of the internal color so it can be restored later
+      showColorInputs.value = false
+      savedInternalColor = internalColor.value
       colorSwatches.value = SETTINGS.style.greyedOutSwatches;
+      pickedColor.value = 'none'
     } else {
-      // emit("update:modelValue", preNoColor)
+      internalColor.value = savedInternalColor
       colorSwatches.value = SETTINGS.style.swatches;
-      // showColorInputs = true;
-      //   // colorData = Nodule.convertStringToHSLAObject(colorString);
+      pickedColor.value = internalColor.value
     }
-    // If color selector is on the label panel, then all changes are directed at the label(s).
   }
 );
+
+function toggleColorInputs(): void {
+  showColorInputs.value = !showColorInputs.value;
+}
+
 </script>
 
 <style lang="scss" scoped>
