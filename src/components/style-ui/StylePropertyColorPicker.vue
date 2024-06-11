@@ -98,6 +98,11 @@ onMounted((): void => {
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
+watch(() => pickedColor.value, externalColor => {
+  if (externalColor !== 'none') {
+    noColorData.value = false
+  }
+}, { deep: true })
 
 watch(() => internalColor.value, (newColor, oldColor) => {
   if (noColorData.value === false) {

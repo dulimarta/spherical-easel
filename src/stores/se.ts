@@ -401,7 +401,9 @@ export const useSEStore = defineStore("se", () => {
   const sePolygonIds: Ref<Array<number>> = ref([]);
   const sePolygons = computed((): SEPolygon[] => sePolygonIds.value.map(id => sePolygonMap.get(id)!))
 
-  const seLabels = computed(() => Array.from(seLabelMap.values()));
+  const seLabelIds: Ref<Array<number>> = ref([])
+  const seLabels = computed((): SELabel[] => seLabelIds.value.map(id => seLabelMap.get(id)!))
+
   const seExpressions: Ref<Array<SEExpression>> = ref([]);
   const seAngleMarkerIds: Ref<Array<number>> = ref([]);
   const seAngleMarkers = computed((): SEAngleMarker[] => seAngleMarkerIds.value.map (id => seAngleMarkerMap.get(id)!))
@@ -427,26 +429,27 @@ export const useSEStore = defineStore("se", () => {
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
     // Update to these arrays are not automatically picked up by VueJS
-    seNodules.value.splice(0);
-    sePointMap.clear();
-    sePointIds.value.splice(0);
-    seLineMap.clear();
+    seAngleMarkerIds.value.splice(0);
+    seAngleMarkerMap.clear();
+    seCircleIds.value.splice(0);
+    seCircleMap.clear();
+    seEllipseIds.value.splice(0);
+    seEllipseMap.clear();
+    seLabelIds.value.splice(0)
+    seLabelMap.clear();
     seLineIds.value.splice(0);
+    seLineMap.clear();
+    seNodules.value.splice(0);
+    seParametricIds.value.splice(0);
+    seParametricMap.clear()
+    sePencils.splice(0);
+    sePointIds.value.splice(0);
+    sePointMap.clear();
+    sePolygonIds.value.splice(0);
+    sePolygonMap.clear()
     seSegmentMap.clear();
     seSegments.value.splice(0);
-    seCircleMap.clear();
-    seCircleIds.value.splice(0);
-    seAngleMarkerMap.clear();
-    seAngleMarkerIds.value.splice(0);
-    sePolygonMap.clear()
-    sePolygonIds.value.splice(0);
-    seEllipseMap.clear();
-    seEllipseIds.value.splice(0);
-    seParametricMap.clear()
-    seParametricIds.value.splice(0);
     seTransformations.value.splice(0);
-    sePencils.splice(0);
-    seLabelMap.clear();
     selectedSENodules.value.splice(0);
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
@@ -699,6 +702,7 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addLabel(label: SELabel): void {
+    seLabelIds.value.push(label.id)
     seLabelMap.set(label.id, label);
     seNodules.value.push(label);
     label.ref.addToLayers(layers);
@@ -711,8 +715,10 @@ export const useSEStore = defineStore("se", () => {
     if (victimLabel) {
       // Remove the associated plottable (Nodule) object from being rendered
       victimLabel.ref.removeFromLayers(twojsLayers.value);
+      const pos = seLabelIds.value.findIndex(x => x === labelId)
       const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === labelId);
       seLabelMap.delete(labelId);
+      seLabelIds.value.splice(pos,1)
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects

@@ -4,7 +4,7 @@
     :show-popup="showPopup"
     :name="editModeIsBack ? 'Back' : 'Front'"
     :disabled="selectedPlottables.size === 0">
-    <template #tabs v-if="!styleOptions.dynamicBackStyle">
+    <template #tabs v-if="!styleOptions.dynamicBackStyle || !editModeIsBack">
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
       <v-tab v-if="hasSomeProperties(['strokeWidthPercent', 'pointRadiusPercent', 'dashArray'])"><v-icon>mdi-format-line-style</v-icon></v-tab>
       <v-tab v-if="hasStyle(/angle/)"><v-icon>mdi-angle-acute</v-icon></v-tab>
@@ -18,8 +18,8 @@
           :label="t('autoBackStyle')"></v-switch>
       </div>
     </template>
-    <template #pages v-if="!styleOptions.dynamicBackStyle">
-      <v-window-item class="pa-2" v-if="hasSomeProperties(['strokeColor', 'fillColor'])">
+    <template #pages v-if="!styleOptions.dynamicBackStyle|| !editModeIsBack">
+      <v-window-item class="pa-2" v-if="hasSomeProperties(['strokeColor', 'fillColor']) || true">
         <!-- FIRST TAB-->
 
         <StylePropertyColorPicker
@@ -228,7 +228,7 @@
           ]"></DisagreementOverride>
       </v-window-item>
     </template>
-    <template #bottom v-if="!styleOptions.dynamicBackStyle">
+    <template #bottom v-if="!styleOptions.dynamicBackStyle || !editModeIsBack">
       <div
         class="ma-1"
         :style="{

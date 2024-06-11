@@ -422,14 +422,25 @@ export const useStylingStore = defineStore("style", () => {
     }
   }
 
+
   function restoreTo(styleMap: Map<string, StyleOptions>) {
+
+    function mergeStyles(accumulator: StyleOptions, curr: StyleOptions) {
+      Object.getOwnPropertyNames(curr).forEach((propName: string) => {
+        if (!Object.hasOwn(accumulator, propName)) {
+          (accumulator as any)[propName] = (curr as any)[propName]
+        }
+      })
+    }
+
+    let combinedStyle: StyleOptions = {}
     styleMap.forEach((style: StyleOptions, name: string) => {
       // Do not use a simple assignment, so the initial/default styles are intact
       // styleOptions.value = style /* This WON'T work
       // Must use the following unpack syntax to create a different object
       // So the initial & default maps do not become aliases to the current
       // style option
-      styleOptions.value = { ...style };
+      mergeStyles(combinedStyle, style)
       if (name.startsWith("label:")) {
         const labelName = name.substring(6);
         const theLabel = seLabels.value.find(n => {
@@ -455,6 +466,7 @@ export const useStylingStore = defineStore("style", () => {
         }
       }
     });
+    styleOptions.value = {...combinedStyle}
     styleIndividuallyAltered = false;
   }
 
