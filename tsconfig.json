@@ -3,7 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "declaration": true,
+    "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
     "jsx": "preserve",
     // "importHelpers": true,
     "noImplicitAny": true,

@@ -110,7 +110,6 @@ import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandl
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
 import { ToolButtonType } from "@/types";
-
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -123,10 +122,9 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
-  // groups,
+  // twojsLayers: layers,
   isEarthMode
 } = storeToRefs(seStore);
-// const {groups} = seStore
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n();
@@ -231,6 +229,7 @@ onBeforeMount((): void => {
   // Create a detached group to prevent duplicate group ID
   // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
   const dummy_group = new Two.Group();
+  // let groups: Array<Two.Group> = []
   for (const layer in LAYER) {
     const layerIdx = Number(layer);
     if (!isNaN(layerIdx)) {
@@ -454,9 +453,9 @@ function updateView() {
   //   .translate(origin + transVector[0], origin + transVector[1]) // Order of these two operations
   //   .scale(mag, -mag); // (translate & scale) is important
   //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
-  seLabels.value.forEach(l => {
+  for (let l of seLabels.value) {
     l.update();
-  });
+  };
 }
 //#endregion updateView
 

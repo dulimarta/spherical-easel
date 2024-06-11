@@ -247,7 +247,7 @@ export const useStylingStore = defineStore("style", () => {
 
       if (styleIndividuallyAltered) {
         selectedLabels.value.forEach(labelName => {
-          const label = seLabels.value.find(lab => lab.ref.name === labelName);
+          const label = seLabels.value.find(lab => lab.ref.name === labelName)
           if (label) {
             label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
             // When a label is modified, add it to the set

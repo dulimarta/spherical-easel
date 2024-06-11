@@ -358,10 +358,6 @@ export default class Label extends Nodule {
     layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
     layers[LAYER.backgroundText].remove(this.backText);
     layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
-    // this.frontText.remove();
-    // this.glowingFrontText.remove();
-    // this.backText.remove();
-    // this.glowingBackText.remove();
   }
 
   updateDisplay(): void {

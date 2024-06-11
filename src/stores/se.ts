@@ -345,11 +345,13 @@ function findClosedSegmentChainLength(segmentArr: Array<SESegment>): number[] {
   return maxChainLengths;
 }
 
-// WARNING: Making layers a reactive variable caused runtime error in SphereFrame.vue
+// WARNING: Making the following variables reactive caused runtime error in SphereFrame.vue
+/* BEGIN Non-Reactive variables */
 let layers: Array<Two.Group> = [];
+const sePointMap: Map<number, SEPoint> = new Map();
+/* END Non-Reactive variables */
 
 export const useSEStore = defineStore("se", () => {
-  // state: (): PiniaAppState => ({
 
   const isEarthMode = ref(false);
   const actionMode: Ref<ActionMode> = ref("rotate");
@@ -366,12 +368,14 @@ export const useSEStore = defineStore("se", () => {
   const seNodules: Ref<Array<SENodule>> = ref([]);
   const temporaryNodules: Ref<Array<Nodule>> = ref([]);
 
-  const sePoints: Ref<Array<SEPoint>> = ref([]);
+  const sePointIds: Ref<Array<number>> = ref([])
+  const sePoints = computed((): SEPoint[] => sePointIds.value.map(id => sePointMap.get(id)!))
   const seLines: Ref<Array<SELine>> = ref([]);
   const seSegments: Ref<Array<SESegment>> = ref([]);
   const seCircles: Ref<Array<SECircle>> = ref([]);
   const seEllipses: Ref<Array<SEEllipse>> = ref([]);
-  const seLabels: Ref<Array<SELabel>> = ref([]);
+  const seLabelMap: Map<number,SELabel> = new Map()
+  const seLabels = computed(() => Array.from(seLabelMap.values()))
   const seExpressions: Ref<Array<SEExpression>> = ref([]);
   const seAngleMarkers: Ref<Array<SEAngleMarker>> = ref([]);
   const seParametrics: Ref<Array<SEParametric>> = ref([]);
@@ -383,6 +387,15 @@ export const useSEStore = defineStore("se", () => {
   const disabledTools: Ref<Array<ActionMode>> = ref([]);
   const inverseTotalRotationMatrix: Ref<Matrix4> = ref(new Matrix4()); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
 
+  const hasObjects = computed(
+    () =>
+      sePointIds.value.length > 0 ||
+      seCircles.value.length > 0 ||
+      seSegments.value.length > 0
+  ); // SELatitude and SE Longitude are not constructed with SEPoints that are put into the object tree
+
+  const twojsLayers = computed(() => layers)
+
   function init(): void {
     actionMode.value = "rotate";
     // this.activeToolName = "RotateDisplayedName";
@@ -390,7 +403,8 @@ export const useSEStore = defineStore("se", () => {
     // Replace clear() with splice(0). Since clear() is an extension function
     // Update to these arrays are not automatically picked up by VueJS
     seNodules.value.splice(0);
-    sePoints.value.splice(0);
+    sePointMap.clear()
+    sePointIds.value.splice(0)
     seLines.value.splice(0);
     seSegments.value.splice(0);
     seCircles.value.splice(0);
@@ -400,7 +414,7 @@ export const useSEStore = defineStore("se", () => {
     seParametrics.value.splice(0);
     seTransformations.value.splice(0);
     sePencils.splice(0);
-    seLabels.value.splice(0);
+    seLabelMap.clear();
     selectedSENodules.value.splice(0);
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
@@ -463,11 +477,16 @@ export const useSEStore = defineStore("se", () => {
     );
     seCircles.value.forEach((x: SECircle) => x.ref.removeFromLayers());
     seEllipses.value.forEach((x: SEEllipse) => x.ref.removeFromLayers());
-    seLabels.value.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
+    for (let lab of seLabels.value) {
+      lab.ref.removeFromLayers(layers);
+    }
     seLines.value.forEach((x: SELine) => x.ref.removeFromLayers());
-    sePoints.value.forEach((pt: SEPoint) => {
-      pt.ref.removeFromLayers();
-    });
+    for (let pt of sePoints.value) {
+      pt!.ref.removeFromLayers()
+    }
+    // sePoints.value.forEach((pt: SEPoint) => {
+    //   pt.ref.removeFromLayers();
+    // });
     seSegments.value.forEach((x: SESegment) => x.ref.removeFromLayers());
     sePolygons.value.forEach((x: SEPolygon) => x.ref.removeFromLayers());
     seParametrics.value.forEach((x: SEParametric) => {
@@ -512,7 +531,8 @@ export const useSEStore = defineStore("se", () => {
   }
   //#region addPoint
   function addPoint(point: SEPoint): void {
-    sePoints.value.push(point);
+    sePointIds.value.push(point.id)
+    sePointMap.set(point.id, point);
     seNodules.value.push(point);
     point.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
@@ -520,11 +540,13 @@ export const useSEStore = defineStore("se", () => {
   }
   //#endregion addPoint
   function removePoint(pointId: number): void {
-    const pos = sePoints.value.findIndex(x => x.id === pointId);
-    if (pos >= 0) {
-      sePoints.value[pos].ref.removeFromLayers();
+    const victimPoint = sePointMap.get(pointId);
+    if (victimPoint) {
+      victimPoint.ref.removeFromLayers();
+      sePointMap.delete(pointId);
+      const pos = sePointIds.value.findIndex(z => z === pointId)
+      sePointIds.value.splice(pos, 1)
       const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === pointId);
-      sePoints.value.splice(pos, 1);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       updateDisabledTools("point");
@@ -533,7 +555,7 @@ export const useSEStore = defineStore("se", () => {
   function movePoint(move: { pointId: number; location: Vector3 }): void {
     const pointMoverVisitor = new PointMoverVisitor();
     pointMoverVisitor.setNewLocation(move.location);
-    const aPoint = sePoints.value.find(x => x.id === move.pointId);
+    const aPoint = sePointMap.get(move.pointId)
     if (aPoint) {
       aPoint.accept(pointMoverVisitor);
     }
@@ -634,19 +656,20 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addLabel(label: SELabel): void {
-    seLabels.value.push(label);
+    seLabelMap.set(label.id, label);
     seNodules.value.push(label);
     label.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
   function removeLabel(labelId: number): void {
-    const pos = seLabels.value.findIndex((z: SELabel) => z.id === labelId);
-    if (pos >= 0) {
+    const victimLabel = seLabelMap.get(labelId)
+
+    if (victimLabel) {
       // Remove the associated plottable (Nodule) object from being rendered
-      seLabels.value[pos].ref.removeFromLayers(layers);
+      victimLabel.ref.removeFromLayers(twojsLayers.value);
       const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === labelId);
-      seLabels.value.splice(pos, 1);
+      seLabelMap.delete(labelId);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
@@ -655,7 +678,7 @@ export const useSEStore = defineStore("se", () => {
   function moveLabel(move: { labelId: number; location: Vector3 }): void {
     const labelMoverVisitor = new LabelMoverVisitor();
     labelMoverVisitor.setNewLocation(move.location);
-    const aLabel = seLabels.value.find(z => z.id === move.labelId);
+    const aLabel = seLabelMap.get(move.labelId);
     if (aLabel) aLabel.accept(labelMoverVisitor);
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
@@ -942,7 +965,8 @@ export const useSEStore = defineStore("se", () => {
       case "point": {
         // "coordinate",// need one point
         // "pointDistance", // need two points
-        const numPoints = sePoints.value.filter(
+        const numPoints = sePoints.value
+          .filter(
           pt =>
             !(
               pt instanceof SEAntipodalPoint ||
@@ -1129,18 +1153,12 @@ export const useSEStore = defineStore("se", () => {
     }
   }
 
-  const hasObjects = computed(
-    () =>
-      sePoints.value.length > 0 ||
-      seCircles.value.length > 0 ||
-      seSegments.value.length > 0
-  ); // SELatitude and SE Longitude are not constructed with SEPoints that are put into the object tree
-
   function hasNoAntipode(testPoint: SEPoint): boolean {
     // create the antipode location vector
     tmpVector.copy(testPoint.locationVector).multiplyScalar(-1);
     // search for the antipode location vector
-    const possibleAntipodes = sePoints.value.filter((p: SEPoint) => {
+    const possibleAntipodes = sePoints.value
+      .filter((p: SEPoint) => {
       return tmpVector.equals(p.locationVector);
     });
     if (possibleAntipodes.length == 0) {
@@ -1248,14 +1266,14 @@ export const useSEStore = defineStore("se", () => {
     // ) {
     //   existingSEPoints.push(newLine.endSEPoint);
     // }
-    sePoints.value.forEach(pt => {
+    for (let pt of sePoints.value) {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
       ) {
         existingSEPoints.push(pt);
       }
-    });
+    };
     // The number of existing sePoint before we start adding to it with newly created intersection points
     const numberOfExistingSEPointsBefore = existingSEPoints.length;
     // The intersectionPointList to return
@@ -1766,14 +1784,15 @@ export const useSEStore = defineStore("se", () => {
     // //  they won't have been added to the state.points array yet so add them first
     // existingSEPoints.push(newSegment.startSEPoint);
     // existingSEPoints.push(newSegment.endSEPoint);
-    sePoints.value.forEach(pt => {
+    for (let pt of sePoints.value) {
+    // sePoints.value.forEach(pt => {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
       ) {
         existingSEPoints.push(pt);
       }
-    });
+    };
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -2285,14 +2304,14 @@ export const useSEStore = defineStore("se", () => {
     // //  they won't have been added to the state.points array yet so add them first
     // existingSEPoints.push(newCircle.centerSEPoint);
     // existingSEPoints.push(newCircle.circleSEPoint);
-    sePoints.value.forEach(pt => {
+    for (let pt of sePoints.value) {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
       ) {
         existingSEPoints.push(pt);
       }
-    });
+    };
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // The number of existing sePoint before we start adding to it with newly created intersection points
@@ -2799,14 +2818,14 @@ export const useSEStore = defineStore("se", () => {
     // existingSEPoints.push(newEllipse.focus1SEPoint);
     // existingSEPoints.push(newEllipse.focus2SEPoint);
     // existingSEPoints.push(newEllipse.ellipseSEPoint);
-    sePoints.value.forEach(pt => {
+    for (let pt of sePoints.value) {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
       ) {
         existingSEPoints.push(pt);
       }
-    });
+    };
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // The number of existing sePoint before we start adding to it with newly created intersection points
@@ -3317,14 +3336,14 @@ export const useSEStore = defineStore("se", () => {
     //     existingSEPoints.push(pt);
     //   }
     // });
-    sePoints.value.forEach(pt => {
+    for (let pt of sePoints.value) {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
       ) {
         existingSEPoints.push(pt);
       }
-    });
+    };
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -3829,12 +3848,10 @@ export const useSEStore = defineStore("se", () => {
     seCircles,
     seEllipses,
     seExpressions,
-    seLabels,
     selectedSENodules,
     seLines,
     seNodules,
     seParametrics,
-    sePoints,
     sePolygons,
     seSegments,
     seTransformations,
@@ -3842,6 +3859,11 @@ export const useSEStore = defineStore("se", () => {
     temporaryNodules,
     zoomMagnificationFactor,
     zoomTranslation,
+
+    /* computed */
+    twojsLayers,
+    seLabels,
+    sePoints,
 
     /* functions */
     addAngleMarkerAndExpression,

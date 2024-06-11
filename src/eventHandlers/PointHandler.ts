@@ -45,7 +45,7 @@ export default class PointHandler extends Highlighter {
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
-      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection or antipodeal point
+      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection or antipodal point
       if (this.hitSEPoints.length > 0) {
         if (
           (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
