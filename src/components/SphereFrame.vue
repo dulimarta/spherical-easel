@@ -159,7 +159,7 @@ let twoInstance!: Two;
  */
 let boundaryCircle!: Two.Circle;
 /**
- * The Global Vuex Store
+ * The Global Pinia Store
  */
 
 /** Tools for handling user input */
@@ -306,7 +306,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   // EventBus.listen(
   //   "set-point-visibility-and-label",
-  //   setPointInitialVibilityAndLabel
+  //   setPointInitialVisibilityAndLabel
   // );
 });
 
@@ -437,7 +437,7 @@ watch(
 
 //#region updateView
 function updateView() {
-  // Get the current maginification factor and translation vector
+  // Get the current magnification factor and translation vector
   const mag = zoomMagnificationFactor.value;
   const transVector = zoomTranslation;
   const originX = props.availableWidth / 2;
@@ -786,7 +786,7 @@ function deleteNode(e: {
 //   }
 // }
 /**
- * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
+ * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
  * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
  * we would not be able to do this (at least not directly).
  */
