@@ -5,6 +5,7 @@ import { StyleOptions, StyleCategory } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
+import Color from "color";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
@@ -21,11 +22,10 @@ export default abstract class Nodule implements Stylable, Resizeable {
   //public id = 0;
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
-  readonly name: string = '<noname-nodule>'
-
+  readonly name: string = "<noname-nodule>";
 
   constructor(noduleName: string) {
-    this.name = noduleName
+    this.name = noduleName;
     // this.id = Nodule.NODULE_COUNT;
     // Nodule.NODULE_COUNT++;
   }
@@ -143,20 +143,24 @@ export default abstract class Nodule implements Stylable, Resizeable {
     colorStringOld: string | undefined
   ): hslaColorType {
     if (colorStringOld) {
-      //remove the first 5 and last character of the string
-      const colorString = colorStringOld.slice(5, -1);
-      const numberArray = colorString
-        .split(",")
-        .map(x => x.replace("%", "").trim()); //remove the percent symbols and the padding spaces
-      if (Number(numberArray[3]) <= 0) {
-        // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-        numberArray[3] = "0";
+      const numberArray = Color(colorStringOld).hsl().array();
+      if (numberArray.length < 4) {
+        // Alpha value is missing (or not parsed), default alpha to 1.0 (fully opaque)
+        let alpha: number = 1;
+        if (colorStringOld.startsWith("#")) {
+          if (colorStringOld.length === 9) {
+            // If we have 8 hex digits, positions 7 and 8 are the alpha value
+            const alphaHexString = colorStringOld.substring(7);
+            alpha = parseInt(alphaHexString, 16) / 255;
+          }
+        }
+        numberArray.push(alpha);
       }
       return {
-        h: Number(numberArray[0]),
-        s: Number(numberArray[1]) / 100,
-        l: Number(numberArray[2]) / 100,
-        a: Number(numberArray[3])
+        h: numberArray[0],
+        s: numberArray[1] / 100,
+        l: numberArray[2] / 100,
+        a: numberArray[3]
       };
     } else {
       // This should never happen
@@ -164,12 +168,15 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
   }
   static hslaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
-    if (colorStringOld === undefined) return true
-    if (colorStringOld === 'none') return true
-    if (colorStringOld?.startsWith('#')) return false
+    if (colorStringOld === undefined) return true;
+    if (colorStringOld === "none") return true;
+    if (colorStringOld?.startsWith("#")) return false;
     if (colorStringOld) {
       const { h, s, l, a } = Nodule.convertStringToHSLAObject(colorStringOld);
-      return Number.isNaN(h) || Number.isNaN(s) || Number.isNaN(l) || Number.isNaN(a)
+      if (h === 0 && s === 0 && l === 0 && a === 0) return true;
+      return (
+        Number.isNaN(h) || Number.isNaN(s) || Number.isNaN(l) || Number.isNaN(a)
+      );
     } else {
       throw new Error(`Color string is undefined`);
     }
@@ -222,10 +229,10 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   set showing(b: boolean) {
     this._showing = b;
-    this.setVisible(b)
+    this.setVisible(b);
   }
 
   get showing(): boolean {
-    return this._showing
+    return this._showing;
   }
 }

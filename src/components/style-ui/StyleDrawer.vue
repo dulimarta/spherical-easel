@@ -286,7 +286,6 @@ watch(
   () => styleSelection.value,
   (selectedTab: number | undefined, prevTab: number | undefined) => {
     if (typeof prevTab === "number" && selectedTab === undefined) {
-      console.debug("Deselect.....");
       styleStore.deselectActiveGroup();
     } else {
       switch (selectedTab) {

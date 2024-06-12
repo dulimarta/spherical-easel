@@ -127,7 +127,7 @@
               :text="t('dashPatternReverseArrayToolTip')" />
             <v-switch
               v-if="useDashPattern"
-              v-model="styleOptions.reverseDashArray"
+              v-model="flipDashPattern"
               :color="hasDisagreement('reverseDashArray') ? `red` : 'secondary'"
               density="compact">
               <template v-slot:label>
@@ -144,7 +144,7 @@
           <v-range-slider
             v-if="useDashPattern"
             v-model="dashArray"
-            min="0"
+            min="1"
             strict
             :step="setStep(hasStyle('angleMarker'))"
             :disabled="emptyDashPattern"
@@ -192,7 +192,7 @@
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'
-            );
+            )
           ">
           <template v-slot:label>
             <span
@@ -209,7 +209,8 @@
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'
-            )">
+            )
+          ">
           <template v-slot:label>
             <span
               :style="{
@@ -222,11 +223,14 @@
 
         <v-switch
           v-model="styleOptions.angleMarkerArrowHeads"
-          :color="hasDisagreement('angleMarkerArrowHeads') ? 'red' : 'secondary'"
+          :color="
+            hasDisagreement('angleMarkerArrowHeads') ? 'red' : 'secondary'
+          "
           @change="
             updateInputGroup(
               'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'
-            )">
+            )
+          ">
           <template v-slot:label>
             <span
               :style="{
@@ -324,10 +328,8 @@ const dashArray: Ref<number[]> = ref(
     ? styleOptions.value.dashArray.slice(0)
     : [1, 5] /* be sure to use slice() to create a copy */
 );
-const useDashPattern = ref(true);
-const reverseDashArray = ref<boolean>(
-  styleOptions.value.reverseDashArray ?? false
-);
+const useDashPattern = ref(styleOptions.value.dashArray ? true : false);
+const flipDashPattern = ref(styleOptions.value.reverseDashArray ?? false)
 const emptyDashPattern = computed(() => {
   if (!styleOptions.value.dashArray) return true;
   const dArr = styleOptions.value.dashArray;
@@ -335,24 +337,47 @@ const emptyDashPattern = computed(() => {
 });
 
 watch(
+  () => useDashPattern.value,
+  useDash => {
+    if (useDash) {
+      styleOptions.value.dashArray = dashArray.value.slice(0);
+    } else {
+      delete styleOptions.value.dashArray;
+    }
+  }
+);
+watch(
   () => dashArray.value,
   dArr => {
     // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
-    if (typeof styleOptions.value.dashArray === "undefined")
-      styleOptions.value.dashArray = [0, 0];
-    styleOptions.value.dashArray = [dArr[1], dArr[0]];
+    if (typeof styleOptions.value.dashArray === "undefined") {
+      console.debug("No dash array specified");
+      // styleOptions.value.dashArray = [0, 0];
+    }
+    if (flipDashPattern.value)
+      styleOptions.value.dashArray = dArr.slice(0)
+    else styleOptions.value.dashArray = dArr.toReversed()
   },
   { deep: true, immediate: true }
 );
 
 watch(
-  () => reverseDashArray.value,
+  () => flipDashPattern.value,
   flip => {
-    styleOptions.value.reverseDashArray = flip;
-  },
-  { immediate: true }
-);
+    if (typeof flip === 'undefined') return;
+    styleOptions.value.reverseDashArray = flip
+    console.debug("Swapping", dashArray.value)
+    // styleOptions.value.reverseDashArray = flip;
+    // In TwoJS even index is gap length, odd index is dash length
+    if (flip) {
+      styleOptions.value.dashArray = dashArray.value.slice(0)
+    }
+    else {
+      styleOptions.value.dashArray = dashArray.value.toReversed()
 
+    }
+  }
+);
 
 // change the background color of the input if there is a conflict on that particular input
 

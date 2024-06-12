@@ -228,6 +228,7 @@ export const useStylingStore = defineStore("style", () => {
   watch(
     () => styleOptions.value,
     (opt: StyleOptions) => {
+      // Use the spread operator (...) to guarantee copy by value (not copy by ref)
       const newOptions: StyleOptions = { ...opt };
       postUpdateStyleOptions = {};
       styleIndividuallyAltered = false;
@@ -235,31 +236,34 @@ export const useStylingStore = defineStore("style", () => {
         const newValue = (newOptions as any)[key];
         const oldValue = stylePropertyMap.get(key);
         if (!isPropEqual(oldValue, newValue)) {
-          // console.debug(
-          //   `Property ${key} changes from ${oldValue} to ${newValue}`
-          // );
+          console.debug(
+            `Property ${key} changes from ${oldValue} to ${newValue}`
+          );
           (postUpdateStyleOptions as any)[key] = newValue;
           stylePropertyMap.set(key, newValue);
           styleIndividuallyAltered = true;
         }
       });
-      console.debug("Compiled props", stylePropertyMap);
 
       if (styleIndividuallyAltered) {
-        selectedLabels.value.forEach(labelName => {
-          const label = seLabels.value.find(lab => lab.ref.name === labelName)
-          if (label) {
-            label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
-            // When a label is modified, add it to the set
-            editedLabels.value.add(label.name);
-          }
-        });
-        selectedPlottables.value.forEach(plot => {
-          plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
-          // any property which may depends on Zoom factor, must also be updated
-          // by calling adjustSize()
-          plot.adjustSize();
-        });
+        if (activeStyleGroup === StyleCategory.Label) {
+          selectedLabels.value.forEach(labelName => {
+            const label = seLabels.value.find(lab => lab.ref.name === labelName)
+            if (label) {
+              label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
+              // When a label is modified, add it to the set
+              editedLabels.value.add(label.name);
+            }
+          });
+        }
+        else if (activeStyleGroup === StyleCategory.Front || activeStyleGroup === StyleCategory.Back) {
+          selectedPlottables.value.forEach(plot => {
+            plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
+            // any property which may depends on Zoom factor, must also be updated
+            // by calling adjustSize()
+            plot.adjustSize();
+          });
+        }
       }
     },
     {
