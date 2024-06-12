@@ -15,7 +15,7 @@
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
     </template>
     <template #pages>
-      <v-window-item>
+      <v-window-item> <!-- First Tab-->
         <v-text-field
           v-model="styleOptions.labelDisplayText"
           :disabled="
@@ -96,7 +96,7 @@
             'labelTextRotation'
           ]" />
       </v-window-item>
-      <v-window-item>
+      <v-window-item> <!-- Second Tab -->
         <!-- Label Text Family Selections -->
         <v-select
           :disabled="
@@ -177,23 +177,23 @@
             'labelTextStyle'
           ]" />
       </v-window-item>
-      <v-window-item>
+      <v-window-item> <!-- Third Tab-->
         <PropertyColorPicker
           :title="t('labelFrontFillColor')"
           :numSelected="selectedLabels.size"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
-          :conflict="conflictItems.labelFrontFillColor"
+          :conflict="hasDisagreement('labelFrontFillColor')"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
         <v-switch
           color="secondary"
           v-model="styleOptions.labelDynamicBackStyle"
-          label="Label Automatic Back Style"></v-switch>
+          :label="t('labelAutomaticBackStyle')"></v-switch>
         <PropertyColorPicker
           v-if="!styleOptions.labelDynamicBackStyle"
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
-          :conflict="conflictItems.labelBackFillColor"
+          :conflict="hasDisagreement('labelBackFillColor')"
           ref="labelBackFillColor"
           style-name="labelBackFillColor"
           v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
@@ -762,6 +762,7 @@ const conflictItems: ConflictItems = {
 <i18n lang="json" locale="en">
 {
   "backStyleDisagreement": "Back Styling Disagreement",
+  "labelAutomaticBackStyle": "Infer Label Back Styles from Front Styles",
   "clickToMakeLabelsVisible": "Click the button below to make labels visible",
   "commonCaptionText": "Common Caption Text",
   "commonLabelText": "Common Label Text",
@@ -817,6 +818,7 @@ const conflictItems: ConflictItems = {
 <i18n lang="json" locale="id">
 {
   "backStyleDisagreement": "Gaya Tampilan Belakang Bertentangan",
+  "labelAutomaticBackStyle": "Gaya Tampilan Belakang Ditentutan dari Tampilan Muka",
   "clickToMakeLabelsVisible": "Tekan tombol dibawah untuk menampilkan label",
   "commonCaptionText": "Keterangan Teks Gabungan",
   "commonLabelText": "Label Teks Gabungan",

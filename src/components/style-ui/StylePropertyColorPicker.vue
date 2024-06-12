@@ -85,7 +85,7 @@ const isOnLabelPanel = ref(false);
 // For TwoJS
 // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
 const showColorInputs = ref(false);
-const colorSwatches = ref(SETTINGS.style.swatches);
+const colorSwatches = ref(props.conflict ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches);
 const noDataUILabel = ref(t("noFill"));
 
 // Vue component life cycle hook
@@ -98,9 +98,14 @@ onMounted((): void => {
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
+watch(() => props.conflict, conflict => {
+  colorSwatches.value = conflict ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches
+})
+
 watch(() => pickedColor.value, externalColor => {
   if (externalColor !== 'none') {
     noColorData.value = false
+    internalColor.value = externalColor
   }
 }, { deep: true })
 
