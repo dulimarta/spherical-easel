@@ -248,15 +248,22 @@ export const useStylingStore = defineStore("style", () => {
       if (styleIndividuallyAltered) {
         if (activeStyleGroup === StyleCategory.Label) {
           selectedLabels.value.forEach(labelName => {
-            const label = seLabels.value.find(lab => lab.ref.name === labelName)
+            const label = seLabels.value.find(
+              lab => lab.ref.name === labelName
+            );
             if (label) {
-              label.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
+              label.ref.updateStyle(
+                StyleCategory.Label,
+                postUpdateStyleOptions
+              );
               // When a label is modified, add it to the set
               editedLabels.value.add(label.name);
             }
           });
-        }
-        else if (activeStyleGroup === StyleCategory.Front || activeStyleGroup === StyleCategory.Back) {
+        } else if (
+          activeStyleGroup === StyleCategory.Front ||
+          activeStyleGroup === StyleCategory.Back
+        ) {
           selectedPlottables.value.forEach(plot => {
             plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
             // any property which may depends on Zoom factor, must also be updated
@@ -272,8 +279,44 @@ export const useStylingStore = defineStore("style", () => {
     }
   );
 
+  watch(
+    () => forceAgreement.value,
+    overrideDisagreement => {
+      if (overrideDisagreement) {
+        console.debug("Force disagreement on", conflictingProperties.value);
+        if (
+          activeStyleGroup === StyleCategory.Label &&
+          conflictingProperties.value.has("labelBackFillColor") &&
+          conflictingProperties.value.has("labelDynamicBackStyle")
+        ) {
+          // The user attempts to update label back fill color but the label dynamic back styles disagree
+          selectedLabels.value.forEach(labelName => {
+            const label = seLabels.value.find(
+              lab => lab.ref.name === labelName
+            );
+            if (label) {
+              label.ref.updateStyle(StyleCategory.Label, {
+                labelDynamicBackStyle: false
+              });
+              editedLabels.value.add(label.name);
+            }
+          });
+        }
+
+        if ((activeStyleGroup === StyleCategory.Front || activeStyleGroup === StyleCategory.Back) &&
+          conflictingProperties.value.has('dynamicBackStyle') &&
+          (conflictingProperties.value.has('fillColor') || conflictingProperties.value.has('strokeColor'))
+        ) {
+          // The user attempts to update stroke/fill color but the dynamic back styles disagree
+          selectedPlottables.value.forEach(plot => {
+            plot.updateStyle(activeStyleGroup!!, {dynamicBackStyle: false})
+          })
+        }
+      }
+    }
+  );
   function recordGlobalContrast() {
-    backStyleContrastCopy = Nodule.getBackStyleContrast()
+    backStyleContrastCopy = Nodule.getBackStyleContrast();
   }
 
   function recordCurrentStyleProperties(category: StyleCategory) {
@@ -372,6 +415,7 @@ export const useStylingStore = defineStore("style", () => {
     Nodule.setBackStyleContrast(newContrast);
     // update all objects display
     seNodules.value.forEach(n => {
+      console.debug("Calling stylize", n.ref?.name);
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
@@ -426,25 +470,23 @@ export const useStylingStore = defineStore("style", () => {
     }
   }
 
-
   function restoreTo(styleMap: Map<string, StyleOptions>) {
-
     function mergeStyles(accumulator: StyleOptions, curr: StyleOptions) {
       Object.getOwnPropertyNames(curr).forEach((propName: string) => {
         if (!Object.hasOwn(accumulator, propName)) {
-          (accumulator as any)[propName] = (curr as any)[propName]
+          (accumulator as any)[propName] = (curr as any)[propName];
         }
-      })
+      });
     }
 
-    let combinedStyle: StyleOptions = {}
+    let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
       // Do not use a simple assignment, so the initial/default styles are intact
       // styleOptions.value = style /* This WON'T work
       // Must use the following unpack syntax to create a different object
       // So the initial & default maps do not become aliases to the current
       // style option
-      mergeStyles(combinedStyle, style)
+      mergeStyles(combinedStyle, style);
       if (name.startsWith("label:")) {
         const labelName = name.substring(6);
         const theLabel = seLabels.value.find(n => {
@@ -470,7 +512,7 @@ export const useStylingStore = defineStore("style", () => {
         }
       }
     });
-    styleOptions.value = {...combinedStyle}
+    styleOptions.value = { ...combinedStyle };
     styleIndividuallyAltered = false;
   }
 

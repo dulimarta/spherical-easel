@@ -974,7 +974,7 @@ export default class Circle extends Nodule {
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.ApplyTemporaryVariables: {
+      case DisplayStyle.ApplyTemporaryVariables:
         // Use the SETTINGS temporary options to directly modify the js objects.
 
         //FRONT
@@ -1038,7 +1038,7 @@ export default class Circle extends Nodule {
         this.glowingFrontPart.visible = false;
         this.glowingBackPart.visible = false;
         break;
-      }
+
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
@@ -1149,9 +1149,6 @@ export default class Circle extends Nodule {
         ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
-          if (frontStyle.reverseDashArray) {
-            this.glowingFrontPart.dashes.reverse();
-          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();

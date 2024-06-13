@@ -147,12 +147,10 @@ export default abstract class Nodule implements Stylable, Resizeable {
       if (numberArray.length < 4) {
         // Alpha value is missing (or not parsed), default alpha to 1.0 (fully opaque)
         let alpha: number = 1;
-        if (colorStringOld.startsWith("#")) {
-          if (colorStringOld.length === 9) {
-            // If we have 8 hex digits, positions 7 and 8 are the alpha value
-            const alphaHexString = colorStringOld.substring(7);
-            alpha = parseInt(alphaHexString, 16) / 255;
-          }
+        if (colorStringOld.startsWith("#") && colorStringOld.length === 9) {
+          // If we have 8 hex digits, positions 7 and 8 are the alpha value
+          const alphaHexString = colorStringOld.substring(7);
+          alpha = parseInt(alphaHexString, 16) / 255;
         }
         numberArray.push(alpha);
       }
