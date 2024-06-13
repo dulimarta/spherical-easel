@@ -147,7 +147,6 @@
             min="1"
             strict
             :step="setStep(hasStyle('angleMarker'))"
-            :disabled="emptyDashPattern"
             :max="setMax(hasStyle('angleMarker'))"
             :color="hasDisagreement('dashArray') ? 'red' : ''"
             density="compact">
@@ -311,7 +310,6 @@ const { attrs } = useAttrs();
 const emits = defineEmits(["undo-styles", "apply-default-styles"]);
 
 const props = defineProps<ComponentProps>();
-const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
 const { hasStyle, hasDisagreement, isCommonProperty, hasSomeProperties } =
@@ -323,24 +321,44 @@ const angleMarkerRadiusPercentage = ref(
 // automaticBackState is controlled by user
 // automaticBackStyle : FALSE means she wants to customize back style
 // automaticBackStyle : TRUE means the program will customize back style
-const dashArray: Ref<number[]> = ref(
-  styleOptions.value.dashArray
-    ? styleOptions.value.dashArray.slice(0)
-    : [1, 5] /* be sure to use slice() to create a copy */
-);
-const useDashPattern = ref(styleOptions.value.dashArray ? true : false);
-const flipDashPattern = ref(styleOptions.value.reverseDashArray ?? false)
-const emptyDashPattern = computed(() => {
-  if (!styleOptions.value.dashArray) return true;
-  const dArr = styleOptions.value.dashArray;
-  return dArr.length == 0;
-});
+const dashArray: Ref<number[]> = ref([1,5])
+const useDashPattern = ref(false);
+const flipDashPattern= ref(false);
+// const emptyDashPattern = computed(() =>
+//   if (dArr.length < 2) return true
+//   return dArr[0] !== 0 && dArr[1] !== 0
+// });
+
+watch(() => styleOptions.value, opt => {
+  if (Object.hasOwn(opt, 'dashArray')) {
+    const arr = opt.dashArray!
+    if (arr.length < 2) useDashPattern.value = false
+    else {
+      if (arr[0] !== 0 && arr[1] !== 0) {
+        useDashPattern.value = true
+        // Copy the predefined pattern
+        dashArray.value[0] = arr[0]
+        dashArray.value[1] = arr[1]
+      } else {
+        useDashPattern.value = false
+      }
+    }
+  } else {
+    useDashPattern.value = false
+  }
+  if (Object.hasOwn(opt, 'reverseDashArray')) {
+    flipDashPattern.value = opt.reverseDashArray!
+  } else {
+    flipDashPattern.value = false
+  }
+})
 
 watch(
   () => useDashPattern.value,
   useDash => {
     if (useDash) {
-      styleOptions.value.dashArray = dashArray.value.slice(0);
+      if (flipDashPattern.value) styleOptions.value.dashArray = dashArray.value.slice(0);
+      else styleOptions.value.dashArray = dashArray.value.toReversed()
     } else {
       delete styleOptions.value.dashArray;
     }
@@ -348,15 +366,11 @@ watch(
 );
 watch(
   () => dashArray.value,
-  dArr => {
+  (dArr, oldArr) => {
+    if (!useDashPattern.value) return
     // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
-    if (typeof styleOptions.value.dashArray === "undefined") {
-      console.debug("No dash array specified");
-      // styleOptions.value.dashArray = [0, 0];
-    }
-    if (flipDashPattern.value)
-      styleOptions.value.dashArray = dArr.slice(0)
-    else styleOptions.value.dashArray = dArr.toReversed()
+    if (flipDashPattern.value) styleOptions.value.dashArray = dArr.slice(0);
+    else styleOptions.value.dashArray = dArr.toReversed();
   },
   { deep: true, immediate: true }
 );
@@ -364,17 +378,13 @@ watch(
 watch(
   () => flipDashPattern.value,
   flip => {
-    if (typeof flip === 'undefined') return;
-    styleOptions.value.reverseDashArray = flip
-    console.debug("Swapping", dashArray.value)
-    // styleOptions.value.reverseDashArray = flip;
-    // In TwoJS even index is gap length, odd index is dash length
+    if (typeof flip === "undefined") return;
+    if (!useDashPattern.value) return
+    styleOptions.value.reverseDashArray = flip;
     if (flip) {
-      styleOptions.value.dashArray = dashArray.value.slice(0)
-    }
-    else {
-      styleOptions.value.dashArray = dashArray.value.toReversed()
-
+      styleOptions.value.dashArray = dashArray.value.slice(0);
+    } else {
+      styleOptions.value.dashArray = dashArray.value.toReversed();
     }
   }
 );

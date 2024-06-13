@@ -1149,6 +1149,10 @@ export default class Circle extends Nodule {
         ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
+          // I think the following three lines do a double reverse()
+          // if (frontStyle.reverseDashArray) {
+          //   this.glowingFrontPart.dashes.reverse();
+          // }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();

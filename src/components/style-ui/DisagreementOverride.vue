@@ -52,13 +52,13 @@ const formattedDisagreement = computed(() => localDisagreement.value.join(","));
 </script>
 <i18n lang="json" locale="en">
 {
+  "angleMarkerArrowHeads": "Angle marker arrow heads",
+  "angleMarkerDoubleArc": "Angle marker double arc",
   "angleMarkerRadiusPercent": "Angle marker radius (%)",
   "angleMarkerTickMark": "Angle marker ticks",
-  "angleMarkerDoubleArc": "Angle marker double arc",
-  "angleMarkerArrowHeads": "Angle marker arrow heads",
   "dashArray": "Dash Pattern",
-  "dynamicBackStyle": "Dynamic Back Style",
   "dontForceAgreement": "Do not apply edit to all selections",
+  "dynamicBackStyle": "Dynamic Back Style",
   "fillColor": "Fill Color",
   "forceAgreement": "Apply edit to all selections",
   "labelBackFillColor": "Fill color (back)",
