@@ -83,14 +83,12 @@ import { Ref, ref, onBeforeMount, onMounted } from "vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 // import LanguageSelector from "./components/LanguageSelector.vue";
 // import AuthenticatedUserToolbox from "./components/AuthenticatedUserToolbox.vue";
-import { getAuth } from "firebase/auth";
 
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "./stores/construction";
-const appAuth = getAuth();
 
 // Register vue router in-component navigation guard functions
 // Component.registerHooks([
@@ -108,7 +106,6 @@ constructionStore.initialize()
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
 const whoami = ref("");
-const uid = ref("");
 
 onBeforeMount((): void => {
   acctStore.resetToolset();
@@ -121,10 +118,9 @@ onMounted((): void => {
 });
 
 async function doLogout(): Promise<void> {
-  await appAuth.signOut();
+  await acctStore.signOff()
   logoutDialog.value?.hide();
   userRole.value = undefined;
-  uid.value = "";
   whoami.value = "";
   acctStore.parseAndSetFavoriteTools("");
 }

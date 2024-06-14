@@ -4,6 +4,7 @@ import {
   ConstructionScript,
   PublicConstructionInFirestore
 } from "@/types";
+import { Command } from "@/commands/Command";
 import { defineStore } from "pinia";
 import { Auth, getAuth } from "firebase/auth";
 import { ref, Ref } from "vue";
@@ -12,7 +13,8 @@ import {
   deleteObject,
   getDownloadURL,
   getStorage,
-  ref as storageRef
+  ref as storageRef,
+  uploadString
 } from "firebase/storage";
 import {
   CollectionReference,
@@ -24,7 +26,6 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot,
   getFirestore,
-  Unsubscribe,
   Firestore,
   deleteDoc,
   deleteField,
@@ -38,9 +39,12 @@ import axios, { AxiosResponse } from "axios";
 import { Matrix4, Sphere } from "three";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
+import { useSEStore } from "./se";
 import { watch } from "vue";
+import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
+let appAuth: Auth;
 
 async function parseDocument(
   id: string,
@@ -116,7 +120,15 @@ export const useConstructionStore = defineStore("construction", () => {
   const currentConstructionPreview: Ref<string | null> = ref(null);
   const starredConstructionIDs: Array<string> = [];
   const acctStore = useAccountStore();
-  const { firebaseUid, userEmail } = storeToRefs(acctStore);
+  const seStore = useSEStore();
+  const {
+    svgCanvas,
+    inverseTotalRotationMatrix,
+    isEarthMode,
+    canvasWidth,
+    canvasHeight
+  } = storeToRefs(seStore);
+    const { firebaseUid, userEmail, includedTools } = storeToRefs(acctStore);
 
   watch(firebaseUid, async (uid, oldUid) => {
     if (uid) {
@@ -158,6 +170,209 @@ export const useConstructionStore = defineStore("construction", () => {
     sortConstructionArray(publicConstructions.value);
   });
 
+  // constructionDocId !== null implies overwrite existing construction
+  // constructionDocId === null implies create a new construction
+  async function saveConstruction(
+    constructionDocId: null | string,
+    constructionDescription: string,
+    saveAsPublic: boolean
+  ): Promise<string> {
+    // By the time doSave() is called, svgCanvas must have been set
+    // to it is safe to non-null assert svgCanvas.value
+    const svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+
+    /* TODO: move the following constant to global-settings? */
+    const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
+    // A local function to convert a blob to base64 representation
+    const toBase64 = (inputBlob: Blob): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          resolve(reader.result as string);
+        };
+        reader.readAsDataURL(inputBlob);
+      });
+
+    /* dump the command history */
+    const scriptOut = Command.dumpOpcode();
+
+    // TODO: should we decouple the zoomFactor from the rotation matrix when
+    // saving a construction?. Possible issue: the construction
+    // was saved by a user working on a larger screen (large zoomFactor),
+    // but loaded by a user working on a smaller screen (small zoomFactor)
+
+    const rotationMat = inverseTotalRotationMatrix.value;
+    const userUid = appAuth.currentUser!.uid;
+    // All constructions, regardless of private/public, are saved under the each user
+    // subcollection. If a construction is made available to public, another document under
+    // the top-level construction will be created
+    const collectionPath = `users/${userUid}/constructions`;
+
+    // Make a duplicate of the SVG tree
+    const svgElement = svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Remove the top-level transformation matrix
+    // We have to save the preview in its "natural" pose
+    svgElement.style.removeProperty("transform");
+
+    const svgBlob = new Blob([svgElement.outerHTML], {
+      type: "image/svg+xml;charset=utf-8"
+    });
+    const svgDataUrl = await toBase64(svgBlob);
+    let previewData: string;
+
+    if (isEarthMode.value) {
+      // In earth mode, the preview has to capture both the
+      // the earth ThreeJS and the unit sphere TwoJS layers
+      // Our trick below is to draw both layers (in the correct order)
+      // into an offline canvas and then convert to a data image
+      const earthCanvas = document.getElementById("earth") as HTMLCanvasElement;
+      previewData = await mergeIntoImageUrl(
+        // Must be specified in the correct order, the first item
+        // in the array will be drawn to the offline canvas first
+        [earthCanvas.toDataURL(), svgDataUrl],
+        canvasWidth.value,
+        canvasHeight.value,
+        "png"
+      );
+      // FileSaver.saveAs(previewData, "hans.png");
+    } else {
+      previewData = svgDataUrl;
+    }
+
+    /* Create a pipeline of Firebase tasks
+         Task 1: Upload construction to Firestore
+         Task 2: Upload the script to Firebase Storage (for large script)
+         Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
+      */
+    let saveTask: Promise<DocumentReference>;
+    const constructionDetails: ConstructionInFirestore = {
+      version: "1",
+      dateCreated: new Date().toISOString(),
+      author: userEmail.value!,
+      description: constructionDescription,
+      rotationMatrix: JSON.stringify(rotationMat.elements),
+      tools: includedTools.value,
+      aspectRatio: canvasWidth.value / canvasHeight.value,
+      // Use an empty string (for type checking only)
+      // the actual script will be determine below
+      script: "",
+      preview: "",
+      // TODO: check this may have to be grabbed from the existing doc in #1a
+      starCount: 0
+    };
+
+    // Task #1
+    if (constructionDocId !== null) {
+      const targetDoc = doc(
+        appDB,
+        collectionPath.concat("/" + constructionDocId)
+      );
+      // Task #1a: update the existing construction
+      getDoc(targetDoc).then(ds => {
+        if (ds.exists()) {
+          constructionDetails.starCount = ds.data().starCount;
+        }
+      });
+      saveTask = updateDoc(targetDoc, constructionDetails as any).then(
+        () => targetDoc
+      );
+    } else {
+      // Task #1b: save as a new construction
+      saveTask = addDoc(collection(appDB, collectionPath), constructionDetails);
+    }
+
+    // try {
+    return await saveTask
+      .then((constructionDoc: DocumentReference) => {
+        acctStore.constructionDocId = constructionDoc.id;
+        /* Task #2 */
+        const scriptPromise: Promise<string> =
+          scriptOut.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(scriptOut)
+            : uploadString(
+                storageRef(appStorage, `scripts/${constructionDoc.id}`),
+                scriptOut
+              ).then(t => getDownloadURL(t.ref));
+
+        /* Task #3 */
+        const svgPromise: Promise<string> =
+          previewData.length < FIELD_SIZE_LIMIT
+            ? Promise.resolve(previewData)
+            : uploadString(
+                storageRef(
+                  appStorage,
+                  `construction-svg/${constructionDoc.id}`
+                ),
+                previewData
+              ).then(t => getDownloadURL(t.ref));
+
+        /* Wrap the result from the three tasks as a new Promise */
+        return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
+      })
+      .then(async ([docId, scriptData, svgData]) => {
+        const constructionDoc = doc(appDB, collectionPath, docId);
+        // Pass on the document ID to be included in the alert message
+        if (saveAsPublic) {
+          const publicConstructionDoc = await addDoc(
+            collection(appDB, "/constructions/"),
+            {
+              author: userUid,
+              constructionDocId: docId // construction document under the user sub-collection
+            }
+          );
+          await updateDoc(constructionDoc, {
+            script: scriptData,
+            preview: svgData,
+            publicDocId: publicConstructionDoc.id
+          });
+        } else {
+          await updateDoc(constructionDoc, {
+            script: scriptData,
+            preview: svgData
+          });
+        }
+        return docId;
+      });
+    // } catch (err) {
+    //   return err as Error
+    // }
+  }
+
+  async function loadPublicConstruction(
+    docId: string
+  ): Promise<ConstructionScript | null> {
+    return await getDoc(doc(appDB, "constructions", docId))
+      .then((ds: DocumentSnapshot) => {
+        const { author, constructionDocId } =
+          ds.data() as PublicConstructionInFirestore;
+        return getDoc(
+          doc(appDB, "users", author, "constructions", constructionDocId)
+        );
+      })
+      .then(async (ds: DocumentSnapshot) => {
+        if (ds.exists()) {
+          const { script } = ds.data() as ConstructionInFirestore;
+          // Check whether the script is inline or stored in Firebase storage
+          if (script.startsWith("https:")) {
+            // The script must be fetched from Firebase storage
+            const constructionStorage = storageRef(appStorage, script);
+            const scriptText = await getDownloadURL(constructionStorage)
+              .then((url: string) => axios.get(url))
+              .then((r: AxiosResponse) => r.data);
+            return JSON.parse(scriptText) as ConstructionScript;
+          } else {
+            // The script is inline
+            return JSON.parse(script) as ConstructionScript;
+          }
+        } else {
+          return null;
+        }
+      });
+  }
+
   async function parsePublicCollection(
     constructionCollection: CollectionReference,
     targetArr: Array<SphericalConstruction>
@@ -198,8 +413,9 @@ export const useConstructionStore = defineStore("construction", () => {
       }
     );
 
-    const constructionArr: Array<SphericalConstruction> =
-      await Promise.all(parseTasks);
+    const constructionArr: Array<SphericalConstruction> = await Promise.all(
+      parseTasks
+    );
     targetArr.push(
       ...constructionArr.filter(
         (c: SphericalConstruction) => c.parsedScript.length > 0
@@ -242,8 +458,9 @@ export const useConstructionStore = defineStore("construction", () => {
       }
     );
 
-    const constructionArray: Array<SphericalConstruction> =
-      await Promise.all(parseTask);
+    const constructionArray: Array<SphericalConstruction> = await Promise.all(
+      parseTask
+    );
     targetArr.push(
       ...constructionArray.filter(
         (s: SphericalConstruction) => s.parsedScript.length > 0
@@ -266,6 +483,7 @@ export const useConstructionStore = defineStore("construction", () => {
     // This function is invoked from App.vue
     appDB = getFirestore();
     appStorage = getStorage();
+    appAuth = getAuth();
 
     const publicColl = collection(appDB, "constructions");
     await parsePublicCollection(publicColl, publicConstructions.value);
@@ -293,7 +511,7 @@ export const useConstructionStore = defineStore("construction", () => {
     if (victimDetails.preview.startsWith("https://"))
       await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
     await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
-    privateConstructions.value.splice(pos, 1)
+    privateConstructions.value.splice(pos, 1);
     return true;
   }
 
@@ -351,19 +569,29 @@ export const useConstructionStore = defineStore("construction", () => {
     }
   }
 
-  async function updateStarCountInFirebase(pubConstructionId: string, byValue: number) {
-    const publicDocRef = doc(appDB, "constructions", pubConstructionId)
-    const publicDS: DocumentSnapshot = await getDoc(publicDocRef)
+  async function updateStarCountInFirebase(
+    pubConstructionId: string,
+    byValue: number
+  ) {
+    const publicDocRef = doc(appDB, "constructions", pubConstructionId);
+    const publicDS: DocumentSnapshot = await getDoc(publicDocRef);
     if (publicDS.exists()) {
-      const publicDoc = publicDS.data() as PublicConstructionInFirestore
-      const ownedDocRef = doc(appDB, "users", publicDoc.author, "constructions", publicDoc.constructionDocId)
-      const ownedDS: DocumentSnapshot = await getDoc(ownedDocRef)
+      const publicDoc = publicDS.data() as PublicConstructionInFirestore;
+      const ownedDocRef = doc(
+        appDB,
+        "users",
+        publicDoc.author,
+        "constructions",
+        publicDoc.constructionDocId
+      );
+      const ownedDS: DocumentSnapshot = await getDoc(ownedDocRef);
       if (ownedDS.exists()) {
-        const ownedDoc = ownedDS.data() as SphericalConstruction
-        if (ownedDoc.starCount + byValue >= 0) { // Avoid negative count (at least during development)
-          await updateDoc(ownedDocRef, { starCount: increment(byValue) })
+        const ownedDoc = ownedDS.data() as SphericalConstruction;
+        if (ownedDoc.starCount + byValue >= 0) {
+          // Avoid negative count (at least during development)
+          await updateDoc(ownedDocRef, { starCount: increment(byValue) });
         } else {
-          await updateDoc(ownedDocRef, { starCount: 0 })
+          await updateDoc(ownedDocRef, { starCount: 0 });
         }
       }
     }
@@ -375,12 +603,12 @@ export const useConstructionStore = defineStore("construction", () => {
       (z: SphericalConstruction) => z.publicDocId == pubConstructionId
     );
     if (pos >= 0) {
-      publicConstructions.value[pos].starCount++
+      publicConstructions.value[pos].starCount++;
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
       starredConstructionIDs.push(pubConstructionId);
       updateStarredArrayInFirebase(starredConstructionIDs);
-      updateStarCountInFirebase(pubConstructionId, +1)
+      updateStarCountInFirebase(pubConstructionId, +1);
     }
   }
 
@@ -389,9 +617,9 @@ export const useConstructionStore = defineStore("construction", () => {
       (z: SphericalConstruction) => z.publicDocId == pubConstructionId
     );
     if (pos >= 0) {
-      const target = starredConstructions.value[pos]
+      const target = starredConstructions.value[pos];
       if (target.starCount > 0) {
-        starredConstructions.value[pos].starCount--
+        starredConstructions.value[pos].starCount--;
       }
       const inStarred = starredConstructions.value.splice(pos, 1);
       publicConstructions.value.push(...inStarred);
@@ -401,19 +629,24 @@ export const useConstructionStore = defineStore("construction", () => {
       starredConstructionIDs.splice(pos2, 1);
 
       updateStarredArrayInFirebase(starredConstructionIDs);
-      updateStarCountInFirebase(pubConstructionId, -1)
+      updateStarCountInFirebase(pubConstructionId, -1);
     }
   }
 
   return {
-    publicConstructions,
-    privateConstructions,
-    starredConstructions,
-    initialize,
+    /* state */
     currentConstructionPreview,
+    privateConstructions,
+    publicConstructions,
+    starredConstructions,
+
+    /* functions */
     deleteConstruction,
+    initialize,
+    loadPublicConstruction,
     makePrivate,
     makePublic,
+    saveConstruction,
     starConstruction,
     unstarConstruction
   };

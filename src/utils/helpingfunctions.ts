@@ -64,3 +64,36 @@ export function getDescendants(startingNodules: SENodule[]): SENodule[] {
   }
   return descendants;
 }
+
+export async function mergeIntoImageUrl(
+  sourceURLs: Array<string>,
+  // fileName: string,
+  imageWidth: number,
+  imageHeight: number,
+  imageFormat: string
+): Promise<string> {
+  // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
+  const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
+  offlineCanvas.width = imageWidth;
+  offlineCanvas.height = imageHeight;
+  // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
+  // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
+  const graphicsCtx = offlineCanvas.getContext("2d");
+  const imageExtension = imageFormat.toLowerCase();
+  const drawTasks = sourceURLs.map((dataUrl: string): Promise<string> => {
+    return new Promise(resolve => {
+      const offlineImage = new Image();
+      offlineImage.addEventListener("load", () => {
+        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
+        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
+        resolve(dataUrl);
+      });
+      // Similar to <img :src="dataUrl" /> but programmatically
+      offlineImage.src = dataUrl;
+    });
+  });
+  await Promise.all(drawTasks);
+  const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
+
+  return imgURL;
+}

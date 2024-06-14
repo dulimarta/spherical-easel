@@ -14,7 +14,10 @@ import {
   getFirestore
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
-import { GoogleAuthProvider, User, UserCredential, createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider, User, UserCredential, createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup,
+  signOut
+ } from "firebase/auth";
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -152,6 +155,10 @@ export const useAccountStore = defineStore("acct", () => {
     }
   }
 
+  async function signOff(): Promise<void> {
+    await signOut(appAuth)
+  }
+
   async function passwordReset(email: string) {
     await sendPasswordResetEmail(appAuth, email)
   }
@@ -189,7 +196,7 @@ export const useAccountStore = defineStore("acct", () => {
     parseAndSetFavoriteTools,
     parseUserProfile,
     fetchStarredConstructions,
-    signIn,
+    signIn, signOff,
     signUp, passwordReset, googleLogin
   };
 });

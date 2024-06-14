@@ -64,9 +64,7 @@
           </template>
         <v-switch-->
       </div>
-      <div
-        v-else
-        :class="['justify-center', 'align-start', previewClass]">
+      <div v-else :class="['justify-center', 'align-start', previewClass]">
         <!--Aspect ratio {{ svgDataImageAspectRatio }} -->
         <!--div class="previewText">
           <p>{{ constructionInfo.count }} objects.</p>
@@ -168,32 +166,19 @@ import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
-import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
 import {
-  ConstructionInFirestore,
-  PublicConstructionInFirestore,
   SphericalConstruction
 } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
-import {
-  getFirestore,
-  DocumentSnapshot,
-  doc,
-  getDoc
-} from "firebase/firestore";
+
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
+import { useConstructionStore } from "@/stores/construction";
 import Parametric from "@/plottables/Parametric";
-import {
-  getStorage,
-  ref as storageRef,
-  getDownloadURL
-} from "firebase/storage";
-import axios, { AxiosResponse } from "axios";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import {
@@ -207,9 +192,6 @@ import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
 const LEFT_PANE_PERCENTAGE = 25;
 const DELETE_DELAY = 5000; // in milliseconds
-const appDB = getFirestore();
-// const appAuth = getAuth();
-const appStorage = getStorage();
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -218,6 +200,7 @@ const appStorage = getStorage();
  */
 const { t } = useI18n();
 const seStore = useSEStore();
+const constructionStore = useConstructionStore();
 const router = useRouter();
 const {
   seNodules,
@@ -310,31 +293,11 @@ function loadDocument(docId: string): void {
   seStore.removeAllFromLayers();
   seStore.init();
   SENodule.resetAllCounters();
-  // Nodule.resetIdPlottableDescriptionMap(); // Needed?
-  // load the script from public collection
-  getDoc(doc(appDB, "constructions", docId))
-    .then((ds: DocumentSnapshot) => {
-      const { author, constructionDocId } =
-        ds.data() as PublicConstructionInFirestore;
-      return getDoc(
-        doc(appDB, "users", author, "constructions", constructionDocId)
-      );
-    })
-    .then(async (ds: DocumentSnapshot) => {
-      if (ds.exists()) {
-        const { script } = ds.data() as ConstructionInFirestore;
-        // Check whether the script is inline or stored in Firebase storage
-        if (script.startsWith("https:")) {
-          // The script must be fetched from Firebase storage
-          const constructionStorage = storageRef(appStorage, script);
-          const scriptText = await getDownloadURL(constructionStorage)
-            .then((url: string) => axios.get(url))
-            .then((r: AxiosResponse) => r.data);
-          run(JSON.parse(scriptText) as ConstructionScript);
-        } else {
-          // The script is inline
-          run(JSON.parse(script) as ConstructionScript);
-        }
+  constructionStore
+    .loadPublicConstruction(docId)
+    .then((script: ConstructionScript | null) => {
+      if (script !== null) {
+        run(script);
         seStore.updateDisplay();
       } else {
         EventBus.fire("show-alert", {
@@ -344,6 +307,9 @@ function loadDocument(docId: string): void {
         });
       }
     });
+
+  // Nodule.resetIdPlottableDescriptionMap(); // Needed?
+  // load the script from public collection
 }
 
 /** mounted() is part of VueJS lifecycle hooks */
@@ -447,11 +413,11 @@ function resizePlottables(e: { factor: number }): void {
   Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
   // Apply the new size in each nodule in the store
-  seNodules.value.forEach((p) => {
+  seNodules.value.forEach(p => {
     p.ref?.adjustSize();
   });
   // The temporary plottables need to be resized too
-  temporaryNodules.value.forEach((p) => {
+  temporaryNodules.value.forEach(p => {
     p.adjustSize();
   });
 }
@@ -614,9 +580,7 @@ onBeforeRouteLeave(
   display: flex;
   align-items: center;
   background-color: white;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #zoomPanel {
@@ -625,9 +589,7 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 .horizontalLine {

@@ -8,7 +8,11 @@
       rowGap: '8px'
     }">
     <!-- {{ userDisplayedName }} {{ userEmail }} -->
-    <v-btn icon size="x-small" class="bg-green-lighten-1" @click="doLoginOrLogout">
+    <v-btn
+      icon
+      size="x-small"
+      class="bg-green-lighten-1"
+      @click="doLoginOrLogout">
       <v-avatar
         size="small"
         v-if="userProfilePictureURL !== undefined"
@@ -18,13 +22,16 @@
         @click="doLoginOrLogout"></v-avatar>
 
       <v-icon size="x-large" v-else>mdi-account</v-icon>
-      <v-tooltip activator="parent" :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
+      <v-tooltip
+        activator="parent"
+        :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
     </v-btn>
-    <router-link to="/settings/" v-if="appAuth.currentUser !== null">
+    <router-link to="/settings/" v-if="firebaseUid">
       <v-icon size="large" color="white">mdi-cog</v-icon>
     </router-link>
-    <HintButton color="secondary"
-      v-if="appAuth.currentUser !== null && hasObjects"
+    <HintButton
+      color="secondary"
+      v-if="firebaseUid && hasObjects"
       @click="() => saveConstructionDialog?.show()"
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
@@ -65,12 +72,12 @@
       @keypress.stop></v-text-field>
     <v-switch
       v-model="isSavedAsPublicConstruction"
-      :disabled="appAuth.currentUser?.uid.length === 0"
+      :disabled="!firebaseUid"
       :label="t('construction.makePublic')"></v-switch>
     <v-switch
       v-if="isMyOwnConstruction"
       v-model="shouldSaveOverwrite"
-      :disabled="appAuth.currentUser?.uid.length === 0"
+      :disabled="!firebaseUid"
       :label="
         t('construction.saveOverwrite', { docId: constructionDocId })
       "></v-switch>
@@ -142,32 +149,15 @@ import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
 import { onKeyDown } from "@vueuse/core";
-import { getAuth, Unsubscribe, User } from "firebase/auth";
-import {
-  doc,
-  getFirestore,
-  getDoc,
-  addDoc,
-  collection,
-  DocumentSnapshot,
-  DocumentReference,
-  updateDoc
-} from "firebase/firestore";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
-import { Command } from "@/commands/Command";
-import { ConstructionInFirestore, SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
-import {
-  uploadString,
-  getDownloadURL,
-  ref as storageRef,
-  getStorage
-} from "firebase/storage";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
+import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -180,31 +170,20 @@ const {
   loginEnabled,
   userProfilePictureURL,
   userDisplayedName,
-  userEmail,
   constructionDocId,
-  includedTools,
   firebaseUid
 } = storeToRefs(acctStore);
 const {
   hasObjects,
-  inverseTotalRotationMatrix,
   svgCanvas,
   canvasHeight,
   canvasWidth,
-  isEarthMode
 } = storeToRefs(seStore);
 const { t } = useI18n();
-// const {
-//   currentConstructionPreview,
-//   isPublicConstruction,
-//   privateConstructions
-// } = useConstruction();
+
 const { privateConstructions, currentConstructionPreview } =
   storeToRefs(constructionStore);
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
-const appAuth = getAuth();
-const appDB = getFirestore();
-const appStorage = getStorage();
 const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -213,7 +192,7 @@ const isSavedAsPublicConstruction = ref(false);
 const shouldSaveOverwrite = ref(false);
 const selectedExportFormat = ref("");
 const svgExportHeight = ref(100);
-let authSubscription: Unsubscribe | null = null;
+// let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 type ComponentProps = {
   expandedView: boolean;
@@ -314,16 +293,16 @@ onMounted(() => {
   // });
 });
 
-onBeforeUnmount(() => {
-  if (authSubscription) {
-    authSubscription();
-    authSubscription = null;
-  }
-});
+// onBeforeUnmount(() => {
+//   if (authSubscription) {
+//     authSubscription();
+//     authSubscription = null;
+//   }
+// });
 
 async function doLoginOrLogout() {
-  if (appAuth.currentUser !== null) {
-    await appAuth.signOut();
+  if (firebaseUid.value) {
+    await acctStore.signOff()
     // userEmail.value = undefined;
     userProfilePictureURL.value = undefined;
     userDisplayedName.value = undefined;
@@ -334,163 +313,12 @@ async function doLoginOrLogout() {
 }
 
 async function doSave(): Promise<void> {
-  if (svgRoot === undefined) {
-    // By the time doSave() is called, svgCanvas must have been set
-    // to it is safe to non-null assert svgCanvas.value
-    svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
-  }
-
-  /* TODO: move the following constant to global-settings? */
-  const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
-  // A local function to convert a blob to base64 representation
-  const toBase64 = (inputBlob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.readAsDataURL(inputBlob);
-    });
-
-  /* dump the command history */
-  const scriptOut = Command.dumpOpcode();
-
-  // TODO: should we decouple the zoomFactor from the rotation matrix when
-  // saving a construction?. Possible issue: the construction
-  // was saved by a user working on a larger screen (large zoomFactor),
-  // but loaded by a user working on a smaller screen (small zoomFactor)
-
-  const rotationMat = inverseTotalRotationMatrix;
-  const userUid = appAuth.currentUser!.uid;
-  // All constructions, regardless of private/public, are saved under the each user
-  // subcollection. If a construction is made available to public, another document under
-  // the top-level construction will be created
-  const collectionPath = `users/${userUid}/constructions`;
-
-  // Make a duplicate of the SVG tree
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-  // Remove the top-level transformation matrix
-  // We have to save the preview in its "natural" pose
-  svgElement.style.removeProperty("transform");
-
-  const svgBlob = new Blob([svgElement.outerHTML], {
-    type: "image/svg+xml;charset=utf-8"
-  });
-  const svgDataUrl = await toBase64(svgBlob);
-  let previewData: string;
-
-  if (isEarthMode.value) {
-    // In earth mode, the preview has to capture both the
-    // the earth ThreeJS and the unit sphere TwoJS layers
-    // Our trick below is to draw both layers (in the correct order)
-    // into an offline canvas and then convert to a data image
-    const earthCanvas = document.getElementById("earth") as HTMLCanvasElement;
-    previewData = await mergeIntoImageUrl(
-      // Must be specified in the correct order, the first item
-      // in the array will be drawn to the offline canvas first
-      [earthCanvas.toDataURL(), svgDataUrl],
-      canvasWidth.value,
-      canvasHeight.value,
-      "png"
-    );
-    // FileSaver.saveAs(previewData, "hans.png");
-  } else {
-    previewData = svgDataUrl;
-  }
-
-  /* Create a pipeline of Firebase tasks
-       Task 1: Upload construction to Firestore
-       Task 2: Upload the script to Firebase Storage (for large script)
-       Task 3: Upload the SVG preview to Firebase Storage (for large SVG)
-    */
-  let saveTask: Promise<DocumentReference>;
-  const constructionDetails: ConstructionInFirestore = {
-    version: "1",
-    dateCreated: new Date().toISOString(),
-    author: userEmail.value!,
-    description: constructionDescription.value,
-    rotationMatrix: JSON.stringify(rotationMat.value.elements),
-    tools: includedTools.value,
-    aspectRatio: canvasWidth.value / canvasHeight.value,
-    // Use an empty string (for type checking only)
-    // the actual script will be determine below
-    script: "",
-    preview: "",
-    // TODO: check this may have to be grabbed from the existing doc in #1a
-    starCount: 0
-  };
-
-  // Task #1
-  if (shouldSaveOverwrite.value) {
-    const targetDoc = doc(
-      appDB,
-      collectionPath.concat("/" + constructionDocId.value)
-    );
-    // Task #1a: update the existing construction
-    getDoc(targetDoc).then(ds => {
-      if (ds.exists()) {
-        constructionDetails.starCount = ds.data().starCount;
-      }
-    });
-    saveTask = updateDoc(targetDoc, constructionDetails as any).then(
-      () => targetDoc
-    );
-  } else {
-    // Task #1b: save as a new construction
-    saveTask = addDoc(collection(appDB, collectionPath), constructionDetails);
-  }
-
-  saveTask
-    .then((constructionDoc: DocumentReference) => {
-      acctStore.constructionDocId = constructionDoc.id;
-      /* Task #2 */
-      const scriptPromise: Promise<string> =
-        scriptOut.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(scriptOut)
-          : uploadString(
-              storageRef(appStorage, `scripts/${constructionDoc.id}`),
-              scriptOut
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Task #3 */
-      const svgPromise: Promise<string> =
-        previewData.length < FIELD_SIZE_LIMIT
-          ? Promise.resolve(previewData)
-          : uploadString(
-              storageRef(appStorage, `construction-svg/${constructionDoc.id}`),
-              previewData
-            ).then(t => getDownloadURL(t.ref));
-
-      /* Wrap the result from the three tasks as a new Promise */
-      return Promise.all([constructionDoc.id, scriptPromise, svgPromise]);
-    })
-    .then(async ([docId, scriptData, svgData]) => {
-      const constructionDoc = doc(appDB, collectionPath, docId);
-      // Pass on the document ID to be included in the alert message
-      if (isSavedAsPublicConstruction.value) {
-        const publicConstructionDoc = await addDoc(
-          collection(appDB, "/constructions/"),
-          {
-            author: userUid,
-            constructionDocId: docId // construction document under the user sub-collection
-          }
-        );
-        await updateDoc(constructionDoc, {
-          script: scriptData,
-          preview: svgData,
-          publicDocId: publicConstructionDoc.id
-        });
-      } else {
-        await updateDoc(constructionDoc, {
-          script: scriptData,
-          preview: svgData
-        });
-      }
-      return docId;
-    })
+  constructionStore
+    .saveConstruction(
+      constructionDocId.value,
+      constructionDescription.value,
+      isSavedAsPublicConstruction.value
+    )
     .then((docId: string) => {
       EventBus.fire("show-alert", {
         key: "constructions.firestoreConstructionSaved",
@@ -506,43 +334,12 @@ async function doSave(): Promise<void> {
         keyOptions: { error: err },
         type: "error"
       });
+    })
+    .finally(() => {
+      saveConstructionDialog.value?.hide();
     });
-
-  saveConstructionDialog.value?.hide();
 }
 
-async function mergeIntoImageUrl(
-  sourceURLs: Array<string>,
-  // fileName: string,
-  imageWidth: number,
-  imageHeight: number,
-  imageFormat: string
-): Promise<string> {
-  // Reference https://gist.github.com/tatsuyasusukida/1261585e3422da5645a1cbb9cf8813d6
-  const offlineCanvas = document.createElement("canvas") as HTMLCanvasElement;
-  offlineCanvas.width = imageWidth;
-  offlineCanvas.height = imageHeight;
-  // offlineCanvas.setAttribute("width", canvasWidth.value.toString());
-  // offlineCanvas.setAttribute("height", canvasHeight.value.toString());
-  const graphicsCtx = offlineCanvas.getContext("2d");
-  const imageExtension = imageFormat.toLowerCase();
-  const drawTasks = sourceURLs.map((dataUrl: string): Promise<string> => {
-    return new Promise(resolve => {
-      const offlineImage = new Image();
-      offlineImage.addEventListener("load", () => {
-        graphicsCtx?.drawImage(offlineImage, 0, 0, imageWidth, imageHeight);
-        // FileSaver.saveAs(offlineCanvas.toDataURL(`image/png`), `hanspreview${index}.png`);
-        resolve(dataUrl);
-      });
-      // Similar to <img :src="dataUrl" /> but programmatically
-      offlineImage.src = dataUrl;
-    });
-  });
-  await Promise.all(drawTasks);
-  const imgURL = offlineCanvas.toDataURL(`image/${imageExtension}`);
-
-  return imgURL;
-}
 
 function doExport() {
   if (svgRoot === undefined) {
