@@ -54,17 +54,16 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-
+import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
-
+const {t} = useI18n()
 let parser = new ExpressionParser();
 
 const calcExpression = ref("");
@@ -99,23 +98,15 @@ function onKeyPressed(): void {
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);
       });
-      // console.debug(
-      //   "Calc ",
-      //   calcExpression.value,
-      //   "using parser",
-      //   this.parser,
-      //   "var map",
-      //   this.varMap
-      // );
       calcResult.value =
         calcExpression.value.length > 0
           ? parser.evaluateWithVars(calcExpression.value, varMap)
           : 0;
       // console.debug("Calculation result is", calcResult.value);
     } catch (err: any) {
-      // no code
       // console.debug("Got an error", err);
-      parsingError.value = err.message;
+      const syntaxErr = err as SyntaxError
+      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any)
     }
   }, 1000);
 }

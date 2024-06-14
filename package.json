@@ -6,7 +6,7 @@
   "scripts": {
     "app:serve": "bunx --bun vite",
     "serve": "bun run app:serve & bun run docs:serve",
-    "test": "vitest",
+    "test": "vitest watch",
     "lint": "eslint src",
     "app:build": "bunx --bun vite build",
     "build": "bun run app:build",

@@ -35,18 +35,18 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-
+import { useI18n } from "vue-i18n";
 interface TestTValueType {
   val: number;
 }
 
 const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
+const {t} = useI18n()
 const props = defineProps<{
   i18nToolTip: string;
   i18nKey: string;
@@ -112,7 +112,8 @@ function onKeyPressed(): void {
     } catch (err: any) {
       // no code
       // console.debug("Got an error", err);
-      parsingError.value = err.message;
+      const syntaxErr = err as SyntaxError
+      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any)
       EventBus.fire("parametric-data-update", {
         name: ""
       });

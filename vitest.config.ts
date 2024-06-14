@@ -7,10 +7,12 @@ import { castToVueI18n } from "vue-i18n";
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    root: "./src",
     test: {
       globals: true,
+      setupFiles: ["./vitest-setup.ts"],
       environment: "jsdom",
-      include: ["**/construction-loader.spec.ts"],
+      include: ["**/expression-parser.spec.ts"],
       server: {
         deps: {
           inline: ["vuetify", "vue-i18n"]

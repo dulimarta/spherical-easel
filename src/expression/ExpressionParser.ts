@@ -1,6 +1,4 @@
-// import i18n from "@/i18n";
-
-import { useI18n } from "vue-i18n";
+import i18n from "@/i18n";
 
 export enum TokenType {
   /* 0 */ PLUS,
@@ -60,9 +58,9 @@ class Lexer {
   private nextChar: IteratorResult<string>;
   private prev?: Lexicon;
   private curr?: Lexicon;
-  private t: any
+  private t: any;
   constructor(input: string) {
-    this.t = useI18n()
+    this.t = i18n.global
     // JS strings are an iterable object
     // The iterator provides two important properties:
     // .done which is set to true when we reach the end of iteration
@@ -74,7 +72,7 @@ class Lexer {
   }
 
   lastToken(): string {
-    return this.prev?.text ?? String(this.t(`objectTree.startOfInput`)); //"Start of input";
+    return this.prev?.text ?? this.t(`exprParser.startOfInput`); //"Start of input";
   }
   skipWhiteSpaces(): void {
     // \s is Regex for whitespace
@@ -215,7 +213,6 @@ class Lexer {
   }
 }
 
-
 export class ExpressionParser {
   // readonly { t } = useI18n()
 
@@ -228,16 +225,15 @@ export class ExpressionParser {
    * @param input a string of arithmetic expression
    */
   static parse(input: string): SyntaxTree {
-    const {t} = useI18n()
     const lexer = new Lexer(input); // Lexical analyzer
     const tokenizer = lexer.tokenize();
     let token = tokenizer.next();
 
-    function throwError(msg: string, info: Lexicon): never {
-      if (info.kind === TokenType.EOF)
-        throw new SyntaxError(String(t(`objectTree.parserError`)));
-      else throw new SyntaxError(msg);
-    }
+    // function throwError(msg: string, option: ErrorOptions, info: Lexicon): never {
+    //   if (info.kind === TokenType.EOF)
+    //     throw new SyntaxError(msg, option);
+    //   else throw new SyntaxError(msg);
+    // }
     function atom(): SyntaxTree {
       // factor() is 3-level deep from EXPR (highest precedence)
       if (token.value.kind === TokenType.LEFT_PAREN) {
@@ -248,14 +244,9 @@ export class ExpressionParser {
           token = tokenizer.next();
           return eTree;
         } else
-          return throwError(
-            String(
-              t(`objectTree.expectedRightParenthesis`, {
-                text: `${token.value.text}`
-              })
-            ),
-            token.value
-          );
+          throw SyntaxError("exprParser.expectedRightParenthesis", {
+            cause: { text: token.value.text }
+          });
       }
       if (token.value.kind === TokenType.MINUS) {
         // Unary minus
@@ -283,14 +274,11 @@ export class ExpressionParser {
         const out = token.value;
         token = tokenizer.next();
         if (token.value.kind !== TokenType.LEFT_PAREN)
-          return throwError(
-            String(
-              t(`objectTree.expectedLeftParenthesis`, {
-                text: `${lexer.lastToken()}`
-              })
-            ),
-            token.value
-          );
+          throw SyntaxError("exprParser.expectedLeftParenthesis", {
+            cause: {
+              text: lexer.lastToken
+            }
+          });
         token = tokenizer.next();
         const exprTree = expr();
         const args = [exprTree];
@@ -304,23 +292,17 @@ export class ExpressionParser {
           token = tokenizer.next();
           return { node: out, args };
         } else
-          return throwError(
-            String(
-              t(`objectTree.expectedRightButParenthesis`, {
-                text: `${token.value.text}`
-              })
-            ),
-            token.value
-          );
+          throw SyntaxError("exprParser.expectedRightButParenthesis", {
+            cause: {
+              text: token.value.text
+            }
+          });
       } else
-        return throwError(
-          String(
-            t(`objectTree.unexpectedInput`, {
-              text: `${token.value.text}`
-            })
-          ),
-          token.value
-        );
+        throw SyntaxError("exprParser.unexpectedInput", {
+          cause: {
+            text: token.value.text
+          }
+        });
     }
 
     // Parses: base ^ power1 ^ power2 ^ ...
@@ -386,13 +368,11 @@ export class ExpressionParser {
     // Be sure there is no leftover character after a valid expression
     if (token.value.kind === TokenType.EOF) return out;
     else
-      throw new SyntaxError(
-        String(
-          t(`objectTree.unexpectedToken`, {
-            text: `${token.value.text}`
-          })
-        )
-      );
+      throw SyntaxError("exprParser.unexpectedToken", {
+        cause: {
+          text: token.value.text
+        }
+      });
   }
   static readonly NOT_DEFINED: SyntaxTree = {
     node: { kind: TokenType.UNKNOWN, text: "0", numericValue: 0 }
@@ -535,7 +515,6 @@ export class ExpressionParser {
     input: SyntaxTree | undefined,
     varName: string
   ): SyntaxTree {
-    const {t} = useI18n()
     if (!input) return ExpressionParser.NOT_DEFINED;
     switch (input.node.kind) {
       case TokenType.NUMBER: // Diff of constant is ZERO
@@ -873,24 +852,20 @@ export class ExpressionParser {
             };
           }
           default:
-            throw new SyntaxError(
-              String(
-                t(`objectTree.unknownFunction`, {
-                  text: `${input.node.text}`
-                })
-              )
-            );
+            throw new SyntaxError("exprParser.unknownFunction", {
+              cause: {
+                text: input.node.text
+              }
+            });
         }
       }
       default:
-        throw new Error(
-          String(
-            t(`objectTree.unhandledTokenType`, {
-              text: `${TokenType[input.node.kind]}`,
-              text2: `${input.node.text}`
-            })
-          )
-        );
+        throw new SyntaxError("exprParser.unhandledTokenType", {
+          cause: {
+            text: TokenType[input.node.kind],
+            text2: input.node.text
+          }
+        });
     }
   }
   /** Recursive evaluation of the syntax tree
@@ -898,7 +873,6 @@ export class ExpressionParser {
    * the highest precedence expressions
    */
   static evaluate(tree: SyntaxTree, varMap: Map<string, number>): number {
-    const {t} = useI18n()
     function valueOf(synTree: SyntaxTree | null): number {
       let numValue: number;
       const measureName = synTree?.node.text ?? "n/a";
@@ -909,26 +883,36 @@ export class ExpressionParser {
         case TokenType.MEASUREMENT:
           if (varMap.has(measureName)) return varMap.get(measureName) ?? 0;
           else
-            throw new Error(
-              String(
-                t(`objectTree.undefinedVariable`, {
-                  text: `${measureName}`
-                })
-              )
-            );
+            throw new SyntaxError("exprParser.undefinedVariable", {
+              cause: {
+                text: measureName
+              }
+            });
+
         case TokenType.PLUS:
-          return valueOf(synTree.leftChild ?? null) + valueOf(synTree.rightChild ?? null);
+          return (
+            valueOf(synTree.leftChild ?? null) +
+            valueOf(synTree.rightChild ?? null)
+          );
         case TokenType.MINUS:
-          return valueOf(synTree.leftChild ?? null) - valueOf(synTree.rightChild ?? null);
+          return (
+            valueOf(synTree.leftChild ?? null) -
+            valueOf(synTree.rightChild ?? null)
+          );
         case TokenType.MULT:
-          return valueOf(synTree.leftChild ?? null) * valueOf(synTree.rightChild ?? null);
+          return (
+            valueOf(synTree.leftChild ?? null) *
+            valueOf(synTree.rightChild ?? null)
+          );
         case TokenType.DIV:
           numValue = valueOf(synTree.rightChild ?? null);
           if (Math.abs(numValue) > 1e-4)
-            return valueOf(synTree.leftChild ?? null) / valueOf(synTree.rightChild ?? null);
+            return (
+              valueOf(synTree.leftChild ?? null) /
+              valueOf(synTree.rightChild ?? null)
+            );
           else {
-            console.error(String(t(`objectTree.divideByZero`)));
-            return NaN;
+            throw SyntaxError("exprParser.divideByZero");
           }
         case TokenType.POW:
           return Math.pow(
@@ -978,15 +962,12 @@ export class ExpressionParser {
             case "tan":
               return Math.tan(valueOf(args[0]));
             default:
-              throw new SyntaxError(
-                String(
-                  t(`objectTree.unknownFunction`, {
-                    text: `${synTree.node.text}`
-                  })
-                )
-              );
+              throw new SyntaxError("exprParser.unknownFunction", {
+                cause: {
+                  text: synTree.node.text
+                }
+              });
           }
-
         default:
           return 0;
       }
